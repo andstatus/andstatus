@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">AndTweet</string>
+	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
+	<string name="message_edit_hint">Enter your tweet here!</string>
+	<string name="menu_item_reply">Reply</string>
+	<string name="menu_item_star">Favorite</string>
+	<string name="options_menu_preferences">Preferences</string>
+	<string name="notification_title">AndTweet</string>
+	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
+	<string name="category_title_preference_credentials">User Credentials</string>
+	<string name="dialog_title_preference_username">Username</string>
+	<string name="dialog_title_preference_password">Password</string>
+	<string name="title_preference_username">Username</string>
+	<string name="title_preference_password">Password</string>
+	<string name="summary_preference_username">Your Twitter username</string>
+	<string name="summary_preference_password">Your Twitter password</string>
+<string name="dialog_title_preference_frequency">Update Frequency</string>
+<string name="title_preference_frequency">Update Frequency</string>
+<string name="summary_preference_frequency">How often should AndTweet get tweets?</string>
+</resources>

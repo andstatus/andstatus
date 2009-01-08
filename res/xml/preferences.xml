@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	<PreferenceCategory android:title="@string/category_title_preference_credentials">
+		<EditTextPreference android:title="@string/title_preference_username"
+			android:dialogTitle="@string/dialog_title_preference_username"
+			android:summary="@string/summary_preference_username" android:key="twitter_username" />
+		<EditTextPreference android:title="@string/title_preference_password"
+			android:dialogTitle="@string/dialog_title_preference_password"
+			android:summary="@string/summary_preference_password" android:key="twitter_password" />
+		<ListPreference android:entryValues="@array/fetch_frequency_keys"
+			android:entries="@array/fetch_frequency_values" android:summary="@string/summary_preference_frequency"
+			android:dialogTitle="@string/dialog_title_preference_frequency"
+			android:title="@string/title_preference_frequency" android:key="fetch_frequency"></ListPreference>
+	</PreferenceCategory>
+</PreferenceScreen>
