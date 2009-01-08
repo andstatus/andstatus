@@ -185,9 +185,6 @@ public class TweetList extends Activity {
 		mNM.cancel(R.string.app_name);
 	}
 
-	/**
-	 * 
-	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
@@ -204,9 +201,6 @@ public class TweetList extends Activity {
 		return true;
 	}
 
-	/**
-	 * 
-	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -225,9 +219,6 @@ public class TweetList extends Activity {
         }
     }
 
-	/**
-	 * 
-	 */
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View view,
 			ContextMenuInfo menuInfo) {
@@ -243,9 +234,6 @@ public class TweetList extends Activity {
 		menu.add(0, CONTEXT_MENU_ITEM_STAR, 1, R.string.menu_item_star);
 	}
 
-	/**
-	 * 
-	 */
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterView.AdapterContextMenuInfo info;
@@ -313,6 +301,9 @@ public class TweetList extends Activity {
 		fillList();
 	}
 
+	/**
+	 * Fill the ListView with Tweet items.
+	 */
 	private void fillList() {
 		mMessageList = (ListView) findViewById(R.id.messagesListView);
 		Cursor cursor = managedQuery(getIntent().getData(), PROJECTION, null,
@@ -328,7 +319,7 @@ public class TweetList extends Activity {
 	}
 
 	/**
-     * 
+     * Temporary method for loading friends from an asset file.
      */
 	private void loadFriends() {
 		try {
@@ -354,7 +345,7 @@ public class TweetList extends Activity {
 	}
 
 	/**
-	 * 
+	 * Disconnect and unregister the service.
 	 */
 	private void disconnectService() {
 		if (mIsBound) {
@@ -371,7 +362,7 @@ public class TweetList extends Activity {
 	}
 
 	/**
-	 * 
+	 * Destroy the service.
 	 */
 	private void destroyService() {
 		if (mService != null) {
@@ -387,13 +378,7 @@ public class TweetList extends Activity {
 		mIsBound = false;
 	}
 
-	/**
-	 * 
-	 */
 	private ServiceConnection mConnection = new ServiceConnection() {
-		/**
-		 * 
-		 */
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			mService = IAndTweetService.Stub.asInterface(service);
 			// We want to monitor the service for as long as we are
@@ -406,17 +391,11 @@ public class TweetList extends Activity {
 			}
 		}
 
-		/**
-		 * 
-		 */
 		public void onServiceDisconnected(ComponentName name) {
 			mService = null;
 		}
 	};
 
-	/**
-	 * 
-	 */
 	private IAndTweetServiceCallback mServiceCallback = new IAndTweetServiceCallback.Stub() {
 		/**
 		 * Value changed callback method
@@ -430,9 +409,6 @@ public class TweetList extends Activity {
 		}
 	};
 
-	/**
-	 * 
-	 */
 	private Handler mHandler = new Handler() {
 		/**
 		 * Message handler

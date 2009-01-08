@@ -48,8 +48,8 @@ import com.xorcode.andtweet.data.AndTweet.Tweets;
 import com.xorcode.andtweet.net.Connection;
 
 /**
- * This is an application service that runs in its own process. Others can
- * interact with it via IPC.
+ * This is an application service that serves as a connection between Android
+ * and Twitter. Other applications can interact with it via IPC.
  */
 public class AndTweetService extends Service {
 
@@ -74,17 +74,11 @@ public class AndTweetService extends Service {
 	private SharedPreferences mPreferences;
 	private int mFrequency = 180;
 
-	/**
-	 * 
-	 */
 	@Override
 	public void onCreate() {
 		// Start the time line updater.
 		mHandler.sendEmptyMessage(MSG_UPDATE_TIMELINE);
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		mUsername = mPreferences.getString("twitter_username", null);
-		mPassword = mPreferences.getString("twitter_password", null);
-		mFrequency = Integer.parseInt(mPreferences.getString("fetch_frequency", "180"));
 	}
 
 	@Override
@@ -97,9 +91,6 @@ public class AndTweetService extends Service {
 		mHandler.removeMessages(MSG_UPDATE_TIMELINE);
 	}
 
-	/**
-	 * 
-	 */
 	@Override
 	public IBinder onBind(Intent intent) {
 		// Select the interface to return. If your service only implements
@@ -128,7 +119,7 @@ public class AndTweetService extends Service {
 
 	/**
 	 * Our Handler used to execute operations on the main thread. This is used
-	 * to schedule increments of our value.
+	 * to schedule updates of timeline data from Twitter.
 	 */
 	private final Handler mHandler = new Handler() {
 
@@ -138,80 +129,8 @@ public class AndTweetService extends Service {
 			switch (msg.what) {
 
 			case MSG_UPDATE_TIMELINE:
-				long aLastRunTime = 0;
-				int aNewTweets = 0;
-				if (mUsername != null && mUsername.length() > 0) {
-					String mDateFormat = (String) getText(R.string.twitter_dateformat);
-					Cursor c = getContentResolver().query(
-							AndTweet.Tweets.CONTENT_URI,
-							new String[] { AndTweet.Tweets._ID,
-									AndTweet.Tweets.SENT_DATE }, null, null,
-							AndTweet.Tweets.DEFAULT_SORT_ORDER);
-					try {
-						c.moveToFirst();
-						if (c.getCount() > 0) {
-							try {
-								DateFormat f = new SimpleDateFormat(mDateFormat);
-								Calendar cal = Calendar.getInstance();
-								cal.setTime(f.parse(c.getString(1)));
-								aLastRunTime = cal.getTimeInMillis();
-							} catch (java.text.ParseException e) {
-								throw new RuntimeException(e);
-							}
-						}
-					} catch (Exception e) {
-						Log.e(TAG, e.getMessage());
-					} finally {
-						c.close();
-					}
-					Connection aConn = new Connection(mUsername, mPassword, aLastRunTime);
-					try {
-						JSONArray jArr = aConn.getFriendsTimeline();
-						for (int index = 0; index < jArr.length(); index++) {
-							JSONObject jo = jArr.getJSONObject(index);
-							JSONObject user;
-							user = jo.getJSONObject("user");
-	
-							ContentValues values = new ContentValues();
-	
-							// Construct the Uri to existing record
-							Long lTweetId = Long.parseLong(jo.getString("id"));
-							Uri aTweetUri = ContentUris.withAppendedId(
-									AndTweet.Tweets.CONTENT_URI, lTweetId);
-	
-							values.put(AndTweet.Tweets._ID, lTweetId.toString());
-							values.put(AndTweet.Tweets.AUTHOR_ID, user
-									.getString("screen_name"));
-	
-							Spannable sText = new SpannableString(jo
-									.getString("text"));
-							Linkify.addLinks(sText, Linkify.ALL);
-							values.put(AndTweet.Tweets.MESSAGE, sText.toString());
-	
-							DateFormat f = new SimpleDateFormat(mDateFormat);
-							Calendar cal = Calendar.getInstance();
-							try {
-								cal.setTime(f.parse(jo.getString("created_at")));
-							} catch (java.text.ParseException e) {
-								Log.e(TAG, e.getMessage());
-							}
-							Spannable sDate = new SpannableString(f.format(cal
-									.getTime()));
-							values.put(Tweets.SENT_DATE, sDate.toString());
-	
-							if ((getContentResolver().update(aTweetUri, values,
-									null, null)) == 0) {
-								getContentResolver().insert(
-										AndTweet.Tweets.CONTENT_URI, values);
-								aNewTweets++;
-							}
-						}
-					} catch (JSONException e) {
-						Log.e(TAG, e.getMessage());
-					} catch (SQLiteConstraintException e) {
-						Log.e(TAG, e.getMessage());
-					}
-				}
+				int aNewTweets = loadTimeline();
+				mFrequency = Integer.parseInt(mPreferences.getString("fetch_frequency", "180"));
 				mLastRunTime = Long.valueOf(System.currentTimeMillis());
 				// Broadcast new value to all clients
 				for (int i = 0; i < N; i++) {
@@ -232,4 +151,89 @@ public class AndTweetService extends Service {
 			}
 		}
 	};
+
+	/**
+	 * Load the friend timeline from Twitter.
+	 * 
+	 * @return int
+	 */
+	protected int loadTimeline() {
+		long aLastRunTime = 0;
+		int aNewTweets = 0;
+		mUsername = mPreferences.getString("twitter_username", null);
+		mPassword = mPreferences.getString("twitter_password", null);
+		if (mUsername != null && mUsername.length() > 0) {
+			String mDateFormat = (String) getText(R.string.twitter_dateformat);
+			Cursor c = getContentResolver().query(
+					AndTweet.Tweets.CONTENT_URI,
+					new String[] { AndTweet.Tweets._ID,
+							AndTweet.Tweets.SENT_DATE }, null, null,
+					AndTweet.Tweets.DEFAULT_SORT_ORDER);
+			try {
+				c.moveToFirst();
+				if (c.getCount() > 0) {
+					try {
+						DateFormat f = new SimpleDateFormat(mDateFormat);
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(f.parse(c.getString(1)));
+						aLastRunTime = cal.getTimeInMillis();
+					} catch (java.text.ParseException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			} catch (Exception e) {
+				Log.e(TAG, e.getMessage());
+			} finally {
+				c.close();
+			}
+			Connection aConn = new Connection(mUsername, mPassword, aLastRunTime);
+			try {
+				JSONArray jArr = aConn.getFriendsTimeline();
+				for (int index = 0; index < jArr.length(); index++) {
+					JSONObject jo = jArr.getJSONObject(index);
+					JSONObject user;
+					user = jo.getJSONObject("user");
+
+					ContentValues values = new ContentValues();
+
+					// Construct the Uri to existing record
+					Long lTweetId = Long.parseLong(jo.getString("id"));
+					Uri aTweetUri = ContentUris.withAppendedId(
+							AndTweet.Tweets.CONTENT_URI, lTweetId);
+
+					values.put(AndTweet.Tweets._ID, lTweetId.toString());
+					values.put(AndTweet.Tweets.AUTHOR_ID, user
+							.getString("screen_name"));
+
+					Spannable sText = new SpannableString(jo
+							.getString("text"));
+					Linkify.addLinks(sText, Linkify.ALL);
+					values.put(AndTweet.Tweets.MESSAGE, sText.toString());
+
+					DateFormat f = new SimpleDateFormat(mDateFormat);
+					Calendar cal = Calendar.getInstance();
+					try {
+						cal.setTime(f.parse(jo.getString("created_at")));
+					} catch (java.text.ParseException e) {
+						Log.e(TAG, e.getMessage());
+					}
+					Spannable sDate = new SpannableString(f.format(cal
+							.getTime()));
+					values.put(Tweets.SENT_DATE, sDate.toString());
+
+					if ((getContentResolver().update(aTweetUri, values,
+							null, null)) == 0) {
+						getContentResolver().insert(
+								AndTweet.Tweets.CONTENT_URI, values);
+						aNewTweets++;
+					}
+				}
+			} catch (JSONException e) {
+				Log.e(TAG, e.getMessage());
+			} catch (SQLiteConstraintException e) {
+				Log.e(TAG, e.getMessage());
+			}
+		}
+		return aNewTweets;
+	}
 }
