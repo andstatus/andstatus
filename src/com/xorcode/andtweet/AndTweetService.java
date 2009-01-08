@@ -129,6 +129,7 @@ public class AndTweetService extends Service {
 			switch (msg.what) {
 
 			case MSG_UPDATE_TIMELINE:
+				mPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 				int aNewTweets = loadTimeline();
 				mFrequency = Integer.parseInt(mPreferences.getString("fetch_frequency", "180"));
 				mLastRunTime = Long.valueOf(System.currentTimeMillis());
@@ -217,9 +218,7 @@ public class AndTweetService extends Service {
 					} catch (java.text.ParseException e) {
 						Log.e(TAG, e.getMessage());
 					}
-					Spannable sDate = new SpannableString(f.format(cal
-							.getTime()));
-					values.put(Tweets.SENT_DATE, sDate.toString());
+					values.put(Tweets.SENT_DATE, cal.getTimeInMillis());
 
 					if ((getContentResolver().update(aTweetUri, values,
 							null, null)) == 0) {

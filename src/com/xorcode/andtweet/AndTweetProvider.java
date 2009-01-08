@@ -86,7 +86,7 @@ public class AndTweetProvider extends ContentProvider {
                     + Tweets._ID + " INTEGER PRIMARY KEY,"
                     + Tweets.AUTHOR_ID + " TEXT,"
                     + Tweets.MESSAGE + " TEXT,"
-                    + Tweets.SENT_DATE + " TEXT,"
+                    + Tweets.SENT_DATE + " INTEGER,"
                     + Tweets.CREATED_DATE + " INTEGER"
                     + ");");
 
@@ -94,7 +94,7 @@ public class AndTweetProvider extends ContentProvider {
                     + DirectMessages._ID + " INTEGER PRIMARY KEY,"
                     + DirectMessages.AUTHOR_ID + " TEXT,"
                     + DirectMessages.MESSAGE + " TEXT,"
-                    + DirectMessages.SENT_DATE + " TEXT,"
+                    + DirectMessages.SENT_DATE + " INTEGER,"
                     + DirectMessages.CREATED_DATE + " INTEGER"
                     + ");");
 
@@ -224,7 +224,7 @@ public class AndTweetProvider extends ContentProvider {
             }
 
             if (values.containsKey(Tweets.SENT_DATE) == false) {
-                values.put(Tweets.SENT_DATE, "");
+                values.put(Tweets.SENT_DATE, now);
             }
 
             if (values.containsKey(Tweets.AUTHOR_ID) == false) {
@@ -256,7 +256,7 @@ public class AndTweetProvider extends ContentProvider {
             }
 
             if (values.containsKey(DirectMessages.SENT_DATE) == false) {
-                values.put(DirectMessages.SENT_DATE, "");
+                values.put(DirectMessages.SENT_DATE, now);
             }
 
             if (values.containsKey(DirectMessages.AUTHOR_ID) == false) {
