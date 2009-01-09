@@ -71,14 +71,13 @@ public class AndTweetService extends Service {
 
 	private String mUsername;
 	private String mPassword;
-	private SharedPreferences mPreferences;
 	private int mFrequency = 180;
 
 	@Override
 	public void onCreate() {
 		// Start the time line updater.
 		mHandler.sendEmptyMessage(MSG_UPDATE_TIMELINE);
-		mPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		Log.d(TAG, "Service created");
 	}
 
 	@Override
@@ -129,22 +128,27 @@ public class AndTweetService extends Service {
 			switch (msg.what) {
 
 			case MSG_UPDATE_TIMELINE:
-				mPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-				int aNewTweets = loadTimeline();
-				mFrequency = Integer.parseInt(mPreferences.getString("fetch_frequency", "180"));
-				mLastRunTime = Long.valueOf(System.currentTimeMillis());
-				// Broadcast new value to all clients
-				for (int i = 0; i < N; i++) {
-					try {
-						mCallbacks.getBroadcastItem(i).tweetsChanged(aNewTweets);
-					} catch (RemoteException e) {
-						Log.e(TAG, e.getMessage());
+				SharedPreferences sp = PreferenceManager
+						.getDefaultSharedPreferences(getApplicationContext());
+				if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
+					int aNewTweets = loadTimeline();
+					mFrequency = Integer.parseInt(sp.getString("fetch_frequency", "180"));
+					mLastRunTime = Long.valueOf(System.currentTimeMillis());
+					// Broadcast new value to all clients
+					for (int i = 0; i < N; i++) {
+						try {
+							mCallbacks.getBroadcastItem(i).tweetsChanged(aNewTweets);
+						} catch (RemoteException e) {
+							Log.e(TAG, e.getMessage());
+						}
 					}
+					mCallbacks.finishBroadcast();
+					// Repeat every 180 seconds (3 minutes)
+					sendMessageDelayed(obtainMessage(MSG_UPDATE_TIMELINE), mFrequency
+							* MILLISECONDS);
+				} else {
+					super.handleMessage(msg);
 				}
-				mCallbacks.finishBroadcast();
-				// Repeat every 180 seconds (3 minutes)
-				sendMessageDelayed(obtainMessage(MSG_UPDATE_TIMELINE),
-						mFrequency * MILLISECONDS);
 				break;
 
 			default:
@@ -161,15 +165,15 @@ public class AndTweetService extends Service {
 	protected int loadTimeline() {
 		long aLastRunTime = 0;
 		int aNewTweets = 0;
-		mUsername = mPreferences.getString("twitter_username", null);
-		mPassword = mPreferences.getString("twitter_password", null);
+		SharedPreferences sp = PreferenceManager
+				.getDefaultSharedPreferences(getApplicationContext());
+		mUsername = sp.getString("twitter_username", null);
+		mPassword = sp.getString("twitter_password", null);
 		if (mUsername != null && mUsername.length() > 0) {
 			String mDateFormat = (String) getText(R.string.twitter_dateformat);
-			Cursor c = getContentResolver().query(
-					AndTweet.Tweets.CONTENT_URI,
-					new String[] { AndTweet.Tweets._ID,
-							AndTweet.Tweets.SENT_DATE }, null, null,
-					AndTweet.Tweets.DEFAULT_SORT_ORDER);
+			Cursor c = getContentResolver().query(AndTweet.Tweets.CONTENT_URI, new String[] {
+				AndTweet.Tweets._ID, AndTweet.Tweets.SENT_DATE
+			}, null, null, AndTweet.Tweets.DEFAULT_SORT_ORDER);
 			try {
 				c.moveToFirst();
 				if (c.getCount() > 0) {
@@ -199,15 +203,13 @@ public class AndTweetService extends Service {
 
 					// Construct the Uri to existing record
 					Long lTweetId = Long.parseLong(jo.getString("id"));
-					Uri aTweetUri = ContentUris.withAppendedId(
-							AndTweet.Tweets.CONTENT_URI, lTweetId);
+					Uri aTweetUri = ContentUris.withAppendedId(AndTweet.Tweets.CONTENT_URI,
+							lTweetId);
 
 					values.put(AndTweet.Tweets._ID, lTweetId.toString());
-					values.put(AndTweet.Tweets.AUTHOR_ID, user
-							.getString("screen_name"));
+					values.put(AndTweet.Tweets.AUTHOR_ID, user.getString("screen_name"));
 
-					Spannable sText = new SpannableString(jo
-							.getString("text"));
+					Spannable sText = new SpannableString(jo.getString("text"));
 					Linkify.addLinks(sText, Linkify.ALL);
 					values.put(AndTweet.Tweets.MESSAGE, sText.toString());
 
@@ -215,15 +217,13 @@ public class AndTweetService extends Service {
 					Calendar cal = Calendar.getInstance();
 					try {
 						cal.setTime(f.parse(jo.getString("created_at")));
+						values.put(Tweets.SENT_DATE, cal.getTimeInMillis());
 					} catch (java.text.ParseException e) {
 						Log.e(TAG, e.getMessage());
 					}
-					values.put(Tweets.SENT_DATE, cal.getTimeInMillis());
 
-					if ((getContentResolver().update(aTweetUri, values,
-							null, null)) == 0) {
-						getContentResolver().insert(
-								AndTweet.Tweets.CONTENT_URI, values);
+					if ((getContentResolver().update(aTweetUri, values, null, null)) == 0) {
+						getContentResolver().insert(AndTweet.Tweets.CONTENT_URI, values);
 						aNewTweets++;
 					}
 				}

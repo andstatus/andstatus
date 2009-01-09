@@ -69,8 +69,7 @@ public class AtTokenizer implements Tokenizer {
 		} else {
 			if (text instanceof Spanned) {
 				SpannableString sp = new SpannableString(text);
-				TextUtils.copySpansFrom((Spanned) text, 0, text.length(),
-						Object.class, sp, 0);
+				TextUtils.copySpansFrom((Spanned) text, 0, text.length(), Object.class, sp, 0);
 				return sp;
 			} else {
 				return text;

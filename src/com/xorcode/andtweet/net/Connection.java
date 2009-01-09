@@ -116,7 +116,7 @@ public class Connection {
 	 */
 	private String getRequest(String url, HttpClient client) {
 		String result = null;
-		url += "?count=200";
+		url += "?count=50";
 		if (mLastRunTime > 0) {
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(mLastRunTime);
@@ -147,8 +147,8 @@ public class Connection {
 		int length = (int) httpEntity.getContentLength();
 		StringBuffer stringBuffer = new StringBuffer(length);
 		try {
-			InputStreamReader inputStreamReader = new InputStreamReader(
-					httpEntity.getContent(), HTTP.UTF_8);
+			InputStreamReader inputStreamReader = new InputStreamReader(httpEntity.getContent(),
+					HTTP.UTF_8);
 			char buffer[] = new char[length];
 			int count;
 			while ((count = inputStreamReader.read(buffer, 0, length - 1)) > 0) {
@@ -170,7 +170,6 @@ public class Connection {
 	 * @return String
 	 */
 	private String getCredentials() {
-		return new String(Base64.encodeBytes((mUsername + ":" + mPassword)
-				.getBytes()));
+		return new String(Base64.encodeBytes((mUsername + ":" + mPassword).getBytes()));
 	}
 }

@@ -23,7 +23,7 @@ import com.xorcode.andtweet.R;
 
 /**
  * @author torgny.bjers
- *
+ * 
  */
 public class Preferences extends PreferenceActivity {
 	@Override

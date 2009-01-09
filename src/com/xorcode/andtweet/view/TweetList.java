@@ -72,15 +72,16 @@ public class TweetList extends Activity {
 
 	private static final String TAG = "TweetList";
 
-    private static final int REQUEST_CODE_PREFERENCES = 1;
+	private static final int REQUEST_CODE_PREFERENCES = 1;
 
 	public static final int OPTIONS_MENU_PREFERENCES = Menu.FIRST;
 
 	public static final int CONTEXT_MENU_ITEM_REPLY = Menu.FIRST + 2;
 	public static final int CONTEXT_MENU_ITEM_STAR = Menu.FIRST + 3;
 
-	private static final String[] PROJECTION = new String[] { Tweets._ID,
-			Tweets.AUTHOR_ID, Tweets.MESSAGE, Tweets.SENT_DATE };
+	private static final String[] PROJECTION = new String[] {
+		Tweets._ID, Tweets.AUTHOR_ID, Tweets.MESSAGE, Tweets.SENT_DATE
+	};
 
 	private NotificationManager mNM;
 
@@ -188,15 +189,13 @@ public class TweetList extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		menu.add(0, OPTIONS_MENU_PREFERENCES, 0,
-				R.string.options_menu_preferences).setShortcut('3', 'p')
-				.setIcon(android.R.drawable.ic_menu_preferences);
+		menu.add(0, OPTIONS_MENU_PREFERENCES, 0, R.string.options_menu_preferences).setShortcut(
+				'3', 'p').setIcon(android.R.drawable.ic_menu_preferences);
 
 		Intent intent = new Intent(null, getIntent().getData());
 		intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
-		menu.addIntentOptions(Menu.CATEGORY_ALTERNATIVE, 0, 0, 
-				new ComponentName(this, TweetList.class), 
-				null, intent, 0, null);
+		menu.addIntentOptions(Menu.CATEGORY_ALTERNATIVE, 0, 0, new ComponentName(this,
+				TweetList.class), null, intent, 0, null);
 
 		return true;
 	}
@@ -205,23 +204,22 @@ public class TweetList extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case OPTIONS_MENU_PREFERENCES:
-	        Intent launchPreferencesIntent = new Intent().setClass(this, Preferences.class);
-	        startActivityForResult(launchPreferencesIntent, REQUEST_CODE_PREFERENCES);
+			Intent launchPreferencesIntent = new Intent().setClass(this, Preferences.class);
+			startActivityForResult(launchPreferencesIntent, REQUEST_CODE_PREFERENCES);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_PREFERENCES) {
-        }
-    }
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == REQUEST_CODE_PREFERENCES) {
+		}
+	}
 
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View view,
-			ContextMenuInfo menuInfo) {
+	public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
 		AdapterView.AdapterContextMenuInfo info;
 		try {
 			info = (AdapterView.AdapterContextMenuInfo) menuInfo;
@@ -262,12 +260,16 @@ public class TweetList extends Activity {
 	 * Initialize service and bind to it
 	 */
 	private void initService() {
-		Intent serviceIntent = new Intent(IAndTweetService.class.getName());
-		if (!mIsBound) {
-			startService(serviceIntent);
-			mIsBound = true;
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
+			Log.d(TAG, "Automatic updates enabled");
+			Intent serviceIntent = new Intent(IAndTweetService.class.getName());
+			if (!mIsBound) {
+				startService(serviceIntent);
+				mIsBound = true;
+			}
+			bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
 		}
-		bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
 	}
 
 	/**
@@ -283,8 +285,7 @@ public class TweetList extends Activity {
 
 		mEditText = (MultiAutoCompleteTextView) findViewById(R.id.messageEditTextAC);
 		mCharsLeftText = (TextView) findViewById(R.id.messageEditCharsLeftTextView);
-		mCharsLeftText
-				.setText(String.valueOf(mLimitChars - mEditText.length()));
+		mCharsLeftText.setText(String.valueOf(mLimitChars - mEditText.length()));
 
 		// Attach listeners to the text field
 		mEditText.setOnFocusChangeListener(mEditTextFocusChangeListener);
@@ -292,8 +293,8 @@ public class TweetList extends Activity {
 
 		if (mFriends.isEmpty()) {
 			loadFriends();
-			ArrayAdapter<String> friendsAdapter = new ArrayAdapter<String>(
-					this, android.R.layout.simple_dropdown_item_1line, mFriends);
+			ArrayAdapter<String> friendsAdapter = new ArrayAdapter<String>(this,
+					android.R.layout.simple_dropdown_item_1line, mFriends);
 			mEditText.setAdapter(friendsAdapter);
 			mEditText.setTokenizer(new AtTokenizer());
 		}
@@ -306,21 +307,22 @@ public class TweetList extends Activity {
 	 */
 	private void fillList() {
 		mMessageList = (ListView) findViewById(R.id.messagesListView);
-		Cursor cursor = managedQuery(getIntent().getData(), PROJECTION, null,
-				null, Tweets.DEFAULT_SORT_ORDER + " LIMIT 20");
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
-				R.layout.tweetlist_item, cursor, new String[] {
-						AndTweet.Tweets.AUTHOR_ID, AndTweet.Tweets.MESSAGE,
-						AndTweet.Tweets.SENT_DATE }, new int[] {
-						R.id.tweetlist_item_screen_name,
-						R.id.tweetlist_item_text, R.id.tweetlist_item_date });
+		Cursor cursor = managedQuery(getIntent().getData(), PROJECTION, null, null,
+				Tweets.DEFAULT_SORT_ORDER + " LIMIT 20");
+		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.tweetlist_item,
+				cursor, new String[] {
+					AndTweet.Tweets.AUTHOR_ID, AndTweet.Tweets.MESSAGE, AndTweet.Tweets.SENT_DATE
+				}, new int[] {
+					R.id.tweetlist_item_screen_name, R.id.tweetlist_item_text,
+					R.id.tweetlist_item_date
+				});
 		mMessageList.setAdapter(adapter);
 		mMessageList.setOnCreateContextMenuListener(this);
 	}
 
 	/**
-     * Temporary method for loading friends from an asset file.
-     */
+	 * Temporary method for loading friends from an asset file.
+	 */
 	private void loadFriends() {
 		try {
 			InputStream is = getAssets().open("friends.json");
@@ -404,8 +406,7 @@ public class TweetList extends Activity {
 		 * @throws RemoteException
 		 */
 		public void tweetsChanged(int value) throws RemoteException {
-			mHandler.sendMessage(mHandler.obtainMessage(MSG_TWEETS_CHANGED,
-					value, 0));
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_TWEETS_CHANGED, value, 0));
 		}
 	};
 
@@ -478,16 +479,13 @@ public class TweetList extends Activity {
 	}
 
 	private void notifyNewTweets(int numTweets) {
-		Notification notification = new Notification(
-				android.R.drawable.ic_popup_sync,
-				(String) getText(R.string.notification_title), System
-						.currentTimeMillis());
+		Notification notification = new Notification(android.R.drawable.ic_popup_sync,
+				(String) getText(R.string.notification_title), System.currentTimeMillis());
 		notification.defaults = Notification.DEFAULT_ALL;
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-				new Intent(this, TweetList.class), 0);
-		notification.setLatestEventInfo(this,
-				getText(R.string.notification_title),
-				numTweets + " new tweets", contentIntent);
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this,
+				TweetList.class), 0);
+		notification.setLatestEventInfo(this, getText(R.string.notification_title), numTweets
+				+ " new tweets", contentIntent);
 		mNM.notify(R.string.app_name, notification);
 	}
 }

@@ -28,8 +28,9 @@ public final class AndTweet {
 	public static final String AUTHORITY = "com.xorcode.andtweet";
 
 	// This class cannot be instantiated
-	private AndTweet() {}
-	
+	private AndTweet() {
+	}
+
 	/**
 	 * Tweets table
 	 * 
@@ -44,36 +45,45 @@ public final class AndTweet {
 		// Table columns
 		/**
 		 * Author ID
-		 * <P>Type: TEXT</P>
+		 * <P>
+		 * Type: TEXT
+		 * </P>
 		 */
 		public static final String AUTHOR_ID = "author_id";
 
 		/**
 		 * Tweet message
-		 * <P>Type: TEXT</P>
+		 * <P>
+		 * Type: TEXT
+		 * </P>
 		 */
 		public static final String MESSAGE = "message";
 
 		/**
 		 * When Tweet was created
-		 * <P>Type: INTEGER (long from System.currentTimeMillis()</P>
+		 * <P>
+		 * Type: INTEGER (long from System.currentTimeMillis()
+		 * </P>
 		 */
 		public static final String CREATED_DATE = "created";
 
 		/**
 		 * When Tweet was originally sent
-		 * <P>Type: INTEGER (long from System.currentTimeMillis()</P>
+		 * <P>
+		 * Type: INTEGER (long from System.currentTimeMillis()
+		 * </P>
 		 */
 		public static final String SENT_DATE = "sent";
 	}
-	
+
 	/**
 	 * Direct Messages table
 	 * 
 	 * @author torgny.bjers
 	 */
 	public static final class DirectMessages implements BaseColumns {
-		public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/directmessages");
+		public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY
+				+ "/directmessages");
 		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.xorcode.andtweet.directmessage";
 		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.xorcode.andtweet.directmessage";
 		public static final String DEFAULT_SORT_ORDER = "sent DESC";
@@ -81,25 +91,33 @@ public final class AndTweet {
 		// Table columns
 		/**
 		 * Author ID
-		 * <P>Type: TEXT</P>
+		 * <P>
+		 * Type: TEXT
+		 * </P>
 		 */
 		public static final String AUTHOR_ID = "author_id";
 
 		/**
 		 * Direct Message text
-		 * <P>Type: TEXT</P>
+		 * <P>
+		 * Type: TEXT
+		 * </P>
 		 */
 		public static final String MESSAGE = "message";
 
 		/**
 		 * When Direct Message was created
-		 * <P>Type: INTEGER (long from System.currentTimeMillis()</P>
+		 * <P>
+		 * Type: INTEGER (long from System.currentTimeMillis()
+		 * </P>
 		 */
 		public static final String CREATED_DATE = "created";
 
 		/**
 		 * When Direct Message was originally sent
-		 * <P>Type: INTEGER (long from System.currentTimeMillis()</P>
+		 * <P>
+		 * Type: INTEGER (long from System.currentTimeMillis()
+		 * </P>
 		 */
 		public static final String SENT_DATE = "sent";
 	}
@@ -118,20 +136,26 @@ public final class AndTweet {
 		// Table columns
 		/**
 		 * Author ID
-		 * <P>Type: TEXT</P>
+		 * <P>
+		 * Type: TEXT
+		 * </P>
 		 */
 		public static final String AUTHOR_ID = "author_id";
 
 		/**
 		 * When User was created
-		 * <P>Type: INTEGER (long from System.currentTimeMillis()</P>
+		 * <P>
+		 * Type: INTEGER (long from System.currentTimeMillis()
+		 * </P>
 		 */
 		public static final String MODIFIED_DATE = "modified";
 
 		/**
 		 * When User was modified
-		 * <P>Type: INTEGER (long from System.currentTimeMillis()</P>
+		 * <P>
+		 * Type: INTEGER (long from System.currentTimeMillis()
+		 * </P>
 		 */
 		public static final String CREATED_DATE = "created";
-}
+	}
 }
