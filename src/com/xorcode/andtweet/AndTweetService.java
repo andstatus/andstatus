@@ -85,6 +85,8 @@ public class AndTweetService extends Service {
 		// Unregister all callbacks.
 		mCallbacks.kill();
 
+		Log.d(TAG, "Service destroyed");
+
 		// Remove the next pending message to increment the counter, stopping
 		// the increment loop.
 		mHandler.removeMessages(MSG_UPDATE_TIMELINE);
@@ -126,12 +128,12 @@ public class AndTweetService extends Service {
 		public void handleMessage(Message msg) {
 			final int N = mCallbacks.beginBroadcast();
 			switch (msg.what) {
-
 			case MSG_UPDATE_TIMELINE:
 				SharedPreferences sp = PreferenceManager
 						.getDefaultSharedPreferences(getApplicationContext());
 				if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
 					int aNewTweets = loadTimeline();
+					Log.d(TAG, aNewTweets + " new tweets");
 					mFrequency = Integer.parseInt(sp.getString("fetch_frequency", "180"));
 					mLastRunTime = Long.valueOf(System.currentTimeMillis());
 					// Broadcast new value to all clients
@@ -165,11 +167,13 @@ public class AndTweetService extends Service {
 	protected int loadTimeline() {
 		long aLastRunTime = 0;
 		int aNewTweets = 0;
+		Log.i(TAG, "Load timeline called");
 		SharedPreferences sp = PreferenceManager
 				.getDefaultSharedPreferences(getApplicationContext());
 		mUsername = sp.getString("twitter_username", null);
 		mPassword = sp.getString("twitter_password", null);
 		if (mUsername != null && mUsername.length() > 0) {
+			Log.i(TAG, "Username and password present");
 			String mDateFormat = (String) getText(R.string.twitter_dateformat);
 			Cursor c = getContentResolver().query(AndTweet.Tweets.CONTENT_URI, new String[] {
 				AndTweet.Tweets._ID, AndTweet.Tweets.SENT_DATE
@@ -177,14 +181,11 @@ public class AndTweetService extends Service {
 			try {
 				c.moveToFirst();
 				if (c.getCount() > 0) {
-					try {
-						DateFormat f = new SimpleDateFormat(mDateFormat);
-						Calendar cal = Calendar.getInstance();
-						cal.setTime(f.parse(c.getString(1)));
-						aLastRunTime = cal.getTimeInMillis();
-					} catch (java.text.ParseException e) {
-						throw new RuntimeException(e);
-					}
+					DateFormat f = new SimpleDateFormat(mDateFormat);
+					Calendar cal = Calendar.getInstance();
+					cal.setTimeInMillis(c.getLong(1));
+					aLastRunTime = cal.getTimeInMillis();
+					Log.d(TAG, "Last run time was " + f.format(cal.getTime()));
 				}
 			} catch (Exception e) {
 				Log.e(TAG, e.getMessage());

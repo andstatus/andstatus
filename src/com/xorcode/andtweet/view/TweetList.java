@@ -168,8 +168,13 @@ public class TweetList extends Activity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		clearNotifications();
 		initService();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		clearNotifications();
 	}
 
 	@Override
