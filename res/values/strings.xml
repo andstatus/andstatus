@@ -13,6 +13,9 @@
 	<string name="dialog_title_preference_frequency">Update Frequency</string>
 	<string name="dialog_title_preference_password">Password</string>
 	<string name="dialog_title_preference_username">Username</string>
+	<string name="notification_tweet_singular">{0} new tweet</string>
+	<string name="notification_tweet_plural">{0,number} new tweets</string>
+	<string name="notification_new_tweet_format">You have {0}.</string>
 	<string name="title_preference_automatic_updates">Automatic Updates</string>
 	<string name="title_preference_frequency">Update Frequency</string>
 	<string name="title_preference_password">Password</string>
@@ -22,4 +25,5 @@
 	<string name="summary_preference_frequency">How often should AndTweet get tweets?</string>
 	<string name="summary_preference_password">Your Twitter password</string>
 	<string name="summary_preference_username">Your Twitter username</string>
+	<string name="resolve_view">View Tweet</string>
 </resources>

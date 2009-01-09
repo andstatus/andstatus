@@ -2,13 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
-	<TextView android:layout_height="wrap_content" android:id="@+id/tweetlist_item_screen_name"
+	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_screen_name"
 		android:layout_width="fill_parent" android:textStyle="bold"
 		android:textSize="8pt" android:text="username" android:textColor="?android:attr/textColorSecondary" android:textAppearance="?android:attr/textAppearanceSmall"/>
-	<TextView android:layout_height="wrap_content" android:id="@+id/tweetlist_item_text"
+	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_message"
 		android:layout_width="fill_parent" android:text="This is a post, and it shall be long and from another user."
 		android:textSize="11pt" android:textAppearance="?android:attr/textAppearanceLarge"/>
-	<TextView android:layout_height="wrap_content" android:id="@+id/tweetlist_item_date"
+	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_sent"
 		android:layout_width="fill_parent" android:textSize="6pt"
 		android:text="15 minutes ago from txt" android:textColor="?android:attr/textColorSecondary" android:textAppearance="?android:attr/textAppearanceSmall"/>
 </LinearLayout>

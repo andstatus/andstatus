@@ -22,9 +22,18 @@
 				<data android:mimeType="vnd.android.cursor.item/vnd.xorcode.andtweet.tweet"></data>
 			</intent-filter>
 		</activity>
-		<activity android:name=".view.Preferences"><intent-filter><action android:name="android.intent.action.MAIN"></action>
-</intent-filter>
-</activity>
+		<activity android:name=".view.Tweet">
+			<intent-filter android:label="@string/resolve_view">
+				<action android:name="android.intent.action.VIEW"></action>
+				<category android:name="android.intent.category.DEFAULT"></category>
+				<data android:mimeType="vnd.android.cursor.item/vnd.xorcode.andtweet.tweet"></data>
+			</intent-filter>
+		</activity>
+		<activity android:name=".view.Preferences">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN"></action>
+			</intent-filter>
+		</activity>
 		<service android:process=":remote" android:name="AndTweetService">
 			<intent-filter>
 				<action android:name="com.xorcode.andtweet.IAndTweetService"></action>
@@ -35,5 +44,4 @@
 	<uses-permission android:name="android.permission.INTERNET"></uses-permission>
 	<uses-permission android:name="android.permission.PERSISTENT_ACTIVITY"></uses-permission>
 	<uses-permission android:name="android.permission.VIBRATE"></uses-permission>
-
 </manifest>

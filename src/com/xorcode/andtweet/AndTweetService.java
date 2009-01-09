@@ -16,7 +16,9 @@
 
 package com.xorcode.andtweet;
 
+import java.text.ChoiceFormat;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -24,6 +26,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -46,6 +51,7 @@ import android.util.Log;
 import com.xorcode.andtweet.data.AndTweet;
 import com.xorcode.andtweet.data.AndTweet.Tweets;
 import com.xorcode.andtweet.net.Connection;
+import com.xorcode.andtweet.view.TweetList;
 
 /**
  * This is an application service that serves as a connection between Android
@@ -73,11 +79,15 @@ public class AndTweetService extends Service {
 	private String mPassword;
 	private int mFrequency = 180;
 
+	private NotificationManager mNM;
+
 	@Override
 	public void onCreate() {
+		// Set up the notification manager.
+		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		// Start the time line updater.
 		mHandler.sendEmptyMessage(MSG_UPDATE_TIMELINE);
-		Log.d(TAG, "Service created");
+		Log.d(TAG, "Service created in context: " + getApplicationContext().getPackageName());
 	}
 
 	@Override
@@ -132,7 +142,24 @@ public class AndTweetService extends Service {
 				SharedPreferences sp = PreferenceManager
 						.getDefaultSharedPreferences(getApplicationContext());
 				if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
+					for (int i = 0; i < N; i++) {
+						try {
+							mCallbacks.getBroadcastItem(i).dataLoading(1);
+						} catch (RemoteException e) {
+							Log.e(TAG, e.getMessage());
+						}
+					}
 					int aNewTweets = loadTimeline();
+					for (int i = 0; i < N; i++) {
+						try {
+							mCallbacks.getBroadcastItem(i).dataLoading(0);
+						} catch (RemoteException e) {
+							Log.e(TAG, e.getMessage());
+						}
+					}
+					if (aNewTweets > 0) {
+						notifyNewTweets(aNewTweets);
+					}
 					Log.d(TAG, aNewTweets + " new tweets");
 					mFrequency = Integer.parseInt(sp.getString("fetch_frequency", "180"));
 					mLastRunTime = Long.valueOf(System.currentTimeMillis());
@@ -235,5 +262,26 @@ public class AndTweetService extends Service {
 			}
 		}
 		return aNewTweets;
+	}
+
+	/**
+	 * Notify the user of new tweets.
+	 * 
+	 * @param numTweets
+	 */
+	private void notifyNewTweets(int numTweets) {
+		Notification notification = new Notification(android.R.drawable.stat_notify_chat,
+				(String) getText(R.string.notification_title), System.currentTimeMillis());
+		notification.defaults = Notification.DEFAULT_ALL;
+		notification.flags = Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(getApplicationContext(), TweetList.class), Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+		MessageFormat form = new MessageFormat(getText(R.string.notification_new_tweet_format).toString());
+		Object[] formArgs = new Object[] {numTweets};
+		double[] tweetLimits = {1,2};
+		String[] tweetPart = { getText(R.string.notification_tweet_singular).toString(), getText(R.string.notification_tweet_plural).toString() };
+		ChoiceFormat tweetForm = new ChoiceFormat(tweetLimits, tweetPart);
+		form.setFormatByArgumentIndex(0, tweetForm);
+		notification.setLatestEventInfo(this, getText(R.string.notification_title), form.format(formArgs), contentIntent);
+		mNM.notify(R.string.app_name, notification);
 	}
 }

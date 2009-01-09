@@ -25,15 +25,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -46,6 +46,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
@@ -56,6 +57,7 @@ import android.widget.ListView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 
 import com.xorcode.andtweet.IAndTweetService;
 import com.xorcode.andtweet.IAndTweetServiceCallback;
@@ -83,7 +85,11 @@ public class TweetList extends Activity {
 		Tweets._ID, Tweets.AUTHOR_ID, Tweets.MESSAGE, Tweets.SENT_DATE
 	};
 
+	private static final int MSG_TWEETS_CHANGED = 1;
+	private static final int MSG_DATA_LOADING = 2;
+
 	private NotificationManager mNM;
+	private SharedPreferences mSP;
 
 	/**
 	 * Send button
@@ -131,11 +137,6 @@ public class TweetList extends Activity {
 	private static boolean mIsBound;
 
 	/**
-	 * 
-	 */
-	private static final int MSG_TWEETS_CHANGED = 1;
-
-	/**
 	 * Called when the activity is first created.
 	 * 
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -146,23 +147,30 @@ public class TweetList extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		// Set up notification manager
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+		// Request window features
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-		if (!sp.contains("twitter_username") || sp.getString("twitter_username", "").length() == 0) {
+		// Set up preference manager
+		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+		mSP = PreferenceManager.getDefaultSharedPreferences(this);
+		String aUsername = mSP.getString("twitter_username", "");
+		if (aUsername != null && aUsername.length() == 0) {
 			startActivity(new Intent(this, Preferences.class));
 		}
 
-		setContentView(R.layout.tweetlist);
+        // Set up the content view and load data
+        setContentView(R.layout.tweetlist);
 		Intent intent = getIntent();
 		if (intent.getData() == null) {
 			intent.setData(Tweets.CONTENT_URI);
 		}
 
-		initService();
+		// Initialize service and UI
 		initUI();
+		initService();
 	}
 
 	@Override
@@ -261,12 +269,15 @@ public class TweetList extends Activity {
 		return false;
 	}
 
+	public void onListItemClick(ListView listView, View view, int position, long id) {
+		
+	}
+
 	/**
 	 * Initialize service and bind to it
 	 */
 	private void initService() {
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-		if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
+		if (mSP.contains("automatic_updates") && mSP.getBoolean("automatic_updates", false)) {
 			Log.d(TAG, "Automatic updates enabled");
 			Intent serviceIntent = new Intent(IAndTweetService.class.getName());
 			if (!mIsBound) {
@@ -323,6 +334,7 @@ public class TweetList extends Activity {
 				});
 		mMessageList.setAdapter(adapter);
 		mMessageList.setOnCreateContextMenuListener(this);
+		mMessageList.setOnItemClickListener(mOnItemClickListener);
 	}
 
 	/**
@@ -385,6 +397,11 @@ public class TweetList extends Activity {
 		mIsBound = false;
 	}
 
+	private void clearNotifications() {
+		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		nm.cancel(R.string.app_name);
+	}
+
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			mService = IAndTweetService.Stub.asInterface(service);
@@ -413,6 +430,16 @@ public class TweetList extends Activity {
 		public void tweetsChanged(int value) throws RemoteException {
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_TWEETS_CHANGED, value, 0));
 		}
+
+		/**
+		 * Value changed callback method
+		 * 
+		 * @param value
+		 * @throws RemoteException
+		 */
+		public void dataLoading(int value) throws RemoteException {
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_DATA_LOADING, value, 0));
+		}
 	};
 
 	private Handler mHandler = new Handler() {
@@ -427,9 +454,12 @@ public class TweetList extends Activity {
 			case MSG_TWEETS_CHANGED:
 				int numTweets = msg.arg1;
 				if (numTweets > 0) {
-					notifyNewTweets(numTweets);
 					fillList();
 				}
+				break;
+			case MSG_DATA_LOADING:
+		        // Request progress bar
+		        setProgressBarIndeterminateVisibility(msg.arg1 == 1 ? true : false);
 				break;
 			default:
 				super.handleMessage(msg);
@@ -478,19 +508,15 @@ public class TweetList extends Activity {
 		}
 	};
 
-	private void clearNotifications() {
-		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		nm.cancel(R.string.app_name);
-	}
-
-	private void notifyNewTweets(int numTweets) {
-		Notification notification = new Notification(android.R.drawable.ic_popup_sync,
-				(String) getText(R.string.notification_title), System.currentTimeMillis());
-		notification.defaults = Notification.DEFAULT_ALL;
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this,
-				TweetList.class), 0);
-		notification.setLatestEventInfo(this, getText(R.string.notification_title), numTweets
-				+ " new tweets", contentIntent);
-		mNM.notify(R.string.app_name, notification);
-	}
+	private OnItemClickListener mOnItemClickListener = new OnItemClickListener() {
+		public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+			Uri uri = ContentUris.withAppendedId(getIntent().getData(), id);
+			String action = getIntent().getAction();
+			if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
+				setResult(RESULT_OK, new Intent().setData(uri));
+			} else {
+				startActivity(new Intent(Intent.ACTION_VIEW, uri));
+			}
+		}
+	};
 }
