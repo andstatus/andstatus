@@ -3,27 +3,20 @@
  */
 package com.xorcode.andtweet.view;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.util.Linkify;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.data.AndTweet.Tweets;
+import com.xorcode.andtweet.util.RelativeTime;
 
 /**
- * @author tbjers
+ * @author torgny.bjers
  *
  */
 public class Tweet extends Activity {
@@ -68,13 +61,12 @@ public class Tweet extends Activity {
 			String aMessage = mCursor.getString(mCursor.getColumnIndex(Tweets.MESSAGE));
 			long aSentDate = mCursor.getLong(mCursor.getColumnIndex(Tweets.SENT_DATE));
 			mAuthor.setText(aAuthor);
-			Spannable sText = new SpannableString(aMessage);
-			Linkify.addLinks(sText, Linkify.ALL);
-			mMessage.setText(sText);
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(aSentDate);
-			DateFormat df = new SimpleDateFormat(getText(R.string.http_dateformat).toString());
-			mSentDate.setText(df.format(cal.getTime()));
+			mMessage.setLinksClickable(true);
+			mMessage.setFocusable(true);
+			mMessage.setFocusableInTouchMode(true);
+			mMessage.setText(aMessage);
+			Linkify.addLinks(mMessage, Linkify.ALL);
+			mSentDate.setText(RelativeTime.getDifference(aSentDate));
 		}
 	}
 }

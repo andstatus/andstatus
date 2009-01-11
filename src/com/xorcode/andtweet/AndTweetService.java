@@ -237,9 +237,7 @@ public class AndTweetService extends Service {
 					values.put(AndTweet.Tweets._ID, lTweetId.toString());
 					values.put(AndTweet.Tweets.AUTHOR_ID, user.getString("screen_name"));
 
-					Spannable sText = new SpannableString(jo.getString("text"));
-					Linkify.addLinks(sText, Linkify.ALL);
-					values.put(AndTweet.Tweets.MESSAGE, sText.toString());
+					values.put(AndTweet.Tweets.MESSAGE, jo.getString("text"));
 
 					DateFormat f = new SimpleDateFormat(mDateFormat);
 					Calendar cal = Calendar.getInstance();

@@ -63,6 +63,7 @@ import com.xorcode.andtweet.IAndTweetService;
 import com.xorcode.andtweet.IAndTweetServiceCallback;
 import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.data.AndTweet;
+import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweet.Tweets;
 import com.xorcode.andtweet.util.AtTokenizer;
 
@@ -168,14 +169,13 @@ public class TweetList extends Activity {
 			intent.setData(Tweets.CONTENT_URI);
 		}
 
-		// Initialize service and UI
 		initUI();
-		initService();
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
+		// Initialize service and UI
 		initService();
 	}
 
@@ -332,6 +332,7 @@ public class TweetList extends Activity {
 					R.id.tweetlist_item_screen_name, R.id.tweetlist_item_text,
 					R.id.tweetlist_item_date
 				});
+		adapter.setViewBinder(new TweetBinder());
 		mMessageList.setAdapter(adapter);
 		mMessageList.setOnCreateContextMenuListener(this);
 		mMessageList.setOnItemClickListener(mOnItemClickListener);
