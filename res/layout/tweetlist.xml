@@ -1,38 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 
+	Copyright (C) 2008 Torgny Bjers
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	     http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+ -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical" android:layout_width="fill_parent"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
-
-	<!-- <ScrollView android:id="@+id/messageListScrollView"
-		android:scrollbars="vertical" android:layout_width="fill_parent"
-		android:layout_height="80px" android:layout_weight="1"></ScrollView> -->
 	<ListView android:id="@+id/messagesListView"
 		android:scrollbars="vertical" android:layout_width="fill_parent"
-		android:layout_height="80px" android:layout_weight="1"></ListView>
+		android:layout_height="80px" android:layout_weight="1" />
 	<LinearLayout android:layout_width="wrap_content"
 		android:layout_height="wrap_content">
 		<TextView android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:text="Characters left:"
+			android:layout_height="wrap_content"
+			android:text="@string/message_characters_left"
 			android:paddingLeft="5dip" />
 		<TextView android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:id="@+id/messageEditCharsLeftTextView"
+			android:layout_height="wrap_content"
+			android:id="@+id/messageEditCharsLeftTextView"
 			android:paddingLeft="5dip" />
 	</LinearLayout>
 
 	<LinearLayout android:layout_height="wrap_content"
 		android:layout_width="fill_parent">
 		<LinearLayout android:layout_height="wrap_content"
-			android:layout_width="fill_parent" android:layout_weight="1">
+			android:layout_width="fill_parent"
+			android:layout_weight="1">
 			<MultiAutoCompleteTextView android:id="@+id/messageEditTextAC"
-				android:capitalize="sentences" android:bufferType="editable"
-				android:autoText="true" android:layout_width="fill_parent"
-				android:gravity="top" android:layout_height="wrap_content" android:hint="@string/message_edit_hint" android:completionThreshold="2" android:completionHint="Username"/>
+				android:capitalize="sentences"
+				android:bufferType="editable"
+				android:autoText="true"
+				android:layout_width="fill_parent"
+				android:gravity="top"
+				android:layout_height="wrap_content"
+				android:hint="@string/message_edit_hint"
+				android:completionThreshold="2" />
 		</LinearLayout>
 
-		<Button android:layout_width="wrap_content" android:text="Send"
-			android:layout_height="fill_parent" android:id="@+id/messageEditSendButton"
-			android:paddingLeft="16dip" android:paddingRight="16dip" />
+		<Button android:layout_width="wrap_content"
+			android:text="@string/button_send"
+			android:layout_height="fill_parent"
+			android:id="@+id/messageEditSendButton"
+			android:paddingLeft="16dip"
+			android:paddingRight="16dip" />
 	</LinearLayout>
-
-
 </LinearLayout>
