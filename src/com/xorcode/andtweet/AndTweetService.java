@@ -32,11 +32,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
@@ -72,8 +69,6 @@ public class AndTweetService extends Service {
 
 	private static final int MILLISECONDS = 1000;
 	private static final int MSG_UPDATE_TIMELINE = 1;
-	private static final int MSG_UPDATE_FRIENDS = 2;
-	private static final int MSG_UPDATE_DIRECTMESSAGES = 3;
 
 	private String mUsername;
 	private String mPassword;

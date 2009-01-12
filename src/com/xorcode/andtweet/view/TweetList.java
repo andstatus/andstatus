@@ -249,13 +249,6 @@ public class TweetList extends Activity {
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
-		AdapterView.AdapterContextMenuInfo info;
-		try {
-			info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-		} catch (ClassCastException e) {
-			Log.e(TAG, "bad menuInfo", e);
-			return;
-		}
 		// Add menu items
 		menu.add(0, CONTEXT_MENU_ITEM_REPLY, 0, R.string.menu_item_reply);
 		menu.add(0, CONTEXT_MENU_ITEM_STAR, 1, R.string.menu_item_star);
