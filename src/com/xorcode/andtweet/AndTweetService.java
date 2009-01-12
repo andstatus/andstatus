@@ -36,6 +36,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
@@ -269,6 +270,9 @@ public class AndTweetService extends Service {
 				(String) getText(R.string.notification_title), System.currentTimeMillis());
 		notification.defaults = Notification.DEFAULT_ALL;
 		notification.flags = Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
+		notification.ledOffMS = 1000;
+		notification.ledOnMS = 500;
+		notification.ledARGB = Color.GREEN;
 
 		// Set up the pending intent
 		Intent intent = new Intent(this, TweetList.class);

@@ -24,6 +24,7 @@
 	<string name="menu_item_reply">Reply</string>
 	<string name="menu_item_star">Favorite</string>
 	<string name="options_menu_preferences">Preferences</string>
+	<string name="options_menu_reload">Reload</string>
 	<string name="notification_title">AndTweet</string>
 	<string name="category_title_preference_credentials">User Credentials</string>
 	<string name="category_title_preference_updates">Updates</string>

@@ -81,6 +81,7 @@ public class TweetList extends Activity {
 	private static final int REQUEST_CODE_PREFERENCES = 1;
 
 	public static final int OPTIONS_MENU_PREFERENCES = Menu.FIRST;
+	public static final int OPTIONS_MENU_RELOAD = Menu.FIRST + 1;
 
 	public static final int CONTEXT_MENU_ITEM_REPLY = Menu.FIRST + 2;
 	public static final int CONTEXT_MENU_ITEM_STAR = Menu.FIRST + 3;
@@ -225,6 +226,8 @@ public class TweetList extends Activity {
 		super.onCreateOptionsMenu(menu);
 		menu.add(0, OPTIONS_MENU_PREFERENCES, 0, R.string.options_menu_preferences).setShortcut(
 				'3', 'p').setIcon(android.R.drawable.ic_menu_preferences);
+		menu.add(0, OPTIONS_MENU_RELOAD, 1, R.string.options_menu_reload).setShortcut(
+				'4', 'r').setIcon(android.R.drawable.ic_menu_rotate);
 
 		Intent intent = new Intent(null, getIntent().getData());
 		intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
@@ -326,10 +329,12 @@ public class TweetList extends Activity {
 				try {
 					result = aConn.updateStatus(message, mReplyId);
 					if (result.optString("error").length() > 0) {
-						Toast.makeText(TweetList.this, (CharSequence) message, Toast.LENGTH_LONG);
+						Toast.makeText(TweetList.this, (CharSequence) message, Toast.LENGTH_LONG).show();
 					} else {
-						Toast.makeText(TweetList.this, R.string.message_sent, Toast.LENGTH_SHORT);
+						Toast.makeText(TweetList.this, R.string.message_sent, Toast.LENGTH_SHORT).show();
 						mEditText.setText("");
+						mEditText.clearFocus();
+						mEditText.requestFocus();
 					}
 				} catch (UnsupportedEncodingException e) {
 					Log.e(TAG, e.getMessage());
@@ -512,10 +517,10 @@ public class TweetList extends Activity {
 		 */
 		public boolean onKey(View v, int keyCode, KeyEvent event) {
 			MultiAutoCompleteTextView editTxt = (MultiAutoCompleteTextView) v;
+			mCurrentChars = editTxt.length();
 			if (mCurrentChars == 0) {
 				mReplyId = 0;
 			}
-			mCurrentChars = editTxt.length();
 			if (keyCode != KeyEvent.KEYCODE_DEL && mCurrentChars > mLimitChars) {
 				return true;
 			}
