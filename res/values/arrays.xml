@@ -21,6 +21,11 @@
 		<item>10 minutes</item>
 		<item>30 minutes</item>
 		<item>1 hour</item>
+		<item>2 hours</item>
+		<item>4 hours</item>
+		<item>8 hours</item>
+		<item>12 hours</item>
+		<item>1 day</item>
 	</string-array>
 	<string-array name="fetch_frequency_keys">
 		<item>180</item>
@@ -28,5 +33,22 @@
 		<item>600</item>
 		<item>1800</item>
 		<item>3600</item>
+		<item>7200</item>
+		<item>14400</item>
+		<item>28800</item>
+		<item>43200</item>
+		<item>86400</item>
+	</string-array>
+	<string-array name="fetch_frequency_display">
+		<item>3 minutes</item>
+		<item>5 minutes</item>
+		<item>10 minutes</item>
+		<item>30 minutes</item>
+		<item>hour</item>
+		<item>2 hours</item>
+		<item>4 hours</item>
+		<item>8 hours</item>
+		<item>12 hours</item>
+		<item>day</item>
 	</string-array>
 </resources>

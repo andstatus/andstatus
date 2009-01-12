@@ -16,7 +16,12 @@
 
 package com.xorcode.andtweet.view;
 
+import java.text.MessageFormat;
+
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
 
 import com.xorcode.andtweet.R;
@@ -25,10 +30,52 @@ import com.xorcode.andtweet.R;
  * @author torgny.bjers
  * 
  */
-public class Preferences extends PreferenceActivity {
+public class Preferences extends PreferenceActivity implements OnSharedPreferenceChangeListener {
+
+	private static final String TAG = "AndTweet.Preferences";
+
+	public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
+
+	private ListPreference mFetchFrequencyPreference;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
+		mFetchFrequencyPreference = (ListPreference) getPreferenceScreen().findPreference(KEY_FETCH_FREQUENCY);
+		updateFrequency();
 	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+	}
+
+	protected void updateFrequency() {
+		String[] k = getResources().getStringArray(R.array.fetch_frequency_keys);
+		String[] d = getResources().getStringArray(R.array.fetch_frequency_display);
+		String displayFrequency = d[0];
+		String frequency = mFetchFrequencyPreference.getValue();
+		for (int i = 0; i < k.length; i++) {
+			if (frequency.equals(k[i])) {
+				displayFrequency = d[i];
+				break;
+			}
+		}
+		MessageFormat sf = new MessageFormat(getText(R.string.summary_preference_frequency).toString());
+		mFetchFrequencyPreference.setSummary(sf.format(new Object[] { displayFrequency }));
+	}
+
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		if (key.equals(KEY_FETCH_FREQUENCY)) {
+			updateFrequency();
+		}
+	};
 }

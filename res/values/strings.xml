@@ -40,7 +40,7 @@
 	<string name="title_preference_username">Username</string>
 	<string name="summary_preference_automatic_updates_off">Automatic updates are disabled</string>
 	<string name="summary_preference_automatic_updates_on">Automatic updates are enabled</string>
-	<string name="summary_preference_frequency">How often should AndTweet get tweets?</string>
+	<string name="summary_preference_frequency">Updates are fetched every {0}.</string>
 	<string name="summary_preference_password">Your Twitter password</string>
 	<string name="summary_preference_username">Your Twitter username</string>
 	<string name="resolve_view">View Tweet</string>
