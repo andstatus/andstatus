@@ -55,6 +55,7 @@ public class Connection {
 	private static final String PUBLIC_TIMELINE_URL = "http://twitter.com/statuses/public_timeline.json";
 	private static final String FRIENDS_TIMELINE_URL = "http://twitter.com/statuses/friends_timeline.json";
 	private static final String UPDATE_STATUS_URL = "http://twitter.com/statuses/update.json";
+	private static final String VERIFY_CREDENTIALS_URL = "http://twitter.com/statuses/verify_credentials.json";
 	private static final String USER_AGENT = "Mozilla/4.5";
 	private static final String TAG = Connection.class.getName();
 
@@ -64,6 +65,8 @@ public class Connection {
 
 	/**
 	 * Creates a new Connection instance.
+	 * 
+	 * Requires a user name and password.
 	 * 
 	 * @param username
 	 * @param password
@@ -75,6 +78,8 @@ public class Connection {
 
 	/**
 	 * Creates a new Connection instance, specifying a last ID.
+	 * 
+	 * Requires a user name and password as well as a last run time.
 	 * 
 	 * @param username
 	 * @param password
@@ -89,6 +94,11 @@ public class Connection {
 	/**
 	 * Get the user's public timeline.
 	 * 
+	 * Returns the 20 most recent statuses from non-protected users who have set 
+	 * a custom user icon. Does not require authentication.  Note that the public 
+	 * timeline is cached for 60 seconds so requesting it more often than that 
+	 * is a waste of resources.
+	 * 
 	 * @return JSONArray
 	 * @throws JSONException
 	 */
@@ -98,6 +108,9 @@ public class Connection {
 
 	/**
 	 * Get the user's own and friends timeline.
+	 * 
+	 * Returns the 20 most recent statuses posted by the authenticating user and that 
+	 * user's friends. This is the equivalent of /home on the Web. 
 	 * 
 	 * @return JSONArray
 	 * @throws JSONException
@@ -117,6 +130,10 @@ public class Connection {
 	/**
 	 * Update user status by posting to the Twitter REST API.
 	 * 
+	 * Updates the authenticating user's status. Requires the status parameter
+	 * specified. Request must be a POST. A status update with text identical 
+	 * to the authenticating user's current status will be ignored.
+	 * 
 	 * @param message
 	 * @return boolean
 	 * @throws UnsupportedEncodingException
@@ -130,6 +147,20 @@ public class Connection {
 			formParams.add(new BasicNameValuePair("in_reply_to_status_id", String.valueOf(inReplyToId)));
 		}
 		return new JSONObject(postRequest(url, new UrlEncodedFormEntity(formParams)));
+	}
+
+	/**
+	 * Verify the user's credentials.
+	 * 
+	 * Returns an HTTP 200 OK response code and a representation of the
+	 * requesting user if authentication was successful; returns a 401 
+	 * status code and an error message if not.
+	 * 
+	 * @return
+	 * @throws JSONException
+	 */
+	public JSONObject verifyCredentials() throws JSONException {
+		return new JSONObject(getRequest(VERIFY_CREDENTIALS_URL, new DefaultHttpClient(new BasicHttpParams())));
 	}
 
 	/**

@@ -155,8 +155,8 @@ public class AndTweetService extends Service {
 					}
 					if (aNewTweets > 0) {
 						notifyNewTweets(aNewTweets);
+						Log.d(TAG, aNewTweets + " new tweets");
 					}
-					Log.d(TAG, aNewTweets + " new tweets");
 					mFrequency = Integer.parseInt(sp.getString("fetch_frequency", "180"));
 					mLastRunTime = Long.valueOf(System.currentTimeMillis());
 					// Broadcast new value to all clients
