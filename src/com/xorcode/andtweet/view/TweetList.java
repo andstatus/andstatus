@@ -18,6 +18,7 @@ package com.xorcode.andtweet.view;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
@@ -57,6 +58,7 @@ import android.widget.ListView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.xorcode.andtweet.IAndTweetService;
@@ -65,6 +67,7 @@ import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.data.AndTweet;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweet.Tweets;
+import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.util.AtTokenizer;
 
 /**
@@ -137,7 +140,15 @@ public class TweetList extends Activity {
 	 */
 	private static boolean mIsBound;
 
+	/**
+	 * Managed query cursor
+	 */
 	private Cursor mCursor;
+
+	/**
+	 * In reply-to ID
+	 */
+	private long mReplyId = 0;
 
 	/**
 	 * Called when the activity is first created.
@@ -188,6 +199,7 @@ public class TweetList extends Activity {
 		mCursor = managedQuery(getIntent().getData(), PROJECTION, null, null,
 				Tweets.DEFAULT_SORT_ORDER + " LIMIT 20");
 		fillList();
+		mReplyId = 0;
 		mEditText.requestFocus();
 	}
 
@@ -206,10 +218,6 @@ public class TweetList extends Activity {
 			mCursor.close();
 		}
 		mNM.cancel(R.string.app_name);
-	}
-
-	public void onReceive(Context context, Intent intent) {
-		Log.d(TAG, "onReceive");
 	}
 
 	@Override
@@ -265,7 +273,7 @@ public class TweetList extends Activity {
 		}
 
 		switch (item.getItemId()) {
-		case CONTEXT_MENU_ITEM_REPLY: {
+		case CONTEXT_MENU_ITEM_REPLY:
 			Uri uri = ContentUris.withAppendedId(getIntent().getData(), info.id);
 			Cursor c = managedQuery(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID }, null, null, null);
 			try {
@@ -274,23 +282,17 @@ public class TweetList extends Activity {
 				String reply = "@" + c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)) + " ";
 				mEditText.setText("");
 				mEditText.append(reply, 0, reply.length());
+				mReplyId = c.getLong(c.getColumnIndex(Tweets._ID));
 			} catch (Exception e) {
 				Log.e(TAG, e.getMessage());
 			} finally {
 				c.close();
 			}
-			// getContentResolver().delete(noteUri, null, null);
 			return true;
-		}
-		case CONTEXT_MENU_ITEM_STAR: {
+		case CONTEXT_MENU_ITEM_STAR:
 			return true;
-		}
 		}
 		return false;
-	}
-
-	public void onListItemClick(ListView listView, View view, int position, long id) {
-		
 	}
 
 	/**
@@ -314,6 +316,27 @@ public class TweetList extends Activity {
 	private void initUI() {
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
+				SharedPreferences sp = PreferenceManager
+					.getDefaultSharedPreferences(getApplicationContext());
+				String username = sp.getString("twitter_username", null);
+				String password = sp.getString("twitter_password", null);
+				String message = mEditText.getText().toString();
+				Connection aConn = new Connection(username, password);
+				JSONObject result;
+				try {
+					result = aConn.updateStatus(message, mReplyId);
+					if (result.optString("error").length() > 0) {
+						Toast.makeText(TweetList.this, (CharSequence) message, Toast.LENGTH_LONG);
+					} else {
+						Toast.makeText(TweetList.this, R.string.message_sent, Toast.LENGTH_SHORT);
+						mEditText.setText("");
+					}
+				} catch (UnsupportedEncodingException e) {
+					Log.e(TAG, e.getMessage());
+				} catch (JSONException e) {
+					Log.e(TAG, e.getMessage());
+					e.printStackTrace();
+				}
 			}
 		});
 
@@ -489,6 +512,9 @@ public class TweetList extends Activity {
 		 */
 		public boolean onKey(View v, int keyCode, KeyEvent event) {
 			MultiAutoCompleteTextView editTxt = (MultiAutoCompleteTextView) v;
+			if (mCurrentChars == 0) {
+				mReplyId = 0;
+			}
 			mCurrentChars = editTxt.length();
 			if (keyCode != KeyEvent.KEYCODE_DEL && mCurrentChars > mLimitChars) {
 				return true;

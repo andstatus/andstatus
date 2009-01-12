@@ -43,4 +43,5 @@
 	<string name="summary_preference_password">Your Twitter password</string>
 	<string name="summary_preference_username">Your Twitter username</string>
 	<string name="resolve_view">View Tweet</string>
+	<string name="message_sent">Your message has been sent.</string>
 </resources>

@@ -22,17 +22,25 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.util.Log;
 
@@ -46,6 +54,7 @@ import com.xorcode.andtweet.util.Base64;
 public class Connection {
 	private static final String PUBLIC_TIMELINE_URL = "http://twitter.com/statuses/public_timeline.json";
 	private static final String FRIENDS_TIMELINE_URL = "http://twitter.com/statuses/friends_timeline.json";
+	private static final String UPDATE_STATUS_URL = "http://twitter.com/statuses/update.json";
 	private static final String USER_AGENT = "Mozilla/4.5";
 	private static final String TAG = Connection.class.getName();
 
@@ -94,7 +103,33 @@ public class Connection {
 	 * @throws JSONException
 	 */
 	public JSONArray getFriendsTimeline() throws JSONException {
-		return new JSONArray(getRequest(FRIENDS_TIMELINE_URL));
+		String url = FRIENDS_TIMELINE_URL;
+		url += "?count=50";
+		if (mLastRunTime > 0) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(mLastRunTime);
+			DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+			url += "&since=" + URLEncoder.encode(df.format(cal.getTime()));
+		}
+		return new JSONArray(getRequest(url));
+	}
+
+	/**
+	 * Update user status by posting to the Twitter REST API.
+	 * 
+	 * @param message
+	 * @return boolean
+	 * @throws UnsupportedEncodingException
+	 * @throws JSONException 
+	 */
+	public JSONObject updateStatus(String message, long inReplyToId) throws UnsupportedEncodingException, JSONException {
+		String url = UPDATE_STATUS_URL;
+		List <NameValuePair> formParams = new ArrayList<NameValuePair>();
+		formParams.add(new BasicNameValuePair("status", message));
+		if (inReplyToId > 0) {
+			formParams.add(new BasicNameValuePair("in_reply_to_status_id", String.valueOf(inReplyToId)));
+		}
+		return new JSONObject(postRequest(url, new UrlEncodedFormEntity(formParams)));
 	}
 
 	/**
@@ -103,7 +138,7 @@ public class Connection {
 	 * @param url
 	 * @return String
 	 */
-	private String getRequest(String url) {
+	protected String getRequest(String url) {
 		return getRequest(url, new DefaultHttpClient(new BasicHttpParams()));
 	}
 
@@ -114,15 +149,8 @@ public class Connection {
 	 * @param client
 	 * @return String
 	 */
-	private String getRequest(String url, HttpClient client) {
+	protected String getRequest(String url, HttpClient client) {
 		String result = null;
-		url += "?count=50";
-		if (mLastRunTime > 0) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(mLastRunTime);
-			DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
-			url += "&since=" + URLEncoder.encode(df.format(cal.getTime()));
-		}
 		HttpGet getMethod = new HttpGet(url);
 		try {
 			getMethod.setHeader("User-Agent", USER_AGENT);
@@ -138,12 +166,58 @@ public class Connection {
 	}
 
 	/**
+	 * Execute a POST request against the Twitter REST API.
+	 * 
+	 * @param url
+	 * @return String
+	 */
+	protected String postRequest(String url) {
+		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), null);
+	}
+
+	/**
+	 * Execute a POST request against the Twitter REST API.
+	 * 
+	 * @param url
+	 * @return String
+	 */
+	protected String postRequest(String url, UrlEncodedFormEntity formParams) {
+		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), formParams);
+	}
+
+	/**
+	 * Execute a POST request against the Twitter REST API.
+	 * 
+	 * @param url
+	 * @param client
+	 * @return String
+	 */
+	protected String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams) {
+		String result = null;
+		HttpPost postMethod = new HttpPost(url);
+		try {
+			postMethod.setHeader("User-Agent", USER_AGENT);
+			postMethod.addHeader("Authorization", "Basic " + getCredentials());
+			if (formParams != null) {
+				postMethod.setEntity(formParams);
+			}
+			HttpResponse httpResponse = client.execute(postMethod);
+			result = EntityUtils.toString(httpResponse.getEntity());
+		} catch (Exception e) {
+			Log.e(TAG, e.getMessage());
+		} finally {
+			postMethod.abort();
+		}
+		return result;
+	}
+
+	/**
 	 * Retrieve the input stream from the HTTP connection.
 	 * 
 	 * @param httpEntity
 	 * @return String
 	 */
-	private String retrieveInputStream(HttpEntity httpEntity) {
+	protected String retrieveInputStream(HttpEntity httpEntity) {
 		int length = (int) httpEntity.getContentLength();
 		StringBuffer stringBuffer = new StringBuffer(length);
 		try {
@@ -169,7 +243,7 @@ public class Connection {
 	 * 
 	 * @return String
 	 */
-	private String getCredentials() {
+	protected String getCredentials() {
 		return new String(Base64.encodeBytes((mUsername + ":" + mPassword).getBytes()));
 	}
 }
