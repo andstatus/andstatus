@@ -57,6 +57,7 @@ public class Connection {
 	private static final String UPDATE_STATUS_URL = "http://twitter.com/statuses/update.json";
 	private static final String VERIFY_CREDENTIALS_URL = "http://twitter.com/statuses/verify_credentials.json";
 	private static final String USER_AGENT = "Mozilla/4.5";
+	private static final String SOURCE_PARAMETER = "andtweet";
 	private static final String TAG = Connection.class.getName();
 
 	private String mUsername;
@@ -143,6 +144,7 @@ public class Connection {
 		String url = UPDATE_STATUS_URL;
 		List <NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
+		formParams.add(new BasicNameValuePair("source", SOURCE_PARAMETER));
 		if (inReplyToId > 0) {
 			formParams.add(new BasicNameValuePair("in_reply_to_status_id", String.valueOf(inReplyToId)));
 		}
