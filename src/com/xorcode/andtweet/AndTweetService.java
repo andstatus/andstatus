@@ -32,8 +32,11 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
@@ -43,9 +46,6 @@ import android.os.Message;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.util.Linkify;
 import android.util.Log;
 
 import com.xorcode.andtweet.data.AndTweet;
@@ -87,7 +87,7 @@ public class AndTweetService extends Service {
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		// Start the time line updater.
 		mHandler.sendEmptyMessage(MSG_UPDATE_TIMELINE);
-		Log.d(TAG, "Service created in context: " + getApplicationContext().getPackageName());
+		Log.d(TAG, "Service created in context: " + getApplication().getApplicationContext().getPackageName());
 	}
 
 	@Override
@@ -172,9 +172,8 @@ public class AndTweetService extends Service {
 						}
 					}
 					mCallbacks.finishBroadcast();
-					// Repeat every 180 seconds (3 minutes)
-					sendMessageDelayed(obtainMessage(MSG_UPDATE_TIMELINE), mFrequency
-							* MILLISECONDS);
+					// Repeat mFrequency seconds (defaults to 180, 3 minutes)
+					sendMessageDelayed(obtainMessage(MSG_UPDATE_TIMELINE), mFrequency * MILLISECONDS);
 				} else {
 					super.handleMessage(msg);
 				}
@@ -202,11 +201,13 @@ public class AndTweetService extends Service {
 		if (mUsername != null && mUsername.length() > 0) {
 			Log.i(TAG, "Username and password present");
 			String mDateFormat = (String) getText(R.string.twitter_dateformat);
+			// Try to load the last record
 			Cursor c = getContentResolver().query(AndTweet.Tweets.CONTENT_URI, new String[] {
 				AndTweet.Tweets._ID, AndTweet.Tweets.SENT_DATE
 			}, null, null, AndTweet.Tweets.DEFAULT_SORT_ORDER);
 			try {
 				c.moveToFirst();
+				// If a record is available, get the last run time
 				if (c.getCount() > 0) {
 					DateFormat f = new SimpleDateFormat(mDateFormat);
 					Calendar cal = Calendar.getInstance();
@@ -268,18 +269,29 @@ public class AndTweetService extends Service {
 	 * @param numTweets
 	 */
 	private void notifyNewTweets(int numTweets) {
+		// Set up the notification to display to the user
 		Notification notification = new Notification(android.R.drawable.stat_notify_chat,
 				(String) getText(R.string.notification_title), System.currentTimeMillis());
 		notification.defaults = Notification.DEFAULT_ALL;
 		notification.flags = Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(getApplicationContext(), TweetList.class), Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+
+		// Set up the pending intent
+		Intent intent = new Intent(this, TweetList.class);
+		intent.setAction("android.intent.action.MAIN");
+		intent.addCategory("android.intent.category.LAUNCHER");
+		PendingIntent contentIntent = PendingIntent.getActivity(this, numTweets, intent, 0);
+
+		// Set up the message
 		MessageFormat form = new MessageFormat(getText(R.string.notification_new_tweet_format).toString());
 		Object[] formArgs = new Object[] {numTweets};
 		double[] tweetLimits = {1,2};
 		String[] tweetPart = { getText(R.string.notification_tweet_singular).toString(), getText(R.string.notification_tweet_plural).toString() };
 		ChoiceFormat tweetForm = new ChoiceFormat(tweetLimits, tweetPart);
 		form.setFormatByArgumentIndex(0, tweetForm);
-		notification.setLatestEventInfo(this, getText(R.string.notification_title), form.format(formArgs), contentIntent);
+		String aMessage = form.format(formArgs); 
+
+		// Set the latest event information and send the notification
+		notification.setLatestEventInfo(this, getText(R.string.notification_title), aMessage, contentIntent);
 		mNM.notify(R.string.app_name, notification);
 	}
 }

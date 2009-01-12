@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.util.Linkify;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.xorcode.andtweet.R;
@@ -22,7 +23,7 @@ import com.xorcode.andtweet.util.RelativeTime;
 public class Tweet extends Activity {
 
 	private static final String TAG = "Tweet";
-	
+
 	private static final String[] PROJECTION = new String[] {
 		Tweets._ID,
 		Tweets.AUTHOR_ID,
@@ -40,7 +41,6 @@ public class Tweet extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		final Intent intent = getIntent();
-		final String action = intent.getAction();
 		mUri = intent.getData();
 
 		setContentView(R.layout.tweetview);
@@ -52,6 +52,7 @@ public class Tweet extends Activity {
 		mCursor = managedQuery(mUri, PROJECTION, null, null, null);
 	}
 
+	@Override
 	protected void onResume() {
 		super.onResume();
 
@@ -67,6 +68,16 @@ public class Tweet extends Activity {
 			mMessage.setText(aMessage);
 			Linkify.addLinks(mMessage, Linkify.ALL);
 			mSentDate.setText(RelativeTime.getDifference(aSentDate));
+		} else {
+			Log.w(TAG, "No cursor found");
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (mCursor != null && !mCursor.isClosed()) {
+			mCursor.close();
 		}
 	}
 }

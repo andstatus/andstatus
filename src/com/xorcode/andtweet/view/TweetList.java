@@ -137,6 +137,8 @@ public class TweetList extends Activity {
 	 */
 	private static boolean mIsBound;
 
+	private Cursor mCursor;
+
 	/**
 	 * Called when the activity is first created.
 	 * 
@@ -164,6 +166,13 @@ public class TweetList extends Activity {
 
         // Set up the content view and load data
         setContentView(R.layout.tweetlist);
+
+		// Set up views
+		mMessageList = (ListView) findViewById(R.id.messagesListView);
+		mSendButton = (Button) findViewById(R.id.messageEditSendButton);
+		mEditText = (MultiAutoCompleteTextView) findViewById(R.id.messageEditTextAC);
+		mCharsLeftText = (TextView) findViewById(R.id.messageEditCharsLeftTextView);
+
 		Intent intent = getIntent();
 		if (intent.getData() == null) {
 			intent.setData(Tweets.CONTENT_URI);
@@ -175,14 +184,11 @@ public class TweetList extends Activity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		// Initialize service and UI
-		initService();
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		clearNotifications();
+		bindToService();
+		mCursor = managedQuery(getIntent().getData(), PROJECTION, null, null,
+				Tweets.DEFAULT_SORT_ORDER + " LIMIT 20");
+		fillList();
+		mEditText.requestFocus();
 	}
 
 	@Override
@@ -196,7 +202,14 @@ public class TweetList extends Activity {
 		super.onDestroy();
 		disconnectService();
 		clearNotifications();
+		if (mCursor != null && !mCursor.isClosed()) {
+			mCursor.close();
+		}
 		mNM.cancel(R.string.app_name);
+	}
+
+	public void onReceive(Context context, Intent intent) {
+		Log.d(TAG, "onReceive");
 	}
 
 	@Override
@@ -228,6 +241,9 @@ public class TweetList extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == REQUEST_CODE_PREFERENCES) {
+			if (!mSP.getBoolean("automatic_updates", false)) {
+				destroyService();
+			}
 		}
 	}
 
@@ -257,8 +273,19 @@ public class TweetList extends Activity {
 
 		switch (item.getItemId()) {
 		case CONTEXT_MENU_ITEM_REPLY: {
-			// Uri noteUri = ContentUris.withAppendedId(getIntent().getData(),
-			// info.id);
+			Uri uri = ContentUris.withAppendedId(getIntent().getData(), info.id);
+			Cursor c = managedQuery(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID }, null, null, null);
+			try {
+				c.moveToFirst();
+				mEditText.requestFocus();
+				String reply = "@" + c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)) + " ";
+				mEditText.setText("");
+				mEditText.append(reply, 0, reply.length());
+			} catch (Exception e) {
+				Log.e(TAG, e.getMessage());
+			} finally {
+				c.close();
+			}
 			// getContentResolver().delete(noteUri, null, null);
 			return true;
 		}
@@ -276,7 +303,7 @@ public class TweetList extends Activity {
 	/**
 	 * Initialize service and bind to it
 	 */
-	private void initService() {
+	private void bindToService() {
 		if (mSP.contains("automatic_updates") && mSP.getBoolean("automatic_updates", false)) {
 			Log.d(TAG, "Automatic updates enabled");
 			Intent serviceIntent = new Intent(IAndTweetService.class.getName());
@@ -292,15 +319,11 @@ public class TweetList extends Activity {
 	 * Initialize UI
 	 */
 	private void initUI() {
-
-		mSendButton = (Button) findViewById(R.id.messageEditSendButton);
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 			}
 		});
 
-		mEditText = (MultiAutoCompleteTextView) findViewById(R.id.messageEditTextAC);
-		mCharsLeftText = (TextView) findViewById(R.id.messageEditCharsLeftTextView);
 		mCharsLeftText.setText(String.valueOf(mLimitChars - mEditText.length()));
 
 		// Attach listeners to the text field
@@ -314,15 +337,12 @@ public class TweetList extends Activity {
 			mEditText.setAdapter(friendsAdapter);
 			mEditText.setTokenizer(new AtTokenizer());
 		}
-
-		fillList();
 	}
 
 	/**
 	 * Fill the ListView with Tweet items.
 	 */
 	private void fillList() {
-		mMessageList = (ListView) findViewById(R.id.messagesListView);
 		Cursor cursor = managedQuery(getIntent().getData(), PROJECTION, null, null,
 				Tweets.DEFAULT_SORT_ORDER + " LIMIT 20");
 		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.tweetlist_item,
@@ -385,14 +405,7 @@ public class TweetList extends Activity {
 	 * Destroy the service.
 	 */
 	private void destroyService() {
-		if (mService != null) {
-			try {
-				mService.unregisterCallback(mServiceCallback);
-			} catch (RemoteException e) {
-				// Service crashed, not much we can do.
-			}
-		}
-		unbindService(mConnection);
+		disconnectService();
 		stopService(new Intent(IAndTweetService.class.getName()));
 		mService = null;
 		mIsBound = false;
