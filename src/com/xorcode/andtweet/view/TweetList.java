@@ -167,8 +167,7 @@ public class TweetList extends Activity {
 		// Set up preference manager
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		mSP = PreferenceManager.getDefaultSharedPreferences(this);
-		String aUsername = mSP.getString("twitter_username", "");
-		if (aUsername != null && aUsername.length() == 0) {
+		if (mSP.getString("twitter_password", "").length() == 0 || mSP.getString("twitter_username", "").length() == 0) {
 			startActivity(new Intent(this, Preferences.class));
 		}
 
@@ -313,6 +312,7 @@ public class TweetList extends Activity {
 			public void onClick(View v) {
 				SharedPreferences sp = PreferenceManager
 					.getDefaultSharedPreferences(getApplicationContext());
+				setProgressBarIndeterminateVisibility(true);
 				String username = sp.getString("twitter_username", null);
 				String password = sp.getString("twitter_password", null);
 				String message = mEditText.getText().toString();
@@ -334,6 +334,7 @@ public class TweetList extends Activity {
 					Log.e(TAG, e.getMessage());
 					e.printStackTrace();
 				}
+				setProgressBarIndeterminateVisibility(false);
 			}
 		});
 
@@ -440,7 +441,7 @@ public class TweetList extends Activity {
 		}
 
 		/**
-		 * Value changed callback method
+		 * dataLoading callback method
 		 * 
 		 * @param value
 		 * @throws RemoteException
