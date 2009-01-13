@@ -22,7 +22,7 @@ import com.xorcode.andtweet.util.RelativeTime;
  */
 public class Tweet extends Activity {
 
-	private static final String TAG = "Tweet";
+	private static final String TAG = "AndTweet";
 
 	private static final String[] PROJECTION = new String[] {
 		Tweets._ID,

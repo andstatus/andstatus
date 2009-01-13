@@ -21,7 +21,7 @@ import com.xorcode.andtweet.net.Connection;
 
 public class FriendTimeline {
 
-	private static final String TAG = FriendTimeline.class.getName();
+	private static final String TAG = "FriendTimeline";
 
 	private static final String DATE_FORMAT = "EEE MMM dd HH:mm:ss Z yyyy";
 

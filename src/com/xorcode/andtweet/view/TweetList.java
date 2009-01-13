@@ -75,7 +75,7 @@ import com.xorcode.andtweet.util.AtTokenizer;
  */
 public class TweetList extends Activity {
 
-	private static final String TAG = "TweetList";
+	private static final String TAG = "AndTweet";
 
 	private static final int REQUEST_CODE_PREFERENCES = 1;
 

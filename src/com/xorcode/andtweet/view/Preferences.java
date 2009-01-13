@@ -21,9 +21,14 @@ import java.text.MessageFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
 import android.util.Log;
@@ -37,19 +42,38 @@ import com.xorcode.andtweet.net.Connection;
  */
 public class Preferences extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 
-	private static final String TAG = "AndTweet.Preferences";
+	private static final String TAG = "AndTweet";
 
 	public static final String KEY_TWITTER_USERNAME = "twitter_username";
 	public static final String KEY_TWITTER_PASSWORD = "twitter_password";
 	public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
+	public static final String KEY_AUTOMATIC_UPDATES = "automatic_updates";
 
+	public static final int MSG_ACCOUNT_VALID = 1;
+	public static final int MSG_ACCOUNT_INVALID = 2;
+
+	private CheckBoxPreference mAutomaticUpdates;
 	private ListPreference mFetchFrequencyPreference;
+	private EditTextPreference mEditTextUsername;
+	private EditTextPreference mEditTextPassword;
+
+	/**
+	 * Progress dialog for notifying user about events.
+	 */
+	private ProgressDialog mProgressDialog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
 		mFetchFrequencyPreference = (ListPreference) getPreferenceScreen().findPreference(KEY_FETCH_FREQUENCY);
+		mAutomaticUpdates = (CheckBoxPreference) getPreferenceScreen().findPreference(KEY_AUTOMATIC_UPDATES);
+		mEditTextUsername = (EditTextPreference) getPreferenceScreen().findPreference(KEY_TWITTER_USERNAME);
+		mEditTextPassword = (EditTextPreference) getPreferenceScreen().findPreference(KEY_TWITTER_PASSWORD);
+		if (mEditTextUsername.getText() == null || mEditTextPassword.getText() == null || mEditTextUsername.getText().length() == 0 || mEditTextPassword.getText().length() == 0) {
+			mAutomaticUpdates.setEnabled(false);
+			mAutomaticUpdates.setChecked(false);
+		}
 		updateFrequency();
 	}
 
@@ -85,10 +109,36 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 			updateFrequency();
 		}
 		if (key.equals(KEY_TWITTER_USERNAME) || key.equals(KEY_TWITTER_PASSWORD)) {
-			String username = sharedPreferences.getString(KEY_TWITTER_USERNAME, "");
-			String password = sharedPreferences.getString(KEY_TWITTER_PASSWORD, "");
-			if (username.length() > 0 && password.length() > 0) {
-				Connection c = new Connection(username, password);
+			mProgressDialog = ProgressDialog.show(Preferences.this, getText(R.string.dialog_title_checking_credentials), getText(R.string.dialog_summary_checking_credentials), true, false);
+			Thread thread = new Thread(mCheckCredentials);
+			thread.start();
+		}
+	};
+
+	private Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_ACCOUNT_VALID:
+				Log.d(TAG, "account valid");
+				mProgressDialog.dismiss();
+				mAutomaticUpdates.setEnabled(true);
+				break;
+			case MSG_ACCOUNT_INVALID:
+				Log.d(TAG, "account invalid");
+				mAutomaticUpdates.setChecked(false);
+				mAutomaticUpdates.setEnabled(false);
+				mProgressDialog.dismiss();
+				break;
+			}
+		}
+	};
+
+	private Runnable mCheckCredentials = new Runnable() {
+		public void run() {
+			Log.d(TAG, "Started thread");
+			if (mEditTextUsername.getText() != null && mEditTextUsername.getText().length() > 0 && mEditTextPassword.getText() != null && mEditTextPassword.getText().length() > 0) {
+				Connection c = new Connection(mEditTextUsername.getText(), mEditTextPassword.getText());
 				try {
 					JSONObject jo = c.verifyCredentials();
 					Log.d(TAG, jo.optString("id"));
@@ -96,6 +146,9 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 				} catch (JSONException e) {
 					Log.e(TAG, e.getMessage());
 				}
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_VALID, 1, 0));
+			} else {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_INVALID, 1, 0));
 			}
 		}
 	};

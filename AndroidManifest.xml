@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.xorcode.andtweet" android:versionCode="5" android:versionName="0.1.7">
+	package="com.xorcode.andtweet" android:versionName="0.1.8" android:versionCode="6">
 	<application android:label="@string/app_name" android:icon="@drawable/icon" android:debuggable="true">
 		<provider android:name="AndTweetProvider"
 			android:authorities="com.xorcode.andtweet"></provider>

@@ -142,10 +142,8 @@ public class AndTweetService extends Service {
 			case MSG_UPDATE_FRIENDS:
 				if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
 					loadFriends();
-					sendMessageDelayed(obtainMessage(MSG_UPDATE_FRIENDS), 1800 * MILLISECONDS);
-				} else {
-					super.handleMessage(msg);
 				}
+				sendMessageDelayed(obtainMessage(MSG_UPDATE_FRIENDS), 1800 * MILLISECONDS);
 				break;
 			case MSG_UPDATE_TIMELINE:
 				if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
@@ -182,11 +180,9 @@ public class AndTweetService extends Service {
 						}
 					}
 					mCallbacks.finishBroadcast();
-					// Repeat mFrequency seconds (defaults to 180, 3 minutes)
-					sendMessageDelayed(obtainMessage(MSG_UPDATE_TIMELINE), mFrequency * MILLISECONDS);
-				} else {
-					super.handleMessage(msg);
 				}
+				// Repeat mFrequency seconds (defaults to 180, 3 minutes)
+				sendMessageDelayed(obtainMessage(MSG_UPDATE_TIMELINE), mFrequency * MILLISECONDS);
 				break;
 
 			default:

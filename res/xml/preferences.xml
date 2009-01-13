@@ -30,7 +30,7 @@
 			android:title="@string/title_preference_automatic_updates"
 			android:disableDependentsState="false"
 			android:summaryOff="@string/summary_preference_automatic_updates_off"
-			android:summaryOn="@string/summary_preference_automatic_updates_on" />
+			android:summaryOn="@string/summary_preference_automatic_updates_on"/>
 		<ListPreference android:entryValues="@array/fetch_frequency_keys"
 			android:entries="@array/fetch_frequency_values"
 			android:summary="@string/summary_preference_frequency"
