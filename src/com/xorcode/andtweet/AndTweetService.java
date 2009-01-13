@@ -30,6 +30,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -195,19 +196,20 @@ public class AndTweetService extends Service {
 	 * 
 	 * @return int
 	 */
-	protected int loadTimeline() {
+	private final int loadTimeline() {
 		long aLastRunTime = 0;
 		int aNewTweets = 0;
 		Log.i(TAG, "Load timeline called");
-		SharedPreferences sp = PreferenceManager
+		final SharedPreferences sp = PreferenceManager
 				.getDefaultSharedPreferences(getApplicationContext());
+		final ContentResolver contentResolver = getContentResolver();
 		mUsername = sp.getString("twitter_username", null);
 		mPassword = sp.getString("twitter_password", null);
 		if (mUsername != null && mUsername.length() > 0) {
-			Log.i(TAG, "Username and password present");
+			Log.i(TAG, "Loading friends timeline");
 			String mDateFormat = (String) getText(R.string.twitter_dateformat);
 			// Try to load the last record
-			Cursor c = getContentResolver().query(AndTweet.Tweets.CONTENT_URI, new String[] {
+			Cursor c = contentResolver.query(AndTweet.Tweets.CONTENT_URI, new String[] {
 				AndTweet.Tweets._ID, AndTweet.Tweets.SENT_DATE
 			}, null, null, AndTweet.Tweets.DEFAULT_SORT_ORDER);
 			try {
@@ -218,12 +220,10 @@ public class AndTweetService extends Service {
 					Calendar cal = Calendar.getInstance();
 					cal.setTimeInMillis(c.getLong(1));
 					aLastRunTime = cal.getTimeInMillis();
-					Log.d(TAG, "Last run time was " + f.format(cal.getTime()));
+					Log.d(TAG, "Last tweet: " + f.format(cal.getTime()));
 				}
 			} catch (Exception e) {
 				Log.e(TAG, e.getMessage());
-			} finally {
-				c.close();
 			}
 			Connection aConn = new Connection(mUsername, mPassword, aLastRunTime);
 			try {
@@ -254,8 +254,8 @@ public class AndTweetService extends Service {
 						Log.e(TAG, e.getMessage());
 					}
 
-					if ((getContentResolver().update(aTweetUri, values, null, null)) == 0) {
-						getContentResolver().insert(AndTweet.Tweets.CONTENT_URI, values);
+					if ((contentResolver.update(aTweetUri, values, null, null)) == 0) {
+						contentResolver.insert(AndTweet.Tweets.CONTENT_URI, values);
 						aNewTweets++;
 					}
 				}
@@ -268,14 +268,15 @@ public class AndTweetService extends Service {
 		return aNewTweets;
 	}
 
-	private void loadFriends() {
+	private final void loadFriends() {
 		Log.i(TAG, "Load friends called");
-		SharedPreferences sp = PreferenceManager
+		final ContentResolver contentResolver = getContentResolver();
+		final SharedPreferences sp = PreferenceManager
 				.getDefaultSharedPreferences(getApplicationContext());
 		mUsername = sp.getString("twitter_username", null);
 		mPassword = sp.getString("twitter_password", null);
 		if (mUsername != null && mUsername.length() > 0) {
-			Log.i(TAG, "Username and password present");
+			Log.i(TAG, "Loading friends");
 			Connection aConn = new Connection(mUsername, mPassword);
 			try {
 				JSONArray jArr = aConn.getFriends();
@@ -291,10 +292,8 @@ public class AndTweetService extends Service {
 					values.put(AndTweet.Users._ID, lUserId.toString());
 					values.put(AndTweet.Users.AUTHOR_ID, jo.getString("screen_name"));
 
-					Log.d(TAG, jo.getString("screen_name"));
-
-					if ((getContentResolver().update(aUserUri, values, null, null)) == 0) {
-						getContentResolver().insert(AndTweet.Users.CONTENT_URI, values);
+					if ((contentResolver.update(aUserUri, values, null, null)) == 0) {
+						contentResolver.insert(AndTweet.Users.CONTENT_URI, values);
 					}
 				}
 			} catch (JSONException e) {
