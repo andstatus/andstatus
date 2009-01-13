@@ -16,12 +16,9 @@
 
 package com.xorcode.andtweet.view;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -67,6 +64,7 @@ import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.data.AndTweet;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweet.Tweets;
+import com.xorcode.andtweet.data.AndTweet.Users;
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.util.AtTokenizer;
 
@@ -86,8 +84,16 @@ public class TweetList extends Activity {
 	public static final int CONTEXT_MENU_ITEM_REPLY = Menu.FIRST + 2;
 	public static final int CONTEXT_MENU_ITEM_STAR = Menu.FIRST + 3;
 
-	private static final String[] PROJECTION = new String[] {
-		Tweets._ID, Tweets.AUTHOR_ID, Tweets.MESSAGE, Tweets.SENT_DATE
+	private static final String[] TWEETS_PROJECTION = new String[] {
+		Tweets._ID,
+		Tweets.AUTHOR_ID,
+		Tweets.MESSAGE,
+		Tweets.SENT_DATE
+	};
+
+	private static final String[] FRIENDS_PROJECTION = new String[] {
+		Users._ID,
+		Users.AUTHOR_ID
 	};
 
 	private static final int MSG_TWEETS_CHANGED = 1;
@@ -127,11 +133,6 @@ public class TweetList extends Activity {
 	private ListView mMessageList;
 
 	/**
-	 * List of friends
-	 */
-	private ArrayList<String> mFriends = new ArrayList<String>();
-
-	/**
 	 * Service interface connection
 	 */
 	IAndTweetService mService = null;
@@ -140,11 +141,6 @@ public class TweetList extends Activity {
 	 * Service binding indicator
 	 */
 	private static boolean mIsBound;
-
-	/**
-	 * Managed query cursor
-	 */
-	private Cursor mCursor;
 
 	/**
 	 * In reply-to ID
@@ -197,9 +193,8 @@ public class TweetList extends Activity {
 	protected void onStart() {
 		super.onStart();
 		bindToService();
-		mCursor = managedQuery(getIntent().getData(), PROJECTION, null, null,
-				Tweets.DEFAULT_SORT_ORDER + " LIMIT 20");
 		fillList();
+		loadFriends();
 		mReplyId = 0;
 		mEditText.requestFocus();
 	}
@@ -215,9 +210,6 @@ public class TweetList extends Activity {
 		super.onDestroy();
 		disconnectService();
 		clearNotifications();
-		if (mCursor != null && !mCursor.isClosed()) {
-			mCursor.close();
-		}
 		mNM.cancel(R.string.app_name);
 	}
 
@@ -225,9 +217,9 @@ public class TweetList extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		menu.add(0, OPTIONS_MENU_PREFERENCES, 0, R.string.options_menu_preferences).setShortcut(
-				'3', 'p').setIcon(android.R.drawable.ic_menu_preferences);
+				'1', 'p').setIcon(android.R.drawable.ic_menu_preferences);
 		menu.add(0, OPTIONS_MENU_RELOAD, 1, R.string.options_menu_reload).setShortcut(
-				'4', 'r').setIcon(android.R.drawable.ic_menu_rotate);
+				'2', 'r').setIcon(android.R.drawable.ic_menu_rotate);
 
 		Intent intent = new Intent(null, getIntent().getData());
 		intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
@@ -350,21 +342,13 @@ public class TweetList extends Activity {
 		// Attach listeners to the text field
 		mEditText.setOnFocusChangeListener(mEditTextFocusChangeListener);
 		mEditText.setOnKeyListener(mEditTextKeyListener);
-
-		if (mFriends.isEmpty()) {
-			loadFriends();
-			ArrayAdapter<String> friendsAdapter = new ArrayAdapter<String>(this,
-					android.R.layout.simple_dropdown_item_1line, mFriends);
-			mEditText.setAdapter(friendsAdapter);
-			mEditText.setTokenizer(new AtTokenizer());
-		}
 	}
 
 	/**
 	 * Fill the ListView with Tweet items.
 	 */
 	private void fillList() {
-		Cursor cursor = managedQuery(getIntent().getData(), PROJECTION, null, null,
+		Cursor cursor = managedQuery(getIntent().getData(), TWEETS_PROJECTION, null, null,
 				Tweets.DEFAULT_SORT_ORDER + " LIMIT 20");
 		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.tweetlist_item,
 				cursor, new String[] {
@@ -380,29 +364,18 @@ public class TweetList extends Activity {
 	}
 
 	/**
-	 * Temporary method for loading friends from an asset file.
+	 * Fill in the context menu with User items.
 	 */
 	private void loadFriends() {
-		try {
-			InputStream is = getAssets().open("friends.json");
-			int size = is.available();
-			byte[] buffer = new byte[size];
-			is.read(buffer);
-			is.close();
-			try {
-				JSONArray jArr = new JSONArray(new String(buffer));
-				for (int index = 0; index < jArr.length(); index++) {
-					JSONObject jo = jArr.getJSONObject(index);
-					if (jo.has("screen_name")) {
-						mFriends.add(jo.getString("screen_name"));
-					}
-				}
-			} catch (JSONException e) {
-				throw new RuntimeException(e);
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		Cursor cursor = managedQuery(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null,
+				Users.DEFAULT_SORT_ORDER);
+		ArrayList<String> aFriends = new ArrayList<String>();
+		while (cursor.moveToNext()) {
+			aFriends.add(cursor.getString(cursor.getColumnIndex(Users.AUTHOR_ID)));
 		}
+		ArrayAdapter<String> friendsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, aFriends);
+		mEditText.setAdapter(friendsAdapter);
+		mEditText.setTokenizer(new AtTokenizer());
 	}
 
 	/**
@@ -529,9 +502,6 @@ public class TweetList extends Activity {
 		}
 	};
 
-	/**
-	 * 
-	 */
 	private OnFocusChangeListener mEditTextFocusChangeListener = new View.OnFocusChangeListener() {
 		/**
 		 * Event triggered when focus of text view changes.
@@ -547,6 +517,12 @@ public class TweetList extends Activity {
 	};
 
 	private OnItemClickListener mOnItemClickListener = new OnItemClickListener() {
+		/**
+		 * @param adapterView
+		 * @param view
+		 * @param position
+		 * @param id
+		 */
 		public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
 			Uri uri = ContentUris.withAppendedId(getIntent().getData(), id);
 			String action = getIntent().getAction();

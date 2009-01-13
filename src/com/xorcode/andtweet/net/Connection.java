@@ -54,6 +54,7 @@ import com.xorcode.andtweet.util.Base64;
 public class Connection {
 	private static final String PUBLIC_TIMELINE_URL = "http://twitter.com/statuses/public_timeline.json";
 	private static final String FRIENDS_TIMELINE_URL = "http://twitter.com/statuses/friends_timeline.json";
+	private static final String FRIENDS_URL = "http://twitter.com/statuses/friends.json";
 	private static final String UPDATE_STATUS_URL = "http://twitter.com/statuses/update.json";
 	private static final String VERIFY_CREDENTIALS_URL = "http://twitter.com/statuses/verify_credentials.json";
 	private static final String USER_AGENT = "Mozilla/4.5";
@@ -125,6 +126,20 @@ public class Connection {
 			DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
 			url += "&since=" + URLEncoder.encode(df.format(cal.getTime()));
 		}
+		return new JSONArray(getRequest(url));
+	}
+
+	/**
+	 * Get the user's most recent friends from the Twitter REST API.
+	 * 
+	 * Returns up to 100 of the authenticating user's friends who have most recently updated,
+	 * each with current status in-line.
+	 * 
+	 * @return
+	 * @throws JSONException
+	 */
+	public JSONArray getFriends() throws JSONException {
+		String url = FRIENDS_URL;
 		return new JSONArray(getRequest(url));
 	}
 

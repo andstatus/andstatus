@@ -128,9 +128,9 @@ public final class AndTweet {
 	 * @author torgny.bjers
 	 */
 	public static final class Users implements BaseColumns {
-		public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/authors");
-		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.xorcode.andtweet.author";
-		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.xorcode.andtweet.author";
+		public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/users");
+		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.xorcode.andtweet.users";
+		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.xorcode.andtweet.users";
 		public static final String DEFAULT_SORT_ORDER = "author_id ASC";
 
 		// Table columns

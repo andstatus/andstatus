@@ -18,13 +18,18 @@ package com.xorcode.andtweet.view;
 
 import java.text.MessageFormat;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
+import android.util.Log;
 
 import com.xorcode.andtweet.R;
+import com.xorcode.andtweet.net.Connection;
 
 /**
  * @author torgny.bjers
@@ -34,6 +39,8 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 
 	private static final String TAG = "AndTweet.Preferences";
 
+	public static final String KEY_TWITTER_USERNAME = "twitter_username";
+	public static final String KEY_TWITTER_PASSWORD = "twitter_password";
 	public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
 
 	private ListPreference mFetchFrequencyPreference;
@@ -76,6 +83,20 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		if (key.equals(KEY_FETCH_FREQUENCY)) {
 			updateFrequency();
+		}
+		if (key.equals(KEY_TWITTER_USERNAME) || key.equals(KEY_TWITTER_PASSWORD)) {
+			String username = sharedPreferences.getString(KEY_TWITTER_USERNAME, "");
+			String password = sharedPreferences.getString(KEY_TWITTER_PASSWORD, "");
+			if (username.length() > 0 && password.length() > 0) {
+				Connection c = new Connection(username, password);
+				try {
+					JSONObject jo = c.verifyCredentials();
+					Log.d(TAG, jo.optString("id"));
+					Log.d(TAG, jo.optString("user"));
+				} catch (JSONException e) {
+					Log.e(TAG, e.getMessage());
+				}
+			}
 		}
 	};
 }

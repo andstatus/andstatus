@@ -70,6 +70,7 @@ public class AndTweetService extends Service {
 
 	private static final int MILLISECONDS = 1000;
 	private static final int MSG_UPDATE_TIMELINE = 1;
+	private static final int MSG_UPDATE_FRIENDS = 2;
 
 	private String mUsername;
 	private String mPassword;
@@ -83,6 +84,7 @@ public class AndTweetService extends Service {
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		// Start the time line updater.
 		mHandler.sendEmptyMessage(MSG_UPDATE_TIMELINE);
+		mHandler.sendEmptyMessage(MSG_UPDATE_FRIENDS);
 		Log.d(TAG, "Service created in context: " + getApplication().getApplicationContext().getPackageName());
 	}
 
@@ -132,11 +134,18 @@ public class AndTweetService extends Service {
 
 		@Override
 		public void handleMessage(Message msg) {
+			final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			final int N = mCallbacks.beginBroadcast();
 			switch (msg.what) {
+			case MSG_UPDATE_FRIENDS:
+				if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
+					loadFriends();
+					sendMessageDelayed(obtainMessage(MSG_UPDATE_FRIENDS), 1800 * MILLISECONDS);
+				} else {
+					super.handleMessage(msg);
+				}
+				break;
 			case MSG_UPDATE_TIMELINE:
-				SharedPreferences sp = PreferenceManager
-						.getDefaultSharedPreferences(getApplicationContext());
 				if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
 					for (int i = 0; i < N; i++) {
 						try {
@@ -257,6 +266,41 @@ public class AndTweetService extends Service {
 			}
 		}
 		return aNewTweets;
+	}
+
+	private void loadFriends() {
+		Log.i(TAG, "Load friends called");
+		SharedPreferences sp = PreferenceManager
+				.getDefaultSharedPreferences(getApplicationContext());
+		mUsername = sp.getString("twitter_username", null);
+		mPassword = sp.getString("twitter_password", null);
+		if (mUsername != null && mUsername.length() > 0) {
+			Log.i(TAG, "Username and password present");
+			Connection aConn = new Connection(mUsername, mPassword);
+			try {
+				JSONArray jArr = aConn.getFriends();
+				for (int index = 0; index < jArr.length(); index++) {
+					JSONObject jo = jArr.getJSONObject(index);
+					ContentValues values = new ContentValues();
+
+					// Construct the Uri to existing record
+					Long lUserId = Long.parseLong(jo.getString("id"));
+					Uri aUserUri = ContentUris.withAppendedId(AndTweet.Users.CONTENT_URI,
+							lUserId);
+
+					values.put(AndTweet.Users._ID, lUserId.toString());
+					values.put(AndTweet.Users.AUTHOR_ID, jo.getString("screen_name"));
+
+					Log.d(TAG, jo.getString("screen_name"));
+
+					if ((getContentResolver().update(aUserUri, values, null, null)) == 0) {
+						getContentResolver().insert(AndTweet.Users.CONTENT_URI, values);
+					}
+				}
+			} catch (JSONException e) {
+				Log.e(TAG, e.getMessage());
+			}
+		}
 	}
 
 	/**
