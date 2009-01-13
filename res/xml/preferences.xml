@@ -23,7 +23,7 @@
 		<EditTextPreference android:title="@string/title_preference_password"
 			android:dialogTitle="@string/dialog_title_preference_password"
 			android:summary="@string/summary_preference_password"
-			android:key="twitter_password" />
+			android:key="twitter_password" android:password="true" />
 	</PreferenceCategory>
 	<PreferenceCategory android:title="@string/category_title_preference_updates">
 		<CheckBoxPreference android:key="automatic_updates"
