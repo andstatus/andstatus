@@ -65,7 +65,9 @@ public class RelativeTime {
 		String value = new String();
 		long to = System.currentTimeMillis();
 		long delta = (to - from) / 1000;
-		if (delta < 1 * MINUTE) {
+		if (delta < 0) {
+			value = "just now";
+		} else if (delta < 1 * MINUTE) {
 			MessageFormat mf = new MessageFormat("{0} seconds ago");
 			value = mf.format(new Object[] { delta });
 		} else if (delta < 2 * MINUTE) {
