@@ -24,6 +24,7 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.NotificationManager;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.Context;
@@ -62,10 +63,10 @@ import com.xorcode.andtweet.IAndTweetService;
 import com.xorcode.andtweet.IAndTweetServiceCallback;
 import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.data.AndTweet;
+import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweet.Tweets;
 import com.xorcode.andtweet.data.AndTweet.Users;
-import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.util.AtTokenizer;
 
 /**
@@ -98,6 +99,8 @@ public class TweetList extends Activity {
 
 	private static final int MSG_TWEETS_CHANGED = 1;
 	private static final int MSG_DATA_LOADING = 2;
+	private static final int MSG_UPDATE_STATUS = 3;
+	private static final int MSG_MANUAL_RELOAD = 4;
 
 	private NotificationManager mNM;
 	private SharedPreferences mSP;
@@ -146,6 +149,11 @@ public class TweetList extends Activity {
 	 * In reply-to ID
 	 */
 	private long mReplyId = 0;
+
+	/**
+	 * Progress dialog for notifying user about events.
+	 */
+	private ProgressDialog mProgressDialog;
 
 	/**
 	 * Called when the activity is first created.
@@ -212,6 +220,24 @@ public class TweetList extends Activity {
 		mNM.cancel(R.string.app_name);
 	}
 
+	/**
+	 * Retrieve the text that is currently in the editor.
+	 * 
+	 * @return Text currently in the editor
+	 */
+	CharSequence getSavedText() {
+		return ((MultiAutoCompleteTextView) findViewById(R.id.messageEditTextAC)).getText();
+	}
+
+	/**
+	 * Set the text in the text editor.
+	 * 
+	 * @param text
+	 */
+	void setSavedText(CharSequence text) {
+		((MultiAutoCompleteTextView) findViewById(R.id.messageEditTextAC)).setText(text);
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
@@ -235,6 +261,11 @@ public class TweetList extends Activity {
 			Intent launchPreferencesIntent = new Intent().setClass(this, Preferences.class);
 			startActivityForResult(launchPreferencesIntent, REQUEST_CODE_PREFERENCES);
 			return true;
+		case OPTIONS_MENU_RELOAD:
+			setProgressBarIndeterminateVisibility(true);
+			Thread thread = new Thread(mManualReload);
+			thread.start();
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -279,8 +310,6 @@ public class TweetList extends Activity {
 				mReplyId = c.getLong(c.getColumnIndex(Tweets._ID));
 			} catch (Exception e) {
 				Log.e(TAG, e.getMessage());
-			} finally {
-				c.close();
 			}
 			return true;
 		case CONTEXT_MENU_ITEM_STAR:
@@ -310,31 +339,10 @@ public class TweetList extends Activity {
 	private void initUI() {
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				SharedPreferences sp = PreferenceManager
-					.getDefaultSharedPreferences(getApplicationContext());
 				setProgressBarIndeterminateVisibility(true);
-				String username = sp.getString("twitter_username", null);
-				String password = sp.getString("twitter_password", null);
-				String message = mEditText.getText().toString();
-				Connection aConn = new Connection(username, password);
-				JSONObject result;
-				try {
-					result = aConn.updateStatus(message, mReplyId);
-					if (result.optString("error").length() > 0) {
-						Toast.makeText(TweetList.this, (CharSequence) message, Toast.LENGTH_LONG).show();
-					} else {
-						Toast.makeText(TweetList.this, R.string.message_sent, Toast.LENGTH_SHORT).show();
-						mEditText.setText("");
-						mEditText.clearFocus();
-						mEditText.requestFocus();
-					}
-				} catch (UnsupportedEncodingException e) {
-					Log.e(TAG, e.getMessage());
-				} catch (JSONException e) {
-					Log.e(TAG, e.getMessage());
-					e.printStackTrace();
-				}
-				setProgressBarIndeterminateVisibility(false);
+				mProgressDialog = ProgressDialog.show(TweetList.this, getText(R.string.dialog_title_sending_message), getText(R.string.dialog_summary_sending_message), true, false);
+				Thread thread = new Thread(mSendUpdate);
+				thread.start();
 			}
 		});
 
@@ -463,12 +471,31 @@ public class TweetList extends Activity {
 			case MSG_TWEETS_CHANGED:
 				int numTweets = msg.arg1;
 				if (numTweets > 0) {
+			        setProgressBarIndeterminateVisibility(true);
 					fillList();
+			        setProgressBarIndeterminateVisibility(false);
 				}
 				break;
 			case MSG_DATA_LOADING:
 		        // Request progress bar
 		        setProgressBarIndeterminateVisibility(msg.arg1 == 1 ? true : false);
+				break;
+			case MSG_UPDATE_STATUS:
+				JSONObject result = (JSONObject) msg.obj;
+				if (result.optString("error").length() > 0) {
+					Toast.makeText(TweetList.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
+				} else {
+					Toast.makeText(TweetList.this, R.string.message_sent, Toast.LENGTH_SHORT).show();
+					mEditText.setText("");
+					mEditText.clearFocus();
+					mEditText.requestFocus();
+				}
+				setProgressBarIndeterminateVisibility(false);
+				mProgressDialog.dismiss();
+				break;
+			case MSG_MANUAL_RELOAD:
+				Toast.makeText(TweetList.this, R.string.timeline_reloaded, Toast.LENGTH_SHORT).show();
+				setProgressBarIndeterminateVisibility(false);
 				break;
 			default:
 				super.handleMessage(msg);
@@ -503,6 +530,9 @@ public class TweetList extends Activity {
 		}
 	};
 
+	/**
+	 * Listener for focus changes of the multi-line text field.
+	 */
 	private OnFocusChangeListener mEditTextFocusChangeListener = new View.OnFocusChangeListener() {
 		/**
 		 * Event triggered when focus of text view changes.
@@ -517,6 +547,9 @@ public class TweetList extends Activity {
 		}
 	};
 
+	/**
+	 * Listener that checks for clicks on the main list view.
+	 */
 	private OnItemClickListener mOnItemClickListener = new OnItemClickListener() {
 		/**
 		 * @param adapterView
@@ -532,6 +565,37 @@ public class TweetList extends Activity {
 			} else {
 				startActivity(new Intent(Intent.ACTION_VIEW, uri));
 			}
+		}
+	};
+
+	private Runnable mSendUpdate = new Runnable() {
+		public void run() {
+			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			String username = sp.getString("twitter_username", null);
+			String password = sp.getString("twitter_password", null);
+			String message = mEditText.getText().toString();
+			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(username, password);
+			JSONObject result = new JSONObject();
+			try {
+				result = aConn.updateStatus(message, mReplyId);
+			} catch (UnsupportedEncodingException e) {
+				Log.e(TAG, e.getMessage());
+			} catch (JSONException e) {
+				Log.e(TAG, e.getMessage());
+				e.printStackTrace();
+			}
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_STATUS, result));
+		}
+	};
+
+	private Runnable mManualReload = new Runnable() {
+		public void run() {
+			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			String username = sp.getString("twitter_username", null);
+			String password = sp.getString("twitter_password", null);
+			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password);
+			int aNewTweets = friendTimeline.loadTimeline();
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewTweets, 0));
 		}
 	};
 }

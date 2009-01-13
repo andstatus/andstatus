@@ -48,6 +48,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.xorcode.andtweet.data.AndTweet;
+import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.data.AndTweet.Tweets;
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.view.TweetList;
@@ -155,7 +156,10 @@ public class AndTweetService extends Service {
 							Log.e(TAG, e.getMessage());
 						}
 					}
-					int aNewTweets = loadTimeline();
+					mUsername = sp.getString("twitter_username", null);
+					mPassword = sp.getString("twitter_password", null);
+					final FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), mUsername, mPassword);
+					int aNewTweets = friendTimeline.loadTimeline();
 					for (int i = 0; i < N; i++) {
 						try {
 							mCallbacks.getBroadcastItem(i).dataLoading(0);
@@ -191,83 +195,6 @@ public class AndTweetService extends Service {
 		}
 	};
 
-	/**
-	 * Load the friend timeline from Twitter.
-	 * 
-	 * @return int
-	 */
-	private final int loadTimeline() {
-		long aLastRunTime = 0;
-		int aNewTweets = 0;
-		Log.i(TAG, "Load timeline called");
-		final SharedPreferences sp = PreferenceManager
-				.getDefaultSharedPreferences(getApplicationContext());
-		final ContentResolver contentResolver = getContentResolver();
-		mUsername = sp.getString("twitter_username", null);
-		mPassword = sp.getString("twitter_password", null);
-		if (mUsername != null && mUsername.length() > 0) {
-			Log.i(TAG, "Loading friends timeline");
-			String mDateFormat = (String) getText(R.string.twitter_dateformat);
-			// Try to load the last record
-			Cursor c = contentResolver.query(AndTweet.Tweets.CONTENT_URI, new String[] {
-				AndTweet.Tweets._ID, AndTweet.Tweets.SENT_DATE
-			}, null, null, AndTweet.Tweets.DEFAULT_SORT_ORDER);
-			try {
-				c.moveToFirst();
-				// If a record is available, get the last run time
-				if (c.getCount() > 0) {
-					DateFormat f = new SimpleDateFormat(mDateFormat);
-					Calendar cal = Calendar.getInstance();
-					cal.setTimeInMillis(c.getLong(1));
-					aLastRunTime = cal.getTimeInMillis();
-					Log.d(TAG, "Last tweet: " + f.format(cal.getTime()));
-				}
-			} catch (Exception e) {
-				Log.e(TAG, e.getMessage());
-			}
-			Connection aConn = new Connection(mUsername, mPassword, aLastRunTime);
-			try {
-				JSONArray jArr = aConn.getFriendsTimeline();
-				for (int index = 0; index < jArr.length(); index++) {
-					JSONObject jo = jArr.getJSONObject(index);
-					JSONObject user;
-					user = jo.getJSONObject("user");
-
-					ContentValues values = new ContentValues();
-
-					// Construct the Uri to existing record
-					Long lTweetId = Long.parseLong(jo.getString("id"));
-					Uri aTweetUri = ContentUris.withAppendedId(AndTweet.Tweets.CONTENT_URI,
-							lTweetId);
-
-					values.put(AndTweet.Tweets._ID, lTweetId.toString());
-					values.put(AndTweet.Tweets.AUTHOR_ID, user.getString("screen_name"));
-
-					values.put(AndTweet.Tweets.MESSAGE, jo.getString("text"));
-
-					DateFormat f = new SimpleDateFormat(mDateFormat);
-					Calendar cal = Calendar.getInstance();
-					try {
-						cal.setTime(f.parse(jo.getString("created_at")));
-						values.put(Tweets.SENT_DATE, cal.getTimeInMillis());
-					} catch (java.text.ParseException e) {
-						Log.e(TAG, e.getMessage());
-					}
-
-					if ((contentResolver.update(aTweetUri, values, null, null)) == 0) {
-						contentResolver.insert(AndTweet.Tweets.CONTENT_URI, values);
-						aNewTweets++;
-					}
-				}
-			} catch (JSONException e) {
-				Log.e(TAG, e.getMessage());
-			} catch (SQLiteConstraintException e) {
-				Log.e(TAG, e.getMessage());
-			}
-		}
-		return aNewTweets;
-	}
-
 	private final void loadFriends() {
 		Log.i(TAG, "Load friends called");
 		final ContentResolver contentResolver = getContentResolver();
@@ -286,8 +213,7 @@ public class AndTweetService extends Service {
 
 					// Construct the Uri to existing record
 					Long lUserId = Long.parseLong(jo.getString("id"));
-					Uri aUserUri = ContentUris.withAppendedId(AndTweet.Users.CONTENT_URI,
-							lUserId);
+					Uri aUserUri = ContentUris.withAppendedId(AndTweet.Users.CONTENT_URI, lUserId);
 
 					values.put(AndTweet.Users._ID, lUserId.toString());
 					values.put(AndTweet.Users.AUTHOR_ID, jo.getString("screen_name"));
@@ -318,10 +244,7 @@ public class AndTweetService extends Service {
 		notification.ledARGB = Color.GREEN;
 
 		// Set up the pending intent
-		Intent intent = new Intent(this, TweetList.class);
-		intent.setAction("android.intent.action.MAIN");
-		intent.addCategory("android.intent.category.LAUNCHER");
-		PendingIntent contentIntent = PendingIntent.getActivity(this, numTweets, intent, 0);
+		PendingIntent contentIntent = PendingIntent.getActivity(this, numTweets, new Intent(this, TweetList.class), 0);
 
 		// Set up the message
 		MessageFormat form = new MessageFormat(getText(R.string.notification_new_tweet_format).toString());

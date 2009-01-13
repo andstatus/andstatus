@@ -45,4 +45,7 @@
 	<string name="summary_preference_username">Your Twitter username</string>
 	<string name="resolve_view">View Tweet</string>
 	<string name="message_sent">Your message has been sent.</string>
+	<string name="dialog_title_sending_message">Sending message...</string>
+	<string name="dialog_summary_sending_message">Please wait while message is being sent.</string>
+	<string name="timeline_reloaded">Timeline has been reloaded.</string>
 </resources>
