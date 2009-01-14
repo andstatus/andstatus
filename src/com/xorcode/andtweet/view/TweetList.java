@@ -295,7 +295,7 @@ public class TweetList extends Activity {
 
 		switch (item.getItemId()) {
 		case CONTEXT_MENU_ITEM_REPLY:
-			Uri uri = ContentUris.withAppendedId(getIntent().getData(), info.id);
+			Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, info.id);
 			Cursor c = managedQuery(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID }, null, null, null);
 			try {
 				c.moveToFirst();
@@ -547,7 +547,7 @@ public class TweetList extends Activity {
 		 * @param id
 		 */
 		public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-			Uri uri = ContentUris.withAppendedId(getIntent().getData(), id);
+			Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, id);
 			String action = getIntent().getAction();
 			if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
 				setResult(RESULT_OK, new Intent().setData(uri));
