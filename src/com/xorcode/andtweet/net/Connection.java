@@ -96,28 +96,30 @@ public class Connection {
 	/**
 	 * Get the user's public timeline.
 	 * 
-	 * Returns the 20 most recent statuses from non-protected users who have set 
-	 * a custom user icon. Does not require authentication.  Note that the public 
-	 * timeline is cached for 60 seconds so requesting it more often than that 
+	 * Returns the 20 most recent statuses from non-protected users who have set
+	 * a custom user icon. Does not require authentication. Note that the public
+	 * timeline is cached for 60 seconds so requesting it more often than that
 	 * is a waste of resources.
 	 * 
 	 * @return JSONArray
 	 * @throws JSONException
+	 * @throws ConnectionException 
 	 */
-	public JSONArray getPublicTimeline() throws JSONException {
+	public JSONArray getPublicTimeline() throws JSONException, ConnectionException {
 		return new JSONArray(getRequest(PUBLIC_TIMELINE_URL));
 	}
 
 	/**
 	 * Get the user's own and friends timeline.
 	 * 
-	 * Returns the 20 most recent statuses posted by the authenticating user and that 
-	 * user's friends. This is the equivalent of /home on the Web. 
+	 * Returns the 20 most recent statuses posted by the authenticating user and
+	 * that user's friends. This is the equivalent of /home on the Web.
 	 * 
 	 * @return JSONArray
 	 * @throws JSONException
+	 * @throws ConnectionException 
 	 */
-	public JSONArray getFriendsTimeline() throws JSONException {
+	public JSONArray getFriendsTimeline() throws JSONException, ConnectionException {
 		String url = FRIENDS_TIMELINE_URL;
 		url += "?count=50";
 		if (mLastRunTime > 0) {
@@ -132,13 +134,14 @@ public class Connection {
 	/**
 	 * Get the user's most recent friends from the Twitter REST API.
 	 * 
-	 * Returns up to 100 of the authenticating user's friends who have most recently updated,
-	 * each with current status in-line.
+	 * Returns up to 100 of the authenticating user's friends who have most
+	 * recently updated, each with current status in-line.
 	 * 
 	 * @return
 	 * @throws JSONException
+	 * @throws ConnectionException 
 	 */
-	public JSONArray getFriends() throws JSONException {
+	public JSONArray getFriends() throws JSONException, ConnectionException {
 		String url = FRIENDS_URL;
 		return new JSONArray(getRequest(url));
 	}
@@ -147,21 +150,24 @@ public class Connection {
 	 * Update user status by posting to the Twitter REST API.
 	 * 
 	 * Updates the authenticating user's status. Requires the status parameter
-	 * specified. Request must be a POST. A status update with text identical 
-	 * to the authenticating user's current status will be ignored.
+	 * specified. Request must be a POST. A status update with text identical to
+	 * the authenticating user's current status will be ignored.
 	 * 
 	 * @param message
 	 * @return boolean
 	 * @throws UnsupportedEncodingException
-	 * @throws JSONException 
+	 * @throws JSONException
+	 * @throws ConnectionException 
 	 */
-	public JSONObject updateStatus(String message, long inReplyToId) throws UnsupportedEncodingException, JSONException {
+	public JSONObject updateStatus(String message, long inReplyToId)
+			throws UnsupportedEncodingException, JSONException, ConnectionException {
 		String url = UPDATE_STATUS_URL;
-		List <NameValuePair> formParams = new ArrayList<NameValuePair>();
+		List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
 		formParams.add(new BasicNameValuePair("source", SOURCE_PARAMETER));
 		if (inReplyToId > 0) {
-			formParams.add(new BasicNameValuePair("in_reply_to_status_id", String.valueOf(inReplyToId)));
+			formParams.add(new BasicNameValuePair("in_reply_to_status_id", String
+					.valueOf(inReplyToId)));
 		}
 		return new JSONObject(postRequest(url, new UrlEncodedFormEntity(formParams)));
 	}
@@ -170,13 +176,14 @@ public class Connection {
 	 * Verify the user's credentials.
 	 * 
 	 * Returns an HTTP 200 OK response code and a representation of the
-	 * requesting user if authentication was successful; returns a 401 
-	 * status code and an error message if not.
+	 * requesting user if authentication was successful; returns a 401 status
+	 * code and an error message if not.
 	 * 
 	 * @return
 	 * @throws JSONException
+	 * @throws ConnectionException 
 	 */
-	public JSONObject verifyCredentials() throws JSONException {
+	public JSONObject verifyCredentials() throws JSONException, ConnectionException {
 		return new JSONObject(getRequest(VERIFY_CREDENTIALS_URL, new DefaultHttpClient(new BasicHttpParams())));
 	}
 
@@ -185,8 +192,9 @@ public class Connection {
 	 * 
 	 * @param url
 	 * @return String
+	 * @throws ConnectionException 
 	 */
-	protected String getRequest(String url) {
+	protected String getRequest(String url) throws ConnectionException {
 		return getRequest(url, new DefaultHttpClient(new BasicHttpParams()));
 	}
 
@@ -196,8 +204,9 @@ public class Connection {
 	 * @param url
 	 * @param client
 	 * @return String
+	 * @throws ConnectionException
 	 */
-	protected String getRequest(String url, HttpClient client) {
+	protected String getRequest(String url, HttpClient client) throws ConnectionException {
 		String result = null;
 		HttpGet getMethod = new HttpGet(url);
 		try {
@@ -206,7 +215,8 @@ public class Connection {
 			HttpResponse httpResponse = client.execute(getMethod);
 			result = retrieveInputStream(httpResponse.getEntity());
 		} catch (Exception e) {
-			Log.e(TAG, e.getMessage());
+			Log.d(TAG, e.getMessage());
+			throw new ConnectionException(e);
 		} finally {
 			getMethod.abort();
 		}
@@ -218,8 +228,9 @@ public class Connection {
 	 * 
 	 * @param url
 	 * @return String
+	 * @throws ConnectionException 
 	 */
-	protected String postRequest(String url) {
+	protected String postRequest(String url) throws ConnectionException {
 		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), null);
 	}
 
@@ -228,8 +239,9 @@ public class Connection {
 	 * 
 	 * @param url
 	 * @return String
+	 * @throws ConnectionException 
 	 */
-	protected String postRequest(String url, UrlEncodedFormEntity formParams) {
+	protected String postRequest(String url, UrlEncodedFormEntity formParams) throws ConnectionException {
 		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), formParams);
 	}
 
@@ -239,8 +251,10 @@ public class Connection {
 	 * @param url
 	 * @param client
 	 * @return String
+	 * @throws ConnectionException
 	 */
-	protected String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams) {
+	protected String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams)
+			throws ConnectionException {
 		String result = null;
 		HttpPost postMethod = new HttpPost(url);
 		try {
@@ -253,6 +267,7 @@ public class Connection {
 			result = EntityUtils.toString(httpResponse.getEntity());
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
+			throw new ConnectionException(e);
 		} finally {
 			postMethod.abort();
 		}

@@ -35,6 +35,7 @@ import android.util.Log;
 
 import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.net.Connection;
+import com.xorcode.andtweet.net.ConnectionException;
 
 /**
  * @author torgny.bjers
@@ -145,6 +146,8 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 					Log.d(TAG, jo.optString("user"));
 				} catch (JSONException e) {
 					Log.e(TAG, e.getMessage());
+				} catch (ConnectionException e) {
+					Log.e(TAG, "mCheckCredentials Connection Exception: " + e.getMessage());
 				}
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_VALID, 1, 0));
 			} else {

@@ -67,6 +67,7 @@ import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweet.Tweets;
 import com.xorcode.andtweet.data.AndTweet.Users;
+import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.util.AtTokenizer;
 
 /**
@@ -187,11 +188,6 @@ public class TweetList extends Activity {
 		mSendButton = (Button) findViewById(R.id.messageEditSendButton);
 		mEditText = (MultiAutoCompleteTextView) findViewById(R.id.messageEditTextAC);
 		mCharsLeftText = (TextView) findViewById(R.id.messageEditCharsLeftTextView);
-
-		Intent intent = getIntent();
-		if (intent.getData() == null) {
-			intent.setData(Tweets.CONTENT_URI);
-		}
 
 		initUI();
 	}
@@ -337,6 +333,7 @@ public class TweetList extends Activity {
 	 * Initialize UI
 	 */
 	private void initUI() {
+		// Set up the send button
 		mSendButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				setProgressBarIndeterminateVisibility(true);
@@ -351,25 +348,17 @@ public class TweetList extends Activity {
 		// Attach listeners to the text field
 		mEditText.setOnFocusChangeListener(mEditTextFocusChangeListener);
 		mEditText.setOnKeyListener(mEditTextKeyListener);
+
+		// Attach listeners to the message list
+		mMessageList.setOnCreateContextMenuListener(this);
+		mMessageList.setOnItemClickListener(mOnItemClickListener);
 	}
 
 	/**
 	 * Fill the ListView with Tweet items.
 	 */
 	private void fillList() {
-		Cursor cursor = managedQuery(getIntent().getData(), TWEETS_PROJECTION, null, null,
-				Tweets.DEFAULT_SORT_ORDER + " LIMIT 20");
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.tweetlist_item,
-				cursor, new String[] {
-					AndTweet.Tweets.AUTHOR_ID, AndTweet.Tweets.MESSAGE, AndTweet.Tweets.SENT_DATE
-				}, new int[] {
-					R.id.tweetlist_item_screen_name, R.id.tweetlist_item_text,
-					R.id.tweetlist_item_date
-				});
-		adapter.setViewBinder(new TweetBinder());
-		mMessageList.setAdapter(adapter);
-		mMessageList.setOnCreateContextMenuListener(this);
-		mMessageList.setOnItemClickListener(mOnItemClickListener);
+		mHandler.post(mFillList);
 	}
 
 	/**
@@ -471,9 +460,9 @@ public class TweetList extends Activity {
 			case MSG_TWEETS_CHANGED:
 				int numTweets = msg.arg1;
 				if (numTweets > 0) {
-			        setProgressBarIndeterminateVisibility(true);
-					fillList();
-			        setProgressBarIndeterminateVisibility(false);
+			        //setProgressBarIndeterminateVisibility(true);
+					//fillList();
+			        //setProgressBarIndeterminateVisibility(false);
 				}
 				break;
 			case MSG_DATA_LOADING:
@@ -583,6 +572,8 @@ public class TweetList extends Activity {
 			} catch (JSONException e) {
 				Log.e(TAG, e.getMessage());
 				e.printStackTrace();
+			} catch (ConnectionException e) {
+				Log.e(TAG, "mSendUpdate Connection Exception: " + e.getMessage());
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_STATUS, result));
 		}
@@ -594,8 +585,28 @@ public class TweetList extends Activity {
 			String username = sp.getString("twitter_username", null);
 			String password = sp.getString("twitter_password", null);
 			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password);
-			int aNewTweets = friendTimeline.loadTimeline();
+			int aNewTweets = 0;
+			try {
+				aNewTweets = friendTimeline.loadTimeline();
+			} catch (ConnectionException e) {
+				Log.e(TAG, "mManualReload Connection Exception: " + e.getMessage());
+			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewTweets, 0));
+		}
+	};
+
+	private Runnable mFillList = new Runnable() {
+		public void run() {
+			Cursor cursor = getContentResolver().query(Tweets.CONTENT_URI, TWEETS_PROJECTION, null, null, Tweets.DEFAULT_SORT_ORDER + " LIMIT 20");
+			SimpleCursorAdapter adapter = new SimpleCursorAdapter(TweetList.this, R.layout.tweetlist_item,
+					cursor, new String[] {
+						AndTweet.Tweets.AUTHOR_ID, AndTweet.Tweets.MESSAGE, AndTweet.Tweets.SENT_DATE
+					}, new int[] {
+						R.id.tweetlist_item_screen_name, R.id.tweetlist_item_text,
+						R.id.tweetlist_item_date
+					});
+			adapter.setViewBinder(new TweetBinder());
+			mMessageList.setAdapter(adapter);
 		}
 	};
 }

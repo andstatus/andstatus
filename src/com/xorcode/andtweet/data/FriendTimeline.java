@@ -18,6 +18,7 @@ import android.util.Log;
 
 import com.xorcode.andtweet.data.AndTweet.Tweets;
 import com.xorcode.andtweet.net.Connection;
+import com.xorcode.andtweet.net.ConnectionException;
 
 public class FriendTimeline {
 
@@ -34,7 +35,13 @@ public class FriendTimeline {
 		mPassword = password;
 	}
 
-	public int loadTimeline() {
+	/**
+	 * Load the user and friends timeline.
+	 * 
+	 * @throws ConnectionException 
+	 * @return int
+	 */
+	public int loadTimeline() throws ConnectionException {
 		long aLastRunTime = 0;
 		int aNewTweets = 0;
 		if (mUsername != null && mUsername.length() > 0) {

@@ -17,10 +17,7 @@
 package com.xorcode.andtweet;
 
 import java.text.ChoiceFormat;
-import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,8 +32,6 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
@@ -49,8 +44,8 @@ import android.util.Log;
 
 import com.xorcode.andtweet.data.AndTweet;
 import com.xorcode.andtweet.data.FriendTimeline;
-import com.xorcode.andtweet.data.AndTweet.Tweets;
 import com.xorcode.andtweet.net.Connection;
+import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.view.TweetList;
 
 /**
@@ -157,7 +152,12 @@ public class AndTweetService extends Service {
 					mUsername = sp.getString("twitter_username", null);
 					mPassword = sp.getString("twitter_password", null);
 					final FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), mUsername, mPassword);
-					int aNewTweets = friendTimeline.loadTimeline();
+					int aNewTweets = 0;
+					try {
+						aNewTweets = friendTimeline.loadTimeline();
+					} catch (ConnectionException e) {
+						Log.e(TAG, "handleMessage Connection Exception: " + e.getMessage());
+					}
 					for (int i = 0; i < N; i++) {
 						try {
 							mCallbacks.getBroadcastItem(i).dataLoading(0);
@@ -220,6 +220,8 @@ public class AndTweetService extends Service {
 				}
 			} catch (JSONException e) {
 				Log.e(TAG, e.getMessage());
+			} catch (ConnectionException e) {
+				Log.e(TAG, "loadFriends Connection Exception: " + e.getMessage());
 			}
 		}
 	}
