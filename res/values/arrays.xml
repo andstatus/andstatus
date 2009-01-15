@@ -19,6 +19,7 @@
 		<item>3 minutes</item>
 		<item>5 minutes</item>
 		<item>10 minutes</item>
+		<item>15 minutes</item>
 		<item>30 minutes</item>
 		<item>1 hour</item>
 		<item>2 hours</item>
@@ -31,6 +32,7 @@
 		<item>180</item>
 		<item>300</item>
 		<item>600</item>
+		<item>900</item>
 		<item>1800</item>
 		<item>3600</item>
 		<item>7200</item>
@@ -43,6 +45,7 @@
 		<item>3 minutes</item>
 		<item>5 minutes</item>
 		<item>10 minutes</item>
+		<item>15 minutes</item>
 		<item>30 minutes</item>
 		<item>hour</item>
 		<item>2 hours</item>
