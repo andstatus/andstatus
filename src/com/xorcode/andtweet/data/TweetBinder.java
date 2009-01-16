@@ -33,7 +33,7 @@ public class TweetBinder implements ViewBinder {
 	 */
 	public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
 		switch (view.getId()) {
-		case R.id.tweetlist_item_date:
+		case R.id.tweet_sent:
 			((TextView)view).setText(RelativeTime.getDifference(cursor.getLong(columnIndex)));
 			return true;
 		}

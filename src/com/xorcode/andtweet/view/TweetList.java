@@ -17,7 +17,6 @@
 package com.xorcode.andtweet.view;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,7 +49,6 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.MultiAutoCompleteTextView;
@@ -62,8 +60,8 @@ import android.widget.AdapterView.OnItemClickListener;
 import com.xorcode.andtweet.IAndTweetService;
 import com.xorcode.andtweet.IAndTweetServiceCallback;
 import com.xorcode.andtweet.R;
-import com.xorcode.andtweet.data.AndTweet;
 import com.xorcode.andtweet.data.FriendTimeline;
+import com.xorcode.andtweet.data.SearchableCursorAdapter;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweet.Tweets;
 import com.xorcode.andtweet.data.AndTweet.Users;
@@ -85,6 +83,9 @@ public class TweetList extends Activity {
 
 	public static final int CONTEXT_MENU_ITEM_REPLY = Menu.FIRST + 2;
 	public static final int CONTEXT_MENU_ITEM_STAR = Menu.FIRST + 3;
+	public static final int CONTEXT_MENU_ITEM_UNFOLLOW = Menu.FIRST + 4;
+	public static final int CONTEXT_MENU_ITEM_BLOCK = Menu.FIRST + 5;
+	public static final int CONTEXT_MENU_ITEM_RETWEET = Menu.FIRST + 6;
 
 	private static final String[] TWEETS_PROJECTION = new String[] {
 		Tweets._ID,
@@ -180,6 +181,8 @@ public class TweetList extends Activity {
 			startActivity(new Intent(this, Preferences.class));
 		}
 
+		setTheme(R.style.Theme_AndTweet_Large);
+
         // Set up the content view and load data
         setContentView(R.layout.tweetlist);
 
@@ -189,6 +192,36 @@ public class TweetList extends Activity {
 		mEditText = (MultiAutoCompleteTextView) findViewById(R.id.messageEditTextAC);
 		mCharsLeftText = (TextView) findViewById(R.id.messageEditCharsLeftTextView);
 
+		final Intent intent = getIntent();
+		if (intent.getData() == null) {
+			intent.setData(Tweets.CONTENT_URI);
+		}
+
+		Cursor tweetsCursor = managedQuery(getIntent().getData(), TWEETS_PROJECTION,
+				null, null, Tweets.DEFAULT_SORT_ORDER);
+		SimpleCursorAdapter tweetsAdapter = new SimpleCursorAdapter(TweetList.this,
+				R.layout.tweetlist_item, tweetsCursor, new String[] {
+						Tweets.AUTHOR_ID, Tweets.MESSAGE, Tweets.SENT_DATE },
+				new int[] { R.id.tweet_screen_name,
+						R.id.tweet_message, R.id.tweet_sent });
+		tweetsAdapter.setViewBinder(new TweetBinder());
+		mMessageList.setAdapter(tweetsAdapter);
+
+		Cursor friendsCursor = managedQuery(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null, Users.DEFAULT_SORT_ORDER);
+		SearchableCursorAdapter friendsAdapter = new SearchableCursorAdapter(
+			TweetList.this,
+			android.R.layout.simple_dropdown_item_1line,
+			friendsCursor,
+			new String[] { Users.AUTHOR_ID },
+			new int[] { android.R.id.text1 },
+			Users.CONTENT_URI,
+			FRIENDS_PROJECTION,
+			Users.DEFAULT_SORT_ORDER
+		);
+		friendsAdapter.setStringConversionColumn(friendsCursor.getColumnIndex(Users.AUTHOR_ID));
+		mEditText.setAdapter(friendsAdapter);
+		mEditText.setTokenizer(new AtTokenizer());
+
 		initUI();
 	}
 
@@ -196,8 +229,6 @@ public class TweetList extends Activity {
 	protected void onStart() {
 		super.onStart();
 		bindToService();
-		fillList();
-		loadFriends();
 		mReplyId = 0;
 		mEditText.requestFocus();
 	}
@@ -211,9 +242,8 @@ public class TweetList extends Activity {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		mNM.cancelAll();
 		disconnectService();
-		clearNotifications();
-		mNM.cancel(R.string.app_name);
 	}
 
 	/**
@@ -278,13 +308,18 @@ public class TweetList extends Activity {
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, view, menuInfo);
 		// Add menu items
 		menu.add(0, CONTEXT_MENU_ITEM_REPLY, 0, R.string.menu_item_reply);
-		menu.add(0, CONTEXT_MENU_ITEM_STAR, 1, R.string.menu_item_star);
+		menu.add(0, CONTEXT_MENU_ITEM_RETWEET, 1, R.string.menu_item_retweet);
+		menu.add(0, CONTEXT_MENU_ITEM_STAR, 2, R.string.menu_item_star);
+		menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, 3, R.string.menu_item_unfollow);
+		menu.add(0, CONTEXT_MENU_ITEM_BLOCK, 4, R.string.menu_item_block);
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
+		super.onContextItemSelected(item);
 		AdapterView.AdapterContextMenuInfo info;
 		try {
 			info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
@@ -308,7 +343,12 @@ public class TweetList extends Activity {
 				Log.e(TAG, e.getMessage());
 			}
 			return true;
+
 		case CONTEXT_MENU_ITEM_STAR:
+		case CONTEXT_MENU_ITEM_RETWEET:
+		case CONTEXT_MENU_ITEM_UNFOLLOW:
+		case CONTEXT_MENU_ITEM_BLOCK:
+			Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show();
 			return true;
 		}
 		return false;
@@ -354,16 +394,7 @@ public class TweetList extends Activity {
 		mMessageList.setOnItemClickListener(mOnItemClickListener);
 	}
 
-	/**
-	 * Fill the ListView with Tweet items.
-	 */
-	private void fillList() {
-		mHandler.post(mFillList);
-	}
-
-	/**
-	 * Fill in the context menu with User items.
-	 */
+	/*
 	private void loadFriends() {
 		Cursor cursor = managedQuery(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null,
 				Users.DEFAULT_SORT_ORDER);
@@ -375,6 +406,7 @@ public class TweetList extends Activity {
 		mEditText.setAdapter(friendsAdapter);
 		mEditText.setTokenizer(new AtTokenizer());
 	}
+	*/
 
 	/**
 	 * Disconnect and unregister the service.
@@ -401,11 +433,6 @@ public class TweetList extends Activity {
 		stopService(new Intent(IAndTweetService.class.getName()));
 		mService = null;
 		mIsBound = false;
-	}
-
-	private void clearNotifications() {
-		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		nm.cancel(R.string.app_name);
 	}
 
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -474,6 +501,15 @@ public class TweetList extends Activity {
 				if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetList.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
+					SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+					String username = sp.getString("twitter_username", null);
+					String password = sp.getString("twitter_password", null);
+					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password);
+					try {
+						fl.insertFromJSONObject(result);
+					} catch (JSONException e) {
+						Toast.makeText(TweetList.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+					}
 					Toast.makeText(TweetList.this, R.string.message_sent, Toast.LENGTH_SHORT).show();
 					mEditText.setText("");
 					mEditText.clearFocus();
@@ -592,21 +628,6 @@ public class TweetList extends Activity {
 				Log.e(TAG, "mManualReload Connection Exception: " + e.getMessage());
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewTweets, 0));
-		}
-	};
-
-	private Runnable mFillList = new Runnable() {
-		public void run() {
-			Cursor cursor = getContentResolver().query(Tweets.CONTENT_URI, TWEETS_PROJECTION, null, null, Tweets.DEFAULT_SORT_ORDER + " LIMIT 20");
-			SimpleCursorAdapter adapter = new SimpleCursorAdapter(TweetList.this, R.layout.tweetlist_item,
-					cursor, new String[] {
-						AndTweet.Tweets.AUTHOR_ID, AndTweet.Tweets.MESSAGE, AndTweet.Tweets.SENT_DATE
-					}, new int[] {
-						R.id.tweetlist_item_screen_name, R.id.tweetlist_item_text,
-						R.id.tweetlist_item_date
-					});
-			adapter.setViewBinder(new TweetBinder());
-			mMessageList.setAdapter(adapter);
 		}
 	};
 }

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	Copyright (C) 2008 Torgny Bjers
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	     http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+ -->
+<resources>
+	<style name="Theme">
+	</style>
+
+	<style name="Theme.AndTweet">
+		<item name="tweetUsernameAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="tweetUsernameColor">?android:attr/textColorSecondary</item>
+		<item name="tweetUsernameStyle">bold</item>
+
+		<item name="tweetMessageAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="tweetMessageColor">?android:attr/textColorPrimary</item>
+		<item name="tweetMessageStyle">normal</item>
+
+		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="tweetSentDateColor">?android:attr/textColorTertiary</item>
+		<item name="tweetSentDateStyle">italic</item>
+	</style>
+
+	<style name="Theme.AndTweet.Small">
+		<item name="tweetUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="tweetUsernameColor">?android:attr/textColorSecondary</item>
+		<item name="tweetUsernameStyle">bold</item>
+
+		<item name="tweetMessageAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="tweetMessageColor">?android:attr/textColorPrimary</item>
+
+		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="tweetSentDateColor">?android:attr/textColorTertiary</item>
+	</style>
+
+	<style name="Theme.AndTweet.Large">
+		<item name="tweetUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="tweetUsernameColor">?android:attr/textColorSecondary</item>
+		<item name="tweetUsernameStyle">bold</item>
+
+		<item name="tweetMessageAppearance">?android:attr/textAppearanceLarge</item>
+		<item name="tweetMessageColor">?android:attr/textColorPrimary</item>
+
+		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="tweetSentDateColor">?android:attr/textColorTertiary</item>
+	</style>
+</resources>

@@ -43,6 +43,8 @@ public class Tweet extends Activity {
 		final Intent intent = getIntent();
 		mUri = intent.getData();
 
+		setTheme(R.style.Theme_AndTweet_Large);
+
 		setContentView(R.layout.tweetview);
 
 		mAuthor = (TextView) findViewById(R.id.tweet_screen_name);
@@ -70,14 +72,6 @@ public class Tweet extends Activity {
 			mSentDate.setText(RelativeTime.getDifference(aSentDate));
 		} else {
 			Log.w(TAG, "No cursor found");
-		}
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		if (mCursor != null && !mCursor.isClosed()) {
-			mCursor.close();
 		}
 	}
 }

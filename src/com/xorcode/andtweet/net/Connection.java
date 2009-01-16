@@ -121,7 +121,7 @@ public class Connection {
 	 */
 	public JSONArray getFriendsTimeline() throws JSONException, ConnectionException {
 		String url = FRIENDS_TIMELINE_URL;
-		url += "?count=50";
+		url += "?count=20";
 		if (mLastRunTime > 0) {
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(mLastRunTime);

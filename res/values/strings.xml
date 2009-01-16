@@ -23,6 +23,10 @@
 	<string name="message_characters_left">Characters left:</string>
 	<string name="menu_item_reply">Reply</string>
 	<string name="menu_item_star">Favorite</string>
+	<string name="menu_item_retweet">Retweet</string>
+	<string name="menu_item_follow">Follow</string>
+	<string name="menu_item_unfollow">Unfollow</string>
+	<string name="menu_item_block">Block</string>
 	<string name="options_menu_preferences">Preferences</string>
 	<string name="options_menu_reload">Reload</string>
 	<string name="notification_title">AndTweet</string>
