@@ -23,10 +23,12 @@
 	<string name="message_characters_left">Characters left:</string>
 	<string name="menu_item_reply">Reply</string>
 	<string name="menu_item_star">Favorite</string>
+	<string name="menu_item_direct_message">Send Message</string>
 	<string name="menu_item_retweet">Retweet</string>
 	<string name="menu_item_follow">Follow</string>
 	<string name="menu_item_unfollow">Unfollow</string>
 	<string name="menu_item_block">Block</string>
+	<string name="menu_item_view_profile">View Profile</string>
 	<string name="options_menu_preferences">Preferences</string>
 	<string name="options_menu_reload">Reload</string>
 	<string name="notification_title">AndTweet</string>
@@ -54,4 +56,5 @@
 	<string name="timeline_reloaded">Timeline has been reloaded.</string>
 	<string name="dialog_title_checking_credentials">Verifying...</string>
 	<string name="dialog_summary_checking_credentials">Please wait while your account is verified.</string>
+	<string name="unimplemented">Not implemented.</string>
 </resources>

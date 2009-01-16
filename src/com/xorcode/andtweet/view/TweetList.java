@@ -83,9 +83,11 @@ public class TweetList extends Activity {
 
 	public static final int CONTEXT_MENU_ITEM_REPLY = Menu.FIRST + 2;
 	public static final int CONTEXT_MENU_ITEM_STAR = Menu.FIRST + 3;
-	public static final int CONTEXT_MENU_ITEM_UNFOLLOW = Menu.FIRST + 4;
-	public static final int CONTEXT_MENU_ITEM_BLOCK = Menu.FIRST + 5;
-	public static final int CONTEXT_MENU_ITEM_RETWEET = Menu.FIRST + 6;
+	public static final int CONTEXT_MENU_ITEM_DIRECT_MESSAGE = Menu.FIRST + 4;
+	public static final int CONTEXT_MENU_ITEM_UNFOLLOW = Menu.FIRST + 5;
+	public static final int CONTEXT_MENU_ITEM_BLOCK = Menu.FIRST + 6;
+	public static final int CONTEXT_MENU_ITEM_RETWEET = Menu.FIRST + 7;
+	public static final int CONTEXT_MENU_ITEM_PROFILE = Menu.FIRST + 8;
 
 	private static final String[] TWEETS_PROJECTION = new String[] {
 		Tweets._ID,
@@ -313,8 +315,10 @@ public class TweetList extends Activity {
 		menu.add(0, CONTEXT_MENU_ITEM_REPLY, 0, R.string.menu_item_reply);
 		menu.add(0, CONTEXT_MENU_ITEM_RETWEET, 1, R.string.menu_item_retweet);
 		menu.add(0, CONTEXT_MENU_ITEM_STAR, 2, R.string.menu_item_star);
-		menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, 3, R.string.menu_item_unfollow);
-		menu.add(0, CONTEXT_MENU_ITEM_BLOCK, 4, R.string.menu_item_block);
+		menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, 0, R.string.menu_item_direct_message);
+		menu.add(0, CONTEXT_MENU_ITEM_PROFILE, 3, R.string.menu_item_view_profile);
+		menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, 4, R.string.menu_item_unfollow);
+		menu.add(0, CONTEXT_MENU_ITEM_BLOCK, 5, R.string.menu_item_block);
 	}
 
 	@Override
@@ -348,7 +352,9 @@ public class TweetList extends Activity {
 		case CONTEXT_MENU_ITEM_RETWEET:
 		case CONTEXT_MENU_ITEM_UNFOLLOW:
 		case CONTEXT_MENU_ITEM_BLOCK:
-			Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show();
+		case CONTEXT_MENU_ITEM_DIRECT_MESSAGE:
+		case CONTEXT_MENU_ITEM_PROFILE:
+			Toast.makeText(this, R.string.unimplemented, Toast.LENGTH_SHORT).show();
 			return true;
 		}
 		return false;
@@ -393,20 +399,6 @@ public class TweetList extends Activity {
 		mMessageList.setOnCreateContextMenuListener(this);
 		mMessageList.setOnItemClickListener(mOnItemClickListener);
 	}
-
-	/*
-	private void loadFriends() {
-		Cursor cursor = managedQuery(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null,
-				Users.DEFAULT_SORT_ORDER);
-		ArrayList<String> aFriends = new ArrayList<String>();
-		while (cursor.moveToNext()) {
-			aFriends.add(cursor.getString(cursor.getColumnIndex(Users.AUTHOR_ID)));
-		}
-		ArrayAdapter<String> friendsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, aFriends);
-		mEditText.setAdapter(friendsAdapter);
-		mEditText.setTokenizer(new AtTokenizer());
-	}
-	*/
 
 	/**
 	 * Disconnect and unregister the service.
@@ -487,13 +479,10 @@ public class TweetList extends Activity {
 			case MSG_TWEETS_CHANGED:
 				int numTweets = msg.arg1;
 				if (numTweets > 0) {
-			        //setProgressBarIndeterminateVisibility(true);
-					//fillList();
-			        //setProgressBarIndeterminateVisibility(false);
+					mNM.cancelAll();
 				}
 				break;
 			case MSG_DATA_LOADING:
-		        // Request progress bar
 		        setProgressBarIndeterminateVisibility(msg.arg1 == 1 ? true : false);
 				break;
 			case MSG_UPDATE_STATUS:
