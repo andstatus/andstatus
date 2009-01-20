@@ -36,6 +36,7 @@ public class SearchableCursorAdapter extends SimpleCursorAdapter implements Filt
 	private String[] mFrom;
 	private Uri mUri;
 	private String mSortOrder;
+	private Cursor mCursor;
 
 	/**
 	 * Creates a new searchable cursor adapter for auto-complete and similar.
@@ -67,14 +68,11 @@ public class SearchableCursorAdapter extends SimpleCursorAdapter implements Filt
 		String selection = null;
 		String selectionArgs[] = null;
 		if (constraint != null) {
-			StringBuilder buffer = new StringBuilder();
-			buffer.append("UPPER(");
-			buffer.append(mFrom[0]);
-			buffer.append(") LIKE ?");
-			String filter  = constraint.toString().toUpperCase() + "%";
+			selection = mFrom[0] + " LIKE ?";
+			String filter  = constraint.toString() + "%";
 			selectionArgs = new String[] { filter };
-			selection = buffer.toString();
 		}
+		if (mCursor != null && !mCursor.isClosed()) mCursor.close();
 		return mContentResolver.query(mUri, mProjection, selection, selectionArgs, mSortOrder);
 	}
 }

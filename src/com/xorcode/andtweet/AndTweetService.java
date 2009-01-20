@@ -32,6 +32,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
@@ -45,6 +46,7 @@ import android.util.Log;
 import com.xorcode.andtweet.data.AndTweet;
 import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.net.Connection;
+import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.view.TweetList;
 
@@ -72,6 +74,9 @@ public class AndTweetService extends Service {
 	private String mUsername;
 	private String mPassword;
 	private int mFrequency = 180;
+	private boolean mAutomaticUpdates;
+	private boolean mNotificationsEnabled;
+	private boolean mNotificationsVibrate;
 
 	private NotificationManager mNM;
 
@@ -133,15 +138,21 @@ public class AndTweetService extends Service {
 		public void handleMessage(Message msg) {
 			final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			final int N = mCallbacks.beginBroadcast();
+			mUsername = sp.getString("twitter_username", null);
+			mPassword = sp.getString("twitter_password", null);
+			mNotificationsEnabled = sp.getBoolean("notifications_enabled", false);
+			mNotificationsVibrate = sp.getBoolean("vibrate", false);
+			mAutomaticUpdates = sp.getBoolean("automatic_updates", false);
 			switch (msg.what) {
 			case MSG_UPDATE_FRIENDS:
-				if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
+				if (mAutomaticUpdates) {
 					loadFriends();
 				}
 				sendMessageDelayed(obtainMessage(MSG_UPDATE_FRIENDS), 1800 * MILLISECONDS);
 				break;
+
 			case MSG_UPDATE_TIMELINE:
-				if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
+				if (mAutomaticUpdates) {
 					for (int i = 0; i < N; i++) {
 						try {
 							mCallbacks.getBroadcastItem(i).dataLoading(1);
@@ -157,6 +168,12 @@ public class AndTweetService extends Service {
 						aNewTweets = friendTimeline.loadTimeline();
 					} catch (ConnectionException e) {
 						Log.e(TAG, "handleMessage Connection Exception: " + e.getMessage());
+					} catch (SQLiteConstraintException e) {
+						Log.e(TAG, "handleMessage SQLite Exception: " + e.getMessage());
+					} catch (JSONException e) {
+						Log.e(TAG, "handleMessage JSON Exception: " + e.getMessage());
+					} catch (ConnectionAuthenticationException e) {
+						Log.e(TAG, "handleMessage Authentication Exception: " + e.getMessage());
 					}
 					for (int i = 0; i < N; i++) {
 						try {
@@ -203,25 +220,29 @@ public class AndTweetService extends Service {
 			Connection aConn = new Connection(mUsername, mPassword);
 			try {
 				JSONArray jArr = aConn.getFriends();
-				for (int index = 0; index < jArr.length(); index++) {
-					JSONObject jo = jArr.getJSONObject(index);
-					ContentValues values = new ContentValues();
-
-					// Construct the Uri to existing record
-					Long lUserId = Long.parseLong(jo.getString("id"));
-					Uri aUserUri = ContentUris.withAppendedId(AndTweet.Users.CONTENT_URI, lUserId);
-
-					values.put(AndTweet.Users._ID, lUserId.toString());
-					values.put(AndTweet.Users.AUTHOR_ID, jo.getString("screen_name"));
-
-					if ((contentResolver.update(aUserUri, values, null, null)) == 0) {
-						contentResolver.insert(AndTweet.Users.CONTENT_URI, values);
+				if (jArr != null) {
+					for (int index = 0; index < jArr.length(); index++) {
+						JSONObject jo = jArr.getJSONObject(index);
+						ContentValues values = new ContentValues();
+	
+						// Construct the Uri to existing record
+						Long lUserId = Long.parseLong(jo.getString("id"));
+						Uri aUserUri = ContentUris.withAppendedId(AndTweet.Users.CONTENT_URI, lUserId);
+	
+						values.put(AndTweet.Users._ID, lUserId.toString());
+						values.put(AndTweet.Users.AUTHOR_ID, jo.getString("screen_name"));
+	
+						if ((contentResolver.update(aUserUri, values, null, null)) == 0) {
+							contentResolver.insert(AndTweet.Users.CONTENT_URI, values);
+						}
 					}
 				}
 			} catch (JSONException e) {
 				Log.e(TAG, e.getMessage());
 			} catch (ConnectionException e) {
 				Log.e(TAG, "loadFriends Connection Exception: " + e.getMessage());
+			} catch (ConnectionAuthenticationException e) {
+				Log.e(TAG, "loadFriends Authentication Exception: " + e.getMessage());
 			}
 		}
 	}
@@ -232,10 +253,17 @@ public class AndTweetService extends Service {
 	 * @param numTweets
 	 */
 	private void notifyNewTweets(int numTweets) {
+		// If no notifications are enabled, return
+		if (!mNotificationsEnabled) {
+			return;
+		}
 		// Set up the notification to display to the user
 		Notification notification = new Notification(android.R.drawable.stat_notify_chat,
 				(String) getText(R.string.notification_title), System.currentTimeMillis());
 		notification.defaults = Notification.DEFAULT_ALL;
+		if (mNotificationsVibrate) {
+			notification.vibrate = new long[] { 350, 350 };
+		}
 		notification.flags = Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
 		notification.ledOffMS = 1000;
 		notification.ledOnMS = 500;
@@ -252,6 +280,9 @@ public class AndTweetService extends Service {
 		ChoiceFormat tweetForm = new ChoiceFormat(tweetLimits, tweetPart);
 		form.setFormatByArgumentIndex(0, tweetForm);
 		String aMessage = form.format(formArgs); 
+
+		// Set up the scrolling message of the notification
+		notification.tickerText = aMessage;
 
 		// Set the latest event information and send the notification
 		notification.setLatestEventInfo(this, getText(R.string.notification_title), aMessage, contentIntent);

@@ -116,19 +116,34 @@ public class Connection {
 	 * that user's friends. This is the equivalent of /home on the Web.
 	 * 
 	 * @return JSONArray
-	 * @throws JSONException
 	 * @throws ConnectionException 
+	 * @throws ConnectionAuthenticationException 
 	 */
-	public JSONArray getFriendsTimeline() throws JSONException, ConnectionException {
+	public JSONArray getFriendsTimeline() throws ConnectionException, ConnectionAuthenticationException {
 		String url = FRIENDS_TIMELINE_URL;
-		url += "?count=20";
+		url += "?count=100";
 		if (mLastRunTime > 0) {
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(mLastRunTime);
 			DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
 			url += "&since=" + URLEncoder.encode(df.format(cal.getTime()));
 		}
-		return new JSONArray(getRequest(url));
+		JSONArray jArr = null;
+		String request = getRequest(url);
+		try {
+			jArr = new JSONArray(request);
+		} catch (JSONException e) {
+			try {
+				JSONObject jObj = new JSONObject(request);
+				String error = jObj.optString("error");
+				if ("Could not authenticate you.".equals(error)) {
+					throw new ConnectionAuthenticationException(error);
+				}
+			} catch (JSONException e1) {
+				throw new ConnectionException(e);
+			}
+		}
+		return jArr;
 	}
 
 	/**
@@ -138,12 +153,27 @@ public class Connection {
 	 * recently updated, each with current status in-line.
 	 * 
 	 * @return
-	 * @throws JSONException
 	 * @throws ConnectionException 
+	 * @throws ConnectionAuthenticationException 
 	 */
-	public JSONArray getFriends() throws JSONException, ConnectionException {
+	public JSONArray getFriends() throws ConnectionException, ConnectionAuthenticationException {
 		String url = FRIENDS_URL;
-		return new JSONArray(getRequest(url));
+		JSONArray jArr = null;
+		String request = getRequest(url);
+		try {
+			jArr = new JSONArray(request);
+		} catch (JSONException e) {
+			try {
+				JSONObject jObj = new JSONObject(request);
+				String error = jObj.optString("error");
+				if ("Could not authenticate you.".equals(error)) {
+					throw new ConnectionAuthenticationException(error);
+				}
+			} catch (JSONException e1) {
+				throw new ConnectionException(e);
+			}
+		}
+		return jArr;
 	}
 
 	/**
@@ -156,20 +186,29 @@ public class Connection {
 	 * @param message
 	 * @return boolean
 	 * @throws UnsupportedEncodingException
-	 * @throws JSONException
 	 * @throws ConnectionException 
+	 * @throws ConnectionAuthenticationException 
 	 */
 	public JSONObject updateStatus(String message, long inReplyToId)
-			throws UnsupportedEncodingException, JSONException, ConnectionException {
+			throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException {
 		String url = UPDATE_STATUS_URL;
 		List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
 		formParams.add(new BasicNameValuePair("source", SOURCE_PARAMETER));
 		if (inReplyToId > 0) {
-			formParams.add(new BasicNameValuePair("in_reply_to_status_id", String
-					.valueOf(inReplyToId)));
+			formParams.add(new BasicNameValuePair("in_reply_to_status_id", String.valueOf(inReplyToId)));
 		}
-		return new JSONObject(postRequest(url, new UrlEncodedFormEntity(formParams)));
+		JSONObject jObj = null;
+		try {
+			jObj = new JSONObject(postRequest(url, new UrlEncodedFormEntity(formParams, HTTP.UTF_8)));
+			String error = jObj.optString("error");
+			if ("Could not authenticate you.".equals(error)) {
+				throw new ConnectionAuthenticationException(error);
+			}
+		} catch (JSONException e) {
+			throw new ConnectionException(e);
+		}
+		return jObj;
 	}
 
 	/**

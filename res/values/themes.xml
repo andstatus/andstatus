@@ -19,11 +19,11 @@
 	</style>
 
 	<style name="Theme.AndTweet">
-		<item name="tweetUsernameAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="tweetUsernameAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="tweetUsernameColor">?android:attr/textColorSecondary</item>
 		<item name="tweetUsernameStyle">bold</item>
 
-		<item name="tweetMessageAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="tweetMessageAppearance">?android:attr/textAppearanceMedium</item>
 		<item name="tweetMessageColor">?android:attr/textColorPrimary</item>
 		<item name="tweetMessageStyle">normal</item>
 
@@ -45,7 +45,7 @@
 	</style>
 
 	<style name="Theme.AndTweet.Large">
-		<item name="tweetUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="tweetUsernameAppearance">?android:attr/textAppearanceMedium</item>
 		<item name="tweetUsernameColor">?android:attr/textColorSecondary</item>
 		<item name="tweetUsernameStyle">bold</item>
 
@@ -54,5 +54,6 @@
 
 		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="tweetSentDateColor">?android:attr/textColorTertiary</item>
+		<item name="tweetSentDateStyle">normal</item>
 	</style>
 </resources>

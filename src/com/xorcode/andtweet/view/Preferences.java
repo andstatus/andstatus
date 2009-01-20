@@ -32,6 +32,7 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.net.Connection;
@@ -124,6 +125,7 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 				Log.d(TAG, "account valid");
 				mProgressDialog.dismiss();
 				mAutomaticUpdates.setEnabled(true);
+				Toast.makeText(Preferences.this, R.string.authentication_successful, Toast.LENGTH_SHORT).show();
 				break;
 			case MSG_ACCOUNT_INVALID:
 				Log.d(TAG, "account invalid");
@@ -144,15 +146,18 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 					JSONObject jo = c.verifyCredentials();
 					Log.d(TAG, jo.optString("id"));
 					Log.d(TAG, jo.optString("user"));
+					if (jo.optString("error").equals("Not found")) {
+						mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_VALID, 1, 0));
+						return;
+					}
 				} catch (JSONException e) {
 					Log.e(TAG, e.getMessage());
 				} catch (ConnectionException e) {
+					Toast.makeText(Preferences.this, e.getMessage(), Toast.LENGTH_LONG).show();
 					Log.e(TAG, "mCheckCredentials Connection Exception: " + e.getMessage());
 				}
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_VALID, 1, 0));
-			} else {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_INVALID, 1, 0));
 			}
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_INVALID, 1, 0));
 		}
 	};
 }

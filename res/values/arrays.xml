@@ -54,4 +54,14 @@
 		<item>12 hours</item>
 		<item>day</item>
 	</string-array>
+	<string-array name="theme_values">
+		<item>Small</item>
+		<item>Standard</item>
+		<item>Large</item>
+	</string-array>
+	<string-array name="theme_keys">
+		<item>Theme.AndTweet.Small</item>
+		<item>Theme.AndTweet</item>
+		<item>Theme.AndTweet.Large</item>
+	</string-array>
 </resources>

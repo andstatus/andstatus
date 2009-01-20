@@ -60,6 +60,14 @@ public final class AndTweet {
 		public static final String MESSAGE = "message";
 
 		/**
+		 * Tweet source
+		 * <P>
+		 * Type: TEXT
+		 * </P>
+		 */
+		public static final String SOURCE = "source";
+
+		/**
 		 * When Tweet was created
 		 * <P>
 		 * Type: INTEGER (long from System.currentTimeMillis()

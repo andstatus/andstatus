@@ -19,25 +19,49 @@
 		<EditTextPreference android:title="@string/title_preference_username"
 			android:dialogTitle="@string/dialog_title_preference_username"
 			android:summary="@string/summary_preference_username"
-			android:key="twitter_username" />
+			android:key="twitter_username" android:singleLine="true" />
 		<EditTextPreference android:title="@string/title_preference_password"
 			android:dialogTitle="@string/dialog_title_preference_password"
 			android:summary="@string/summary_preference_password"
-			android:key="twitter_password" android:password="true" />
+			android:key="twitter_password" android:password="true" android:singleLine="true" />
 	</PreferenceCategory>
-	<PreferenceCategory android:title="@string/category_title_preference_updates">
-		<CheckBoxPreference android:key="automatic_updates"
-			android:title="@string/title_preference_automatic_updates"
-			android:disableDependentsState="false"
-			android:summaryOff="@string/summary_preference_automatic_updates_off"
-			android:summaryOn="@string/summary_preference_automatic_updates_on"/>
-		<ListPreference android:entryValues="@array/fetch_frequency_keys"
-			android:entries="@array/fetch_frequency_values"
-			android:summary="@string/summary_preference_frequency"
-			android:dialogTitle="@string/dialog_title_preference_frequency"
-			android:title="@string/title_preference_frequency"
-			android:key="fetch_frequency"
-			android:dependency="automatic_updates"
-			android:defaultValue="180" />
+	<PreferenceCategory android:title="@string/category_title_preference_settings">
+		<PreferenceScreen android:summary="@string/summary_preference_appearance"
+			android:key="preference_screen_apperance" android:title="@string/title_preference_appearance">
+			<PreferenceCategory android:title="@string/category_title_preference_appearance">
+				<ListPreference android:key="theme" android:entries="@array/theme_values"
+					android:entryValues="@array/theme_keys" android:defaultValue="Theme.AndTweet"
+					android:title="@string/title_preference_theme" android:summary="@string/summary_preference_theme"
+					android:dialogTitle="@string/dialog_title_preference_theme"></ListPreference>
+			</PreferenceCategory>
+		</PreferenceScreen>
+		<PreferenceScreen android:summary="@string/summary_preference_notifications"
+			android:key="preference_screen_notifications" android:title="@string/title_preference_notifications">
+			<PreferenceCategory android:title="@string/category_title_preference_notifications">
+				<CheckBoxPreference android:key="notifications_enabled"
+					android:summaryOn="Notifications are enabled" android:summaryOff="All notifications are disabled"
+					android:summary="Should notifications be enabled?" android:title="Enable Notifications"
+					android:disableDependentsState="false"></CheckBoxPreference>
+				<CheckBoxPreference android:key="vibration"
+					android:summary="Vibrate on incoming message" android:title="Vibration"
+					android:summaryOn="Vibrating on incoming messages"
+					android:summaryOff="Vibration turned off" android:dependency="notifications_enabled"></CheckBoxPreference>
+			</PreferenceCategory>
+		</PreferenceScreen>
+		<PreferenceScreen android:summary="@string/summary_preference_automatic_updates"
+			android:key="preference_screen_automatic_updates" android:title="@string/title_preference_automatic_updates" android:dependency="twitter_username" android:shouldDisableView="true">
+			<PreferenceCategory android:title="@string/category_title_preference_automatic_updates">
+				<CheckBoxPreference android:key="automatic_updates"
+					android:title="@string/title_preference_automatic_updates"
+					android:disableDependentsState="false"
+					android:summaryOff="@string/summary_preference_automatic_updates_off"
+					android:summaryOn="@string/summary_preference_automatic_updates_on" />
+				<ListPreference android:entryValues="@array/fetch_frequency_keys"
+					android:entries="@array/fetch_frequency_values" android:summary="@string/summary_preference_frequency"
+					android:dialogTitle="@string/dialog_title_preference_frequency"
+					android:title="@string/title_preference_frequency" android:key="fetch_frequency"
+					android:dependency="automatic_updates" android:defaultValue="180" />
+			</PreferenceCategory>
+		</PreferenceScreen>
 	</PreferenceCategory>
 </PreferenceScreen>

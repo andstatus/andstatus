@@ -77,6 +77,8 @@ public class RelativeTime {
 			value = mf.format(new Object[] { delta / MINUTE });
 		} else if (delta < 90 * MINUTE) {
 			value = "an hour ago";
+		} else if (delta < 150 * MINUTE) {
+			value = "two hours ago";
 		} else if (delta < 24 * HOUR) {
 			MessageFormat mf = new MessageFormat("{0} hours ago");
 			value = mf.format(new Object[] { delta / HOUR });

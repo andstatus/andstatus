@@ -82,14 +82,16 @@ public class AndTweetProvider extends ContentProvider {
 
 		@Override
 		public void onCreate(SQLiteDatabase db) {
-			db.execSQL("CREATE TABLE " + TWEETS_TABLE_NAME + " (" + Tweets._ID
-					+ " INTEGER PRIMARY KEY," + Tweets.AUTHOR_ID + " TEXT," + Tweets.MESSAGE
-					+ " TEXT," + Tweets.SENT_DATE + " INTEGER," + Tweets.CREATED_DATE + " INTEGER"
+			db.execSQL("CREATE TABLE " + TWEETS_TABLE_NAME + " ("
+					+ Tweets._ID + " INTEGER PRIMARY KEY," + Tweets.AUTHOR_ID + " TEXT," 
+					+ Tweets.MESSAGE + " TEXT," + Tweets.SOURCE + " TEXT,"
+					+ Tweets.SENT_DATE + " INTEGER," + Tweets.CREATED_DATE + " INTEGER"
 					+ ");");
 
-			db.execSQL("CREATE TABLE " + DIRECTMESSAGES_TABLE_NAME + " (" + DirectMessages._ID
-					+ " INTEGER PRIMARY KEY," + DirectMessages.AUTHOR_ID + " TEXT,"
-					+ DirectMessages.MESSAGE + " TEXT," + DirectMessages.SENT_DATE + " INTEGER,"
+			db.execSQL("CREATE TABLE " + DIRECTMESSAGES_TABLE_NAME + " ("
+					+ DirectMessages._ID + " INTEGER PRIMARY KEY," 
+					+ DirectMessages.AUTHOR_ID + " TEXT," + DirectMessages.MESSAGE + " TEXT," 
+					+ DirectMessages.SENT_DATE + " INTEGER,"
 					+ DirectMessages.CREATED_DATE + " INTEGER" + ");");
 
 			db.execSQL("CREATE TABLE " + USERS_TABLE_NAME + " (" + Users._ID
@@ -106,6 +108,15 @@ public class AndTweetProvider extends ContentProvider {
 			db.execSQL("DROP TABLE IF EXISTS " + USERS_TABLE_NAME);
 			onCreate(db);
 		}
+	}
+
+	/**
+	 * @see android.content.ContentProvider#onCreate()
+	 */
+	@Override
+	public boolean onCreate() {
+		mOpenHelper = new DatabaseHelper(getContext());
+		return (mOpenHelper == null) ? false : true;
 	}
 
 	/**
@@ -231,6 +242,10 @@ public class AndTweetProvider extends ContentProvider {
 				values.put(Tweets.MESSAGE, "");
 			}
 
+			if (values.containsKey(Tweets.SOURCE) == false) {
+				values.put(Tweets.SOURCE, "");
+			}
+
 			rowId = db.insert(TWEETS_TABLE_NAME, Tweets.MESSAGE, values);
 			if (rowId > 0) {
 				Uri tweetUri = ContentUris.withAppendedId(Tweets.CONTENT_URI, rowId);
@@ -302,15 +317,6 @@ public class AndTweetProvider extends ContentProvider {
 		default:
 			throw new IllegalArgumentException("Unknown URI " + uri);
 		}
-	}
-
-	/**
-	 * @see android.content.ContentProvider#onCreate()
-	 */
-	@Override
-	public boolean onCreate() {
-		mOpenHelper = new DatabaseHelper(getContext());
-		return true;
 	}
 
 	/**
@@ -469,6 +475,7 @@ public class AndTweetProvider extends ContentProvider {
 		sTweetsProjectionMap.put(Tweets._ID, Tweets._ID);
 		sTweetsProjectionMap.put(Tweets.AUTHOR_ID, Tweets.AUTHOR_ID);
 		sTweetsProjectionMap.put(Tweets.MESSAGE, Tweets.MESSAGE);
+		sTweetsProjectionMap.put(Tweets.SOURCE, Tweets.SOURCE);
 		sTweetsProjectionMap.put(Tweets.SENT_DATE, Tweets.SENT_DATE);
 		sTweetsProjectionMap.put(Tweets.CREATED_DATE, Tweets.CREATED_DATE);
 

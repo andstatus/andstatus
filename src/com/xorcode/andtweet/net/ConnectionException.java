@@ -32,15 +32,15 @@ public class ConnectionException extends Exception {
 	}
 
 	/**
-	 * @param mThrowable
+	 * @param throwable
 	 */
 	public ConnectionException(Throwable throwable) {
 		super(throwable);
 	}
 
 	/**
-	 * @param mDetailMessage
-	 * @param mThrowable
+	 * @param detailMessage
+	 * @param throwable
 	 */
 	public ConnectionException(String detailMessage, Throwable throwable) {
 		super(detailMessage, throwable);

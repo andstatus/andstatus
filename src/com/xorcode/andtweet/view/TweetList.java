@@ -22,15 +22,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -65,6 +69,7 @@ import com.xorcode.andtweet.data.SearchableCursorAdapter;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweet.Tweets;
 import com.xorcode.andtweet.data.AndTweet.Users;
+import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.util.AtTokenizer;
 
@@ -78,9 +83,11 @@ public class TweetList extends Activity {
 
 	private static final int REQUEST_CODE_PREFERENCES = 1;
 
+	// Options menu items
 	public static final int OPTIONS_MENU_PREFERENCES = Menu.FIRST;
 	public static final int OPTIONS_MENU_RELOAD = Menu.FIRST + 1;
 
+	// Context menu items
 	public static final int CONTEXT_MENU_ITEM_REPLY = Menu.FIRST + 2;
 	public static final int CONTEXT_MENU_ITEM_STAR = Menu.FIRST + 3;
 	public static final int CONTEXT_MENU_ITEM_DIRECT_MESSAGE = Menu.FIRST + 4;
@@ -88,6 +95,19 @@ public class TweetList extends Activity {
 	public static final int CONTEXT_MENU_ITEM_BLOCK = Menu.FIRST + 6;
 	public static final int CONTEXT_MENU_ITEM_RETWEET = Menu.FIRST + 7;
 	public static final int CONTEXT_MENU_ITEM_PROFILE = Menu.FIRST + 8;
+
+	// Handler message codes
+	private static final int MSG_TWEETS_CHANGED = 1;
+	private static final int MSG_DATA_LOADING = 2;
+	private static final int MSG_UPDATE_STATUS = 3;
+	private static final int MSG_MANUAL_RELOAD = 4;
+	private static final int MSG_AUTHENTICATION_ERROR = 5;
+
+	// Dialog identifier codes
+	private static final int DIALOG_AUTHENTICATION_FAILED = 1;
+
+	// Bundle identifier keys
+	private static final String BUNDLE_KEY_REPLY_ID = "replyId";
 
 	private static final String[] TWEETS_PROJECTION = new String[] {
 		Tweets._ID,
@@ -100,11 +120,6 @@ public class TweetList extends Activity {
 		Users._ID,
 		Users.AUTHOR_ID
 	};
-
-	private static final int MSG_TWEETS_CHANGED = 1;
-	private static final int MSG_DATA_LOADING = 2;
-	private static final int MSG_UPDATE_STATUS = 3;
-	private static final int MSG_MANUAL_RELOAD = 4;
 
 	private NotificationManager mNM;
 	private SharedPreferences mSP;
@@ -159,6 +174,9 @@ public class TweetList extends Activity {
 	 */
 	private ProgressDialog mProgressDialog;
 
+	private Cursor mTweetsCursor;
+	private Cursor mFriendsCursor;
+
 	/**
 	 * Called when the activity is first created.
 	 * 
@@ -169,6 +187,10 @@ public class TweetList extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		if (savedInstanceState != null && savedInstanceState.containsKey(BUNDLE_KEY_REPLY_ID)) {
+			mReplyId = savedInstanceState.getLong(BUNDLE_KEY_REPLY_ID);
+		}
 
 		// Set up notification manager
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -183,10 +205,15 @@ public class TweetList extends Activity {
 			startActivity(new Intent(this, Preferences.class));
 		}
 
-		setTheme(R.style.Theme_AndTweet_Large);
+		loadTheme();
 
         // Set up the content view and load data
         setContentView(R.layout.tweetlist);
+
+		final Intent intent = getIntent();
+		if (intent.getData() == null) {
+			intent.setData(Tweets.CONTENT_URI);
+		}
 
 		// Set up views
 		mMessageList = (ListView) findViewById(R.id.messagesListView);
@@ -194,50 +221,34 @@ public class TweetList extends Activity {
 		mEditText = (MultiAutoCompleteTextView) findViewById(R.id.messageEditTextAC);
 		mCharsLeftText = (TextView) findViewById(R.id.messageEditCharsLeftTextView);
 
-		final Intent intent = getIntent();
-		if (intent.getData() == null) {
-			intent.setData(Tweets.CONTENT_URI);
-		}
-
-		Cursor tweetsCursor = managedQuery(getIntent().getData(), TWEETS_PROJECTION,
-				null, null, Tweets.DEFAULT_SORT_ORDER);
-		SimpleCursorAdapter tweetsAdapter = new SimpleCursorAdapter(TweetList.this,
-				R.layout.tweetlist_item, tweetsCursor, new String[] {
-						Tweets.AUTHOR_ID, Tweets.MESSAGE, Tweets.SENT_DATE },
-				new int[] { R.id.tweet_screen_name,
-						R.id.tweet_message, R.id.tweet_sent });
-		tweetsAdapter.setViewBinder(new TweetBinder());
-		mMessageList.setAdapter(tweetsAdapter);
-
-		Cursor friendsCursor = managedQuery(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null, Users.DEFAULT_SORT_ORDER);
-		SearchableCursorAdapter friendsAdapter = new SearchableCursorAdapter(
-			TweetList.this,
-			android.R.layout.simple_dropdown_item_1line,
-			friendsCursor,
-			new String[] { Users.AUTHOR_ID },
-			new int[] { android.R.id.text1 },
-			Users.CONTENT_URI,
-			FRIENDS_PROJECTION,
-			Users.DEFAULT_SORT_ORDER
-		);
-		friendsAdapter.setStringConversionColumn(friendsCursor.getColumnIndex(Users.AUTHOR_ID));
-		mEditText.setAdapter(friendsAdapter);
-		mEditText.setTokenizer(new AtTokenizer());
-
 		initUI();
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
+		mTweetsCursor = getContentResolver().query(getIntent().getData(), TWEETS_PROJECTION, null, null, Tweets.DEFAULT_SORT_ORDER);
+		mFriendsCursor = getContentResolver().query(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null, Users.DEFAULT_SORT_ORDER);
+		createAdapters();
 		bindToService();
-		mReplyId = 0;
 		mEditText.requestFocus();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		mCharsLeftText.setText(String.valueOf(mLimitChars - mEditText.length()));
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
+		mTweetsCursor.close();
+		mFriendsCursor.close();
+		SimpleCursorAdapter a = (SimpleCursorAdapter) mEditText.getAdapter();
+		if (a.getCursor() != null && !a.getCursor().isClosed()) {
+			a.getCursor().close();
+		}
 		disconnectService();
 	}
 
@@ -246,6 +257,12 @@ public class TweetList extends Activity {
 		super.onDestroy();
 		mNM.cancelAll();
 		disconnectService();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putLong(BUNDLE_KEY_REPLY_ID, mReplyId);
+		super.onSaveInstanceState(outState);
 	}
 
 	/**
@@ -286,9 +303,8 @@ public class TweetList extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case OPTIONS_MENU_PREFERENCES:
-			Intent launchPreferencesIntent = new Intent().setClass(this, Preferences.class);
-			startActivityForResult(launchPreferencesIntent, REQUEST_CODE_PREFERENCES);
-			return true;
+			startActivityForResult(new Intent(this, Preferences.class), REQUEST_CODE_PREFERENCES);
+			break;
 		case OPTIONS_MENU_RELOAD:
 			setProgressBarIndeterminateVisibility(true);
 			Thread thread = new Thread(mManualReload);
@@ -315,10 +331,10 @@ public class TweetList extends Activity {
 		menu.add(0, CONTEXT_MENU_ITEM_REPLY, 0, R.string.menu_item_reply);
 		menu.add(0, CONTEXT_MENU_ITEM_RETWEET, 1, R.string.menu_item_retweet);
 		menu.add(0, CONTEXT_MENU_ITEM_STAR, 2, R.string.menu_item_star);
-		menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, 0, R.string.menu_item_direct_message);
-		menu.add(0, CONTEXT_MENU_ITEM_PROFILE, 3, R.string.menu_item_view_profile);
-		menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, 4, R.string.menu_item_unfollow);
-		menu.add(0, CONTEXT_MENU_ITEM_BLOCK, 5, R.string.menu_item_block);
+		menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, 3, R.string.menu_item_direct_message);
+		menu.add(0, CONTEXT_MENU_ITEM_PROFILE, 4, R.string.menu_item_view_profile);
+		menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, 5, R.string.menu_item_unfollow);
+		menu.add(0, CONTEXT_MENU_ITEM_BLOCK, 6, R.string.menu_item_block);
 	}
 
 	@Override
@@ -335,7 +351,7 @@ public class TweetList extends Activity {
 		switch (item.getItemId()) {
 		case CONTEXT_MENU_ITEM_REPLY:
 			Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, info.id);
-			Cursor c = managedQuery(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID }, null, null, null);
+			Cursor c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID }, null, null, null);
 			try {
 				c.moveToFirst();
 				mEditText.requestFocus();
@@ -345,6 +361,8 @@ public class TweetList extends Activity {
 				mReplyId = c.getLong(c.getColumnIndex(Tweets._ID));
 			} catch (Exception e) {
 				Log.e(TAG, e.getMessage());
+			} finally {
+				if (c != null && !c.isClosed()) c.close();
 			}
 			return true;
 
@@ -360,6 +378,154 @@ public class TweetList extends Activity {
 		return false;
 	}
 
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		switch (id) {
+		case DIALOG_AUTHENTICATION_FAILED:
+			return new AlertDialog.Builder(TweetList.this)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setTitle(R.string.dialog_title_authentication_failed)
+				.setMessage(R.string.dialog_summary_authentication_failed)
+				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface Dialog, int whichButton) {
+						startActivityForResult(new Intent(TweetList.this, Preferences.class), REQUEST_CODE_PREFERENCES);
+					}
+				}).create();
+		default:
+			return super.onCreateDialog(id);
+		}
+	}
+
+	/**
+	 * Load the theme for preferences.
+	 */
+	protected void loadTheme() {
+		setTheme((int) getResources().getIdentifier(mSP.getString("theme", "Theme.AndTweet"), "style", "com.xorcode.andtweet"));
+	}
+
+	/**
+	 * Initialize UI
+	 */
+	private void initUI() {
+		// Set up the send button
+		mSendButton.setOnClickListener(mSendOnClickListener);
+
+		// Attach listeners to the text field
+		mEditText.setOnFocusChangeListener(mEditTextFocusChangeListener);
+		mEditText.setOnKeyListener(mEditTextKeyListener);
+
+		// Attach listeners to the message list
+		mMessageList.setOnCreateContextMenuListener(this);
+		mMessageList.setOnItemClickListener(mOnItemClickListener);
+	}
+
+	private void createAdapters() {
+		SimpleCursorAdapter tweetsAdapter = new SimpleCursorAdapter(TweetList.this,
+				R.layout.tweetlist_item, mTweetsCursor, new String[] {
+						Tweets.AUTHOR_ID, Tweets.MESSAGE, Tweets.SENT_DATE },
+				new int[] { R.id.tweet_screen_name,
+						R.id.tweet_message, R.id.tweet_sent });
+		tweetsAdapter.setViewBinder(new TweetBinder());
+
+		SearchableCursorAdapter friendsAdapter = new SearchableCursorAdapter(
+			TweetList.this,
+			android.R.layout.simple_dropdown_item_1line,
+			mFriendsCursor,
+			new String[] { Users.AUTHOR_ID },
+			new int[] { android.R.id.text1 },
+			Users.CONTENT_URI,
+			FRIENDS_PROJECTION,
+			Users.DEFAULT_SORT_ORDER
+		);
+		friendsAdapter.setStringConversionColumn(mFriendsCursor.getColumnIndexOrThrow(Users.AUTHOR_ID));
+
+		mMessageList.setAdapter(tweetsAdapter);
+
+		mEditText.setAdapter(friendsAdapter);
+		mEditText.setTokenizer(new AtTokenizer());
+	}
+
+	/**
+	 * Listener for send button clicks.
+	 */
+	private View.OnClickListener mSendOnClickListener = new View.OnClickListener() {
+		public void onClick(View v) {
+			if (mEditText.length() > 0) {
+				setProgressBarIndeterminateVisibility(true);
+				mProgressDialog = ProgressDialog.show(TweetList.this, getText(R.string.dialog_title_sending_message), getText(R.string.dialog_summary_sending_message), true, false);
+				Thread thread = new Thread(mSendUpdate);
+				thread.start();
+			} else {
+				Toast.makeText(TweetList.this, R.string.cannot_send_empty_message, Toast.LENGTH_SHORT).show();
+			}
+		}
+	};
+
+	/**
+	 * Listener for key events on the multi-line text field.
+	 */
+	private OnKeyListener mEditTextKeyListener = new View.OnKeyListener() {
+		/**
+		 * Event that listens for keys. Returns true if the limit has been
+		 * reached, and false if the user is allowed to continue typing.
+		 * 
+		 * @param v
+		 * @param keyCode
+		 * @param event
+		 * @return boolean
+		 */
+		public boolean onKey(View v, int keyCode, KeyEvent event) {
+			MultiAutoCompleteTextView editTxt = (MultiAutoCompleteTextView) v;
+			mCurrentChars = editTxt.length();
+			if (mCurrentChars == 0) {
+				mReplyId = 0;
+			}
+			if (keyCode != KeyEvent.KEYCODE_DEL && mCurrentChars > mLimitChars) {
+				return true;
+			}
+			mCharsLeftText.setText(String.valueOf(mLimitChars - mCurrentChars));
+			return false;
+		}
+	};
+
+	/**
+	 * Listener for focus changes of the multi-line text field.
+	 */
+	private OnFocusChangeListener mEditTextFocusChangeListener = new View.OnFocusChangeListener() {
+		/**
+		 * Event triggered when focus of text view changes.
+		 * 
+		 * @param v
+		 * @param hasFocus
+		 */
+		public void onFocusChange(View v, boolean hasFocus) {
+			MultiAutoCompleteTextView editTxt = (MultiAutoCompleteTextView) v;
+			mCurrentChars = editTxt.length();
+			mCharsLeftText.setText(String.valueOf(mLimitChars - mCurrentChars));
+		}
+	};
+
+	/**
+	 * Listener that checks for clicks on the main list view.
+	 */
+	private OnItemClickListener mOnItemClickListener = new OnItemClickListener() {
+		/**
+		 * @param adapterView
+		 * @param view
+		 * @param position
+		 * @param id
+		 */
+		public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+			Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, id);
+			String action = getIntent().getAction();
+			if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
+				setResult(RESULT_OK, new Intent().setData(uri));
+			} else {
+				startActivity(new Intent(Intent.ACTION_VIEW, uri));
+			}
+		}
+	};
+
 	/**
 	 * Initialize service and bind to it
 	 */
@@ -373,31 +539,6 @@ public class TweetList extends Activity {
 			}
 			bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
 		}
-	}
-
-	/**
-	 * Initialize UI
-	 */
-	private void initUI() {
-		// Set up the send button
-		mSendButton.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				setProgressBarIndeterminateVisibility(true);
-				mProgressDialog = ProgressDialog.show(TweetList.this, getText(R.string.dialog_title_sending_message), getText(R.string.dialog_summary_sending_message), true, false);
-				Thread thread = new Thread(mSendUpdate);
-				thread.start();
-			}
-		});
-
-		mCharsLeftText.setText(String.valueOf(mLimitChars - mEditText.length()));
-
-		// Attach listeners to the text field
-		mEditText.setOnFocusChangeListener(mEditTextFocusChangeListener);
-		mEditText.setOnKeyListener(mEditTextKeyListener);
-
-		// Attach listeners to the message list
-		mMessageList.setOnCreateContextMenuListener(this);
-		mMessageList.setOnItemClickListener(mOnItemClickListener);
 	}
 
 	/**
@@ -482,9 +623,11 @@ public class TweetList extends Activity {
 					mNM.cancelAll();
 				}
 				break;
+
 			case MSG_DATA_LOADING:
 		        setProgressBarIndeterminateVisibility(msg.arg1 == 1 ? true : false);
 				break;
+
 			case MSG_UPDATE_STATUS:
 				JSONObject result = (JSONObject) msg.obj;
 				if (result.optString("error").length() > 0) {
@@ -500,6 +643,7 @@ public class TweetList extends Activity {
 						Toast.makeText(TweetList.this, e.getMessage(), Toast.LENGTH_SHORT).show();
 					}
 					Toast.makeText(TweetList.this, R.string.message_sent, Toast.LENGTH_SHORT).show();
+					mReplyId = 0;
 					mEditText.setText("");
 					mEditText.clearFocus();
 					mEditText.requestFocus();
@@ -507,77 +651,25 @@ public class TweetList extends Activity {
 				setProgressBarIndeterminateVisibility(false);
 				mProgressDialog.dismiss();
 				break;
+
+			case MSG_AUTHENTICATION_ERROR:
+				int source = msg.arg1;
+				switch (source) {
+				case MSG_MANUAL_RELOAD:
+					setProgressBarIndeterminateVisibility(false);
+					break;
+				case MSG_UPDATE_STATUS:
+					break;
+				}
+				showDialog(DIALOG_AUTHENTICATION_FAILED);
+				break;
+
 			case MSG_MANUAL_RELOAD:
 				Toast.makeText(TweetList.this, R.string.timeline_reloaded, Toast.LENGTH_SHORT).show();
 				setProgressBarIndeterminateVisibility(false);
 				break;
 			default:
 				super.handleMessage(msg);
-			}
-		}
-	};
-
-	/**
-	 * Listener for key events on the multi-line text field.
-	 */
-	private OnKeyListener mEditTextKeyListener = new View.OnKeyListener() {
-		/**
-		 * Event that listens for keys. Returns true if the limit has been
-		 * reached, and false if the user is allowed to continue typing.
-		 * 
-		 * @param v
-		 * @param keyCode
-		 * @param event
-		 * @return boolean
-		 */
-		public boolean onKey(View v, int keyCode, KeyEvent event) {
-			MultiAutoCompleteTextView editTxt = (MultiAutoCompleteTextView) v;
-			mCurrentChars = editTxt.length();
-			if (mCurrentChars == 0) {
-				mReplyId = 0;
-			}
-			if (keyCode != KeyEvent.KEYCODE_DEL && mCurrentChars > mLimitChars) {
-				return true;
-			}
-			mCharsLeftText.setText(String.valueOf(mLimitChars - mCurrentChars));
-			return false;
-		}
-	};
-
-	/**
-	 * Listener for focus changes of the multi-line text field.
-	 */
-	private OnFocusChangeListener mEditTextFocusChangeListener = new View.OnFocusChangeListener() {
-		/**
-		 * Event triggered when focus of text view changes.
-		 * 
-		 * @param v
-		 * @param hasFocus
-		 */
-		public void onFocusChange(View v, boolean hasFocus) {
-			MultiAutoCompleteTextView editTxt = (MultiAutoCompleteTextView) v;
-			mCurrentChars = editTxt.length();
-			mCharsLeftText.setText(String.valueOf(mLimitChars - mCurrentChars));
-		}
-	};
-
-	/**
-	 * Listener that checks for clicks on the main list view.
-	 */
-	private OnItemClickListener mOnItemClickListener = new OnItemClickListener() {
-		/**
-		 * @param adapterView
-		 * @param view
-		 * @param position
-		 * @param id
-		 */
-		public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-			Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, id);
-			String action = getIntent().getAction();
-			if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
-				setResult(RESULT_OK, new Intent().setData(uri));
-			} else {
-				startActivity(new Intent(Intent.ACTION_VIEW, uri));
 			}
 		}
 	};
@@ -594,11 +686,12 @@ public class TweetList extends Activity {
 				result = aConn.updateStatus(message, mReplyId);
 			} catch (UnsupportedEncodingException e) {
 				Log.e(TAG, e.getMessage());
-			} catch (JSONException e) {
-				Log.e(TAG, e.getMessage());
-				e.printStackTrace();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mSendUpdate Connection Exception: " + e.getMessage());
+				return;
+			} catch (ConnectionAuthenticationException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_UPDATE_STATUS, 0));
+				return;
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_STATUS, result));
 		}
@@ -615,6 +708,16 @@ public class TweetList extends Activity {
 				aNewTweets = friendTimeline.loadTimeline();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mManualReload Connection Exception: " + e.getMessage());
+				return;
+			} catch (SQLiteConstraintException e) {
+				Log.e(TAG, "mManualReload database exception: " + e.getMessage());
+				return;
+			} catch (JSONException e) {
+				Log.e(TAG, "mManualReload JSON exception: " + e.getMessage());
+				return;
+			} catch (ConnectionAuthenticationException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_MANUAL_RELOAD, 0));
+				return;
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewTweets, 0));
 		}

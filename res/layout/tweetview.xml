@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 	Copyright (C) 2008 Torgny Bjers
 	
@@ -15,25 +15,18 @@
 	limitations under the License.
  -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
-	android:layout_width="fill_parent"
+	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
-	<TextView android:layout_height="wrap_content"
-		android:id="@+id/tweet_screen_name"
-		android:layout_width="fill_parent"
-		android:textStyle="?com.xorcode.andtweet:attr/tweetUsernameStyle"
+	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_screen_name"
+		android:layout_width="fill_parent" android:textStyle="?com.xorcode.andtweet:attr/tweetUsernameStyle"
 		android:textColor="?com.xorcode.andtweet:attr/tweetUsernameColor"
 		android:textAppearance="?com.xorcode.andtweet:attr/tweetUsernameAppearance" />
-	<TextView android:layout_height="wrap_content"
-		android:id="@+id/tweet_message"
-		android:layout_width="fill_parent"
-		android:textStyle="?com.xorcode.andtweet:attr/tweetMessageStyle"
+	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_message"
+		android:layout_width="fill_parent" android:textStyle="?com.xorcode.andtweet:attr/tweetMessageStyle"
 		android:textColor="?com.xorcode.andtweet:attr/tweetMessageColor"
 		android:textAppearance="?com.xorcode.andtweet:attr/tweetMessageAppearance" />
-	<TextView android:layout_height="wrap_content"
-		android:id="@+id/tweet_sent"
-		android:layout_width="fill_parent"
-		android:textStyle="?com.xorcode.andtweet:attr/tweetSentDateStyle"
+	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_sent"
+		android:layout_width="fill_parent" android:textStyle="?com.xorcode.andtweet:attr/tweetSentDateStyle"
 		android:textColor="?com.xorcode.andtweet:attr/tweetSentDateColor"
 		android:textAppearance="?com.xorcode.andtweet:attr/tweetSentDateAppearance" />
 </LinearLayout>

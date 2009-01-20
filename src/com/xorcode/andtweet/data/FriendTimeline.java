@@ -30,10 +30,12 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
+import android.text.Html;
 import android.util.Log;
 
 import com.xorcode.andtweet.data.AndTweet.Tweets;
 import com.xorcode.andtweet.net.Connection;
+import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 
 /**
@@ -63,7 +65,7 @@ public class FriendTimeline {
 	 * @throws ConnectionException 
 	 * @return int
 	 */
-	public int loadTimeline() throws ConnectionException {
+	public int loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException {
 		long aLastRunTime = 0;
 		mNewTweets = 0;
 		if (mUsername != null && mUsername.length() > 0) {
@@ -84,24 +86,25 @@ public class FriendTimeline {
 				}
 			} catch (Exception e) {
 				Log.e(TAG, e.getMessage());
+				String msg = e.getMessage();
+				if (msg == null) {
+					msg = "An unknown error has ocurred: " + e.toString();
+				}
+				Log.e(TAG, msg);
+			} finally {
+				if (c != null && !c.isClosed()) c.close();
 			}
 			Connection aConn = new Connection(mUsername, mPassword, aLastRunTime);
-			try {
-				JSONArray jArr = aConn.getFriendsTimeline();
-				for (int index = 0; index < jArr.length(); index++) {
-					JSONObject jo = jArr.getJSONObject(index);
-					insertFromJSONObject(jo);
-				}
-			} catch (JSONException e) {
-				Log.e(TAG, e.getMessage());
-			} catch (SQLiteConstraintException e) {
-				Log.e(TAG, e.getMessage());
+			JSONArray jArr = aConn.getFriendsTimeline();
+			for (int index = 0; index < jArr.length(); index++) {
+				JSONObject jo = jArr.getJSONObject(index);
+				insertFromJSONObject(jo);
 			}
 		}
 		return mNewTweets;
 	}
 
-	public Uri insertFromJSONObject(JSONObject jo) throws JSONException {
+	public Uri insertFromJSONObject(JSONObject jo) throws JSONException, SQLiteConstraintException {
 		JSONObject user;
 		user = jo.getJSONObject("user");
 
@@ -114,7 +117,8 @@ public class FriendTimeline {
 		values.put(AndTweet.Tweets._ID, lTweetId.toString());
 		values.put(AndTweet.Tweets.AUTHOR_ID, user.getString("screen_name"));
 
-		values.put(AndTweet.Tweets.MESSAGE, jo.getString("text"));
+		values.put(AndTweet.Tweets.MESSAGE, Html.fromHtml(jo.getString("text")).toString());
+		values.put(AndTweet.Tweets.SOURCE, jo.getString("source"));
 
 		DateFormat f = new SimpleDateFormat(DATE_FORMAT);
 		Calendar cal = Calendar.getInstance();
