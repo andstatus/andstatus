@@ -24,11 +24,11 @@ import android.provider.BaseColumns;
  * 
  * @author torgny.bjers
  */
-public final class AndTweet {
+public final class AndTweetDatabase {
 	public static final String AUTHORITY = "com.xorcode.andtweet";
 
 	// This class cannot be instantiated
-	private AndTweet() {
+	private AndTweetDatabase() {
 	}
 
 	/**
@@ -43,44 +43,12 @@ public final class AndTweet {
 		public static final String DEFAULT_SORT_ORDER = "sent DESC";
 
 		// Table columns
-		/**
-		 * Author ID
-		 * <P>
-		 * Type: TEXT
-		 * </P>
-		 */
 		public static final String AUTHOR_ID = "author_id";
-
-		/**
-		 * Tweet message
-		 * <P>
-		 * Type: TEXT
-		 * </P>
-		 */
 		public static final String MESSAGE = "message";
-
-		/**
-		 * Tweet source
-		 * <P>
-		 * Type: TEXT
-		 * </P>
-		 */
 		public static final String SOURCE = "source";
-
-		/**
-		 * When Tweet was created
-		 * <P>
-		 * Type: INTEGER (long from System.currentTimeMillis()
-		 * </P>
-		 */
+		public static final String IN_REPLY_TO_STATUS_ID = "in_reply_to_status_id";
+		public static final String IN_REPLY_TO_AUTHOR_ID = "in_reply_to_author_id";
 		public static final String CREATED_DATE = "created";
-
-		/**
-		 * When Tweet was originally sent
-		 * <P>
-		 * Type: INTEGER (long from System.currentTimeMillis()
-		 * </P>
-		 */
 		public static final String SENT_DATE = "sent";
 	}
 
@@ -97,36 +65,9 @@ public final class AndTweet {
 		public static final String DEFAULT_SORT_ORDER = "sent DESC";
 
 		// Table columns
-		/**
-		 * Author ID
-		 * <P>
-		 * Type: TEXT
-		 * </P>
-		 */
 		public static final String AUTHOR_ID = "author_id";
-
-		/**
-		 * Direct Message text
-		 * <P>
-		 * Type: TEXT
-		 * </P>
-		 */
 		public static final String MESSAGE = "message";
-
-		/**
-		 * When Direct Message was created
-		 * <P>
-		 * Type: INTEGER (long from System.currentTimeMillis()
-		 * </P>
-		 */
 		public static final String CREATED_DATE = "created";
-
-		/**
-		 * When Direct Message was originally sent
-		 * <P>
-		 * Type: INTEGER (long from System.currentTimeMillis()
-		 * </P>
-		 */
 		public static final String SENT_DATE = "sent";
 	}
 
@@ -142,28 +83,8 @@ public final class AndTweet {
 		public static final String DEFAULT_SORT_ORDER = "author_id ASC";
 
 		// Table columns
-		/**
-		 * Author ID
-		 * <P>
-		 * Type: TEXT
-		 * </P>
-		 */
 		public static final String AUTHOR_ID = "author_id";
-
-		/**
-		 * When User was created
-		 * <P>
-		 * Type: INTEGER (long from System.currentTimeMillis()
-		 * </P>
-		 */
 		public static final String MODIFIED_DATE = "modified";
-
-		/**
-		 * When User was modified
-		 * <P>
-		 * Type: INTEGER (long from System.currentTimeMillis()
-		 * </P>
-		 */
 		public static final String CREATED_DATE = "created";
 	}
 }

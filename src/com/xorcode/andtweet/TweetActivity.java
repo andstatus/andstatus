@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.xorcode.andtweet.view;
+package com.xorcode.andtweet;
 
 import java.util.Locale;
 
@@ -17,23 +17,24 @@ import android.text.util.Linkify;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.xorcode.andtweet.R;
-import com.xorcode.andtweet.data.AndTweet.Tweets;
+import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.util.RelativeTime;
 
 /**
  * @author torgny.bjers
  *
  */
-public class Tweet extends Activity {
+public class TweetActivity extends Activity {
 
-	private static final String TAG = "AndTweet";
+	private static final String TAG = "AndTweetDatabase";
 
 	private static final String[] PROJECTION = new String[] {
 		Tweets._ID,
 		Tweets.AUTHOR_ID,
 		Tweets.MESSAGE,
 		Tweets.SOURCE,
+		Tweets.IN_REPLY_TO_AUTHOR_ID,
+		Tweets.IN_REPLY_TO_STATUS_ID,
 		Tweets.SENT_DATE
 	};
 
@@ -80,7 +81,22 @@ public class Tweet extends Activity {
 			mMessage.setFocusableInTouchMode(true);
 			mMessage.setText(aMessage);
 			Linkify.addLinks(mMessage, Linkify.ALL);
-			String sentDate = String.format(Locale.getDefault(), getText(R.string.tweet_source_from).toString(), RelativeTime.getDifference(aSentDate), Html.fromHtml(mCursor.getString(mCursor.getColumnIndex(Tweets.SOURCE))));
+			String inReplyTo = "";
+			int colIndex = mCursor.getColumnIndex(Tweets.IN_REPLY_TO_AUTHOR_ID);
+			if (colIndex > -1) {
+				inReplyTo = mCursor.getString(colIndex);
+				if (inReplyTo != null && "null".equals(inReplyTo) == false) {
+					inReplyTo = String.format(Locale.getDefault(), getText(R.string.tweet_source_in_reply_to).toString(), inReplyTo);
+				}
+			}
+			if (inReplyTo == null || "null".equals(inReplyTo)) inReplyTo = "";
+			String sentDate = String.format(
+				Locale.getDefault(), 
+				getText(R.string.tweet_source_from).toString(), 
+				RelativeTime.getDifference(aSentDate), 
+				Html.fromHtml(mCursor.getString(mCursor.getColumnIndex(Tweets.SOURCE))),
+				inReplyTo
+			);
 			mSentDate.setText(sentDate);
 		} else {
 			Log.w(TAG, "No cursor found");

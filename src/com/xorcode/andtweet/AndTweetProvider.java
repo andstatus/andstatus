@@ -35,13 +35,13 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.xorcode.andtweet.data.AndTweet;
-import com.xorcode.andtweet.data.AndTweet.DirectMessages;
-import com.xorcode.andtweet.data.AndTweet.Tweets;
-import com.xorcode.andtweet.data.AndTweet.Users;
+import com.xorcode.andtweet.data.AndTweetDatabase;
+import com.xorcode.andtweet.data.AndTweetDatabase.DirectMessages;
+import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
+import com.xorcode.andtweet.data.AndTweetDatabase.Users;
 
 /**
- * Database provider for the AndTweet database.
+ * Database provider for the AndTweetDatabase database.
  * 
  * @author torgny.bjers
  */
@@ -50,7 +50,7 @@ public class AndTweetProvider extends ContentProvider {
 	private static final String TAG = "AndTweetProvider";
 
 	private static final String DATABASE_NAME = "andtweet.db";
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 5;
 	private static final String TWEETS_TABLE_NAME = "tweets";
 	private static final String USERS_TABLE_NAME = "users";
 	private static final String DIRECTMESSAGES_TABLE_NAME = "directmessages";
@@ -83,20 +83,30 @@ public class AndTweetProvider extends ContentProvider {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			db.execSQL("CREATE TABLE " + TWEETS_TABLE_NAME + " ("
-					+ Tweets._ID + " INTEGER PRIMARY KEY," + Tweets.AUTHOR_ID + " TEXT," 
-					+ Tweets.MESSAGE + " TEXT," + Tweets.SOURCE + " TEXT,"
-					+ Tweets.SENT_DATE + " INTEGER," + Tweets.CREATED_DATE + " INTEGER"
+					+ Tweets._ID + " INTEGER PRIMARY KEY," 
+					+ Tweets.AUTHOR_ID + " TEXT," 
+					+ Tweets.MESSAGE + " TEXT," 
+					+ Tweets.SOURCE + " TEXT,"
+					+ Tweets.IN_REPLY_TO_STATUS_ID + " INTEGER,"
+					+ Tweets.IN_REPLY_TO_AUTHOR_ID + " TEXT,"
+					+ Tweets.SENT_DATE + " INTEGER," 
+					+ Tweets.CREATED_DATE + " INTEGER"
 					+ ");");
 
 			db.execSQL("CREATE TABLE " + DIRECTMESSAGES_TABLE_NAME + " ("
 					+ DirectMessages._ID + " INTEGER PRIMARY KEY," 
-					+ DirectMessages.AUTHOR_ID + " TEXT," + DirectMessages.MESSAGE + " TEXT," 
+					+ DirectMessages.AUTHOR_ID + " TEXT," 
+					+ DirectMessages.MESSAGE + " TEXT," 
 					+ DirectMessages.SENT_DATE + " INTEGER,"
-					+ DirectMessages.CREATED_DATE + " INTEGER" + ");");
+					+ DirectMessages.CREATED_DATE + " INTEGER"
+					+ ");");
 
-			db.execSQL("CREATE TABLE " + USERS_TABLE_NAME + " (" + Users._ID
-					+ " INTEGER PRIMARY KEY," + Users.AUTHOR_ID + " TEXT," + Users.CREATED_DATE
-					+ " INTEGER," + Users.MODIFIED_DATE + " INTEGER" + ");");
+			db.execSQL("CREATE TABLE " + USERS_TABLE_NAME + " ("
+					+ Users._ID + " INTEGER PRIMARY KEY," 
+					+ Users.AUTHOR_ID + " TEXT," 
+					+ Users.CREATED_DATE + " INTEGER," 
+					+ Users.MODIFIED_DATE + " INTEGER"
+					+ ");");
 		}
 
 		@Override
@@ -117,6 +127,37 @@ public class AndTweetProvider extends ContentProvider {
 	public boolean onCreate() {
 		mOpenHelper = new DatabaseHelper(getContext());
 		return (mOpenHelper == null) ? false : true;
+	}
+
+	/**
+	 * Get type of the Uri to make sure we use the right table
+	 * 
+	 * @see android.content.ContentProvider#getType(android.net.Uri)
+	 */
+	@Override
+	public String getType(Uri uri) {
+		switch (sUriMatcher.match(uri)) {
+		case TWEETS:
+			return Tweets.CONTENT_TYPE;
+
+		case TWEET_ID:
+			return Tweets.CONTENT_ITEM_TYPE;
+
+		case DIRECTMESSAGES:
+			return DirectMessages.CONTENT_TYPE;
+
+		case DIRECTMESSAGE_ID:
+			return DirectMessages.CONTENT_ITEM_TYPE;
+
+		case USERS:
+			return Users.CONTENT_TYPE;
+
+		case USER_ID:
+			return Users.CONTENT_ITEM_TYPE;
+
+		default:
+			throw new IllegalArgumentException("Unknown URI " + uri);
+		}
 	}
 
 	/**
@@ -172,37 +213,6 @@ public class AndTweetProvider extends ContentProvider {
 	}
 
 	/**
-	 * Get type of the Uri to make sure we use the right table
-	 * 
-	 * @see android.content.ContentProvider#getType(android.net.Uri)
-	 */
-	@Override
-	public String getType(Uri uri) {
-		switch (sUriMatcher.match(uri)) {
-		case TWEETS:
-			return Tweets.CONTENT_TYPE;
-
-		case TWEET_ID:
-			return Tweets.CONTENT_ITEM_TYPE;
-
-		case DIRECTMESSAGES:
-			return DirectMessages.CONTENT_TYPE;
-
-		case DIRECTMESSAGE_ID:
-			return DirectMessages.CONTENT_ITEM_TYPE;
-
-		case USERS:
-			return Users.CONTENT_TYPE;
-
-		case USER_ID:
-			return Users.CONTENT_ITEM_TYPE;
-
-		default:
-			throw new IllegalArgumentException("Unknown URI " + uri);
-		}
-	}
-
-	/**
 	 * Insert a new record into the database.
 	 * 
 	 * @see android.content.ContentProvider#insert(android.net.Uri,
@@ -217,106 +227,59 @@ public class AndTweetProvider extends ContentProvider {
 		Long now = Long.valueOf(cal.getTimeInMillis());
 		SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
+		String table;
+		String nullColumnHack;
+		Uri contentUri;
+
+		if (initialValues != null) {
+			values = new ContentValues(initialValues);
+		} else {
+			values = new ContentValues();
+		}
+
 		switch (sUriMatcher.match(uri)) {
 		case TWEETS:
-			if (initialValues != null) {
-				values = new ContentValues(initialValues);
-			} else {
-				values = new ContentValues();
-			}
-
-			// Make sure that the fields are all set
-			if (values.containsKey(Tweets.CREATED_DATE) == false) {
-				values.put(Tweets.CREATED_DATE, now);
-			}
-
-			if (values.containsKey(Tweets.SENT_DATE) == false) {
-				values.put(Tweets.SENT_DATE, now);
-			}
-
-			if (values.containsKey(Tweets.AUTHOR_ID) == false) {
-				values.put(Tweets.AUTHOR_ID, "");
-			}
-
-			if (values.containsKey(Tweets.MESSAGE) == false) {
-				values.put(Tweets.MESSAGE, "");
-			}
-
-			if (values.containsKey(Tweets.SOURCE) == false) {
-				values.put(Tweets.SOURCE, "");
-			}
-
-			rowId = db.insert(TWEETS_TABLE_NAME, Tweets.MESSAGE, values);
-			if (rowId > 0) {
-				Uri tweetUri = ContentUris.withAppendedId(Tweets.CONTENT_URI, rowId);
-				getContext().getContentResolver().notifyChange(tweetUri, null);
-				return tweetUri;
-			}
-			throw new SQLException("Failed to insert row into " + uri);
+			table = TWEETS_TABLE_NAME;
+			nullColumnHack = Tweets.MESSAGE;
+			contentUri = Tweets.CONTENT_URI;
+			if (values.containsKey(Tweets.CREATED_DATE) == false) values.put(Tweets.CREATED_DATE, now);
+			if (values.containsKey(Tweets.SENT_DATE) == false) values.put(Tweets.SENT_DATE, now);
+			if (values.containsKey(Tweets.AUTHOR_ID) == false) values.put(Tweets.AUTHOR_ID, "");
+			if (values.containsKey(Tweets.MESSAGE) == false) values.put(Tweets.MESSAGE, "");
+			if (values.containsKey(Tweets.SOURCE) == false) values.put(Tweets.SOURCE, "");
+			if (values.containsKey(Tweets.IN_REPLY_TO_AUTHOR_ID) == false) values.put(Tweets.IN_REPLY_TO_AUTHOR_ID, "");
+			break;
 
 		case DIRECTMESSAGES:
-			if (initialValues != null) {
-				values = new ContentValues(initialValues);
-			} else {
-				values = new ContentValues();
-			}
-
-			// Make sure that the fields are all set
-			if (values.containsKey(DirectMessages.CREATED_DATE) == false) {
-				values.put(DirectMessages.CREATED_DATE, now);
-			}
-
-			if (values.containsKey(DirectMessages.SENT_DATE) == false) {
-				values.put(DirectMessages.SENT_DATE, now);
-			}
-
-			if (values.containsKey(DirectMessages.AUTHOR_ID) == false) {
-				values.put(DirectMessages.AUTHOR_ID, "");
-			}
-
-			if (values.containsKey(DirectMessages.MESSAGE) == false) {
-				values.put(DirectMessages.MESSAGE, "");
-			}
-
-			rowId = db.insert(DIRECTMESSAGES_TABLE_NAME, DirectMessages.MESSAGE, values);
-			if (rowId > 0) {
-				Uri messageUri = ContentUris.withAppendedId(DirectMessages.CONTENT_URI, rowId);
-				getContext().getContentResolver().notifyChange(messageUri, null);
-				return messageUri;
-			}
-			throw new SQLException("Failed to insert row into " + uri);
+			table = DIRECTMESSAGES_TABLE_NAME;
+			nullColumnHack = DirectMessages.MESSAGE;
+			contentUri = DirectMessages.CONTENT_URI;
+			if (values.containsKey(DirectMessages.CREATED_DATE) == false) values.put(DirectMessages.CREATED_DATE, now);
+			if (values.containsKey(DirectMessages.SENT_DATE) == false) values.put(DirectMessages.SENT_DATE, now);
+			if (values.containsKey(DirectMessages.AUTHOR_ID) == false) values.put(DirectMessages.AUTHOR_ID, "");
+			if (values.containsKey(DirectMessages.MESSAGE) == false) values.put(DirectMessages.MESSAGE, "");
+			break;
 
 		case USERS:
-			if (initialValues != null) {
-				values = new ContentValues(initialValues);
-			} else {
-				values = new ContentValues();
-			}
-
-			// Make sure that the fields are all set
-			if (values.containsKey(Users.MODIFIED_DATE) == false) {
-				values.put(Users.MODIFIED_DATE, now);
-			}
-
-			if (values.containsKey(Users.CREATED_DATE) == false) {
-				values.put(Users.CREATED_DATE, now);
-			}
-
-			if (values.containsKey(Users.AUTHOR_ID) == false) {
-				values.put(Users.AUTHOR_ID, "");
-			}
-
-			rowId = db.insert(USERS_TABLE_NAME, Users.AUTHOR_ID, values);
-			if (rowId > 0) {
-				Uri userUri = ContentUris.withAppendedId(Users.CONTENT_URI, rowId);
-				getContext().getContentResolver().notifyChange(userUri, null);
-				return userUri;
-			}
-			throw new SQLException("Failed to insert row into " + uri);
+			table = USERS_TABLE_NAME;
+			nullColumnHack = Users.AUTHOR_ID;
+			contentUri = Users.CONTENT_URI;
+			if (values.containsKey(Users.MODIFIED_DATE) == false) values.put(Users.MODIFIED_DATE, now);
+			if (values.containsKey(Users.CREATED_DATE) == false) values.put(Users.CREATED_DATE, now);
+			if (values.containsKey(Users.AUTHOR_ID) == false) values.put(Users.AUTHOR_ID, "");
+			break;
 
 		default:
 			throw new IllegalArgumentException("Unknown URI " + uri);
 		}
+
+		rowId = db.insert(table, nullColumnHack, values);
+		if (rowId > 0) {
+			Uri newUri = ContentUris.withAppendedId(contentUri, rowId);
+			return newUri;
+		}
+
+		throw new SQLException("Failed to insert row into " + uri);
 	}
 
 	/**
@@ -399,8 +362,7 @@ public class AndTweetProvider extends ContentProvider {
 		SQLiteDatabase db = mOpenHelper.getReadableDatabase();
 		Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
 
-		// Tell the cursor what Uri to watch, so it knows when its source data
-		// changes
+		// Tell the cursor what Uri to watch, so it knows when its source data changes
 		c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}
@@ -454,7 +416,6 @@ public class AndTweetProvider extends ContentProvider {
 			throw new IllegalArgumentException("Unknown URI " + uri);
 		}
 
-		getContext().getContentResolver().notifyChange(uri, null);
 		return count;
 	}
 
@@ -462,20 +423,22 @@ public class AndTweetProvider extends ContentProvider {
 	static {
 		sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-		sUriMatcher.addURI(AndTweet.AUTHORITY, TWEETS_TABLE_NAME, TWEETS);
-		sUriMatcher.addURI(AndTweet.AUTHORITY, TWEETS_TABLE_NAME + "/#", TWEET_ID);
+		sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, TWEETS_TABLE_NAME, TWEETS);
+		sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, TWEETS_TABLE_NAME + "/#", TWEET_ID);
 
-		sUriMatcher.addURI(AndTweet.AUTHORITY, USERS_TABLE_NAME, USERS);
-		sUriMatcher.addURI(AndTweet.AUTHORITY, USERS_TABLE_NAME + "/#", USER_ID);
+		sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, USERS_TABLE_NAME, USERS);
+		sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, USERS_TABLE_NAME + "/#", USER_ID);
 
-		sUriMatcher.addURI(AndTweet.AUTHORITY, DIRECTMESSAGES_TABLE_NAME, DIRECTMESSAGES);
-		sUriMatcher.addURI(AndTweet.AUTHORITY, DIRECTMESSAGES_TABLE_NAME + "/#", DIRECTMESSAGE_ID);
+		sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, DIRECTMESSAGES_TABLE_NAME, DIRECTMESSAGES);
+		sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, DIRECTMESSAGES_TABLE_NAME + "/#", DIRECTMESSAGE_ID);
 
 		sTweetsProjectionMap = new HashMap<String, String>();
 		sTweetsProjectionMap.put(Tweets._ID, Tweets._ID);
 		sTweetsProjectionMap.put(Tweets.AUTHOR_ID, Tweets.AUTHOR_ID);
 		sTweetsProjectionMap.put(Tweets.MESSAGE, Tweets.MESSAGE);
 		sTweetsProjectionMap.put(Tweets.SOURCE, Tweets.SOURCE);
+		sTweetsProjectionMap.put(Tweets.IN_REPLY_TO_STATUS_ID, Tweets.IN_REPLY_TO_STATUS_ID);
+		sTweetsProjectionMap.put(Tweets.IN_REPLY_TO_AUTHOR_ID, Tweets.IN_REPLY_TO_AUTHOR_ID);
 		sTweetsProjectionMap.put(Tweets.SENT_DATE, Tweets.SENT_DATE);
 		sTweetsProjectionMap.put(Tweets.CREATED_DATE, Tweets.CREATED_DATE);
 

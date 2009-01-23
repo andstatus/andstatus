@@ -16,12 +16,15 @@
 
 package com.xorcode.andtweet.data;
 
+import java.util.Locale;
+
 import android.database.Cursor;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
 import com.xorcode.andtweet.R;
+import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.util.RelativeTime;
 
 /**
@@ -34,7 +37,15 @@ public class TweetBinder implements ViewBinder {
 	public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
 		switch (view.getId()) {
 		case R.id.tweet_sent:
-			((TextView)view).setText(RelativeTime.getDifference(cursor.getLong(columnIndex)));
+			String time = RelativeTime.getDifference(cursor.getLong(columnIndex));
+			int colIndex = cursor.getColumnIndex(Tweets.IN_REPLY_TO_AUTHOR_ID);
+			if (colIndex > -1) {
+				String inReplyTo = cursor.getString(colIndex);
+				if (inReplyTo != null && "null".equals(inReplyTo) == false) {
+					time += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.tweet_source_in_reply_to).toString(), inReplyTo);
+				}
+			}
+			((TextView)view).setText(time);
 			return true;
 		}
 		return false;

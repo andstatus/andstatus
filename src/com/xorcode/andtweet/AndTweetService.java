@@ -43,12 +43,11 @@ import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.xorcode.andtweet.data.AndTweet;
+import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
-import com.xorcode.andtweet.view.TweetList;
 
 /**
  * This is an application service that serves as a connection between Android
@@ -227,15 +226,16 @@ public class AndTweetService extends Service {
 	
 						// Construct the Uri to existing record
 						Long lUserId = Long.parseLong(jo.getString("id"));
-						Uri aUserUri = ContentUris.withAppendedId(AndTweet.Users.CONTENT_URI, lUserId);
+						Uri aUserUri = ContentUris.withAppendedId(AndTweetDatabase.Users.CONTENT_URI, lUserId);
 	
-						values.put(AndTweet.Users._ID, lUserId.toString());
-						values.put(AndTweet.Users.AUTHOR_ID, jo.getString("screen_name"));
+						values.put(AndTweetDatabase.Users._ID, lUserId.toString());
+						values.put(AndTweetDatabase.Users.AUTHOR_ID, jo.getString("screen_name"));
 	
 						if ((contentResolver.update(aUserUri, values, null, null)) == 0) {
-							contentResolver.insert(AndTweet.Users.CONTENT_URI, values);
+							contentResolver.insert(AndTweetDatabase.Users.CONTENT_URI, values);
 						}
 					}
+					getContentResolver().notifyChange(AndTweetDatabase.Users.CONTENT_URI, null);
 				}
 			} catch (JSONException e) {
 				Log.e(TAG, e.getMessage());
@@ -270,7 +270,7 @@ public class AndTweetService extends Service {
 		notification.ledARGB = Color.GREEN;
 
 		// Set up the pending intent
-		PendingIntent contentIntent = PendingIntent.getActivity(this, numTweets, new Intent(this, TweetList.class), 0);
+		PendingIntent contentIntent = PendingIntent.getActivity(this, numTweets, new Intent(this, TweetListActivity.class), 0);
 
 		// Set up the message
 		MessageFormat form = new MessageFormat(getText(R.string.notification_new_tweet_format).toString());

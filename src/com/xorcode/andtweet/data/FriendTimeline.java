@@ -33,7 +33,7 @@ import android.net.Uri;
 import android.text.Html;
 import android.util.Log;
 
-import com.xorcode.andtweet.data.AndTweet.Tweets;
+import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
@@ -71,9 +71,9 @@ public class FriendTimeline {
 		if (mUsername != null && mUsername.length() > 0) {
 			Log.i(TAG, "Loading friends timeline");
 			// Try to load the last record
-			Cursor c = mContentResolver.query(AndTweet.Tweets.CONTENT_URI, new String[] {
-				AndTweet.Tweets._ID, AndTweet.Tweets.SENT_DATE
-			}, null, null, AndTweet.Tweets.DEFAULT_SORT_ORDER);
+			Cursor c = mContentResolver.query(AndTweetDatabase.Tweets.CONTENT_URI, new String[] {
+				AndTweetDatabase.Tweets._ID, AndTweetDatabase.Tweets.SENT_DATE
+			}, null, null, AndTweetDatabase.Tweets.DEFAULT_SORT_ORDER);
 			try {
 				c.moveToFirst();
 				// If a record is available, get the last run time
@@ -100,6 +100,9 @@ public class FriendTimeline {
 				JSONObject jo = jArr.getJSONObject(index);
 				insertFromJSONObject(jo);
 			}
+			if (mNewTweets > 0) {
+				mContentResolver.notifyChange(AndTweetDatabase.Tweets.CONTENT_URI, null);
+			}
 		}
 		return mNewTweets;
 	}
@@ -112,13 +115,15 @@ public class FriendTimeline {
 
 		// Construct the Uri to existing record
 		Long lTweetId = Long.parseLong(jo.getString("id"));
-		Uri aTweetUri = ContentUris.withAppendedId(AndTweet.Tweets.CONTENT_URI, lTweetId);
+		Uri aTweetUri = ContentUris.withAppendedId(AndTweetDatabase.Tweets.CONTENT_URI, lTweetId);
 
-		values.put(AndTweet.Tweets._ID, lTweetId.toString());
-		values.put(AndTweet.Tweets.AUTHOR_ID, user.getString("screen_name"));
+		values.put(AndTweetDatabase.Tweets._ID, lTweetId.toString());
+		values.put(AndTweetDatabase.Tweets.AUTHOR_ID, user.getString("screen_name"));
 
-		values.put(AndTweet.Tweets.MESSAGE, Html.fromHtml(jo.getString("text")).toString());
-		values.put(AndTweet.Tweets.SOURCE, jo.getString("source"));
+		values.put(AndTweetDatabase.Tweets.MESSAGE, Html.fromHtml(jo.getString("text")).toString());
+		values.put(AndTweetDatabase.Tweets.SOURCE, jo.getString("source"));
+		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_STATUS_ID, jo.getString("in_reply_to_status_id"));
+		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_AUTHOR_ID, jo.getString("in_reply_to_screen_name"));
 
 		DateFormat f = new SimpleDateFormat(DATE_FORMAT);
 		Calendar cal = Calendar.getInstance();
@@ -130,9 +135,15 @@ public class FriendTimeline {
 		}
 
 		if ((mContentResolver.update(aTweetUri, values, null, null)) == 0) {
-			mContentResolver.insert(AndTweet.Tweets.CONTENT_URI, values);
+			mContentResolver.insert(AndTweetDatabase.Tweets.CONTENT_URI, values);
 			mNewTweets++;
 		}
+		return aTweetUri;
+	}
+
+	public Uri insertFromJSONObject(JSONObject jo, boolean notify) throws JSONException, SQLiteConstraintException {
+		Uri aTweetUri = insertFromJSONObject(jo);
+		if (notify) mContentResolver.notifyChange(aTweetUri, null);
 		return aTweetUri;
 	}
 }

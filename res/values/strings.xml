@@ -58,7 +58,7 @@
 	<string name="dialog_summary_checking_credentials">Please wait while your account is verified.</string>
 	<string name="unimplemented">Not implemented.</string>
 	<string name="authentication_successful">Authentication successful!</string>
-	<string name="tweet_source_from">%1$s from %2$s</string>
+	<string name="tweet_source_from">%1$s from %2$s %3$s</string>
 	<string name="summary_preference_appearance">Change the AndTweet look and feel</string>
 	<string name="category_title_preference_appearance">Appearance</string>
 	<string name="category_title_preference_notifications">Notifications</string>
@@ -74,4 +74,7 @@
 	<string name="summary_preference_automatic_updates">Change automatic update settings</string>
 	<string name="summary_preference_theme">Select AndTweet theme</string>
 	<string name="cannot_send_empty_message">Cannot send empty message.</string>
+	<string name="loading">Loading...</string>
+	<string name="options_menu_more">More</string>
+	<string name="tweet_source_in_reply_to">in reply to %1$s</string>
 </resources>

@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,20 +16,11 @@
 
 package com.xorcode.andtweet;
 
-import com.xorcode.andtweet.IAndTweetServiceCallback;
+import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView.OnItemClickListener;
 
 /**
- * Example of defining an interface for calling on to a remote service
- * (running in another process).
+ * @author torgny.bjers
+ *
  */
-interface IAndTweetService {
-    /**
-     * Register a callback interface with the service.
-     */
-    void registerCallback(IAndTweetServiceCallback cb);
-    
-    /**
-     * Remove a previously registered callback interface.
-     */
-    void unregisterCallback(IAndTweetServiceCallback cb);
-}
+public interface ITimelineActivity extends OnScrollListener, OnItemClickListener {}

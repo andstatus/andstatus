@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.xorcode.andtweet.view;
+package com.xorcode.andtweet;
 
 import java.text.MessageFormat;
 
@@ -34,7 +34,6 @@ import android.preference.PreferenceActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionException;
 
@@ -42,9 +41,9 @@ import com.xorcode.andtweet.net.ConnectionException;
  * @author torgny.bjers
  * 
  */
-public class Preferences extends PreferenceActivity implements OnSharedPreferenceChangeListener {
+public class PreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 
-	private static final String TAG = "AndTweet";
+	private static final String TAG = "AndTweetDatabase";
 
 	public static final String KEY_TWITTER_USERNAME = "twitter_username";
 	public static final String KEY_TWITTER_PASSWORD = "twitter_password";
@@ -111,7 +110,7 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 			updateFrequency();
 		}
 		if (key.equals(KEY_TWITTER_USERNAME) || key.equals(KEY_TWITTER_PASSWORD)) {
-			mProgressDialog = ProgressDialog.show(Preferences.this, getText(R.string.dialog_title_checking_credentials), getText(R.string.dialog_summary_checking_credentials), true, false);
+			mProgressDialog = ProgressDialog.show(PreferencesActivity.this, getText(R.string.dialog_title_checking_credentials), getText(R.string.dialog_summary_checking_credentials), true, false);
 			Thread thread = new Thread(mCheckCredentials);
 			thread.start();
 		}
@@ -125,7 +124,7 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 				Log.d(TAG, "account valid");
 				mProgressDialog.dismiss();
 				mAutomaticUpdates.setEnabled(true);
-				Toast.makeText(Preferences.this, R.string.authentication_successful, Toast.LENGTH_SHORT).show();
+				Toast.makeText(PreferencesActivity.this, R.string.authentication_successful, Toast.LENGTH_SHORT).show();
 				break;
 			case MSG_ACCOUNT_INVALID:
 				Log.d(TAG, "account invalid");
@@ -153,7 +152,7 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 				} catch (JSONException e) {
 					Log.e(TAG, e.getMessage());
 				} catch (ConnectionException e) {
-					Toast.makeText(Preferences.this, e.getMessage(), Toast.LENGTH_LONG).show();
+					Toast.makeText(PreferencesActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
 					Log.e(TAG, "mCheckCredentials Connection Exception: " + e.getMessage());
 				}
 			}

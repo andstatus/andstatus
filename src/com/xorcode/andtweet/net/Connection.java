@@ -59,7 +59,7 @@ public class Connection {
 	private static final String VERIFY_CREDENTIALS_URL = "http://twitter.com/statuses/verify_credentials.json";
 	private static final String USER_AGENT = "Mozilla/4.5";
 	private static final String SOURCE_PARAMETER = "andtweet";
-	private static final String TAG = "AndTweet";
+	private static final String TAG = "AndTweetDatabase";
 
 	private String mUsername;
 	private String mPassword;
