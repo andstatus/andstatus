@@ -77,4 +77,6 @@
 	<string name="loading">Loading...</string>
 	<string name="options_menu_more">More</string>
 	<string name="tweet_source_in_reply_to">in reply to %1$s</string>
+	<string name="splash_button_settings">Settings</string>
+	<string name="splash_button_get_started">Get Started</string>
 </resources>
