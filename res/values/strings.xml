@@ -82,7 +82,7 @@
 	<string name="tweet_activity">Tweet</string>
 	<string name="messages_activity">Direct Messages</string>
 	<string name="notification_message_singular">{0} new message</string>
-	<string name="notification_message_plural">{0,number} new messa1ges</string>
+	<string name="notification_message_plural">{0,number} new messages</string>
 	<string name="notification_new_message_format">You have {0}.</string>
 	<string name="notification_title_messages">New Direct Messages</string>
 	<string name="title_preference_light_theme">Light Theme</string>
