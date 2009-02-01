@@ -33,7 +33,6 @@ import android.net.Uri;
 import android.text.Html;
 import android.util.Log;
 
-import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
@@ -43,17 +42,17 @@ import com.xorcode.andtweet.net.ConnectionException;
  * 
  * @author torgny.bjers
  */
-public class FriendTimeline {
+public class DirectMessages {
 
-	private static final String TAG = "FriendTimeline";
+	private static final String TAG = "DirectMessages";
 
 	private static final String DATE_FORMAT = "EEE MMM dd HH:mm:ss Z yyyy";
 
 	private ContentResolver mContentResolver;
 	private String mUsername, mPassword;
-	private int mNewTweets;
+	private int mNewMessages;
 
-	public FriendTimeline(ContentResolver contentResolver, String username, String password) {
+	public DirectMessages(ContentResolver contentResolver, String username, String password) {
 		mContentResolver = contentResolver;
 		mUsername = username;
 		mPassword = password;
@@ -65,15 +64,15 @@ public class FriendTimeline {
 	 * @throws ConnectionException 
 	 * @return int
 	 */
-	public int loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException {
+	public int loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException {
 		long aLastRunTime = 0;
-		mNewTweets = 0;
+		mNewMessages = 0;
 		if (mUsername != null && mUsername.length() > 0) {
-			Log.i(TAG, "Loading friends timeline");
+			Log.i(TAG, "Loading direct messages");
 			// Try to load the last record
-			Cursor c = mContentResolver.query(AndTweetDatabase.Tweets.CONTENT_URI, new String[] {
-				AndTweetDatabase.Tweets._ID, AndTweetDatabase.Tweets.SENT_DATE
-			}, null, null, AndTweetDatabase.Tweets.DEFAULT_SORT_ORDER);
+			Cursor c = mContentResolver.query(AndTweetDatabase.DirectMessages.CONTENT_URI, new String[] {
+				AndTweetDatabase.DirectMessages._ID, AndTweetDatabase.DirectMessages.SENT_DATE
+			}, null, null, AndTweetDatabase.DirectMessages.DEFAULT_SORT_ORDER);
 			try {
 				c.moveToFirst();
 				// If a record is available, get the last run time
@@ -82,7 +81,7 @@ public class FriendTimeline {
 					Calendar cal = Calendar.getInstance();
 					cal.setTimeInMillis(c.getLong(1));
 					aLastRunTime = cal.getTimeInMillis();
-					Log.d(TAG, "Last tweet: " + f.format(cal.getTime()));
+					Log.d(TAG, "Last direct message: " + f.format(cal.getTime()));
 				}
 			} catch (Exception e) {
 				String msg = e.getMessage();
@@ -94,55 +93,50 @@ public class FriendTimeline {
 				if (c != null && !c.isClosed()) c.close();
 			}
 			Connection aConn = new Connection(mUsername, mPassword, aLastRunTime);
-			JSONArray jArr = aConn.getFriendsTimeline();
+			JSONArray jArr = aConn.getDirectMessages();
 			for (int index = 0; index < jArr.length(); index++) {
 				JSONObject jo = jArr.getJSONObject(index);
 				insertFromJSONObject(jo);
 			}
-			if (mNewTweets > 0) {
-				mContentResolver.notifyChange(AndTweetDatabase.Tweets.CONTENT_URI, null);
+			if (mNewMessages > 0) {
+				mContentResolver.notifyChange(AndTweetDatabase.DirectMessages.CONTENT_URI, null);
 			}
 		}
-		return mNewTweets;
+		return mNewMessages;
 	}
 
 	public Uri insertFromJSONObject(JSONObject jo) throws JSONException, SQLiteConstraintException {
-		JSONObject user;
-		user = jo.getJSONObject("user");
-
 		ContentValues values = new ContentValues();
 
 		// Construct the Uri to existing record
-		Long lTweetId = Long.parseLong(jo.getString("id"));
-		Uri aTweetUri = ContentUris.withAppendedId(AndTweetDatabase.Tweets.CONTENT_URI, lTweetId);
+		Long lMessageId = Long.parseLong(jo.getString("id"));
+		Uri aMessageUri = ContentUris.withAppendedId(AndTweetDatabase.DirectMessages.CONTENT_URI, lMessageId);
+		Log.d(TAG, aMessageUri.toString());
 
-		values.put(AndTweetDatabase.Tweets._ID, lTweetId.toString());
-		values.put(AndTweetDatabase.Tweets.AUTHOR_ID, user.getString("screen_name"));
+		values.put(AndTweetDatabase.DirectMessages._ID, lMessageId.toString());
+		values.put(AndTweetDatabase.DirectMessages.AUTHOR_ID, jo.getString("sender_screen_name"));
 
-		values.put(AndTweetDatabase.Tweets.MESSAGE, Html.fromHtml(jo.getString("text")).toString());
-		values.put(AndTweetDatabase.Tweets.SOURCE, jo.getString("source"));
-		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_STATUS_ID, jo.getString("in_reply_to_status_id"));
-		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_AUTHOR_ID, jo.getString("in_reply_to_screen_name"));
+		values.put(AndTweetDatabase.DirectMessages.MESSAGE, Html.fromHtml(jo.getString("text")).toString());
 
 		DateFormat f = new SimpleDateFormat(DATE_FORMAT);
 		Calendar cal = Calendar.getInstance();
 		try {
 			cal.setTime(f.parse(jo.getString("created_at")));
-			values.put(Tweets.SENT_DATE, cal.getTimeInMillis());
+			values.put(AndTweetDatabase.DirectMessages.SENT_DATE, cal.getTimeInMillis());
 		} catch (java.text.ParseException e) {
 			Log.e(TAG, e.getMessage());
 		}
 
-		if ((mContentResolver.update(aTweetUri, values, null, null)) == 0) {
-			mContentResolver.insert(AndTweetDatabase.Tweets.CONTENT_URI, values);
-			mNewTweets++;
+		if ((mContentResolver.update(aMessageUri, values, null, null)) == 0) {
+			mContentResolver.insert(AndTweetDatabase.DirectMessages.CONTENT_URI, values);
+			mNewMessages++;
 		}
-		return aTweetUri;
+		return aMessageUri;
 	}
 
 	public Uri insertFromJSONObject(JSONObject jo, boolean notify) throws JSONException, SQLiteConstraintException {
-		Uri aTweetUri = insertFromJSONObject(jo);
-		if (notify) mContentResolver.notifyChange(aTweetUri, null);
-		return aTweetUri;
+		Uri aMessageUri = insertFromJSONObject(jo);
+		if (notify) mContentResolver.notifyChange(aMessageUri, null);
+		return aMessageUri;
 	}
 }

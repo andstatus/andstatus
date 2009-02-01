@@ -50,7 +50,7 @@ public class AndTweetProvider extends ContentProvider {
 	private static final String TAG = "AndTweetProvider";
 
 	private static final String DATABASE_NAME = "andtweet.db";
-	private static final int DATABASE_VERSION = 5;
+	private static final int DATABASE_VERSION = 6;
 	private static final String TWEETS_TABLE_NAME = "tweets";
 	private static final String USERS_TABLE_NAME = "users";
 	private static final String DIRECTMESSAGES_TABLE_NAME = "directmessages";

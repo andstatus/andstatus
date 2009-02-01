@@ -39,5 +39,7 @@
 			<flag name="bold" value="1"/>
 			<flag name="italic" value="2"/>
 		</attr>
+
+		<attr name="textEditColor" format="reference|color" />
 	</declare-styleable>
 </resources>

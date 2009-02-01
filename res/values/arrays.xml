@@ -60,8 +60,8 @@
 		<item>Large</item>
 	</string-array>
 	<string-array name="theme_keys">
-		<item>Theme.AndTweet.Small</item>
-		<item>Theme.AndTweet</item>
-		<item>Theme.AndTweet.Large</item>
+		<item>AndTweet.Small</item>
+		<item>AndTweet</item>
+		<item>AndTweet.Large</item>
 	</string-array>
 </resources>

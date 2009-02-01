@@ -1,6 +1,19 @@
-/**
- * 
+/* 
+ * Copyright (C) 2008 Torgny Bjers
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package com.xorcode.andtweet;
 
 import java.util.Locale;
@@ -107,7 +120,17 @@ public class TweetActivity extends Activity {
 	 * Load the theme for preferences.
 	 */
 	protected void loadTheme() {
-		int resourceId = getResources().getIdentifier(mSP.getString("theme", "Theme.AndTweet"), "style", "com.xorcode.andtweet");
-		setTheme(resourceId);
+		boolean light = mSP.getBoolean("appearance_light_theme", false);
+		StringBuilder theme = new StringBuilder();
+		String name = mSP.getString("theme", "AndTweet");
+		if (name.indexOf("Theme.") > -1) {
+			name = name.substring(name.indexOf("Theme."));
+		}
+		theme.append("Theme.");
+		if (light) {
+			theme.append("Light.");
+		}
+		theme.append(name);
+		setTheme((int) getResources().getIdentifier(theme.toString(), "style", "com.xorcode.andtweet"));
 	}
 }

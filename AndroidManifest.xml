@@ -1,7 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	Copyright (C) 2008 Torgny Bjers
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	     http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+ -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.xorcode.andtweet" android:versionName="0.1.12" android:versionCode="12">
-	<application android:label="@string/app_name" android:icon="@drawable/icon" android:debuggable="true">
+	package="com.xorcode.andtweet" android:versionName="0.1.14"
+	android:versionCode="14">
+	<application android:label="@string/app_name" android:icon="@drawable/icon"
+		android:debuggable="true">
 		<provider android:name="AndTweetProvider"
 			android:authorities="com.xorcode.andtweet"></provider>
 		<service android:process=":remote" android:name="AndTweetService">
@@ -26,16 +43,37 @@
 				<data android:mimeType="vnd.android.cursor.dir/vnd.xorcode.andtweet.tweet"></data>
 			</intent-filter>
 		</activity>
-		<activity android:name="TweetActivity">
+		<activity android:label="@string/tweet_activity"
+			android:name="TweetActivity">
 			<intent-filter android:label="@string/resolve_view">
 				<action android:name="android.intent.action.VIEW"></action>
 				<category android:name="android.intent.category.DEFAULT"></category>
 				<data android:mimeType="vnd.android.cursor.item/vnd.xorcode.andtweet.tweet"></data>
 			</intent-filter>
 		</activity>
-		<activity android:name="PreferencesActivity">
+		<activity android:name="PreferencesActivity"
+			android:launchMode="singleTask">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"></action>
+			</intent-filter>
+		</activity>
+		<activity android:label="@string/messages_activity"
+			android:name="MessageListActivity" android:launchMode="singleTask">
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW"></action>
+				<action android:name="android.intent.action.PICK"></action>
+				<category android:name="android.intent.category.DEFAULT"></category>
+				<data android:mimeType="vnd.android.cursor.dir/vnd.xorcode.andtweet.directmessage"></data>
+			</intent-filter>
+		</activity>
+		<activity android:name="SplashActivity" android:launchMode="singleTask">
+			<intent-filter>
+				<category android:name="android.intent.category.DEFAULT"></category>
+			</intent-filter>
+		</activity>
+		<activity android:name="SplashMoreActivity" android:launchMode="singleTask">
+			<intent-filter>
+				<category android:name="android.intent.category.DEFAULT"></category>
 			</intent-filter>
 		</activity>
 	</application>

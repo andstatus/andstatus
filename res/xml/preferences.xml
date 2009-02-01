@@ -18,21 +18,25 @@
 	<PreferenceCategory android:title="@string/category_title_preference_credentials">
 		<EditTextPreference android:title="@string/title_preference_username"
 			android:dialogTitle="@string/dialog_title_preference_username"
-			android:summary="@string/summary_preference_username"
-			android:key="twitter_username" android:singleLine="true" />
+			android:summary="@string/summary_preference_username" android:key="twitter_username"
+			android:singleLine="true" />
 		<EditTextPreference android:title="@string/title_preference_password"
 			android:dialogTitle="@string/dialog_title_preference_password"
-			android:summary="@string/summary_preference_password"
-			android:key="twitter_password" android:password="true" android:singleLine="true" />
+			android:summary="@string/summary_preference_password" android:key="twitter_password"
+			android:password="true" android:singleLine="true" />
 	</PreferenceCategory>
 	<PreferenceCategory android:title="@string/category_title_preference_settings">
 		<PreferenceScreen android:summary="@string/summary_preference_appearance"
 			android:key="preference_screen_apperance" android:title="@string/title_preference_appearance">
 			<PreferenceCategory android:title="@string/category_title_preference_appearance">
 				<ListPreference android:key="theme" android:entries="@array/theme_values"
-					android:entryValues="@array/theme_keys" android:defaultValue="Theme.AndTweet"
+					android:entryValues="@array/theme_keys" android:defaultValue="AndTweet"
 					android:title="@string/title_preference_theme" android:summary="@string/summary_preference_theme"
-					android:dialogTitle="@string/dialog_title_preference_theme"></ListPreference>
+					android:dialogTitle="@string/dialog_title_preference_theme" />
+				<CheckBoxPreference android:key="appearance_light_theme"
+					android:title="@string/title_preference_light_theme"
+					android:summaryOff="@string/summary_preference_light_theme_off"
+					android:summaryOn="@string/summary_preference_light_theme_on" />
 			</PreferenceCategory>
 		</PreferenceScreen>
 		<PreferenceScreen android:summary="@string/summary_preference_notifications"
@@ -41,16 +45,18 @@
 				<CheckBoxPreference android:key="notifications_enabled"
 					android:summaryOn="Notifications are enabled" android:summaryOff="All notifications are disabled"
 					android:summary="Should notifications be enabled?" android:title="Enable Notifications"
-					android:disableDependentsState="false"></CheckBoxPreference>
+					android:disableDependentsState="false" />
 				<CheckBoxPreference android:key="vibration"
 					android:summary="Vibrate on incoming message" android:title="Vibration"
 					android:summaryOn="Vibrating on incoming messages"
-					android:summaryOff="Vibration turned off" android:dependency="notifications_enabled"></CheckBoxPreference>
+					android:summaryOff="Vibration turned off" android:dependency="notifications_enabled" />
 			</PreferenceCategory>
 		</PreferenceScreen>
 		<PreferenceScreen android:summary="@string/summary_preference_automatic_updates"
-			android:key="preference_screen_automatic_updates" android:title="@string/title_preference_automatic_updates" android:dependency="twitter_username" android:shouldDisableView="true">
-			<PreferenceCategory android:title="@string/category_title_preference_automatic_updates">
+			android:key="preference_screen_automatic_updates" android:title="@string/title_preference_automatic_updates"
+			android:dependency="twitter_username" android:shouldDisableView="true">
+			<PreferenceCategory
+				android:title="@string/category_title_preference_automatic_updates">
 				<CheckBoxPreference android:key="automatic_updates"
 					android:title="@string/title_preference_automatic_updates"
 					android:disableDependentsState="false"

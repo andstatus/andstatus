@@ -37,7 +37,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.protocol.HTTP;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,11 +51,17 @@ import com.xorcode.andtweet.util.Base64;
  * @author torgny.bjers
  */
 public class Connection {
-	private static final String PUBLIC_TIMELINE_URL = "http://twitter.com/statuses/public_timeline.json";
-	private static final String FRIENDS_TIMELINE_URL = "http://twitter.com/statuses/friends_timeline.json";
-	private static final String FRIENDS_URL = "http://twitter.com/statuses/friends.json";
-	private static final String UPDATE_STATUS_URL = "http://twitter.com/statuses/update.json";
-	private static final String VERIFY_CREDENTIALS_URL = "http://twitter.com/statuses/verify_credentials.json";
+
+	private static final String BASE_URL = "http://twitter.com";
+	private static final String EXTENSION = ".json";
+
+	private static final String PUBLIC_TIMELINE_URL = BASE_URL + "/statuses/public_timeline" + EXTENSION;
+	private static final String FRIENDS_TIMELINE_URL = BASE_URL + "/statuses/friends_timeline" + EXTENSION;
+	private static final String DIRECT_MESSAGES_URL = BASE_URL + "/direct_messages" + EXTENSION;
+	private static final String DIRECT_MESSAGES_SENT_URL = BASE_URL + "/direct_messages/sent" + EXTENSION;
+	private static final String FRIENDS_URL = BASE_URL + "/statuses/friends" + EXTENSION;
+	private static final String UPDATE_STATUS_URL = BASE_URL + "/statuses/update" + EXTENSION;
+	private static final String VERIFY_CREDENTIALS_URL = BASE_URL + "/statuses/verify_credentials" + EXTENSION;
 	private static final String USER_AGENT = "Mozilla/4.5";
 	private static final String SOURCE_PARAMETER = "andtweet";
 	private static final String TAG = "AndTweetDatabase";
@@ -112,7 +117,7 @@ public class Connection {
 	/**
 	 * Get the user's own and friends timeline.
 	 * 
-	 * Returns the 20 most recent statuses posted by the authenticating user and
+	 * Returns the 100 most recent statuses posted by the authenticating user and
 	 * that user's friends. This is the equivalent of /home on the Web.
 	 * 
 	 * @return JSONArray
@@ -158,6 +163,78 @@ public class Connection {
 	 */
 	public JSONArray getFriends() throws ConnectionException, ConnectionAuthenticationException {
 		String url = FRIENDS_URL;
+		JSONArray jArr = null;
+		String request = getRequest(url);
+		try {
+			jArr = new JSONArray(request);
+		} catch (JSONException e) {
+			try {
+				JSONObject jObj = new JSONObject(request);
+				String error = jObj.optString("error");
+				if ("Could not authenticate you.".equals(error)) {
+					throw new ConnectionAuthenticationException(error);
+				}
+			} catch (JSONException e1) {
+				throw new ConnectionException(e);
+			}
+		}
+		return jArr;
+	}
+
+	/**
+	 * Get the user's own and friends timeline.
+	 * 
+	 * Returns the 100 most recent direct messages for the authenticating user.
+	 * 
+	 * @return JSONArray
+	 * @throws ConnectionException 
+	 * @throws ConnectionAuthenticationException 
+	 */
+	public JSONArray getDirectMessages() throws ConnectionException, ConnectionAuthenticationException {
+		String url = DIRECT_MESSAGES_URL;
+		url += "?count=100";
+		if (mLastRunTime > 0) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(mLastRunTime);
+			DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+			url += "&since=" + URLEncoder.encode(df.format(cal.getTime()));
+		}
+		JSONArray jArr = null;
+		String request = getRequest(url);
+		try {
+			jArr = new JSONArray(request);
+		} catch (JSONException e) {
+			try {
+				JSONObject jObj = new JSONObject(request);
+				String error = jObj.optString("error");
+				if ("Could not authenticate you.".equals(error)) {
+					throw new ConnectionAuthenticationException(error);
+				}
+			} catch (JSONException e1) {
+				throw new ConnectionException(e);
+			}
+		}
+		return jArr;
+	}
+
+	/**
+	 * Get the user's own and friends timeline.
+	 * 
+	 * Returns the 100 most recent sent messages for the authenticating user.
+	 * 
+	 * @return JSONArray
+	 * @throws ConnectionException 
+	 * @throws ConnectionAuthenticationException 
+	 */
+	public JSONArray getSentDirectMessages() throws ConnectionException, ConnectionAuthenticationException {
+		String url = DIRECT_MESSAGES_SENT_URL;
+		url += "?count=100";
+		if (mLastRunTime > 0) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(mLastRunTime);
+			DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+			url += "&since=" + URLEncoder.encode(df.format(cal.getTime()));
+		}
 		JSONArray jArr = null;
 		String request = getRequest(url);
 		try {
@@ -303,7 +380,7 @@ public class Connection {
 				postMethod.setEntity(formParams);
 			}
 			HttpResponse httpResponse = client.execute(postMethod);
-			result = EntityUtils.toString(httpResponse.getEntity());
+			result = retrieveInputStream(httpResponse.getEntity());
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 			throw new ConnectionException(e);
@@ -323,8 +400,7 @@ public class Connection {
 		int length = (int) httpEntity.getContentLength();
 		StringBuffer stringBuffer = new StringBuffer(length);
 		try {
-			InputStreamReader inputStreamReader = new InputStreamReader(httpEntity.getContent(),
-					HTTP.UTF_8);
+			InputStreamReader inputStreamReader = new InputStreamReader(httpEntity.getContent(), HTTP.UTF_8);
 			char buffer[] = new char[length];
 			int count;
 			while ((count = inputStreamReader.read(buffer, 0, length - 1)) > 0) {

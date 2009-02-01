@@ -21,7 +21,7 @@
 		android:scrollbars="vertical" android:layout_width="fill_parent"
 		android:layout_height="80px" android:layout_weight="1" />
 	<LinearLayout android:layout_width="wrap_content"
-		android:layout_height="wrap_content">
+		android:layout_height="wrap_content" android:id="@+id/tweetlist_info">
 		<TextView android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:text="@string/message_characters_left"
 			android:paddingLeft="5dip" />
@@ -31,7 +31,7 @@
 	</LinearLayout>
 
 	<LinearLayout android:layout_height="wrap_content"
-		android:layout_width="fill_parent">
+		android:layout_width="fill_parent" android:id="@+id/tweetlist_editor">
 		<LinearLayout android:layout_height="wrap_content"
 			android:layout_width="fill_parent" android:layout_weight="1">
 			<MultiAutoCompleteTextView android:id="@+id/messageEditTextAC"
