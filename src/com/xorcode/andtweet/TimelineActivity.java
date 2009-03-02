@@ -16,10 +16,12 @@
 
 package com.xorcode.andtweet;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -32,6 +34,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -84,6 +87,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final int OPTIONS_MENU_RELOAD = Menu.FIRST + 2;
 	public static final int OPTIONS_MENU_MORE_SWITCH_TIMELINE = Menu.FIRST + 3;
 
+	public static final int MILLISECONDS = 1000;
+
 	// Views and widgets
 	protected LinearLayout mListFooter;
 
@@ -93,9 +98,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	protected SharedPreferences mSP;
 	protected ProgressDialog mProgressDialog;
 	protected Handler mHandler;
+	protected PendingIntent mAlarmSender;
+	protected AlarmManager mAM;
 
 	protected int mCurrentPage = 1;
 	protected int mTotalItemCount = 0;
+	protected int mFrequency = 180;
 
 	protected boolean mIsBound;
 	protected boolean mIsLoading;
@@ -123,6 +131,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
 		// Set up notification manager
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+		// Get the frequency from preferences
+		mFrequency = Integer.parseInt(mSP.getString("fetch_frequency", "180"));
+
+		// Set up the alarm manager
+		mAM = (AlarmManager) getSystemService(ALARM_SERVICE);
+		Intent serviceIntent = new Intent(IAndTweetService.class.getName());
+		mAlarmSender = PendingIntent.getService(this, 0, serviceIntent, 0);
+		mAM.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), mFrequency * MILLISECONDS, mAlarmSender);
 	}
 
 	@Override
@@ -262,7 +279,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			Log.d(TAG, "Automatic updates enabled");
 			Intent serviceIntent = new Intent(IAndTweetService.class.getName());
 			if (!mIsBound) {
-				startService(serviceIntent);
+				mAlarmSender = PendingIntent.getService(this, 0, serviceIntent, 0);
+				mAM.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), mFrequency * MILLISECONDS, mAlarmSender);
 				mIsBound = true;
 			}
 			bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);

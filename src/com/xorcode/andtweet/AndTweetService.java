@@ -106,9 +106,10 @@ public class AndTweetService extends Service {
 
 		Log.d(TAG, "Service destroyed");
 
-		// Remove the next pending message to increment the counter, stopping
-		// the increment loop.
+		// Remove messages, stopping loops.
 		mHandler.removeMessages(MSG_UPDATE_TIMELINE);
+		mHandler.removeMessages(MSG_UPDATE_DIRECT_MESSAGES);
+		mHandler.removeMessages(MSG_UPDATE_FRIENDS);
 	}
 
 	@Override
@@ -240,7 +241,7 @@ public class AndTweetService extends Service {
 		// Set up the notification to display to the user
 		Notification notification = new Notification(android.R.drawable.stat_notify_chat,
 				(String) getText(R.string.notification_title), System.currentTimeMillis());
-		notification.defaults = Notification.DEFAULT_ALL;
+		notification.defaults = Notification.DEFAULT_SOUND;
 		if (mNotificationsVibrate) {
 			notification.vibrate = new long[] { 350, 350 };
 		}
@@ -312,6 +313,10 @@ public class AndTweetService extends Service {
 			if (aNewTweets > 0) {
 				Log.d(TAG, aNewTweets + " new tweets");
 			}
+			int aDeletedTweets = friendTimeline.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
+			if (aDeletedTweets > 0) {
+				Log.d(TAG, aDeletedTweets + " tweets deleted");
+			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_TIMELINE_DONE, aNewTweets, 0));
 		}
 	};
@@ -336,6 +341,10 @@ public class AndTweetService extends Service {
 			}
 			if (aNewMessages > 0) {
 				Log.d(TAG, aNewMessages + " new messages");
+			}
+			int aDeletedMessages = directMessages.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
+			if (aDeletedMessages > 0) {
+				Log.d(TAG, aDeletedMessages + " messages deleted");
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_DIRECT_MESSAGES_DONE, aNewMessages, 0));
 		}

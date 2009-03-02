@@ -82,6 +82,7 @@ public class AndTweetProvider extends ContentProvider {
 
 		@Override
 		public void onCreate(SQLiteDatabase db) {
+			Log.d(TAG, "Creating tables");
 			db.execSQL("CREATE TABLE " + TWEETS_TABLE_NAME + " ("
 					+ Tweets._ID + " INTEGER PRIMARY KEY," 
 					+ Tweets.AUTHOR_ID + " TEXT," 
@@ -111,12 +112,6 @@ public class AndTweetProvider extends ContentProvider {
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			Log.w(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion
-					+ ", which will destroy all old data");
-			db.execSQL("DROP TABLE IF EXISTS " + TWEETS_TABLE_NAME);
-			db.execSQL("DROP TABLE IF EXISTS " + DIRECTMESSAGES_TABLE_NAME);
-			db.execSQL("DROP TABLE IF EXISTS " + USERS_TABLE_NAME);
-			onCreate(db);
 		}
 	}
 

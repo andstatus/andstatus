@@ -47,8 +47,6 @@ public class FriendTimeline {
 
 	private static final String TAG = "FriendTimeline";
 
-	private static final String DATE_FORMAT = "EEE MMM dd HH:mm:ss Z yyyy";
-
 	private ContentResolver mContentResolver;
 	private String mUsername, mPassword;
 	private int mNewTweets;
@@ -78,7 +76,7 @@ public class FriendTimeline {
 				c.moveToFirst();
 				// If a record is available, get the last run time
 				if (c.getCount() > 0) {
-					DateFormat f = new SimpleDateFormat(DATE_FORMAT);
+					DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
 					Calendar cal = Calendar.getInstance();
 					cal.setTimeInMillis(c.getLong(1));
 					aLastRunTime = cal.getTimeInMillis();
@@ -124,7 +122,7 @@ public class FriendTimeline {
 		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_STATUS_ID, jo.getString("in_reply_to_status_id"));
 		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_AUTHOR_ID, jo.getString("in_reply_to_screen_name"));
 
-		DateFormat f = new SimpleDateFormat(DATE_FORMAT);
+		DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
 		Calendar cal = Calendar.getInstance();
 		try {
 			cal.setTime(f.parse(jo.getString("created_at")));
@@ -144,5 +142,12 @@ public class FriendTimeline {
 		Uri aTweetUri = insertFromJSONObject(jo);
 		if (notify) mContentResolver.notifyChange(aTweetUri, null);
 		return aTweetUri;
+	}
+
+	public int pruneOldRecords(long sinceTimestamp) {
+		if (sinceTimestamp == 0) {
+			sinceTimestamp = System.currentTimeMillis();
+		}
+		return mContentResolver.delete(AndTweetDatabase.Tweets.CONTENT_URI, AndTweetDatabase.Tweets.CREATED_DATE + " < " + sinceTimestamp, null);
 	}
 }

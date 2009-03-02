@@ -46,8 +46,6 @@ public class DirectMessages {
 
 	private static final String TAG = "DirectMessages";
 
-	private static final String DATE_FORMAT = "EEE MMM dd HH:mm:ss Z yyyy";
-
 	private ContentResolver mContentResolver;
 	private String mUsername, mPassword;
 	private int mNewMessages;
@@ -77,7 +75,7 @@ public class DirectMessages {
 				c.moveToFirst();
 				// If a record is available, get the last run time
 				if (c.getCount() > 0) {
-					DateFormat f = new SimpleDateFormat(DATE_FORMAT);
+					DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
 					Calendar cal = Calendar.getInstance();
 					cal.setTimeInMillis(c.getLong(1));
 					aLastRunTime = cal.getTimeInMillis();
@@ -118,7 +116,7 @@ public class DirectMessages {
 
 		values.put(AndTweetDatabase.DirectMessages.MESSAGE, Html.fromHtml(jo.getString("text")).toString());
 
-		DateFormat f = new SimpleDateFormat(DATE_FORMAT);
+		DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
 		Calendar cal = Calendar.getInstance();
 		try {
 			cal.setTime(f.parse(jo.getString("created_at")));
@@ -138,5 +136,12 @@ public class DirectMessages {
 		Uri aMessageUri = insertFromJSONObject(jo);
 		if (notify) mContentResolver.notifyChange(aMessageUri, null);
 		return aMessageUri;
+	}
+
+	public int pruneOldRecords(long sinceTimestamp) {
+		if (sinceTimestamp == 0) {
+			sinceTimestamp = System.currentTimeMillis();
+		}
+		return mContentResolver.delete(AndTweetDatabase.DirectMessages.CONTENT_URI, AndTweetDatabase.DirectMessages.CREATED_DATE + " < " + sinceTimestamp, null);
 	}
 }

@@ -25,7 +25,9 @@ import android.provider.BaseColumns;
  * @author torgny.bjers
  */
 public final class AndTweetDatabase {
+
 	public static final String AUTHORITY = "com.xorcode.andtweet";
+	public static final String TWITTER_DATE_FORMAT = "EEE MMM dd HH:mm:ss Z yyyy";
 
 	// This class cannot be instantiated
 	private AndTweetDatabase() {
