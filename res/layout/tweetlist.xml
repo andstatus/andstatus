@@ -39,6 +39,7 @@
 				android:autoText="true" android:layout_width="fill_parent"
 				android:gravity="top" android:layout_height="wrap_content"
 				android:hint="@string/message_edit_hint"
+				android:textColor="?com.xorcode.andtweet:attr/textEditColor"
 				android:completionThreshold="2" android:longClickable="true"
 				android:linksClickable="false" android:maxLines="4"
 				android:editable="true" android:enabled="true" />

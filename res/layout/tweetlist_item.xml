@@ -16,7 +16,8 @@
  -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent">
+	android:layout_height="fill_parent" android:paddingLeft="6dip" 
+	android:paddingRight="6dip" android:paddingBottom="2dip" android:paddingTop="2dip">
 	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_screen_name"
 		android:layout_width="fill_parent"
 		android:textStyle="?com.xorcode.andtweet:attr/tweetUsernameStyle"

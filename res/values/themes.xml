@@ -16,6 +16,7 @@
  -->
 <resources>
 	<style name="Theme">
+        <item name="textEditColor">?android:textColorPrimary</item>
 	</style>
 
 	<style name="Theme.Light">
@@ -37,6 +38,7 @@
 
         <item name="android:listViewStyle">@android:style/Widget.ListView.White</item>
         <item name="android:listDivider">@android:drawable/divider_horizontal_bright</item>
+        <item name="textEditColor">?android:textColorPrimary</item>
 	</style>
 
 	<style name="Theme.AndTweet">
