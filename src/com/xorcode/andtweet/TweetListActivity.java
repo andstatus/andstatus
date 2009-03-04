@@ -222,25 +222,13 @@ public class TweetListActivity extends TimelineActivity {
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		menu.findItem(OPTIONS_MENU_MORE_SWITCH_TIMELINE).setTitle("Direct Messages");
-		return true;
-	}
-
-	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case OPTIONS_MENU_RELOAD:
+		case R.id.reload_menu_item:
 			setProgressBarIndeterminateVisibility(true);
 			mListFooter.setVisibility(View.VISIBLE);
 			Thread thread = new Thread(mManualReload);
 			thread.start();
-			break;
-
-		case OPTIONS_MENU_MORE_SWITCH_TIMELINE:
-			startActivity(new Intent(this, MessageListActivity.class));
-			finish();
 			break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -275,12 +263,12 @@ public class TweetListActivity extends TimelineActivity {
 
 		// Add menu items
 		menu.add(0, CONTEXT_MENU_ITEM_REPLY, m++, R.string.menu_item_reply);
-		menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, m++, R.string.menu_item_direct_message);
-		menu.add(0, CONTEXT_MENU_ITEM_RETWEET, m++, R.string.menu_item_retweet);
-		menu.add(0, CONTEXT_MENU_ITEM_STAR, m++, R.string.menu_item_star);
-		menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, m++, R.string.menu_item_unfollow);
-		menu.add(0, CONTEXT_MENU_ITEM_BLOCK, m++, R.string.menu_item_block);
-		menu.add(0, CONTEXT_MENU_ITEM_PROFILE, m++, R.string.menu_item_view_profile);
+		//menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, m++, R.string.menu_item_direct_message);
+		//menu.add(0, CONTEXT_MENU_ITEM_RETWEET, m++, R.string.menu_item_retweet);
+		//menu.add(0, CONTEXT_MENU_ITEM_STAR, m++, R.string.menu_item_star);
+		//menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, m++, R.string.menu_item_unfollow);
+		//menu.add(0, CONTEXT_MENU_ITEM_BLOCK, m++, R.string.menu_item_block);
+		//menu.add(0, CONTEXT_MENU_ITEM_PROFILE, m++, R.string.menu_item_view_profile);
 	}
 
 	@Override

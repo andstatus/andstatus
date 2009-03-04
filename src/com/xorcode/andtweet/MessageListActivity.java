@@ -163,25 +163,13 @@ public class MessageListActivity extends TimelineActivity {
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		menu.findItem(OPTIONS_MENU_MORE_SWITCH_TIMELINE).setTitle("Friends Timeline");
-		return true;
-	}
-
-	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case OPTIONS_MENU_RELOAD:
+		case R.id.reload_menu_item:
 			setProgressBarIndeterminateVisibility(true);
 			mListFooter.setVisibility(View.VISIBLE);
 			Thread thread = new Thread(mManualReload);
 			thread.start();
-			break;
-
-		case OPTIONS_MENU_MORE_SWITCH_TIMELINE:
-			startActivity(new Intent(this, TweetListActivity.class));
-			finish();
 			break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -191,13 +179,13 @@ public class MessageListActivity extends TimelineActivity {
 	public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, view, menuInfo);
 		// Add menu items
-		menu.add(0, CONTEXT_MENU_ITEM_REPLY, 0, R.string.menu_item_reply);
-		menu.add(0, CONTEXT_MENU_ITEM_RETWEET, 1, R.string.menu_item_retweet);
-		menu.add(0, CONTEXT_MENU_ITEM_STAR, 2, R.string.menu_item_star);
-		menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, 3, R.string.menu_item_direct_message);
-		menu.add(0, CONTEXT_MENU_ITEM_PROFILE, 4, R.string.menu_item_view_profile);
-		menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, 5, R.string.menu_item_unfollow);
-		menu.add(0, CONTEXT_MENU_ITEM_BLOCK, 6, R.string.menu_item_block);
+		//menu.add(0, CONTEXT_MENU_ITEM_REPLY, 0, R.string.menu_item_reply);
+		//menu.add(0, CONTEXT_MENU_ITEM_RETWEET, 1, R.string.menu_item_retweet);
+		//menu.add(0, CONTEXT_MENU_ITEM_STAR, 2, R.string.menu_item_star);
+		//menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, 3, R.string.menu_item_direct_message);
+		//menu.add(0, CONTEXT_MENU_ITEM_PROFILE, 4, R.string.menu_item_view_profile);
+		//menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, 5, R.string.menu_item_unfollow);
+		//menu.add(0, CONTEXT_MENU_ITEM_BLOCK, 6, R.string.menu_item_block);
 	}
 
 	@Override

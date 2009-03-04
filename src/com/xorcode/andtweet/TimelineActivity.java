@@ -39,8 +39,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.Window;
 import android.widget.AbsListView;
@@ -80,12 +80,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final String BUNDLE_KEY_REPLY_ID = "replyId";
 	public static final String BUNDLE_KEY_CURRENT_PAGE = "currentPage";
 	public static final String BUNDLE_KEY_IS_LOADING = "isLoading";
-
-	// Options menu items
-	public static final int OPTIONS_MENU_PREFERENCES = Menu.FIRST;
-	public static final int OPTIONS_MENU_MORE = Menu.FIRST + 1;
-	public static final int OPTIONS_MENU_RELOAD = Menu.FIRST + 2;
-	public static final int OPTIONS_MENU_MORE_SWITCH_TIMELINE = Menu.FIRST + 3;
 
 	public static final int MILLISECONDS = 1000;
 
@@ -183,20 +177,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 
-		int order = 0;
-		int groupId = Menu.NONE;
-
-		menu.add(groupId, OPTIONS_MENU_PREFERENCES, order++, R.string.options_menu_preferences)
-			.setShortcut('1', 'p')
-			.setIcon(android.R.drawable.ic_menu_preferences);
-
-		menu.add(groupId, OPTIONS_MENU_RELOAD, order++, R.string.options_menu_reload)
-			.setShortcut('2', 'r')
-			.setIcon(android.R.drawable.ic_menu_rotate);
-
-		SubMenu more = menu.addSubMenu(groupId, OPTIONS_MENU_MORE, order++, R.string.options_menu_more)
-			.setIcon(android.R.drawable.ic_menu_more);
-		more.add(groupId, OPTIONS_MENU_MORE_SWITCH_TIMELINE, order++, "");
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.timeline, menu);
 
 		Intent intent = new Intent(null, getIntent().getData());
 		intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
@@ -208,8 +190,16 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case OPTIONS_MENU_PREFERENCES:
+		case R.id.preferences_menu_id:
 			startActivity(new Intent(this, PreferencesActivity.class));
+			break;
+
+		case R.id.friends_timeline_menu_id:
+			startActivity(new Intent(this, TweetListActivity.class));
+			break;
+
+		case R.id.direct_messages_menu_id:
+			startActivity(new Intent(this, MessageListActivity.class));
 			break;
 		}
 		return super.onOptionsItemSelected(item);
