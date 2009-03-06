@@ -69,7 +69,7 @@ public class SearchableCursorAdapter extends SimpleCursorAdapter implements Filt
 		String selectionArgs[] = null;
 		if (constraint != null) {
 			selection = mFrom[0] + " LIKE ?";
-			String filter  = constraint.toString() + "%";
+			String filter = constraint.toString() + "%";
 			selectionArgs = new String[] { filter };
 		}
 		if (mCursor != null && !mCursor.isClosed()) mCursor.close();
