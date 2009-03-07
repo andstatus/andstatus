@@ -39,6 +39,16 @@
 				android:id="@+id/splash_more_text_content_3" android:textSize="8pt"
 				android:textColor="#ffffffff" 
 				android:text="@string/splash_text_learn_more_3" />
+			<TextView android:layout_height="fill_parent"
+				android:layout_width="fill_parent" android:padding="16dip"
+				android:id="@+id/splash_more_text_content_4" android:textSize="8pt"
+				android:textColor="#ffffffff" 
+				android:text="@string/splash_text_learn_more_4" />
+			<TextView android:layout_height="fill_parent"
+				android:layout_width="fill_parent" android:padding="16dip"
+				android:id="@+id/splash_more_text_content_5" android:textSize="8pt"
+				android:textColor="#ffffffff" 
+				android:text="@string/splash_text_learn_more_5" />
 		</ViewFlipper>
 	</LinearLayout>
 	<LinearLayout android:layout_width="fill_parent"

@@ -27,7 +27,6 @@ import org.json.JSONObject;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.text.Html;
@@ -49,11 +48,16 @@ public class DirectMessages {
 	private ContentResolver mContentResolver;
 	private String mUsername, mPassword;
 	private int mNewMessages;
+	private long mLastRunTime;
 
-	public DirectMessages(ContentResolver contentResolver, String username, String password) {
+	public DirectMessages(ContentResolver contentResolver, String username, String password, long lastRunTime) {
 		mContentResolver = contentResolver;
 		mUsername = username;
 		mPassword = password;
+		mLastRunTime = lastRunTime;
+		if (mLastRunTime == 0) {
+			mLastRunTime = System.currentTimeMillis();
+		}
 	}
 
 	/**
@@ -67,29 +71,11 @@ public class DirectMessages {
 		mNewMessages = 0;
 		if (mUsername != null && mUsername.length() > 0) {
 			Log.i(TAG, "Loading direct messages");
-			// Try to load the last record
-			Cursor c = mContentResolver.query(AndTweetDatabase.DirectMessages.CONTENT_URI, new String[] {
-				AndTweetDatabase.DirectMessages._ID, AndTweetDatabase.DirectMessages.SENT_DATE
-			}, null, null, AndTweetDatabase.DirectMessages.DEFAULT_SORT_ORDER);
-			try {
-				c.moveToFirst();
-				// If a record is available, get the last run time
-				if (c.getCount() > 0) {
-					DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
-					Calendar cal = Calendar.getInstance();
-					cal.setTimeInMillis(c.getLong(1));
-					aLastRunTime = cal.getTimeInMillis();
-					Log.d(TAG, "Last direct message: " + f.format(cal.getTime()));
-				}
-			} catch (Exception e) {
-				String msg = e.getMessage();
-				if (msg == null) {
-					msg = "An unknown error has ocurred: " + e.toString();
-				}
-				Log.e(TAG, msg);
-			} finally {
-				if (c != null && !c.isClosed()) c.close();
-			}
+			DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(mLastRunTime);
+			aLastRunTime = cal.getTimeInMillis();
+			Log.d(TAG, "Last direct message: " + f.format(cal.getTime()));
 			Connection aConn = new Connection(mUsername, mPassword, aLastRunTime);
 			JSONArray jArr = aConn.getDirectMessages();
 			for (int index = 0; index < jArr.length(); index++) {

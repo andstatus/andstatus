@@ -16,6 +16,11 @@
  -->
 <resources>
 	<string name="app_name">AndTweet</string>
+	<string name="activity_title_format">%1$s: %2$s</string>
+	<string name="activity_title_direct_messages">Messages</string>
+	<string name="activity_title_timeline">Friends</string>
+	<string name="activity_title_replies">Replies</string>
+	<string name="activity_title_search">Search</string>
 	<string name="button_send">Send</string>
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
 	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
@@ -99,5 +104,7 @@
 	<string name="splash_payoff_line">Light-Weight Twitter Client for Android™</string>
 	<string name="splash_text_learn_more_1"><h1><b>1. ANDTWEET BASICS</b></h1>\n\nThe first view of AndTweet contains your friend timeline.\n\nIn order to perform an action on a tweet in the list you can <b>hold down</b> on it to get a menu.\n\nYou can <b>click</b> on a tweet to get more details.\n\nPress the <b>Menu</b> button to switch to other views.</string>
 	<string name="splash_text_learn_more_2"><h1><b>2. SENDING AND REPLYING</b></h1>\n\nIn order to update your status simply type it into the text area and click <b>Send</b>.\n\nIn order to reply, <b>hold down</b> and select <b>Reply</b> and type in your reply at the bottom.\n\nTo abort a reply, delete all text in the bottom text area.</string>
-	<string name="splash_text_learn_more_3"><h1><b>3. DIRECT MESSAGES</b></h1>\n\nClick <b>Menu</b> and then <b>More</b> and then <b>Direct Messages</b>.\n\nIn order to <b>delete</b> a direct message, <b>hold down</b> on it and select <b>Delete</b>.\n\nNew messages are fetched if you have turned on <b>Automatic Updates</b>.</string>
+	<string name="splash_text_learn_more_3"><h1><b>3. DIRECT MESSAGES</b></h1>\n\nClick <b>Menu</b> and then <b>Messages</b>.\n\nIn order to <b>delete</b> a direct message, <b>hold down</b> on it and select <b>Delete</b>.\n\nNew messages are fetched if you have turned on <b>Automatic Updates</b>.</string>
+	<string name="splash_text_learn_more_4"><h1><b>4. LISTING REPLIES</b></h1>\n\nClick <b>Menu</b> and then <b>Replies</b>.\n\nReplies will list every tweet that begins with your <b>@username</b>.</string>
+	<string name="splash_text_learn_more_5"><h1><b>5. SEARCHING</b></h1>\n\nClick <b>Menu</b> and then <b>Search</b>.\n\nA search will find any text contained within a tweet. If you wish to show tweets from a specific user, search for "<b>@username</b>."</string>
 </resources>

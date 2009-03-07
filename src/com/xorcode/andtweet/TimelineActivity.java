@@ -123,6 +123,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		loadTheme();
 		setContentView(R.layout.tweetlist);
 
+		setTitle(getString(R.string.activity_title_format, new Object[] {getTitle(), username}));
+
 		// Set up notification manager
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 

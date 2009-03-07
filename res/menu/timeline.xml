@@ -2,11 +2,11 @@
 <item android:title="@string/options_menu_reload" android:id="@+id/reload_menu_item" android:alphabeticShortcut="r" android:icon="@drawable/ic_menu_reload"></item>
 <item android:id="@+id/friends_timeline_menu_id" android:title="@string/options_menu_friends_timeline" android:alphabeticShortcut="f" android:titleCondensed="@string/options_menu_friends_timeline_cond" android:icon="@drawable/ic_menu_timeline"></item>
 
-<item android:title="@string/options_menu_replies" android:id="@+id/replies_menu_id" android:icon="@drawable/ic_menu_replies"></item><item android:id="@+id/direct_messages_menu_id" android:title="@string/options_menu_direct_messages" android:alphabeticShortcut="d" android:titleCondensed="@string/options_menu_direct_messages_cond" android:icon="@drawable/ic_menu_direct_messages"></item>
+<item android:title="@string/options_menu_replies" android:id="@+id/replies_menu_id" android:icon="@drawable/ic_menu_replies" android:alphabeticShortcut="e"></item><item android:id="@+id/direct_messages_menu_id" android:title="@string/options_menu_direct_messages" android:alphabeticShortcut="d" android:titleCondensed="@string/options_menu_direct_messages_cond" android:icon="@drawable/ic_menu_direct_messages"></item>
 
-<item android:title="@string/options_menu_search" android:id="@+id/search_menu_id" android:icon="@drawable/ic_menu_search"></item><item android:title="@string/options_menu_preferences" android:id="@+id/preferences_menu_id" android:alphabeticShortcut="p" android:icon="@drawable/ic_menu_preferences"></item>
+<item android:title="@string/options_menu_search" android:id="@+id/search_menu_id" android:icon="@drawable/ic_menu_search" android:alphabeticShortcut="s"></item><item android:title="@string/options_menu_preferences" android:id="@+id/preferences_menu_id" android:alphabeticShortcut="p" android:icon="@drawable/ic_menu_preferences"></item>
 
 
-<item android:id="@+id/help_menu_id" android:title="@string/options_menu_help" android:icon="@drawable/ic_menu_help"></item><item android:title="@string/options_menu_about" android:titleCondensed="@string/options_menu_about_cond" android:id="@+id/about_menu_id" android:icon="@drawable/icon"></item>
+<item android:id="@+id/help_menu_id" android:title="@string/options_menu_help" android:icon="@drawable/ic_menu_help" android:alphabeticShortcut="h"></item><item android:title="@string/options_menu_about" android:titleCondensed="@string/options_menu_about_cond" android:id="@+id/about_menu_id" android:icon="@drawable/icon" android:alphabeticShortcut="a"></item>
 </group>
 </menu>

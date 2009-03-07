@@ -27,14 +27,12 @@ import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -521,10 +519,9 @@ public class TweetListActivity extends TimelineActivity {
 				if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
-					SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-					String username = sp.getString("twitter_username", null);
-					String password = sp.getString("twitter_password", null);
-					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password);
+					String username = mSP.getString("twitter_username", null);
+					String password = mSP.getString("twitter_password", null);
+					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
 					try {
 						fl.insertFromJSONObject(result, true);
 					} catch (JSONException e) {
@@ -615,7 +612,7 @@ public class TweetListActivity extends TimelineActivity {
 			mIsLoading = true;
 			String username = mSP.getString("twitter_username", null);
 			String password = mSP.getString("twitter_password", null);
-			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password);
+			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
 			int aNewTweets = 0;
 			try {
 				aNewTweets = friendTimeline.loadTimeline();

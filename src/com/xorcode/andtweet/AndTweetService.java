@@ -156,6 +156,8 @@ public class AndTweetService extends Service {
 			mNotificationsVibrate = sp.getBoolean("vibrate", false);
 			mAutomaticUpdates = sp.getBoolean("automatic_updates", false);
 
+			SharedPreferences.Editor prefsEditor = sp.edit();
+
 			switch (msg.what) {
 			case MSG_UPDATE_FRIENDS:
 				if (mAutomaticUpdates) {
@@ -177,6 +179,8 @@ public class AndTweetService extends Service {
 			case MSG_UPDATE_TIMELINE_DONE:
 				mFrequency = Integer.parseInt(sp.getString("fetch_frequency", "180"));
 				mLastRunTime = Long.valueOf(System.currentTimeMillis());
+				prefsEditor.putLong("last_timeline_runtime", mLastRunTime);
+				prefsEditor.commit();
 				// Broadcast new value to all clients
 				for (int i = 0; i < N; i++) {
 					try {
@@ -205,6 +209,8 @@ public class AndTweetService extends Service {
 
 			case MSG_UPDATE_DIRECT_MESSAGES_DONE:
 				mLastMessageRunTime = Long.valueOf(System.currentTimeMillis());
+				prefsEditor.putLong("last_messages_runtime", mLastRunTime);
+				prefsEditor.commit();
 				// Broadcast new value to all clients
 				for (int i = 0; i < N; i++) {
 					try {
@@ -241,7 +247,7 @@ public class AndTweetService extends Service {
 		// Set up the notification to display to the user
 		Notification notification = new Notification(android.R.drawable.stat_notify_chat,
 				(String) getText(R.string.notification_title), System.currentTimeMillis());
-		notification.defaults = Notification.DEFAULT_SOUND;
+		notification.defaults = Notification.DEFAULT_ALL;
 		if (mNotificationsVibrate) {
 			notification.vibrate = new long[] { 350, 350 };
 		}
@@ -297,7 +303,7 @@ public class AndTweetService extends Service {
 			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			mUsername = sp.getString("twitter_username", null);
 			mPassword = sp.getString("twitter_password", null);
-			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), mUsername, mPassword);
+			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), mUsername, mPassword, mLastRunTime);
 			int aNewTweets = 0;
 			try {
 				aNewTweets = friendTimeline.loadTimeline();
@@ -326,7 +332,7 @@ public class AndTweetService extends Service {
 			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			mUsername = sp.getString("twitter_username", null);
 			mPassword = sp.getString("twitter_password", null);
-			DirectMessages directMessages = new DirectMessages(getContentResolver(), mUsername, mPassword);
+			DirectMessages directMessages = new DirectMessages(getContentResolver(), mUsername, mPassword, mLastMessageRunTime);
 			int aNewMessages = 0;
 			try {
 				aNewMessages = directMessages.loadMessages();

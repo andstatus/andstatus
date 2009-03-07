@@ -385,7 +385,7 @@ public class MessageListActivity extends TimelineActivity {
 			mIsLoading = true;
 			String username = mSP.getString("twitter_username", null);
 			String password = mSP.getString("twitter_password", null);
-			DirectMessages directMessages = new DirectMessages(getContentResolver(), username, password);
+			DirectMessages directMessages = new DirectMessages(getContentResolver(), username, password, mSP.getLong("last_messages_runtime", System.currentTimeMillis()));
 			int aNewMessages = 0;
 			try {
 				aNewMessages = directMessages.loadMessages();
