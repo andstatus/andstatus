@@ -56,9 +56,6 @@ public class FriendTimeline {
 		mUsername = username;
 		mPassword = password;
 		mLastRunTime = lastRunTime;
-		if (mLastRunTime == 0) {
-			mLastRunTime = System.currentTimeMillis();
-		}
 	}
 
 	/**
@@ -76,9 +73,13 @@ public class FriendTimeline {
 			DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(mLastRunTime);
-			aLastRunTime = cal.getTimeInMillis();
 			Log.d(TAG, "Last tweet: " + f.format(cal.getTime()));
-			Connection aConn = new Connection(mUsername, mPassword, aLastRunTime);
+			Connection aConn;
+			if (mLastRunTime > 0) {
+				aConn = new Connection(mUsername, mPassword, aLastRunTime);
+			} else {
+				aConn = new Connection(mUsername, mPassword);
+			}
 			JSONArray jArr = aConn.getFriendsTimeline();
 			for (int index = 0; index < jArr.length(); index++) {
 				JSONObject jo = jArr.getJSONObject(index);

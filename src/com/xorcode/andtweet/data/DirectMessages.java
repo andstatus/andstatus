@@ -55,9 +55,6 @@ public class DirectMessages {
 		mUsername = username;
 		mPassword = password;
 		mLastRunTime = lastRunTime;
-		if (mLastRunTime == 0) {
-			mLastRunTime = System.currentTimeMillis();
-		}
 	}
 
 	/**
@@ -74,9 +71,13 @@ public class DirectMessages {
 			DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
 			Calendar cal = Calendar.getInstance();
 			cal.setTimeInMillis(mLastRunTime);
-			aLastRunTime = cal.getTimeInMillis();
 			Log.d(TAG, "Last direct message: " + f.format(cal.getTime()));
-			Connection aConn = new Connection(mUsername, mPassword, aLastRunTime);
+			Connection aConn;
+			if (mLastRunTime > 0) {
+				aConn = new Connection(mUsername, mPassword, aLastRunTime);
+			} else {
+				aConn = new Connection(mUsername, mPassword);
+			}
 			JSONArray jArr = aConn.getDirectMessages();
 			for (int index = 0; index < jArr.length(); index++) {
 				JSONObject jo = jArr.getJSONObject(index);
