@@ -156,6 +156,9 @@ public class AndTweetService extends Service {
 			mNotificationsVibrate = sp.getBoolean("vibrate", false);
 			mAutomaticUpdates = sp.getBoolean("automatic_updates", false);
 
+			mLastRunTime = sp.getLong("last_timeline_runtime", System.currentTimeMillis());
+			mLastMessageRunTime = sp.getLong("last_messages_runtime", System.currentTimeMillis());
+
 			SharedPreferences.Editor prefsEditor = sp.edit();
 
 			switch (msg.what) {

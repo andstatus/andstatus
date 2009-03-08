@@ -64,7 +64,6 @@ public class DirectMessages {
 	 * @return int
 	 */
 	public int loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException {
-		long aLastRunTime = 0;
 		mNewMessages = 0;
 		if (mUsername != null && mUsername.length() > 0) {
 			Log.i(TAG, "Loading direct messages");
@@ -74,7 +73,7 @@ public class DirectMessages {
 			Log.d(TAG, "Last direct message: " + f.format(cal.getTime()));
 			Connection aConn;
 			if (mLastRunTime > 0) {
-				aConn = new Connection(mUsername, mPassword, aLastRunTime);
+				aConn = new Connection(mUsername, mPassword, mLastRunTime);
 			} else {
 				aConn = new Connection(mUsername, mPassword);
 			}

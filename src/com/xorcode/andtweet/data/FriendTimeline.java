@@ -65,7 +65,6 @@ public class FriendTimeline {
 	 * @return int
 	 */
 	public int loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException {
-		long aLastRunTime = 0;
 		mNewTweets = 0;
 		if (mUsername != null && mUsername.length() > 0) {
 			Log.i(TAG, "Loading friends timeline");
@@ -76,7 +75,7 @@ public class FriendTimeline {
 			Log.d(TAG, "Last tweet: " + f.format(cal.getTime()));
 			Connection aConn;
 			if (mLastRunTime > 0) {
-				aConn = new Connection(mUsername, mPassword, aLastRunTime);
+				aConn = new Connection(mUsername, mPassword, mLastRunTime);
 			} else {
 				aConn = new Connection(mUsername, mPassword);
 			}
