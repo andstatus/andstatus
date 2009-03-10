@@ -71,6 +71,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	public static final int MSG_ACCOUNT_VALID = 1;
 	public static final int MSG_ACCOUNT_INVALID = 2;
 	public static final int MSG_SERVICE_UNAVAILABLE_ERROR = 3;
+	public static final int MSG_CONNECTION_EXCEPTION = 4;
 
 	private CheckBoxPreference mAutomaticUpdates;
 	private ListPreference mFetchFrequencyPreference;
@@ -220,6 +221,21 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 				dismissDialog(DIALOG_CHECKING_CREDENTIALS);
 				showDialog(DIALOG_SERVICE_UNAVAILABLE);
 				break;
+			case MSG_CONNECTION_EXCEPTION:
+				mAuthentiated = false;
+				Log.d(TAG, "twitter is over capacity");
+				dismissDialog(DIALOG_CHECKING_CREDENTIALS);
+				int mId = Integer.parseInt((String) msg.obj);
+				switch (mId) {
+				case 404:
+					mId = R.string.error_twitter_404;
+					break;
+				default:
+					mId = R.string.error_connection_error;
+					break;
+				}
+				Toast.makeText(PreferencesActivity.this, mId, Toast.LENGTH_LONG).show();
+				break;
 			}
 		}
 	};
@@ -230,22 +246,20 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 			Connection c = new Connection(mEditTextUsername.getText(), mEditTextPassword.getText());
 			try {
 				JSONObject jo = c.verifyCredentials();
-				Log.d(TAG, jo.optString("id"));
-				Log.d(TAG, jo.optString("user"));
-				if (jo.optString("error").equals("Not found")) {
+				if (jo.optInt("id") > 0) {
 					mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_VALID, 1, 0));
 					return;
 				}
 			} catch (JSONException e) {
 				Log.e(TAG, e.getMessage());
 			} catch (ConnectionException e) {
-				Toast.makeText(PreferencesActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
-				Log.e(TAG, "mCheckCredentials Connection Exception: " + e.getMessage());
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, 1, 0, e.getMessage()));
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_INVALID, 1, 0));
 			} catch (ConnectionUnavailableException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, 1, 0));
 			}
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_INVALID, 1, 0));
 		}
 	};
 }

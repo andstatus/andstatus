@@ -115,4 +115,6 @@
 	<string name="search_direct_messages_hint">Enter a username or phrase</string>
 	<string name="dialog_title_service_unavailable">Service Unavailable</string>
 	<string name="dialog_summary_service_unavailable">Twitter is currently over capacity. Please try again later.</string>
+	<string name="error_twitter_404">The page cannot be found. Please report this error!</string>
+	<string name="error_connection_error">A connection error has occurred. Please report this error!</string>
 </resources>

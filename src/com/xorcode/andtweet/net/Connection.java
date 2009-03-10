@@ -61,7 +61,7 @@ public class Connection {
 	private static final String DIRECT_MESSAGES_SENT_URL = BASE_URL + "/direct_messages/sent" + EXTENSION;
 	private static final String FRIENDS_URL = BASE_URL + "/statuses/friends" + EXTENSION;
 	private static final String UPDATE_STATUS_URL = BASE_URL + "/statuses/update" + EXTENSION;
-	private static final String VERIFY_CREDENTIALS_URL = BASE_URL + "/statuses/verify_credentials" + EXTENSION;
+	private static final String VERIFY_CREDENTIALS_URL = BASE_URL + "/account/verify_credentials" + EXTENSION;
 	private static final String USER_AGENT = "Mozilla/4.5";
 	private static final String SOURCE_PARAMETER = "andtweet";
 	private static final String TAG = "AndTweetConnection";
@@ -351,7 +351,7 @@ public class Connection {
 		} finally {
 			getMethod.abort();
 		}
-		parseStatusCode(statusCode);
+		parseStatusCode(statusCode, url);
 		return result;
 	}
 
@@ -411,7 +411,7 @@ public class Connection {
 		} finally {
 			postMethod.abort();
 		}
-		parseStatusCode(statusCode);
+		parseStatusCode(statusCode, url);
 		return result;
 	}
 
@@ -450,25 +450,21 @@ public class Connection {
 		return new String(Base64.encodeBytes((mUsername + ":" + mPassword).getBytes()));
 	}
 
-	protected void parseStatusCode(int code) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	protected void parseStatusCode(int code, String path) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		switch (code) {
 		case 200:
 		case 304:
 			break;
-		case 400:
-			throw new ConnectionException("Bad Request");
 		case 401:
-			throw new ConnectionAuthenticationException("Unauthorized");
+			throw new ConnectionAuthenticationException(String.valueOf(code));
+		case 400:
 		case 403:
-			throw new ConnectionException("Forbidden");
 		case 404:
-			throw new ConnectionException("Not Found");
+			throw new ConnectionException(String.valueOf(code));
 		case 500:
-			throw new ConnectionUnavailableException("Internal Server Error");
 		case 502:
-			throw new ConnectionUnavailableException("Bad Gateway");
 		case 503:
-			throw new ConnectionUnavailableException("Service Unavailable");
+			throw new ConnectionUnavailableException(String.valueOf(code));
 		}
 	}
 }
