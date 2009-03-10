@@ -14,10 +14,12 @@
 			android:icon="@drawable/ic_menu_search" android:alphabeticShortcut="s"></item>
 		<item android:title="@string/options_menu_preferences" android:id="@+id/preferences_menu_id"
 			android:alphabeticShortcut="p" android:icon="@drawable/ic_menu_preferences"></item>
+<!-- DISABLED FOR NOW
 		<item android:id="@+id/help_menu_id" android:title="@string/options_menu_help"
 			android:icon="@drawable/ic_menu_help" android:alphabeticShortcut="h"></item>
 		<item android:title="@string/options_menu_about"
 			android:titleCondensed="@string/options_menu_about_cond" android:id="@+id/about_menu_id"
 			android:icon="@drawable/icon" android:alphabeticShortcut="a"></item>
+-->
 	</group>
 </menu>
