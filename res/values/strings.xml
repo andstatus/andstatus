@@ -58,11 +58,13 @@
 	<string name="title_preference_frequency">Update Frequency</string>
 	<string name="title_preference_password">Password</string>
 	<string name="title_preference_username">Username</string>
+	<string name="title_preference_notification_sound">Notification Ringtone</string>
 	<string name="summary_preference_automatic_updates_off">Automatic updates are disabled</string>
 	<string name="summary_preference_automatic_updates_on">Automatic updates are enabled</string>
 	<string name="summary_preference_frequency">Updates are fetched every {0}.</string>
 	<string name="summary_preference_password">Your Twitter password</string>
 	<string name="summary_preference_username">Your Twitter username</string>
+	<string name="summary_preference_no_ringtone">Silent</string>
 	<string name="resolve_view">View Tweet</string>
 	<string name="message_sent">Your message has been sent.</string>
 	<string name="dialog_title_sending_message">Sending message...</string>
@@ -107,4 +109,10 @@
 	<string name="splash_text_learn_more_3"><h1><b>3. DIRECT MESSAGES</b></h1>\n\nClick <b>Menu</b> and then <b>Messages</b>.\n\nIn order to <b>delete</b> a direct message, <b>hold down</b> on it and select <b>Delete</b>.\n\nNew messages are fetched if you have turned on <b>Automatic Updates</b>.</string>
 	<string name="splash_text_learn_more_4"><h1><b>4. LISTING REPLIES</b></h1>\n\nClick <b>Menu</b> and then <b>Replies</b>.\n\nReplies will list every tweet that begins with your <b>@username</b>.</string>
 	<string name="splash_text_learn_more_5"><h1><b>5. SEARCHING</b></h1>\n\nClick <b>Menu</b> and then <b>Search</b>.\n\nA search will find any text contained within a tweet. If you wish to show tweets from a specific user, search for "<b>@username</b>."</string>
+	<string name="search_timeline_label">Search tweets, users, and hashtags</string>
+	<string name="search_timeline_hint">Enter a username/phrase</string>
+	<string name="search_direct_messages_label">Search direct messages</string>
+	<string name="search_direct_messages_hint">Enter a username or phrase</string>
+	<string name="dialog_title_service_unavailable">Service Unavailable</string>
+	<string name="dialog_summary_service_unavailable">Twitter is currently over capacity. Please try again later.</string>
 </resources>

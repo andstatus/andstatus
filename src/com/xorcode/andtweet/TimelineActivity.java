@@ -16,6 +16,8 @@
 
 package com.xorcode.andtweet;
 
+import com.xorcode.andtweet.data.AndTweetDatabase;
+
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -23,6 +25,7 @@ import android.app.ListActivity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -48,7 +51,6 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
 
-
 /**
  * @author torgny.bjers
  */
@@ -64,6 +66,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final int MSG_AUTHENTICATION_ERROR = 5;
 	public static final int MSG_LOAD_ITEMS = 6;
 	public static final int MSG_DIRECT_MESSAGES_CHANGED = 7;
+	public static final int MSG_SERVICE_UNAVAILABLE_ERROR = 8;
 
 	// Handler message status codes
 	public static final int STATUS_LOAD_ITEMS_FAILURE = 0;
@@ -72,6 +75,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	// Dialog identifier codes
 	public static final int DIALOG_AUTHENTICATION_FAILED = 1;
 	public static final int DIALOG_SENDING_MESSAGE = 2;
+	public static final int DIALOG_SERVICE_UNAVAILABLE = 3;
 
 	// Intent bundle result keys
 	public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
@@ -164,6 +168,17 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 					}
 				}).create();
 
+		case DIALOG_SERVICE_UNAVAILABLE:
+			return new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setTitle(R.string.dialog_title_service_unavailable)
+				.setMessage(R.string.dialog_summary_service_unavailable)
+				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface Dialog, int whichButton) {
+						startActivity(new Intent(TimelineActivity.this, PreferencesActivity.class));
+					}
+				}).create();
+
 		case DIALOG_SENDING_MESSAGE:
 			mProgressDialog = new ProgressDialog(this);
 			mProgressDialog.setTitle(R.string.dialog_title_sending_message);
@@ -191,17 +206,48 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		Intent intent;
+		Bundle appDataBundle;
+
 		switch (item.getItemId()) {
 		case R.id.preferences_menu_id:
 			startActivity(new Intent(this, PreferencesActivity.class));
 			break;
 
 		case R.id.friends_timeline_menu_id:
-			startActivity(new Intent(this, TweetListActivity.class));
+			intent = new Intent(this, TweetListActivity.class);
+			appDataBundle = new Bundle();
+			appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.SEARCH_URI);
+			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+			intent.setAction(Intent.ACTION_SEARCH);
+			startActivity(intent);
 			break;
 
 		case R.id.direct_messages_menu_id:
-			startActivity(new Intent(this, MessageListActivity.class));
+			intent = new Intent(this, MessageListActivity.class);
+			appDataBundle = new Bundle();
+			appDataBundle.putParcelable("content_uri", AndTweetDatabase.DirectMessages.SEARCH_URI);
+			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+			intent.setAction(Intent.ACTION_SEARCH);
+			startActivity(intent);
+			break;
+
+		case R.id.search_menu_id:
+			onSearchRequested();
+			break;
+
+		case R.id.replies_menu_id:
+			intent = new Intent(this, TweetListActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			String username = mSP.getString("twitter_username", null);
+			if (username != null) {
+				intent.putExtra(SearchManager.QUERY, "@" + username);
+			}
+			appDataBundle = new Bundle();
+			appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.SEARCH_URI);
+			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+			intent.setAction(Intent.ACTION_SEARCH);
+			startActivity(intent);
 			break;
 		}
 		return super.onOptionsItemSelected(item);

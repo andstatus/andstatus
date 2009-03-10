@@ -35,6 +35,7 @@ import android.util.Log;
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
+import com.xorcode.andtweet.net.ConnectionUnavailableException;
 
 /**
  * Handles loading data from JSON into database.
@@ -48,7 +49,7 @@ public class DirectMessages {
 	private ContentResolver mContentResolver;
 	private String mUsername, mPassword;
 	private int mNewMessages;
-	private long mLastRunTime;
+	private long mLastRunTime = 0;
 
 	public DirectMessages(ContentResolver contentResolver, String username, String password, long lastRunTime) {
 		mContentResolver = contentResolver;
@@ -62,8 +63,9 @@ public class DirectMessages {
 	 * 
 	 * @throws ConnectionException 
 	 * @return int
+	 * @throws ConnectionUnavailableException 
 	 */
-	public int loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException {
+	public int loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		mNewMessages = 0;
 		if (mUsername != null && mUsername.length() > 0) {
 			Log.i(TAG, "Loading direct messages");

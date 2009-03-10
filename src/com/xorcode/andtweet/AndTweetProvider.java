@@ -68,6 +68,7 @@ public class AndTweetProvider extends ContentProvider {
 	private static final int USER_ID = 4;
 	private static final int DIRECTMESSAGES = 5;
 	private static final int DIRECTMESSAGE_ID = 6;
+	private static final int TWEET_SEARCH = 7;
 
 	/**
 	 * Database helper for AndTweetProvider.
@@ -133,6 +134,7 @@ public class AndTweetProvider extends ContentProvider {
 	public String getType(Uri uri) {
 		switch (sUriMatcher.match(uri)) {
 		case TWEETS:
+		case TWEET_SEARCH:
 			return Tweets.CONTENT_TYPE;
 
 		case TWEET_ID:
@@ -301,6 +303,14 @@ public class AndTweetProvider extends ContentProvider {
 			qb.appendWhere(Tweets._ID + "=" + uri.getPathSegments().get(1));
 			break;
 
+		case TWEET_SEARCH:
+			qb.setTables(TWEETS_TABLE_NAME);
+			qb.setProjectionMap(sTweetsProjectionMap);
+			qb.appendWhere(Tweets.AUTHOR_ID + " LIKE ? OR " + Tweets.MESSAGE + " LIKE ?");
+			selectionArgs = new String[2];
+			selectionArgs[0] = selectionArgs[1] = "%" + uri.getLastPathSegment() + "%";
+			break;
+
 		case DIRECTMESSAGES:
 			qb.setTables(DIRECTMESSAGES_TABLE_NAME);
 			qb.setProjectionMap(sDirectMessagesProjectionMap);
@@ -420,6 +430,7 @@ public class AndTweetProvider extends ContentProvider {
 
 		sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, TWEETS_TABLE_NAME, TWEETS);
 		sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, TWEETS_TABLE_NAME + "/#", TWEET_ID);
+		sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, TWEETS_TABLE_NAME + "/search/*", TWEET_SEARCH);
 
 		sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, USERS_TABLE_NAME, USERS);
 		sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, USERS_TABLE_NAME + "/#", USER_ID);

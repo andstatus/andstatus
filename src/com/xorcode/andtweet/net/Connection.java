@@ -64,7 +64,7 @@ public class Connection {
 	private static final String VERIFY_CREDENTIALS_URL = BASE_URL + "/statuses/verify_credentials" + EXTENSION;
 	private static final String USER_AGENT = "Mozilla/4.5";
 	private static final String SOURCE_PARAMETER = "andtweet";
-	private static final String TAG = "AndTweetDatabase";
+	private static final String TAG = "AndTweetConnection";
 
 	private String mUsername;
 	private String mPassword;
@@ -109,8 +109,10 @@ public class Connection {
 	 * @return JSONArray
 	 * @throws JSONException
 	 * @throws ConnectionException 
+	 * @throws ConnectionUnavailableException 
+	 * @throws ConnectionAuthenticationException 
 	 */
-	public JSONArray getPublicTimeline() throws JSONException, ConnectionException {
+	public JSONArray getPublicTimeline() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		return new JSONArray(getRequest(PUBLIC_TIMELINE_URL));
 	}
 
@@ -123,8 +125,9 @@ public class Connection {
 	 * @return JSONArray
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
+	 * @throws ConnectionUnavailableException 
 	 */
-	public JSONArray getFriendsTimeline() throws ConnectionException, ConnectionAuthenticationException {
+	public JSONArray getFriendsTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = FRIENDS_TIMELINE_URL;
 		url += "?count=100";
 		if (mLastRunTime > 0) {
@@ -160,8 +163,9 @@ public class Connection {
 	 * @return
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
+	 * @throws ConnectionUnavailableException 
 	 */
-	public JSONArray getFriends() throws ConnectionException, ConnectionAuthenticationException {
+	public JSONArray getFriends() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = FRIENDS_URL;
 		JSONArray jArr = null;
 		String request = getRequest(url);
@@ -189,8 +193,9 @@ public class Connection {
 	 * @return JSONArray
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
+	 * @throws ConnectionUnavailableException 
 	 */
-	public JSONArray getDirectMessages() throws ConnectionException, ConnectionAuthenticationException {
+	public JSONArray getDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = DIRECT_MESSAGES_URL;
 		url += "?count=100";
 		if (mLastRunTime > 0) {
@@ -225,8 +230,9 @@ public class Connection {
 	 * @return JSONArray
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
+	 * @throws ConnectionUnavailableException 
 	 */
-	public JSONArray getSentDirectMessages() throws ConnectionException, ConnectionAuthenticationException {
+	public JSONArray getSentDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = DIRECT_MESSAGES_SENT_URL;
 		url += "?count=100";
 		if (mLastRunTime > 0) {
@@ -265,9 +271,10 @@ public class Connection {
 	 * @throws UnsupportedEncodingException
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
+	 * @throws ConnectionUnavailableException 
 	 */
 	public JSONObject updateStatus(String message, long inReplyToId)
-			throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException {
+			throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = UPDATE_STATUS_URL;
 		List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
@@ -298,8 +305,10 @@ public class Connection {
 	 * @return
 	 * @throws JSONException
 	 * @throws ConnectionException 
+	 * @throws ConnectionUnavailableException 
+	 * @throws ConnectionAuthenticationException 
 	 */
-	public JSONObject verifyCredentials() throws JSONException, ConnectionException {
+	public JSONObject verifyCredentials() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		return new JSONObject(getRequest(VERIFY_CREDENTIALS_URL, new DefaultHttpClient(new BasicHttpParams())));
 	}
 
@@ -309,8 +318,10 @@ public class Connection {
 	 * @param url
 	 * @return String
 	 * @throws ConnectionException 
+	 * @throws ConnectionUnavailableException 
+	 * @throws ConnectionAuthenticationException 
 	 */
-	protected String getRequest(String url) throws ConnectionException {
+	protected String getRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		return getRequest(url, new DefaultHttpClient(new BasicHttpParams()));
 	}
 
@@ -321,14 +332,18 @@ public class Connection {
 	 * @param client
 	 * @return String
 	 * @throws ConnectionException
+	 * @throws ConnectionUnavailableException 
+	 * @throws ConnectionAuthenticationException 
 	 */
-	protected String getRequest(String url, HttpClient client) throws ConnectionException {
+	protected String getRequest(String url, HttpClient client) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String result = null;
+		int statusCode = 0;
 		HttpGet getMethod = new HttpGet(url);
 		try {
 			getMethod.setHeader("User-Agent", USER_AGENT);
 			getMethod.addHeader("Authorization", "Basic " + getCredentials());
 			HttpResponse httpResponse = client.execute(getMethod);
+			statusCode = httpResponse.getStatusLine().getStatusCode();
 			result = retrieveInputStream(httpResponse.getEntity());
 		} catch (Exception e) {
 			Log.d(TAG, e.getMessage());
@@ -336,6 +351,7 @@ public class Connection {
 		} finally {
 			getMethod.abort();
 		}
+		parseStatusCode(statusCode);
 		return result;
 	}
 
@@ -345,8 +361,10 @@ public class Connection {
 	 * @param url
 	 * @return String
 	 * @throws ConnectionException 
+	 * @throws ConnectionUnavailableException 
+	 * @throws ConnectionAuthenticationException 
 	 */
-	protected String postRequest(String url) throws ConnectionException {
+	protected String postRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), null);
 	}
 
@@ -356,8 +374,10 @@ public class Connection {
 	 * @param url
 	 * @return String
 	 * @throws ConnectionException 
+	 * @throws ConnectionUnavailableException 
+	 * @throws ConnectionAuthenticationException 
 	 */
-	protected String postRequest(String url, UrlEncodedFormEntity formParams) throws ConnectionException {
+	protected String postRequest(String url, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), formParams);
 	}
 
@@ -368,10 +388,13 @@ public class Connection {
 	 * @param client
 	 * @return String
 	 * @throws ConnectionException
+	 * @throws ConnectionUnavailableException 
+	 * @throws ConnectionAuthenticationException 
 	 */
 	protected String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams)
-			throws ConnectionException {
+			throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String result = null;
+		int statusCode = 0;
 		HttpPost postMethod = new HttpPost(url);
 		try {
 			postMethod.setHeader("User-Agent", USER_AGENT);
@@ -380,6 +403,7 @@ public class Connection {
 				postMethod.setEntity(formParams);
 			}
 			HttpResponse httpResponse = client.execute(postMethod);
+			statusCode = httpResponse.getStatusLine().getStatusCode();
 			result = retrieveInputStream(httpResponse.getEntity());
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
@@ -387,6 +411,7 @@ public class Connection {
 		} finally {
 			postMethod.abort();
 		}
+		parseStatusCode(statusCode);
 		return result;
 	}
 
@@ -423,5 +448,27 @@ public class Connection {
 	 */
 	protected String getCredentials() {
 		return new String(Base64.encodeBytes((mUsername + ":" + mPassword).getBytes()));
+	}
+
+	protected void parseStatusCode(int code) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+		switch (code) {
+		case 200:
+		case 304:
+			break;
+		case 400:
+			throw new ConnectionException("Bad Request");
+		case 401:
+			throw new ConnectionAuthenticationException("Unauthorized");
+		case 403:
+			throw new ConnectionException("Forbidden");
+		case 404:
+			throw new ConnectionException("Not Found");
+		case 500:
+			throw new ConnectionUnavailableException("Internal Server Error");
+		case 502:
+			throw new ConnectionUnavailableException("Bad Gateway");
+		case 503:
+			throw new ConnectionUnavailableException("Service Unavailable");
+		}
 	}
 }

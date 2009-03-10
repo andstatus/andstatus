@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<searchable xmlns:android="http://schemas.android.com/apk/res/android"
+    android:label="@string/search_direct_messages_label"
+    android:hint="@string/search_direct_messages_hint" 
+    android:searchMode="showSearchLabelAsBadge"
+    android:searchSuggestIntentAction="android.intent.action.SEARCH"
+    android:searchSuggestAuthority="com.xorcode.andtweet.TimelineSuggestionProvider"
+    android:searchSuggestSelection=" ? "/>

@@ -21,11 +21,8 @@ import java.io.UnsupportedEncodingException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.ContentUris;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
@@ -33,6 +30,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.SearchRecentSuggestions;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -56,11 +54,13 @@ import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.data.PagedCursorAdapter;
 import com.xorcode.andtweet.data.SearchableCursorAdapter;
+import com.xorcode.andtweet.data.TimelineSearchSuggestionProvider;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.data.AndTweetDatabase.Users;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
+import com.xorcode.andtweet.net.ConnectionUnavailableException;
 import com.xorcode.andtweet.util.AtTokenizer;
 
 /**
@@ -84,7 +84,6 @@ public class TweetListActivity extends TimelineActivity {
 	private Button mSendButton;
 	private MultiAutoCompleteTextView mEditText;
 	private TextView mCharsLeftText;
-	private ProgressDialog mProgressDialog;
 
 	// Text limits
 	private int mCurrentChars = 0;
@@ -121,7 +120,7 @@ public class TweetListActivity extends TimelineActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+	
 		if (savedInstanceState != null) {
 			if (savedInstanceState.containsKey(BUNDLE_KEY_REPLY_ID)) {
 				mReplyId = savedInstanceState.getLong(BUNDLE_KEY_REPLY_ID);
@@ -133,11 +132,16 @@ public class TweetListActivity extends TimelineActivity {
 				mIsLoading = savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING);
 			}
 		}
-
+	
 		final Intent intent = getIntent();
-		if (intent.getData() == null) {
-			intent.setData(Tweets.CONTENT_URI);
-		}
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+			intent.setData(AndTweetDatabase.Tweets.SEARCH_URI);
+            doSearchQuery(intent, "onCreate()");
+        } else {
+    		if (intent.getData() == null) {
+    			intent.setData(AndTweetDatabase.Tweets.CONTENT_URI);
+    		}
+        }
 
 		// Set up views
 		mSendButton = (Button) findViewById(R.id.messageEditSendButton);
@@ -159,6 +163,60 @@ public class TweetListActivity extends TimelineActivity {
 	}
 
 	@Override
+	public boolean onSearchRequested() {
+		Bundle appDataBundle = new Bundle();
+		appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.SEARCH_URI);
+		startSearch(null, false, appDataBundle, false);
+		return true;
+	}
+
+	@Override
+	public void onNewIntent(final Intent newIntent) {
+		super.onNewIntent(newIntent);
+		// get and process search query here
+		if (Intent.ACTION_SEARCH.equals(newIntent.getAction())) {
+			doSearchQuery(newIntent, "onNewIntent()");
+		}
+	}
+
+	protected void doSearchQuery(final Intent queryIntent, final String entryPoint) {
+		// The search query is provided as an "extra" string in the query intent
+		final String queryString = queryIntent.getStringExtra(SearchManager.QUERY);
+		Log.d(TAG, "Search queryString: " + queryString);
+
+		// Record the query string in the recent queries suggestions provider
+		SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+				TimelineSearchSuggestionProvider.AUTHORITY, TimelineSearchSuggestionProvider.MODE);
+		suggestions.saveRecentQuery(queryString, null);
+
+		// Extract content URI from the search data
+		final Bundle appData = queryIntent.getBundleExtra(SearchManager.APP_DATA);
+		if (appData != null) {
+			final Intent intent = getIntent();
+			Uri contentUri = appData.getParcelable("content_uri");
+			if (queryString != null) {
+				contentUri = Uri.withAppendedPath((Uri) appData.getParcelable("content_uri"), Uri.encode(queryString));
+			} else {
+				contentUri = AndTweetDatabase.Tweets.CONTENT_URI;
+			}
+			if (contentUri != null) {
+				intent.setData(contentUri);
+				mCurrentPage = 1;
+				if (mCursor != null && !mCursor.isClosed()) {
+					mCursor.close();
+				}
+				mCursor = getContentResolver().query(contentUri, PROJECTION, null, null, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
+				createAdapters();
+			}
+			Log.d(TAG, (contentUri == null) ? "<no app data>" : "Search URI: " + contentUri.toString());
+		} else {
+			Log.d(TAG, "<no app data bundle>");
+		}
+
+		Log.d(TAG, "Search entryPoint: " + entryPoint);
+	}
+
+	@Override
 	protected void onStart() {
 		super.onStart();
 		mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, null, null, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
@@ -166,7 +224,7 @@ public class TweetListActivity extends TimelineActivity {
 		createAdapters();
 		final Intent intent = getIntent();
 		mEditText.requestFocus();
-		if ("initialize".equals(intent.getAction())) {
+		if ("com.xorcode.andtweet.INITIALIZE".equals(intent.getAction())) {
 			intent.setAction(null);
 			Log.d(TAG, "onStart() Initializing...");
 			mInitializing = true;
@@ -310,31 +368,6 @@ public class TweetListActivity extends TimelineActivity {
 		return false;
 	}
 
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		switch (id) {
-		case DIALOG_AUTHENTICATION_FAILED:
-			return new AlertDialog.Builder(this)
-				.setIcon(android.R.drawable.ic_dialog_alert)
-				.setTitle(R.string.dialog_title_authentication_failed)
-				.setMessage(R.string.dialog_summary_authentication_failed)
-				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface Dialog, int whichButton) {
-						startActivity(new Intent(TweetListActivity.this, PreferencesActivity.class));
-					}
-				}).create();
-
-		case DIALOG_SENDING_MESSAGE:
-			mProgressDialog = new ProgressDialog(this);
-			mProgressDialog.setTitle(R.string.dialog_title_sending_message);
-			mProgressDialog.setMessage(getText(R.string.dialog_summary_sending_message));
-			return mProgressDialog;
-
-		default:
-			return super.onCreateDialog(id);
-		}
-	}
-
 	/**
 	 * Initialize UI
 	 */
@@ -358,7 +391,7 @@ public class TweetListActivity extends TimelineActivity {
 			mCursor,
 			new String[] { Tweets.AUTHOR_ID, Tweets.MESSAGE, Tweets.SENT_DATE },
 			new int[] { R.id.tweet_screen_name, R.id.tweet_message, R.id.tweet_sent },
-			Tweets.CONTENT_URI,
+			getIntent().getData(),
 			PROJECTION,
 			Tweets.DEFAULT_SORT_ORDER
 		);
@@ -489,7 +522,7 @@ public class TweetListActivity extends TimelineActivity {
 			break;
 		}
 	}
-	
+
 	/**
 	 * Message handler for messages from threads.
 	 */
@@ -538,8 +571,7 @@ public class TweetListActivity extends TimelineActivity {
 				break;
 
 			case MSG_AUTHENTICATION_ERROR:
-				int source = msg.arg1;
-				switch (source) {
+				switch (msg.arg1) {
 				case MSG_MANUAL_RELOAD:
 					setProgressBarIndeterminateVisibility(false);
 					break;
@@ -547,6 +579,17 @@ public class TweetListActivity extends TimelineActivity {
 					break;
 				}
 				showDialog(DIALOG_AUTHENTICATION_FAILED);
+				break;
+
+			case MSG_SERVICE_UNAVAILABLE_ERROR:
+				switch (msg.arg1) {
+				case MSG_MANUAL_RELOAD:
+					setProgressBarIndeterminateVisibility(false);
+					break;
+				case MSG_UPDATE_STATUS:
+					break;
+				}
+				showDialog(DIALOG_SERVICE_UNAVAILABLE);
 				break;
 
 			case MSG_MANUAL_RELOAD:
@@ -599,6 +642,8 @@ public class TweetListActivity extends TimelineActivity {
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_UPDATE_STATUS, 0));
 				return;
+			} catch (ConnectionUnavailableException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_UPDATE_STATUS, 0));
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_STATUS, result));
 		}
@@ -612,7 +657,7 @@ public class TweetListActivity extends TimelineActivity {
 			mIsLoading = true;
 			String username = mSP.getString("twitter_username", null);
 			String password = mSP.getString("twitter_password", null);
-			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
+			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", 0));
 			int aNewTweets = 0;
 			try {
 				aNewTweets = friendTimeline.loadTimeline();
@@ -628,6 +673,8 @@ public class TweetListActivity extends TimelineActivity {
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_MANUAL_RELOAD, 0));
 				return;
+			} catch (ConnectionUnavailableException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_MANUAL_RELOAD, 0));
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewTweets, 0));
 		}

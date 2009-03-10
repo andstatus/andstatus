@@ -47,6 +47,7 @@ import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweetDatabase.Users;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
+import com.xorcode.andtweet.net.ConnectionUnavailableException;
 
 /**
  * @author torgny.bjers
@@ -103,9 +104,13 @@ public class MessageListActivity extends TimelineActivity {
 		}
 
 		final Intent intent = getIntent();
+        final String queryAction = intent.getAction();
 		if (intent.getData() == null) {
 			intent.setData(AndTweetDatabase.DirectMessages.CONTENT_URI);
 		}
+        if (Intent.ACTION_SEARCH.equals(queryAction)) {
+            //doSearchQuery(intent, "onCreate()");
+        }
 
 		findViewById(R.id.tweetlist_info).setVisibility(View.GONE);
 		findViewById(R.id.tweetlist_editor).setVisibility(View.GONE);
@@ -122,6 +127,14 @@ public class MessageListActivity extends TimelineActivity {
 		getListView().setOnScrollListener(this);
 
 		initUI();
+	}
+
+	@Override
+	public boolean onSearchRequested() {
+	    Bundle appDataBundle = new Bundle();
+	    appDataBundle.putParcelable("content_uri", AndTweetDatabase.DirectMessages.CONTENT_URI);
+		startSearch(null, false, appDataBundle, false);
+		return true;
 	}
 
 	@Override
@@ -333,8 +346,7 @@ public class MessageListActivity extends TimelineActivity {
 				break;
 
 			case MSG_AUTHENTICATION_ERROR:
-				int source = msg.arg1;
-				switch (source) {
+				switch (msg.arg1) {
 				case MSG_MANUAL_RELOAD:
 					setProgressBarIndeterminateVisibility(false);
 					break;
@@ -342,6 +354,17 @@ public class MessageListActivity extends TimelineActivity {
 					break;
 				}
 				showDialog(DIALOG_AUTHENTICATION_FAILED);
+				break;
+
+			case MSG_SERVICE_UNAVAILABLE_ERROR:
+				switch (msg.arg1) {
+				case MSG_MANUAL_RELOAD:
+					setProgressBarIndeterminateVisibility(false);
+					break;
+				case MSG_UPDATE_STATUS:
+					break;
+				}
+				showDialog(DIALOG_SERVICE_UNAVAILABLE);
 				break;
 
 			case MSG_MANUAL_RELOAD:
@@ -399,6 +422,9 @@ public class MessageListActivity extends TimelineActivity {
 				Log.e(TAG, "mManualReload JSON exception: " + e.getMessage());
 				return;
 			} catch (ConnectionAuthenticationException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_MANUAL_RELOAD, 0));
+				return;
+			} catch (ConnectionUnavailableException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_MANUAL_RELOAD, 0));
 				return;
 			}

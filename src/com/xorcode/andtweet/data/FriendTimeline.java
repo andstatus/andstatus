@@ -36,6 +36,7 @@ import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
+import com.xorcode.andtweet.net.ConnectionUnavailableException;
 
 /**
  * Handles loading data from JSON into database.
@@ -49,7 +50,7 @@ public class FriendTimeline {
 	private ContentResolver mContentResolver;
 	private String mUsername, mPassword;
 	private int mNewTweets;
-	private long mLastRunTime;
+	private long mLastRunTime = 0;
 
 	public FriendTimeline(ContentResolver contentResolver, String username, String password, long lastRunTime) {
 		mContentResolver = contentResolver;
@@ -63,16 +64,20 @@ public class FriendTimeline {
 	 * 
 	 * @throws ConnectionException 
 	 * @return int
+	 * @throws ConnectionUnavailableException 
 	 */
-	public int loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException {
+	public int loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		mNewTweets = 0;
 		if (mUsername != null && mUsername.length() > 0) {
 			Log.i(TAG, "Loading friends timeline");
-			// Try to load the last record
-			DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(mLastRunTime);
-			Log.d(TAG, "Last tweet: " + f.format(cal.getTime()));
+			try {
+				final DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
+				final Calendar cal = Calendar.getInstance();
+				cal.setTimeInMillis(mLastRunTime);
+				Log.d(TAG, "Last tweet: " + f.format(cal.getTime()));
+			} catch (Exception e) {
+				Log.e(TAG, "An error has occurred.", e);
+			}
 			Connection aConn;
 			if (mLastRunTime > 0) {
 				aConn = new Connection(mUsername, mPassword, mLastRunTime);

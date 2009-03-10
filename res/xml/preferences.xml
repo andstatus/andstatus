@@ -50,6 +50,9 @@
 					android:summary="Vibrate on incoming message" android:title="Vibration"
 					android:summaryOn="Vibrating on incoming messages"
 					android:summaryOff="Vibration turned off" android:dependency="notifications_enabled" />
+				<RingtonePreference android:key="notification_ringtone" 
+					android:ringtoneType="notification" 
+					android:title="@string/title_preference_notification_sound" />
 			</PreferenceCategory>
 		</PreferenceScreen>
 		<PreferenceScreen android:summary="@string/summary_preference_automatic_updates"

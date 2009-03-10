@@ -27,29 +27,38 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.RingtonePreference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.xorcode.andtweet.net.Connection;
+import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
+import com.xorcode.andtweet.net.ConnectionUnavailableException;
 
 /**
  * @author torgny.bjers
  * 
  */
-public class PreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
+public class PreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
 
-	private static final String TAG = "AndTweetDatabase";
+	private static final String TAG = "AndTweetPreferences";
 
 	private static final int DIALOG_AUTHENTICATION_FAILED = 1;
 	private static final int DIALOG_CHECKING_CREDENTIALS = 2;
+	private static final int DIALOG_SERVICE_UNAVAILABLE = 3;
 
 	public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
 
@@ -57,14 +66,17 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	public static final String KEY_TWITTER_PASSWORD = "twitter_password";
 	public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
 	public static final String KEY_AUTOMATIC_UPDATES = "automatic_updates";
+	public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
 
 	public static final int MSG_ACCOUNT_VALID = 1;
 	public static final int MSG_ACCOUNT_INVALID = 2;
+	public static final int MSG_SERVICE_UNAVAILABLE_ERROR = 3;
 
 	private CheckBoxPreference mAutomaticUpdates;
 	private ListPreference mFetchFrequencyPreference;
 	private EditTextPreference mEditTextUsername;
 	private EditTextPreference mEditTextPassword;
+	private RingtonePreference mNotificationRingtone;
 
 	private ProgressDialog mProgressDialog;
 
@@ -76,13 +88,15 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 		addPreferencesFromResource(R.xml.preferences);
 		mFetchFrequencyPreference = (ListPreference) getPreferenceScreen().findPreference(KEY_FETCH_FREQUENCY);
 		mAutomaticUpdates = (CheckBoxPreference) getPreferenceScreen().findPreference(KEY_AUTOMATIC_UPDATES);
+		mNotificationRingtone = (RingtonePreference) getPreferenceScreen().findPreference(KEY_RINGTONE_PREFERENCE);
 		mEditTextUsername = (EditTextPreference) getPreferenceScreen().findPreference(KEY_TWITTER_USERNAME);
 		mEditTextPassword = (EditTextPreference) getPreferenceScreen().findPreference(KEY_TWITTER_PASSWORD);
 		if (mEditTextUsername.getText() == null || mEditTextPassword.getText() == null || mEditTextUsername.getText().length() == 0 || mEditTextPassword.getText().length() == 0) {
 			mAutomaticUpdates.setEnabled(false);
-			mAutomaticUpdates.setChecked(false);
 		}
+		mNotificationRingtone.setOnPreferenceChangeListener(this);
 		updateFrequency();
+		updateRingtone(getPreferenceScreen().getSharedPreferences().getString(KEY_RINGTONE_PREFERENCE, null));
 	}
 
 	@Override
@@ -112,6 +126,21 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 		mFetchFrequencyPreference.setSummary(sf.format(new Object[] { displayFrequency }));
 	}
 
+	protected void updateRingtone(Object newValue) {
+		String ringtone = (String) newValue;
+		Uri uri;
+		Ringtone rt;
+		if (ringtone == null) {
+			uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		} else if ("".equals(ringtone)) {
+			mNotificationRingtone.setSummary(R.string.summary_preference_no_ringtone);
+		} else {
+			uri = Uri.parse(ringtone);
+			rt = RingtoneManager.getRingtone(this, uri);
+			mNotificationRingtone.setSummary(rt.getTitle(this));
+		}
+	}
+
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		if (key.equals(KEY_FETCH_FREQUENCY)) {
 			updateFrequency();
@@ -125,6 +154,14 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 		}
 	};
 
+	public boolean onPreferenceChange(Preference preference, Object newValue) {
+		if (preference.getKey().equals(KEY_RINGTONE_PREFERENCE)) {
+			updateRingtone(newValue);
+			return true;
+		}
+		return false;
+	}
+
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
@@ -133,6 +170,16 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 				.setIcon(android.R.drawable.ic_dialog_alert)
 				.setTitle(R.string.dialog_title_authentication_failed)
 				.setMessage(R.string.dialog_summary_authentication_failed)
+				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface Dialog, int whichButton) {
+					}
+				}).create();
+
+		case DIALOG_SERVICE_UNAVAILABLE:
+			return new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setTitle(R.string.dialog_title_service_unavailable)
+				.setMessage(R.string.dialog_summary_service_unavailable)
 				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface Dialog, int whichButton) {
 					}
@@ -163,10 +210,15 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 			case MSG_ACCOUNT_INVALID:
 				mAuthentiated = false;
 				Log.d(TAG, "account invalid");
-				mAutomaticUpdates.setChecked(false);
 				mAutomaticUpdates.setEnabled(false);
 				dismissDialog(DIALOG_CHECKING_CREDENTIALS);
 				showDialog(DIALOG_AUTHENTICATION_FAILED);
+				break;
+			case MSG_SERVICE_UNAVAILABLE_ERROR:
+				mAuthentiated = false;
+				Log.d(TAG, "twitter is over capacity");
+				dismissDialog(DIALOG_CHECKING_CREDENTIALS);
+				showDialog(DIALOG_SERVICE_UNAVAILABLE);
 				break;
 			}
 		}
@@ -189,8 +241,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 			} catch (ConnectionException e) {
 				Toast.makeText(PreferencesActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
 				Log.e(TAG, "mCheckCredentials Connection Exception: " + e.getMessage());
+			} catch (ConnectionAuthenticationException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_INVALID, 1, 0));
+			} catch (ConnectionUnavailableException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, 1, 0));
 			}
-			mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_INVALID, 1, 0));
 		}
 	};
 }

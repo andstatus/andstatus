@@ -49,6 +49,7 @@ import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
+import com.xorcode.andtweet.net.ConnectionUnavailableException;
 
 /**
  * This is an application service that serves as a connection between Android
@@ -153,7 +154,7 @@ public class AndTweetService extends Service {
 			mPassword = sp.getString("twitter_password", null);
 
 			mNotificationsEnabled = sp.getBoolean("notifications_enabled", false);
-			mNotificationsVibrate = sp.getBoolean("vibrate", false);
+			mNotificationsVibrate = sp.getBoolean("vibration", false);
 			mAutomaticUpdates = sp.getBoolean("automatic_updates", false);
 
 			mLastRunTime = sp.getLong("last_timeline_runtime", System.currentTimeMillis());
@@ -247,17 +248,31 @@ public class AndTweetService extends Service {
 		if (!mNotificationsEnabled) {
 			return;
 		}
+
+		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
 		// Set up the notification to display to the user
 		Notification notification = new Notification(android.R.drawable.stat_notify_chat,
 				(String) getText(R.string.notification_title), System.currentTimeMillis());
-		notification.defaults = Notification.DEFAULT_ALL;
+
+		notification.vibrate = null;
 		if (mNotificationsVibrate) {
-			notification.vibrate = new long[] { 350, 350 };
+			notification.vibrate = new long[] { 200, 300, 200, 300 };
 		}
+
 		notification.flags = Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
 		notification.ledOffMS = 1000;
 		notification.ledOnMS = 500;
 		notification.ledARGB = Color.GREEN;
+
+		String ringtone = sp.getString(PreferencesActivity.KEY_RINGTONE_PREFERENCE, null);
+		if ("".equals(ringtone) || ringtone == null) {
+			notification.sound = null;
+		} else {
+			Uri ringtoneUri = Uri.parse(ringtone);
+			Log.w(TAG, "ringtone URI: " + ringtoneUri.toString());
+			notification.sound = ringtoneUri;
+		}
 
 		// Set up the pending intent
 		PendingIntent contentIntent;
@@ -266,6 +281,7 @@ public class AndTweetService extends Service {
 		int messageFormat;
 		int singular;
 		int plural;
+
 		switch (msgType) {
 		case NOTIFY_DIRECT_MESSAGE:
 			messageFormat = R.string.notification_new_message_format;
@@ -274,6 +290,7 @@ public class AndTweetService extends Service {
 			messageTitle = R.string.notification_title_messages;
 			contentIntent = PendingIntent.getActivity(this, numTweets, new Intent(this, MessageListActivity.class), 0);
 			break;
+
 		case NOTIFY_TIMELINE:
 		default:
 			messageFormat = R.string.notification_new_tweet_format;
@@ -298,7 +315,7 @@ public class AndTweetService extends Service {
 
 		// Set the latest event information and send the notification
 		notification.setLatestEventInfo(this, getText(messageTitle), aMessage, contentIntent);
-		mNM.notify(R.string.app_name, notification);
+		mNM.notify(msgType, notification);
 	}
 
 	protected Runnable mLoadTimeline = new Runnable() {
@@ -318,6 +335,8 @@ public class AndTweetService extends Service {
 				Log.e(TAG, "handleMessage JSON Exception: " + e.getMessage());
 			} catch (ConnectionAuthenticationException e) {
 				Log.e(TAG, "handleMessage Authentication Exception: " + e.getMessage());
+			} catch (ConnectionUnavailableException e) {
+				Log.e(TAG, "Twitter FAIL Whale: " + e.getMessage());
 			}
 			if (aNewTweets > 0) {
 				Log.d(TAG, aNewTweets + " new tweets");
@@ -347,6 +366,8 @@ public class AndTweetService extends Service {
 				Log.e(TAG, "handleMessage JSON Exception: " + e.getMessage());
 			} catch (ConnectionAuthenticationException e) {
 				Log.e(TAG, "handleMessage Authentication Exception: " + e.getMessage());
+			} catch (ConnectionUnavailableException e) {
+				Log.e(TAG, "Twitter FAIL Whale: " + e.getMessage());
 			}
 			if (aNewMessages > 0) {
 				Log.d(TAG, aNewMessages + " new messages");
@@ -396,6 +417,8 @@ public class AndTweetService extends Service {
 					Log.e(TAG, "loadFriends Connection Exception: " + e.getMessage());
 				} catch (ConnectionAuthenticationException e) {
 					Log.e(TAG, "loadFriends Authentication Exception: " + e.getMessage());
+				} catch (ConnectionUnavailableException e) {
+					Log.e(TAG, "loadFriends FAIL Whale Exception: " + e.getMessage());
 				}
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_FRIENDS_DONE));
 			}

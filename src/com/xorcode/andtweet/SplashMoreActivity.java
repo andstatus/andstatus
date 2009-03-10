@@ -87,7 +87,7 @@ public class SplashMoreActivity extends Activity {
 		}
 		if (mSkipPreferences) {
 			Intent intent = new Intent(this, TweetListActivity.class);
-			intent.setAction("initialize");
+			intent.setAction("com.xorcode.andtweet.INITIALIZE");
 			startActivity(intent);
 			finish();
 		}
