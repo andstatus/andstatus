@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.SearchManager;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -35,6 +36,7 @@ import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -79,6 +81,7 @@ public class AndTweetService extends Service {
 
 	private static final int NOTIFY_DIRECT_MESSAGE = 1;
 	private static final int NOTIFY_TIMELINE = 2;
+	private static final int NOTIFY_REPLIES = 3;
 
 	private String mUsername;
 	private String mPassword;
@@ -189,14 +192,17 @@ public class AndTweetService extends Service {
 				for (int i = 0; i < N; i++) {
 					try {
 						mCallbacks.getBroadcastItem(i).tweetsChanged(msg.arg1);
+						mCallbacks.getBroadcastItem(i).repliesChanged(msg.arg2);
 					} catch (RemoteException e) {
 						Log.e(TAG, e.getMessage());
 					}
 				}
 				mCallbacks.finishBroadcast();
 				if (msg.arg1 > 0) {
-					// Notify user
 					notifyNewTweets(msg.arg1, NOTIFY_TIMELINE);
+				}
+				if (msg.arg2 > 0) {
+					notifyNewTweets(msg.arg2, NOTIFY_REPLIES);
 				}
 				// Repeat mFrequency seconds (defaults to 180, 3 minutes)
 				sendMessageDelayed(obtainMessage(MSG_UPDATE_TIMELINE), mFrequency * MILLISECONDS);
@@ -250,6 +256,22 @@ public class AndTweetService extends Service {
 		}
 
 		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		boolean notificationsMessages = sp.getBoolean("notifications_messages", false);
+		boolean notificationsReplies = sp.getBoolean("notifications_replies", false);
+		boolean notificationsTimeline = sp.getBoolean("notifications_timeline", false);
+
+		// Make sure that notifications haven't been turned off for the message type
+		switch (msgType) {
+		case NOTIFY_REPLIES:
+			if (!notificationsReplies) return;
+			break;
+		case NOTIFY_DIRECT_MESSAGE:
+			if (!notificationsMessages) return;
+			break;
+		case NOTIFY_TIMELINE:
+			if (!notificationsTimeline) return;
+			break;
+		}
 
 		// Set up the notification to display to the user
 		Notification notification = new Notification(android.R.drawable.stat_notify_chat,
@@ -283,6 +305,20 @@ public class AndTweetService extends Service {
 		int plural;
 
 		switch (msgType) {
+		case NOTIFY_REPLIES:
+			messageFormat = R.string.notification_new_reply_format;
+			singular = R.string.notification_reply_singular;
+			plural = R.string.notification_reply_plural;
+			messageTitle = R.string.notification_title_replies;
+			Intent intent = new Intent(getApplicationContext(), TweetListActivity.class);
+			intent.putExtra(SearchManager.QUERY, "@" + mUsername);
+			Bundle appDataBundle = new Bundle();
+			appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.SEARCH_URI);
+			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+			intent.setAction(Intent.ACTION_SEARCH);
+			contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets, intent, 0);
+			break;
+
 		case NOTIFY_DIRECT_MESSAGE:
 			messageFormat = R.string.notification_new_message_format;
 			singular = R.string.notification_message_singular;
@@ -325,8 +361,11 @@ public class AndTweetService extends Service {
 			mPassword = sp.getString("twitter_password", null);
 			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), mUsername, mPassword, mLastRunTime);
 			int aNewTweets = 0;
+			int aReplyCount = 0;
 			try {
-				aNewTweets = friendTimeline.loadTimeline();
+				friendTimeline.loadTimeline();
+				aNewTweets = friendTimeline.newCount();
+				aReplyCount = friendTimeline.replyCount();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "handleMessage Connection Exception: " + e.getMessage());
 			} catch (SQLiteConstraintException e) {
@@ -341,11 +380,14 @@ public class AndTweetService extends Service {
 			if (aNewTweets > 0) {
 				Log.d(TAG, aNewTweets + " new tweets");
 			}
+			if (aReplyCount > 0) {
+				Log.d(TAG, aReplyCount + " replies");
+			}
 			int aDeletedTweets = friendTimeline.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
 			if (aDeletedTweets > 0) {
 				Log.d(TAG, aDeletedTweets + " tweets deleted");
 			}
-			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_TIMELINE_DONE, aNewTweets, 0));
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_TIMELINE_DONE, aNewTweets, aReplyCount));
 		}
 	};
 

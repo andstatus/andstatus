@@ -51,6 +51,7 @@ public class FriendTimeline {
 	private String mUsername, mPassword;
 	private int mNewTweets;
 	private long mLastRunTime = 0;
+	private int mReplies;
 
 	public FriendTimeline(ContentResolver contentResolver, String username, String password, long lastRunTime) {
 		mContentResolver = contentResolver;
@@ -66,7 +67,7 @@ public class FriendTimeline {
 	 * @return int
 	 * @throws ConnectionUnavailableException 
 	 */
-	public int loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public void loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		mNewTweets = 0;
 		if (mUsername != null && mUsername.length() > 0) {
 			Log.i(TAG, "Loading friends timeline");
@@ -93,7 +94,6 @@ public class FriendTimeline {
 				mContentResolver.notifyChange(AndTweetDatabase.Tweets.CONTENT_URI, null);
 			}
 		}
-		return mNewTweets;
 	}
 
 	public Uri insertFromJSONObject(JSONObject jo) throws JSONException, SQLiteConstraintException {
@@ -109,7 +109,8 @@ public class FriendTimeline {
 		values.put(AndTweetDatabase.Tweets._ID, lTweetId.toString());
 		values.put(AndTweetDatabase.Tweets.AUTHOR_ID, user.getString("screen_name"));
 
-		values.put(AndTweetDatabase.Tweets.MESSAGE, Html.fromHtml(jo.getString("text")).toString());
+		String message = Html.fromHtml(jo.getString("text")).toString();
+		values.put(AndTweetDatabase.Tweets.MESSAGE, message);
 		values.put(AndTweetDatabase.Tweets.SOURCE, jo.getString("source"));
 		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_STATUS_ID, jo.getString("in_reply_to_status_id"));
 		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_AUTHOR_ID, jo.getString("in_reply_to_screen_name"));
@@ -126,6 +127,9 @@ public class FriendTimeline {
 		if ((mContentResolver.update(aTweetUri, values, null, null)) == 0) {
 			mContentResolver.insert(AndTweetDatabase.Tweets.CONTENT_URI, values);
 			mNewTweets++;
+			if (mUsername.equals(jo.getString("in_reply_to_screen_name")) || message.contains("@" + mUsername)) {
+				mReplies++;
+			}
 		}
 		return aTweetUri;
 	}
@@ -141,5 +145,13 @@ public class FriendTimeline {
 			sinceTimestamp = System.currentTimeMillis();
 		}
 		return mContentResolver.delete(AndTweetDatabase.Tweets.CONTENT_URI, AndTweetDatabase.Tweets.CREATED_DATE + " < " + sinceTimestamp, null);
+	}
+
+	public int newCount() {
+		return mNewTweets;
+	}
+
+	public int replyCount() {
+		return mReplies;
 	}
 }

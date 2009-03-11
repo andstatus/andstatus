@@ -51,6 +51,14 @@ public class DirectMessages {
 	private int mNewMessages;
 	private long mLastRunTime = 0;
 
+	/**
+	 * Class constructor.
+	 * 
+	 * @param contentResolver
+	 * @param username
+	 * @param password
+	 * @param lastRunTime
+	 */
 	public DirectMessages(ContentResolver contentResolver, String username, String password, long lastRunTime) {
 		mContentResolver = contentResolver;
 		mUsername = username;
@@ -61,18 +69,25 @@ public class DirectMessages {
 	/**
 	 * Load the user and friends timeline.
 	 * 
-	 * @throws ConnectionException 
 	 * @return int
-	 * @throws ConnectionUnavailableException 
+	 * @throws ConnectionException
+	 * @throws JSONException
+	 * @throws SQLiteConstraintException
+	 * @throws ConnectionAuthenticationException
+	 * @throws ConnectionUnavailableException
 	 */
 	public int loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		mNewMessages = 0;
 		if (mUsername != null && mUsername.length() > 0) {
 			Log.i(TAG, "Loading direct messages");
-			DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(mLastRunTime);
-			Log.d(TAG, "Last direct message: " + f.format(cal.getTime()));
+			try {
+				final DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
+				final Calendar cal = Calendar.getInstance();
+				cal.setTimeInMillis(mLastRunTime);
+				Log.d(TAG, "Last tweet: " + f.format(cal.getTime()));
+			} catch (Exception e) {
+				Log.e(TAG, "An error has occurred.", e);
+			}
 			Connection aConn;
 			if (mLastRunTime > 0) {
 				aConn = new Connection(mUsername, mPassword, mLastRunTime);
@@ -91,6 +106,14 @@ public class DirectMessages {
 		return mNewMessages;
 	}
 
+	/**
+	 * Insert a record from a JSON object.
+	 * 
+	 * @param jo
+	 * @return Uri
+	 * @throws JSONException
+	 * @throws SQLiteConstraintException
+	 */
 	public Uri insertFromJSONObject(JSONObject jo) throws JSONException, SQLiteConstraintException {
 		ContentValues values = new ContentValues();
 
@@ -120,12 +143,27 @@ public class DirectMessages {
 		return aMessageUri;
 	}
 
+	/**
+	 * Insert a record from a JSON object.
+	 * 
+	 * @param jo
+	 * @param notify
+	 * @return Uri
+	 * @throws JSONException
+	 * @throws SQLiteConstraintException
+	 */
 	public Uri insertFromJSONObject(JSONObject jo, boolean notify) throws JSONException, SQLiteConstraintException {
 		Uri aMessageUri = insertFromJSONObject(jo);
 		if (notify) mContentResolver.notifyChange(aMessageUri, null);
 		return aMessageUri;
 	}
 
+	/**
+	 * Prune old records from the database to keep the size down.
+	 * 
+	 * @param sinceTimestamp
+	 * @return int
+	 */
 	public int pruneOldRecords(long sinceTimestamp) {
 		if (sinceTimestamp == 0) {
 			sinceTimestamp = System.currentTimeMillis();

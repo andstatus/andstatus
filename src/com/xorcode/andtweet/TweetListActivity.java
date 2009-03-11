@@ -120,7 +120,7 @@ public class TweetListActivity extends TimelineActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-	
+
 		if (savedInstanceState != null) {
 			if (savedInstanceState.containsKey(BUNDLE_KEY_REPLY_ID)) {
 				mReplyId = savedInstanceState.getLong(BUNDLE_KEY_REPLY_ID);
@@ -132,16 +132,15 @@ public class TweetListActivity extends TimelineActivity {
 				mIsLoading = savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING);
 			}
 		}
-	
+		
 		final Intent intent = getIntent();
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 			intent.setData(AndTweetDatabase.Tweets.SEARCH_URI);
-            doSearchQuery(intent, "onCreate()");
-        } else {
-    		if (intent.getData() == null) {
-    			intent.setData(AndTweetDatabase.Tweets.CONTENT_URI);
-    		}
-        }
+		} else {
+			if (intent.getData() == null) {
+				intent.setData(AndTweetDatabase.Tweets.CONTENT_URI);
+			}
+		}
 
 		// Set up views
 		mSendButton = (Button) findViewById(R.id.messageEditSendButton);
@@ -219,10 +218,14 @@ public class TweetListActivity extends TimelineActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, null, null, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
-		mFriendsCursor = getContentResolver().query(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null, Users.DEFAULT_SORT_ORDER);
-		createAdapters();
 		final Intent intent = getIntent();
+		mFriendsCursor = getContentResolver().query(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null, Users.DEFAULT_SORT_ORDER);
+		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+		    doSearchQuery(intent, "onCreate()");
+		} else {
+			mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, null, null, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
+			createAdapters();
+		}
 		mEditText.requestFocus();
 		if ("com.xorcode.andtweet.INITIALIZE".equals(intent.getAction())) {
 			intent.setAction(null);
@@ -409,7 +412,11 @@ public class TweetListActivity extends TimelineActivity {
 			FRIENDS_PROJECTION,
 			Users.DEFAULT_SORT_ORDER
 		);
-		friendsAdapter.setStringConversionColumn(mFriendsCursor.getColumnIndexOrThrow(Users.AUTHOR_ID));
+		try {
+			friendsAdapter.setStringConversionColumn(mFriendsCursor.getColumnIndexOrThrow(Users.AUTHOR_ID));
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "Could not set string conversion column on mFriendsCursor", e);
+		}
 
 		mEditText.setAdapter(friendsAdapter);
 		mEditText.setTokenizer(new AtTokenizer());
@@ -659,8 +666,11 @@ public class TweetListActivity extends TimelineActivity {
 			String password = mSP.getString("twitter_password", null);
 			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", 0));
 			int aNewTweets = 0;
+			int aReplyCount = 0;
 			try {
-				aNewTweets = friendTimeline.loadTimeline();
+				friendTimeline.loadTimeline();
+				aNewTweets = friendTimeline.newCount();
+				aReplyCount = friendTimeline.replyCount();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mManualReload Connection Exception: " + e.getMessage());
 				return;
@@ -676,7 +686,7 @@ public class TweetListActivity extends TimelineActivity {
 			} catch (ConnectionUnavailableException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_MANUAL_RELOAD, 0));
 			}
-			mHandler.sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewTweets, 0));
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewTweets, aReplyCount));
 		}
 	};
 

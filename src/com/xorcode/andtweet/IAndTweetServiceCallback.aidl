@@ -31,6 +31,11 @@ oneway interface IAndTweetServiceCallback {
      */
     void messagesChanged(int value);
 
+    /**
+     * Called when the service has found replies.
+     */
+    void repliesChanged(int value);
+
 	/**
 	 * Called when the service is loading data.
 	 */

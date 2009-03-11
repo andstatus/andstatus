@@ -67,6 +67,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final int MSG_LOAD_ITEMS = 6;
 	public static final int MSG_DIRECT_MESSAGES_CHANGED = 7;
 	public static final int MSG_SERVICE_UNAVAILABLE_ERROR = 8;
+	public static final int MSG_REPLIES_CHANGED = 9;
 
 	// Handler message status codes
 	public static final int STATUS_LOAD_ITEMS_FAILURE = 0;
@@ -175,7 +176,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 				.setMessage(R.string.dialog_summary_service_unavailable)
 				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface Dialog, int whichButton) {
-						startActivity(new Intent(TimelineActivity.this, PreferencesActivity.class));
 					}
 				}).create();
 
@@ -397,7 +397,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_DATA_LOADING, value, 0));
 		}
 
-
 		/**
 		 * Messages changed callback method
 		 * 
@@ -406,6 +405,16 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		 */
 		public void messagesChanged(int value) throws RemoteException {
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_DIRECT_MESSAGES_CHANGED, value, 0));
+		}
+
+		/**
+		 * Replies changed callback method
+		 * 
+		 * @param value
+		 * @throws RemoteException
+		 */
+		public void repliesChanged(int value) throws RemoteException {
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_REPLIES_CHANGED, value, 0));
 		}
 	};
 }

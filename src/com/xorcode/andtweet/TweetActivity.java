@@ -30,6 +30,7 @@ import android.text.util.Linkify;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.util.RelativeTime;
 
@@ -132,5 +133,13 @@ public class TweetActivity extends Activity {
 		}
 		theme.append(name);
 		setTheme((int) getResources().getIdentifier(theme.toString(), "style", "com.xorcode.andtweet"));
+	}
+
+	@Override
+	public boolean onSearchRequested() {
+		Bundle appDataBundle = new Bundle();
+		appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.SEARCH_URI);
+		startSearch(null, false, appDataBundle, false);
+		return true;
 	}
 }
