@@ -70,15 +70,6 @@ public class FriendTimeline {
 	public void loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		mNewTweets = 0;
 		if (mUsername != null && mUsername.length() > 0) {
-			Log.i(TAG, "Loading friends timeline");
-			try {
-				final DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
-				final Calendar cal = Calendar.getInstance();
-				cal.setTimeInMillis(mLastRunTime);
-				Log.d(TAG, "Last tweet: " + f.format(cal.getTime()));
-			} catch (Exception e) {
-				Log.e(TAG, "An error has occurred.", e);
-			}
 			Connection aConn;
 			if (mLastRunTime > 0) {
 				aConn = new Connection(mUsername, mPassword, mLastRunTime);

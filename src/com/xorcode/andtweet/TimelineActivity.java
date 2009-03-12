@@ -314,7 +314,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	 */
 	protected void bindToService() {
 		if (mSP.contains("automatic_updates") && mSP.getBoolean("automatic_updates", false)) {
-			Log.d(TAG, "Automatic updates enabled");
 			Intent serviceIntent = new Intent(IAndTweetService.class.getName());
 			if (!mIsBound) {
 				mAlarmSender = PendingIntent.getService(this, 0, serviceIntent, 0);

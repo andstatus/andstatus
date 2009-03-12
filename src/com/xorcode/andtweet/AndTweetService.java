@@ -292,7 +292,6 @@ public class AndTweetService extends Service {
 			notification.sound = null;
 		} else {
 			Uri ringtoneUri = Uri.parse(ringtone);
-			Log.w(TAG, "ringtone URI: " + ringtoneUri.toString());
 			notification.sound = ringtoneUri;
 		}
 
@@ -377,16 +376,7 @@ public class AndTweetService extends Service {
 			} catch (ConnectionUnavailableException e) {
 				Log.e(TAG, "Twitter FAIL Whale: " + e.getMessage());
 			}
-			if (aNewTweets > 0) {
-				Log.d(TAG, aNewTweets + " new tweets");
-			}
-			if (aReplyCount > 0) {
-				Log.d(TAG, aReplyCount + " replies");
-			}
-			int aDeletedTweets = friendTimeline.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
-			if (aDeletedTweets > 0) {
-				Log.d(TAG, aDeletedTweets + " tweets deleted");
-			}
+			friendTimeline.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_TIMELINE_DONE, aNewTweets, aReplyCount));
 		}
 	};
@@ -411,27 +401,19 @@ public class AndTweetService extends Service {
 			} catch (ConnectionUnavailableException e) {
 				Log.e(TAG, "Twitter FAIL Whale: " + e.getMessage());
 			}
-			if (aNewMessages > 0) {
-				Log.d(TAG, aNewMessages + " new messages");
-			}
-			int aDeletedMessages = directMessages.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
-			if (aDeletedMessages > 0) {
-				Log.d(TAG, aDeletedMessages + " messages deleted");
-			}
+			directMessages.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_DIRECT_MESSAGES_DONE, aNewMessages, 0));
 		}
 	};
 
 	protected Runnable mLoadFriends = new Runnable() {
 		public void run() {
-			Log.i(TAG, "Load friends called");
 			final ContentResolver contentResolver = getContentResolver();
 			final SharedPreferences sp = PreferenceManager
 					.getDefaultSharedPreferences(getApplicationContext());
 			mUsername = sp.getString("twitter_username", null);
 			mPassword = sp.getString("twitter_password", null);
 			if (mUsername != null && mUsername.length() > 0) {
-				Log.i(TAG, "Loading friends");
 				Connection aConn = new Connection(mUsername, mPassword);
 				try {
 					JSONArray jArr = aConn.getFriends();

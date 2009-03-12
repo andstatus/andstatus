@@ -174,14 +174,13 @@ public class TweetListActivity extends TimelineActivity {
 		super.onNewIntent(newIntent);
 		// get and process search query here
 		if (Intent.ACTION_SEARCH.equals(newIntent.getAction())) {
-			doSearchQuery(newIntent, "onNewIntent()");
+			doSearchQuery(newIntent);
 		}
 	}
 
-	protected void doSearchQuery(final Intent queryIntent, final String entryPoint) {
+	protected void doSearchQuery(final Intent queryIntent) {
 		// The search query is provided as an "extra" string in the query intent
 		final String queryString = queryIntent.getStringExtra(SearchManager.QUERY);
-		Log.d(TAG, "Search queryString: " + queryString);
 
 		// Record the query string in the recent queries suggestions provider
 		SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
@@ -207,12 +206,7 @@ public class TweetListActivity extends TimelineActivity {
 				mCursor = getContentResolver().query(contentUri, PROJECTION, null, null, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
 				createAdapters();
 			}
-			Log.d(TAG, (contentUri == null) ? "<no app data>" : "Search URI: " + contentUri.toString());
-		} else {
-			Log.d(TAG, "<no app data bundle>");
 		}
-
-		Log.d(TAG, "Search entryPoint: " + entryPoint);
 	}
 
 	@Override
@@ -221,7 +215,7 @@ public class TweetListActivity extends TimelineActivity {
 		final Intent intent = getIntent();
 		mFriendsCursor = getContentResolver().query(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null, Users.DEFAULT_SORT_ORDER);
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-		    doSearchQuery(intent, "onCreate()");
+		    doSearchQuery(intent);
 		} else {
 			mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, null, null, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
 			createAdapters();

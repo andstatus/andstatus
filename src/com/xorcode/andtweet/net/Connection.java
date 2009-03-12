@@ -346,7 +346,7 @@ public class Connection {
 			statusCode = httpResponse.getStatusLine().getStatusCode();
 			result = retrieveInputStream(httpResponse.getEntity());
 		} catch (Exception e) {
-			Log.d(TAG, e.getMessage());
+			Log.e(TAG, e.getMessage());
 			throw new ConnectionException(e);
 		} finally {
 			getMethod.abort();

@@ -203,27 +203,23 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 			switch (msg.what) {
 			case MSG_ACCOUNT_VALID:
 				mAuthentiated = true;
-				Log.d(TAG, "account valid");
 				dismissDialog(DIALOG_CHECKING_CREDENTIALS);
 				mAutomaticUpdates.setEnabled(true);
 				Toast.makeText(PreferencesActivity.this, R.string.authentication_successful, Toast.LENGTH_SHORT).show();
 				break;
 			case MSG_ACCOUNT_INVALID:
 				mAuthentiated = false;
-				Log.d(TAG, "account invalid");
 				mAutomaticUpdates.setEnabled(false);
 				dismissDialog(DIALOG_CHECKING_CREDENTIALS);
 				showDialog(DIALOG_AUTHENTICATION_FAILED);
 				break;
 			case MSG_SERVICE_UNAVAILABLE_ERROR:
 				mAuthentiated = false;
-				Log.d(TAG, "twitter is over capacity");
 				dismissDialog(DIALOG_CHECKING_CREDENTIALS);
 				showDialog(DIALOG_SERVICE_UNAVAILABLE);
 				break;
 			case MSG_CONNECTION_EXCEPTION:
 				mAuthentiated = false;
-				Log.d(TAG, "twitter is over capacity");
 				dismissDialog(DIALOG_CHECKING_CREDENTIALS);
 				int mId = Integer.parseInt((String) msg.obj);
 				switch (mId) {
@@ -242,7 +238,6 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
 	private Runnable mCheckCredentials = new Runnable() {
 		public void run() {
-			Log.d(TAG, "Started thread");
 			Connection c = new Connection(mEditTextUsername.getText(), mEditTextPassword.getText());
 			try {
 				JSONObject jo = c.verifyCredentials();

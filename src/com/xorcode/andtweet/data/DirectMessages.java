@@ -79,15 +79,6 @@ public class DirectMessages {
 	public int loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		mNewMessages = 0;
 		if (mUsername != null && mUsername.length() > 0) {
-			Log.i(TAG, "Loading direct messages");
-			try {
-				final DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
-				final Calendar cal = Calendar.getInstance();
-				cal.setTimeInMillis(mLastRunTime);
-				Log.d(TAG, "Last tweet: " + f.format(cal.getTime()));
-			} catch (Exception e) {
-				Log.e(TAG, "An error has occurred.", e);
-			}
 			Connection aConn;
 			if (mLastRunTime > 0) {
 				aConn = new Connection(mUsername, mPassword, mLastRunTime);
@@ -120,7 +111,6 @@ public class DirectMessages {
 		// Construct the Uri to existing record
 		Long lMessageId = Long.parseLong(jo.getString("id"));
 		Uri aMessageUri = ContentUris.withAppendedId(AndTweetDatabase.DirectMessages.CONTENT_URI, lMessageId);
-		Log.d(TAG, aMessageUri.toString());
 
 		values.put(AndTweetDatabase.DirectMessages._ID, lMessageId.toString());
 		values.put(AndTweetDatabase.DirectMessages.AUTHOR_ID, jo.getString("sender_screen_name"));

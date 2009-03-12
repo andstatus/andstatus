@@ -42,7 +42,7 @@ public class AndTweetServiceManager extends BroadcastReceiver {
 			PendingIntent mAlarmSender = PendingIntent.getService(context, 0, serviceIntent, 0);
 			mAM.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), mFrequency * 1000, mAlarmSender);
 		} else {
-			Log.d(TAG, "Received unexpected intent: " + intent.toString());
+			Log.e(TAG, "Received unexpected intent: " + intent.toString());
 		}
 	}
 

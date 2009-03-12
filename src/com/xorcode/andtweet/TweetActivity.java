@@ -113,7 +113,7 @@ public class TweetActivity extends Activity {
 			);
 			mSentDate.setText(sentDate);
 		} else {
-			Log.w(TAG, "No cursor found");
+			Log.e(TAG, "No cursor found");
 		}
 	}
 

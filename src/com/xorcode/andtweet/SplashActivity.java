@@ -72,7 +72,7 @@ public class SplashActivity extends Activity {
 			PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
 			version.setText(MessageFormat.format("{0} {1}", new Object[] {pi.packageName, pi.versionName}));
 		} catch (NameNotFoundException e) {
-			Log.w(TAG, "Unable to obtain package information", e);
+			Log.e(TAG, "Unable to obtain package information", e);
 		}
 
 		payoff.setText(R.string.splash_payoff_line);
