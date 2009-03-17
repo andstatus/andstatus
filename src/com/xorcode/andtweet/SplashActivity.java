@@ -19,12 +19,16 @@ package com.xorcode.andtweet;
 import java.text.MessageFormat;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
@@ -61,6 +65,12 @@ public class SplashActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 		setContentView(R.layout.splash);
+
+		if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+			if (!mSP.getBoolean("confirmed_external_storage_use", false)) {
+				showDialog(TimelineActivity.DIALOG_EXTERNAL_STORAGE);
+			}
+		}
 
 		mContainer = (LinearLayout) findViewById(R.id.splash_container);
 
@@ -121,5 +131,34 @@ public class SplashActivity extends Activity {
 	protected void onStart() {
 		super.onStart();
 		mContainer.setVisibility(View.VISIBLE);
+	}
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		switch (id) {
+		case TimelineActivity.DIALOG_EXTERNAL_STORAGE:
+			return new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setTitle(R.string.dialog_title_external_storage)
+				.setMessage(R.string.dialog_summary_external_storage)
+				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface Dialog, int whichButton) {
+						SharedPreferences.Editor editor = mSP.edit();
+						editor.putBoolean("confirmed_external_storage_use", true);
+						editor.putBoolean("storage_use_external", true);
+						editor.commit();
+					}
+				})
+				.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface Dialog, int whichButton) {
+						SharedPreferences.Editor editor = mSP.edit();
+						editor.putBoolean("confirmed_external_storage_use", true);
+						editor.commit();
+					}
+				}).create();
+
+		default:
+			return super.onCreateDialog(id);
+		}
 	}
 }

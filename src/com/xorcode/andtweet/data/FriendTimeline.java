@@ -49,8 +49,8 @@ public class FriendTimeline {
 
 	private ContentResolver mContentResolver;
 	private String mUsername, mPassword;
-	private int mNewTweets;
 	private long mLastRunTime = 0;
+	private int mNewTweets;
 	private int mReplies;
 
 	public FriendTimeline(ContentResolver contentResolver, String username, String password, long lastRunTime) {
@@ -63,23 +63,65 @@ public class FriendTimeline {
 	/**
 	 * Load the user and friends timeline.
 	 * 
-	 * @throws ConnectionException 
-	 * @return int
-	 * @throws ConnectionUnavailableException 
+	 * @throws ConnectionException
+	 * @throws JSONException
+	 * @throws SQLiteConstraintException
+	 * @throws ConnectionAuthenticationException
+	 * @throws ConnectionUnavailableException
 	 */
 	public void loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
+		loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, false);
+	}
+
+	/**
+	 * Load the user and friends timeline.
+	 * 
+	 * @param tweetType
+	 * @throws ConnectionException
+	 * @throws JSONException
+	 * @throws SQLiteConstraintException
+	 * @throws ConnectionAuthenticationException
+	 * @throws ConnectionUnavailableException
+	 */
+	public void loadTimeline(int tweetType) throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
+		loadTimeline(tweetType, false);
+	}
+
+	/**
+	 * Load the user and friends timeline.
+	 * 
+	 * @param tweetType
+	 * @param firstRun
+	 * @throws ConnectionException
+	 * @throws JSONException
+	 * @throws SQLiteConstraintException
+	 * @throws ConnectionAuthenticationException
+	 * @throws ConnectionUnavailableException
+	 */
+	public void loadTimeline(int tweetType, boolean firstRun) throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		mNewTweets = 0;
+		mReplies = 0;
+		int limit = 200;
+		if (firstRun) {
+			limit = 20;
+		}
 		if (mUsername != null && mUsername.length() > 0) {
-			Connection aConn;
-			if (mLastRunTime > 0) {
-				aConn = new Connection(mUsername, mPassword, mLastRunTime);
-			} else {
-				aConn = new Connection(mUsername, mPassword);
+			Connection aConn = new Connection(mUsername, mPassword, mLastRunTime, limit);
+			JSONArray jArr = null;
+			switch (tweetType) {
+			case AndTweetDatabase.Tweets.TWEET_TYPE_TWEET:
+				jArr = aConn.getFriendsTimeline();
+				break;
+			case AndTweetDatabase.Tweets.TWEET_TYPE_REPLY:
+				jArr = aConn.getRepliesTimeline();
+				break;
+			default:
+				Log.e(TAG, "Got unhandled tweet type: " + tweetType);
+				break;
 			}
-			JSONArray jArr = aConn.getFriendsTimeline();
 			for (int index = 0; index < jArr.length(); index++) {
 				JSONObject jo = jArr.getJSONObject(index);
-				insertFromJSONObject(jo);
+				insertFromJSONObject(jo, tweetType);
 			}
 			if (mNewTweets > 0) {
 				mContentResolver.notifyChange(AndTweetDatabase.Tweets.CONTENT_URI, null);
@@ -87,7 +129,7 @@ public class FriendTimeline {
 		}
 	}
 
-	public Uri insertFromJSONObject(JSONObject jo) throws JSONException, SQLiteConstraintException {
+	public Uri insertFromJSONObject(JSONObject jo, int tweetType) throws JSONException, SQLiteConstraintException {
 		JSONObject user;
 		user = jo.getJSONObject("user");
 
@@ -103,6 +145,7 @@ public class FriendTimeline {
 		String message = Html.fromHtml(jo.getString("text")).toString();
 		values.put(AndTweetDatabase.Tweets.MESSAGE, message);
 		values.put(AndTweetDatabase.Tweets.SOURCE, jo.getString("source"));
+		values.put(AndTweetDatabase.Tweets.TWEET_TYPE, tweetType);
 		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_STATUS_ID, jo.getString("in_reply_to_status_id"));
 		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_AUTHOR_ID, jo.getString("in_reply_to_screen_name"));
 
@@ -125,8 +168,8 @@ public class FriendTimeline {
 		return aTweetUri;
 	}
 
-	public Uri insertFromJSONObject(JSONObject jo, boolean notify) throws JSONException, SQLiteConstraintException {
-		Uri aTweetUri = insertFromJSONObject(jo);
+	public Uri insertFromJSONObject(JSONObject jo, int tweetType, boolean notify) throws JSONException, SQLiteConstraintException {
+		Uri aTweetUri = insertFromJSONObject(jo, tweetType);
 		if (notify) mContentResolver.notifyChange(aTweetUri, null);
 		return aTweetUri;
 	}

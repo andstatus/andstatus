@@ -16,8 +16,6 @@
 
 package com.xorcode.andtweet;
 
-import com.xorcode.andtweet.data.AndTweetDatabase;
-
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -34,12 +32,12 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -50,6 +48,11 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.xorcode.andtweet.data.AndTweetDatabase;
+import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 
 /**
  * @author torgny.bjers
@@ -68,6 +71,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final int MSG_DIRECT_MESSAGES_CHANGED = 7;
 	public static final int MSG_SERVICE_UNAVAILABLE_ERROR = 8;
 	public static final int MSG_REPLIES_CHANGED = 9;
+	public static final int MSG_UPDATED_TITLE = 10;
 
 	// Handler message status codes
 	public static final int STATUS_LOAD_ITEMS_FAILURE = 0;
@@ -77,6 +81,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final int DIALOG_AUTHENTICATION_FAILED = 1;
 	public static final int DIALOG_SENDING_MESSAGE = 2;
 	public static final int DIALOG_SERVICE_UNAVAILABLE = 3;
+	public static final int DIALOG_EXTERNAL_STORAGE = 4;
+	public static final int DIALOG_TIMELINE_LOADING = 5;
 
 	// Intent bundle result keys
 	public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
@@ -115,8 +121,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		mSP = PreferenceManager.getDefaultSharedPreferences(this);
 
-		// Make sure the window has access to progress animation
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		// Request window features before loading the content view
+		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 
 		String username = mSP.getString("twitter_username", null);
 		String password = mSP.getString("twitter_password", null);
@@ -127,8 +133,30 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
 		loadTheme();
 		setContentView(R.layout.tweetlist);
+		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.timeline_title);
+		updateTitle();
 
-		setTitle(getString(R.string.activity_title_format, new Object[] {getTitle(), username}));
+		if (mSP.getBoolean("storage_use_external", false)) {
+			if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+				Toast.makeText(this, "External storage not present. Aborting. If you start AndTweet again internal memory will be used, data loss may occur.", Toast.LENGTH_LONG).show();
+				SharedPreferences.Editor editor = mSP.edit();
+				editor.putBoolean("storage_use_external", false);
+				editor.commit();
+				destroyService();
+				finish();
+			}
+			if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
+				Toast.makeText(this, "External storage mounted read-only. Cannot write to database. Please re-mount your storage and try again.", Toast.LENGTH_LONG).show();
+				destroyService();
+				finish();
+			}
+		}
+
+		if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+			if (!mSP.getBoolean("confirmed_external_storage_use", false)) {
+				showDialog(DIALOG_EXTERNAL_STORAGE);
+			}
+		}
 
 		// Set up notification manager
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -181,9 +209,43 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
 		case DIALOG_SENDING_MESSAGE:
 			mProgressDialog = new ProgressDialog(this);
+			mProgressDialog.setIcon(android.R.drawable.ic_dialog_info);
 			mProgressDialog.setTitle(R.string.dialog_title_sending_message);
 			mProgressDialog.setMessage(getText(R.string.dialog_summary_sending_message));
 			return mProgressDialog;
+
+		case DIALOG_TIMELINE_LOADING:
+			mProgressDialog = new ProgressDialog(this);
+			mProgressDialog.setIcon(android.R.drawable.ic_dialog_info);
+			mProgressDialog.setTitle(R.string.dialog_title_timeline_loading);
+			mProgressDialog.setMessage(getText(R.string.dialog_summary_timeline_loading));
+			return mProgressDialog;
+
+		case DIALOG_EXTERNAL_STORAGE:
+			return new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setTitle(R.string.dialog_title_external_storage)
+				.setMessage(R.string.dialog_summary_external_storage)
+				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface Dialog, int whichButton) {
+						SharedPreferences.Editor editor = mSP.edit();
+						editor.putBoolean("confirmed_external_storage_use", true);
+						editor.putBoolean("storage_use_external", true);
+						editor.commit();
+						destroyService();
+						finish();
+						Intent intent = new Intent(TimelineActivity.this, TweetListActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+						startActivity(intent);
+					}
+				})
+				.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface Dialog, int whichButton) {
+						SharedPreferences.Editor editor = mSP.edit();
+						editor.putBoolean("confirmed_external_storage_use", true);
+						editor.commit();
+					}
+				}).create();
 
 		default:
 			return super.onCreateDialog(id);
@@ -218,6 +280,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			intent = new Intent(this, TweetListActivity.class);
 			appDataBundle = new Bundle();
 			appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.SEARCH_URI);
+			appDataBundle.putString("selection", AndTweetDatabase.Tweets.TWEET_TYPE + " = ?");
+			appDataBundle.putStringArray("selectionArgs", new String[] { String.valueOf(Tweets.TWEET_TYPE_TWEET) });
 			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
 			intent.setAction(Intent.ACTION_SEARCH);
 			startActivity(intent);
@@ -280,6 +344,27 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		}
 		theme.append(name);
 		setTheme((int) getResources().getIdentifier(theme.toString(), "style", "com.xorcode.andtweet"));
+	}
+
+	/**
+	 * Sets the title with a left and right title.
+	 * 
+	 * @param leftText Left title part
+	 * @param rightText Right title part
+	 */
+	public void setTitle(CharSequence leftText, CharSequence rightText) {
+		TextView leftTitle = (TextView) findViewById(R.id.custom_title_left_text);
+		TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
+		leftTitle.setText(leftText);
+		rightTitle.setText(rightText);
+	}
+
+	/**
+	 * Updates the activity title.
+	 */
+	public void updateTitle() {
+		String username = mSP.getString("twitter_username", null);
+		setTitle(getString(R.string.activity_title_format, new Object[] {getTitle(), username}), "");
 	}
 
 	/**

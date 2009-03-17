@@ -16,6 +16,7 @@
 
 package com.xorcode.andtweet;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
@@ -25,13 +26,17 @@ import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -49,8 +54,8 @@ public class AndTweetProvider extends ContentProvider {
 
 	private static final String TAG = "AndTweetProvider";
 
-	private static final String DATABASE_NAME = "andtweet.db";
-	private static final int DATABASE_VERSION = 6;
+	private static final String DATABASE_NAME = "andtweet.sqlite";
+	private static final int DATABASE_VERSION = 7;
 	private static final String TWEETS_TABLE_NAME = "tweets";
 	private static final String USERS_TABLE_NAME = "users";
 	private static final String DIRECTMESSAGES_TABLE_NAME = "directmessages";
@@ -77,8 +82,129 @@ public class AndTweetProvider extends ContentProvider {
 	 */
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 
+		private SQLiteDatabase mDatabase;
+		private boolean mIsInitializing = false;
+		private boolean mUseExternalStorage = false;
+
 		DatabaseHelper(Context context) {
 			super(context, DATABASE_NAME, null, DATABASE_VERSION);
+			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+			mUseExternalStorage = sp.getBoolean("storage_use_external", false);
+		}
+
+		@Override
+		public synchronized SQLiteDatabase getWritableDatabase() {
+			if (!mUseExternalStorage) {
+				return super.getWritableDatabase();
+			}
+
+			if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+				return super.getWritableDatabase();
+			}
+
+			if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
+				return super.getWritableDatabase();
+			}
+
+			if (mDatabase != null && mDatabase.isOpen() && !mDatabase.isReadOnly()) {
+				return mDatabase;
+			}
+
+			if (mIsInitializing) {
+				throw new IllegalStateException("getWritableDatabase called recursively");
+			}
+
+			boolean success = false;
+			SQLiteDatabase db = null;
+			try {
+				mIsInitializing = true;
+				File storage = Environment.getExternalStorageDirectory();
+				String path = storage.getAbsolutePath();
+				File file = new File(path, DATABASE_NAME);
+				db = SQLiteDatabase.openOrCreateDatabase(file, null);
+				int version = db.getVersion();
+				if (version != DATABASE_VERSION) {
+					db.beginTransaction();
+					try {
+						if (version == 0) {
+							onCreate(db);
+						} else {
+							onUpgrade(db, version, DATABASE_VERSION);
+						}
+						db.setVersion(DATABASE_VERSION);
+						db.setTransactionSuccessful();
+					} finally {
+						db.endTransaction();
+					}
+				}
+				onOpen(db);
+				success = true;
+				return db;
+			} finally {
+				mIsInitializing = false;
+				if (success) {
+					if (mDatabase != null) {
+						try { mDatabase.close(); } catch (Exception e) { }
+					}
+					mDatabase = db;
+				} else {
+					if (db != null) db.close();
+				}
+			}
+		}
+
+		@Override
+		public synchronized SQLiteDatabase getReadableDatabase() {
+			if (!mUseExternalStorage) {
+				return super.getReadableDatabase();
+			}
+
+			if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+				Log.e(TAG, "Cannot get a readable database: External storage not present: " + Environment.getExternalStorageState());
+				return super.getReadableDatabase();
+			}
+
+			if (mDatabase != null && mDatabase.isOpen()) {
+				return mDatabase;
+			}
+
+			if (mIsInitializing) {
+				throw new IllegalStateException("getReadableDatabase called recursively");
+			}
+
+			try {
+				return getWritableDatabase();
+			} catch (SQLiteException e) {
+				Log.e(TAG, "Couldn't open " + DATABASE_NAME + " for writing (will try read-only):", e);
+			}
+
+			SQLiteDatabase db = null;
+			try {
+				mIsInitializing = true;
+				File storage = Environment.getExternalStorageDirectory();
+				String path = storage.getAbsolutePath();
+				File file = new File(path, DATABASE_NAME);
+				db = SQLiteDatabase.openDatabase(file.getAbsolutePath(), null, SQLiteDatabase.OPEN_READONLY);
+				if (db.getVersion() != DATABASE_VERSION) {
+					throw new SQLiteException("Can't upgrade read-only database from version " + db.getVersion() + " to " + DATABASE_VERSION + ": " + file.getAbsolutePath());
+				}
+				onOpen(db);
+				Log.w(TAG, "Opened " + DATABASE_NAME + " in read-only mode");
+				mDatabase = db;
+				return mDatabase;
+			} finally {
+				mIsInitializing = false;
+				if (db != null && db != mDatabase) db.close();
+			}
+		}
+
+		@Override
+		public synchronized void close() {
+			super.close();
+			if (mUseExternalStorage && mDatabase != null && mDatabase.isOpen()) {
+				mDatabase.close();
+				mDatabase = null;
+			}
 		}
 
 		@Override
@@ -89,6 +215,7 @@ public class AndTweetProvider extends ContentProvider {
 					+ Tweets.AUTHOR_ID + " TEXT," 
 					+ Tweets.MESSAGE + " TEXT," 
 					+ Tweets.SOURCE + " TEXT,"
+					+ Tweets.TWEET_TYPE + " INTEGER,"
 					+ Tweets.IN_REPLY_TO_STATUS_ID + " INTEGER,"
 					+ Tweets.IN_REPLY_TO_AUTHOR_ID + " TEXT,"
 					+ Tweets.SENT_DATE + " INTEGER," 
@@ -106,6 +233,7 @@ public class AndTweetProvider extends ContentProvider {
 			db.execSQL("CREATE TABLE " + USERS_TABLE_NAME + " ("
 					+ Users._ID + " INTEGER PRIMARY KEY," 
 					+ Users.AUTHOR_ID + " TEXT," 
+					+ Users.AVATAR_IMAGE + " BLOB," 
 					+ Users.CREATED_DATE + " INTEGER," 
 					+ Users.MODIFIED_DATE + " INTEGER"
 					+ ");");
@@ -113,6 +241,69 @@ public class AndTweetProvider extends ContentProvider {
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+			Log.d(TAG, "Upgrading database from version " + oldVersion + " to version " + newVersion);
+			if (oldVersion < 7) {
+				db.beginTransaction();
+				try {
+					/*
+					 * Upgrading tweets table:
+					 *  - Add column TWEET_TYPE
+					 */
+					db.execSQL("CREATE TEMPORARY TABLE " + TWEETS_TABLE_NAME + "_backup ("
+							+ Tweets._ID + " INTEGER PRIMARY KEY," 
+							+ Tweets.AUTHOR_ID + " TEXT," 
+							+ Tweets.MESSAGE + " TEXT," 
+							+ Tweets.SOURCE + " TEXT,"
+							+ Tweets.IN_REPLY_TO_STATUS_ID + " INTEGER,"
+							+ Tweets.IN_REPLY_TO_AUTHOR_ID + " TEXT,"
+							+ Tweets.SENT_DATE + " INTEGER," 
+							+ Tweets.CREATED_DATE + " INTEGER"
+							+ ");");
+					db.execSQL("INSERT INTO " + TWEETS_TABLE_NAME + "_backup SELECT " + Tweets._ID + ", " + Tweets.AUTHOR_ID + ", " + Tweets.MESSAGE + ", " + Tweets.SOURCE + ", " + Tweets.IN_REPLY_TO_AUTHOR_ID + ", " + Tweets.IN_REPLY_TO_STATUS_ID + ", " + Tweets.SENT_DATE + ", " + Tweets.CREATED_DATE + " FROM " + TWEETS_TABLE_NAME + ";");
+					db.execSQL("DROP TABLE " + TWEETS_TABLE_NAME + ";");
+					db.execSQL("CREATE TABLE " + TWEETS_TABLE_NAME + " ("
+							+ Tweets._ID + " INTEGER PRIMARY KEY," 
+							+ Tweets.AUTHOR_ID + " TEXT," 
+							+ Tweets.MESSAGE + " TEXT," 
+							+ Tweets.SOURCE + " TEXT,"
+							+ Tweets.TWEET_TYPE + " INTEGER,"
+							+ Tweets.IN_REPLY_TO_STATUS_ID + " INTEGER,"
+							+ Tweets.IN_REPLY_TO_AUTHOR_ID + " TEXT,"
+							+ Tweets.SENT_DATE + " INTEGER," 
+							+ Tweets.CREATED_DATE + " INTEGER"
+							+ ");");
+					db.execSQL("INSERT INTO " + TWEETS_TABLE_NAME + " SELECT " + Tweets._ID + ", " + Tweets.AUTHOR_ID + ", " + Tweets.MESSAGE + ", " + Tweets.SOURCE + ", " + Tweets.TWEET_TYPE_TWEET + ", " + Tweets.IN_REPLY_TO_AUTHOR_ID + ", " + Tweets.IN_REPLY_TO_STATUS_ID + ", " + Tweets.SENT_DATE + ", " + Tweets.CREATED_DATE + " FROM " + TWEETS_TABLE_NAME + "_backup;");
+					db.execSQL("DROP TABLE " + TWEETS_TABLE_NAME + "_backup;");
+
+					/*
+					 * Upgrading users table:
+					 *  - Add column AVATAR_IMAGE
+					 */
+					db.execSQL("CREATE TEMPORARY TABLE " + USERS_TABLE_NAME + "_backup ("
+							+ Users._ID + " INTEGER PRIMARY KEY," 
+							+ Users.AUTHOR_ID + " TEXT," 
+							+ Users.CREATED_DATE + " INTEGER," 
+							+ Users.MODIFIED_DATE + " INTEGER"
+							+ ");");
+					db.execSQL("INSERT INTO " + USERS_TABLE_NAME + "_backup SELECT " + Users._ID + ", " + Users.AUTHOR_ID + ", " + Users.CREATED_DATE + ", " + Users.MODIFIED_DATE + " FROM " + USERS_TABLE_NAME + ";");
+					db.execSQL("DROP TABLE " + USERS_TABLE_NAME + ";");
+					db.execSQL("CREATE TABLE " + USERS_TABLE_NAME + " ("
+							+ Users._ID + " INTEGER PRIMARY KEY," 
+							+ Users.AUTHOR_ID + " TEXT," 
+							+ Users.AVATAR_IMAGE + " BLOB," 
+							+ Users.CREATED_DATE + " INTEGER," 
+							+ Users.MODIFIED_DATE + " INTEGER"
+							+ ");");
+					db.execSQL("INSERT INTO " + USERS_TABLE_NAME + " SELECT " + Users._ID + ", " + Users.AUTHOR_ID + ", null, " + Users.CREATED_DATE + ", " + Users.MODIFIED_DATE + " FROM " + USERS_TABLE_NAME + "_backup;");
+					db.execSQL("DROP TABLE " + USERS_TABLE_NAME + "_backup;");
+					db.setTransactionSuccessful();
+					Log.d(TAG, "Successfully upgraded database from version " + oldVersion + " to version " + newVersion + ".");
+				} catch (SQLException e) {
+					Log.e(TAG, "Could not upgrade database from version " + oldVersion + " to version " + newVersion, e);
+				} finally {
+					db.endTransaction();
+				}
+			}
 		}
 	}
 
@@ -458,6 +649,7 @@ public class AndTweetProvider extends ContentProvider {
 		sUsersProjectionMap = new HashMap<String, String>();
 		sUsersProjectionMap.put(Users._ID, Users._ID);
 		sUsersProjectionMap.put(Users.AUTHOR_ID, Users.AUTHOR_ID);
+		sUsersProjectionMap.put(Users.AVATAR_IMAGE, Users.AVATAR_IMAGE);
 		sUsersProjectionMap.put(Users.CREATED_DATE, Users.CREATED_DATE);
 		sUsersProjectionMap.put(Users.MODIFIED_DATE, Users.MODIFIED_DATE);
 	}

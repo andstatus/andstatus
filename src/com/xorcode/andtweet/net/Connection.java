@@ -23,8 +23,9 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -57,11 +58,13 @@ public class Connection {
 
 	private static final String PUBLIC_TIMELINE_URL = BASE_URL + "/statuses/public_timeline" + EXTENSION;
 	private static final String FRIENDS_TIMELINE_URL = BASE_URL + "/statuses/friends_timeline" + EXTENSION;
+	private static final String REPLIES_TIMELINE_URL = BASE_URL + "/statuses/replies" + EXTENSION;
 	private static final String DIRECT_MESSAGES_URL = BASE_URL + "/direct_messages" + EXTENSION;
 	private static final String DIRECT_MESSAGES_SENT_URL = BASE_URL + "/direct_messages/sent" + EXTENSION;
 	private static final String FRIENDS_URL = BASE_URL + "/statuses/friends" + EXTENSION;
 	private static final String UPDATE_STATUS_URL = BASE_URL + "/statuses/update" + EXTENSION;
 	private static final String VERIFY_CREDENTIALS_URL = BASE_URL + "/account/verify_credentials" + EXTENSION;
+	private static final String RATE_LIMIT_STATUS_URL = BASE_URL + "/account/rate_limit_status" + EXTENSION;
 	private static final String USER_AGENT = "Mozilla/4.5";
 	private static final String SOURCE_PARAMETER = "andtweet";
 	private static final String TAG = "AndTweetConnection";
@@ -69,6 +72,7 @@ public class Connection {
 	private String mUsername;
 	private String mPassword;
 	private long mLastRunTime;
+	private int mLimit = 200;
 
 	/**
 	 * Creates a new Connection instance.
@@ -96,6 +100,24 @@ public class Connection {
 		mUsername = username;
 		mPassword = password;
 		mLastRunTime = lastRunTime;
+	}
+
+	/**
+	 * Creates a new Connection instance, specifying a last ID.
+	 * 
+	 * Requires a user name and password as well as a last run time.
+	 * 
+	 * @param username
+	 * @param password
+	 * @param lastId
+	 */
+	public Connection(String username, String password, long lastRunTime, int limit) {
+		mUsername = username;
+		mPassword = password;
+		mLastRunTime = lastRunTime;
+		mLimit = limit;
+		if (mLimit < 1) mLimit = 1;
+		if (mLimit > 200) mLimit = 200;
 	}
 
 	/**
@@ -129,12 +151,9 @@ public class Connection {
 	 */
 	public JSONArray getFriendsTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = FRIENDS_TIMELINE_URL;
-		url += "?count=100";
+		url += "?count=" + mLimit;
 		if (mLastRunTime > 0) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(mLastRunTime);
-			DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
-			url += "&since=" + URLEncoder.encode(df.format(cal.getTime()));
+			url += "&since=" + URLEncoder.encode(getTwitterDate(mLastRunTime));
 		}
 		JSONArray jArr = null;
 		String request = getRequest(url);
@@ -153,6 +172,42 @@ public class Connection {
 		}
 		return jArr;
 	}
+
+	/**
+	 * Get the user's replies.
+	 * 
+	 * Returns the 20 most recent @replies (status updates prefixed with @username) 
+	 * for the authenticating user.
+	 * 
+	 * @return JSONArray
+	 * @throws ConnectionException 
+	 * @throws ConnectionAuthenticationException 
+	 * @throws ConnectionUnavailableException 
+	 */
+	public JSONArray getRepliesTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+		String url = REPLIES_TIMELINE_URL;
+		url += "?count=" + mLimit;
+		if (mLastRunTime > 0) {
+			url += "&since=" + URLEncoder.encode(getTwitterDate(mLastRunTime));
+		}
+		JSONArray jArr = null;
+		String request = getRequest(url);
+		try {
+			jArr = new JSONArray(request);
+		} catch (JSONException e) {
+			try {
+				JSONObject jObj = new JSONObject(request);
+				String error = jObj.optString("error");
+				if ("Could not authenticate you.".equals(error)) {
+					throw new ConnectionAuthenticationException(error);
+				}
+			} catch (JSONException e1) {
+				throw new ConnectionException(e);
+			}
+		}
+		return jArr;
+	}
+
 
 	/**
 	 * Get the user's most recent friends from the Twitter REST API.
@@ -197,12 +252,9 @@ public class Connection {
 	 */
 	public JSONArray getDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = DIRECT_MESSAGES_URL;
-		url += "?count=100";
+		url += "?count=" + mLimit;
 		if (mLastRunTime > 0) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(mLastRunTime);
-			DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
-			url += "&since=" + URLEncoder.encode(df.format(cal.getTime()));
+			url += "&since=" + URLEncoder.encode(getTwitterDate(mLastRunTime));
 		}
 		JSONArray jArr = null;
 		String request = getRequest(url);
@@ -234,12 +286,9 @@ public class Connection {
 	 */
 	public JSONArray getSentDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = DIRECT_MESSAGES_SENT_URL;
-		url += "?count=100";
+		url += "?count=" + mLimit;
 		if (mLastRunTime > 0) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(mLastRunTime);
-			DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
-			url += "&since=" + URLEncoder.encode(df.format(cal.getTime()));
+			url += "&since=" + URLEncoder.encode(getTwitterDate(mLastRunTime));
 		}
 		JSONArray jArr = null;
 		String request = getRequest(url);
@@ -267,7 +316,7 @@ public class Connection {
 	 * the authenticating user's current status will be ignored.
 	 * 
 	 * @param message
-	 * @return boolean
+	 * @return JSONObject
 	 * @throws UnsupportedEncodingException
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
@@ -302,7 +351,7 @@ public class Connection {
 	 * requesting user if authentication was successful; returns a 401 status
 	 * code and an error message if not.
 	 * 
-	 * @return
+	 * @return JSONObject
 	 * @throws JSONException
 	 * @throws ConnectionException 
 	 * @throws ConnectionUnavailableException 
@@ -310,6 +359,26 @@ public class Connection {
 	 */
 	public JSONObject verifyCredentials() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		return new JSONObject(getRequest(VERIFY_CREDENTIALS_URL, new DefaultHttpClient(new BasicHttpParams())));
+	}
+
+	/**
+	 * Check API requests status.
+	 * 
+	 * Returns the remaining number of API requests available to the requesting 
+	 * user before the API limit is reached for the current hour. Calls to 
+	 * rate_limit_status do not count against the rate limit.  If authentication 
+	 * credentials are provided, the rate limit status for the authenticating 
+	 * user is returned.  Otherwise, the rate limit status for the requester's 
+	 * IP address is returned.
+	 * 
+	 * @return JSONObject
+	 * @throws JSONException
+	 * @throws ConnectionException
+	 * @throws ConnectionAuthenticationException
+	 * @throws ConnectionUnavailableException
+	 */
+	public JSONObject rateLimitStatus() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+		return new JSONObject(getRequest(RATE_LIMIT_STATUS_URL, new DefaultHttpClient(new BasicHttpParams())));
 	}
 
 	/**
@@ -466,5 +535,10 @@ public class Connection {
 		case 503:
 			throw new ConnectionUnavailableException(String.valueOf(code));
 		}
+	}
+
+	protected synchronized String getTwitterDate(long time) {
+		DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
+		return df.format(new Date(time));
 	}
 }

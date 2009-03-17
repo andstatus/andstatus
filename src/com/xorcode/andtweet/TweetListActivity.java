@@ -24,6 +24,7 @@ import org.json.JSONObject;
 import android.app.SearchManager;
 import android.content.ContentUris;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
@@ -58,6 +59,7 @@ import com.xorcode.andtweet.data.TimelineSearchSuggestionProvider;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.data.AndTweetDatabase.Users;
+import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
@@ -192,6 +194,8 @@ public class TweetListActivity extends TimelineActivity {
 		if (appData != null) {
 			final Intent intent = getIntent();
 			Uri contentUri = appData.getParcelable("content_uri");
+			String selection = appData.getString("selection");
+			String[] selectionArgs = appData.getStringArray("selectionArgs");
 			if (queryString != null) {
 				contentUri = Uri.withAppendedPath((Uri) appData.getParcelable("content_uri"), Uri.encode(queryString));
 			} else {
@@ -203,7 +207,7 @@ public class TweetListActivity extends TimelineActivity {
 				if (mCursor != null && !mCursor.isClosed()) {
 					mCursor.close();
 				}
-				mCursor = getContentResolver().query(contentUri, PROJECTION, null, null, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
+				mCursor = getContentResolver().query(contentUri, PROJECTION, selection, selectionArgs, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
 				createAdapters();
 			}
 		}
@@ -217,7 +221,7 @@ public class TweetListActivity extends TimelineActivity {
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 		    doSearchQuery(intent);
 		} else {
-			mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, null, null, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
+			mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, Tweets.TWEET_TYPE + " = ?", new String[] { String.valueOf(Tweets.TWEET_TYPE_TWEET) }, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
 			createAdapters();
 		}
 		mEditText.requestFocus();
@@ -230,7 +234,7 @@ public class TweetListActivity extends TimelineActivity {
 			getContentResolver().delete(AndTweetDatabase.DirectMessages.CONTENT_URI, null, null);
 			getContentResolver().delete(AndTweetDatabase.Users.CONTENT_URI, null, null);
 			// Display the indeterminate progress bar
-			setProgressBarIndeterminateVisibility(true);
+			showDialog(DIALOG_TIMELINE_LOADING);
 			// Display the list footer progress bar
 			mListFooter.setVisibility(View.VISIBLE);
 			// Start the manual reload thread
@@ -239,7 +243,7 @@ public class TweetListActivity extends TimelineActivity {
 		} else {
 			bindToService();
 		}
-		setProgressBarIndeterminateVisibility(mIsLoading);
+		//setProgressBarIndeterminateVisibility(mIsLoading);
 	}
 
 	@Override
@@ -278,7 +282,7 @@ public class TweetListActivity extends TimelineActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.reload_menu_item:
-			setProgressBarIndeterminateVisibility(true);
+			showDialog(DIALOG_TIMELINE_LOADING);
 			mListFooter.setVisibility(View.VISIBLE);
 			Thread thread = new Thread(mManualReload);
 			thread.start();
@@ -382,9 +386,13 @@ public class TweetListActivity extends TimelineActivity {
 	 * Create adapters
 	 */
 	private void createAdapters() {
+		int listItemId = R.layout.tweetlist_item;
+		if (mSP.getBoolean("appearance_use_avatars", false)) {
+			listItemId = R.layout.tweetlist_item_avatar;
+		}
 		PagedCursorAdapter tweetsAdapter = new PagedCursorAdapter(
 			TweetListActivity.this,
-			R.layout.tweetlist_item,
+			listItemId,
 			mCursor,
 			new String[] { Tweets.AUTHOR_ID, Tweets.MESSAGE, Tweets.SENT_DATE },
 			new int[] { R.id.tweet_screen_name, R.id.tweet_message, R.id.tweet_sent },
@@ -422,7 +430,7 @@ public class TweetListActivity extends TimelineActivity {
 	private View.OnClickListener mSendOnClickListener = new View.OnClickListener() {
 		public void onClick(View v) {
 			if (mEditText.length() > 0) {
-				setProgressBarIndeterminateVisibility(true);
+				//setProgressBarIndeterminateVisibility(true);
 				showDialog(DIALOG_SENDING_MESSAGE);
 				Thread thread = new Thread(mSendUpdate);
 				thread.start();
@@ -510,7 +518,7 @@ public class TweetListActivity extends TimelineActivity {
 			if (view.getLastVisiblePosition() >= mTotalItemCount - 1) {
 				if (getListView().getFooterViewsCount() == 1 && !mIsLoading) {
 					mIsLoading = true;
-					setProgressBarIndeterminateVisibility(true);
+					//setProgressBarIndeterminateVisibility(true);
 					mListFooter.setVisibility(View.VISIBLE);
 					Thread thread = new Thread(mLoadListItems);
 					thread.start();
@@ -522,6 +530,15 @@ public class TweetListActivity extends TimelineActivity {
 		case SCROLL_STATE_FLING:
 			break;
 		}
+	}
+
+	/**
+	 * Updates the activity title.
+	 */
+	@Override
+	public void updateTitle() {
+		Thread thread = new Thread(mUpdateTitle);
+		thread.start();
 	}
 
 	/**
@@ -545,7 +562,11 @@ public class TweetListActivity extends TimelineActivity {
 
 			case MSG_DATA_LOADING:
 				mIsLoading = msg.arg1 == 1 ? true : false;
-		        setProgressBarIndeterminateVisibility(mIsLoading);
+				if (mIsLoading) {
+					showDialog(DIALOG_TIMELINE_LOADING);
+				} else {
+					dismissDialog(DIALOG_TIMELINE_LOADING);
+				}
 				break;
 
 			case MSG_UPDATE_STATUS:
@@ -557,7 +578,7 @@ public class TweetListActivity extends TimelineActivity {
 					String password = mSP.getString("twitter_password", null);
 					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
 					try {
-						fl.insertFromJSONObject(result, true);
+						fl.insertFromJSONObject(result, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, true);
 					} catch (JSONException e) {
 						Toast.makeText(TweetListActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
 					}
@@ -567,53 +588,72 @@ public class TweetListActivity extends TimelineActivity {
 					mEditText.clearFocus();
 					mEditText.requestFocus();
 				}
-				setProgressBarIndeterminateVisibility(false);
 				dismissDialog(DIALOG_SENDING_MESSAGE);
 				break;
 
 			case MSG_AUTHENTICATION_ERROR:
 				switch (msg.arg1) {
 				case MSG_MANUAL_RELOAD:
-					setProgressBarIndeterminateVisibility(false);
+					dismissDialog(DIALOG_TIMELINE_LOADING);
 					break;
 				case MSG_UPDATE_STATUS:
+					dismissDialog(DIALOG_SENDING_MESSAGE);
 					break;
 				}
+				mListFooter.setVisibility(View.INVISIBLE);
 				showDialog(DIALOG_AUTHENTICATION_FAILED);
 				break;
 
 			case MSG_SERVICE_UNAVAILABLE_ERROR:
 				switch (msg.arg1) {
 				case MSG_MANUAL_RELOAD:
-					setProgressBarIndeterminateVisibility(false);
+					dismissDialog(DIALOG_TIMELINE_LOADING);
 					break;
 				case MSG_UPDATE_STATUS:
+					dismissDialog(DIALOG_SENDING_MESSAGE);
 					break;
 				}
+				mListFooter.setVisibility(View.INVISIBLE);
 				showDialog(DIALOG_SERVICE_UNAVAILABLE);
 				break;
 
 			case MSG_MANUAL_RELOAD:
+				dismissDialog(DIALOG_TIMELINE_LOADING);
 				mIsLoading = false;
 				Toast.makeText(TweetListActivity.this, R.string.timeline_reloaded, Toast.LENGTH_SHORT).show();
 				mListFooter.setVisibility(View.INVISIBLE);
-				setProgressBarIndeterminateVisibility(false);
+				updateTitle();
 				if (mInitializing) {
 					mInitializing = false;
 					bindToService();
 				}
+				SharedPreferences.Editor prefsEditor = mSP.edit();
+				prefsEditor.putLong("last_timeline_runtime", System.currentTimeMillis());
+				prefsEditor.commit();
 				break;
 
 			case MSG_LOAD_ITEMS:
+				mListFooter.setVisibility(View.INVISIBLE);
 				switch (msg.arg1) {
 				case STATUS_LOAD_ITEMS_SUCCESS:
+					updateTitle();
 					mIsLoading = false;
 					mListFooter.setVisibility(View.INVISIBLE);
 					((SimpleCursorAdapter) getListAdapter()).changeCursor(mCursor);
-					setProgressBarIndeterminateVisibility(false);
+					//setProgressBarIndeterminateVisibility(false);
 					break;
 				case STATUS_LOAD_ITEMS_FAILURE:
 					break;
+				}
+				break;
+
+			case MSG_UPDATED_TITLE:
+				String username = mSP.getString("twitter_username", null);
+				JSONObject status = (JSONObject) msg.obj;
+				try {
+					setTitle(getString(R.string.activity_title_format, new Object[] {getTitle(), username}), status.getInt("remaining_hits") + "/" + status.getInt("hourly_limit"));
+				} catch (JSONException e) {
+					e.printStackTrace();
 				}
 				break;
 
@@ -658,13 +698,16 @@ public class TweetListActivity extends TimelineActivity {
 			mIsLoading = true;
 			String username = mSP.getString("twitter_username", null);
 			String password = mSP.getString("twitter_password", null);
-			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", 0));
+			long lastRunTime = mSP.getLong("last_timeline_runtime", 0);
+			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password, lastRunTime);
 			int aNewTweets = 0;
 			int aReplyCount = 0;
 			try {
-				friendTimeline.loadTimeline();
-				aNewTweets = friendTimeline.newCount();
+				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_REPLY, mInitializing);
 				aReplyCount = friendTimeline.replyCount();
+				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, mInitializing);
+				aNewTweets = friendTimeline.newCount();
+				aReplyCount += friendTimeline.replyCount();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mManualReload Connection Exception: " + e.getMessage());
 				return;
@@ -687,10 +730,30 @@ public class TweetListActivity extends TimelineActivity {
 	/**
 	 * Load more items into the list.
 	 */
-	protected Runnable mLoadListItems  = new Runnable() {
+	protected Runnable mLoadListItems = new Runnable() {
 		public void run() {
 			mCursor = ((PagedCursorAdapter) TweetListActivity.this.getListAdapter()).runQuery("LIMIT 0," + (++mCurrentPage * 20));
 			mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_LOAD_ITEMS, STATUS_LOAD_ITEMS_SUCCESS, 0), 400);
+		}
+	};
+
+	protected Runnable mUpdateTitle = new Runnable() {
+		public void run() {
+			String username = mSP.getString("twitter_username", null);
+			String password = mSP.getString("twitter_password", null);
+			Connection c = new Connection(username, password);
+			try {
+				JSONObject status = c.rateLimitStatus();
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATED_TITLE, status));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			} catch (ConnectionException e) {
+				e.printStackTrace();
+			} catch (ConnectionAuthenticationException e) {
+				e.printStackTrace();
+			} catch (ConnectionUnavailableException e) {
+				e.printStackTrace();
+			}
 		}
 	};
 }

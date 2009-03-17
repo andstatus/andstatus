@@ -246,9 +246,13 @@ public class MessageListActivity extends TimelineActivity {
 	}
 
 	private void createAdapters() {
+		int listItemId = R.layout.tweetlist_item;
+		if (mSP.getBoolean("appearance_use_avatars", false)) {
+			listItemId = R.layout.tweetlist_item_avatar;
+		}
 		PagedCursorAdapter directMessagesAdapter = new PagedCursorAdapter(
 			MessageListActivity.this,
-			R.layout.tweetlist_item,
+			listItemId,
 			mCursor,
 			new String[] { AndTweetDatabase.DirectMessages.AUTHOR_ID, AndTweetDatabase.DirectMessages.MESSAGE, AndTweetDatabase.DirectMessages.SENT_DATE },
 			new int[] { R.id.tweet_screen_name, R.id.tweet_message, R.id.tweet_sent },

@@ -47,8 +47,9 @@ public class TweetBinder implements ViewBinder {
 			}
 			((TextView)view).setText(time);
 			return true;
+		case R.id.tweet_avatar_image:
+			return true;
 		}
 		return false;
 	}
-
 }

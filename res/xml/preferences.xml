@@ -15,6 +15,7 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	<!-- USER CREDENTIALS -->
 	<PreferenceCategory android:title="@string/category_title_preference_credentials">
 		<EditTextPreference android:key="twitter_username"
 			android:title="@string/title_preference_username"
@@ -28,10 +29,25 @@
 			android:password="true" android:singleLine="true" />
 	</PreferenceCategory>
 
+	<!-- SETTINGS -->
 	<PreferenceCategory android:title="@string/category_title_preference_settings">
+
+		<!-- STORAGE -->
+		<PreferenceScreen android:key="preference_screen_storage"
+			android:title="@string/title_preference_storage" 
+			android:summary="@string/summary_preference_storage">
+			<PreferenceCategory android:title="@string/title_preference_storage">
+				<CheckBoxPreference android:key="storage_use_external"
+					android:title="@string/title_preference_storage_external"
+					android:summaryOff="@string/summary_preference_storage_external_off"
+					android:summaryOn="@string/summary_preference_storage_external_on" />
+			</PreferenceCategory>
+		</PreferenceScreen>
+
 		<!-- APPEARANCE -->
-		<PreferenceScreen android:summary="@string/summary_preference_appearance"
-			android:key="preference_screen_apperance" android:title="@string/title_preference_appearance">
+		<PreferenceScreen android:key="preference_screen_apperance"
+			android:summary="@string/summary_preference_appearance"
+			android:title="@string/title_preference_appearance">
 			<PreferenceCategory android:title="@string/category_title_preference_appearance">
 				<ListPreference android:key="theme" android:entries="@array/theme_values"
 					android:entryValues="@array/theme_keys"
@@ -43,6 +59,12 @@
 					android:title="@string/title_preference_light_theme"
 					android:summaryOff="@string/summary_preference_light_theme_off"
 					android:summaryOn="@string/summary_preference_light_theme_on" />
+<!--
+				<CheckBoxPreference android:key="appearance_use_avatars"
+					android:title="@string/title_preference_use_avatars"
+					android:summaryOff="@string/summary_preference_use_avatars_off"
+					android:summaryOn="@string/summary_preference_use_avatars_on" />
+ -->
 			</PreferenceCategory>
 		</PreferenceScreen>
 

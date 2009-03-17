@@ -163,7 +163,7 @@ public class AndTweetService extends Service {
 			mLastRunTime = sp.getLong("last_timeline_runtime", System.currentTimeMillis());
 			mLastMessageRunTime = sp.getLong("last_messages_runtime", System.currentTimeMillis());
 
-			SharedPreferences.Editor prefsEditor = sp.edit();
+			final SharedPreferences.Editor prefsEditor = sp.edit();
 
 			switch (msg.what) {
 			case MSG_UPDATE_FRIENDS:
@@ -219,7 +219,7 @@ public class AndTweetService extends Service {
 
 			case MSG_UPDATE_DIRECT_MESSAGES_DONE:
 				mLastMessageRunTime = Long.valueOf(System.currentTimeMillis());
-				prefsEditor.putLong("last_messages_runtime", mLastRunTime);
+				prefsEditor.putLong("last_messages_runtime", mLastMessageRunTime);
 				prefsEditor.commit();
 				// Broadcast new value to all clients
 				for (int i = 0; i < N; i++) {
@@ -362,9 +362,11 @@ public class AndTweetService extends Service {
 			int aNewTweets = 0;
 			int aReplyCount = 0;
 			try {
-				friendTimeline.loadTimeline();
-				aNewTweets = friendTimeline.newCount();
+				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_REPLY);
 				aReplyCount = friendTimeline.replyCount();
+				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_TWEET);
+				aNewTweets = friendTimeline.newCount();
+				aReplyCount += friendTimeline.replyCount();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "handleMessage Connection Exception: " + e.getMessage());
 			} catch (SQLiteConstraintException e) {
@@ -428,7 +430,7 @@ public class AndTweetService extends Service {
 		
 							values.put(AndTweetDatabase.Users._ID, lUserId.toString());
 							values.put(AndTweetDatabase.Users.AUTHOR_ID, jo.getString("screen_name"));
-		
+
 							if ((contentResolver.update(aUserUri, values, null, null)) == 0) {
 								contentResolver.insert(AndTweetDatabase.Users.CONTENT_URI, values);
 							}
