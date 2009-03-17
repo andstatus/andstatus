@@ -243,7 +243,6 @@ public class TweetListActivity extends TimelineActivity {
 		} else {
 			bindToService();
 		}
-		//setProgressBarIndeterminateVisibility(mIsLoading);
 	}
 
 	@Override
