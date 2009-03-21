@@ -31,6 +31,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
@@ -54,6 +55,7 @@ public class AndTweetProvider extends ContentProvider {
 
 	private static final String TAG = "AndTweetProvider";
 
+	private static final String DATABASE_DIRECTORY = "andtweet";
 	private static final String DATABASE_NAME = "andtweet.sqlite";
 	private static final int DATABASE_VERSION = 7;
 	private static final String TWEETS_TABLE_NAME = "tweets";
@@ -99,11 +101,11 @@ public class AndTweetProvider extends ContentProvider {
 			}
 
 			if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-				return super.getWritableDatabase();
+				throw new SQLiteDiskIOException("Cannot access external storage: not mounted");
 			}
 
 			if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
-				return super.getWritableDatabase();
+				throw new SQLiteDiskIOException("Cannot access external storage: mounted read only");
 			}
 
 			if (mDatabase != null && mDatabase.isOpen() && !mDatabase.isReadOnly()) {
@@ -120,7 +122,9 @@ public class AndTweetProvider extends ContentProvider {
 				mIsInitializing = true;
 				File storage = Environment.getExternalStorageDirectory();
 				String path = storage.getAbsolutePath();
-				File file = new File(path, DATABASE_NAME);
+				File dir = new File(path, DATABASE_DIRECTORY);
+				dir.mkdir();
+				File file = new File(dir.getAbsolutePath(), DATABASE_NAME);
 				db = SQLiteDatabase.openOrCreateDatabase(file, null);
 				int version = db.getVersion();
 				if (version != DATABASE_VERSION) {
@@ -160,8 +164,7 @@ public class AndTweetProvider extends ContentProvider {
 			}
 
 			if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-				Log.e(TAG, "Cannot get a readable database: External storage not present: " + Environment.getExternalStorageState());
-				return super.getReadableDatabase();
+				throw new SQLiteDiskIOException("Cannot access external storage: not mounted");
 			}
 
 			if (mDatabase != null && mDatabase.isOpen()) {
@@ -183,7 +186,9 @@ public class AndTweetProvider extends ContentProvider {
 				mIsInitializing = true;
 				File storage = Environment.getExternalStorageDirectory();
 				String path = storage.getAbsolutePath();
-				File file = new File(path, DATABASE_NAME);
+				File dir = new File(path, DATABASE_DIRECTORY);
+				dir.mkdir();
+				File file = new File(dir.getAbsolutePath(), DATABASE_NAME);
 				db = SQLiteDatabase.openDatabase(file.getAbsolutePath(), null, SQLiteDatabase.OPEN_READONLY);
 				if (db.getVersion() != DATABASE_VERSION) {
 					throw new SQLiteException("Can't upgrade read-only database from version " + db.getVersion() + " to " + DATABASE_VERSION + ": " + file.getAbsolutePath());
