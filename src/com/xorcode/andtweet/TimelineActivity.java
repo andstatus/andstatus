@@ -30,6 +30,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Environment;
@@ -83,6 +84,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final int DIALOG_SERVICE_UNAVAILABLE = 3;
 	public static final int DIALOG_EXTERNAL_STORAGE = 4;
 	public static final int DIALOG_TIMELINE_LOADING = 5;
+	public static final int DIALOG_EXTERNAL_STORAGE_MISSING = 6;
 
 	// Intent bundle result keys
 	public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
@@ -138,12 +140,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
 		if (mSP.getBoolean("storage_use_external", false)) {
 			if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-				Toast.makeText(this, "External storage not present. Aborting. If you start AndTweet again internal memory will be used, data loss may occur.", Toast.LENGTH_LONG).show();
-				SharedPreferences.Editor editor = mSP.edit();
-				editor.putBoolean("storage_use_external", false);
-				editor.commit();
-				destroyService();
-				finish();
+				showDialog(DIALOG_EXTERNAL_STORAGE_MISSING);
 			}
 			if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
 				Toast.makeText(this, "External storage mounted read-only. Cannot write to database. Please re-mount your storage and try again.", Toast.LENGTH_LONG).show();
@@ -223,7 +220,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
 		case DIALOG_EXTERNAL_STORAGE:
 			return new AlertDialog.Builder(this)
-				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setIcon(android.R.drawable.ic_dialog_info)
 				.setTitle(R.string.dialog_title_external_storage)
 				.setMessage(R.string.dialog_summary_external_storage)
 				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -235,7 +232,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 						destroyService();
 						finish();
 						Intent intent = new Intent(TimelineActivity.this, TweetListActivity.class);
-						intent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 						startActivity(intent);
 					}
 				})
@@ -244,6 +241,31 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 						SharedPreferences.Editor editor = mSP.edit();
 						editor.putBoolean("confirmed_external_storage_use", true);
 						editor.commit();
+					}
+				}).create();
+
+		case DIALOG_EXTERNAL_STORAGE_MISSING:
+			return new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setTitle(R.string.dialog_title_external_storage_missing)
+				.setMessage(R.string.dialog_summary_external_storage_missing)
+				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface Dialog, int whichButton) {
+						SharedPreferences.Editor editor = mSP.edit();
+						editor.putBoolean("confirmed_external_storage_use", true);
+						editor.putBoolean("storage_use_external", false);
+						editor.commit();
+						destroyService();
+						finish();
+						Intent intent = new Intent(TimelineActivity.this, TweetListActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						startActivity(intent);
+					}
+				})
+				.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface Dialog, int whichButton) {
+						destroyService();
+						finish();
 					}
 				}).create();
 
