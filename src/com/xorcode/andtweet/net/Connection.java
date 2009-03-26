@@ -74,6 +74,8 @@ public class Connection {
 	private long mLastRunTime;
 	private int mLimit = 200;
 
+	private final DateFormat mDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
+
 	/**
 	 * Creates a new Connection instance.
 	 * 
@@ -537,8 +539,9 @@ public class Connection {
 		}
 	}
 
-	protected synchronized String getTwitterDate(long time) {
-		DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
-		return df.format(new Date(time));
+	protected String getTwitterDate(long time) {
+		synchronized (mDateFormat) {
+			return mDateFormat.format(new Date(time));
+		}
 	}
 }
