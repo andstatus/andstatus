@@ -33,12 +33,14 @@
 	<string name="dialog_summary_authentication_failed">Please check your username and password.</string>
 	<string name="dialog_summary_checking_credentials">Please wait while your account is verified.</string>
 	<string name="dialog_summary_external_storage">External storage has been detected. Do you wish AndTweet to store data there? Old data cannot be moved, but will remain in your internal memory.</string>
+	<string name="dialog_summary_external_storage_missing">External storage not present or unmounted. Do you want to use the internal memory? Any data stored on the external storage will still be available.</string>
 	<string name="dialog_summary_sending_message">Please wait while message is being sent.</string>
 	<string name="dialog_summary_service_unavailable">Twitter is currently over capacity. Please try again later.</string>
 	<string name="dialog_summary_timeline_loading">Please wait while the timeline is being refreshed. This may take several minutes depending on your connection.</string>
 	<string name="dialog_title_authentication_failed">Authentication Failed</string>
 	<string name="dialog_title_checking_credentials">Verifying...</string>
 	<string name="dialog_title_external_storage">External Storage Available</string>
+	<string name="dialog_title_external_storage_missing">External Storage Missing</string>
 	<string name="dialog_title_preference_frequency">Update Frequency</string>
 	<string name="dialog_title_preference_password">Password</string>
 	<string name="dialog_title_preference_theme">Select a Theme</string>
