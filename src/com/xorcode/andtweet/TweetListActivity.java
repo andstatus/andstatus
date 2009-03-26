@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -217,7 +218,12 @@ public class TweetListActivity extends TimelineActivity {
 	protected void onStart() {
 		super.onStart();
 		final Intent intent = getIntent();
-		mFriendsCursor = getContentResolver().query(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null, Users.DEFAULT_SORT_ORDER);
+		try {
+			mFriendsCursor = getContentResolver().query(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null, Users.DEFAULT_SORT_ORDER);
+		} catch (SQLiteDiskIOException e) {
+			showDialog(DIALOG_EXTERNAL_STORAGE_MISSING);
+			return;
+		}
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 		    doSearchQuery(intent);
 		} else {
@@ -255,11 +261,15 @@ public class TweetListActivity extends TimelineActivity {
 	protected void onStop() {
 		super.onStop();
 		SimpleCursorAdapter a = (SimpleCursorAdapter) mEditText.getAdapter();
-		if (a.getCursor() != null && !a.getCursor().isClosed()) {
+		if (a != null && a.getCursor() != null && !a.getCursor().isClosed()) {
 			a.getCursor().close();
 		}
-		mCursor.close();
-		mFriendsCursor.close();
+		if (mCursor != null && !mCursor.isClosed()) {
+			mCursor.close();
+		}
+		if (mFriendsCursor != null && !mFriendsCursor.isClosed()) {
+			mFriendsCursor.close();
+		}
 		disconnectService();
 	}
 
