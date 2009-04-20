@@ -28,7 +28,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
@@ -66,11 +65,13 @@ public class SplashActivity extends Activity {
 
 		setContentView(R.layout.splash);
 
+		/*
 		if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
 			if (!mSP.getBoolean("confirmed_external_storage_use", false)) {
 				showDialog(TimelineActivity.DIALOG_EXTERNAL_STORAGE);
 			}
 		}
+		*/
 
 		mContainer = (LinearLayout) findViewById(R.id.splash_container);
 

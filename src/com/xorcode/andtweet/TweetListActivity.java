@@ -705,10 +705,11 @@ public class TweetListActivity extends TimelineActivity {
 	protected Runnable mManualReload = new Runnable() {
 		public void run() {
 			mIsLoading = true;
+			final SharedPreferences.Editor prefsEditor = mSP.edit();
 			String username = mSP.getString("twitter_username", null);
 			String password = mSP.getString("twitter_password", null);
-			long lastRunTime = mSP.getLong("last_timeline_runtime", 0);
-			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password, lastRunTime);
+			long lastTweetId = mSP.getLong("last_timeline_id", 0);
+			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password, lastTweetId);
 			int aNewTweets = 0;
 			int aReplyCount = 0;
 			try {
@@ -717,6 +718,9 @@ public class TweetListActivity extends TimelineActivity {
 				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, mInitializing);
 				aNewTweets = friendTimeline.newCount();
 				aReplyCount += friendTimeline.replyCount();
+				lastTweetId = friendTimeline.lastId();
+				prefsEditor.putLong("last_timeline_id", lastTweetId);
+				prefsEditor.commit();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mManualReload Connection Exception: " + e.getMessage());
 				return;

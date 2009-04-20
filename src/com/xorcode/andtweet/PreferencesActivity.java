@@ -31,7 +31,6 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.CheckBoxPreference;
@@ -68,7 +67,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
 	public static final String KEY_AUTOMATIC_UPDATES = "automatic_updates";
 	public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
-	public static final String KEY_EXTERNAL_STORAGE = "storage_use_external";
+	//public static final String KEY_EXTERNAL_STORAGE = "storage_use_external";
 
 	public static final int MSG_ACCOUNT_VALID = 1;
 	public static final int MSG_ACCOUNT_INVALID = 2;
@@ -76,7 +75,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	public static final int MSG_CONNECTION_EXCEPTION = 4;
 
 	private CheckBoxPreference mAutomaticUpdates;
-	private CheckBoxPreference mUseExternalStorage;
+	//private CheckBoxPreference mUseExternalStorage;
 	private ListPreference mFetchFrequencyPreference;
 	private EditTextPreference mEditTextUsername;
 	private EditTextPreference mEditTextPassword;
@@ -99,11 +98,13 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 			mAutomaticUpdates.setEnabled(false);
 		}
 		mNotificationRingtone.setOnPreferenceChangeListener(this);
+		/*
 		mUseExternalStorage = (CheckBoxPreference) getPreferenceScreen().findPreference(KEY_EXTERNAL_STORAGE);
 		if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
 			mUseExternalStorage.setEnabled(false);
 			mUseExternalStorage.setChecked(false);
 		}
+		*/
 		updateFrequency();
 		updateRingtone(getPreferenceScreen().getSharedPreferences().getString(KEY_RINGTONE_PREFERENCE, null));
 	}

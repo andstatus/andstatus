@@ -415,7 +415,8 @@ public class MessageListActivity extends TimelineActivity {
 			DirectMessages directMessages = new DirectMessages(getContentResolver(), username, password, mSP.getLong("last_messages_runtime", System.currentTimeMillis()));
 			int aNewMessages = 0;
 			try {
-				aNewMessages = directMessages.loadMessages();
+				directMessages.loadMessages();
+				aNewMessages = directMessages.newCount();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mManualReload Connection Exception: " + e.getMessage());
 				return;

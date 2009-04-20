@@ -70,6 +70,8 @@ public class AndTweetService extends Service {
 	int mReportValue = 0;
 	long mLastRunTime = 0;
 	long mLastMessageRunTime = 0;
+	long mLastTweetId = 0;
+	long mLastMessageId = 0;
 
 	private static final int MILLISECONDS = 1000;
 	private static final int MSG_UPDATE_TIMELINE = 1;
@@ -163,6 +165,9 @@ public class AndTweetService extends Service {
 			mLastRunTime = sp.getLong("last_timeline_runtime", System.currentTimeMillis());
 			mLastMessageRunTime = sp.getLong("last_messages_runtime", System.currentTimeMillis());
 
+			mLastTweetId = sp.getLong("last_timeline_id", 0);
+			mLastMessageId = sp.getLong("last_message_id", 0);
+
 			final SharedPreferences.Editor prefsEditor = sp.edit();
 
 			switch (msg.what) {
@@ -187,6 +192,7 @@ public class AndTweetService extends Service {
 				mFrequency = Integer.parseInt(sp.getString("fetch_frequency", "180"));
 				mLastRunTime = Long.valueOf(System.currentTimeMillis());
 				prefsEditor.putLong("last_timeline_runtime", mLastRunTime);
+				prefsEditor.putLong("last_timeline_id", mLastTweetId);
 				prefsEditor.commit();
 				// Broadcast new value to all clients
 				for (int i = 0; i < N; i++) {
@@ -220,6 +226,7 @@ public class AndTweetService extends Service {
 			case MSG_UPDATE_DIRECT_MESSAGES_DONE:
 				mLastMessageRunTime = Long.valueOf(System.currentTimeMillis());
 				prefsEditor.putLong("last_messages_runtime", mLastMessageRunTime);
+				prefsEditor.putLong("last_message_id", mLastMessageId);
 				prefsEditor.commit();
 				// Broadcast new value to all clients
 				for (int i = 0; i < N; i++) {
@@ -358,7 +365,7 @@ public class AndTweetService extends Service {
 			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			mUsername = sp.getString("twitter_username", null);
 			mPassword = sp.getString("twitter_password", null);
-			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), mUsername, mPassword, mLastRunTime);
+			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), mUsername, mPassword, mLastTweetId);
 			int aNewTweets = 0;
 			int aReplyCount = 0;
 			try {
@@ -367,6 +374,7 @@ public class AndTweetService extends Service {
 				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_TWEET);
 				aNewTweets = friendTimeline.newCount();
 				aReplyCount += friendTimeline.replyCount();
+				mLastTweetId = friendTimeline.lastId();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "handleMessage Connection Exception: " + e.getMessage());
 			} catch (SQLiteConstraintException e) {
@@ -388,10 +396,12 @@ public class AndTweetService extends Service {
 			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			mUsername = sp.getString("twitter_username", null);
 			mPassword = sp.getString("twitter_password", null);
-			DirectMessages directMessages = new DirectMessages(getContentResolver(), mUsername, mPassword, mLastMessageRunTime);
+			DirectMessages directMessages = new DirectMessages(getContentResolver(), mUsername, mPassword, mLastMessageId);
 			int aNewMessages = 0;
 			try {
-				aNewMessages = directMessages.loadMessages();
+				directMessages.loadMessages();
+				aNewMessages = directMessages.newCount();
+				mLastMessageId = directMessages.lastId();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "handleMessage Connection Exception: " + e.getMessage());
 			} catch (SQLiteConstraintException e) {

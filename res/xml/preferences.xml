@@ -33,6 +33,7 @@
 	<PreferenceCategory android:title="@string/category_title_preference_settings">
 
 		<!-- STORAGE -->
+		<!--
 		<PreferenceScreen android:key="preference_screen_storage"
 			android:title="@string/title_preference_storage" 
 			android:summary="@string/summary_preference_storage">
@@ -43,6 +44,7 @@
 					android:summaryOn="@string/summary_preference_storage_external_on" />
 			</PreferenceCategory>
 		</PreferenceScreen>
+		-->
 
 		<!-- APPEARANCE -->
 		<PreferenceScreen android:key="preference_screen_apperance"

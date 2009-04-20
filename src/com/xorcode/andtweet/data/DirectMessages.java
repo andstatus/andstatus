@@ -49,7 +49,7 @@ public class DirectMessages {
 	private ContentResolver mContentResolver;
 	private String mUsername, mPassword;
 	private int mNewMessages;
-	private long mLastRunTime = 0;
+	private long mLastMessageId = 0;
 
 	/**
 	 * Class constructor.
@@ -59,42 +59,44 @@ public class DirectMessages {
 	 * @param password
 	 * @param lastRunTime
 	 */
-	public DirectMessages(ContentResolver contentResolver, String username, String password, long lastRunTime) {
+	public DirectMessages(ContentResolver contentResolver, String username, String password, long lastMessageId) {
 		mContentResolver = contentResolver;
 		mUsername = username;
 		mPassword = password;
-		mLastRunTime = lastRunTime;
+		mLastMessageId = lastMessageId;
 	}
 
 	/**
 	 * Load the user and friends timeline.
 	 * 
-	 * @return int
 	 * @throws ConnectionException
 	 * @throws JSONException
 	 * @throws SQLiteConstraintException
 	 * @throws ConnectionAuthenticationException
 	 * @throws ConnectionUnavailableException
 	 */
-	public int loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public void loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		mNewMessages = 0;
 		if (mUsername != null && mUsername.length() > 0) {
 			Connection aConn;
-			if (mLastRunTime > 0) {
-				aConn = new Connection(mUsername, mPassword, mLastRunTime);
+			if (mLastMessageId > 0) {
+				aConn = new Connection(mUsername, mPassword, mLastMessageId);
 			} else {
 				aConn = new Connection(mUsername, mPassword);
 			}
 			JSONArray jArr = aConn.getDirectMessages();
 			for (int index = 0; index < jArr.length(); index++) {
 				JSONObject jo = jArr.getJSONObject(index);
+				long lId = jo.getLong("id");
+				if (lId > mLastMessageId) {
+					mLastMessageId = lId;
+				}
 				insertFromJSONObject(jo);
 			}
 			if (mNewMessages > 0) {
 				mContentResolver.notifyChange(AndTweetDatabase.DirectMessages.CONTENT_URI, null);
 			}
 		}
-		return mNewMessages;
 	}
 
 	/**
@@ -159,5 +161,13 @@ public class DirectMessages {
 			sinceTimestamp = System.currentTimeMillis();
 		}
 		return mContentResolver.delete(AndTweetDatabase.DirectMessages.CONTENT_URI, AndTweetDatabase.DirectMessages.CREATED_DATE + " < " + sinceTimestamp, null);
+	}
+
+	public int newCount() {
+		return mNewMessages;
+	}
+
+	public long lastId() {
+		return mLastMessageId;
 	}
 }

@@ -49,15 +49,15 @@ public class FriendTimeline {
 
 	private ContentResolver mContentResolver;
 	private String mUsername, mPassword;
-	private long mLastRunTime = 0;
+	private long mLastStatusId = 0;
 	private int mNewTweets;
 	private int mReplies;
 
-	public FriendTimeline(ContentResolver contentResolver, String username, String password, long lastRunTime) {
+	public FriendTimeline(ContentResolver contentResolver, String username, String password, long lastStatusId) {
 		mContentResolver = contentResolver;
 		mUsername = username;
 		mPassword = password;
-		mLastRunTime = lastRunTime;
+		mLastStatusId = lastStatusId;
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class FriendTimeline {
 			limit = 20;
 		}
 		if (mUsername != null && mUsername.length() > 0) {
-			Connection aConn = new Connection(mUsername, mPassword, mLastRunTime, limit);
+			Connection aConn = new Connection(mUsername, mPassword, mLastStatusId, limit);
 			JSONArray jArr = null;
 			switch (tweetType) {
 			case AndTweetDatabase.Tweets.TWEET_TYPE_TWEET:
@@ -121,6 +121,10 @@ public class FriendTimeline {
 			}
 			for (int index = 0; index < jArr.length(); index++) {
 				JSONObject jo = jArr.getJSONObject(index);
+				long lId = jo.getLong("id");
+				if (lId > mLastStatusId) {
+					mLastStatusId = lId;
+				}
 				insertFromJSONObject(jo, tweetType);
 			}
 			if (mNewTweets > 0) {
@@ -187,5 +191,9 @@ public class FriendTimeline {
 
 	public int replyCount() {
 		return mReplies;
+	}
+
+	public long lastId() {
+		return mLastStatusId;
 	}
 }

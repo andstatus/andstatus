@@ -30,10 +30,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -50,7 +48,6 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
@@ -138,6 +135,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.timeline_title);
 		updateTitle();
 
+		/*
 		if (mSP.getBoolean("storage_use_external", false)) {
 			if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
 				showDialog(DIALOG_EXTERNAL_STORAGE_MISSING);
@@ -154,6 +152,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 				showDialog(DIALOG_EXTERNAL_STORAGE);
 			}
 		}
+		*/
 
 		// Set up notification manager
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);

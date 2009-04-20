@@ -19,7 +19,6 @@ package com.xorcode.andtweet.net;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -71,7 +70,7 @@ public class Connection {
 
 	private String mUsername;
 	private String mPassword;
-	private long mLastRunTime;
+	private long mSinceId;
 	private int mLimit = 200;
 
 	private final DateFormat mDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
@@ -98,10 +97,10 @@ public class Connection {
 	 * @param password
 	 * @param lastId
 	 */
-	public Connection(String username, String password, long lastRunTime) {
+	public Connection(String username, String password, long sinceId) {
 		mUsername = username;
 		mPassword = password;
-		mLastRunTime = lastRunTime;
+		mSinceId = sinceId;
 	}
 
 	/**
@@ -113,10 +112,10 @@ public class Connection {
 	 * @param password
 	 * @param lastId
 	 */
-	public Connection(String username, String password, long lastRunTime, int limit) {
+	public Connection(String username, String password, long sinceId, int limit) {
 		mUsername = username;
 		mPassword = password;
-		mLastRunTime = lastRunTime;
+		mSinceId = sinceId;
 		mLimit = limit;
 		if (mLimit < 1) mLimit = 1;
 		if (mLimit > 200) mLimit = 200;
@@ -154,8 +153,8 @@ public class Connection {
 	public JSONArray getFriendsTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = FRIENDS_TIMELINE_URL;
 		url += "?count=" + mLimit;
-		if (mLastRunTime > 0) {
-			url += "&since=" + URLEncoder.encode(getTwitterDate(mLastRunTime));
+		if (mSinceId > 0) {
+			url += "&since_id=" + mSinceId;
 		}
 		JSONArray jArr = null;
 		String request = getRequest(url);
@@ -189,8 +188,8 @@ public class Connection {
 	public JSONArray getRepliesTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = REPLIES_TIMELINE_URL;
 		url += "?count=" + mLimit;
-		if (mLastRunTime > 0) {
-			url += "&since=" + URLEncoder.encode(getTwitterDate(mLastRunTime));
+		if (mSinceId > 0) {
+			url += "&since_id=" + mSinceId;
 		}
 		JSONArray jArr = null;
 		String request = getRequest(url);
@@ -255,8 +254,8 @@ public class Connection {
 	public JSONArray getDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = DIRECT_MESSAGES_URL;
 		url += "?count=" + mLimit;
-		if (mLastRunTime > 0) {
-			url += "&since=" + URLEncoder.encode(getTwitterDate(mLastRunTime));
+		if (mSinceId > 0) {
+			url += "&since_id=" + mSinceId;
 		}
 		JSONArray jArr = null;
 		String request = getRequest(url);
@@ -289,8 +288,8 @@ public class Connection {
 	public JSONArray getSentDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		String url = DIRECT_MESSAGES_SENT_URL;
 		url += "?count=" + mLimit;
-		if (mLastRunTime > 0) {
-			url += "&since=" + URLEncoder.encode(getTwitterDate(mLastRunTime));
+		if (mSinceId > 0) {
+			url += "&since_id=" + mSinceId;
 		}
 		JSONArray jArr = null;
 		String request = getRequest(url);
