@@ -18,7 +18,7 @@
 	<string name="app_name">AndTweet</string>
 	<string name="activity_title_direct_messages">Messages</string>
 	<string name="activity_title_format">%1$s: %2$s</string>
-	<string name="activity_title_replies">Replies</string>
+	<string name="activity_title_mentions">Mentions</string>
 	<string name="activity_title_search">Search</string>
 	<string name="activity_title_timeline">Friends</string>
 	<string name="authentication_successful">Authentication successful!</string>
@@ -32,6 +32,7 @@
 	<string name="category_title_preference_updates">Updates</string>
 	<string name="dialog_summary_authentication_failed">Please check your username and password.</string>
 	<string name="dialog_summary_checking_credentials">Please wait while your account is verified.</string>
+	<string name="dialog_summary_connection_timeout">Connection timed out. Please try again later.</string>
 	<string name="dialog_summary_external_storage">External storage has been detected. Do you wish AndTweet to store data there? Old data cannot be moved, but will remain in your internal memory.</string>
 	<string name="dialog_summary_external_storage_missing">External storage not present or unmounted. Do you want to use the internal memory? Any data stored on the external storage will still be available.</string>
 	<string name="dialog_summary_sending_message">Please wait while message is being sent.</string>
@@ -39,6 +40,7 @@
 	<string name="dialog_summary_timeline_loading">Please wait while the timeline is being refreshed. This may take several minutes depending on your connection.</string>
 	<string name="dialog_title_authentication_failed">Authentication Failed</string>
 	<string name="dialog_title_checking_credentials">Verifying...</string>
+	<string name="dialog_title_connection_timeout">Connection Timed Out</string>
 	<string name="dialog_title_external_storage">External Storage Available</string>
 	<string name="dialog_title_external_storage_missing">External Storage Missing</string>
 	<string name="dialog_title_preference_frequency">Update Frequency</string>
@@ -72,10 +74,10 @@
 	<string name="notification_message_plural">{0,number} new messages</string>
 	<string name="notification_new_message_format">You have {0}.</string>
 	<string name="notification_title_messages">New Direct Messages</string>
-	<string name="notification_reply_singular">{0} new reply</string>
-	<string name="notification_reply_plural">{0,number} new replies</string>
-	<string name="notification_new_reply_format">You have {0}.</string>
-	<string name="notification_title_replies">New Replies</string>
+	<string name="notification_mention_singular">{0} new mention</string>
+	<string name="notification_mention_plural">{0,number} new mentions</string>
+	<string name="notification_new_mention_format">You have {0}.</string>
+	<string name="notification_title_mentions">New Mentions</string>
 	<string name="options_menu_about">About AndTweet</string>
 	<string name="options_menu_about_cond">About</string>
 	<string name="options_menu_direct_messages">Direct Messages</string>
@@ -85,7 +87,7 @@
 	<string name="options_menu_help">Help</string>
 	<string name="options_menu_preferences">Preferences</string>
 	<string name="options_menu_reload">Reload</string>
-	<string name="options_menu_replies">Replies</string>
+	<string name="options_menu_mentions">Mentions</string>
 	<string name="options_menu_search">Search</string>
 	<string name="resolve_view">View Tweet</string>
 	<string name="splash_button_learn_more">Learn More</string>
@@ -94,8 +96,8 @@
 	<string name="splash_text_learn_more_1"><h1><b>1. ANDTWEET BASICS</b></h1>\n\nThe first view of AndTweet contains your friend timeline.\n\nIn order to perform an action on a tweet in the list you can <b>hold down</b> on it to get a menu.\n\nYou can <b>click</b> on a tweet to get more details.\n\nPress the <b>Menu</b> button to switch to other views.</string>
 	<string name="splash_text_learn_more_2"><h1><b>2. SENDING AND REPLYING</b></h1>\n\nIn order to update your status simply type it into the text area and click <b>Send</b>.\n\nIn order to reply, <b>hold down</b> and select <b>Reply</b> and type in your reply at the bottom.\n\nTo abort a reply, delete all text in the bottom text area.</string>
 	<string name="splash_text_learn_more_3"><h1><b>3. DIRECT MESSAGES</b></h1>\n\nClick <b>Menu</b> and then <b>Messages</b>.\n\nIn order to <b>delete</b> a direct message, <b>hold down</b> on it and select <b>Delete</b>.\n\nNew messages are fetched if you have turned on <b>Automatic Updates</b>.</string>
-	<string name="splash_text_learn_more_4"><h1><b>4. LISTING REPLIES</b></h1>\n\nClick <b>Menu</b> and then <b>Replies</b>.\n\nReplies will list every tweet that begins with your <b>@username</b>.</string>
-	<string name="splash_text_learn_more_5"><h1><b>5. SEARCHING</b></h1>\n\nClick <b>Menu</b> and then <b>Search</b>, or you can click the <b>Search</b> button on your phone.\n\nA search will find any text contained within a tweet. If you wish to show tweets from a specific user, search for "<b>username</b>."\n\nIf you want to see replies to a specific user in your timeline, search for "<b>@username</b>"</string>
+	<string name="splash_text_learn_more_4"><h1><b>4. LISTING MENTIONS</b></h1>\n\nClick <b>Menu</b> and then <b>Mentions</b>.\n\nMentions will list every tweet that mentions your <b>@username</b>.</string>
+	<string name="splash_text_learn_more_5"><h1><b>5. SEARCHING</b></h1>\n\nClick <b>Menu</b> and then <b>Search</b>, or you can click the <b>Search</b> button on your phone.\n\nA search will find any text contained within a tweet. If you wish to show tweets from a specific user, search for "<b>username</b>."\n\nIf you want to see mentions of a specific user, search for "<b>@username</b>"</string>
 	<string name="search_timeline_label">Search tweets, users, and hashtags</string>
 	<string name="search_timeline_hint">Enter a username/phrase</string>
 	<string name="search_direct_messages_label">Search direct messages</string>
@@ -115,9 +117,9 @@
 	<string name="summary_preference_notifications_messages">Notify on new Direct Messages?</string>
 	<string name="summary_preference_notifications_messages_off">No notification for DMs</string>
 	<string name="summary_preference_notifications_messages_on">You will be notified of new DMs</string>
-	<string name="summary_preference_notifications_replies">Notify on new Replies?</string>
-	<string name="summary_preference_notifications_replies_off">No notification for Replies</string>
-	<string name="summary_preference_notifications_replies_on">You will be notified of new replies</string>
+	<string name="summary_preference_notifications_mentions">Notify on new Mentions?</string>
+	<string name="summary_preference_notifications_mentions_off">No notification for Mentions</string>
+	<string name="summary_preference_notifications_mentions_on">You will be notified of new Mentions</string>
 	<string name="summary_preference_notifications_timeline">Notify on new tweets?</string>
 	<string name="summary_preference_notifications_timeline_off">No notification for Tweets</string>
 	<string name="summary_preference_notifications_timeline_on">You will be notified of new tweets</string>
@@ -141,7 +143,7 @@
 	<string name="title_preference_notifications">Notifications</string>
 	<string name="title_preference_notifications_enabled">Enable Notifications</string>
 	<string name="title_preference_notifications_messages">Notify on new DMs</string>
-	<string name="title_preference_notifications_replies">Notify on new Replies</string>
+	<string name="title_preference_notifications_mentions">Notify on new Mentions</string>
 	<string name="title_preference_notifications_timeline">Notify on new Tweets</string>
 	<string name="title_preference_password">Password</string>
 	<string name="title_preference_storage">Storage</string>

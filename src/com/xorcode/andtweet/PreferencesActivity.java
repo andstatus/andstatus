@@ -16,6 +16,7 @@
 
 package com.xorcode.andtweet;
 
+import java.net.SocketTimeoutException;
 import java.text.MessageFormat;
 
 import org.json.JSONException;
@@ -59,6 +60,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	private static final int DIALOG_AUTHENTICATION_FAILED = 1;
 	private static final int DIALOG_CHECKING_CREDENTIALS = 2;
 	private static final int DIALOG_SERVICE_UNAVAILABLE = 3;
+	private static final int DIALOG_CONNECTION_TIMEOUT = 4;
 
 	public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
 
@@ -73,6 +75,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	public static final int MSG_ACCOUNT_INVALID = 2;
 	public static final int MSG_SERVICE_UNAVAILABLE_ERROR = 3;
 	public static final int MSG_CONNECTION_EXCEPTION = 4;
+	public static final int MSG_SOCKET_TIMEOUT_EXCEPTION = 5;
 
 	private CheckBoxPreference mAutomaticUpdates;
 	//private CheckBoxPreference mUseExternalStorage;
@@ -201,6 +204,16 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 			mProgressDialog.setMessage(getText(R.string.dialog_summary_checking_credentials));
 			return mProgressDialog;
 
+		case DIALOG_CONNECTION_TIMEOUT:
+			return new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setTitle(R.string.dialog_title_connection_timeout)
+				.setMessage(R.string.dialog_summary_connection_timeout)
+				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface Dialog, int whichButton) {
+					}
+				}).create();
+
 		default:
 			return super.onCreateDialog(id);
 		}
@@ -230,7 +243,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 			case MSG_CONNECTION_EXCEPTION:
 				mAuthentiated = false;
 				dismissDialog(DIALOG_CHECKING_CREDENTIALS);
-				int mId = Integer.parseInt((String) msg.obj);
+				int mId = 0;
+				try {
+					mId = Integer.parseInt((String) msg.obj);
+				} catch (Exception e) {
+				}
 				switch (mId) {
 				case 404:
 					mId = R.string.error_twitter_404;
@@ -240,6 +257,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 					break;
 				}
 				Toast.makeText(PreferencesActivity.this, mId, Toast.LENGTH_LONG).show();
+				break;
+			case MSG_SOCKET_TIMEOUT_EXCEPTION:
+				mAuthentiated = false;
+				dismissDialog(DIALOG_CHECKING_CREDENTIALS);
+				showDialog(DIALOG_CONNECTION_TIMEOUT);
 				break;
 			}
 		}
@@ -258,10 +280,16 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 				Log.e(TAG, e.getMessage());
 			} catch (ConnectionException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, 1, 0, e.getMessage()));
+				return;
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_INVALID, 1, 0));
+				return;
 			} catch (ConnectionUnavailableException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, 1, 0));
+				return;
+			} catch (SocketTimeoutException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_SOCKET_TIMEOUT_EXCEPTION, 1, 0));
+				return;
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_INVALID, 1, 0));
 		}

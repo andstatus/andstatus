@@ -16,6 +16,7 @@
 
 package com.xorcode.andtweet.data;
 
+import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -68,8 +69,9 @@ public class FriendTimeline {
 	 * @throws SQLiteConstraintException
 	 * @throws ConnectionAuthenticationException
 	 * @throws ConnectionUnavailableException
+	 * @throws SocketTimeoutException 
 	 */
-	public void loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public void loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, false);
 	}
 
@@ -82,8 +84,9 @@ public class FriendTimeline {
 	 * @throws SQLiteConstraintException
 	 * @throws ConnectionAuthenticationException
 	 * @throws ConnectionUnavailableException
+	 * @throws SocketTimeoutException 
 	 */
-	public void loadTimeline(int tweetType) throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public void loadTimeline(int tweetType) throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		loadTimeline(tweetType, false);
 	}
 
@@ -97,8 +100,9 @@ public class FriendTimeline {
 	 * @throws SQLiteConstraintException
 	 * @throws ConnectionAuthenticationException
 	 * @throws ConnectionUnavailableException
+	 * @throws SocketTimeoutException 
 	 */
-	public void loadTimeline(int tweetType, boolean firstRun) throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public void loadTimeline(int tweetType, boolean firstRun) throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		mNewTweets = 0;
 		mReplies = 0;
 		int limit = 200;
@@ -113,7 +117,7 @@ public class FriendTimeline {
 				jArr = aConn.getFriendsTimeline();
 				break;
 			case AndTweetDatabase.Tweets.TWEET_TYPE_REPLY:
-				jArr = aConn.getRepliesTimeline();
+				jArr = aConn.getMentionsTimeline();
 				break;
 			default:
 				Log.e(TAG, "Got unhandled tweet type: " + tweetType);

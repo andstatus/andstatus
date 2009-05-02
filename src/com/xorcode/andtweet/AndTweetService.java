@@ -16,6 +16,7 @@
 
 package com.xorcode.andtweet;
 
+import java.net.SocketTimeoutException;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
 
@@ -312,10 +313,10 @@ public class AndTweetService extends Service {
 
 		switch (msgType) {
 		case NOTIFY_REPLIES:
-			messageFormat = R.string.notification_new_reply_format;
-			singular = R.string.notification_reply_singular;
-			plural = R.string.notification_reply_plural;
-			messageTitle = R.string.notification_title_replies;
+			messageFormat = R.string.notification_new_mention_format;
+			singular = R.string.notification_mention_singular;
+			plural = R.string.notification_mention_plural;
+			messageTitle = R.string.notification_title_mentions;
 			Intent intent = new Intent(getApplicationContext(), TweetListActivity.class);
 			intent.putExtra(SearchManager.QUERY, "@" + mUsername);
 			Bundle appDataBundle = new Bundle();
@@ -376,15 +377,17 @@ public class AndTweetService extends Service {
 				aReplyCount += friendTimeline.replyCount();
 				mLastTweetId = friendTimeline.lastId();
 			} catch (ConnectionException e) {
-				Log.e(TAG, "handleMessage Connection Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadTimeline Connection Exception: " + e.getMessage());
 			} catch (SQLiteConstraintException e) {
-				Log.e(TAG, "handleMessage SQLite Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadTimeline SQLite Exception: " + e.getMessage());
 			} catch (JSONException e) {
-				Log.e(TAG, "handleMessage JSON Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadTimeline JSON Exception: " + e.getMessage());
 			} catch (ConnectionAuthenticationException e) {
-				Log.e(TAG, "handleMessage Authentication Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadTimeline Authentication Exception: " + e.getMessage());
 			} catch (ConnectionUnavailableException e) {
-				Log.e(TAG, "Twitter FAIL Whale: " + e.getMessage());
+				Log.e(TAG, "mLoadTimeline FAIL Whale: " + e.getMessage());
+			} catch (SocketTimeoutException e) {
+				Log.e(TAG, "mLoadTimeline Connection Timeout: " + e.getMessage());
 			}
 			friendTimeline.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_TIMELINE_DONE, aNewTweets, aReplyCount));
@@ -403,15 +406,17 @@ public class AndTweetService extends Service {
 				aNewMessages = directMessages.newCount();
 				mLastMessageId = directMessages.lastId();
 			} catch (ConnectionException e) {
-				Log.e(TAG, "handleMessage Connection Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadMessages Connection Exception: " + e.getMessage());
 			} catch (SQLiteConstraintException e) {
-				Log.e(TAG, "handleMessage SQLite Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadMessages SQLite Exception: " + e.getMessage());
 			} catch (JSONException e) {
-				Log.e(TAG, "handleMessage JSON Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadMessages JSON Exception: " + e.getMessage());
 			} catch (ConnectionAuthenticationException e) {
-				Log.e(TAG, "handleMessage Authentication Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadMessages Authentication Exception: " + e.getMessage());
 			} catch (ConnectionUnavailableException e) {
-				Log.e(TAG, "Twitter FAIL Whale: " + e.getMessage());
+				Log.e(TAG, "mLoadMessages FAIL Whale: " + e.getMessage());
+			} catch (SocketTimeoutException e) {
+				Log.e(TAG, "mLoadMessages Connection Timeout: " + e.getMessage());
 			}
 			directMessages.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_DIRECT_MESSAGES_DONE, aNewMessages, 0));
@@ -455,6 +460,8 @@ public class AndTweetService extends Service {
 					Log.e(TAG, "loadFriends Authentication Exception: " + e.getMessage());
 				} catch (ConnectionUnavailableException e) {
 					Log.e(TAG, "loadFriends FAIL Whale Exception: " + e.getMessage());
+				} catch (SocketTimeoutException e) {
+					Log.e(TAG, "loadFriends Timeout Exception: " + e.getMessage());
 				}
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_FRIENDS_DONE));
 			}

@@ -19,6 +19,7 @@ package com.xorcode.andtweet.net;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,13 +37,16 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.R;
 import android.util.Log;
 
+import com.xorcode.andtweet.R.color;
 import com.xorcode.andtweet.util.Base64;
 
 /**
@@ -57,16 +61,19 @@ public class Connection {
 
 	private static final String PUBLIC_TIMELINE_URL = BASE_URL + "/statuses/public_timeline" + EXTENSION;
 	private static final String FRIENDS_TIMELINE_URL = BASE_URL + "/statuses/friends_timeline" + EXTENSION;
-	private static final String REPLIES_TIMELINE_URL = BASE_URL + "/statuses/replies" + EXTENSION;
+	private static final String MENTIONS_TIMELINE_URL = BASE_URL + "/statuses/mentions" + EXTENSION;
 	private static final String DIRECT_MESSAGES_URL = BASE_URL + "/direct_messages" + EXTENSION;
 	private static final String DIRECT_MESSAGES_SENT_URL = BASE_URL + "/direct_messages/sent" + EXTENSION;
 	private static final String FRIENDS_URL = BASE_URL + "/statuses/friends" + EXTENSION;
 	private static final String UPDATE_STATUS_URL = BASE_URL + "/statuses/update" + EXTENSION;
 	private static final String VERIFY_CREDENTIALS_URL = BASE_URL + "/account/verify_credentials" + EXTENSION;
 	private static final String RATE_LIMIT_STATUS_URL = BASE_URL + "/account/rate_limit_status" + EXTENSION;
-	private static final String USER_AGENT = "Mozilla/4.5";
+	private static final String USER_AGENT = "AndTweet/1.0";
 	private static final String SOURCE_PARAMETER = "andtweet";
 	private static final String TAG = "AndTweetConnection";
+
+	private static final Integer DEFAULT_GET_REQUEST_TIMEOUT = 10000;
+	private static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 15000;
 
 	private String mUsername;
 	private String mPassword;
@@ -134,8 +141,9 @@ public class Connection {
 	 * @throws ConnectionException 
 	 * @throws ConnectionUnavailableException 
 	 * @throws ConnectionAuthenticationException 
+	 * @throws SocketTimeoutException 
 	 */
-	public JSONArray getPublicTimeline() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public JSONArray getPublicTimeline() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		return new JSONArray(getRequest(PUBLIC_TIMELINE_URL));
 	}
 
@@ -149,8 +157,9 @@ public class Connection {
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
 	 * @throws ConnectionUnavailableException 
+	 * @throws SocketTimeoutException 
 	 */
-	public JSONArray getFriendsTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public JSONArray getFriendsTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		String url = FRIENDS_TIMELINE_URL;
 		url += "?count=" + mLimit;
 		if (mSinceId > 0) {
@@ -184,9 +193,10 @@ public class Connection {
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
 	 * @throws ConnectionUnavailableException 
+	 * @throws SocketTimeoutException 
 	 */
-	public JSONArray getRepliesTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
-		String url = REPLIES_TIMELINE_URL;
+	public JSONArray getMentionsTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+		String url = MENTIONS_TIMELINE_URL;
 		url += "?count=" + mLimit;
 		if (mSinceId > 0) {
 			url += "&since_id=" + mSinceId;
@@ -220,8 +230,9 @@ public class Connection {
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
 	 * @throws ConnectionUnavailableException 
+	 * @throws SocketTimeoutException 
 	 */
-	public JSONArray getFriends() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public JSONArray getFriends() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		String url = FRIENDS_URL;
 		JSONArray jArr = null;
 		String request = getRequest(url);
@@ -250,8 +261,9 @@ public class Connection {
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
 	 * @throws ConnectionUnavailableException 
+	 * @throws SocketTimeoutException 
 	 */
-	public JSONArray getDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public JSONArray getDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		String url = DIRECT_MESSAGES_URL;
 		url += "?count=" + mLimit;
 		if (mSinceId > 0) {
@@ -284,8 +296,9 @@ public class Connection {
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
 	 * @throws ConnectionUnavailableException 
+	 * @throws SocketTimeoutException 
 	 */
-	public JSONArray getSentDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public JSONArray getSentDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		String url = DIRECT_MESSAGES_SENT_URL;
 		url += "?count=" + mLimit;
 		if (mSinceId > 0) {
@@ -322,9 +335,10 @@ public class Connection {
 	 * @throws ConnectionException 
 	 * @throws ConnectionAuthenticationException 
 	 * @throws ConnectionUnavailableException 
+	 * @throws SocketTimeoutException 
 	 */
 	public JSONObject updateStatus(String message, long inReplyToId)
-			throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+			throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		String url = UPDATE_STATUS_URL;
 		List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
@@ -357,8 +371,9 @@ public class Connection {
 	 * @throws ConnectionException 
 	 * @throws ConnectionUnavailableException 
 	 * @throws ConnectionAuthenticationException 
+	 * @throws SocketTimeoutException 
 	 */
-	public JSONObject verifyCredentials() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public JSONObject verifyCredentials() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		return new JSONObject(getRequest(VERIFY_CREDENTIALS_URL, new DefaultHttpClient(new BasicHttpParams())));
 	}
 
@@ -377,8 +392,9 @@ public class Connection {
 	 * @throws ConnectionException
 	 * @throws ConnectionAuthenticationException
 	 * @throws ConnectionUnavailableException
+	 * @throws SocketTimeoutException 
 	 */
-	public JSONObject rateLimitStatus() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public JSONObject rateLimitStatus() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		return new JSONObject(getRequest(RATE_LIMIT_STATUS_URL, new DefaultHttpClient(new BasicHttpParams())));
 	}
 
@@ -390,8 +406,9 @@ public class Connection {
 	 * @throws ConnectionException 
 	 * @throws ConnectionUnavailableException 
 	 * @throws ConnectionAuthenticationException 
+	 * @throws SocketTimeoutException 
 	 */
-	protected String getRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	protected String getRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		return getRequest(url, new DefaultHttpClient(new BasicHttpParams()));
 	}
 
@@ -404,17 +421,22 @@ public class Connection {
 	 * @throws ConnectionException
 	 * @throws ConnectionUnavailableException 
 	 * @throws ConnectionAuthenticationException 
+	 * @throws SocketTimeoutException 
 	 */
-	protected String getRequest(String url, HttpClient client) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	protected String getRequest(String url, HttpClient client) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		String result = null;
 		int statusCode = 0;
 		HttpGet getMethod = new HttpGet(url);
 		try {
 			getMethod.setHeader("User-Agent", USER_AGENT);
 			getMethod.addHeader("Authorization", "Basic " + getCredentials());
+			client.getParams().setIntParameter(HttpConnectionParams.CONNECTION_TIMEOUT, DEFAULT_GET_REQUEST_TIMEOUT);
+			client.getParams().setIntParameter(HttpConnectionParams.SO_TIMEOUT, DEFAULT_GET_REQUEST_TIMEOUT);
 			HttpResponse httpResponse = client.execute(getMethod);
 			statusCode = httpResponse.getStatusLine().getStatusCode();
 			result = retrieveInputStream(httpResponse.getEntity());
+		} catch (SocketTimeoutException e) {
+			throw e;
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 			throw new ConnectionException(e);
@@ -433,8 +455,9 @@ public class Connection {
 	 * @throws ConnectionException 
 	 * @throws ConnectionUnavailableException 
 	 * @throws ConnectionAuthenticationException 
+	 * @throws SocketTimeoutException 
 	 */
-	protected String postRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	protected String postRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), null);
 	}
 
@@ -446,8 +469,9 @@ public class Connection {
 	 * @throws ConnectionException 
 	 * @throws ConnectionUnavailableException 
 	 * @throws ConnectionAuthenticationException 
+	 * @throws SocketTimeoutException 
 	 */
-	protected String postRequest(String url, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	protected String postRequest(String url, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), formParams);
 	}
 
@@ -462,7 +486,7 @@ public class Connection {
 	 * @throws ConnectionAuthenticationException 
 	 */
 	protected String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams)
-			throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+			throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		String result = null;
 		int statusCode = 0;
 		HttpPost postMethod = new HttpPost(url);
@@ -472,9 +496,13 @@ public class Connection {
 			if (formParams != null) {
 				postMethod.setEntity(formParams);
 			}
+			client.getParams().setIntParameter(HttpConnectionParams.CONNECTION_TIMEOUT, DEFAULT_POST_REQUEST_TIMEOUT);
+			client.getParams().setIntParameter(HttpConnectionParams.SO_TIMEOUT, DEFAULT_POST_REQUEST_TIMEOUT);
 			HttpResponse httpResponse = client.execute(postMethod);
 			statusCode = httpResponse.getStatusLine().getStatusCode();
 			result = retrieveInputStream(httpResponse.getEntity());
+		} catch (SocketTimeoutException e) {
+			throw e;
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 			throw new ConnectionException(e);

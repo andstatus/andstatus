@@ -16,6 +16,7 @@
 
 package com.xorcode.andtweet.data;
 
+import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -74,8 +75,9 @@ public class DirectMessages {
 	 * @throws SQLiteConstraintException
 	 * @throws ConnectionAuthenticationException
 	 * @throws ConnectionUnavailableException
+	 * @throws SocketTimeoutException 
 	 */
-	public void loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	public void loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		mNewMessages = 0;
 		if (mUsername != null && mUsername.length() > 0) {
 			Connection aConn;

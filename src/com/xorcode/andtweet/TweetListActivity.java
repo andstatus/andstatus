@@ -17,6 +17,7 @@
 package com.xorcode.andtweet;
 
 import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -666,6 +667,19 @@ public class TweetListActivity extends TimelineActivity {
 				}
 				break;
 
+			case MSG_CONNECTION_TIMEOUT_EXCEPTION:
+				switch (msg.arg1) {
+				case MSG_MANUAL_RELOAD:
+					dismissDialog(DIALOG_TIMELINE_LOADING);
+					break;
+				case MSG_UPDATE_STATUS:
+					dismissDialog(DIALOG_SENDING_MESSAGE);
+					break;
+				}
+				mListFooter.setVisibility(View.INVISIBLE);
+				showDialog(DIALOG_CONNECTION_TIMEOUT);
+				break;
+
 			default:
 				super.handleMessage(msg);
 			}
@@ -694,6 +708,10 @@ public class TweetListActivity extends TimelineActivity {
 				return;
 			} catch (ConnectionUnavailableException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_UPDATE_STATUS, 0));
+				return;
+			} catch (SocketTimeoutException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_UPDATE_STATUS, 0));
+				return;
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_STATUS, result));
 		}
@@ -735,6 +753,10 @@ public class TweetListActivity extends TimelineActivity {
 				return;
 			} catch (ConnectionUnavailableException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_MANUAL_RELOAD, 0));
+				return;
+			} catch (SocketTimeoutException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_MANUAL_RELOAD, 0));
+				return;
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewTweets, aReplyCount));
 		}
@@ -759,13 +781,10 @@ public class TweetListActivity extends TimelineActivity {
 				JSONObject status = c.rateLimitStatus();
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATED_TITLE, status));
 			} catch (JSONException e) {
-				e.printStackTrace();
 			} catch (ConnectionException e) {
-				e.printStackTrace();
 			} catch (ConnectionAuthenticationException e) {
-				e.printStackTrace();
 			} catch (ConnectionUnavailableException e) {
-				e.printStackTrace();
+			} catch (SocketTimeoutException e) {
 			}
 		}
 	};

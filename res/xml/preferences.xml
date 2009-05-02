@@ -88,11 +88,11 @@
 					android:summaryOff="@string/summary_preference_notifications_messages_off" 
 					android:defaultValue="true" 
 					android:dependency="notifications_enabled" />
-				<CheckBoxPreference android:key="notifications_replies"
-					android:summary="@string/summary_preference_notifications_replies" 
-					android:title="@string/title_preference_notifications_replies"
-					android:summaryOn="@string/summary_preference_notifications_replies_on"
-					android:summaryOff="@string/summary_preference_notifications_replies_off" 
+				<CheckBoxPreference android:key="notifications_mentions"
+					android:summary="@string/summary_preference_notifications_mentions" 
+					android:title="@string/title_preference_notifications_mentions"
+					android:summaryOn="@string/summary_preference_notifications_mentions_on"
+					android:summaryOff="@string/summary_preference_notifications_mentions_off" 
 					android:defaultValue="true" 
 					android:dependency="notifications_enabled" />
 				<CheckBoxPreference android:key="notifications_timeline"

@@ -16,6 +16,8 @@
 
 package com.xorcode.andtweet;
 
+import java.net.SocketTimeoutException;
+
 import org.json.JSONException;
 
 import android.content.ContentUris;
@@ -390,6 +392,17 @@ public class MessageListActivity extends TimelineActivity {
 				}
 				break;
 
+			case MSG_CONNECTION_TIMEOUT_EXCEPTION:
+				switch (msg.arg1) {
+				case MSG_MANUAL_RELOAD:
+					setProgressBarIndeterminateVisibility(false);
+					break;
+				case MSG_UPDATE_STATUS:
+					break;
+				}
+				showDialog(DIALOG_CONNECTION_TIMEOUT);
+				break;
+
 			default:
 				super.handleMessage(msg);
 			}
@@ -431,6 +444,9 @@ public class MessageListActivity extends TimelineActivity {
 				return;
 			} catch (ConnectionUnavailableException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_MANUAL_RELOAD, 0));
+				return;
+			} catch (SocketTimeoutException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_MANUAL_RELOAD, 0));
 				return;
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewMessages, 0));

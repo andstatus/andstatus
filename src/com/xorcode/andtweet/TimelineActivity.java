@@ -70,6 +70,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final int MSG_SERVICE_UNAVAILABLE_ERROR = 8;
 	public static final int MSG_REPLIES_CHANGED = 9;
 	public static final int MSG_UPDATED_TITLE = 10;
+	public static final int MSG_CONNECTION_TIMEOUT_EXCEPTION = 11;
 
 	// Handler message status codes
 	public static final int STATUS_LOAD_ITEMS_FAILURE = 0;
@@ -82,6 +83,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final int DIALOG_EXTERNAL_STORAGE = 4;
 	public static final int DIALOG_TIMELINE_LOADING = 5;
 	public static final int DIALOG_EXTERNAL_STORAGE_MISSING = 6;
+	public static final int DIALOG_CONNECTION_TIMEOUT = 7;
 
 	// Intent bundle result keys
 	public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
@@ -268,6 +270,16 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 					}
 				}).create();
 
+		case DIALOG_CONNECTION_TIMEOUT:
+			return new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setTitle(R.string.dialog_title_connection_timeout)
+				.setMessage(R.string.dialog_summary_connection_timeout)
+				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface Dialog, int whichButton) {
+					}
+				}).create();
+
 		default:
 			return super.onCreateDialog(id);
 		}
@@ -321,7 +333,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			onSearchRequested();
 			break;
 
-		case R.id.replies_menu_id:
+		case R.id.mentions_menu_id:
 			intent = new Intent(this, TweetListActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			String username = mSP.getString("twitter_username", null);
