@@ -331,7 +331,7 @@ public class TweetListActivity extends TimelineActivity {
 		// Add menu items
 		menu.add(0, CONTEXT_MENU_ITEM_REPLY, m++, R.string.menu_item_reply);
 		//menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, m++, R.string.menu_item_direct_message);
-		//menu.add(0, CONTEXT_MENU_ITEM_RETWEET, m++, R.string.menu_item_retweet);
+		menu.add(0, CONTEXT_MENU_ITEM_RETWEET, m++, R.string.menu_item_retweet);
 		//menu.add(0, CONTEXT_MENU_ITEM_STAR, m++, R.string.menu_item_star);
 		//menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, m++, R.string.menu_item_unfollow);
 		//menu.add(0, CONTEXT_MENU_ITEM_BLOCK, m++, R.string.menu_item_block);
@@ -349,10 +349,13 @@ public class TweetListActivity extends TimelineActivity {
 			return false;
 		}
 
+		Uri uri;
+		Cursor c;
+
 		switch (item.getItemId()) {
 		case CONTEXT_MENU_ITEM_REPLY:
-			Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, info.id);
-			Cursor c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID }, null, null, null);
+			uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, info.id);
+			c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID }, null, null, null);
 			try {
 				c.moveToFirst();
 				mEditText.requestFocus();
@@ -367,8 +370,34 @@ public class TweetListActivity extends TimelineActivity {
 			}
 			return true;
 
-		case CONTEXT_MENU_ITEM_STAR:
 		case CONTEXT_MENU_ITEM_RETWEET:
+			uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, info.id);
+			c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID, Tweets.MESSAGE }, null, null, null);
+			try {
+				c.moveToFirst();
+				mEditText.requestFocus();
+				StringBuilder message = new StringBuilder();
+				String reply = "RT @" + c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)) + " ";
+				message.append(reply);
+				CharSequence text = c.getString(c.getColumnIndex(Tweets.MESSAGE));
+				int len = 140 - reply.length() - 3;
+				if (text.length() < len) {
+					len = text.length();
+				}
+				message.append(text, 0, len);
+				if (message.length() == 137) {
+					message.append("...");
+				}
+				mEditText.setText("");
+				mEditText.append(message, 0, message.length());
+			} catch (Exception e) {
+				Log.e(TAG, "An error occurred", e);
+			} finally {
+				if (c != null && !c.isClosed()) c.close();
+			}
+			return true;
+
+		case CONTEXT_MENU_ITEM_STAR:
 		case CONTEXT_MENU_ITEM_UNFOLLOW:
 		case CONTEXT_MENU_ITEM_BLOCK:
 		case CONTEXT_MENU_ITEM_DIRECT_MESSAGE:
