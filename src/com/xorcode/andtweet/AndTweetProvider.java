@@ -312,71 +312,70 @@ public class AndTweetProvider extends ContentProvider {
 				} finally {
 					db.endTransaction();
 				}
-				if (oldVersion < 8) {
-					try {
-						/*
-						 * Upgrading users table:
-						 *  - Add column FOLLOWING
-						 */
-						db.execSQL("CREATE TEMPORARY TABLE " + USERS_TABLE_NAME + "_backup ("
-								+ Users._ID + " INTEGER PRIMARY KEY," 
-								+ Users.AUTHOR_ID + " TEXT," 
-								+ Users.AVATAR_IMAGE + " BLOB," 
-								+ Users.CREATED_DATE + " INTEGER," 
-								+ Users.MODIFIED_DATE + " INTEGER"
-								+ ");");
-						db.execSQL("INSERT INTO " + USERS_TABLE_NAME + "_backup SELECT " + Users._ID + ", " + Users.AUTHOR_ID + ", " + Users.AVATAR_IMAGE + ", " + Users.CREATED_DATE + ", " + Users.MODIFIED_DATE + " FROM " + USERS_TABLE_NAME + ";");
-						db.execSQL("DROP TABLE " + USERS_TABLE_NAME + ";");
-						db.execSQL("CREATE TABLE " + USERS_TABLE_NAME + " ("
-								+ Users._ID + " INTEGER PRIMARY KEY," 
-								+ Users.AUTHOR_ID + " TEXT," 
-								+ Users.FOLLOWING + " INTEGER," 
-								+ Users.AVATAR_IMAGE + " BLOB," 
-								+ Users.CREATED_DATE + " INTEGER," 
-								+ Users.MODIFIED_DATE + " INTEGER"
-								+ ");");
-						db.execSQL("INSERT INTO " + USERS_TABLE_NAME + " SELECT " + Users._ID + ", " + Users.AUTHOR_ID + ", null, " + Users.AVATAR_IMAGE + ", " + Users.CREATED_DATE + ", " + Users.MODIFIED_DATE + " FROM " + USERS_TABLE_NAME + "_backup;");
-						db.execSQL("DROP TABLE " + USERS_TABLE_NAME + "_backup;");
+			} else if (oldVersion < 8) {
+				try {
+					/*
+					 * Upgrading users table:
+					 *  - Add column FOLLOWING
+					 */
+					db.execSQL("CREATE TEMPORARY TABLE " + USERS_TABLE_NAME + "_backup ("
+							+ Users._ID + " INTEGER PRIMARY KEY," 
+							+ Users.AUTHOR_ID + " TEXT," 
+							+ Users.AVATAR_IMAGE + " BLOB," 
+							+ Users.CREATED_DATE + " INTEGER," 
+							+ Users.MODIFIED_DATE + " INTEGER"
+							+ ");");
+					db.execSQL("INSERT INTO " + USERS_TABLE_NAME + "_backup SELECT " + Users._ID + ", " + Users.AUTHOR_ID + ", " + Users.AVATAR_IMAGE + ", " + Users.CREATED_DATE + ", " + Users.MODIFIED_DATE + " FROM " + USERS_TABLE_NAME + ";");
+					db.execSQL("DROP TABLE " + USERS_TABLE_NAME + ";");
+					db.execSQL("CREATE TABLE " + USERS_TABLE_NAME + " ("
+							+ Users._ID + " INTEGER PRIMARY KEY," 
+							+ Users.AUTHOR_ID + " TEXT," 
+							+ Users.FOLLOWING + " INTEGER," 
+							+ Users.AVATAR_IMAGE + " BLOB," 
+							+ Users.CREATED_DATE + " INTEGER," 
+							+ Users.MODIFIED_DATE + " INTEGER"
+							+ ");");
+					db.execSQL("INSERT INTO " + USERS_TABLE_NAME + " SELECT " + Users._ID + ", " + Users.AUTHOR_ID + ", null, " + Users.AVATAR_IMAGE + ", " + Users.CREATED_DATE + ", " + Users.MODIFIED_DATE + " FROM " + USERS_TABLE_NAME + "_backup;");
+					db.execSQL("DROP TABLE " + USERS_TABLE_NAME + "_backup;");
 
-						/*
-						 * Upgrading tweets table:
-						 *  - Add column FAVORITED
-						 */
-						db.execSQL("CREATE TEMPORARY TABLE " + TWEETS_TABLE_NAME + "_backup ("
-								+ Tweets._ID + " INTEGER PRIMARY KEY," 
-								+ Tweets.AUTHOR_ID + " TEXT," 
-								+ Tweets.MESSAGE + " TEXT," 
-								+ Tweets.SOURCE + " TEXT,"
-								+ Tweets.TWEET_TYPE + " INTEGER,"
-								+ Tweets.IN_REPLY_TO_STATUS_ID + " INTEGER,"
-								+ Tweets.IN_REPLY_TO_AUTHOR_ID + " TEXT,"
-								+ Tweets.SENT_DATE + " INTEGER," 
-								+ Tweets.CREATED_DATE + " INTEGER"
-								+ ");");
-						db.execSQL("INSERT INTO " + TWEETS_TABLE_NAME + "_backup SELECT " + Tweets._ID + ", " + Tweets.AUTHOR_ID + ", " + Tweets.MESSAGE + ", " + Tweets.SOURCE + ", " + Tweets.TWEET_TYPE + ", " + Tweets.IN_REPLY_TO_AUTHOR_ID + ", " + Tweets.IN_REPLY_TO_STATUS_ID + ", " + Tweets.SENT_DATE + ", " + Tweets.CREATED_DATE + " FROM " + TWEETS_TABLE_NAME + ";");
-						db.execSQL("DROP TABLE " + TWEETS_TABLE_NAME + ";");
-						db.execSQL("CREATE TABLE " + TWEETS_TABLE_NAME + " ("
-								+ Tweets._ID + " INTEGER PRIMARY KEY," 
-								+ Tweets.AUTHOR_ID + " TEXT," 
-								+ Tweets.MESSAGE + " TEXT," 
-								+ Tweets.SOURCE + " TEXT,"
-								+ Tweets.TWEET_TYPE + " INTEGER,"
-								+ Tweets.IN_REPLY_TO_STATUS_ID + " INTEGER,"
-								+ Tweets.IN_REPLY_TO_AUTHOR_ID + " TEXT,"
-								+ Tweets.FAVORITED + " INTEGER," 
-								+ Tweets.SENT_DATE + " INTEGER," 
-								+ Tweets.CREATED_DATE + " INTEGER"
-								+ ");");
-						db.execSQL("INSERT INTO " + TWEETS_TABLE_NAME + " SELECT " + Tweets._ID + ", " + Tweets.AUTHOR_ID + ", " + Tweets.MESSAGE + ", " + Tweets.SOURCE + ", " + Tweets.TWEET_TYPE + ", " + Tweets.IN_REPLY_TO_AUTHOR_ID + ", " + Tweets.IN_REPLY_TO_STATUS_ID + ", null, " + Tweets.SENT_DATE + ", " + Tweets.CREATED_DATE + " FROM " + TWEETS_TABLE_NAME + "_backup;");
-						db.execSQL("DROP TABLE " + TWEETS_TABLE_NAME + "_backup;");
+					/*
+					 * Upgrading tweets table:
+					 *  - Add column FAVORITED
+					 */
+					db.execSQL("CREATE TEMPORARY TABLE " + TWEETS_TABLE_NAME + "_backup ("
+							+ Tweets._ID + " INTEGER PRIMARY KEY," 
+							+ Tweets.AUTHOR_ID + " TEXT," 
+							+ Tweets.MESSAGE + " TEXT," 
+							+ Tweets.SOURCE + " TEXT,"
+							+ Tweets.TWEET_TYPE + " INTEGER,"
+							+ Tweets.IN_REPLY_TO_STATUS_ID + " INTEGER,"
+							+ Tweets.IN_REPLY_TO_AUTHOR_ID + " TEXT,"
+							+ Tweets.SENT_DATE + " INTEGER," 
+							+ Tweets.CREATED_DATE + " INTEGER"
+							+ ");");
+					db.execSQL("INSERT INTO " + TWEETS_TABLE_NAME + "_backup SELECT " + Tweets._ID + ", " + Tweets.AUTHOR_ID + ", " + Tweets.MESSAGE + ", " + Tweets.SOURCE + ", " + Tweets.TWEET_TYPE + ", " + Tweets.IN_REPLY_TO_AUTHOR_ID + ", " + Tweets.IN_REPLY_TO_STATUS_ID + ", " + Tweets.SENT_DATE + ", " + Tweets.CREATED_DATE + " FROM " + TWEETS_TABLE_NAME + ";");
+					db.execSQL("DROP TABLE " + TWEETS_TABLE_NAME + ";");
+					db.execSQL("CREATE TABLE " + TWEETS_TABLE_NAME + " ("
+							+ Tweets._ID + " INTEGER PRIMARY KEY," 
+							+ Tweets.AUTHOR_ID + " TEXT," 
+							+ Tweets.MESSAGE + " TEXT," 
+							+ Tweets.SOURCE + " TEXT,"
+							+ Tweets.TWEET_TYPE + " INTEGER,"
+							+ Tweets.IN_REPLY_TO_STATUS_ID + " INTEGER,"
+							+ Tweets.IN_REPLY_TO_AUTHOR_ID + " TEXT,"
+							+ Tweets.FAVORITED + " INTEGER," 
+							+ Tweets.SENT_DATE + " INTEGER," 
+							+ Tweets.CREATED_DATE + " INTEGER"
+							+ ");");
+					db.execSQL("INSERT INTO " + TWEETS_TABLE_NAME + " SELECT " + Tweets._ID + ", " + Tweets.AUTHOR_ID + ", " + Tweets.MESSAGE + ", " + Tweets.SOURCE + ", " + Tweets.TWEET_TYPE + ", " + Tweets.IN_REPLY_TO_AUTHOR_ID + ", " + Tweets.IN_REPLY_TO_STATUS_ID + ", null, " + Tweets.SENT_DATE + ", " + Tweets.CREATED_DATE + " FROM " + TWEETS_TABLE_NAME + "_backup;");
+					db.execSQL("DROP TABLE " + TWEETS_TABLE_NAME + "_backup;");
 
-						db.setTransactionSuccessful();
-						Log.d(TAG, "Successfully upgraded database from version " + oldVersion + " to version " + newVersion + ".");
-					} catch (SQLException e) {
-						Log.e(TAG, "Could not upgrade database from version " + oldVersion + " to version " + newVersion, e);
-					} finally {
-						db.endTransaction();
-					}
+					db.setTransactionSuccessful();
+					Log.d(TAG, "Successfully upgraded database from version " + oldVersion + " to version " + newVersion + ".");
+				} catch (SQLException e) {
+					Log.e(TAG, "Could not upgrade database from version " + oldVersion + " to version " + newVersion, e);
+				} finally {
+					db.endTransaction();
 				}
 			}
 		}
