@@ -41,5 +41,7 @@
 		</attr>
 
 		<attr name="textEditColor" format="reference|color" />
+
+		<attr name="windowBackgroundColor" format="reference|color" />
 	</declare-styleable>
 </resources>

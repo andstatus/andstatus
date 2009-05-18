@@ -45,8 +45,8 @@ import android.view.View;
 import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
@@ -71,6 +71,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final int MSG_REPLIES_CHANGED = 9;
 	public static final int MSG_UPDATED_TITLE = 10;
 	public static final int MSG_CONNECTION_TIMEOUT_EXCEPTION = 11;
+	public static final int MSG_STATUS_DESTROY = 12;
+	public static final int MSG_FAVORITE_CREATE = 13;
+	public static final int MSG_FAVORITE_DESTROY = 14;
 
 	// Handler message status codes
 	public static final int STATUS_LOAD_ITEMS_FAILURE = 0;
@@ -84,12 +87,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final int DIALOG_TIMELINE_LOADING = 5;
 	public static final int DIALOG_EXTERNAL_STORAGE_MISSING = 6;
 	public static final int DIALOG_CONNECTION_TIMEOUT = 7;
+	public static final int DIALOG_EXECUTING_COMMAND = 8;
 
 	// Intent bundle result keys
 	public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
 
 	// Bundle identifier keys
 	public static final String BUNDLE_KEY_REPLY_ID = "replyId";
+	public static final String BUNDLE_KEY_CURRENT_ID = "currentId";
 	public static final String BUNDLE_KEY_CURRENT_PAGE = "currentPage";
 	public static final String BUNDLE_KEY_IS_LOADING = "isLoading";
 
@@ -280,6 +285,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 					}
 				}).create();
 
+		case DIALOG_EXECUTING_COMMAND:
+			mProgressDialog = new ProgressDialog(this);
+			mProgressDialog.setIcon(android.R.drawable.ic_dialog_info);
+			mProgressDialog.setTitle(R.string.dialog_title_executing_command);
+			mProgressDialog.setMessage(getText(R.string.dialog_summary_executing_command));
+			return mProgressDialog;
+
 		default:
 			return super.onCreateDialog(id);
 		}
@@ -313,8 +325,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			intent = new Intent(this, TweetListActivity.class);
 			appDataBundle = new Bundle();
 			appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.SEARCH_URI);
-			appDataBundle.putString("selection", AndTweetDatabase.Tweets.TWEET_TYPE + " = ?");
-			appDataBundle.putStringArray("selectionArgs", new String[] { String.valueOf(Tweets.TWEET_TYPE_TWEET) });
+			appDataBundle.putString("selection", AndTweetDatabase.Tweets.TWEET_TYPE + " IN (?, ?)");
+			appDataBundle.putStringArray("selectionArgs", new String[] { String.valueOf(Tweets.TWEET_TYPE_TWEET), String.valueOf(Tweets.TWEET_TYPE_REPLY) });
 			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
 			intent.setAction(Intent.ACTION_SEARCH);
 			startActivity(intent);
@@ -406,7 +418,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	 * @return Text currently in the editor
 	 */
 	protected CharSequence getSavedText() {
-		return ((MultiAutoCompleteTextView) findViewById(R.id.messageEditTextAC)).getText();
+		return ((EditText) findViewById(R.id.edtTweetInput)).getText();
 	}
 
 	/**
@@ -415,7 +427,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	 * @param text
 	 */
 	protected void setSavedText(CharSequence text) {
-		((MultiAutoCompleteTextView) findViewById(R.id.messageEditTextAC)).setText(text);
+		((EditText) findViewById(R.id.edtTweetInput)).setText(text);
 	}
 
 	/**

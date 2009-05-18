@@ -52,6 +52,7 @@ public final class AndTweetDatabase {
 		public static final String TWEET_TYPE = "tweet_type";
 		public static final String IN_REPLY_TO_STATUS_ID = "in_reply_to_status_id";
 		public static final String IN_REPLY_TO_AUTHOR_ID = "in_reply_to_author_id";
+		public static final String FAVORITED = "favorited";
 		public static final String CREATED_DATE = "created";
 		public static final String SENT_DATE = "sent";
 
@@ -91,6 +92,7 @@ public final class AndTweetDatabase {
 
 		// Table columns
 		public static final String AUTHOR_ID = "author_id";
+		public static final String FOLLOWING = "following";
 		public static final String AVATAR_IMAGE = "avatar_blob";
 		public static final String MODIFIED_DATE = "modified";
 		public static final String CREATED_DATE = "created";

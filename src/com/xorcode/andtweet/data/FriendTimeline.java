@@ -137,6 +137,15 @@ public class FriendTimeline {
 		}
 	}
 
+	/**
+	 * Insert a row from a JSONObject.
+	 * 
+	 * @param jo
+	 * @param tweetType
+	 * @return
+	 * @throws JSONException
+	 * @throws SQLiteConstraintException
+	 */
 	public Uri insertFromJSONObject(JSONObject jo, int tweetType) throws JSONException, SQLiteConstraintException {
 		JSONObject user;
 		user = jo.getJSONObject("user");
@@ -156,6 +165,7 @@ public class FriendTimeline {
 		values.put(AndTweetDatabase.Tweets.TWEET_TYPE, tweetType);
 		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_STATUS_ID, jo.getString("in_reply_to_status_id"));
 		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_AUTHOR_ID, jo.getString("in_reply_to_screen_name"));
+		values.put(AndTweetDatabase.Tweets.FAVORITED, jo.getBoolean("favorited") ? 1 : 0);
 
 		DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
 		Calendar cal = Calendar.getInstance();
@@ -176,12 +186,29 @@ public class FriendTimeline {
 		return aTweetUri;
 	}
 
+	/**
+	 * Insert a row from a JSONObject.
+	 * Takes an optional parameter to notify listeners of the change.
+	 * 
+	 * @param jo
+	 * @param tweetType
+	 * @param notify
+	 * @return Uri
+	 * @throws JSONException
+	 * @throws SQLiteConstraintException
+	 */
 	public Uri insertFromJSONObject(JSONObject jo, int tweetType, boolean notify) throws JSONException, SQLiteConstraintException {
 		Uri aTweetUri = insertFromJSONObject(jo, tweetType);
 		if (notify) mContentResolver.notifyChange(aTweetUri, null);
 		return aTweetUri;
 	}
 
+	/**
+	 * Remove old records to ensure that the database does not grow too large.
+	 * 
+	 * @param sinceTimestamp
+	 * @return Number of deleted records
+	 */
 	public int pruneOldRecords(long sinceTimestamp) {
 		if (sinceTimestamp == 0) {
 			sinceTimestamp = System.currentTimeMillis();
@@ -189,15 +216,40 @@ public class FriendTimeline {
 		return mContentResolver.delete(AndTweetDatabase.Tweets.CONTENT_URI, AndTweetDatabase.Tweets.CREATED_DATE + " < " + sinceTimestamp, null);
 	}
 
+	/**
+	 * Return the number of new statuses.
+	 * 
+	 * @return integer
+	 */
 	public int newCount() {
 		return mNewTweets;
 	}
 
+	/**
+	 * Return the number of new replies.
+	 * 
+	 * @return integer
+	 */
 	public int replyCount() {
 		return mReplies;
 	}
 
+	/**
+	 * Get the last status ID.
+	 * 
+	 * @return long
+	 */
 	public long lastId() {
 		return mLastStatusId;
+	}
+
+	/**
+	 * Destroy the status specified by ID.
+	 * 
+	 * @param statusId
+	 * @return Number of deleted records
+	 */
+	public int destroyStatus(long statusId) {
+		return mContentResolver.delete(AndTweetDatabase.Tweets.CONTENT_URI, AndTweetDatabase.Tweets._ID + " = " + statusId, null);
 	}
 }

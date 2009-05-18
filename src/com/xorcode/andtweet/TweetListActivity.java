@@ -24,6 +24,7 @@ import org.json.JSONObject;
 
 import android.app.SearchManager;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -34,6 +35,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.SearchRecentSuggestions;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -42,13 +44,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.View.OnFocusChangeListener;
-import android.view.View.OnKeyListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.MultiAutoCompleteTextView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,7 +66,6 @@ import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
-import com.xorcode.andtweet.util.AtTokenizer;
 
 /**
  * @author torgny.bjers
@@ -77,16 +77,18 @@ public class TweetListActivity extends TimelineActivity {
 
 	// Context menu items
 	public static final int CONTEXT_MENU_ITEM_REPLY = Menu.FIRST + 2;
-	public static final int CONTEXT_MENU_ITEM_STAR = Menu.FIRST + 3;
+	public static final int CONTEXT_MENU_ITEM_FAVORITE = Menu.FIRST + 3;
 	public static final int CONTEXT_MENU_ITEM_DIRECT_MESSAGE = Menu.FIRST + 4;
 	public static final int CONTEXT_MENU_ITEM_UNFOLLOW = Menu.FIRST + 5;
 	public static final int CONTEXT_MENU_ITEM_BLOCK = Menu.FIRST + 6;
 	public static final int CONTEXT_MENU_ITEM_RETWEET = Menu.FIRST + 7;
 	public static final int CONTEXT_MENU_ITEM_PROFILE = Menu.FIRST + 8;
+	public static final int CONTEXT_MENU_ITEM_DESTROY_FAVORITE = Menu.FIRST + 9;
+	public static final int CONTEXT_MENU_ITEM_DESTROY_STATUS = Menu.FIRST + 10;
 
 	// Views and widgets
 	private Button mSendButton;
-	private MultiAutoCompleteTextView mEditText;
+	private EditText mEditText;
 	private TextView mCharsLeftText;
 
 	// Text limits
@@ -98,6 +100,7 @@ public class TweetListActivity extends TimelineActivity {
 	private Cursor mFriendsCursor;
 
 	protected long mReplyId = 0;
+	protected long mCurrentId = 0;
 
 	// Table columns to use for the tweets data
 	private static final String[] PROJECTION = new String[] {
@@ -105,6 +108,7 @@ public class TweetListActivity extends TimelineActivity {
 		Tweets.AUTHOR_ID,
 		Tweets.MESSAGE,
 		Tweets.IN_REPLY_TO_AUTHOR_ID,
+		Tweets.FAVORITED,
 		Tweets.SENT_DATE
 	};
 
@@ -135,6 +139,9 @@ public class TweetListActivity extends TimelineActivity {
 			if (savedInstanceState.containsKey(BUNDLE_KEY_IS_LOADING)) {
 				mIsLoading = savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING);
 			}
+			if (savedInstanceState.containsKey(BUNDLE_KEY_CURRENT_ID)) {
+				mCurrentId = savedInstanceState.getLong(BUNDLE_KEY_CURRENT_ID);
+			}
 		}
 		
 		final Intent intent = getIntent();
@@ -148,7 +155,7 @@ public class TweetListActivity extends TimelineActivity {
 
 		// Set up views
 		mSendButton = (Button) findViewById(R.id.messageEditSendButton);
-		mEditText = (MultiAutoCompleteTextView) findViewById(R.id.messageEditTextAC);
+		mEditText = (EditText) findViewById(R.id.edtTweetInput);
 		mCharsLeftText = (TextView) findViewById(R.id.messageEditCharsLeftTextView);
 
 		// Create list footer for loading messages
@@ -228,7 +235,7 @@ public class TweetListActivity extends TimelineActivity {
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 		    doSearchQuery(intent);
 		} else {
-			mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, Tweets.TWEET_TYPE + " = ?", new String[] { String.valueOf(Tweets.TWEET_TYPE_TWEET) }, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
+			mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, Tweets.TWEET_TYPE + " IN (?, ?)", new String[] { String.valueOf(Tweets.TWEET_TYPE_TWEET), String.valueOf(Tweets.TWEET_TYPE_REPLY) }, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
 			createAdapters();
 		}
 		mEditText.requestFocus();
@@ -261,10 +268,12 @@ public class TweetListActivity extends TimelineActivity {
 	@Override
 	protected void onStop() {
 		super.onStop();
+		/*
 		SimpleCursorAdapter a = (SimpleCursorAdapter) mEditText.getAdapter();
 		if (a != null && a.getCursor() != null && !a.getCursor().isClosed()) {
 			a.getCursor().close();
 		}
+		*/
 		if (mCursor != null && !mCursor.isClosed()) {
 			mCursor.close();
 		}
@@ -285,6 +294,7 @@ public class TweetListActivity extends TimelineActivity {
 		outState.putLong(BUNDLE_KEY_REPLY_ID, mReplyId);
 		outState.putInt(BUNDLE_KEY_CURRENT_PAGE, mCurrentPage);
 		outState.putBoolean(BUNDLE_KEY_IS_LOADING, mIsLoading);
+		outState.putLong(BUNDLE_KEY_CURRENT_ID, mReplyId);
 		super.onSaveInstanceState(outState);
 	}
 
@@ -314,28 +324,35 @@ public class TweetListActivity extends TimelineActivity {
 			return;
 		}
 
+		int m = 0;
+
+		// Add menu items
+		menu.add(0, CONTEXT_MENU_ITEM_REPLY, m++, R.string.menu_item_reply);
+		menu.add(0, CONTEXT_MENU_ITEM_RETWEET, m++, R.string.menu_item_retweet);
+		//menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, m++, R.string.menu_item_direct_message);
+		//menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, m++, R.string.menu_item_unfollow);
+		//menu.add(0, CONTEXT_MENU_ITEM_BLOCK, m++, R.string.menu_item_block);
+		//menu.add(0, CONTEXT_MENU_ITEM_PROFILE, m++, R.string.menu_item_view_profile);
+
 		// Get the record for the currently selected item
 		Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, info.id);
-		Cursor c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.MESSAGE, Tweets.AUTHOR_ID }, null, null, null);
+		Cursor c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.MESSAGE, Tweets.AUTHOR_ID, Tweets.FAVORITED }, null, null, null);
 		try {
 			c.moveToFirst();
 			menu.setHeaderTitle(c.getString(c.getColumnIndex(Tweets.MESSAGE)));
+			if (c.getInt(c.getColumnIndex(Tweets.FAVORITED)) == 1) {
+				menu.add(0, CONTEXT_MENU_ITEM_DESTROY_FAVORITE, m++, R.string.menu_item_destroy_favorite);
+			} else {
+				menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, m++, R.string.menu_item_favorite);
+			}
+			if (mSP.getString("twitter_username", null).equals(c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)))) {
+				menu.add(0, CONTEXT_MENU_ITEM_DESTROY_STATUS, m++, R.string.menu_item_destroy_status);
+			}
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 		} finally {
 			if (c != null && !c.isClosed()) c.close();
 		}
-
-		int m = 0;
-
-		// Add menu items
-		menu.add(0, CONTEXT_MENU_ITEM_REPLY, m++, R.string.menu_item_reply);
-		//menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, m++, R.string.menu_item_direct_message);
-		menu.add(0, CONTEXT_MENU_ITEM_RETWEET, m++, R.string.menu_item_retweet);
-		//menu.add(0, CONTEXT_MENU_ITEM_STAR, m++, R.string.menu_item_star);
-		//menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, m++, R.string.menu_item_unfollow);
-		//menu.add(0, CONTEXT_MENU_ITEM_BLOCK, m++, R.string.menu_item_block);
-		//menu.add(0, CONTEXT_MENU_ITEM_PROFILE, m++, R.string.menu_item_view_profile);
 	}
 
 	@Override
@@ -349,8 +366,11 @@ public class TweetListActivity extends TimelineActivity {
 			return false;
 		}
 
+		mCurrentId = info.id;
+
 		Uri uri;
 		Cursor c;
+		Thread thread;
 
 		switch (item.getItemId()) {
 		case CONTEXT_MENU_ITEM_REPLY:
@@ -365,6 +385,7 @@ public class TweetListActivity extends TimelineActivity {
 				mReplyId = c.getLong(c.getColumnIndex(Tweets._ID));
 			} catch (Exception e) {
 				Log.e(TAG, e.getMessage());
+				return false;
 			} finally {
 				if (c != null && !c.isClosed()) c.close();
 			}
@@ -392,12 +413,30 @@ public class TweetListActivity extends TimelineActivity {
 				mEditText.append(message, 0, message.length());
 			} catch (Exception e) {
 				Log.e(TAG, "An error occurred", e);
+				return false;
 			} finally {
 				if (c != null && !c.isClosed()) c.close();
 			}
 			return true;
 
-		case CONTEXT_MENU_ITEM_STAR:
+		case CONTEXT_MENU_ITEM_DESTROY_STATUS:
+			showDialog(DIALOG_EXECUTING_COMMAND);
+			thread = new Thread(mDestroyStatus);
+			thread.start();
+			return true;
+
+		case CONTEXT_MENU_ITEM_FAVORITE:
+			showDialog(DIALOG_EXECUTING_COMMAND);
+			thread = new Thread(mCreateFavorite);
+			thread.start();
+			return true;
+
+		case CONTEXT_MENU_ITEM_DESTROY_FAVORITE:
+			showDialog(DIALOG_EXECUTING_COMMAND);
+			thread = new Thread(mDestroyFavorite);
+			thread.start();
+			return true;
+
 		case CONTEXT_MENU_ITEM_UNFOLLOW:
 		case CONTEXT_MENU_ITEM_BLOCK:
 		case CONTEXT_MENU_ITEM_DIRECT_MESSAGE:
@@ -409,16 +448,88 @@ public class TweetListActivity extends TimelineActivity {
 	}
 
 	/**
+	 * Send the message.
+	 */
+	void sendMessage() {
+		String msg = mEditText.getText().toString();
+		if (TextUtils.isEmpty(msg.trim())) {
+			Toast.makeText(TweetListActivity.this, R.string.cannot_send_empty_message, Toast.LENGTH_SHORT).show();
+		} else {
+			showDialog(DIALOG_SENDING_MESSAGE);
+			Thread thread = new Thread(mSendUpdate);
+			thread.start();
+			closeSoftKeyboard();
+		}
+	}
+
+	/**
+	 * Close the on-screen keyboard.
+	 */
+	private void closeSoftKeyboard() {
+		InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		inputMethodManager.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
+	}
+
+	/**
 	 * Initialize UI
 	 */
 	@Override
 	protected void initUI() {
 		super.initUI();
-		// Set up the send button
-		mSendButton.setOnClickListener(mSendOnClickListener);
-		// Attach listeners to the text field
-		mEditText.setOnFocusChangeListener(mEditTextFocusChangeListener);
-		mEditText.setOnKeyListener(mEditTextKeyListener);
+
+		mSendButton.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				sendMessage();
+			}
+		});
+
+		mEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			public void onFocusChange(View v, boolean hasFocus) {
+				EditText editTxt = (EditText) v;
+				mCurrentChars = editTxt.length();
+				mCharsLeftText.setText(String.valueOf(mLimitChars - mCurrentChars));
+			}
+		});
+
+		mEditText.setOnKeyListener(new View.OnKeyListener() {
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				if (event.getAction() == KeyEvent.ACTION_DOWN) {
+					mCurrentChars = mEditText.length();
+					if (mCurrentChars == 0) {
+						mReplyId = 0;
+					}
+					switch (keyCode) {
+					case KeyEvent.KEYCODE_DPAD_CENTER:
+						sendMessage();
+						return true;
+					case KeyEvent.KEYCODE_ENTER:
+						if (event.isAltPressed()) {
+							mEditText.append("\n");
+							return true;
+						}
+					default:
+						if (keyCode != KeyEvent.KEYCODE_DEL && mCurrentChars > mLimitChars) {
+							return true;
+						}
+						mCharsLeftText.setText(String.valueOf(mLimitChars - mCurrentChars));
+						break;
+					}
+				}
+				return false;
+			}
+		});
+
+		mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if (event != null) {
+					if (event.isAltPressed()) {
+						return false;
+					}
+				}
+				sendMessage();
+				return true;
+			}
+		});
 	}
 
 	/**
@@ -433,8 +544,8 @@ public class TweetListActivity extends TimelineActivity {
 			TweetListActivity.this,
 			listItemId,
 			mCursor,
-			new String[] { Tweets.AUTHOR_ID, Tweets.MESSAGE, Tweets.SENT_DATE },
-			new int[] { R.id.tweet_screen_name, R.id.tweet_message, R.id.tweet_sent },
+			new String[] { Tweets.AUTHOR_ID, Tweets.MESSAGE, Tweets.SENT_DATE, Tweets.FAVORITED },
+			new int[] { R.id.tweet_screen_name, R.id.tweet_message, R.id.tweet_sent, R.id.tweet_favorite },
 			getIntent().getData(),
 			PROJECTION,
 			Tweets.DEFAULT_SORT_ORDER
@@ -459,69 +570,9 @@ public class TweetListActivity extends TimelineActivity {
 			Log.e(TAG, "Could not set string conversion column on mFriendsCursor", e);
 		}
 
-		mEditText.setAdapter(friendsAdapter);
-		mEditText.setTokenizer(new AtTokenizer());
+		//mEditText.setAdapter(friendsAdapter);
+		//mEditText.setTokenizer(new AtTokenizer());
 	}
-
-	/**
-	 * Listener for send button clicks.
-	 */
-	private View.OnClickListener mSendOnClickListener = new View.OnClickListener() {
-		public void onClick(View v) {
-			if (mEditText.length() > 0) {
-				//setProgressBarIndeterminateVisibility(true);
-				showDialog(DIALOG_SENDING_MESSAGE);
-				Thread thread = new Thread(mSendUpdate);
-				thread.start();
-			} else {
-				Toast.makeText(TweetListActivity.this, R.string.cannot_send_empty_message, Toast.LENGTH_SHORT).show();
-			}
-		}
-	};
-
-	/**
-	 * Listener for key events on the multi-line text field.
-	 */
-	private OnKeyListener mEditTextKeyListener = new View.OnKeyListener() {
-		/**
-		 * Event that listens for keys. Returns true if the limit has been
-		 * reached, and false if the user is allowed to continue typing.
-		 * 
-		 * @param v
-		 * @param keyCode
-		 * @param event
-		 * @return boolean
-		 */
-		public boolean onKey(View v, int keyCode, KeyEvent event) {
-			MultiAutoCompleteTextView editTxt = (MultiAutoCompleteTextView) v;
-			mCurrentChars = editTxt.length();
-			if (mCurrentChars == 0) {
-				mReplyId = 0;
-			}
-			if (keyCode != KeyEvent.KEYCODE_DEL && mCurrentChars > mLimitChars) {
-				return true;
-			}
-			mCharsLeftText.setText(String.valueOf(mLimitChars - mCurrentChars));
-			return false;
-		}
-	};
-
-	/**
-	 * Listener for focus changes of the multi-line text field.
-	 */
-	private OnFocusChangeListener mEditTextFocusChangeListener = new View.OnFocusChangeListener() {
-		/**
-		 * Event triggered when focus of text view changes.
-		 * 
-		 * @param v
-		 * @param hasFocus
-		 */
-		public void onFocusChange(View v, boolean hasFocus) {
-			MultiAutoCompleteTextView editTxt = (MultiAutoCompleteTextView) v;
-			mCurrentChars = editTxt.length();
-			mCharsLeftText.setText(String.valueOf(mLimitChars - mCurrentChars));
-		}
-	};
 
 	/**
 	 * Listener that checks for clicks on the main list view.
@@ -533,6 +584,9 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	@Override
 	public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+		if (id <= 0) {
+			return;
+		}
 		Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, id);
 		String action = getIntent().getAction();
 		if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
@@ -554,7 +608,7 @@ public class TweetListActivity extends TimelineActivity {
 		}
 		switch (scrollState) {
 		case SCROLL_STATE_IDLE:
-			if (view.getLastVisiblePosition() >= mTotalItemCount - 1) {
+			if (view.getLastVisiblePosition() >= mTotalItemCount - 1 && mTotalItemCount > 0) {
 				if (getListView().getFooterViewsCount() == 1 && !mIsLoading) {
 					mIsLoading = true;
 					//setProgressBarIndeterminateVisibility(true);
@@ -591,6 +645,9 @@ public class TweetListActivity extends TimelineActivity {
 		 */
 		@Override
 		public void handleMessage(Message msg) {
+			JSONObject result = null;
+			String username = mSP.getString("twitter_username", null);
+			String password = mSP.getString("twitter_password", null);
 			switch (msg.what) {
 			case MSG_TWEETS_CHANGED:
 				int numTweets = msg.arg1;
@@ -609,13 +666,11 @@ public class TweetListActivity extends TimelineActivity {
 				break;
 
 			case MSG_UPDATE_STATUS:
-				JSONObject result = (JSONObject) msg.obj;
+				result = (JSONObject) msg.obj;
 				if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
-					String username = mSP.getString("twitter_username", null);
-					String password = mSP.getString("twitter_password", null);
-					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
+					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_id", 0));
 					try {
 						fl.insertFromJSONObject(result, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, true);
 					} catch (JSONException e) {
@@ -687,7 +742,6 @@ public class TweetListActivity extends TimelineActivity {
 				break;
 
 			case MSG_UPDATED_TITLE:
-				String username = mSP.getString("twitter_username", null);
 				JSONObject status = (JSONObject) msg.obj;
 				try {
 					setTitle(getString(R.string.activity_title_format, new Object[] {getTitle(), username}), status.getInt("remaining_hits") + "/" + status.getInt("hourly_limit"));
@@ -709,6 +763,75 @@ public class TweetListActivity extends TimelineActivity {
 				showDialog(DIALOG_CONNECTION_TIMEOUT);
 				break;
 
+			case MSG_STATUS_DESTROY:
+				result = (JSONObject) msg.obj;
+				if (result.optString("error").length() > 0) {
+					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
+				} else {
+					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
+					try {
+						fl.destroyStatus(result.getLong("id"));
+					} catch (JSONException e) {
+						Toast.makeText(TweetListActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+					}
+					Toast.makeText(TweetListActivity.this, R.string.status_destroyed, Toast.LENGTH_SHORT).show();
+					mCurrentId = 0;
+				}
+				dismissDialog(DIALOG_EXECUTING_COMMAND);
+				break;
+
+			case MSG_FAVORITE_CREATE:
+				result = (JSONObject) msg.obj;
+				if (result.optString("error").length() > 0) {
+					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
+				} else {
+					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
+					try {
+						Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result.getLong("id"));
+						Cursor c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE }, null, null, null);
+						try {
+							c.moveToFirst();
+							fl.insertFromJSONObject(result, c.getInt(c.getColumnIndex(Tweets.TWEET_TYPE)), true);
+						} catch (Exception e) {
+							Log.e(TAG, e.getMessage());
+						} finally {
+							if (c != null && !c.isClosed()) c.close();
+						}
+					} catch (JSONException e) {
+						Toast.makeText(TweetListActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+					}
+					Toast.makeText(TweetListActivity.this, R.string.favorite_created, Toast.LENGTH_SHORT).show();
+					mCurrentId = 0;
+				}
+				dismissDialog(DIALOG_EXECUTING_COMMAND);
+				break;
+
+			case MSG_FAVORITE_DESTROY:
+				result = (JSONObject) msg.obj;
+				if (result.optString("error").length() > 0) {
+					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
+				} else {
+					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
+					try {
+						Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result.getLong("id"));
+						Cursor c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE }, null, null, null);
+						try {
+							c.moveToFirst();
+							fl.insertFromJSONObject(result, c.getInt(c.getColumnIndex(Tweets.TWEET_TYPE)), true);
+						} catch (Exception e) {
+							Log.e(TAG, e.getMessage());
+						} finally {
+							if (c != null && !c.isClosed()) c.close();
+						}
+					} catch (JSONException e) {
+						Toast.makeText(TweetListActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+					}
+					Toast.makeText(TweetListActivity.this, R.string.favorite_destroyed, Toast.LENGTH_SHORT).show();
+					mCurrentId = 0;
+				}
+				dismissDialog(DIALOG_EXECUTING_COMMAND);
+				break;
+
 			default:
 				super.handleMessage(msg);
 			}
@@ -726,7 +849,7 @@ public class TweetListActivity extends TimelineActivity {
 			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(username, password);
 			JSONObject result = new JSONObject();
 			try {
-				result = aConn.updateStatus(message, mReplyId);
+				result = aConn.updateStatus(message.trim(), mReplyId);
 			} catch (UnsupportedEncodingException e) {
 				Log.e(TAG, e.getMessage());
 			} catch (ConnectionException e) {
@@ -801,6 +924,9 @@ public class TweetListActivity extends TimelineActivity {
 		}
 	};
 
+	/**
+	 * Update the title with the number of remaining API calls.
+	 */
 	protected Runnable mUpdateTitle = new Runnable() {
 		public void run() {
 			String username = mSP.getString("twitter_username", null);
@@ -815,6 +941,96 @@ public class TweetListActivity extends TimelineActivity {
 			} catch (ConnectionUnavailableException e) {
 			} catch (SocketTimeoutException e) {
 			}
+		}
+	};
+
+	/**
+	 * Handles threaded removal of statuses.
+	 */
+	protected Runnable mDestroyStatus = new Runnable() {
+		public void run() {
+			String username = mSP.getString("twitter_username", null);
+			String password = mSP.getString("twitter_password", null);
+			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(username, password);
+			JSONObject result = new JSONObject();
+			try {
+				result = aConn.destroyStatus(mCurrentId);
+			} catch (UnsupportedEncodingException e) {
+				Log.e(TAG, e.getMessage());
+			} catch (ConnectionException e) {
+				Log.e(TAG, "mDestroyStatus Connection Exception: " + e.getMessage());
+				return;
+			} catch (ConnectionAuthenticationException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_UPDATE_STATUS, 0));
+				return;
+			} catch (ConnectionUnavailableException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_UPDATE_STATUS, 0));
+				return;
+			} catch (SocketTimeoutException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_UPDATE_STATUS, 0));
+				return;
+			}
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_STATUS_DESTROY, result));
+		}
+	};
+
+	/**
+	 * Handles threaded creation of favorites
+	 */
+	protected Runnable mCreateFavorite = new Runnable() {
+		public void run() {
+			String username = mSP.getString("twitter_username", null);
+			String password = mSP.getString("twitter_password", null);
+			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(username, password);
+			JSONObject result = new JSONObject();
+			try {
+				result = aConn.createFavorite(mCurrentId);
+			} catch (UnsupportedEncodingException e) {
+				Log.e(TAG, e.getMessage());
+			} catch (ConnectionException e) {
+				Log.e(TAG, "mCreateFavorite Connection Exception: " + e.getMessage());
+				return;
+			} catch (ConnectionAuthenticationException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_UPDATE_STATUS, 0));
+				return;
+			} catch (ConnectionUnavailableException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_UPDATE_STATUS, 0));
+				return;
+			} catch (SocketTimeoutException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_UPDATE_STATUS, 0));
+				return;
+			}
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_FAVORITE_CREATE, result));
+		}
+	};
+
+	/**
+	 * Handles threaded creation of favorites
+	 */
+	protected Runnable mDestroyFavorite = new Runnable() {
+		public void run() {
+			String username = mSP.getString("twitter_username", null);
+			String password = mSP.getString("twitter_password", null);
+			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(username, password);
+			JSONObject result = new JSONObject();
+			try {
+				result = aConn.destroyFavorite(mCurrentId);
+			} catch (UnsupportedEncodingException e) {
+				Log.e(TAG, e.getMessage());
+			} catch (ConnectionException e) {
+				Log.e(TAG, "mDestroyFavorite Connection Exception: " + e.getMessage());
+				return;
+			} catch (ConnectionAuthenticationException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_UPDATE_STATUS, 0));
+				return;
+			} catch (ConnectionUnavailableException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_UPDATE_STATUS, 0));
+				return;
+			} catch (SocketTimeoutException e) {
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_UPDATE_STATUS, 0));
+				return;
+			}
+			mHandler.sendMessage(mHandler.obtainMessage(MSG_FAVORITE_DESTROY, result));
 		}
 	};
 }

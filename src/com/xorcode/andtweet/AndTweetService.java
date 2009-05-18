@@ -76,11 +76,11 @@ public class AndTweetService extends Service {
 
 	private static final int MILLISECONDS = 1000;
 	private static final int MSG_UPDATE_TIMELINE = 1;
-	private static final int MSG_UPDATE_FRIENDS = 2;
-	private static final int MSG_UPDATE_DIRECT_MESSAGES = 3;
-	private static final int MSG_UPDATE_TIMELINE_DONE = 4;
-	private static final int MSG_UPDATE_FRIENDS_DONE = 5;
-	private static final int MSG_UPDATE_DIRECT_MESSAGES_DONE = 6;
+	private static final int MSG_UPDATE_DIRECT_MESSAGES = 2;
+	private static final int MSG_UPDATE_TIMELINE_DONE = 3;
+	private static final int MSG_UPDATE_DIRECT_MESSAGES_DONE = 4;
+	private static final int MSG_UPDATE_FOLLOWERS = 5;
+	private static final int MSG_UPDATE_FOLLOWERS_DONE = 6;
 
 	private static final int NOTIFY_DIRECT_MESSAGE = 1;
 	private static final int NOTIFY_TIMELINE = 2;
@@ -102,7 +102,7 @@ public class AndTweetService extends Service {
 		// Start the time line updater.
 		mHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIMELINE, mFrequency * MILLISECONDS);
 		mHandler.sendEmptyMessageDelayed(MSG_UPDATE_DIRECT_MESSAGES, mFrequency * MILLISECONDS);
-		mHandler.sendEmptyMessageDelayed(MSG_UPDATE_FRIENDS, 1800 * MILLISECONDS);
+		mHandler.sendEmptyMessageDelayed(MSG_UPDATE_FOLLOWERS, 1800 * MILLISECONDS);
 		Log.d(TAG, "Service created in context: " + getApplication().getApplicationContext().getPackageName());
 	}
 
@@ -116,7 +116,7 @@ public class AndTweetService extends Service {
 		// Remove messages, stopping loops.
 		mHandler.removeMessages(MSG_UPDATE_TIMELINE);
 		mHandler.removeMessages(MSG_UPDATE_DIRECT_MESSAGES);
-		mHandler.removeMessages(MSG_UPDATE_FRIENDS);
+		mHandler.removeMessages(MSG_UPDATE_FOLLOWERS);
 	}
 
 	@Override
@@ -172,12 +172,12 @@ public class AndTweetService extends Service {
 			final SharedPreferences.Editor prefsEditor = sp.edit();
 
 			switch (msg.what) {
-			case MSG_UPDATE_FRIENDS:
+			case MSG_UPDATE_FOLLOWERS:
 				if (mAutomaticUpdates) {
-					Thread t = new Thread(mLoadFriends);
+					Thread t = new Thread(mLoadFollowers);
 					t.start();
 				}
-				sendMessageDelayed(obtainMessage(MSG_UPDATE_FRIENDS), 1800 * MILLISECONDS);
+				sendMessageDelayed(obtainMessage(MSG_UPDATE_FOLLOWERS), 1800 * MILLISECONDS);
 				break;
 
 			case MSG_UPDATE_TIMELINE:
@@ -423,7 +423,7 @@ public class AndTweetService extends Service {
 		}
 	};
 
-	protected Runnable mLoadFriends = new Runnable() {
+	protected Runnable mLoadFollowers = new Runnable() {
 		public void run() {
 			final ContentResolver contentResolver = getContentResolver();
 			final SharedPreferences sp = PreferenceManager
@@ -433,7 +433,7 @@ public class AndTweetService extends Service {
 			if (mUsername != null && mUsername.length() > 0) {
 				Connection aConn = new Connection(mUsername, mPassword);
 				try {
-					JSONArray jArr = aConn.getFriends();
+					JSONArray jArr = aConn.getFollowers();
 					if (jArr != null) {
 						for (int index = 0; index < jArr.length(); index++) {
 							JSONObject jo = jArr.getJSONObject(index);
@@ -455,15 +455,15 @@ public class AndTweetService extends Service {
 				} catch (JSONException e) {
 					Log.e(TAG, e.getMessage());
 				} catch (ConnectionException e) {
-					Log.e(TAG, "loadFriends Connection Exception: " + e.getMessage());
+					Log.e(TAG, "loadFollowers Connection Exception: " + e.getMessage());
 				} catch (ConnectionAuthenticationException e) {
-					Log.e(TAG, "loadFriends Authentication Exception: " + e.getMessage());
+					Log.e(TAG, "loadFollowers Authentication Exception: " + e.getMessage());
 				} catch (ConnectionUnavailableException e) {
-					Log.e(TAG, "loadFriends FAIL Whale Exception: " + e.getMessage());
+					Log.e(TAG, "loadFollowers FAIL Whale Exception: " + e.getMessage());
 				} catch (SocketTimeoutException e) {
-					Log.e(TAG, "loadFriends Timeout Exception: " + e.getMessage());
+					Log.e(TAG, "loadFollowers Timeout Exception: " + e.getMessage());
 				}
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_FRIENDS_DONE));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_FOLLOWERS_DONE));
 			}
 		}
 	};

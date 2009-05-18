@@ -43,10 +43,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.R;
 import android.util.Log;
 
-import com.xorcode.andtweet.R.color;
 import com.xorcode.andtweet.util.Base64;
 
 /**
@@ -59,15 +57,18 @@ public class Connection {
 	private static final String BASE_URL = "http://twitter.com";
 	private static final String EXTENSION = ".json";
 
-	private static final String PUBLIC_TIMELINE_URL = BASE_URL + "/statuses/public_timeline" + EXTENSION;
-	private static final String FRIENDS_TIMELINE_URL = BASE_URL + "/statuses/friends_timeline" + EXTENSION;
-	private static final String MENTIONS_TIMELINE_URL = BASE_URL + "/statuses/mentions" + EXTENSION;
+	private static final String STATUSES_PUBLIC_TIMELINE_URL = BASE_URL + "/statuses/public_timeline" + EXTENSION;
+	private static final String STATUSES_FRIENDS_TIMELINE_URL = BASE_URL + "/statuses/friends_timeline" + EXTENSION;
+	private static final String STATUSES_MENTIONS_TIMELINE_URL = BASE_URL + "/statuses/mentions" + EXTENSION;
+	private static final String STATUSES_FOLLOWERS_URL = BASE_URL + "/statuses/followers" + EXTENSION;
+	private static final String STATUSES_UPDATE_URL = BASE_URL + "/statuses/update" + EXTENSION;
+	private static final String STATUSES_DESTROY_URL = BASE_URL + "/statuses/destroy/";
 	private static final String DIRECT_MESSAGES_URL = BASE_URL + "/direct_messages" + EXTENSION;
 	private static final String DIRECT_MESSAGES_SENT_URL = BASE_URL + "/direct_messages/sent" + EXTENSION;
-	private static final String FRIENDS_URL = BASE_URL + "/statuses/friends" + EXTENSION;
-	private static final String UPDATE_STATUS_URL = BASE_URL + "/statuses/update" + EXTENSION;
-	private static final String VERIFY_CREDENTIALS_URL = BASE_URL + "/account/verify_credentials" + EXTENSION;
-	private static final String RATE_LIMIT_STATUS_URL = BASE_URL + "/account/rate_limit_status" + EXTENSION;
+	private static final String ACCOUNT_VERIFY_CREDENTIALS_URL = BASE_URL + "/account/verify_credentials" + EXTENSION;
+	private static final String ACCOUNT_RATE_LIMIT_STATUS_URL = BASE_URL + "/account/rate_limit_status" + EXTENSION;
+	private static final String FAVORITES_CREATE_URL = BASE_URL + "/favorites/create/";
+	private static final String FAVORITES_DESTROY_URL = BASE_URL + "/favorites/destroy/";
 	private static final String USER_AGENT = "AndTweet/1.0";
 	private static final String SOURCE_PARAMETER = "andtweet";
 	private static final String TAG = "AndTweetConnection";
@@ -144,7 +145,7 @@ public class Connection {
 	 * @throws SocketTimeoutException 
 	 */
 	public JSONArray getPublicTimeline() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		return new JSONArray(getRequest(PUBLIC_TIMELINE_URL));
+		return new JSONArray(getRequest(STATUSES_PUBLIC_TIMELINE_URL));
 	}
 
 	/**
@@ -160,7 +161,7 @@ public class Connection {
 	 * @throws SocketTimeoutException 
 	 */
 	public JSONArray getFriendsTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		String url = FRIENDS_TIMELINE_URL;
+		String url = STATUSES_FRIENDS_TIMELINE_URL;
 		url += "?count=" + mLimit;
 		if (mSinceId > 0) {
 			url += "&since_id=" + mSinceId;
@@ -196,7 +197,7 @@ public class Connection {
 	 * @throws SocketTimeoutException 
 	 */
 	public JSONArray getMentionsTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		String url = MENTIONS_TIMELINE_URL;
+		String url = STATUSES_MENTIONS_TIMELINE_URL;
 		url += "?count=" + mLimit;
 		if (mSinceId > 0) {
 			url += "&since_id=" + mSinceId;
@@ -219,21 +220,17 @@ public class Connection {
 		return jArr;
 	}
 
-
 	/**
-	 * Get the user's most recent friends from the Twitter REST API.
+	 * Get the user's followers from the Twitter REST API.
 	 * 
-	 * Returns up to 100 of the authenticating user's friends who have most
-	 * recently updated, each with current status in-line.
-	 * 
-	 * @return
-	 * @throws ConnectionException 
-	 * @throws ConnectionAuthenticationException 
-	 * @throws ConnectionUnavailableException 
-	 * @throws SocketTimeoutException 
+	 * @return JSONArray
+	 * @throws ConnectionException
+	 * @throws ConnectionAuthenticationException
+	 * @throws ConnectionUnavailableException
+	 * @throws SocketTimeoutException
 	 */
-	public JSONArray getFriends() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		String url = FRIENDS_URL;
+	public JSONArray getFollowers() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+		String url = STATUSES_FOLLOWERS_URL;
 		JSONArray jArr = null;
 		String request = getRequest(url);
 		try {
@@ -337,9 +334,8 @@ public class Connection {
 	 * @throws ConnectionUnavailableException 
 	 * @throws SocketTimeoutException 
 	 */
-	public JSONObject updateStatus(String message, long inReplyToId)
-			throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		String url = UPDATE_STATUS_URL;
+	public JSONObject updateStatus(String message, long inReplyToId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+		String url = STATUSES_UPDATE_URL;
 		List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
 		formParams.add(new BasicNameValuePair("source", SOURCE_PARAMETER));
@@ -349,6 +345,91 @@ public class Connection {
 		JSONObject jObj = null;
 		try {
 			jObj = new JSONObject(postRequest(url, new UrlEncodedFormEntity(formParams, HTTP.UTF_8)));
+			String error = jObj.optString("error");
+			if ("Could not authenticate you.".equals(error)) {
+				throw new ConnectionAuthenticationException(error);
+			}
+		} catch (JSONException e) {
+			throw new ConnectionException(e);
+		}
+		return jObj;
+	}
+
+	/**
+	 * Destroys the status specified by the required ID parameter.
+	 * The authenticating user must be the author of the specified status.
+	 * 
+	 * @param statusId
+	 * @return JSONObject
+	 * @throws UnsupportedEncodingException
+	 * @throws ConnectionException
+	 * @throws ConnectionAuthenticationException
+	 * @throws ConnectionUnavailableException
+	 * @throws SocketTimeoutException
+	 */
+	public JSONObject destroyStatus(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+		StringBuilder url = new StringBuilder(STATUSES_DESTROY_URL);
+		url.append(String.valueOf(statusId));
+		url.append(EXTENSION);
+		JSONObject jObj = null;
+		try {
+			jObj = new JSONObject(postRequest(url.toString()));
+			String error = jObj.optString("error");
+			if ("Could not authenticate you.".equals(error)) {
+				throw new ConnectionAuthenticationException(error);
+			}
+		} catch (JSONException e) {
+			throw new ConnectionException(e);
+		}
+		return jObj;
+	}
+
+	/**
+	 * Favorites the status specified in the ID parameter as the authenticating user.
+	 * Returns the favorite status when successful.
+	 * 
+	 * @param statusId
+	 * @return JSONObject
+	 * @throws UnsupportedEncodingException
+	 * @throws ConnectionException
+	 * @throws ConnectionAuthenticationException
+	 * @throws ConnectionUnavailableException
+	 * @throws SocketTimeoutException
+	 */
+	public JSONObject createFavorite(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+		StringBuilder url = new StringBuilder(FAVORITES_CREATE_URL);
+		url.append(String.valueOf(statusId));
+		url.append(EXTENSION);
+		JSONObject jObj = null;
+		try {
+			jObj = new JSONObject(postRequest(url.toString()));
+			String error = jObj.optString("error");
+			if ("Could not authenticate you.".equals(error)) {
+				throw new ConnectionAuthenticationException(error);
+			}
+		} catch (JSONException e) {
+			throw new ConnectionException(e);
+		}
+		return jObj;
+	}
+
+	/**
+	 * 
+	 * @param statusId
+	 * @return JSONObject
+	 * @throws UnsupportedEncodingException
+	 * @throws ConnectionException
+	 * @throws ConnectionAuthenticationException
+	 * @throws ConnectionUnavailableException
+	 * @throws SocketTimeoutException
+	 */
+	public JSONObject destroyFavorite(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+		StringBuilder url = new StringBuilder(FAVORITES_DESTROY_URL);
+		url.append(String.valueOf(statusId));
+		url.append(EXTENSION);
+		JSONObject jObj = null;
+		try {
+			jObj = new JSONObject(postRequest(url.toString()));
 			String error = jObj.optString("error");
 			if ("Could not authenticate you.".equals(error)) {
 				throw new ConnectionAuthenticationException(error);
@@ -374,7 +455,7 @@ public class Connection {
 	 * @throws SocketTimeoutException 
 	 */
 	public JSONObject verifyCredentials() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		return new JSONObject(getRequest(VERIFY_CREDENTIALS_URL, new DefaultHttpClient(new BasicHttpParams())));
+		return new JSONObject(getRequest(ACCOUNT_VERIFY_CREDENTIALS_URL, new DefaultHttpClient(new BasicHttpParams())));
 	}
 
 	/**
@@ -395,7 +476,7 @@ public class Connection {
 	 * @throws SocketTimeoutException 
 	 */
 	public JSONObject rateLimitStatus() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		return new JSONObject(getRequest(RATE_LIMIT_STATUS_URL, new DefaultHttpClient(new BasicHttpParams())));
+		return new JSONObject(getRequest(ACCOUNT_RATE_LIMIT_STATUS_URL, new DefaultHttpClient(new BasicHttpParams())));
 	}
 
 	/**
@@ -485,8 +566,7 @@ public class Connection {
 	 * @throws ConnectionUnavailableException 
 	 * @throws ConnectionAuthenticationException 
 	 */
-	protected String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams)
-			throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	protected String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		String result = null;
 		int statusCode = 0;
 		HttpPost postMethod = new HttpPost(url);
@@ -548,6 +628,15 @@ public class Connection {
 		return new String(Base64.encodeBytes((mUsername + ":" + mPassword).getBytes()));
 	}
 
+	/**
+	 * Parse the status code and throw appropriate exceptions when necessary.
+	 * 
+	 * @param code
+	 * @param path
+	 * @throws ConnectionException
+	 * @throws ConnectionAuthenticationException
+	 * @throws ConnectionUnavailableException
+	 */
 	protected void parseStatusCode(int code, String path) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		switch (code) {
 		case 200:
@@ -566,6 +655,12 @@ public class Connection {
 		}
 	}
 
+	/**
+	 * Format a Date in the twitter date format.
+	 * 
+	 * @param time
+	 * @return
+	 */
 	protected String getTwitterDate(long time) {
 		synchronized (mDateFormat) {
 			return mDateFormat.format(new Date(time));

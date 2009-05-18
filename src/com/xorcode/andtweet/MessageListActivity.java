@@ -248,9 +248,9 @@ public class MessageListActivity extends TimelineActivity {
 	}
 
 	private void createAdapters() {
-		int listItemId = R.layout.tweetlist_item;
+		int listItemId = R.layout.messagelist_item;
 		if (mSP.getBoolean("appearance_use_avatars", false)) {
-			listItemId = R.layout.tweetlist_item_avatar;
+			listItemId = R.layout.messagelist_item_avatar;
 		}
 		PagedCursorAdapter directMessagesAdapter = new PagedCursorAdapter(
 			MessageListActivity.this,
@@ -289,6 +289,9 @@ public class MessageListActivity extends TimelineActivity {
 	 */
 	@Override
 	public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+		if (id <= 0) {
+			return;
+		}
 		Uri uri = ContentUris.withAppendedId(AndTweetDatabase.DirectMessages.CONTENT_URI, id);
 		String action = getIntent().getAction();
 		if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
@@ -310,7 +313,7 @@ public class MessageListActivity extends TimelineActivity {
 		}
 		switch (scrollState) {
 		case SCROLL_STATE_IDLE:
-			if (view.getLastVisiblePosition() >= mTotalItemCount - 1) {
+			if (view.getLastVisiblePosition() >= mTotalItemCount - 1 && mTotalItemCount > 0) {
 				if (getListView().getFooterViewsCount() == 1 && !mIsLoading) {
 					mIsLoading = true;
 					setProgressBarIndeterminateVisibility(true);

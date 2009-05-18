@@ -17,6 +17,7 @@
 <resources>
 	<style name="Theme">
         <item name="textEditColor">?android:textColorPrimary</item>
+        <item name="windowBackgroundColor">@android:color/background_dark</item>
 	</style>
 
 	<style name="Theme.Light">
@@ -39,6 +40,7 @@
         <item name="android:listViewStyle">@android:style/Widget.ListView.White</item>
         <item name="android:listDivider">@android:drawable/divider_horizontal_bright</item>
         <item name="textEditColor">?android:textColorPrimary</item>
+        <item name="windowBackgroundColor">@android:color/background_light</item>
 	</style>
 
 	<style name="Theme.AndTweet">
@@ -71,6 +73,7 @@
 
 		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="tweetSentDateColor">?android:attr/textColorTertiary</item>
+        <item name="android:background">@android:color/background_light</item>
 	</style>
 
 	<style name="Theme.AndTweet.Large">

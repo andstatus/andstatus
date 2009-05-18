@@ -23,7 +23,10 @@
 		android:gravity="center" android:orientation="vertical"
 		android:id="@+id/splash_container">
 		<ViewFlipper android:id="@+id/splash_more_flipper"
-			android:layout_width="fill_parent" android:layout_height="fill_parent" android:outAnimation="@anim/push_left_out" android:inAnimation="@anim/push_left_in">
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:outAnimation="@com.xorcode.andtweet:anim/push_left_out"
+			android:inAnimation="@com.xorcode.andtweet:anim/push_left_in">
 			<TextView android:layout_height="fill_parent"
 				android:layout_width="fill_parent" android:padding="16dip"
 				android:id="@+id/splash_more_text_content_1" android:textSize="8pt"

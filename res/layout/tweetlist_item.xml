@@ -18,11 +18,24 @@
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent" android:paddingLeft="6dip" 
 	android:paddingRight="6dip" android:paddingBottom="2dip" android:paddingTop="2dip">
-	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_screen_name"
-		android:layout_width="fill_parent"
-		android:textStyle="?com.xorcode.andtweet:attr/tweetUsernameStyle"
-		android:textColor="?com.xorcode.andtweet:attr/tweetUsernameColor"
-		android:textAppearance="?com.xorcode.andtweet:attr/tweetUsernameAppearance" />
+
+	<LinearLayout android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal"
+			android:layout_weight="1">
+		<TextView android:id="@+id/tweet_screen_name"
+			android:layout_weight="1"
+			android:textStyle="?com.xorcode.andtweet:attr/tweetUsernameStyle"
+			android:textAppearance="?com.xorcode.andtweet:attr/tweetUsernameAppearance"
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content" />
+		<ImageView android:id="@+id/tweet_favorite"
+			android:src="@android:drawable/star_off"
+			android:paddingTop="1dip"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" />
+	</LinearLayout>
+
 	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_message"
 		android:layout_width="fill_parent"
 		android:textStyle="?com.xorcode.andtweet:attr/tweetMessageStyle"
@@ -33,4 +46,5 @@
 		android:textStyle="?com.xorcode.andtweet:attr/tweetSentDateStyle"
 		android:textColor="?com.xorcode.andtweet:attr/tweetSentDateColor"
 		android:textAppearance="?com.xorcode.andtweet:attr/tweetSentDateAppearance" />
+
 </LinearLayout>

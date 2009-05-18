@@ -16,6 +16,7 @@
  -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
+	android:background="?com.xorcode.andtweet:attr/windowBackgroundColor"
 	android:layout_height="fill_parent">
 	<ListView android:id="@+android:id/list"
 		android:scrollbars="vertical" android:layout_width="fill_parent"
@@ -34,15 +35,14 @@
 		android:layout_width="fill_parent" android:id="@+id/tweetlist_editor">
 		<LinearLayout android:layout_height="wrap_content"
 			android:layout_width="fill_parent" android:layout_weight="1">
-			<MultiAutoCompleteTextView android:id="@+id/messageEditTextAC"
-				android:capitalize="sentences" android:bufferType="editable"
-				android:autoText="true" android:layout_width="fill_parent"
-				android:gravity="top" android:layout_height="wrap_content"
-				android:hint="@string/message_edit_hint"
-				android:textColor="?com.xorcode.andtweet:attr/textEditColor"
-				android:completionThreshold="2" android:longClickable="true"
-				android:linksClickable="false" android:maxLines="4"
-				android:editable="true" android:enabled="true" />
+			<EditText android:id="@+id/edtTweetInput"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine|textImeMultiLine"
+				android:imeOptions="actionSend|flagNoEnterAction"
+				android:maxLines="4"
+				android:maxLength="160"
+				android:hint="@string/message_edit_hint" />
 		</LinearLayout>
 
 		<Button android:layout_width="wrap_content" android:text="@string/button_send"

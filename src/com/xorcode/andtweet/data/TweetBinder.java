@@ -20,6 +20,7 @@ import java.util.Locale;
 
 import android.database.Cursor;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
@@ -35,10 +36,11 @@ public class TweetBinder implements ViewBinder {
 	 * @see android.widget.SimpleCursorAdapter.ViewBinder#setViewValue(android.view.View, android.database.Cursor, int)
 	 */
 	public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+		int colIndex = -1;
 		switch (view.getId()) {
 		case R.id.tweet_sent:
 			String time = RelativeTime.getDifference(cursor.getLong(columnIndex));
-			int colIndex = cursor.getColumnIndex(Tweets.IN_REPLY_TO_AUTHOR_ID);
+			colIndex = cursor.getColumnIndex(Tweets.IN_REPLY_TO_AUTHOR_ID);
 			if (colIndex > -1) {
 				String inReplyTo = cursor.getString(colIndex);
 				if (inReplyTo != null && "null".equals(inReplyTo) == false) {
@@ -48,6 +50,16 @@ public class TweetBinder implements ViewBinder {
 			((TextView)view).setText(time);
 			return true;
 		case R.id.tweet_avatar_image:
+			return true;
+		case R.id.tweet_favorite:
+			colIndex = cursor.getColumnIndex(Tweets.FAVORITED);
+			if (colIndex > -1) {
+				if (cursor.getInt(colIndex) == 1) {
+					((ImageView)view).setImageResource(android.R.drawable.star_on);
+				} else {
+					((ImageView)view).setImageResource(android.R.drawable.star_off);
+				}
+			}
 			return true;
 		}
 		return false;
