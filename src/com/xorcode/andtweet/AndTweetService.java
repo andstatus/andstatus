@@ -32,6 +32,7 @@ import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteConstraintException;
@@ -41,6 +42,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.PowerManager;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
@@ -94,11 +96,18 @@ public class AndTweetService extends Service {
 	private boolean mNotificationsVibrate;
 
 	private NotificationManager mNM;
+	private PowerManager.WakeLock mWL;
+
 
 	@Override
 	public void onCreate() {
 		// Set up the notification manager.
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		// Set up the power manager.
+		Log.d(TAG, "Acquiring wake lock.");
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		mWL = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+		mWL.acquire();
 		// Start the time line updater.
 		mHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIMELINE, mFrequency * MILLISECONDS);
 		mHandler.sendEmptyMessageDelayed(MSG_UPDATE_DIRECT_MESSAGES, mFrequency * MILLISECONDS);
@@ -117,6 +126,12 @@ public class AndTweetService extends Service {
 		mHandler.removeMessages(MSG_UPDATE_TIMELINE);
 		mHandler.removeMessages(MSG_UPDATE_DIRECT_MESSAGES);
 		mHandler.removeMessages(MSG_UPDATE_FOLLOWERS);
+
+		// Remove the wake lock.
+		if (mWL != null) {
+			Log.d(TAG, "Releasing wake lock.");
+			mWL.release();
+		}
 	}
 
 	@Override
