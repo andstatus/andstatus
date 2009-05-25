@@ -67,14 +67,14 @@ public class Connection {
 	private static final String DIRECT_MESSAGES_SENT_URL = BASE_URL + "/direct_messages/sent" + EXTENSION;
 	private static final String ACCOUNT_VERIFY_CREDENTIALS_URL = BASE_URL + "/account/verify_credentials" + EXTENSION;
 	private static final String ACCOUNT_RATE_LIMIT_STATUS_URL = BASE_URL + "/account/rate_limit_status" + EXTENSION;
-	private static final String FAVORITES_CREATE_URL = BASE_URL + "/favorites/create/";
-	private static final String FAVORITES_DESTROY_URL = BASE_URL + "/favorites/destroy/";
+	private static final String FAVORITES_CREATE_BASE_URL = BASE_URL + "/favorites/create/";
+	private static final String FAVORITES_DESTROY_BASE_URL = BASE_URL + "/favorites/destroy/";
 	private static final String USER_AGENT = "AndTweet/1.0";
 	private static final String SOURCE_PARAMETER = "andtweet";
 	private static final String TAG = "AndTweetConnection";
 
-	private static final Integer DEFAULT_GET_REQUEST_TIMEOUT = 10000;
-	private static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 15000;
+	private static final Integer DEFAULT_GET_REQUEST_TIMEOUT = 15000;
+	private static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 20000;
 
 	private String mUsername;
 	private String mPassword;
@@ -397,7 +397,7 @@ public class Connection {
 	 * @throws SocketTimeoutException
 	 */
 	public JSONObject createFavorite(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		StringBuilder url = new StringBuilder(FAVORITES_CREATE_URL);
+		StringBuilder url = new StringBuilder(FAVORITES_CREATE_BASE_URL);
 		url.append(String.valueOf(statusId));
 		url.append(EXTENSION);
 		JSONObject jObj = null;
@@ -424,7 +424,7 @@ public class Connection {
 	 * @throws SocketTimeoutException
 	 */
 	public JSONObject destroyFavorite(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		StringBuilder url = new StringBuilder(FAVORITES_DESTROY_URL);
+		StringBuilder url = new StringBuilder(FAVORITES_DESTROY_BASE_URL);
 		url.append(String.valueOf(statusId));
 		url.append(EXTENSION);
 		JSONObject jObj = null;

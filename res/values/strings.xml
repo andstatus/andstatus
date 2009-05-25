@@ -95,6 +95,17 @@
 	<string name="options_menu_reload">Reload</string>
 	<string name="options_menu_mentions">Mentions</string>
 	<string name="options_menu_search">Search</string>
+	<string name="reltime_just_now">just now</string>
+	<string name="reltime_seconds_ago">%1$s seconds ago</string>
+	<string name="reltime_a_minute_ago">a minute ago</string>
+	<string name="reltime_minutes_ago">%1$s minutes ago</string>
+	<string name="reltime_an_hour_ago">an hour ago</string>
+	<string name="reltime_two_hours_ago">two hours ago</string>
+	<string name="reltime_hours_ago">%1$s hours ago</string>
+	<string name="reltime_yesterday">yesterday</string>
+	<string name="reltime_days_ago">%1$s days ago</string>
+	<string name="reltime_one_month_ago">one month ago</string>
+	<string name="reltime_months_ago">{0} months ago</string>
 	<string name="resolve_view">View Tweet</string>
 	<string name="splash_button_learn_more">Learn More</string>
 	<string name="splash_button_get_started">Get Started</string>

@@ -107,7 +107,7 @@ public class TweetActivity extends Activity {
 			String sentDate = String.format(
 				Locale.getDefault(), 
 				getText(R.string.tweet_source_from).toString(), 
-				RelativeTime.getDifference(aSentDate), 
+				RelativeTime.getDifference(this, aSentDate), 
 				Html.fromHtml(mCursor.getString(mCursor.getColumnIndex(Tweets.SOURCE))),
 				inReplyTo
 			);

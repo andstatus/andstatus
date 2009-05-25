@@ -39,7 +39,7 @@ public class TweetBinder implements ViewBinder {
 		int colIndex = -1;
 		switch (view.getId()) {
 		case R.id.tweet_sent:
-			String time = RelativeTime.getDifference(cursor.getLong(columnIndex));
+			String time = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
 			colIndex = cursor.getColumnIndex(Tweets.IN_REPLY_TO_AUTHOR_ID);
 			if (colIndex > -1) {
 				String inReplyTo = cursor.getString(colIndex);

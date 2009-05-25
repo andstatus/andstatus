@@ -21,6 +21,10 @@ import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.xorcode.andtweet.R;
+
+import android.content.Context;
+
 /**
  * 
  * @author torgny.bjers
@@ -34,13 +38,15 @@ public class RelativeTime {
 	private static final int MONTH = 30 * DAY;
 
 	private Calendar mCalendar;
+	private Context mContext;
 	
 	/**
 	 * 
 	 * @param cal
 	 */
-	public RelativeTime(Calendar cal) {
+	public RelativeTime(Calendar cal, Context context) {
 		mCalendar = cal;
+		mContext = context;
 	}
 
 	/**
@@ -61,37 +67,38 @@ public class RelativeTime {
 		mCalendar.setTimeInMillis(milliseconds);
 	}
 
-	public static String getDifference(long from) {
+	/**
+	 * 
+	 * @param from
+	 * @return String
+	 */
+	public static String getDifference(Context context, long from) {
 		String value = new String();
 		long to = System.currentTimeMillis();
 		long delta = (to - from) / 1000;
 		if (delta < 0) {
-			value = "just now";
+			value = context.getString(R.string.reltime_just_now);
 		} else if (delta < 1 * MINUTE) {
-			MessageFormat mf = new MessageFormat("{0} seconds ago");
-			value = mf.format(new Object[] { delta });
+			value = context.getString(R.string.reltime_seconds_ago, new Object[] { delta });
 		} else if (delta < 2 * MINUTE) {
-			value = "a minute ago";
+			value = context.getString(R.string.reltime_a_minute_ago);
 		} else if (delta < 59 * MINUTE) {
-			MessageFormat mf = new MessageFormat("{0} minutes ago");
-			value = mf.format(new Object[] { delta / MINUTE });
+			value = context.getString(R.string.reltime_minutes_ago, new Object[] { delta / MINUTE });
 		} else if (delta < 90 * MINUTE) {
-			value = "an hour ago";
+			value = context.getString(R.string.reltime_an_hour_ago);
 		} else if (delta < 150 * MINUTE) {
-			value = "two hours ago";
+			value = context.getString(R.string.reltime_two_hours_ago);
 		} else if (delta < 24 * HOUR) {
-			MessageFormat mf = new MessageFormat("{0} hours ago");
-			value = mf.format(new Object[] { delta / HOUR });
+			value = context.getString(R.string.reltime_hours_ago, new Object[] { delta / HOUR });
 		} else if (delta < 48 * HOUR) {
-			value = "yesterday";
+			value = context.getString(R.string.reltime_yesterday);
 		} else if (delta < 30 * DAY) {
-			MessageFormat mf = new MessageFormat("{0} days ago");
-			value = mf.format(new Object[] { delta / DAY });
+			value = context.getString(R.string.reltime_days_ago, new Object[] { delta / DAY });
 		} else if (delta < 12 * MONTH) {
 			MessageFormat form = new MessageFormat("{0}");
 			Object[] formArgs = new Object[] { delta / MONTH };
 			double[] tweetLimits = {1,2};
-			String[] tweetPart = { "one month ago", "{0} months ago" };
+			String[] tweetPart = { context.getString(R.string.reltime_one_month_ago), context.getString(R.string.reltime_months_ago) };
 			ChoiceFormat tweetForm = new ChoiceFormat(tweetLimits, tweetPart);
 			form.setFormatByArgumentIndex(0, tweetForm);
 			value = form.format(formArgs);
@@ -105,6 +112,6 @@ public class RelativeTime {
 	 * @return String
 	 */
 	public String toString() {
-		return getDifference(mCalendar.getTimeInMillis());
+		return getDifference(mContext, mCalendar.getTimeInMillis());
 	}
 }
