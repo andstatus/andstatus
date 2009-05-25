@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+	Copyright (C) 2008 Torgny Bjers
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	     http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+ -->
+ 
+ <!--
+ 	German translation by Benjamin Schirmer (codename.matrix@gmail.com) 
+ -->
+<resources>
+	<string name="app_name">AndTweet</string>
+	<string name="activity_title_direct_messages">Nachrichten</string>
+	<string name="activity_title_format">%1$s: %2$s</string>
+	<string name="activity_title_mentions">Erwähnungen</string>
+	<string name="activity_title_search">Suche</string>
+	<string name="activity_title_timeline">Freunde</string>
+	<string name="authentication_successful">Anmeldung erfolgreich!</string>
+	<string name="button_send">Senden</string>
+	<string name="cannot_send_empty_message">Kann keine leere Nachricht senden.</string>
+	<string name="category_title_preference_appearance">Design</string>
+	<string name="category_title_preference_automatic_updates">Aktualisierungen</string>
+	<string name="category_title_preference_credentials">Anmeldedaten</string>
+	<string name="category_title_preference_notifications">Benachrichtigungen</string>
+	<string name="category_title_preference_settings">Einstellungen</string>
+	<string name="category_title_preference_updates">Aktualisierungen</string>
+	<string name="dialog_summary_authentication_failed">Bitte überprüfe Benutzername und Passwort.</string>
+	<string name="dialog_summary_checking_credentials">Bitte warten, während die Zugangsdaten überprüft werden.</string>
+	<string name="dialog_summary_connection_timeout">Zeitüberschreitung der Verbindung. Bitte versuche es später noch einmal.</string>
+	<string name="dialog_summary_executing_command">Bitte warten, während der Befehl auf dem Server ausgeführt wird.</string>
+	<string name="dialog_summary_external_storage">Externer Speicher entdeckt. Soll AndTweet seine Daten dort speichern? Alte Daten können nicht verschoben werden, aber bleiben im internen Speicher vorhanden.</string>
+	<string name="dialog_summary_external_storage_missing">Externer Speicher nicht verfügbar oder eingebunden. Willst du den internen Speicher verwenden? Alle Daten auf dem externen Speicher sind bleiben verfügbar.</string>
+	<string name="dialog_summary_sending_message">Bitte warten, während die Nachricht gesendet wird.</string>
+	<string name="dialog_summary_service_unavailable">Twitter ist derzeit überlastet. Bitte versuche es später noch einmal.</string>
+	<string name="dialog_summary_timeline_loading">Bitte warten, während die Chronik aktualisiert wird. Dies kann, je nach Verbindung, einige Minuten dauern.</string>
+	<string name="dialog_title_authentication_failed">Anmeldung fehlgeschlagen</string>
+	<string name="dialog_title_checking_credentials">Bestätige...</string>
+	<string name="dialog_title_connection_timeout">Zeitüberschreitung der Verbindung</string>
+	<string name="dialog_title_executing_command">Führe Befehl aus...</string>
+	<string name="dialog_title_external_storage">Externer Speicher verfügbar</string>
+	<string name="dialog_title_external_storage_missing">Externer Speicher fehlt</string>
+	<string name="dialog_title_preference_frequency">Aktualisierungsfrequenz</string>
+	<string name="dialog_title_preference_password">Passwort</string>
+	<string name="dialog_title_preference_theme">Design wählen</string>
+	<string name="dialog_title_preference_username">Benutzername</string>
+	<string name="dialog_title_sending_message">Nachricht senden...</string>
+	<string name="dialog_title_service_unavailable">Dienst nicht verfügbar</string>
+	<string name="dialog_title_timeline_loading">Aktualisiere Chronik...</string>
+	<string name="error_twitter_404">Die Seite wurde nicht gefunden. Bitte melde diesen Fehler!</string>
+	<string name="error_connection_error">Ein Verbindungsfehler ist aufgetreten. Bitte melde diesen Fehler!</string>
+	<string name="favorite_created">Favorit erstellt.</string>
+	<string name="favorite_destroyed">Favorit entfernt.</string>
+	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
+	<string name="loading">Lade...</string>
+	<string name="message_edit_hint">Gib deinen tweet hier ein!</string>
+	<string name="message_characters_left">Verbleibende Zeichen:</string>
+	<string name="menu_item_block">blockieren</string>
+	<string name="menu_item_destroy_favorite">Favorit entfernen</string>
+	<string name="menu_item_destroy_status">Tweet entfernen</string>
+	<string name="menu_item_direct_message">Direktnachrichten</string>
+	<string name="menu_item_favorite">Als Favorit</string>
+	<string name="menu_item_follow">Follow</string>
+	<string name="menu_item_reply">Antworten</string>
+	<string name="menu_item_retweet">Retweet</string>
+	<string name="menu_item_unfollow">UnFollow</string>
+	<string name="menu_item_view_profile">Profil anschauen</string>
+	<string name="message_sent">Deine Nachricht wurde gesendet.</string>
+	<string name="messages_activity">Direct Message</string>
+	<string name="notification_title">AndTweet</string>
+	<string name="notification_tweet_singular">{0} neuen tweet</string>
+	<string name="notification_tweet_plural">{0,number} neue tweets</string>
+	<string name="notification_new_tweet_format">Du hast {0}.</string>
+	<string name="notification_message_singular">{0} neue Message</string>
+	<string name="notification_message_plural">{0,number} neue Messages</string>
+	<string name="notification_new_message_format">Du hast {0}.</string>
+	<string name="notification_title_messages">Neue Direct Messages</string>
+	<string name="notification_mention_singular">{0} neue Erwähnung</string>
+	<string name="notification_mention_plural">{0,number} neue Erwähnungen</string>
+	<string name="notification_new_mention_format">Du hast {0}.</string>
+	<string name="notification_title_mentions">Neue Erwähnungen</string>
+	<string name="options_menu_about">Über AndTweet</string>
+	<string name="options_menu_about_cond">Über</string>
+	<string name="options_menu_direct_messages">Direct Messages</string>
+	<string name="options_menu_direct_messages_cond">Nachrichten</string>
+	<string name="options_menu_friends_timeline">Chronik der Freunde</string>
+	<string name="options_menu_friends_timeline_cond">Freunde</string>
+	<string name="options_menu_help">Hilfe</string>
+	<string name="options_menu_preferences">Einstellungen</string>
+	<string name="options_menu_reload">Aktualisieren</string>
+	<string name="options_menu_mentions">Erwähnungen</string>
+	<string name="options_menu_search">Suche</string>
+	<string name="reltime_just_now">gerade eben</string>
+	<string name="reltime_seconds_ago">vor %1$s Sekunden</string>
+	<string name="reltime_a_minute_ago">vor einer Minute</string>
+	<string name="reltime_minutes_ago">vor %1$s Minuten</string>
+	<string name="reltime_an_hour_ago">vor einer Stunde</string>
+	<string name="reltime_two_hours_ago">vor zwei Stunden</string>
+	<string name="reltime_hours_ago">vor %1$s Stunden</string>
+	<string name="reltime_yesterday">Gestern</string>
+	<string name="reltime_days_ago">vor %1$s Tagen</string>
+	<string name="reltime_one_month_ago">vor einem Monat</string>
+	<string name="reltime_months_ago">vor {0} Monaten</string>
+	<string name="resolve_view">Zeige Tweet</string>
+	<string name="splash_button_learn_more">Mehr Informationen</string>
+	<string name="splash_button_get_started">Los gehts</string>
+	<string name="splash_payoff_line">schlanker Twitter Client für Android™</string>
+	<string name="splash_text_learn_more_1"><h1><b>1. ANDTWEET EINFÜHRUNG</b></h1>\n\nDie erste Ansicht von AndTweet zeigt die Chronik deiner Freunde.\n\nUm eine Aktion zu einem bestimmten Tweet in der Liste durchzuführen, kannst du ihn <b>lange halten</b> um zu einem Menü zu gelangen.\n\n<b>Klicke</b> auf einen Tweet für mehr Informationen zu erhalten.\n\nDrücke den <b>Menü</b> Knopf um zu anderen Ansichten zu wechseln.</string>
+	<string name="splash_text_learn_more_2"><h1><b>2. EMPFANGEN UND ANTWORTEN</b></h1>\n\nUm deinen Status zu aktualisieren, gib ihn einfach in das Textfeld ein und drücke <b>Senden</b>.\n\nUm zu antworten, <b>halte</b> einen Tweet, wähle <b>Antworten</b> und gib deine Antwort unten ein.\n\nUm eine Antwort abzubrechen, lösche den gesamten Text aus dem Textfeld.</string>
+	<string name="splash_text_learn_more_3"><h1><b>3. DIREKTNACHRICHTEN</b></h1>\n\nDrücke <b>Menü</b> und dann <b>Nachrichten</b>.\n\nUm Direktnachrichten zu <b>löschen</b>, <b>halte</b> sie und wähle <b>Löschen</b>.\n\nNeue Nachrichten werden geladen, wenn du <b>automatische Aktualisierungen</b> aktiviert hast.</string>
+	<string name="splash_text_learn_more_4"><h1><b>4. ERWÄHUNGEN AUFLISTEN</b></h1>\n\nDrücke <b>Menü</b> und dann <b>Erwähnungen</b>.\n\nErwähungen listen jeden Tweet auf, der deinen <b>@Benutzername</b> enthält.</string>
+	<string name="splash_text_learn_more_5"><h1><b>5. SUCHEN</b></h1>\n\nDrücke <b>Menü</b> und dann <b>Suchen</b>, oder drücke den <b>Suchen</b> Knopf auf deinem Telefon.\n\nEine Suche findet jeden Text in einem Tweet. Wenn du Tweets von einem bestimmten Benutzer anzeigen willst, suche nach "<b>Benutzername</b>".\n\nUm Erwähungen von einem bestimmten Benutzer anzuzeigen, suche nach "<b>@Benutzername</b>"</string>
+	<string name="search_timeline_label">Suche Tweets, Benutzer und Tags</string>
+	<string name="search_timeline_hint">Name/Wort eingeben</string>
+	<string name="search_direct_messages_label">Direktnachrichten durchsuchen</string>
+	<string name="search_direct_messages_hint">Name oder Wort suchen</string>
+	<string name="status_destroyed">Der Tweet wurde entfernt.</string>
+	<string name="summary_preference_appearance">Ändere das Aussehen von AndTweet</string>
+	<string name="summary_preference_automatic_updates">Einstellungen zur automatischen Aktualisierung ändern</string>
+	<string name="summary_preference_automatic_updates_off">automatische Aktualisierung ist deaktiviert</string>
+	<string name="summary_preference_automatic_updates_on">automatische Aktualisierung ist aktiviert</string>
+	<string name="summary_preference_frequency">Aktualisierungen werden {0} abgerufen.</string>
+	<string name="summary_preference_light_theme_off">Standard Design wird benutzt.</string>
+	<string name="summary_preference_light_theme_on">Das helle Design wird benutzt.</string>
+	<string name="summary_preference_no_ringtone">Stumm</string>
+	<string name="summary_preference_notifications">Benachrichtigungsoptionen</string>
+	<string name="summary_preference_notifications_enabled">Sollen Benachrichtigungen aktiviert werden?</string>
+	<string name="summary_preference_notifications_enabled_off">Benachrichtigungen sind deaktiviert</string>
+	<string name="summary_preference_notifications_enabled_on">Benachrichtigungen sind aktiviert</string>
+	<string name="summary_preference_notifications_messages">Bei neuen Direktnachrichten benachrichtigen?</string>
+	<string name="summary_preference_notifications_messages_off">Keine Benachrichtigungen für Direktnachrichten</string>
+	<string name="summary_preference_notifications_messages_on">Benachrichtigungen für Direktnachrichten</string>
+	<string name="summary_preference_notifications_mentions">Benachrichtigung bei Erwähungen?</string>
+	<string name="summary_preference_notifications_mentions_off">Keine Benachrichtigung bei Erwähnungen</string>
+	<string name="summary_preference_notifications_mentions_on">Du wirst bei Erwähungen benachrichtigt</string>
+	<string name="summary_preference_notifications_timeline">Bei neuen Tweets benachrichtigen?</string>
+	<string name="summary_preference_notifications_timeline_off">Keine Benachrichtigungen bei Tweets</string>
+	<string name="summary_preference_notifications_timeline_on">Du wirst bei neuen Tweets benachrichtigt</string>
+	<string name="summary_preference_password">Dein Twitter Passwort</string>
+	<string name="summary_preference_storage">Speicherort für Daten und Bilder</string>
+	<string name="summary_preference_storage_external_off">Internen Speicher verwenden</string>
+	<string name="summary_preference_storage_external_on">Externen Speicher verwenden</string>
+	<string name="summary_preference_theme">AndTweet Design wählen</string>
+	<string name="summary_preference_use_avatars_off">Benutzeravatare werden nicht angezeigt</string>
+	<string name="summary_preference_use_avatars_on">Benutzeravatare werden angezeigt</string>
+	<string name="summary_preference_username">Dein Twitter Benutzername</string>
+	<string name="summary_preference_vibration">Bei neuen Nachrichten vibrieren</string>
+	<string name="summary_preference_vibration_off">Vibration ist ausgeschaltet</string>
+	<string name="summary_preference_vibration_on">Vibration bei neuen Nachrichten</string>
+	<string name="timeline_reloaded">Chronik wurde aktualisiert.</string>
+	<string name="title_preference_appearance">Design</string>
+	<string name="title_preference_automatic_updates">autom. Aktualisierungen</string>
+	<string name="title_preference_frequency">Aktualisierungsfrequenz</string>
+	<string name="title_preference_light_theme">Helles Design</string>
+	<string name="title_preference_notification_sound">Benachrichtigung mit Ton</string>
+	<string name="title_preference_notifications">Benachrichtigungen</string>
+	<string name="title_preference_notifications_enabled">Benachrichtigungen aktivieren</string>
+	<string name="title_preference_notifications_messages">Benachrichtigungen bei neuen Direktnachrichten</string>
+	<string name="title_preference_notifications_mentions">Benachrichtigungen neuen Erwähungen</string>
+	<string name="title_preference_notifications_timeline">Benachrichtigungen bei neuen Tweets</string>
+	<string name="title_preference_password">Passwort</string>
+	<string name="title_preference_storage">Speicher</string>
+	<string name="title_preference_storage_external">Externen Speicher verwenden</string>
+	<string name="title_preference_theme">Design</string>
+	<string name="title_preference_username">Benutzername</string>
+	<string name="title_preference_use_avatars">Avatare anzeigen</string>
+	<string name="title_preference_vibration">Vibration</string>
+	<string name="tweet_activity">Tweet</string>
+	<string name="tweet_source_from">%1$s von %2$s %3$s</string>
+	<string name="tweet_source_in_reply_to">als Antwort auf %1$s</string>
+	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
+	<string name="unimplemented">Nicht Implementiert.</string>
+</resources>
