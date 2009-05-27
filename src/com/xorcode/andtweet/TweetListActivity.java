@@ -661,7 +661,11 @@ public class TweetListActivity extends TimelineActivity {
 				if (mIsLoading) {
 					showDialog(DIALOG_TIMELINE_LOADING);
 				} else {
-					dismissDialog(DIALOG_TIMELINE_LOADING);
+					try {
+						dismissDialog(DIALOG_TIMELINE_LOADING);
+					} catch (IllegalArgumentException e) {
+						Log.d(TAG, e.getMessage());
+					}
 				}
 				break;
 
@@ -682,16 +686,28 @@ public class TweetListActivity extends TimelineActivity {
 					mEditText.clearFocus();
 					mEditText.requestFocus();
 				}
-				dismissDialog(DIALOG_SENDING_MESSAGE);
+				try {
+					dismissDialog(DIALOG_SENDING_MESSAGE);
+				} catch (IllegalArgumentException e) {
+					Log.d(TAG, e.getMessage());
+				}
 				break;
 
 			case MSG_AUTHENTICATION_ERROR:
 				switch (msg.arg1) {
 				case MSG_MANUAL_RELOAD:
-					dismissDialog(DIALOG_TIMELINE_LOADING);
+					try {
+						dismissDialog(DIALOG_TIMELINE_LOADING);
+					} catch (IllegalArgumentException e) {
+						Log.d(TAG, e.getMessage());
+					}
 					break;
 				case MSG_UPDATE_STATUS:
-					dismissDialog(DIALOG_SENDING_MESSAGE);
+					try {
+						dismissDialog(DIALOG_SENDING_MESSAGE);
+					} catch (IllegalArgumentException e) {
+						Log.d(TAG, e.getMessage());
+					}
 					break;
 				}
 				mListFooter.setVisibility(View.INVISIBLE);
@@ -701,10 +717,18 @@ public class TweetListActivity extends TimelineActivity {
 			case MSG_SERVICE_UNAVAILABLE_ERROR:
 				switch (msg.arg1) {
 				case MSG_MANUAL_RELOAD:
-					dismissDialog(DIALOG_TIMELINE_LOADING);
+					try {
+						dismissDialog(DIALOG_TIMELINE_LOADING);
+					} catch (IllegalArgumentException e) {
+						Log.d(TAG, e.getMessage());
+					}
 					break;
 				case MSG_UPDATE_STATUS:
-					dismissDialog(DIALOG_SENDING_MESSAGE);
+					try {
+						dismissDialog(DIALOG_SENDING_MESSAGE);
+					} catch (IllegalArgumentException e) {
+						Log.d(TAG, e.getMessage());
+					}
 					break;
 				}
 				mListFooter.setVisibility(View.INVISIBLE);
@@ -712,7 +736,11 @@ public class TweetListActivity extends TimelineActivity {
 				break;
 
 			case MSG_MANUAL_RELOAD:
-				dismissDialog(DIALOG_TIMELINE_LOADING);
+				try {
+					dismissDialog(DIALOG_TIMELINE_LOADING);
+				} catch (IllegalArgumentException e) {
+					Log.d(TAG, e.getMessage());
+				}
 				mIsLoading = false;
 				Toast.makeText(TweetListActivity.this, R.string.timeline_reloaded, Toast.LENGTH_SHORT).show();
 				mListFooter.setVisibility(View.INVISIBLE);
@@ -753,10 +781,18 @@ public class TweetListActivity extends TimelineActivity {
 			case MSG_CONNECTION_TIMEOUT_EXCEPTION:
 				switch (msg.arg1) {
 				case MSG_MANUAL_RELOAD:
-					dismissDialog(DIALOG_TIMELINE_LOADING);
+					try {
+						dismissDialog(DIALOG_TIMELINE_LOADING);
+					} catch (IllegalArgumentException e) {
+						Log.d(TAG, e.getMessage());
+					}
 					break;
 				case MSG_UPDATE_STATUS:
-					dismissDialog(DIALOG_SENDING_MESSAGE);
+					try {
+						dismissDialog(DIALOG_SENDING_MESSAGE);
+					} catch (IllegalArgumentException e) {
+						Log.d(TAG, e.getMessage());
+					}
 					break;
 				}
 				mListFooter.setVisibility(View.INVISIBLE);
@@ -777,7 +813,11 @@ public class TweetListActivity extends TimelineActivity {
 					Toast.makeText(TweetListActivity.this, R.string.status_destroyed, Toast.LENGTH_SHORT).show();
 					mCurrentId = 0;
 				}
-				dismissDialog(DIALOG_EXECUTING_COMMAND);
+				try {
+					dismissDialog(DIALOG_EXECUTING_COMMAND);
+				} catch (IllegalArgumentException e) {
+					Log.d(TAG, e.getMessage());
+				}
 				break;
 
 			case MSG_FAVORITE_CREATE:
@@ -803,7 +843,11 @@ public class TweetListActivity extends TimelineActivity {
 					Toast.makeText(TweetListActivity.this, R.string.favorite_created, Toast.LENGTH_SHORT).show();
 					mCurrentId = 0;
 				}
-				dismissDialog(DIALOG_EXECUTING_COMMAND);
+				try {
+					dismissDialog(DIALOG_EXECUTING_COMMAND);
+				} catch (IllegalArgumentException e) {
+					Log.d(TAG, e.getMessage());
+				}
 				break;
 
 			case MSG_FAVORITE_DESTROY:
@@ -829,7 +873,26 @@ public class TweetListActivity extends TimelineActivity {
 					Toast.makeText(TweetListActivity.this, R.string.favorite_destroyed, Toast.LENGTH_SHORT).show();
 					mCurrentId = 0;
 				}
-				dismissDialog(DIALOG_EXECUTING_COMMAND);
+				try {
+					dismissDialog(DIALOG_EXECUTING_COMMAND);
+				} catch (IllegalArgumentException e) {
+					Log.d(TAG, e.getMessage());
+				}
+				break;
+
+			case MSG_CONNECTION_EXCEPTION:
+				switch (msg.arg1) {
+				case MSG_FAVORITE_CREATE:
+				case MSG_FAVORITE_DESTROY:
+				case MSG_STATUS_DESTROY:
+					try {
+						dismissDialog(DIALOG_EXECUTING_COMMAND);
+					} catch (IllegalArgumentException e) {
+						Log.d(TAG, e.getMessage());
+					}
+					break;
+				}
+				Toast.makeText(TweetListActivity.this, R.string.error_connection_error, Toast.LENGTH_SHORT).show();
 				break;
 
 			default:
@@ -959,15 +1022,16 @@ public class TweetListActivity extends TimelineActivity {
 				Log.e(TAG, e.getMessage());
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mDestroyStatus Connection Exception: " + e.getMessage());
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, MSG_STATUS_DESTROY, Integer.parseInt(e.getMessage())));
 				return;
 			} catch (ConnectionAuthenticationException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_UPDATE_STATUS, 0));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_STATUS_DESTROY, 0));
 				return;
 			} catch (ConnectionUnavailableException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_UPDATE_STATUS, 0));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_STATUS_DESTROY, 0));
 				return;
 			} catch (SocketTimeoutException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_UPDATE_STATUS, 0));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_STATUS_DESTROY, 0));
 				return;
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_STATUS_DESTROY, result));
@@ -989,15 +1053,16 @@ public class TweetListActivity extends TimelineActivity {
 				Log.e(TAG, e.getMessage());
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mCreateFavorite Connection Exception: " + e.getMessage());
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, MSG_FAVORITE_CREATE, Integer.parseInt(e.getMessage())));
 				return;
 			} catch (ConnectionAuthenticationException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_UPDATE_STATUS, 0));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_FAVORITE_CREATE, 0));
 				return;
 			} catch (ConnectionUnavailableException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_UPDATE_STATUS, 0));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_FAVORITE_CREATE, 0));
 				return;
 			} catch (SocketTimeoutException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_UPDATE_STATUS, 0));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_FAVORITE_CREATE, 0));
 				return;
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_FAVORITE_CREATE, result));
@@ -1019,15 +1084,16 @@ public class TweetListActivity extends TimelineActivity {
 				Log.e(TAG, e.getMessage());
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mDestroyFavorite Connection Exception: " + e.getMessage());
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, MSG_FAVORITE_DESTROY, Integer.parseInt(e.getMessage())));
 				return;
 			} catch (ConnectionAuthenticationException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_UPDATE_STATUS, 0));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_FAVORITE_DESTROY, 0));
 				return;
 			} catch (ConnectionUnavailableException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_UPDATE_STATUS, 0));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR, MSG_FAVORITE_DESTROY, 0));
 				return;
 			} catch (SocketTimeoutException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_UPDATE_STATUS, 0));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_FAVORITE_DESTROY, 0));
 				return;
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_FAVORITE_DESTROY, result));

@@ -74,6 +74,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final int MSG_STATUS_DESTROY = 12;
 	public static final int MSG_FAVORITE_CREATE = 13;
 	public static final int MSG_FAVORITE_DESTROY = 14;
+	public static final int MSG_CONNECTION_EXCEPTION = 15;
 
 	// Handler message status codes
 	public static final int STATUS_LOAD_ITEMS_FAILURE = 0;
