@@ -280,7 +280,7 @@ public class AndTweetService extends Service {
 
 		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		boolean notificationsMessages = sp.getBoolean("notifications_messages", false);
-		boolean notificationsReplies = sp.getBoolean("notifications_replies", false);
+		boolean notificationsReplies = sp.getBoolean("notifications_mentions", false);
 		boolean notificationsTimeline = sp.getBoolean("notifications_timeline", false);
 
 		// Make sure that notifications haven't been turned off for the message type
