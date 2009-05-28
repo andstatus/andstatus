@@ -17,9 +17,7 @@
 package com.xorcode.andtweet.data;
 
 import java.net.SocketTimeoutException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.Date;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -167,12 +165,10 @@ public class FriendTimeline {
 		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_AUTHOR_ID, jo.getString("in_reply_to_screen_name"));
 		values.put(AndTweetDatabase.Tweets.FAVORITED, jo.getBoolean("favorited") ? 1 : 0);
 
-		DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
-		Calendar cal = Calendar.getInstance();
 		try {
-			cal.setTime(f.parse(jo.getString("created_at")));
-			values.put(Tweets.SENT_DATE, cal.getTimeInMillis());
-		} catch (java.text.ParseException e) {
+			Long created = Date.parse(jo.getString("created_at"));
+			values.put(Tweets.SENT_DATE, created);
+		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 		}
 
