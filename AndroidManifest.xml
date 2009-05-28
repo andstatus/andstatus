@@ -43,7 +43,7 @@
 		</receiver>
 
 		<activity android:name=".TweetListActivity"
-			android:label="@string/app_name" android:launchMode="singleTask" android:windowSoftInputMode="stateVisible|adjustResize">
+			android:label="@string/app_name" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />

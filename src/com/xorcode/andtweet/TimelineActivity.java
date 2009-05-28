@@ -30,6 +30,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -438,6 +439,21 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		// Attach listeners to the message list
 		getListView().setOnCreateContextMenuListener(this);
 		getListView().setOnItemClickListener(this);
+	}
+
+	/**
+	 * Check to see if the system has a hardware keyboard.
+	 * @return
+	 */
+	protected boolean hasHardwareKeyboard() {
+		Configuration c = getResources().getConfiguration();
+		switch (c.keyboard) {
+		case Configuration.KEYBOARD_12KEY:
+		case Configuration.KEYBOARD_QWERTY:
+			return true;
+		default:
+			return false;
+		}
 	}
 
 	/**

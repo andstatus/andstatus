@@ -240,7 +240,9 @@ public class TweetListActivity extends TimelineActivity {
 			mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, Tweets.TWEET_TYPE + " IN (?, ?)", new String[] { String.valueOf(Tweets.TWEET_TYPE_TWEET), String.valueOf(Tweets.TWEET_TYPE_REPLY) }, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
 			createAdapters();
 		}
-		mEditText.requestFocus();
+		if (hasHardwareKeyboard()) {
+			mEditText.requestFocus();
+		}
 		if ("com.xorcode.andtweet.INITIALIZE".equals(intent.getAction())) {
 			intent.setAction(null);
 			Log.d(TAG, "onStart() Initializing...");
@@ -380,7 +382,9 @@ public class TweetListActivity extends TimelineActivity {
 			c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID }, null, null, null);
 			try {
 				c.moveToFirst();
-				mEditText.requestFocus();
+				if (hasHardwareKeyboard()) {
+					mEditText.requestFocus();
+				}
 				String reply = "@" + c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)) + " ";
 				mEditText.setText("");
 				mEditText.append(reply, 0, reply.length());
@@ -398,7 +402,9 @@ public class TweetListActivity extends TimelineActivity {
 			c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID, Tweets.MESSAGE }, null, null, null);
 			try {
 				c.moveToFirst();
-				mEditText.requestFocus();
+				if (hasHardwareKeyboard()) {
+					mEditText.requestFocus();
+				}
 				StringBuilder message = new StringBuilder();
 				String reply = "RT @" + c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)) + " ";
 				message.append(reply);
@@ -687,8 +693,9 @@ public class TweetListActivity extends TimelineActivity {
 					Toast.makeText(TweetListActivity.this, R.string.message_sent, Toast.LENGTH_SHORT).show();
 					mReplyId = 0;
 					mEditText.setText("");
-					mEditText.clearFocus();
-					mEditText.requestFocus();
+					if (hasHardwareKeyboard()) {
+						mEditText.requestFocus();
+					}
 				}
 				try {
 					dismissDialog(DIALOG_SENDING_MESSAGE);
