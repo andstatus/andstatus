@@ -20,6 +20,7 @@ import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,6 +34,7 @@ import android.net.Uri;
 import android.text.Html;
 import android.util.Log;
 
+import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
@@ -118,15 +120,12 @@ public class DirectMessages {
 
 		values.put(AndTweetDatabase.DirectMessages._ID, lMessageId.toString());
 		values.put(AndTweetDatabase.DirectMessages.AUTHOR_ID, jo.getString("sender_screen_name"));
-
 		values.put(AndTweetDatabase.DirectMessages.MESSAGE, Html.fromHtml(jo.getString("text")).toString());
 
-		DateFormat f = new SimpleDateFormat(AndTweetDatabase.TWITTER_DATE_FORMAT);
-		Calendar cal = Calendar.getInstance();
 		try {
-			cal.setTime(f.parse(jo.getString("created_at")));
-			values.put(AndTweetDatabase.DirectMessages.SENT_DATE, cal.getTimeInMillis());
-		} catch (java.text.ParseException e) {
+			Long created = Date.parse(jo.getString("created_at"));
+			values.put(AndTweetDatabase.DirectMessages.SENT_DATE, created);
+		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 		}
 
