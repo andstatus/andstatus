@@ -75,7 +75,7 @@
 	<string name="menu_item_unfollow">UnFollow</string>
 	<string name="menu_item_view_profile">Profil anschauen</string>
 	<string name="message_sent">Deine Nachricht wurde gesendet.</string>
-	<string name="messages_activity">Direct Message</string>
+	<string name="messages_activity">Direktnachrichten</string>
 	<string name="notification_title">AndTweet</string>
 	<string name="notification_tweet_singular">{0} neuen tweet</string>
 	<string name="notification_tweet_plural">{0,number} neue tweets</string>
@@ -83,14 +83,14 @@
 	<string name="notification_message_singular">{0} neue Message</string>
 	<string name="notification_message_plural">{0,number} neue Messages</string>
 	<string name="notification_new_message_format">Du hast {0}.</string>
-	<string name="notification_title_messages">Neue Direct Messages</string>
+	<string name="notification_title_messages">Neue Direktnachrichten</string>
 	<string name="notification_mention_singular">{0} neue Erwähnung</string>
 	<string name="notification_mention_plural">{0,number} neue Erwähnungen</string>
 	<string name="notification_new_mention_format">Du hast {0}.</string>
 	<string name="notification_title_mentions">Neue Erwähnungen</string>
 	<string name="options_menu_about">Über AndTweet</string>
 	<string name="options_menu_about_cond">Über</string>
-	<string name="options_menu_direct_messages">Direct Messages</string>
+	<string name="options_menu_direct_messages">Direktnachrichten</string>
 	<string name="options_menu_direct_messages_cond">Nachrichten</string>
 	<string name="options_menu_friends_timeline">Chronik der Freunde</string>
 	<string name="options_menu_friends_timeline_cond">Freunde</string>
