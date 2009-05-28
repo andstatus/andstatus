@@ -35,7 +35,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.SearchRecentSuggestions;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -483,12 +485,14 @@ public class TweetListActivity extends TimelineActivity {
 			}
 		});
 
-		mEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-			public void onFocusChange(View v, boolean hasFocus) {
-				EditText editTxt = (EditText) v;
-				mCurrentChars = editTxt.length();
+		mEditText.addTextChangedListener(new TextWatcher() {
+			public void afterTextChanged(Editable s) {
+				mCurrentChars = s.length();
 				mCharsLeftText.setText(String.valueOf(mLimitChars - mCurrentChars));
 			}
+
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+			public void onTextChanged(CharSequence s, int start, int before, int count) {}
 		});
 
 		mEditText.setOnKeyListener(new View.OnKeyListener() {
