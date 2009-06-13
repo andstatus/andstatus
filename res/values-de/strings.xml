@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- 
 	Copyright (C) 2008 Torgny Bjers
 	
@@ -117,8 +117,8 @@
 	<string name="splash_text_learn_more_1"><h1><b>1. ANDTWEET EINFÜHRUNG</b></h1>\n\nDie erste Ansicht von AndTweet zeigt die Chronik deiner Freunde.\n\nUm eine Aktion zu einem bestimmten Tweet in der Liste durchzuführen, kannst du ihn <b>lange halten</b> um zu einem Menü zu gelangen.\n\n<b>Klicke</b> auf einen Tweet für mehr Informationen zu erhalten.\n\nDrücke den <b>Menü</b> Knopf um zu anderen Ansichten zu wechseln.</string>
 	<string name="splash_text_learn_more_2"><h1><b>2. EMPFANGEN UND ANTWORTEN</b></h1>\n\nUm deinen Status zu aktualisieren, gib ihn einfach in das Textfeld ein und drücke <b>Senden</b>.\n\nUm zu antworten, <b>halte</b> einen Tweet, wähle <b>Antworten</b> und gib deine Antwort unten ein.\n\nUm eine Antwort abzubrechen, lösche den gesamten Text aus dem Textfeld.</string>
 	<string name="splash_text_learn_more_3"><h1><b>3. DIREKTNACHRICHTEN</b></h1>\n\nDrücke <b>Menü</b> und dann <b>Nachrichten</b>.\n\nUm Direktnachrichten zu <b>löschen</b>, <b>halte</b> sie und wähle <b>Löschen</b>.\n\nNeue Nachrichten werden geladen, wenn du <b>automatische Aktualisierungen</b> aktiviert hast.</string>
-	<string name="splash_text_learn_more_4"><h1><b>4. ERWÄHUNGEN AUFLISTEN</b></h1>\n\nDrücke <b>Menü</b> und dann <b>Erwähnungen</b>.\n\nErwähungen listen jeden Tweet auf, der deinen <b>@Benutzername</b> enthält.</string>
-	<string name="splash_text_learn_more_5"><h1><b>5. SUCHEN</b></h1>\n\nDrücke <b>Menü</b> und dann <b>Suchen</b>, oder drücke den <b>Suchen</b> Knopf auf deinem Telefon.\n\nEine Suche findet jeden Text in einem Tweet. Wenn du Tweets von einem bestimmten Benutzer anzeigen willst, suche nach "<b>Benutzername</b>".\n\nUm Erwähungen von einem bestimmten Benutzer anzuzeigen, suche nach "<b>@Benutzername</b>"</string>
+	<string name="splash_text_learn_more_4"><h1><b>4. ERWÄHNUNGEN AUFLISTEN</b></h1>\n\nDrücke <b>Menü</b> und dann <b>Erwähnungen</b>.\n\nErwähnungen listen jeden Tweet auf, der deinen <b>@Benutzername</b> enthält.</string>
+	<string name="splash_text_learn_more_5"><h1><b>5. SUCHEN</b></h1>\n\nDrücke <b>Menü</b> und dann <b>Suchen</b>, oder drücke den <b>Suchen</b> Knopf auf deinem Telefon.\n\nEine Suche findet jeden Text in einem Tweet. Wenn du Tweets von einem bestimmten Benutzer anzeigen willst, suche nach "<b>Benutzername</b>".\n\nUm Erwähnungen von einem bestimmten Benutzer anzuzeigen, suche nach "<b>@Benutzername</b>"</string>
 	<string name="search_timeline_label">Suche Tweets, Benutzer und Tags</string>
 	<string name="search_timeline_hint">Name/Wort eingeben</string>
 	<string name="search_direct_messages_label">Direktnachrichten durchsuchen</string>
@@ -139,9 +139,9 @@
 	<string name="summary_preference_notifications_messages">Bei neuen Direktnachrichten benachrichtigen?</string>
 	<string name="summary_preference_notifications_messages_off">Keine Benachrichtigungen für Direktnachrichten</string>
 	<string name="summary_preference_notifications_messages_on">Benachrichtigungen für Direktnachrichten</string>
-	<string name="summary_preference_notifications_mentions">Benachrichtigung bei Erwähungen?</string>
+	<string name="summary_preference_notifications_mentions">Benachrichtigung bei Erwähnungen?</string>
 	<string name="summary_preference_notifications_mentions_off">Keine Benachrichtigung bei Erwähnungen</string>
-	<string name="summary_preference_notifications_mentions_on">Du wirst bei Erwähungen benachrichtigt</string>
+	<string name="summary_preference_notifications_mentions_on">Du wirst bei Erwähnungen benachrichtigt</string>
 	<string name="summary_preference_notifications_timeline">Bei neuen Tweets benachrichtigen?</string>
 	<string name="summary_preference_notifications_timeline_off">Keine Benachrichtigungen bei Tweets</string>
 	<string name="summary_preference_notifications_timeline_on">Du wirst bei neuen Tweets benachrichtigt</string>
@@ -165,7 +165,7 @@
 	<string name="title_preference_notifications">Benachrichtigungen</string>
 	<string name="title_preference_notifications_enabled">Benachrichtigungen aktivieren</string>
 	<string name="title_preference_notifications_messages">Benachrichtigungen bei neuen Direktnachrichten</string>
-	<string name="title_preference_notifications_mentions">Benachrichtigungen neuen Erwähungen</string>
+	<string name="title_preference_notifications_mentions">Benachrichtigungen neuen Erwähnungen</string>
 	<string name="title_preference_notifications_timeline">Benachrichtigungen bei neuen Tweets</string>
 	<string name="title_preference_password">Passwort</string>
 	<string name="title_preference_storage">Speicher</string>
