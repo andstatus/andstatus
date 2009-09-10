@@ -64,4 +64,61 @@
 		<item>AndTweet</item>
 		<item>AndTweet.Large</item>
 	</string-array>
+	<string-array name="history_size_values">
+		<item>500 tweets</item>
+		<item>1000 tweets</item>
+		<item>2000 tweets</item>
+		<item>5000 tweets</item>
+		<item>10000 tweets</item>
+		<item>20000 tweets</item>
+		<item>50000 tweets</item>
+		<item>100000 tweets</item>
+	</string-array>
+	<string-array name="history_size_keys">
+		<item>500</item>
+		<item>1000</item>
+		<item>2000</item>
+		<item>5000</item>
+		<item>10000</item>
+		<item>20000</item>
+		<item>50000</item>
+		<item>100000</item>
+	</string-array>
+	<string-array name="history_size_display">
+		<item>500 tweets</item>
+		<item>1000 tweets</item>
+		<item>2000 tweets</item>
+		<item>5000 tweets</item>
+		<item>10000 tweets</item>
+		<item>20000 tweets</item>
+		<item>50000 tweets</item>
+		<item>100000 tweets</item>
+	</string-array>
+	<string-array name="history_time_values">
+		<item>1 day</item>
+		<item>2 days</item>
+		<item>3 days</item>
+		<item>4 days</item>
+		<item>5 days</item>
+		<item>6 days</item>
+		<item>1 week</item>
+	</string-array>
+	<string-array name="history_time_keys">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>6</item>
+		<item>7</item>
+	</string-array>
+	<string-array name="history_time_display">
+		<item>1 day</item>
+		<item>2 days</item>
+		<item>3 days</item>
+		<item>4 days</item>
+		<item>5 days</item>
+		<item>6 days</item>
+		<item>1 week</item>
+	</string-array>
 </resources>

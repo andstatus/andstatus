@@ -67,6 +67,16 @@
 					android:summaryOff="@string/summary_preference_use_avatars_off"
 					android:summaryOn="@string/summary_preference_use_avatars_on" />
  -->
+				<ListPreference android:entryValues="@array/history_size_keys"
+					android:entries="@array/history_size_values" android:summary="@string/summary_preference_history_size"
+					android:dialogTitle="@string/dialog_title_preference_history_size"
+					android:defaultValue="2000"
+					android:title="@string/title_preference_history_size" android:key="history_size" />
+				<ListPreference android:entryValues="@array/history_time_keys"
+					android:entries="@array/history_time_values" android:summary="@string/summary_preference_history_time"
+					android:dialogTitle="@string/dialog_title_preference_history_time"
+					android:defaultValue="3"
+					android:title="@string/title_preference_history_time" android:key="history_time" />
 			</PreferenceCategory>
 		</PreferenceScreen>
 

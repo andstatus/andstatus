@@ -66,6 +66,8 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
 	public static final String KEY_TWITTER_USERNAME = "twitter_username";
 	public static final String KEY_TWITTER_PASSWORD = "twitter_password";
+	public static final String KEY_HISTORY_SIZE = "history_size";
+	public static final String KEY_HISTORY_TIME = "history_time";
 	public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
 	public static final String KEY_AUTOMATIC_UPDATES = "automatic_updates";
 	public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
@@ -79,6 +81,8 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
 	private CheckBoxPreference mAutomaticUpdates;
 	//private CheckBoxPreference mUseExternalStorage;
+	private ListPreference mHistorySizePreference;
+	private ListPreference mHistoryTimePreference;
 	private ListPreference mFetchFrequencyPreference;
 	private EditTextPreference mEditTextUsername;
 	private EditTextPreference mEditTextPassword;
@@ -92,6 +96,8 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
+		mHistorySizePreference = (ListPreference) getPreferenceScreen().findPreference(KEY_HISTORY_SIZE);
+		mHistoryTimePreference = (ListPreference) getPreferenceScreen().findPreference(KEY_HISTORY_TIME);
 		mFetchFrequencyPreference = (ListPreference) getPreferenceScreen().findPreference(KEY_FETCH_FREQUENCY);
 		mAutomaticUpdates = (CheckBoxPreference) getPreferenceScreen().findPreference(KEY_AUTOMATIC_UPDATES);
 		mNotificationRingtone = (RingtonePreference) getPreferenceScreen().findPreference(KEY_RINGTONE_PREFERENCE);
@@ -109,6 +115,8 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 		}
 		*/
 		updateFrequency();
+		updateHistorySize();
+		updateHistoryTime();
 		updateRingtone(getPreferenceScreen().getSharedPreferences().getString(KEY_RINGTONE_PREFERENCE, null));
 	}
 
@@ -122,6 +130,36 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	protected void onPause() {
 		super.onPause();
 		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+	}
+
+	protected void updateHistorySize() {
+		String[] k = getResources().getStringArray(R.array.history_size_keys);
+		String[] d = getResources().getStringArray(R.array.history_size_display);
+		String displayHistorySize = d[0];
+		String historySize = mHistorySizePreference.getValue();
+		for (int i = 0; i < k.length; i++) {
+			if (historySize.equals(k[i])) {
+				displayHistorySize = d[i];
+				break;
+			}
+		}
+		MessageFormat sf = new MessageFormat(getText(R.string.summary_preference_history_size).toString());
+		mHistorySizePreference.setSummary(sf.format(new Object[] { displayHistorySize }));
+	}
+
+	protected void updateHistoryTime() {
+		String[] k = getResources().getStringArray(R.array.history_time_keys);
+		String[] d = getResources().getStringArray(R.array.history_time_display);
+		String displayHistoryTime = d[0];
+		String historyTime = mHistoryTimePreference.getValue();
+		for (int i = 0; i < k.length; i++) {
+			if (historyTime.equals(k[i])) {
+				displayHistoryTime = d[i];
+				break;
+			}
+		}
+		MessageFormat sf = new MessageFormat(getText(R.string.summary_preference_history_time).toString());
+		mHistoryTimePreference.setSummary(sf.format(new Object[] { displayHistoryTime }));
 	}
 
 	protected void updateFrequency() {

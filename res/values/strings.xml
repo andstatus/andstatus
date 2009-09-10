@@ -46,6 +46,8 @@
 	<string name="dialog_title_external_storage">External Storage Available</string>
 	<string name="dialog_title_external_storage_missing">External Storage Missing</string>
 	<string name="dialog_title_preference_frequency">Update Frequency</string>
+	<string name="dialog_title_preference_history_size">History Size</string>
+	<string name="dialog_title_preference_history_time">History Time</string>
 	<string name="dialog_title_preference_password">Password</string>
 	<string name="dialog_title_preference_theme">Select a Theme</string>
 	<string name="dialog_title_preference_username">Username</string>
@@ -125,6 +127,8 @@
 	<string name="summary_preference_automatic_updates_off">Automatic updates are disabled</string>
 	<string name="summary_preference_automatic_updates_on">Automatic updates are enabled</string>
 	<string name="summary_preference_frequency">Updates are fetched every {0}.</string>
+	<string name="summary_preference_history_size">Remember tweet history up to {0}.</string>
+	<string name="summary_preference_history_time">Remember tweet history up to {0}.</string>
 	<string name="summary_preference_light_theme_off">The standard theme will be used.</string>
 	<string name="summary_preference_light_theme_on">The light theme will be used.</string>
 	<string name="summary_preference_no_ringtone">Silent</string>
@@ -156,6 +160,8 @@
 	<string name="title_preference_appearance">Appearance</string>
 	<string name="title_preference_automatic_updates">Automatic Updates</string>
 	<string name="title_preference_frequency">Update Frequency</string>
+	<string name="title_preference_history_size">History Size</string>
+	<string name="title_preference_history_time">History Time</string>
 	<string name="title_preference_light_theme">Light Theme</string>
 	<string name="title_preference_notification_sound">Notification Ringtone</string>
 	<string name="title_preference_notifications">Notifications</string>
