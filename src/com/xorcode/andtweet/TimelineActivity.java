@@ -177,33 +177,17 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	}
 
 	@Override
-	protected void onResume() {
-		super.onResume();
-		clearNotifications();
+	protected void onStart() {
+		super.onStart();
+		mNM.cancelAll();
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		clearNotifications();
+		mNM.cancelAll();
 	}
 
-	private void clearNotifications() {
-		try {
-			// TODO: Check if there are any notifications
-			// and if none than don't waist time for this:
-			
-			mNM.cancelAll();
-	
-			// Reset notifications on AppWidget(s)
-			Intent intent = new Intent(AndTweetService.ACTION_APPWIDGET_UPDATE);
-			intent.putExtra(AndTweetService.EXTRA_MSGTYPE, AndTweetService.NOTIFY_CLEAR);
-			sendBroadcast(intent); }
-		finally {
-			// Nothing yet...
-		}
-	}
-	
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
