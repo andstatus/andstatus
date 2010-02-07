@@ -29,6 +29,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.app.Service;
+import android.appwidget.AppWidgetProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -61,9 +62,42 @@ import com.xorcode.andtweet.net.ConnectionUnavailableException;
  * and Twitter. Other applications can interact with it via IPC.
  */
 public class AndTweetService extends Service {
+	private static final String TAG = AndTweetService.class.getSimpleName();
+    
+    /**
+     * Intent with this action sent when it is time to update AndTweet AppWidget.
+     *
+     * <p>This may be sent in response to some new information
+     * is ready for notification (some changes...),
+     * or the system booting.
+     *
+     * <p>
+     * The intent will contain the following extras:
+     * <ul>
+     * 	<li>{@link #EXTRA_MSGTYPE}</li>
+     * 	<li>{@link #EXTRA_NUMTWEETSMSGTYPE}</li>
+     * 	<li>{@link android.appwidget.AppWidgetManager#EXTRA_APPWIDGET_IDS}<br/>
+     *     The appWidgetIds to update.  This may be all of the AppWidgets created for this
+     *     provider, or just a subset.  The system tries to send updates for as few AppWidget
+     *     instances as possible.</li>
+     * 
+     * @see AppWidgetProvider#onUpdate AppWidgetProvider.onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
+     */
+    public static final String ACTION_APPWIDGET_UPDATE = AndTweetService.class.getPackage().getName() + ".action.APPWIDGET_UPDATE";
 
-	private static final String TAG = "AndTweetService";
-
+    private static final String packageName = AndTweetService.class.getPackage().getName();
+    
+    /**	
+     * These names of extras are used in the Intent-notification of new Tweets
+     * (e.g. to notify Widget).
+     * For types of messages see {@link #NOTIFY_DIRECT_MESSAGE}
+     */
+    public static final String EXTRA_MSGTYPE = packageName + ".MSGTYPE";
+    /**	
+     * Number of new tweets...
+     */
+    public static final String EXTRA_NUMTWEETS = packageName + ".NUMTWEETS";
+    
 	/**
 	 * This is a list of callbacks that have been registered with the service.
 	 */
@@ -84,9 +118,20 @@ public class AndTweetService extends Service {
 	private static final int MSG_UPDATE_FOLLOWERS = 5;
 	private static final int MSG_UPDATE_FOLLOWERS_DONE = 6;
 
-	private static final int NOTIFY_DIRECT_MESSAGE = 1;
-	private static final int NOTIFY_TIMELINE = 2;
-	private static final int NOTIFY_REPLIES = 3;
+    /**
+     * A sentiel value that this class will never use as a msgType
+     */
+    public static final int NOTIFY_INVALID = 0;
+	/**
+	 * Types of new tweets notification messages
+	 */
+	public static final int NOTIFY_DIRECT_MESSAGE = 1;
+	public static final int NOTIFY_TIMELINE = 2;
+	public static final int NOTIFY_REPLIES = 3;
+	/**
+	 * Clear previous notifications (because e.g. user open tweet list...) 
+	 */
+	public static final int NOTIFY_CLEAR = 4;
 
 	private String mUsername;
 	private String mPassword;
@@ -170,6 +215,7 @@ public class AndTweetService extends Service {
 		public void handleMessage(Message msg) {
 			final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			final int N = mCallbacks.beginBroadcast();
+			Log.d(TAG, "handleMessage what=" + msg.what);
 
 			mUsername = sp.getString("twitter_username", null);
 			mPassword = sp.getString("twitter_password", null);
@@ -226,6 +272,7 @@ public class AndTweetService extends Service {
 				if (msg.arg2 > 0) {
 					notifyNewTweets(msg.arg2, NOTIFY_REPLIES);
 				}
+				
 				// Repeat mFrequency seconds (defaults to 180, 3 minutes)
 				sendMessageDelayed(obtainMessage(MSG_UPDATE_TIMELINE), mFrequency * MILLISECONDS);
 				break;
@@ -273,6 +320,10 @@ public class AndTweetService extends Service {
 	 * @param numTweets
 	 */
 	private void notifyNewTweets(int numTweets, int msgType) {
+		Log.d(TAG, "notifyNewTweets n=" + numTweets + "; msgType=" + msgType);
+		
+		updateWidgets(numTweets, msgType);
+		
 		// If no notifications are enabled, return
 		if (!mNotificationsEnabled) {
 			return;
@@ -376,6 +427,18 @@ public class AndTweetService extends Service {
 		mNM.notify(msgType, notification);
 	}
 
+	/** 
+	 * Send Update intent to AndTweet Widget(s),
+	 * if there are some installed... (e.g. on the Home screen...) 
+	 * @see AndTweetAppWidgetProvider
+	 */
+	private void updateWidgets(int numTweets, int msgType) {
+		Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
+		intent.putExtra(EXTRA_NUMTWEETS, numTweets);
+		intent.putExtra(EXTRA_MSGTYPE, msgType);
+		sendBroadcast(intent);
+	}
+	
 	protected Runnable mLoadTimeline = new Runnable() {
 		public void run() {
 			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
