@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This is resource, describing "receiver" called "AndTweetAppWidgetProvider"
+	It has reference to the layout of the actual AppWidget
+	(shown on the Homepage...) and to the configuration activity
+-->
+
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="146dip"
+    android:minHeight="72dip"
+    android:updatePeriodMillis="0"
+    android:initialLayout="@layout/appwidget"
+    android:configure="com.xorcode.andtweet.appwidget.AndTweetAppWidgetConfigure"
+    >
+</appwidget-provider>
+
+<!-- updatePeriodMillis
+	was =86400000 is the value of AlarmManager.INTERVAL_DAY - or once per day.
+	We've set =0 here so we'll perform updates based on an alarm
+	that will not wake the device 
+-->
+

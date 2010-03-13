@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+	<!-- This is default layout of the AppWidget shown on the Home Screen -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/widget"
+	android:focusable="true" 
+	android:paddingLeft="12dip"
+	android:paddingTop="1dip"
+	android:paddingRight="0dip"
+	android:paddingBottom="9dip"
+	style="@style/WidgetStyle" 
+	android:layout_height="fill_parent"
+	android:layout_width="fill_parent">
+
+	<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/appwidget_time"
+		android:paddingTop="0dip"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:textColor="#ff000000"
+		android:textStyle="italic"	 
+		android:textSize="12sp"	 
+		android:paddingLeft="5dip"
+		android:layout_alignParentBottom="true" 
+		android:gravity="bottom"/>
+	<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="fill_parent"
+		android:id="@+id/appwidget_lineone"
+		android:layout_above="@+id/appwidget_time" 
+		android:layout_height="fill_parent">
+		
+		<ImageView android:id="@+id/icon"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/icon"
+			android:layout_alignParentRight="true"
+			android:layout_alignParentLeft="false" 
+			/>
+		<RelativeLayout android:id="@+id/widget_text_column"
+			android:layout_height="wrap_content" android:focusable="true"
+			android:layout_width="wrap_content"
+			android:paddingLeft="0dip"
+			android:paddingTop="7dip"
+			android:paddingRight="1dip"
+			android:paddingBottom="0dip"
+			style="@style/EmptyStyle"
+			android:layout_toLeftOf="@+id/icon"
+			android:layout_alignParentLeft="true" 
+			>
+			<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+				android:id="@+id/appwidget_text"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textColor="#ff000000"
+				android:layout_alignParentTop="true"
+				android:layout_alignParentLeft="true"
+				android:textStyle="bold"/>
+			<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+				android:id="@+id/appwidget_comment"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textColor="#ff000000"
+				android:layout_below="@+id/appwidget_text" android:layout_alignParentBottom="true"/>
+		</RelativeLayout>
+	</RelativeLayout>
+</RelativeLayout>

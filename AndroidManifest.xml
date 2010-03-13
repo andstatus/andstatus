@@ -15,7 +15,7 @@
 	limitations under the License.
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.xorcode.andtweet" android:versionName="0.2.4" android:versionCode="24">
+	package="com.xorcode.andtweet" android:versionName="0.2.5" android:versionCode="25">
 
 	<uses-sdk android:minSdkVersion="3"/>
 
@@ -104,7 +104,22 @@
 				<category android:name="android.intent.category.DEFAULT"></category>
 			</intent-filter>
 		</activity>
-	
+
+        <receiver android:name=".appwidget.AndTweetAppWidgetProvider">
+            <meta-data android:name="android.appwidget.provider"
+                    android:resource="@xml/appwidget_info" />
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.xorcode.andtweet.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name=".appwidget.AndTweetAppWidgetConfigure">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
 	</application>
 
 	<uses-permission android:name="android.permission.INTERNET"></uses-permission>
