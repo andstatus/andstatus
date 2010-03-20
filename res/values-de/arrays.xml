@@ -19,6 +19,30 @@
  	German translation by Benjamin Schirmer (codename.matrix@gmail.com) 
  -->
 <resources>
+	<string-array name="appwidget_tweet_formats">
+		<item>"{0} tweet"</item>
+		<item>"{0} tweets"</item>
+	</string-array>
+	<string-array name="appwidget_tweet_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="appwidget_mention_formats">
+		<item>"{0} Erwähnung"</item>
+		<item>"{0} Erwähnungen"</item>
+	</string-array>
+	<string-array name="appwidget_mention_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="appwidget_message_formats">
+		<item>"{0} Message"</item>
+		<item>"{0} Messages"</item>
+	</string-array>
+	<string-array name="appwidget_message_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
 	<string-array name="fetch_frequency_values">
 		<item>3 Minuten</item>
 		<item>5 Minuten</item>
@@ -67,5 +91,29 @@
 		<item>AndTweet.Small</item>
 		<item>AndTweet</item>
 		<item>AndTweet.Large</item>
+	</string-array>
+	<string-array name="notification_tweet_formats">
+		<item>"{0} neuen tweet"</item>
+		<item>"{0} neue tweets"</item>
+	</string-array>
+	<string-array name="notification_tweet_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="notification_mention_formats">
+		<item>"{0} neue Erwähnung"</item>
+		<item>"{0} neue Erwähnungen"</item>
+	</string-array>
+	<string-array name="notification_mention_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="notification_message_formats">
+		<item>"{0} neue Message"</item>
+		<item>"{0} neue Messages"</item>
+	</string-array>
+	<string-array name="notification_message_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
 	</string-array>
 </resources>

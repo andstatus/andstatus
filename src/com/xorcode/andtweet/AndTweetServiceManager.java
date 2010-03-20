@@ -35,13 +35,18 @@ public class AndTweetServiceManager extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
 			PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
+
+			Log.d(TAG, "Starting service on boot.");
+			Intent serviceIntent = new Intent(IAndTweetService.class.getName());
+			context.startService(serviceIntent);
+
 			SharedPreferences mSP = PreferenceManager.getDefaultSharedPreferences(context);
 			if (mSP.contains("automatic_updates") && mSP.getBoolean("automatic_updates", false)) {
-				Log.d(TAG, "Starting service on boot.");
-				Intent serviceIntent = new Intent(IAndTweetService.class.getName());
-				context.startService(serviceIntent);
+				Log.d(TAG, "Alarm started. Automatic updates turned on.");
+				AndTweetService.startAutomaticUpdates(context);
 			} else {
-				Log.d(TAG, "Service not started. Automatic updates turned off.");
+				Log.d(TAG, "Alarm cancelled. Automatic updates turned off.");
+				AndTweetService.stopAutomaticUpdates(context);
 			}
 		} else {
 			Log.e(TAG, "Received unexpected intent: " + intent.toString());

@@ -15,6 +15,33 @@
 	limitations under the License.
  -->
 <resources>
+	<string-array name="appwidget_tweet_formats">
+		<item>"{0} tweet"</item>
+		<item>"{0} tweets"</item>
+	</string-array>
+	<string-array name="appwidget_tweet_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="appwidget_mention_formats">
+		<item>"{0} mention"</item>
+		<item>"{0} mentions"</item>
+	</string-array>
+	<string-array name="appwidget_mention_patterns">
+		<!-- same as @appwidget_tweet_patterns,
+		but I couldn't refer to existing resource, e.g. by 
+		@array/appwidget_tweet_patterns -->
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="appwidget_message_formats">
+		<item>"{0} message"</item>
+		<item>"{0} messages"</item>
+	</string-array>
+	<string-array name="appwidget_message_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
 	<string-array name="fetch_frequency_values">
 		<item>3 minutes</item>
 		<item>5 minutes</item>
@@ -120,5 +147,29 @@
 		<item>5 days</item>
 		<item>6 days</item>
 		<item>1 week</item>
+	</string-array>
+	<string-array name="notification_tweet_formats">
+		<item>"{0} new tweet"</item>
+		<item>"{0} new tweets"</item>
+	</string-array>
+	<string-array name="notification_tweet_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="notification_mention_formats">
+		<item>"{0} new mention"</item>
+		<item>"{0} new mentions"</item>
+	</string-array>
+	<string-array name="notification_mention_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="notification_message_formats">
+		<item>"{0} new message"</item>
+		<item>"{0} new messages"</item>
+	</string-array>
+	<string-array name="notification_message_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
 	</string-array>
 </resources>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+	Copyright (C) 2010 Yuri Volkov, yvolk@yurivolkov.com
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	     http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+ -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+	<string name="app_name">AndTweet</string>
+	<string name="activity_title_direct_messages">Личные сообщения</string>
+	<string name="activity_title_format">%1$s: %2$s</string>
+	<string name="activity_title_mentions">Упоминания</string>
+	<string name="activity_title_search">Поиск</string>
+	<string name="activity_title_timeline">Друзья</string>
+
+    <string name="appwidget_configure_instructions">Настройте сообщение Виджета, которое показывается в том случае, если нет ничего нового:</string>
+    <string name="appwidget_nothing_default">Ничего нового после:</string>
+	<string name="appwidget_new_tweet_format">{0}</string>
+	<string name="appwidget_message_singular">{0} сообщение</string>
+	<string name="appwidget_message_plural">{0,number} сообщений</string>
+	<string name="appwidget_new_message_format">{0}</string>
+	<string name="appwidget_mention_singular">{0} упоминание</string>
+	<string name="appwidget_mention_plural">{0,number} упоминаний</string>
+	<string name="appwidget_new_mention_format">{0}</string>
+
+	<string name="authentication_successful">Успешная проверка логина и пароля!</string>
+	<string name="button_send">Отправить</string>
+	<string name="cannot_send_empty_message">Невозможно отправить пустое сообщение.</string>
+	<string name="category_title_preference_appearance">Внешний вид</string>
+	<string name="category_title_preference_automatic_updates">Обновления</string>
+	<string name="category_title_preference_credentials">Имя пользователя и пароль</string>
+	<string name="category_title_preference_notifications">Уведомления</string>
+	<string name="category_title_preference_settings">Настройки</string>
+	<string name="category_title_preference_updates">Обновления</string>
+	<string name="dialog_summary_authentication_failed">Пожалуйста проверьте Ваши имя пользователя и пароль.</string>
+	<string name="dialog_summary_checking_credentials">Пожалуйста подождите завершения проверки имени пользователя и пароля аккаунта.</string>
+	<string name="dialog_summary_connection_timeout">Время соединения закончилось. Пожалуйста, повторите попытку позднее.</string>
+	<string name="dialog_summary_executing_command">Пожалуйста, подождите завершения обработки команды на сервере.</string>
+	<string name="dialog_summary_external_storage">Обнаружена внешняя память (SD-карта). Вы хотите, чтобы AndTweet сохранял данные на ней? Старые данные перенести туда нельзя, но они останутся во внутренней памяти Вашего устройства.</string>
+	<string name="dialog_summary_external_storage_missing">Внешняя память отсутствует или удалена (не смонтирована). Вы хотите использовать внутреннюю память? Все данные, которые были сохранены во внешней памяти, будут по-прежнему доступны.</string>
+	<string name="dialog_summary_sending_message">Пожалуйста подождите завершения отправки сообщения.</string>
+	<string name="dialog_summary_service_unavailable">Сервис Твиттера сейчас перегружен. Пожалуйста, попробуйте обратиться позже.</string>
+	<string name="dialog_summary_timeline_loading">Подождите завершения обновления ленты времени. Эта процедура может занять несколько минут, в зависимости от качества соединения.</string>
+	<string name="dialog_title_authentication_failed">Аутентификация (проверка имени пользователя и пароля) завершилась неудачей</string>
+	<string name="dialog_title_checking_credentials">Проверка...</string>
+	<string name="dialog_title_connection_timeout">Время соединения завершилось</string>
+	<string name="dialog_title_executing_command">Исполнение комманды...</string>
+	<string name="dialog_title_external_storage">Внешняя память доступна</string>
+	<string name="dialog_title_external_storage_missing">Внешняя память отсутствует</string>
+	<string name="dialog_title_preference_frequency">Частота обновления</string>
+	<string name="dialog_title_preference_history_size">Количество твитов в истории</string>
+	<string name="dialog_title_preference_history_time">Время хранения истории</string>
+	<string name="dialog_title_preference_password">Пароль</string>
+	<string name="dialog_title_preference_theme">Выберите тему</string>
+	<string name="dialog_title_preference_username">Имя пользователя</string>
+	<string name="dialog_title_sending_message">Отправка сообщения...</string>
+	<string name="dialog_title_service_unavailable">Сервис недоступен</string>
+	<string name="dialog_title_timeline_loading">Обновление ленты времени...</string>
+	<string name="error_twitter_404">Страница не найдена! Пожалуйста, сообщите об этой ошибке!</string>
+	<string name="error_connection_error">Произошла ошибка соединения. Сообщите об этой ошибке!</string>
+	<string name="favorite_created">Твит добавлен в избранное.</string>
+	<string name="favorite_destroyed">Твит удалён из избранного.</string>
+	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
+	<string name="loading">Загрузка...</string>
+	<string name="message_edit_hint">Что происходит?</string>
+	<string name="message_characters_left">Осталось символов:</string>
+	<string name="menu_item_block">Блокировать</string>
+	<string name="menu_item_destroy_favorite">Идалить из избранного</string>
+	<string name="menu_item_destroy_status">Удалить твит</string>
+	<string name="menu_item_direct_message">Личное сообщение</string>
+	<string name="menu_item_favorite">Добавить в избранное</string>
+	<string name="menu_item_follow">Следить</string>
+	<string name="menu_item_reply">Ответить</string>
+	<string name="menu_item_retweet">Пересказать</string>
+	<string name="menu_item_unfollow">Не следить</string>
+	<string name="menu_item_view_profile">Посмотреть профиль</string>
+	<string name="message_sent">Ваше сообщение отправлено.</string>
+	<string name="messages_activity">Личные сообщения</string>
+	<string name="notification_title">AndTweet</string>
+	<string name="notification_tweet_singular">{0} новый твит</string>
+	<string name="notification_tweet_plural">{0,number} новых твитов</string>
+	<string name="notification_new_tweet_format">У вас {0}.</string>
+	<string name="notification_message_singular">{0} новое сообщение</string>
+	<string name="notification_message_plural">{0,number} новых сообщений</string>
+	<string name="notification_new_message_format">У вас {0}.</string>
+	<string name="notification_title_messages">Новые личные сообщения</string>
+	<string name="notification_mention_singular">{0} новое упоминание</string>
+	<string name="notification_mention_plural">{0,number} новых упоминаний</string>
+	<string name="notification_new_mention_format">У вас {0}.</string>
+	<string name="notification_title_mentions">Новые упоминания</string>
+	<string name="options_menu_about">О программе AndTweet</string>
+	<string name="options_menu_about_cond">Информация</string>
+	<string name="options_menu_direct_messages">Личные сообщения</string>
+	<string name="options_menu_direct_messages_cond">Сообщения</string>
+	<string name="options_menu_friends_timeline">Линии времени друзей</string>
+	<string name="options_menu_friends_timeline_cond">Друзья</string>
+	<string name="options_menu_help">Помощь</string>
+	<string name="options_menu_preferences">Настройки</string>
+	<string name="options_menu_reload">Перезагрузка</string>
+	<string name="options_menu_mentions">Упоминания</string>
+	<string name="options_menu_search">Поиск</string>
+	<string name="reltime_just_now">только что</string>
+	<string name="reltime_seconds_ago">%1$s секунд назад</string>
+	<string name="reltime_a_minute_ago">минуту назад</string>
+	<string name="reltime_minutes_ago">%1$s минут назад</string>
+	<string name="reltime_an_hour_ago">час назад</string>
+	<string name="reltime_two_hours_ago">два часа назад</string>
+	<string name="reltime_hours_ago">%1$s часов назад</string>
+	<string name="reltime_yesterday">вчера</string>
+	<string name="reltime_days_ago">%1$s дней назад</string>
+	<string name="reltime_one_month_ago">месяц назад</string>
+	<string name="reltime_months_ago">{0} месяцев назад</string>
+	<string name="resolve_view">Посмотреть твит</string>
+	<string name="splash_button_learn_more">Узнать больше</string>
+	<string name="splash_button_get_started">Начать работу с программой</string>
+	<string name="splash_payoff_line">Лёгкий клиент Твиттера для Андроида™</string>
+	<string name="splash_text_learn_more_1"><h1><b>1. АЗЫ ПРОГРАММЫ ANDTWEET</b></h1>\n\nПервая страница AndTweet-а содержит ленту времени Ваших друзей (т.е. тех, за кем Вы следуете - follow).\n\nДля того, чтобы произвести какое-либо действие c отдельным твитом из этой ленты-списка, Вы можете <b>длительно нажать</b> на него для появления контекстного меню.\n\nВы можетее также <b>кратко нажать</b> на твит для того, чтобы получить более подробную информацию о нём.\n\nНажмите кнопку <b>Меню</b> Вашего устройства для переключения на другие страницы программы.</string>
+	<string name="splash_text_learn_more_2"><h1><b>2. ОТПРАВКА И ОТВЕТЫ</b></h1>\n\nДля обновления Вашего статуса (для сообщения о том, что происходит...) просто напишите об этом в текстовом поле внизу окна и нажмите кнопку <b>Отправить</b>.\n\nДля того, чтобы ответить, <b>длительно нажмите</b> на твит, выберите <b>Ответить</b> в контекстном меню и введите свой ответ в текстовом поле внизу страницы.\n\nДля отмены ответа, удалите весь текст из текстового поля внизу страницы.</string>
+	<string name="splash_text_learn_more_3"><h1><b>3. ЛИЧНЫЕ СООБЩЕНИЯ</b></h1>\n\nНажмите <b>Меню</b>, а далее - <b>Сообщения</b>.\n\nДля <b>удаления</b> личного сообщения, <b>длительно нажмите</b> на него и выберите <b>Удалить</b>.\n\nНовые сообщения появляются, если Вы включили <b>Автоматические обновления</b>.</string>
+	<string name="splash_text_learn_more_4"><h1><b>4. СПИСОК УПОМИНАНИЙ</b></h1>\n\nНажмите <b>Меню</b>, а далее - <b>Упоминания</b>.\n\nВ списке упоминаний будут показаны все твиты, в которых упоминается Ваше <b>@имяпользователя</b>.</string>
+	<string name="splash_text_learn_more_5"><h1><b>5. ПОИСК</b></h1>\n\nНажмите <b>Меню</b>, а далее <b>Поиск</b>; или Вы можете нажать кнопку <b>Поиск</b> Вашего устройства.\n\nПоиск будет производится по всему тексту твитов. Если Вы хотите увидель только твиты определённого пользователя, ищите "<b>имяпользователя</b>."\n\nДля того, чтобы найти упоминания определённого пользователя, ищите "<b>@имяпользователя</b>"</string>
+	<string name="search_timeline_label">Поиск твитов, людей и тем</string>
+	<string name="search_timeline_hint">Введите имя или фразу</string>
+	<string name="search_direct_messages_label">Поиск личных сообщений</string>
+	<string name="search_direct_messages_hint">Введите имя или фразу</string>
+	<string name="status_destroyed">Твит удалён.</string>
+	<string name="summary_preference_appearance">Изменить внешний вид программы AndTweet</string>
+	<string name="summary_preference_automatic_updates">Изменить параметры автоматического обновления</string>
+	<string name="summary_preference_automatic_updates_off">Автоматические обновления отключены</string>
+	<string name="summary_preference_automatic_updates_on">Автоматические обновления включены</string>
+	<string name="summary_preference_frequency">Обновления происходят {0}.</string>
+	<string name="summary_preference_history_size">Сохранять историю до {0} штук твитов.</string>
+	<string name="summary_preference_history_time">Хранить истории за {0}.</string>
+	<string name="summary_preference_light_theme_off">Будет использована стандартная тема.</string>
+	<string name="summary_preference_light_theme_on">Будет использована светлая тема.</string>
+	<string name="summary_preference_no_ringtone">Тишина</string>
+	<string name="summary_preference_notifications">Изменить параметры уведомлений</string>
+	<string name="summary_preference_notifications_enabled">Включить уведомления?</string>
+	<string name="summary_preference_notifications_enabled_off">Обновления отключены</string>
+	<string name="summary_preference_notifications_enabled_on">Обновления включены</string>
+	<string name="summary_preference_notifications_messages">Сообщать о новых личных сообщениях?</string>
+	<string name="summary_preference_notifications_messages_off">Нет уведомлений для Личных сообщений</string>
+	<string name="summary_preference_notifications_messages_on">Вы будете уведомлены о новых личных сообщениях</string>
+	<string name="summary_preference_notifications_mentions">Сообщать о новых упоминаниях?</string>
+	<string name="summary_preference_notifications_mentions_off">Отключить напоминания об упоминаниях</string>
+	<string name="summary_preference_notifications_mentions_on">Вы будете уведомлены о новых упоминаниях</string>
+	<string name="summary_preference_notifications_timeline">Сообщать о новых твитах?</string>
+	<string name="summary_preference_notifications_timeline_off">Уведомления о новых твитах отключены</string>
+	<string name="summary_preference_notifications_timeline_on">Вы будете оведомлены о новых твитах</string>
+	<string name="summary_preference_password">Ваш пароль в Твиттере</string>
+	<string name="summary_preference_storage">Где сохранять данные и изображения</string>
+	<string name="summary_preference_storage_external_off">Сохранять данные во внутренней памяти</string>
+	<string name="summary_preference_storage_external_on">Сохранять данные во внешней памяти</string>
+	<string name="summary_preference_theme">Выберите тему AndTweet-а</string>
+	<string name="summary_preference_use_avatars_off">Аватары пользователей не будут показаны</string>
+	<string name="summary_preference_use_avatars_on">Аватары пользователей будут показаны</string>
+	<string name="summary_preference_username">Ваше имя пользователя в Твиттере</string>
+	<string name="summary_preference_vibration">Виброзвонок при входящем твите</string>
+	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>
+	<string name="summary_preference_vibration_on">Виброзвонок при входящем твите включён</string>
+	<string name="timeline_reloaded">Лента времени обновлена.</string>
+	<string name="title_preference_appearance">Внешний вид</string>
+	<string name="title_preference_automatic_updates">Автоматические обновления</string>
+	<string name="title_preference_frequency">Частота обновлений</string>
+	<string name="title_preference_history_size">Размер истории</string>
+	<string name="title_preference_history_time">Длительность хранения истории</string>
+	<string name="title_preference_light_theme">Светлая тема</string>
+	<string name="title_preference_notification_sound">Мелодия звонка для уведомлений</string>
+	<string name="title_preference_notifications">Уведомления</string>
+	<string name="title_preference_notifications_enabled">Разрешить уведомления</string>
+	<string name="title_preference_notifications_messages">Новые личные сообщениях</string>
+	<string name="title_preference_notifications_mentions">Новые упоминания</string>
+	<string name="title_preference_notifications_timeline">Новые твиты друзей</string>
+	<string name="title_preference_password">Пароль</string>
+	<string name="title_preference_storage">Память</string>
+	<string name="title_preference_storage_external">Использовать внешнюю память</string>
+	<string name="title_preference_theme">Тема</string>
+	<string name="title_preference_username">Имя пользователя</string>
+	<string name="title_preference_use_avatars">Показывать аватары</string>
+	<string name="title_preference_vibration">Виброзвонок</string>
+	<string name="tweet_activity">Твиты</string>
+	<string name="tweet_source_from">%1$s от %2$s %3$s</string>
+	<string name="tweet_source_in_reply_to">в ответ на %1$s</string>
+	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
+	<string name="unimplemented">Не реализовано.</string>
+</resources>

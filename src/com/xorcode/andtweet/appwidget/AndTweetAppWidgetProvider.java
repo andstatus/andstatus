@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2010 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xorcode.andtweet.appwidget;
 
 import android.app.PendingIntent;
@@ -8,7 +23,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import java.util.Calendar; 
 import android.text.format.DateFormat; 
 import android.text.format.DateUtils;
 import android.text.format.Time;
@@ -18,9 +32,8 @@ import android.widget.RemoteViews;
 
 import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.AndTweetService;
+import com.xorcode.andtweet.util.I18n;
 import com.xorcode.andtweet.util.RelativeTime;
-
-import static com.xorcode.andtweet.AndTweetService.*;
 
 /**
  * A widget provider. If uses AndTweetAppWidgetData to store preferences and to
@@ -50,12 +63,16 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Log.d(TAG, "onReceive; intent=" + intent);
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onReceive; intent=" + intent);
+        }
 		boolean done = false;
 		String action = intent.getAction();
 
 		if (AndTweetService.ACTION_APPWIDGET_UPDATE.equals(action)) {
-			Log.d(TAG, "inst=" + instanceId + "; Intent from AndTweetService received!");
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "inst=" + instanceId + "; Intent from AndTweetService received!");
+            }
 			Bundle extras = intent.getExtras();
 			if (extras != null) {
 				msgType = extras.getInt(AndTweetService.EXTRA_MSGTYPE);
@@ -84,9 +101,13 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 						AppWidgetManager.INVALID_APPWIDGET_ID);
 				done = true;
 			}
-			Log.d(TAG, "inst=" + instanceId + "; Intent from AndTweetService processed");
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "inst=" + instanceId + "; Intent from AndTweetService processed");
+            }
 		} else if (AppWidgetManager.ACTION_APPWIDGET_DELETED.equals(action)) {
-			Log.d(TAG, "Action APPWIDGET_DELETED was received");
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "Action APPWIDGET_DELETED was received");
+            }
 			Bundle extras = intent.getExtras();
 			if (extras != null) {
 				int[] appWidgetIds = extras
@@ -106,8 +127,10 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 				}
 			}
 			if (!done) {
-				Log.d(TAG, "Deletion was not done, extras='"
-						+ extras.toString() + "'");
+	            if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+	                Log.d(TAG, "Deletion was not done, extras='"
+	                        + extras.toString() + "'");
+	            }
 			}
 		}
 		if (!done) {
@@ -118,7 +141,9 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
-		Log.d(TAG, "onUpdate");
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onUpdate");
+        }
 		// For each widget that needs an update, get the text that we should
 		// display:
 		// - Create a RemoteViews object for it
@@ -133,7 +158,9 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 
 	@Override
 	public void onDeleted(Context context, int[] appWidgetIds) {
-		Log.d(TAG, "onDeleted");
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onDeleted");
+        }
 		// When the user deletes the widget, delete all preferences associated
 		// with it.
 		final int N = appWidgetIds.length;
@@ -144,12 +171,16 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 
 	@Override
 	public void onEnabled(Context context) {
-		Log.d(TAG, "onEnabled");
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onEnabled");
+        }
 	}
 
 	@Override
 	public void onDisabled(Context context) {
-		Log.d(TAG, "onDisabled");
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onDisabled");
+        }
 
 	}
 
@@ -165,8 +196,10 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 			int appWidgetId) {
 		boolean Ok = false;
 		try {
-			Log.d(TAG, "inst=" + instanceId + "; updateAppWidget appWidgetId=" + appWidgetId 
-					+ "; msgType=" + msgType);
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "inst=" + instanceId + "; updateAppWidget appWidgetId=" + appWidgetId 
+                        + "; msgType=" + msgType);
+            }
 
 			// TODO:
 			// see /ApiDemos/src/com/example/android/apis/app/AlarmController.java
@@ -177,25 +210,25 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 				data = new AndTweetAppWidgetData(context,
 						appWidgetId);
 				data.load();
-		
-				if (numSomethingReceived != 0) {
-					data.changed = true;
-				}
+
+		        if (AndTweetService.updateWidgetsOnEveryUpdate || (numSomethingReceived != 0)) {
+                    data.changed = true;
+		        }
 				// Calculate new values
 				switch (msgType) {
-				case NOTIFY_REPLIES:
+				case AndTweetService.NOTIFY_REPLIES:
 					data.numMentions += numSomethingReceived;
 					break;
 		
-				case NOTIFY_DIRECT_MESSAGE:
+				case AndTweetService.NOTIFY_DIRECT_MESSAGE:
 					data.numMessages += numSomethingReceived;
 					break;
 		
-				case NOTIFY_TIMELINE:
+				case AndTweetService.NOTIFY_TIMELINE:
 					data.numTweets += numSomethingReceived;
 					break;
 		
-				case NOTIFY_CLEAR:
+				case AndTweetService.NOTIFY_CLEAR:
 					data.clear();
 					break;
 		
@@ -218,7 +251,7 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 			String widgetTime = "";
 			if (data.dateUpdated == 0) {
 				widgetTime = "==0 ???";
-				Log.e(TAG, "data.dateUpdated==0");
+                Log.e(TAG, "data.dateUpdated==0");
 			} else {
 				widgetTime = formatWidgetTime(context, data.dateCleared, data.dateUpdated);
 			}
@@ -228,35 +261,37 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 			if (data.numMentions > 0) {
 				isFound = true;
 				widgetText += (widgetText.length() > 0 ? "\n" : "")
-						+ formatMessage(context,
+						+ I18n.formatQuantityMessage(context,
 								R.string.appwidget_new_mention_format,
 								data.numMentions,
-								R.string.appwidget_mention_singular,
-								R.string.appwidget_mention_plural);
+								R.array.appwidget_mention_patterns,
+								R.array.appwidget_mention_formats);
 			}
 			if (data.numMessages > 0) {
 				isFound = true;
 				widgetText += (widgetText.length() > 0 ? "\n" : "")
-						+ formatMessage(context,
+						+ I18n.formatQuantityMessage(context,
 								R.string.appwidget_new_message_format,
 								data.numMessages,
-								R.string.appwidget_message_singular,
-								R.string.appwidget_message_plural);
+								R.array.appwidget_message_patterns,
+								R.array.appwidget_message_formats);
 			}
 			if (data.numTweets > 0) {
 				isFound = true;
 				widgetText += (widgetText.length() > 0 ? "\n" : "")
-						+ formatMessage(context,
+						+ I18n.formatQuantityMessage(context,
 								R.string.appwidget_new_tweet_format,
-								data.numTweets, R.string.appwidget_tweet_singular,
-								R.string.appwidget_tweet_plural);
+								data.numTweets, R.array.appwidget_tweet_patterns,
+								R.array.appwidget_tweet_formats);
 			}
 			if (!isFound) {
 				widgetComment = data.nothingPref;
 			}
 
-			Log.d(TAG, "updateAppWidget text=\"" + widgetText.replaceAll("\n", "; ") + "\"; comment=\""
-					+ widgetComment + "\"");
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "updateAppWidget text=\"" + widgetText.replaceAll("\n", "; ") + "\"; comment=\""
+                        + widgetComment + "\"");
+            }
 
 			// Construct the RemoteViews object. It takes the package name (in our
 			// case, it's our
@@ -311,7 +346,9 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 			Log.e(TAG, "inst=" + instanceId + "; updateAppWidget exception: " + e.toString() );
 			
 		} finally {
-			Log.d(TAG, "inst=" + instanceId + "; updateAppWidget " + (Ok ? "succeded" : "failed") );
+            if ( !Ok || Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.d(TAG, "inst=" + instanceId + "; updateAppWidget " + (Ok ? "succeded" : "failed") );
+            }
 		}
 	}
 
@@ -422,21 +459,5 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 		}		
 		
 		return widgetTime;
-	}
-
-	private String formatMessage(Context context, int messageFormat,
-			int numSomething, int singular, int plural) {
-		String aMessage = "";
-		java.text.MessageFormat form = new java.text.MessageFormat(context
-				.getText(messageFormat).toString());
-		Object[] formArgs = new Object[] { numSomething };
-		double[] tweetLimits = { 1, 2 };
-		String[] tweetPart = { context.getText(singular).toString(),
-				context.getText(plural).toString() };
-		java.text.ChoiceFormat tweetForm = new java.text.ChoiceFormat(
-				tweetLimits, tweetPart);
-		form.setFormatByArgumentIndex(0, tweetForm);
-		aMessage = form.format(formArgs);
-		return aMessage;
 	}
 }

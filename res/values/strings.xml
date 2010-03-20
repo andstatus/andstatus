@@ -25,14 +25,8 @@
     <string name="appwidget_configure_instructions">Customize 
     AndTweet Widget message, shown in a case there is nothing new:</string>
     <string name="appwidget_nothing_default">Nothing new since:</string>
-	<string name="appwidget_tweet_singular">{0} tweet</string>
-	<string name="appwidget_tweet_plural">{0,number} tweets</string>
 	<string name="appwidget_new_tweet_format">{0}</string>
-	<string name="appwidget_message_singular">{0} message</string>
-	<string name="appwidget_message_plural">{0,number} messages</string>
 	<string name="appwidget_new_message_format">{0}</string>
-	<string name="appwidget_mention_singular">{0} mention</string>
-	<string name="appwidget_mention_plural">{0,number} mentions</string>
 	<string name="appwidget_new_mention_format">{0}</string>
 
 	<string name="authentication_successful">Authentication successful!</string>

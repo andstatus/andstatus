@@ -18,7 +18,6 @@ package com.xorcode.andtweet.appwidget;
 
 import android.app.Activity;
 import android.appwidget.AppWidgetManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,6 +25,7 @@ import android.view.View;
 import android.widget.EditText;
 
 // class is in a sub-package.
+import com.xorcode.andtweet.AndTweetService;
 import com.xorcode.andtweet.R;
 
 /**
@@ -66,7 +66,9 @@ public class AndTweetAppWidgetConfigure extends Activity {
 			mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
 					AppWidgetManager.INVALID_APPWIDGET_ID);
 		}
-		Log.d(TAG, "mAppWidgetId=" + mAppWidgetId);
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "mAppWidgetId=" + mAppWidgetId);
+        }
 
 		// If they gave us an intent without the widget id, just bail.
 		if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
@@ -83,8 +85,6 @@ public class AndTweetAppWidgetConfigure extends Activity {
 
 	View.OnClickListener mOnClickListener = new View.OnClickListener() {
 		public void onClick(View v) {
-			final Context context = AndTweetAppWidgetConfigure.this;
-
 			// When the button is clicked, save configuration settings in our prefs
 			// and return that they clicked OK.
 			appWidgetData.nothingPref = mAppWidgetTitle.getText().toString();

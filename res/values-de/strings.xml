@@ -77,15 +77,9 @@
 	<string name="message_sent">Deine Nachricht wurde gesendet.</string>
 	<string name="messages_activity">Direktnachrichten</string>
 	<string name="notification_title">AndTweet</string>
-	<string name="notification_tweet_singular">{0} neuen tweet</string>
-	<string name="notification_tweet_plural">{0,number} neue tweets</string>
 	<string name="notification_new_tweet_format">Du hast {0}.</string>
-	<string name="notification_message_singular">{0} neue Message</string>
-	<string name="notification_message_plural">{0,number} neue Messages</string>
 	<string name="notification_new_message_format">Du hast {0}.</string>
 	<string name="notification_title_messages">Neue Direktnachrichten</string>
-	<string name="notification_mention_singular">{0} neue Erwähnung</string>
-	<string name="notification_mention_plural">{0,number} neue Erwähnungen</string>
 	<string name="notification_new_mention_format">Du hast {0}.</string>
 	<string name="notification_title_mentions">Neue Erwähnungen</string>
 	<string name="options_menu_about">Über AndTweet</string>

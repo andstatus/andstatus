@@ -92,6 +92,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
 	protected boolean mAuthentiated = false;
 
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -119,7 +120,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 		updateHistoryTime();
 		updateRingtone(getPreferenceScreen().getSharedPreferences().getString(KEY_RINGTONE_PREFERENCE, null));
 	}
-
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -129,6 +130,15 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	@Override
 	protected void onPause() {
 		super.onPause();
+
+		if (mAutomaticUpdates.isChecked()) {
+            Log.d(TAG, "auto updates checked");
+            AndTweetService.restartAutomaticUpdates(getApplicationContext());
+        }
+        else {
+            Log.d(TAG, "auto updates NOT checked");
+            AndTweetService.stopAutomaticUpdates(getApplicationContext());
+        }
 		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
 	}
 
