@@ -165,15 +165,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
 		// Set up notification manager
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-		// Get the frequency from preferences
-		mFrequency = Integer.parseInt(mSP.getString("fetch_frequency", "180"));
-
-		// Set up the alarm manager
-		mAM = (AlarmManager) getSystemService(ALARM_SERVICE);
-		Intent serviceIntent = new Intent(IAndTweetService.class.getName());
-		mAlarmSender = PendingIntent.getService(this, 0, serviceIntent, 0);
-		mAM.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), mFrequency * MILLISECONDS, mAlarmSender);
 	}
 
 	@Override

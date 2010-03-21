@@ -248,7 +248,8 @@ public class AndTweetService extends Service {
 	
 	@Override
 	public void onStart(Intent intent, int startId) {
-		super.onStart(intent, startId);
+		super.onStart(intent, startId); 
+		Log.d(TAG, "onStart(): " + intent + " startid: " + startId);
 		Bundle extras = intent.getExtras();
 		if (extras != null) {
 			String action = extras.getString(EXTRA_MSGTYPE);
