@@ -17,6 +17,7 @@
 package com.xorcode.andtweet;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -38,16 +39,19 @@ public class AndTweetServiceManager extends BroadcastReceiver {
 
 			Log.d(TAG, "Starting service on boot.");
 			Intent serviceIntent = new Intent(IAndTweetService.class.getName());
-			context.startService(serviceIntent);
-
+			
 			SharedPreferences mSP = PreferenceManager.getDefaultSharedPreferences(context);
 			if (mSP.contains("automatic_updates") && mSP.getBoolean("automatic_updates", false)) {
 				Log.d(TAG, "Alarm started. Automatic updates turned on.");
-				AndTweetService.startAutomaticUpdates(context);
+				serviceIntent.putExtra(AndTweetService.EXTRA_MSGTYPE, AndTweetService.ACTION_START_ALARM);
 			} else {
 				Log.d(TAG, "Alarm cancelled. Automatic updates turned off.");
-				AndTweetService.stopAutomaticUpdates(context);
+				serviceIntent.putExtra(AndTweetService.EXTRA_MSGTYPE, AndTweetService.ACTION_STOP_ALARM);
 			}
+
+			ComponentName name = context.startService(serviceIntent);
+			Log.d(TAG, "Started service " + name);
+		
 		} else {
 			Log.e(TAG, "Received unexpected intent: " + intent.toString());
 		}

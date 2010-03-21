@@ -17,8 +17,6 @@
 package com.xorcode.andtweet;
 
 import java.net.SocketTimeoutException;
-import java.text.ChoiceFormat;
-import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -98,10 +96,33 @@ public class AndTweetService extends Service {
      * @see AppWidgetProvider#onUpdate AppWidgetProvider.onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
      */
 	private static final String ACTIONPREFIX = packageName + ".action.";
+	/**
+	 * The message string that triggers an update of the widget.
+	 */
     public static final String ACTION_APPWIDGET_UPDATE = ACTIONPREFIX + "APPWIDGET_UPDATE";
-	private static final String ACTION_START_ALARM = ACTIONPREFIX + "START_ALARM";
-	private static final String ACTION_STOP_ALARM = ACTIONPREFIX + "STOP_ALARM";
-	private static final String ACTION_RESTART_ALARM = ACTIONPREFIX + "RESTART_ALARM";
+	/**
+	 * The message string that is send to AndTweetService to signal that
+	 * the recurring alarm that is used to implement recurring tweet downloads
+	 * should be started.
+	 */
+    public static final String ACTION_START_ALARM = ACTIONPREFIX + "START_ALARM";
+	/**
+	 * The message string that is send to AndTweetService to signal that
+	 * the recurring alarm that is used to implement recurring tweet downloads
+	 * should be stopped.
+	 */
+	public static final String ACTION_STOP_ALARM = ACTIONPREFIX + "STOP_ALARM";
+	/**
+	 * The message string that is send to AndTweetService to signal that
+	 * the recurring alarm that is used to implement recurring tweet downloads
+	 * should be restarted.
+	 */
+	public static final String ACTION_RESTART_ALARM = ACTIONPREFIX + "RESTART_ALARM";
+	/**
+	 * The message string that the recurring alarm sends to signal
+	 * to AndTweetService that it should poll/download the tweets and
+	 * other information.
+	 */
 	private static final String ACTION_POLL = ACTIONPREFIX + "POLL";
 
     
@@ -160,9 +181,20 @@ public class AndTweetService extends Service {
 	private boolean mNotificationsVibrate;
 
 	private NotificationManager mNM;
-	
+
+	/**
+	 * The set of threads that are currently performing downloads of
+	 * information from the Twitter servers.
+	 */
 	private Set<Runnable> mPollingThreads = new HashSet<Runnable>();
+	/**
+	 * The number of listeners returned by the last broadcast start call.
+	 */
 	private volatile int mBroadcastListenerCount = 0;
+	/**
+	 * The reference to the wake lock used to keep the CPU from stopping
+	 * during downloads.
+	 */
 	private volatile PowerManager.WakeLock mWakeLock = null;
 	
 
@@ -185,29 +217,9 @@ public class AndTweetService extends Service {
 		@Override
 		public void onReceive(Context arg0, Intent intent) {
 			Log.d(TAG, "onReceive()");
-			if (ACTION_POLL.equals(intent.getAction())) {
-				Log.d(TAG, "ACTION_POLL");
-                mHandler.sendEmptyMessage(MSG_UPDATE_TIMELINE);
-                mHandler.sendEmptyMessage(MSG_UPDATE_DIRECT_MESSAGES);
-                mHandler.sendEmptyMessage(MSG_UPDATE_FOLLOWERS);
-                mHandler.sendEmptyMessage(MSG_UPDATE_TIMELINE);
-                mHandler.sendEmptyMessage(MSG_UPDATE_DIRECT_MESSAGES);
-                mHandler.sendEmptyMessage(MSG_UPDATE_FOLLOWERS);
-			}
-			else if (ACTION_START_ALARM.equals(intent.getAction())) {
-				Log.d(TAG, "ACTION_START_ALARM");
-				scheduleRecurringIntent();
-			}
-			else if (ACTION_STOP_ALARM.equals(intent.getAction())) {
-				Log.d(TAG, "ACTION_STOP_ALARM");
-				cancelRecurringIntent();
-			}
-			else if (ACTION_RESTART_ALARM.equals(intent.getAction())) {
-				Log.d(TAG, "ACTION_RESTART_ALARM");
-				cancelRecurringIntent();
-				scheduleRecurringIntent();
-			}
+			handleIntent(intent.getAction());
 		}
+
 	};
 	
 	@Override
@@ -233,6 +245,47 @@ public class AndTweetService extends Service {
 		return null;
 	}
 
+	
+	@Override
+	public void onStart(Intent intent, int startId) {
+		super.onStart(intent, startId);
+		Bundle extras = intent.getExtras();
+		if (extras != null) {
+			String action = extras.getString(EXTRA_MSGTYPE);
+			handleIntent(action);
+		}
+	}
+
+	
+	/**
+	 * Handles the action that came with an incoming intent and is used to update 
+	 * the alarm setting and to start a poll.
+	 * 
+	 * @param action the action string to handle
+	 */
+	private void handleIntent(String action) {
+		if (ACTION_POLL.equals(action)) {
+			Log.d(TAG, "ACTION_POLL");
+            mHandler.sendEmptyMessage(MSG_UPDATE_TIMELINE);
+            mHandler.sendEmptyMessage(MSG_UPDATE_DIRECT_MESSAGES);
+            mHandler.sendEmptyMessage(MSG_UPDATE_FOLLOWERS);
+		}
+		else if (ACTION_START_ALARM.equals(action)) {
+			Log.d(TAG, "ACTION_START_ALARM");
+			scheduleRecurringIntent();
+		}
+		else if (ACTION_STOP_ALARM.equals(action)) {
+			Log.d(TAG, "ACTION_STOP_ALARM");
+			cancelRecurringIntent();
+		}
+		else if (ACTION_RESTART_ALARM.equals(action)) {
+			Log.d(TAG, "ACTION_RESTART_ALARM");
+			cancelRecurringIntent();
+			scheduleRecurringIntent();
+		}
+	}
+
+	
 	private PowerManager.WakeLock getWakeLock() {
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		PowerManager.WakeLock wakeLock = pm.newWakeLock(
@@ -242,6 +295,13 @@ public class AndTweetService extends Service {
 	}
 
 	
+	/**
+	 * Bookkeeping method that should be called before a Twitter transaction is to be performed.
+	 * 
+	 * @param runnable the {@link Runnable} that is about to connect to Twitter
+	 * @param logMsg a log message to include for debugging
+	 * @return the number of broadcast receivers
+	 */
 	private synchronized int startStuff(Runnable runnable, String logMsg) {
 	    Log.d(TAG, logMsg);
 	    mPollingThreads.add(runnable);
@@ -255,6 +315,12 @@ public class AndTweetService extends Service {
 	}
 	
 	
+	/**
+	 * Bookkeeping method that should be called after a Twitter transaction was performed.
+	 * 
+	 * @param runnable the {@link Runnable} that ended its Twitter connection
+	 * @param logMsg a log message to include for debugging
+	 */
 	private synchronized void endStuff(Runnable runnable, String logMsg) {
 	    Log.d(TAG, logMsg);
 	    mPollingThreads.remove(runnable);
@@ -265,6 +331,13 @@ public class AndTweetService extends Service {
 	    }
 	}
 	
+	
+	/**
+	 * Returns if a specific Twitter connection is still running.
+	 * 
+	 * @param runnable the {@link Runnable} the check if it is currently running
+	 * @return true, if the Runnable is running, else false
+	 */
 	private boolean stuffRunning(Runnable runnable) {
 	    return mPollingThreads.contains(runnable);
 	}
@@ -714,7 +787,6 @@ public class AndTweetService extends Service {
 	public static void startAutomaticUpdates(Context context) {
 		Intent intent = new Intent(ACTION_START_ALARM);
 		context.sendBroadcast(intent);
-
 	}
 
 	/**
