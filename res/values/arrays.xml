@@ -172,4 +172,48 @@
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
+	<string-array name="reltime_days_ago_formats">
+		<item>"yesterday"</item>
+		<item>"{0} days ago"</item>
+	</string-array>
+	<string-array name="reltime_days_ago_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_hours_ago_formats">
+		<item>"an hour ago"</item>
+		<item>"two hours ago"</item>
+		<item>"{0} hours ago"</item>
+	</string-array>
+	<string-array name="reltime_hours_ago_patterns">
+		<item>"1"</item>
+		<item>"2"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_minutes_ago_formats">
+		<item>"a minute ago"</item>
+		<item>"two minutes ago"</item>
+		<item>"{0} minutes ago"</item>
+	</string-array>
+	<string-array name="reltime_minutes_ago_patterns">
+		<item>"1"</item>
+		<item>"2"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_months_ago_formats">
+		<item>"one month ago"</item>
+		<item>"{0} months ago"</item>
+	</string-array>
+	<string-array name="reltime_months_ago_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_seconds_ago_formats">
+		<item>"one second ago"</item>
+		<item>"{0} seconds ago"</item>
+	</string-array>
+	<string-array name="reltime_seconds_ago_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
 </resources>

@@ -94,16 +94,7 @@
 	<string name="options_menu_mentions">Erwähnungen</string>
 	<string name="options_menu_search">Suche</string>
 	<string name="reltime_just_now">gerade eben</string>
-	<string name="reltime_seconds_ago">vor %1$s Sekunden</string>
-	<string name="reltime_a_minute_ago">vor einer Minute</string>
-	<string name="reltime_minutes_ago">vor %1$s Minuten</string>
-	<string name="reltime_an_hour_ago">vor einer Stunde</string>
-	<string name="reltime_two_hours_ago">vor zwei Stunden</string>
-	<string name="reltime_hours_ago">vor %1$s Stunden</string>
-	<string name="reltime_yesterday">Gestern</string>
-	<string name="reltime_days_ago">vor %1$s Tagen</string>
-	<string name="reltime_one_month_ago">vor einem Monat</string>
-	<string name="reltime_months_ago">vor {0} Monaten</string>
+	<string name="reltime_years_ago">more than a year ago</string>
 	<string name="resolve_view">Zeige Tweet</string>
 	<string name="splash_button_learn_more">Mehr Informationen</string>
 	<string name="splash_button_get_started">Los gehts</string>

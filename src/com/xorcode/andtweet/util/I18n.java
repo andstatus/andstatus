@@ -64,9 +64,12 @@ public class I18n {
 		MessageFormat msf = new MessageFormat(subformat);
 		submessage = msf.format(new Object[] { quantityOfSomething });
 		
-		MessageFormat mf = new MessageFormat(context.getText(messageFormat).toString());
-		
-		message = mf.format(new Object[] { submessage });
+		if (messageFormat == 0) {
+            message = submessage;
+		} else {
+	        MessageFormat mf = new MessageFormat(context.getText(messageFormat).toString());
+	        message = mf.format(new Object[] { submessage });
+		}
 
         if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
             Log.v(TAG, "formatMessage, num=" + toMatch + "; subformat=" + subformat 

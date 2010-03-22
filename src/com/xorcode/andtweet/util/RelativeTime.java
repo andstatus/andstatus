@@ -16,8 +16,6 @@
 
 package com.xorcode.andtweet.util;
 
-import java.text.ChoiceFormat;
-import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -28,6 +26,7 @@ import android.content.Context;
 /**
  * 
  * @author torgny.bjers
+ * 2010-03-22 yvolk improved phrase formatting to using {@link I18n#formatQuantityMessage} 
  */
 public class RelativeTime {
 
@@ -68,40 +67,54 @@ public class RelativeTime {
 	}
 
 	/**
-	 * 
-	 * @param from
+	 * Difference to Now
+	 * @param from 
 	 * @return String
 	 */
 	public static String getDifference(Context context, long from) {
 		String value = new String();
 		long to = System.currentTimeMillis();
-		long delta = (to - from) / 1000;
-		if (delta < 0) {
+		long delta = java.lang.Math.round( (double)(to - from) / 1000);
+		if (delta < 1) {
 			value = context.getString(R.string.reltime_just_now);
 		} else if (delta < 1 * MINUTE) {
-			value = context.getString(R.string.reltime_seconds_ago, new Object[] { delta });
-		} else if (delta < 2 * MINUTE) {
-			value = context.getString(R.string.reltime_a_minute_ago);
+            int numSeconds = (int) delta;
+            value = I18n.formatQuantityMessage(context,
+                    0,
+                    numSeconds,
+                    R.array.reltime_seconds_ago_patterns,
+                    R.array.reltime_seconds_ago_formats);
 		} else if (delta < 59 * MINUTE) {
-			value = context.getString(R.string.reltime_minutes_ago, new Object[] { delta / MINUTE });
-		} else if (delta < 90 * MINUTE) {
-			value = context.getString(R.string.reltime_an_hour_ago);
-		} else if (delta < 150 * MINUTE) {
-			value = context.getString(R.string.reltime_two_hours_ago);
+            int numMinutes = (int) java.lang.Math.round( (double) delta / MINUTE);
+            value = I18n.formatQuantityMessage(context,
+                    0,
+                    numMinutes,
+                    R.array.reltime_minutes_ago_patterns,
+                    R.array.reltime_minutes_ago_formats);
 		} else if (delta < 24 * HOUR) {
-			value = context.getString(R.string.reltime_hours_ago, new Object[] { delta / HOUR });
-		} else if (delta < 48 * HOUR) {
-			value = context.getString(R.string.reltime_yesterday);
+            int numHours = (int) java.lang.Math.round( (double) delta / HOUR);
+            value = I18n.formatQuantityMessage(context,
+                    0,
+                    numHours,
+                    R.array.reltime_hours_ago_patterns,
+                    R.array.reltime_hours_ago_formats);
 		} else if (delta < 30 * DAY) {
-			value = context.getString(R.string.reltime_days_ago, new Object[] { delta / DAY });
+		    int numDays = (int) java.lang.Math.round( (double) delta / DAY);
+		    value = I18n.formatQuantityMessage(context,
+                    0,
+                    numDays,
+                    R.array.reltime_days_ago_patterns,
+                    R.array.reltime_days_ago_formats);
 		} else if (delta < 12 * MONTH) {
-			MessageFormat form = new MessageFormat("{0}");
-			Object[] formArgs = new Object[] { delta / MONTH };
-			double[] tweetLimits = {1,2};
-			String[] tweetPart = { context.getString(R.string.reltime_one_month_ago), context.getString(R.string.reltime_months_ago) };
-			ChoiceFormat tweetForm = new ChoiceFormat(tweetLimits, tweetPart);
-			form.setFormatByArgumentIndex(0, tweetForm);
-			value = form.format(formArgs);
+            int numMonths = (int) java.lang.Math.round( (double) delta / MONTH);
+            value = I18n.formatQuantityMessage(context,
+                    0,
+                    numMonths,
+                    R.array.reltime_months_ago_patterns,
+                    R.array.reltime_months_ago_formats);
+		} else {
+		    // TODO: Years...
+            value = context.getString(R.string.reltime_years_ago);
 		}
 		return value;
 	}

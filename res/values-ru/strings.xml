@@ -109,16 +109,7 @@
 	<string name="options_menu_mentions">Упоминания</string>
 	<string name="options_menu_search">Поиск</string>
 	<string name="reltime_just_now">только что</string>
-	<string name="reltime_seconds_ago">%1$s секунд назад</string>
-	<string name="reltime_a_minute_ago">минуту назад</string>
-	<string name="reltime_minutes_ago">%1$s минут назад</string>
-	<string name="reltime_an_hour_ago">час назад</string>
-	<string name="reltime_two_hours_ago">два часа назад</string>
-	<string name="reltime_hours_ago">%1$s часов назад</string>
-	<string name="reltime_yesterday">вчера</string>
-	<string name="reltime_days_ago">%1$s дней назад</string>
-	<string name="reltime_one_month_ago">месяц назад</string>
-	<string name="reltime_months_ago">{0} месяцев назад</string>
+	<string name="reltime_years_ago">больше года назад</string>
 	<string name="resolve_view">Посмотреть твит</string>
 	<string name="splash_button_learn_more">Узнать больше</string>
 	<string name="splash_button_get_started">Начать работу с программой</string>

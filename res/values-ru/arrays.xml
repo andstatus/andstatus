@@ -183,4 +183,68 @@
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>
 	</string-array>
+	<string-array name="reltime_days_ago_formats">
+		<item>"вчера"</item>
+		<item>"{0} день назад"</item>
+		<item>"{0} дня назад"</item>
+		<item>"{0} дней назад"</item>
+	</string-array>
+	<string-array name="reltime_days_ago_patterns">
+		<item>"1"</item>
+		<item>".*[^1]1"</item>
+		<item>".*[^1][234]|2|3|4"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_hours_ago_formats">
+		<item>"час назад"</item>
+		<item>"два часа назад"</item>
+		<item>"{0} час назад"</item>
+		<item>"{0} часа назад"</item>
+		<item>"{0} часов назад"</item>
+	</string-array>
+	<string-array name="reltime_hours_ago_patterns">
+		<item>"1"</item>
+		<item>"2"</item>
+		<item>".*[^1]1"</item>
+		<item>".*[^1][234]|3|4"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_minutes_ago_formats">
+		<item>"минуту назад"</item>
+		<item>"две минуты назад"</item>
+		<item>"{0} минута назад"</item>
+		<item>"{0} минуты назад"</item>
+		<item>"{0} минут назад"</item>
+	</string-array>
+	<string-array name="reltime_minutes_ago_patterns">
+		<item>"1"</item>
+		<item>"2"</item>
+		<item>".*[^1]1"</item>
+		<item>".*[^1][234]|3|4"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_months_ago_formats">
+		<item>"месяц назад"</item>
+		<item>"{0} месяц назад"</item>
+		<item>"{0} месяца назад"</item>
+		<item>"{0} месяцев назад"</item>
+	</string-array>
+	<string-array name="reltime_months_ago_patterns">
+		<item>"1"</item>
+		<item>".*[^1]1"</item>
+		<item>".*[^1][234]|2|3|4"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_seconds_ago_formats">
+		<item>"секунду назад"</item>
+		<item>"{0} секунду назад"</item>
+		<item>"{0} секунды назад"</item>
+		<item>"{0} секунд назад"</item>
+	</string-array>
+	<string-array name="reltime_seconds_ago_patterns">
+		<item>"1"</item>
+		<item>".*[^1]1"</item>
+		<item>".*[^1][234]|2|3|4"</item>
+		<item>".*"</item>
+	</string-array>
 </resources>

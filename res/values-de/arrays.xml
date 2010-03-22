@@ -116,4 +116,44 @@
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
+	<string-array name="reltime_days_ago_formats">
+		<item>"Gestern"</item>
+		<item>"vor {0} Tagen"</item>
+	</string-array>
+	<string-array name="reltime_days_ago_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_hours_ago_formats">
+		<item>"vor einer Stunde"</item>
+		<item>"vor zwei Stunden"</item>
+		<item>"vor {0} Stunden"</item>
+	</string-array>
+	<string-array name="reltime_hours_ago_patterns">
+		<item>"1"</item>
+		<item>"2"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_minutes_ago_formats">
+		<item>"vor einer Minute"</item>
+		<item>"vor {0} Minuten"</item>
+	</string-array>
+	<string-array name="reltime_minutes_ago_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_months_ago_formats">
+		<item>"vor einem Monat"</item>
+		<item>"vor {0} Monaten"</item>
+	</string-array>
+	<string-array name="reltime_months_ago_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_seconds_ago_formats">
+		<item>"vor {0} Sekunden"</item>
+	</string-array>
+	<string-array name="reltime_seconds_ago_patterns">
+		<item>".*"</item>
+	</string-array>
 </resources>
