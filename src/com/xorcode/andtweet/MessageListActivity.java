@@ -289,16 +289,29 @@ public class MessageListActivity extends TimelineActivity {
 	 */
 	@Override
 	public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-		if (id <= 0) {
-			return;
-		}
-		Uri uri = ContentUris.withAppendedId(AndTweetDatabase.DirectMessages.CONTENT_URI, id);
-		String action = getIntent().getAction();
-		if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
-			setResult(RESULT_OK, new Intent().setData(uri));
-		} else {
-			startActivity(new Intent(Intent.ACTION_VIEW, uri));
-		}
+	    
+	    // TODO: This class is not fully implemented
+	    // Compare it to the TweetListActivity
+        Toast.makeText(this, R.string.unimplemented, Toast.LENGTH_SHORT).show();
+        return;
+	    
+//		if (id <= 0) {
+//			return;
+//		}
+//		Uri uri = ContentUris.withAppendedId(AndTweetDatabase.DirectMessages.CONTENT_URI, id);
+//		String action = getIntent().getAction();
+//		if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
+//			setResult(RESULT_OK, new Intent().setData(uri));
+//		} else {
+//		    /** 
+//		     * TODO: Such Activity is not implemented, resulting in the error:
+//		     * ERROR/AndroidRuntime(944): 
+//		     *  android.content.ActivityNotFoundException: No Activity found to handle Intent
+//		     *  { action=android.intent.action.VIEW 
+//		     *  data=content://com.xorcode.andtweet/directmessages/944723647
+//		     */
+//			startActivity(new Intent(Intent.ACTION_VIEW, uri));
+//		}
 	}
 
 	@Override
