@@ -17,7 +17,6 @@
 package com.xorcode.andtweet;
 
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,31 +29,36 @@ import android.util.Log;
  */
 public class AndTweetServiceManager extends BroadcastReceiver {
 
-	public static final String TAG = "AndTweetServiceManager";
+    public static final String TAG = "AndTweetServiceManager";
 
-	@Override
-	public void onReceive(Context context, Intent intent) {
-		if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
-			PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
+            PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
 
-			Log.d(TAG, "Starting service on boot.");
-			Intent serviceIntent = new Intent(IAndTweetService.class.getName());
-			
-			SharedPreferences mSP = PreferenceManager.getDefaultSharedPreferences(context);
-			if (mSP.contains("automatic_updates") && mSP.getBoolean("automatic_updates", false)) {
-				Log.d(TAG, "Alarm started. Automatic updates turned on.");
-				serviceIntent.putExtra(AndTweetService.EXTRA_MSGTYPE, AndTweetService.ACTION_START_ALARM);
-			} else {
-				Log.d(TAG, "Alarm cancelled. Automatic updates turned off.");
-				serviceIntent.putExtra(AndTweetService.EXTRA_MSGTYPE, AndTweetService.ACTION_STOP_ALARM);
-			}
+            Log.d(TAG, "Starting service on boot.");
+            startAndTweetService(context);
+        
+        } else {
+            Log.e(TAG, "Received unexpected intent: " + intent.toString());
+        }
+    }
 
-			ComponentName name = context.startService(serviceIntent);
-			Log.d(TAG, "Started service " + name);
-		
-		} else {
-			Log.e(TAG, "Received unexpected intent: " + intent.toString());
-		}
-	}
+    /**
+     * Starts AndTweetService if it is not already started.
+     * 
+     * @param context 
+     * @return
+     */
+    public static void startAndTweetService(Context context) {
+        SharedPreferences mSP = PreferenceManager.getDefaultSharedPreferences(context);
+        if (mSP.contains("automatic_updates") && mSP.getBoolean("automatic_updates", false)) {
+            Log.d(TAG, "Alarm started. Automatic updates turned on.");
+            AndTweetService.startAutomaticUpdates(context);
+        } else {
+            Log.d(TAG, "Alarm cancelled. Automatic updates turned off.");
+            AndTweetService.stopAutomaticUpdates(context);
+        }
+    }
 
 }

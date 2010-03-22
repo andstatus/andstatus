@@ -127,20 +127,14 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 		getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 	}
 
-	@Override
-	protected void onPause() {
-		super.onPause();
+    @Override
+    protected void onPause() {
+        super.onPause();
 
-		if (mAutomaticUpdates.isChecked()) {
-            Log.d(TAG, "auto updates checked");
-            AndTweetService.restartAutomaticUpdates(getApplicationContext());
-        }
-        else {
-            Log.d(TAG, "auto updates NOT checked");
-            AndTweetService.stopAutomaticUpdates(getApplicationContext());
-        }
-		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-	}
+        AndTweetServiceManager.startAndTweetService(this);
+        
+        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+    }
 
 	protected void updateHistorySize() {
 		String[] k = getResources().getStringArray(R.array.history_size_keys);

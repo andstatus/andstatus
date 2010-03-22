@@ -206,9 +206,6 @@ public class AndTweetService extends Service {
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
 		registerReceiver(intentReceiver, new IntentFilter(ACTION_POLL));
-		registerReceiver(intentReceiver, new IntentFilter(ACTION_START_ALARM));
-		registerReceiver(intentReceiver, new IntentFilter(ACTION_STOP_ALARM));
-		registerReceiver(intentReceiver, new IntentFilter(ACTION_RESTART_ALARM));
 	}
 
 
@@ -780,34 +777,39 @@ public class AndTweetService extends Service {
 		}
 	};
 
-	/**
-	 * Utility method to send the Intent to the {@link AndTweetService} that starts the recurring alarm.
-	 * 
-	 * @param context the context to use for sending the Intent
-	 */
-	public static void startAutomaticUpdates(Context context) {
-		Intent intent = new Intent(ACTION_START_ALARM);
-		context.sendBroadcast(intent);
-	}
+    /**
+     * Utility method to send the Intent to the {@link AndTweetService} that
+     * starts the recurring alarm.
+     * 
+     * @param context the context to use for sending the Intent
+     */
+    public static void startAutomaticUpdates(Context context) {
+        Intent serviceIntent = new Intent(IAndTweetService.class.getName());
+        serviceIntent.putExtra(AndTweetService.EXTRA_MSGTYPE, AndTweetService.ACTION_START_ALARM);
+        context.startService(serviceIntent);
+    }
 
-	/**
-	 * Utility method to send the Intent to the {@link AndTweetService} that stops the recurring alarm.
-	 * 
-	 * @param context the context to use for sending the Intent
-	 */
-	public static void stopAutomaticUpdates(Context context) {
-		Intent intent = new Intent(ACTION_STOP_ALARM);
-		context.sendBroadcast(intent);
-	}
+    /**
+     * Utility method to send the Intent to the {@link AndTweetService} that
+     * stops the recurring alarm.
+     * 
+     * @param context the context to use for sending the Intent
+     */
+    public static void stopAutomaticUpdates(Context context) {
+        Intent serviceIntent = new Intent(IAndTweetService.class.getName());
+        serviceIntent.putExtra(AndTweetService.EXTRA_MSGTYPE, AndTweetService.ACTION_STOP_ALARM);
+        context.startService(serviceIntent);
+    }
 
-	/**
-	 * Utility method to send the Intent to the {@link AndTweetService} that restart the recurring alarm. 
-	 * This is useful for changing the frequency.
-	 * 
-	 * @param context the context to use for sending the Intent
-	 */
-	public static void restartAutomaticUpdates(Context context) {
-		Intent intent = new Intent(ACTION_RESTART_ALARM);
-		context.sendBroadcast(intent);
-	}
+    /**
+     * Utility method to send the Intent to the {@link AndTweetService} that
+     * restarts the recurring alarm. This is useful for changing the frequency.
+     * 
+     * @param context the context to use for sending the Intent
+     */
+    public static void restartAutomaticUpdates(Context context) {
+        Intent serviceIntent = new Intent(IAndTweetService.class.getName());
+        serviceIntent.putExtra(AndTweetService.EXTRA_MSGTYPE, AndTweetService.ACTION_RESTART_ALARM);
+        context.startService(serviceIntent);
+    }
 }
