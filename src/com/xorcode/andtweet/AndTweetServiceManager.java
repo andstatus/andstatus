@@ -53,10 +53,10 @@ public class AndTweetServiceManager extends BroadcastReceiver {
     public static void startAndTweetService(Context context) {
         SharedPreferences mSP = PreferenceManager.getDefaultSharedPreferences(context);
         if (mSP.contains("automatic_updates") && mSP.getBoolean("automatic_updates", false)) {
-            Log.d(TAG, "Alarm started. Automatic updates turned on.");
+            Log.d(TAG, "Automatic updates turned on, so starting repeating alarm.");
             AndTweetService.startAutomaticUpdates(context);
         } else {
-            Log.d(TAG, "Alarm cancelled. Automatic updates turned off.");
+            Log.d(TAG, "Automatic updates turned off, so cancelling repeating alarm.");
             AndTweetService.stopAutomaticUpdates(context);
         }
     }

@@ -120,10 +120,10 @@ public class AndTweetService extends Service {
 	public static final String ACTION_RESTART_ALARM = ACTIONPREFIX + "RESTART_ALARM";
 	/**
 	 * The message string that the recurring alarm sends to signal
-	 * to AndTweetService that it should poll/download the tweets and
+	 * to AndTweetService that it should fetch the tweets and
 	 * other information.
 	 */
-	private static final String ACTION_POLL = ACTIONPREFIX + "POLL";
+	private static final String ACTION_FETCH = ACTIONPREFIX + "FETCH";
 
     
     /**	
@@ -186,7 +186,7 @@ public class AndTweetService extends Service {
 	 * The set of threads that are currently performing downloads of
 	 * information from the Twitter servers.
 	 */
-	private Set<Runnable> mPollingThreads = new HashSet<Runnable>();
+	private Set<Runnable> mFetchingThreads = new HashSet<Runnable>();
 	/**
 	 * The number of listeners returned by the last broadcast start call.
 	 */
@@ -205,7 +205,7 @@ public class AndTweetService extends Service {
 
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-		registerReceiver(intentReceiver, new IntentFilter(ACTION_POLL));
+		registerReceiver(intentReceiver, new IntentFilter(ACTION_FETCH));
 	}
 
 
@@ -224,7 +224,7 @@ public class AndTweetService extends Service {
 		// Unregister all callbacks.
 		mCallbacks.kill();
 
-		cancelRecurringIntent();
+		cancelRepeatingAlarm();
 		
 		unregisterReceiver(intentReceiver);
 
@@ -257,29 +257,29 @@ public class AndTweetService extends Service {
 	
 	/**
 	 * Handles the action that came with an incoming intent and is used to update 
-	 * the alarm setting and to start a poll.
+	 * the alarm setting and to start fetching.
 	 * 
 	 * @param action the action string to handle
 	 */
 	private void handleIntent(String action) {
-		if (ACTION_POLL.equals(action)) {
-			Log.d(TAG, "ACTION_POLL");
+		if (ACTION_FETCH.equals(action)) {
+			Log.d(TAG, "ACTION_FETCH");
             mHandler.sendEmptyMessage(MSG_UPDATE_TIMELINE);
             mHandler.sendEmptyMessage(MSG_UPDATE_DIRECT_MESSAGES);
             mHandler.sendEmptyMessage(MSG_UPDATE_FOLLOWERS);
 		}
 		else if (ACTION_START_ALARM.equals(action)) {
 			Log.d(TAG, "ACTION_START_ALARM");
-			scheduleRecurringIntent();
+			scheduleRepeatingAlarm();
 		}
 		else if (ACTION_STOP_ALARM.equals(action)) {
 			Log.d(TAG, "ACTION_STOP_ALARM");
-			cancelRecurringIntent();
+			cancelRepeatingAlarm();
 		}
 		else if (ACTION_RESTART_ALARM.equals(action)) {
 			Log.d(TAG, "ACTION_RESTART_ALARM");
-			cancelRecurringIntent();
-			scheduleRecurringIntent();
+			cancelRepeatingAlarm();
+			scheduleRepeatingAlarm();
 		}
 	}
 
@@ -302,8 +302,8 @@ public class AndTweetService extends Service {
 	 */
 	private synchronized int startStuff(Runnable runnable, String logMsg) {
 	    Log.d(TAG, logMsg);
-	    mPollingThreads.add(runnable);
-	    if (mPollingThreads.size() == 1) {
+	    mFetchingThreads.add(runnable);
+	    if (mFetchingThreads.size() == 1) {
 	        Log.d(TAG, "No other threads running so starting new broadcast.");
 	        mWakeLock = getWakeLock();
 	        mBroadcastListenerCount = mCallbacks.beginBroadcast();
@@ -321,8 +321,8 @@ public class AndTweetService extends Service {
 	 */
 	private synchronized void endStuff(Runnable runnable, String logMsg) {
 	    Log.d(TAG, logMsg);
-	    mPollingThreads.remove(runnable);
-	    if (mPollingThreads.size() == 0) {
+	    mFetchingThreads.remove(runnable);
+	    if (mFetchingThreads.size() == 0) {
 	        Log.d(TAG, "Ending last thread so also ending broadcast.");
 	        mWakeLock.release();
 	        mCallbacks.finishBroadcast();
@@ -337,15 +337,16 @@ public class AndTweetService extends Service {
 	 * @return true, if the Runnable is running, else false
 	 */
 	private boolean stuffRunning(Runnable runnable) {
-	    return mPollingThreads.contains(runnable);
+	    return mFetchingThreads.contains(runnable);
 	}
 	
 	
 	/**
-	 * Returns the number of milliseconds between two poll actions. (I.e. when new tweets are downloaded from Twitter.) 
+	 * Returns the number of milliseconds between two fetch actions. 
+	 *  
 	 * @return the number of milliseconds
 	 */
-	private int getPollFrequencyS() {
+	private int getFetchFrequencyS() {
 		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		int frequencyS =  Integer.parseInt(sp.getString("fetch_frequency", "180"));
 		return (frequencyS * MILLISECONDS);
@@ -353,27 +354,25 @@ public class AndTweetService extends Service {
 	
 
 	/**
-	 * Starts the recurring AlarmHandler Intent.
+	 * Starts the repeating Alarm that sends the fetch Intent.
 	 */
-	private void scheduleRecurringIntent() {
-		AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		PendingIntent pIntent = getRecurringIntent();
-		
-		int frequencyMs = getPollFrequencyS();
-
-		Log.d(TAG, "Will send intent in " + frequencyMs + "ms");
+	private void scheduleRepeatingAlarm() {
+		final AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		final PendingIntent pIntent = getRepeatingIntent();
+		final int frequencyMs = getFetchFrequencyS();
 		am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, frequencyMs, frequencyMs,	pIntent);
+        Log.d(TAG, "Started repeating alarm in a " + frequencyMs + "ms rhythm.");
 	}
 
 
 	/**
-	 * Cancels the recurring AlarmHandler Intent.
+	 * Cancels the repeating Alarm that sends the fetch Intent.
 	 */
-	private void cancelRecurringIntent() {
-		AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		PendingIntent pIntent = getRecurringIntent();
+	private void cancelRepeatingAlarm() {
+		final AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		final PendingIntent pIntent = getRepeatingIntent();
 		am.cancel(pIntent);
-		Log.d(TAG, "canceled recurring intent");
+		Log.d(TAG, "Cancelled repeating alarm.");
 	}
 
 	
@@ -381,8 +380,8 @@ public class AndTweetService extends Service {
 	 * Returns the recurring AlarmHandler Intent.
 	 * @return the Intent 
 	 */
-	private PendingIntent getRecurringIntent() {
-		Intent intent = new Intent(ACTION_POLL);
+	private PendingIntent getRepeatingIntent() {
+		Intent intent = new Intent(ACTION_FETCH);
 		PendingIntent pIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
 		return pIntent;
 	}
