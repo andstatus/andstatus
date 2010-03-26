@@ -221,7 +221,7 @@ public class MessageListActivity extends TimelineActivity {
 			try {
 				c.moveToFirst();
 			} catch (Exception e) {
-				Log.e(TAG, e.getMessage());
+	            Log.e(TAG, "onContextItemSelected: " + e.toString());
 			} finally {
 				if (c != null && !c.isClosed()) c.close();
 			}
@@ -447,13 +447,13 @@ public class MessageListActivity extends TimelineActivity {
 				directMessages.loadMessages();
 				aNewMessages = directMessages.newCount();
 			} catch (ConnectionException e) {
-				Log.e(TAG, "mManualReload Connection Exception: " + e.getMessage());
+				Log.e(TAG, "mManualReload Connection Exception: " + e.toString());
 				return;
 			} catch (SQLiteConstraintException e) {
-				Log.e(TAG, "mManualReload database exception: " + e.getMessage());
+				Log.e(TAG, "mManualReload database exception: " + e.toString());
 				return;
 			} catch (JSONException e) {
-				Log.e(TAG, "mManualReload JSON exception: " + e.getMessage());
+				Log.e(TAG, "mManualReload JSON exception: " + e.toString());
 				return;
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_MANUAL_RELOAD, 0));

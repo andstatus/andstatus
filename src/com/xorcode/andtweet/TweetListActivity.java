@@ -353,7 +353,7 @@ public class TweetListActivity extends TimelineActivity {
 				menu.add(0, CONTEXT_MENU_ITEM_DESTROY_STATUS, m++, R.string.menu_item_destroy_status);
 			}
 		} catch (Exception e) {
-			Log.e(TAG, e.getMessage());
+            Log.e(TAG, "onCreateContextMenu: " + e.toString());
 		} finally {
 			if (c != null && !c.isClosed()) c.close();
 		}
@@ -390,7 +390,7 @@ public class TweetListActivity extends TimelineActivity {
 				mEditText.append(reply, 0, reply.length());
 				mReplyId = c.getLong(c.getColumnIndex(Tweets._ID));
 			} catch (Exception e) {
-				Log.e(TAG, e.getMessage());
+	            Log.e(TAG, "onContextItemSelected: " + e.toString());
 				return false;
 			} finally {
 				if (c != null && !c.isClosed()) c.close();
@@ -420,7 +420,7 @@ public class TweetListActivity extends TimelineActivity {
 				mEditText.setText("");
 				mEditText.append(message, 0, message.length());
 			} catch (Exception e) {
-				Log.e(TAG, "An error occurred", e);
+                Log.e(TAG, "onContextItemSelected: " + e.toString());
 				return false;
 			} finally {
 				if (c != null && !c.isClosed()) c.close();
@@ -674,7 +674,7 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						dismissDialog(DIALOG_TIMELINE_LOADING);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.getMessage());
+						Log.d(TAG, e.toString());
 					}
 				}
 				break;
@@ -688,7 +688,7 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						fl.insertFromJSONObject(result, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, true);
 					} catch (JSONException e) {
-						Toast.makeText(TweetListActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+						Toast.makeText(TweetListActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
 					}
 					Toast.makeText(TweetListActivity.this, R.string.message_sent, Toast.LENGTH_SHORT).show();
 					mReplyId = 0;
@@ -700,7 +700,7 @@ public class TweetListActivity extends TimelineActivity {
 				try {
 					dismissDialog(DIALOG_SENDING_MESSAGE);
 				} catch (IllegalArgumentException e) {
-					Log.d(TAG, e.getMessage());
+					Log.d(TAG, e.toString());
 				}
 				break;
 
@@ -710,14 +710,14 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						dismissDialog(DIALOG_TIMELINE_LOADING);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.getMessage());
+						Log.d(TAG, e.toString());
 					}
 					break;
 				case MSG_UPDATE_STATUS:
 					try {
 						dismissDialog(DIALOG_SENDING_MESSAGE);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.getMessage());
+						Log.d(TAG, e.toString());
 					}
 					break;
 				}
@@ -731,14 +731,14 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						dismissDialog(DIALOG_TIMELINE_LOADING);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.getMessage());
+						Log.d(TAG, e.toString());
 					}
 					break;
 				case MSG_UPDATE_STATUS:
 					try {
 						dismissDialog(DIALOG_SENDING_MESSAGE);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.getMessage());
+						Log.d(TAG, e.toString());
 					}
 					break;
 				}
@@ -750,7 +750,7 @@ public class TweetListActivity extends TimelineActivity {
 				try {
 					dismissDialog(DIALOG_TIMELINE_LOADING);
 				} catch (IllegalArgumentException e) {
-					Log.d(TAG, e.getMessage());
+					Log.d(TAG, e.toString());
 				}
 				mIsLoading = false;
 				Toast.makeText(TweetListActivity.this, R.string.timeline_reloaded, Toast.LENGTH_SHORT).show();
@@ -795,14 +795,14 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						dismissDialog(DIALOG_TIMELINE_LOADING);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.getMessage());
+						Log.d(TAG, e.toString());
 					}
 					break;
 				case MSG_UPDATE_STATUS:
 					try {
 						dismissDialog(DIALOG_SENDING_MESSAGE);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.getMessage());
+						Log.d(TAG, e.toString());
 					}
 					break;
 				}
@@ -819,7 +819,7 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						fl.destroyStatus(result.getLong("id"));
 					} catch (JSONException e) {
-						Toast.makeText(TweetListActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+						Toast.makeText(TweetListActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
 					}
 					Toast.makeText(TweetListActivity.this, R.string.status_destroyed, Toast.LENGTH_SHORT).show();
 					mCurrentId = 0;
@@ -827,7 +827,7 @@ public class TweetListActivity extends TimelineActivity {
 				try {
 					dismissDialog(DIALOG_EXECUTING_COMMAND);
 				} catch (IllegalArgumentException e) {
-					Log.d(TAG, e.getMessage());
+					Log.d(TAG, e.toString());
 				}
 				break;
 
@@ -844,12 +844,12 @@ public class TweetListActivity extends TimelineActivity {
 							c.moveToFirst();
 							fl.insertFromJSONObject(result, c.getInt(c.getColumnIndex(Tweets.TWEET_TYPE)), true);
 						} catch (Exception e) {
-							Log.e(TAG, e.getMessage());
+			                Log.e(TAG, "handleMessage: " + e.toString());
 						} finally {
 							if (c != null && !c.isClosed()) c.close();
 						}
 					} catch (JSONException e) {
-						Toast.makeText(TweetListActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+						Toast.makeText(TweetListActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
 					}
 					Toast.makeText(TweetListActivity.this, R.string.favorite_created, Toast.LENGTH_SHORT).show();
 					mCurrentId = 0;
@@ -857,7 +857,7 @@ public class TweetListActivity extends TimelineActivity {
 				try {
 					dismissDialog(DIALOG_EXECUTING_COMMAND);
 				} catch (IllegalArgumentException e) {
-					Log.d(TAG, e.getMessage());
+					Log.d(TAG, e.toString());
 				}
 				break;
 
@@ -874,12 +874,12 @@ public class TweetListActivity extends TimelineActivity {
 							c.moveToFirst();
 							fl.insertFromJSONObject(result, c.getInt(c.getColumnIndex(Tweets.TWEET_TYPE)), true);
 						} catch (Exception e) {
-							Log.e(TAG, e.getMessage());
+                            Log.e(TAG, "handleMessage: " + e.toString());
 						} finally {
 							if (c != null && !c.isClosed()) c.close();
 						}
 					} catch (JSONException e) {
-						Toast.makeText(TweetListActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+						Toast.makeText(TweetListActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
 					}
 					Toast.makeText(TweetListActivity.this, R.string.favorite_destroyed, Toast.LENGTH_SHORT).show();
 					mCurrentId = 0;
@@ -887,7 +887,7 @@ public class TweetListActivity extends TimelineActivity {
 				try {
 					dismissDialog(DIALOG_EXECUTING_COMMAND);
 				} catch (IllegalArgumentException e) {
-					Log.d(TAG, e.getMessage());
+					Log.d(TAG, e.toString());
 				}
 				break;
 
@@ -899,7 +899,7 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						dismissDialog(DIALOG_EXECUTING_COMMAND);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.getMessage());
+						Log.d(TAG, e.toString());
 					}
 					break;
 				}
@@ -925,9 +925,9 @@ public class TweetListActivity extends TimelineActivity {
 			try {
 				result = aConn.updateStatus(message.trim(), mReplyId);
 			} catch (UnsupportedEncodingException e) {
-				Log.e(TAG, e.getMessage());
+				Log.e(TAG, e.toString());
 			} catch (ConnectionException e) {
-				Log.e(TAG, "mSendUpdate Connection Exception: " + e.getMessage());
+				Log.e(TAG, "mSendUpdate Connection Exception: " + e.toString());
 				return;
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_UPDATE_STATUS, 0));
@@ -966,13 +966,13 @@ public class TweetListActivity extends TimelineActivity {
 				prefsEditor.putLong("last_timeline_id", lastTweetId);
 				prefsEditor.commit();
 			} catch (ConnectionException e) {
-				Log.e(TAG, "mManualReload Connection Exception: " + e.getMessage());
+				Log.e(TAG, "mManualReload Connection Exception: " + e.toString());
 				return;
 			} catch (SQLiteConstraintException e) {
-				Log.e(TAG, "mManualReload database exception: " + e.getMessage());
+				Log.e(TAG, "mManualReload database exception: " + e.toString());
 				return;
 			} catch (JSONException e) {
-				Log.e(TAG, "mManualReload JSON exception: " + e.getMessage());
+				Log.e(TAG, "mManualReload JSON exception: " + e.toString());
 				return;
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_MANUAL_RELOAD, 0));
@@ -1030,10 +1030,10 @@ public class TweetListActivity extends TimelineActivity {
 			try {
 				result = aConn.destroyStatus(mCurrentId);
 			} catch (UnsupportedEncodingException e) {
-				Log.e(TAG, e.getMessage());
+				Log.e(TAG, e.toString());
 			} catch (ConnectionException e) {
-				Log.e(TAG, "mDestroyStatus Connection Exception: " + e.getMessage());
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, MSG_STATUS_DESTROY, Integer.parseInt(e.getMessage())));
+				Log.e(TAG, "mDestroyStatus Connection Exception: " + e.toString());
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, MSG_STATUS_DESTROY, Integer.parseInt(e.toString())));
 				return;
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_STATUS_DESTROY, 0));
@@ -1061,10 +1061,10 @@ public class TweetListActivity extends TimelineActivity {
 			try {
 				result = aConn.createFavorite(mCurrentId);
 			} catch (UnsupportedEncodingException e) {
-				Log.e(TAG, e.getMessage());
+				Log.e(TAG, e.toString());
 			} catch (ConnectionException e) {
-				Log.e(TAG, "mCreateFavorite Connection Exception: " + e.getMessage());
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, MSG_FAVORITE_CREATE, Integer.parseInt(e.getMessage())));
+				Log.e(TAG, "mCreateFavorite Connection Exception: " + e.toString());
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, MSG_FAVORITE_CREATE, Integer.parseInt(e.toString())));
 				return;
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_FAVORITE_CREATE, 0));
@@ -1092,10 +1092,10 @@ public class TweetListActivity extends TimelineActivity {
 			try {
 				result = aConn.destroyFavorite(mCurrentId);
 			} catch (UnsupportedEncodingException e) {
-				Log.e(TAG, e.getMessage());
+				Log.e(TAG, e.toString());
 			} catch (ConnectionException e) {
-				Log.e(TAG, "mDestroyFavorite Connection Exception: " + e.getMessage());
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, MSG_FAVORITE_DESTROY, Integer.parseInt(e.getMessage())));
+				Log.e(TAG, "mDestroyFavorite Connection Exception: " + e.toString());
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, MSG_FAVORITE_DESTROY, Integer.parseInt(e.toString())));
 				return;
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_FAVORITE_DESTROY, 0));

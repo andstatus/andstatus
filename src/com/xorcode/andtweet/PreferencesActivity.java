@@ -319,9 +319,9 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 					return;
 				}
 			} catch (JSONException e) {
-				Log.e(TAG, e.getMessage());
+				Log.e(TAG, e.toString());
 			} catch (ConnectionException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, 1, 0, e.getMessage()));
+				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, 1, 0, e.toString()));
 				return;
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_INVALID, 1, 0));

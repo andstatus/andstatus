@@ -9,13 +9,16 @@
     android:minHeight="72dip"
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/appwidget"
-    android:configure="com.xorcode.andtweet.appwidget.AndTweetAppWidgetConfigure"
     >
 </appwidget-provider>
 
-<!-- updatePeriodMillis
-	was =86400000 is the value of AlarmManager.INTERVAL_DAY - or once per day.
-	We've set =0 here so we'll perform updates based on an alarm
-	that will not wake the device 
+<!--
+	2010-03-26 yvolk (Temporarily?) got rid of the Configuration activity:
+    android:configure="com.xorcode.andtweet.appwidget.AndTweetAppWidgetConfigure"
+	 
+	updatePeriodMillis
+	  was =86400000 is the value of AlarmManager.INTERVAL_DAY - or once per day.
+	  We've set =0 here so we'll perform updates based on an alarm
+	  that will not wake the device 
 -->
 

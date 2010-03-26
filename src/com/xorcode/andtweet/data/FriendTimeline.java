@@ -169,7 +169,7 @@ public class FriendTimeline {
 			Long created = Date.parse(jo.getString("created_at"));
 			values.put(Tweets.SENT_DATE, created);
 		} catch (Exception e) {
-			Log.e(TAG, e.getMessage());
+		    Log.e(TAG, "insertFromJSONObject: " + e.toString());
 		}
 
 		if ((mContentResolver.update(aTweetUri, values, null, null)) == 0) {

@@ -122,7 +122,13 @@ public class DirectMessages {
 			Long created = Date.parse(jo.getString("created_at"));
 			values.put(AndTweetDatabase.DirectMessages.SENT_DATE, created);
 		} catch (Exception e) {
-			Log.e(TAG, e.getMessage());
+		    /* 2010-0326 yvolk
+		     * Here and in other places got rid of e.getMessage()
+             * in exception handling, e.g.:
+             *   Log.e(TAG, e.getMessage());
+             * because sometimes it produces uncaught exception!!!
+		     */
+			Log.e(TAG, "insertFromJSONObject: " + e.toString());
 		}
 
 		if ((mContentResolver.update(aMessageUri, values, null, null)) == 0) {

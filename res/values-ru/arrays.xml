@@ -212,7 +212,7 @@
 	<string-array name="reltime_minutes_ago_formats">
 		<item>"минуту назад"</item>
 		<item>"две минуты назад"</item>
-		<item>"{0} минута назад"</item>
+		<item>"{0} минуту назад"</item>
 		<item>"{0} минуты назад"</item>
 		<item>"{0} минут назад"</item>
 	</string-array>

@@ -615,17 +615,17 @@ public class AndTweetService extends Service {
 				aReplyCount += friendTimeline.replyCount();
 				mLastTweetId = friendTimeline.lastId();
 			} catch (ConnectionException e) {
-				Log.e(TAG, "mLoadTimeline Connection Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadTimeline Connection Exception: " + e.toString());
 			} catch (SQLiteConstraintException e) {
-				Log.e(TAG, "mLoadTimeline SQLite Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadTimeline SQLite Exception: " + e.toString());
 			} catch (JSONException e) {
-				Log.e(TAG, "mLoadTimeline JSON Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadTimeline JSON Exception: " + e.toString());
 			} catch (ConnectionAuthenticationException e) {
-				Log.e(TAG, "mLoadTimeline Authentication Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadTimeline Authentication Exception: " + e.toString());
 			} catch (ConnectionUnavailableException e) {
-				Log.e(TAG, "mLoadTimeline FAIL Whale: " + e.getMessage());
+				Log.e(TAG, "mLoadTimeline FAIL Whale: " + e.toString());
 			} catch (SocketTimeoutException e) {
-				Log.e(TAG, "mLoadTimeline Connection Timeout: " + e.getMessage());
+				Log.e(TAG, "mLoadTimeline Connection Timeout: " + e.toString());
 			}
 			friendTimeline.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
 
@@ -653,7 +653,7 @@ public class AndTweetService extends Service {
 					cb.repliesChanged(repliesChanged);
 				}
 			} catch (RemoteException e) {
-				Log.e(TAG, e.getMessage());
+				Log.e(TAG, e.toString());
 			}
 		}
 		if (tweetsChanged > 0 || repliesChanged == 0) {
@@ -684,17 +684,17 @@ public class AndTweetService extends Service {
 				aNewMessages = directMessages.newCount();
 				mLastMessageId = directMessages.lastId();
 			} catch (ConnectionException e) {
-				Log.e(TAG, "mLoadMessages Connection Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadMessages Connection Exception: " + e.toString());
 			} catch (SQLiteConstraintException e) {
-				Log.e(TAG, "mLoadMessages SQLite Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadMessages SQLite Exception: " + e.toString());
 			} catch (JSONException e) {
-				Log.e(TAG, "mLoadMessages JSON Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadMessages JSON Exception: " + e.toString());
 			} catch (ConnectionAuthenticationException e) {
-				Log.e(TAG, "mLoadMessages Authentication Exception: " + e.getMessage());
+				Log.e(TAG, "mLoadMessages Authentication Exception: " + e.toString());
 			} catch (ConnectionUnavailableException e) {
-				Log.e(TAG, "mLoadMessages FAIL Whale: " + e.getMessage());
+				Log.e(TAG, "mLoadMessages FAIL Whale: " + e.toString());
 			} catch (SocketTimeoutException e) {
-				Log.e(TAG, "mLoadMessages Connection Timeout: " + e.getMessage());
+				Log.e(TAG, "mLoadMessages Connection Timeout: " + e.toString());
 			}
 			directMessages.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
 
@@ -716,7 +716,7 @@ public class AndTweetService extends Service {
 			try {
 				mCallbacks.getBroadcastItem(i).messagesChanged(messagesChanged);
 			} catch (RemoteException e) {
-				Log.e(TAG, e.getMessage());
+				Log.e(TAG, e.toString());
 			}
 		}
 
@@ -759,15 +759,15 @@ public class AndTweetService extends Service {
 						getContentResolver().notifyChange(AndTweetDatabase.Users.CONTENT_URI, null);
 					}
 				} catch (JSONException e) {
-					Log.e(TAG, e.getMessage());
+					Log.e(TAG, e.toString());
 				} catch (ConnectionException e) {
-					Log.e(TAG, "loadFollowers Connection Exception: " + e.getMessage());
+					Log.e(TAG, "loadFollowers Connection Exception: " + e.toString());
 				} catch (ConnectionAuthenticationException e) {
-					Log.e(TAG, "loadFollowers Authentication Exception: " + e.getMessage());
+					Log.e(TAG, "loadFollowers Authentication Exception: " + e.toString());
 				} catch (ConnectionUnavailableException e) {
-					Log.e(TAG, "loadFollowers FAIL Whale Exception: " + e.getMessage());
+					Log.e(TAG, "loadFollowers FAIL Whale Exception: " + e.toString());
 				} catch (SocketTimeoutException e) {
-					Log.e(TAG, "loadFollowers Timeout Exception: " + e.getMessage());
+					Log.e(TAG, "loadFollowers Timeout Exception: " + e.toString());
 				}
 
 			}

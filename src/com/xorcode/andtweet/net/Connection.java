@@ -519,7 +519,7 @@ public class Connection {
 		} catch (SocketTimeoutException e) {
 			throw e;
 		} catch (Exception e) {
-			Log.e(TAG, e.getMessage());
+            Log.e(TAG, "getRequest: " + e.toString());
 			throw new ConnectionException(e);
 		} finally {
 			getMethod.abort();
@@ -584,7 +584,7 @@ public class Connection {
 		} catch (SocketTimeoutException e) {
 			throw e;
 		} catch (Exception e) {
-			Log.e(TAG, e.getMessage());
+            Log.e(TAG, "postRequest: " + e.toString());
 			throw new ConnectionException(e);
 		} finally {
 			postMethod.abort();
@@ -610,11 +610,11 @@ public class Connection {
 				stringBuffer.append(buffer, 0, count);
 			}
 		} catch (UnsupportedEncodingException e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, e.toString());
 		} catch (IllegalStateException e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, e.toString());
 		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, e.toString());
 		}
 		return stringBuffer.toString();
 	}
