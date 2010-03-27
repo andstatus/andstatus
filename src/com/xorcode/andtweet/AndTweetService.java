@@ -196,7 +196,13 @@ public class AndTweetService extends Service {
 	 * during downloads.
 	 */
 	private volatile PowerManager.WakeLock mWakeLock = null;
-	
+
+    /** 
+     * @return Single instance of SharedPreferences is returned, this is why we may synchronize on the object
+     */
+    private SharedPreferences getSp() {
+       return PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+    }
 
 	@Override
 	public void onCreate() {
@@ -347,8 +353,7 @@ public class AndTweetService extends Service {
 	 * @return the number of milliseconds
 	 */
 	private int getFetchFrequencyS() {
-		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-		int frequencyS =  Integer.parseInt(sp.getString("fetch_frequency", "180"));
+		int frequencyS =  Integer.parseInt(getSp().getString("fetch_frequency", "180"));
 		return (frequencyS * MILLISECONDS);
 	}
 	
@@ -410,21 +415,22 @@ public class AndTweetService extends Service {
 
 		@Override
 		public void handleMessage(Message msg) {
-			final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			Log.d(TAG, "handleMessage what=" + msg.what);
 
-			mUsername = sp.getString("twitter_username", null);
-			mPassword = sp.getString("twitter_password", null);
+            SharedPreferences sp = getSp();
+            synchronized (sp) {
+                mUsername = sp.getString("twitter_username", null);
+                mPassword = sp.getString("twitter_password", null);
 
-			mNotificationsEnabled = sp.getBoolean("notifications_enabled", false);
-			mNotificationsVibrate = sp.getBoolean("vibration", false);
+                mNotificationsEnabled = sp.getBoolean("notifications_enabled", false);
+                mNotificationsVibrate = sp.getBoolean("vibration", false);
 
-			mLastRunTime = sp.getLong("last_timeline_runtime", System.currentTimeMillis());
-			mLastMessageRunTime = sp.getLong("last_messages_runtime", System.currentTimeMillis());
+                mLastRunTime = sp.getLong("last_timeline_runtime", System.currentTimeMillis());
+                mLastMessageRunTime = sp.getLong("last_messages_runtime", System.currentTimeMillis());
 
-			mLastTweetId = sp.getLong("last_timeline_id", 0);
-			mLastMessageId = sp.getLong("last_message_id", 0);
-
+                mLastTweetId = sp.getLong("last_timeline_id", 0);
+                mLastMessageId = sp.getLong("last_message_id", 0);
+            }
 
 			switch (msg.what) {
 				case MSG_UPDATE_FOLLOWERS: {
@@ -469,13 +475,17 @@ public class AndTweetService extends Service {
 			return;
 		}
 
-		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		boolean notificationsMessages = sp.getBoolean("notifications_messages",
-				false);
-		boolean notificationsReplies = sp.getBoolean("notifications_mentions",
-				false);
-		boolean notificationsTimeline = sp.getBoolean("notifications_timeline",
-				false);
+        boolean notificationsMessages = false;
+        boolean notificationsReplies = false;
+        boolean notificationsTimeline = false;
+        String ringtone = null;
+        SharedPreferences sp = getSp();
+        synchronized (sp) {
+            notificationsMessages = sp.getBoolean("notifications_messages", false);
+            notificationsReplies = sp.getBoolean("notifications_mentions", false);
+            notificationsTimeline = sp.getBoolean("notifications_timeline", false);
+            ringtone = sp.getString(PreferencesActivity.KEY_RINGTONE_PREFERENCE, null);
+        }		
 
 		// Make sure that notifications haven't been turned off for the message
 		// type
@@ -511,8 +521,6 @@ public class AndTweetService extends Service {
 		notification.ledOnMS = 500;
 		notification.ledARGB = Color.GREEN;
 
-		String ringtone = sp.getString(
-				PreferencesActivity.KEY_RINGTONE_PREFERENCE, null);
 		if ("".equals(ringtone) || ringtone == null) {
 			notification.sound = null;
 		} else {
@@ -599,10 +607,11 @@ public class AndTweetService extends Service {
             }
 		    final int N = startStuff(this, "Getting tweets and replies.");
 		    
-			final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-			final SharedPreferences.Editor prefsEditor = sp.edit();
-			mUsername = sp.getString("twitter_username", null);
-			mPassword = sp.getString("twitter_password", null);
+	        SharedPreferences sp = getSp();
+	        synchronized (sp) {
+    			mUsername = sp.getString("twitter_username", null);
+    			mPassword = sp.getString("twitter_password", null);
+	        }
 
 			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), mUsername, mPassword, mLastTweetId);
 			int aNewTweets = 0;
@@ -629,7 +638,7 @@ public class AndTweetService extends Service {
 			}
 			friendTimeline.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
 
-			finishUpdateTimeline(aNewTweets, aReplyCount, N, prefsEditor);
+			finishUpdateTimeline(aNewTweets, aReplyCount, N);
 
 			endStuff(this, "Ended getting " + aNewTweets + " tweets and "
 			        + aReplyCount + " replies.");
@@ -638,11 +647,16 @@ public class AndTweetService extends Service {
 
 	
 	private void finishUpdateTimeline(int tweetsChanged, int repliesChanged,
-			final int N, final SharedPreferences.Editor prefsEditor) {
-		mLastRunTime = Long.valueOf(System.currentTimeMillis());
-		prefsEditor.putLong("last_timeline_runtime", mLastRunTime);
-		prefsEditor.putLong("last_timeline_id", mLastTweetId);
-		prefsEditor.commit();
+			final int N) {
+	    
+        SharedPreferences sp = getSp();
+        synchronized (sp) {
+            SharedPreferences.Editor prefsEditor = sp.edit();
+            mLastRunTime = Long.valueOf(System.currentTimeMillis());
+            prefsEditor.putLong("last_timeline_runtime", mLastRunTime);
+            prefsEditor.putLong("last_timeline_id", mLastTweetId);
+            prefsEditor.commit();
+        }
 
 		for (int i = 0; i < N; i++) {
 			try {
@@ -673,10 +687,11 @@ public class AndTweetService extends Service {
 		    }
 			final int N = startStuff(this, "Getting direct messages.");
 
-			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-			final SharedPreferences.Editor prefsEditor = sp.edit();
-			mUsername = sp.getString("twitter_username", null);
-			mPassword = sp.getString("twitter_password", null);
+            SharedPreferences sp = getSp();
+            synchronized (sp) {
+                mUsername = sp.getString("twitter_username", null);
+                mPassword = sp.getString("twitter_password", null);
+            }
 			DirectMessages directMessages = new DirectMessages(getContentResolver(), mUsername, mPassword, mLastMessageId);
 			int aNewMessages = 0;
 			try {
@@ -698,19 +713,23 @@ public class AndTweetService extends Service {
 			}
 			directMessages.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
 
-			finishUpdateDirectMessages(aNewMessages, N, prefsEditor);
+			finishUpdateDirectMessages(aNewMessages, N);
 
 			endStuff(this, "Ended getting direct messages.");
 		}
 	};
 
 	
-	private void finishUpdateDirectMessages(int messagesChanged, final int N,
-			final SharedPreferences.Editor prefsEditor) {
-		mLastMessageRunTime = Long.valueOf(System.currentTimeMillis());
-		prefsEditor.putLong("last_messages_runtime", mLastMessageRunTime);
-		prefsEditor.putLong("last_message_id", mLastMessageId);
-		prefsEditor.commit();
+	private void finishUpdateDirectMessages(int messagesChanged, final int N) {
+
+        SharedPreferences sp = getSp();
+        synchronized (sp) {
+            SharedPreferences.Editor prefsEditor = sp.edit();
+            mLastMessageRunTime = Long.valueOf(System.currentTimeMillis());
+            prefsEditor.putLong("last_messages_runtime", mLastMessageRunTime);
+            prefsEditor.putLong("last_message_id", mLastMessageId);
+            prefsEditor.commit();
+        }
 
 		for (int i = 0; i < N; i++) {
 			try {
@@ -733,9 +752,11 @@ public class AndTweetService extends Service {
 		    startStuff(this, "Getting followers list.");
 		    
 			final ContentResolver contentResolver = getContentResolver();
-			final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-			mUsername = sp.getString("twitter_username", null);
-			mPassword = sp.getString("twitter_password", null);
+            SharedPreferences sp = getSp();
+            synchronized (sp) {
+                mUsername = sp.getString("twitter_username", null);
+                mPassword = sp.getString("twitter_password", null);
+            }
 			if (mUsername != null && mUsername.length() > 0) {
 				Connection aConn = new Connection(mUsername, mPassword);
 				try {
