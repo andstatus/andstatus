@@ -49,6 +49,7 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -365,7 +366,8 @@ public class AndTweetService extends Service {
 		final AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		final PendingIntent pIntent = getRepeatingIntent();
 		final int frequencyMs = getFetchFrequencyS();
-		am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, frequencyMs, frequencyMs,	pIntent);
+        final long firstTime = SystemClock.elapsedRealtime() + frequencyMs;
+        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, frequencyMs,   pIntent);
         Log.d(TAG, "Started repeating alarm in a " + frequencyMs + "ms rhythm.");
 	}
 
