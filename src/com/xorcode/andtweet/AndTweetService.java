@@ -506,7 +506,7 @@ public class AndTweetService extends Service {
 
 		// Set up the notification to display to the user
 		Notification notification = new Notification(
-				android.R.drawable.stat_notify_chat,
+				R.drawable.notification_icon,
 				(String) getText(R.string.notification_title), System
 						.currentTimeMillis());
 
