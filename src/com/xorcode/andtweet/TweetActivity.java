@@ -40,7 +40,7 @@ import com.xorcode.andtweet.util.RelativeTime;
  */
 public class TweetActivity extends Activity {
 
-	private static final String TAG = "AndTweetDatabase";
+	private static final String TAG = TweetActivity.class.getSimpleName();
 
 	private static final String[] PROJECTION = new String[] {
 		Tweets._ID,
@@ -132,6 +132,9 @@ public class TweetActivity extends Activity {
 			theme.append("Light.");
 		}
 		theme.append(name);
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "loadTheme; theme=\"" + theme.toString() + "\"");
+        }
 		setTheme((int) getResources().getIdentifier(theme.toString(), "style", "com.xorcode.andtweet"));
 	}
 

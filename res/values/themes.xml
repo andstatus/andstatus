@@ -73,7 +73,6 @@
 
 		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="tweetSentDateColor">?android:attr/textColorTertiary</item>
-        <item name="android:background">@android:color/background_light</item>
 	</style>
 
 	<style name="Theme.AndTweet.Large">

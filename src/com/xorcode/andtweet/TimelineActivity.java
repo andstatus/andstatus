@@ -36,8 +36,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -58,7 +58,7 @@ import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
  */
 public class TimelineActivity extends ListActivity implements ITimelineActivity {
 
-	public static String TAG = "TimelineActivity";
+    private static final String TAG = TimelineActivity.class.getSimpleName();
 
 	// Handler message codes
 	public static final int MSG_TWEETS_CHANGED = 1;
@@ -397,6 +397,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			theme.append("Light.");
 		}
 		theme.append(name);
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "loadTheme; theme=\"" + theme.toString() + "\"");
+        }
 		setTheme((int) getResources().getIdentifier(theme.toString(), "style", "com.xorcode.andtweet"));
 	}
 

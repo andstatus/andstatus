@@ -131,7 +131,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     protected void onPause() {
         super.onPause();
 
-        AndTweetServiceManager.startAndTweetService(this);
+        //TODO: Is this necessary? AndTweetServiceManager.startAndTweetService(this);
         
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
