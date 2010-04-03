@@ -684,6 +684,7 @@ public class TweetListActivity extends TimelineActivity {
 				if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
+				    // The tweet was sent successfully
 					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_id", 0));
 					try {
 						fl.insertFromJSONObject(result, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, true);
@@ -692,6 +693,7 @@ public class TweetListActivity extends TimelineActivity {
 					}
 					Toast.makeText(TweetListActivity.this, R.string.message_sent, Toast.LENGTH_SHORT).show();
 					mReplyId = 0;
+					// So we may clear the text box with the sent tweet text...
 					mEditText.setText("");
 					if (hasHardwareKeyboard()) {
 						mEditText.requestFocus();
@@ -913,7 +915,11 @@ public class TweetListActivity extends TimelineActivity {
 	};
 
 	/**
-	 * Handles threaded sending of messages.
+	 * Handles threaded sending of the message, typed in the mEditText text box.
+	 * Currently queued message sending is not supported
+	 *   (if initial sending failed for some reason).
+	 * In a case of an error the message remains intact in the mEditText text box
+	 *   and User has to send the same message again manually (e.g. by pressing "Send" button),
 	 */
 	protected Runnable mSendUpdate = new Runnable() {
 		public void run() {

@@ -63,6 +63,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	// Handler message codes
 	public static final int MSG_TWEETS_CHANGED = 1;
 	public static final int MSG_DATA_LOADING = 2;
+	/**
+	 * My tweet ("What's happening?"...) is being sending
+	 */
 	public static final int MSG_UPDATE_STATUS = 3;
 	public static final int MSG_MANUAL_RELOAD = 4;
 	public static final int MSG_AUTHENTICATION_ERROR = 5;
