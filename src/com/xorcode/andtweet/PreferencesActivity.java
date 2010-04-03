@@ -130,10 +130,15 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     @Override
     protected void onPause() {
         super.onPause();
-
-        //TODO: Is this necessary? AndTweetServiceManager.startAndTweetService(this);
-        
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+
+        // Let the AndTweetService know about preferences changes,
+        // particularly about automatic updates changes
+        AndTweetServiceManager.startAndTweetService(this);
+
+        // TODO: Maybe we can notify running AndTweet activities
+        // about preferences changes to reflect them immediately?
+        // Now we need to kill (e.g. reboot device) and then restart them.
     }
 
 	protected void updateHistorySize() {

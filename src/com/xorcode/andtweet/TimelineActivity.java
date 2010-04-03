@@ -174,10 +174,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	}
 
 	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		clearNotifications();
-	}
+    protected void onPause() {
+        super.onPause();
+        // The activity just lost its focus, 
+        // so we have to start notifying the User about new events after his moment.
+        clearNotifications();
+    }
 
 	private void clearNotifications() {
 		try {

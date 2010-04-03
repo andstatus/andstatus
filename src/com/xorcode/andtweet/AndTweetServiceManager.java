@@ -45,7 +45,8 @@ public class AndTweetServiceManager extends BroadcastReceiver {
     }
 
     /**
-     * Starts AndTweetService if it is not already started.
+     * Starts AndTweetService if it is not already started
+     * and schedule Automatic updates according to the preferences.
      * 
      * @param context 
      * @return
