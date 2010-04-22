@@ -30,6 +30,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -48,6 +49,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
@@ -103,6 +105,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final String BUNDLE_KEY_CURRENT_PAGE = "currentPage";
 	public static final String BUNDLE_KEY_IS_LOADING = "isLoading";
 
+	private static final String LAST_POS_KEY = "last_position";
+	
 	public static final int MILLISECONDS = 1000;
 
 	// Views and widgets
@@ -127,6 +131,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		Log.d(TAG, "onCreate");
 
 		// Set up preference manager
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -168,20 +174,107 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
 		// Set up notification manager
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		
+		loadPosition();
 	}
+	
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		savePosition();
+	}
+	
+
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-		clearNotifications();
+		loadPosition();
 	}
 
+	
+	
+	private void savePosition() {
+		final int firstItem = getListView().getFirstVisiblePosition();
+		final long firstItemId = getListView().getAdapter().getItemId(firstItem);
+		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		final SharedPreferences.Editor prefsEditor = sp.edit();
+		prefsEditor.putLong(LAST_POS_KEY, firstItemId);
+		prefsEditor.commit();
+	}
+
+	private void loadPosition() {
+		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		try {
+			final long firstItemId = sp.getLong(LAST_POS_KEY, -1);
+			int scrollPos = listPosForId(firstItemId);
+			if (scrollPos != -1) {
+				getListView().setSelectionFromTop(scrollPos, -1);
+			}
+			else {
+				scrollPos = getListView().getCount() - 1;
+				setSelectionAtBottom(scrollPos);
+			}
+		} catch (Exception e) {
+			Editor ed = sp.edit();
+			ed.remove(LAST_POS_KEY);
+			ed.commit();
+		}
+	}
+
+
+	private void setSelectionAtBottom(int scrollPos) {
+		Log.d(TAG, "############## 1");
+		final int viewHeight = getListView().getHeight();
+		final int childHeight;
+			childHeight = 30;
+		final int y = viewHeight - childHeight;
+		Log.d(TAG, "set position of last item to " + y);
+		getListView().setSelectionFromTop(scrollPos, y);
+	}
+
+	/**
+	 * Returns the position of the item with the given ID.
+	 * 
+	 * @param searchedId the ID of the item whose position 
+	 * in the list is to be returned.
+	 * 
+	 * @return the position in the list or -1 if the item was not found
+	 */
+	private int listPosForId(long searchedId) {
+		int listPos;
+		boolean itemFound = false;
+		final ListView lv = getListView();
+		final int itemCount = lv.getCount();
+		Log.d(TAG, "item count: "+ itemCount);
+		for (listPos = 0; (!itemFound && (listPos < itemCount)); listPos++) {
+			long itemId = lv.getItemIdAtPosition(listPos);
+			itemFound = (itemId == searchedId);
+		}
+		
+		if (!itemFound) {
+			listPos = -1;
+		}
+		return listPos;
+	}
+	
+	
+	@Override
+	public void onContentChanged() {
+		super.onContentChanged();
+		Log.d(TAG, "CONTENT CHANGED");
+	}
+	
+	
+	
 	@Override
     protected void onPause() {
         super.onPause();
         // The activity just lost its focus, 
         // so we have to start notifying the User about new events after his moment.
         clearNotifications();
+		savePosition();
     }
 
 	private void clearNotifications() {
