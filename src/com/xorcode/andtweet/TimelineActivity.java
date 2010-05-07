@@ -16,12 +16,10 @@
 
 package com.xorcode.andtweet;
 
-import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.ComponentName;
@@ -109,23 +107,47 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	
 	public static final int MILLISECONDS = 1000;
 
-	// Views and widgets
+	/**
+	 *  List footer for loading messages,
+	 *   appears at the bottom of the list of tweets
+	 *  In fact, it is not visible but it is used to find out
+	 *   when User wants to see items that were not loaded into the list...
+	 */
 	protected LinearLayout mListFooter;
 
 	protected Cursor mCursor;
 	protected NotificationManager mNM;
-	protected IAndTweetService mService;
 	protected SharedPreferences mSP;
 	protected ProgressDialog mProgressDialog;
 	protected Handler mHandler;
-	protected PendingIntent mAlarmSender;
-	protected AlarmManager mAM;
 
+	/**
+	 * "Number of pages of tweets" loaded into the list of Tweets.
+	 * Start from one page and increase it (and load more Tweets)
+	 *  in a case User scrolls down to the end of list.
+	 * This value limits _maximum_ number of rows queried from AndTweetProvider (query 'limit'),
+	 *  so actual number of Tweets loaded may be less...
+	 * TODO: Now "page size" is hard coded = 20 ... 
+	 */
 	protected int mCurrentPage = 1;
+	/**
+	 * Number of items (Tweets) in the list.
+	 * It is used to find out when we need to load more items.
+	 */
 	protected int mTotalItemCount = 0;
-	protected int mFrequency = 180;
 
+	/**
+	 * Is connected to the application service?
+	 */
 	protected boolean mIsBound;
+    /**
+     * See mServiceCallback also
+     */
+    protected IAndTweetService mService;
+	
+	/**
+	 * Items are being loaded into the list (asynchronously...)
+	 */
 	protected boolean mIsLoading;
 
 	@Override
@@ -178,22 +200,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		loadPosition();
 	}
 	
-	
-	@Override
-	protected void onStop() {
-		super.onStop();
-		savePosition();
-	}
-	
-
-
 	@Override
 	protected void onResume() {
 		super.onResume();
 		loadPosition();
 	}
-
-	
 	
 	private void savePosition() {
 		final int firstItem = getListView().getFirstVisiblePosition();
@@ -204,13 +215,18 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		prefsEditor.commit();
 	}
 
+	/**
+	 * TODO: This won't work in a case the tweet was not loaded into the list. 
+	 *  So maybe we need to control that "Number of pages of tweets" (mCurrentPage) also
+	 *  ... maybe not :-)
+	 */
 	private void loadPosition() {
 		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		try {
 			final long firstItemId = sp.getLong(LAST_POS_KEY, -1);
 			int scrollPos = listPosForId(firstItemId);
-			if (scrollPos != -1) {
-				getListView().setSelectionFromTop(scrollPos, -1);
+			if (scrollPos > 0) {
+				getListView().setSelectionFromTop(scrollPos - 1, 0);
 			}
 			else {
 				scrollPos = getListView().getCount() - 1;

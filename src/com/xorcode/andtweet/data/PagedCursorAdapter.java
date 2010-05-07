@@ -35,8 +35,6 @@ public class PagedCursorAdapter extends SimpleCursorAdapter implements FilterQue
 	private String[] mProjection;
 	private Uri mUri;
 	private String mSortOrder;
-	private Cursor mCursor;
-	//private LayoutInflater mInflater;
 
 	/**
 	 * 
@@ -70,7 +68,6 @@ public class PagedCursorAdapter extends SimpleCursorAdapter implements FilterQue
 			}
 			mSortOrder += " " + constraint.toString().trim();
 		}
-		if (mCursor != null && !mCursor.isClosed()) mCursor.close();
 		return mContentResolver.query(mUri, mProjection, null, null, mSortOrder);
 	}
 }

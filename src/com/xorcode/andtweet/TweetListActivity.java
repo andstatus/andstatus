@@ -101,7 +101,14 @@ public class TweetListActivity extends TimelineActivity {
 	// Database cursors
 	private Cursor mFriendsCursor;
 
+	/**
+	 * Id of the Tweet to which we are replying
+	 */
 	protected long mReplyId = 0;
+	/**
+	 * Id of the Tweet that was selected (clicked, or whose context menu item was selected)
+	 * TODO: clicked, restore position...   
+	 */
 	protected long mCurrentId = 0;
 
 	// Table columns to use for the tweets data
@@ -229,6 +236,7 @@ public class TweetListActivity extends TimelineActivity {
 		super.onStart();
 		final Intent intent = getIntent();
 		try {
+		    // The "ContentResolver" is (by default...) AndTweetProvider instance
 			mFriendsCursor = getContentResolver().query(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null, Users.DEFAULT_SORT_ORDER);
 		} catch (SQLiteDiskIOException e) {
 			showDialog(DIALOG_EXTERNAL_STORAGE_MISSING);
@@ -298,7 +306,7 @@ public class TweetListActivity extends TimelineActivity {
 		outState.putLong(BUNDLE_KEY_REPLY_ID, mReplyId);
 		outState.putInt(BUNDLE_KEY_CURRENT_PAGE, mCurrentPage);
 		outState.putBoolean(BUNDLE_KEY_IS_LOADING, mIsLoading);
-		outState.putLong(BUNDLE_KEY_CURRENT_ID, mReplyId);
+		outState.putLong(BUNDLE_KEY_CURRENT_ID, mCurrentId);
 		super.onSaveInstanceState(outState);
 	}
 
