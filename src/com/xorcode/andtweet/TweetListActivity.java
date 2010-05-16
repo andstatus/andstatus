@@ -75,7 +75,7 @@ import com.xorcode.andtweet.net.ConnectionUnavailableException;
  */
 public class TweetListActivity extends TimelineActivity {
 
-	public static final String TAG = "AndTweet";
+    private static final String TAG = TweetListActivity.class.getSimpleName();
 
 	// Context menu items
 	public static final int CONTEXT_MENU_ITEM_REPLY = Menu.FIRST + 2;
@@ -138,6 +138,10 @@ public class TweetListActivity extends TimelineActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onCreate");
+        }
+		
 		if (savedInstanceState != null) {
 			if (savedInstanceState.containsKey(BUNDLE_KEY_REPLY_ID)) {
 				mReplyId = savedInstanceState.getLong(BUNDLE_KEY_REPLY_ID);
@@ -199,6 +203,9 @@ public class TweetListActivity extends TimelineActivity {
 	}
 
 	protected void doSearchQuery(final Intent queryIntent) {
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "doSearchQuery");
+        }
 		// The search query is provided as an "extra" string in the query intent
 		final String queryString = queryIntent.getStringExtra(SearchManager.QUERY);
 
@@ -234,6 +241,9 @@ public class TweetListActivity extends TimelineActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onStart");
+        }
 		final Intent intent = getIntent();
 		try {
 		    // The "ContentResolver" is (by default...) AndTweetProvider instance
@@ -245,6 +255,7 @@ public class TweetListActivity extends TimelineActivity {
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 		    doSearchQuery(intent);
 		} else {
+		    // TODO: do we need to specify tweet types...
 			mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, Tweets.TWEET_TYPE + " IN (?, ?)", new String[] { String.valueOf(Tweets.TWEET_TYPE_TWEET), String.valueOf(Tweets.TWEET_TYPE_REPLY) }, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
 			createAdapters();
 		}
@@ -253,7 +264,9 @@ public class TweetListActivity extends TimelineActivity {
 		}
 		if ("com.xorcode.andtweet.INITIALIZE".equals(intent.getAction())) {
 			intent.setAction(null);
-			Log.d(TAG, "onStart() Initializing...");
+	        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+	            Log.d(TAG, "onStart() Initializing...");
+	        }
 			mInitializing = true;
 			// Clean up databases in case there is data in there
 			getContentResolver().delete(AndTweetDatabase.Tweets.CONTENT_URI, null, null);
@@ -274,6 +287,9 @@ public class TweetListActivity extends TimelineActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onResume");
+        }
 		mCharsLeftText.setText(String.valueOf(mLimitChars - mEditText.length()));
 	}
 
@@ -314,6 +330,8 @@ public class TweetListActivity extends TimelineActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.reload_menu_item:
+		    // Only newer tweets (newer that last loaded) are being loaded from the Internet,
+		    // old tweets are not reloaded.
 			showDialog(DIALOG_TIMELINE_LOADING);
 			mListFooter.setVisibility(View.VISIBLE);
 			Thread thread = new Thread(mManualReload);
@@ -602,14 +620,23 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	@Override
 	public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onItemClick, id=" + id );
+        }
 		if (id <= 0) {
 			return;
 		}
 		Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, id);
 		String action = getIntent().getAction();
 		if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
+	        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+	            Log.d(TAG, "onItemClick, setData=" + uri );
+	        }
 			setResult(RESULT_OK, new Intent().setData(uri));
 		} else {
+	        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+	            Log.d(TAG, "onItemClick, startActivity=" + uri );
+	        }
 			startActivity(new Intent(Intent.ACTION_VIEW, uri));
 		}
 	}
@@ -682,7 +709,7 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						dismissDialog(DIALOG_TIMELINE_LOADING);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.toString());
+	                    AndTweetService.d(TAG, "", e);
 					}
 				}
 				break;
@@ -710,7 +737,7 @@ public class TweetListActivity extends TimelineActivity {
 				try {
 					dismissDialog(DIALOG_SENDING_MESSAGE);
 				} catch (IllegalArgumentException e) {
-					Log.d(TAG, e.toString());
+                    AndTweetService.d(TAG, "", e);
 				}
 				break;
 
@@ -720,14 +747,14 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						dismissDialog(DIALOG_TIMELINE_LOADING);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.toString());
+	                    AndTweetService.d(TAG, "", e);
 					}
 					break;
 				case MSG_UPDATE_STATUS:
 					try {
 						dismissDialog(DIALOG_SENDING_MESSAGE);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.toString());
+	                    AndTweetService.d(TAG, "", e);
 					}
 					break;
 				}
@@ -741,14 +768,14 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						dismissDialog(DIALOG_TIMELINE_LOADING);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.toString());
+	                    AndTweetService.d(TAG, "", e);
 					}
 					break;
 				case MSG_UPDATE_STATUS:
 					try {
 						dismissDialog(DIALOG_SENDING_MESSAGE);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.toString());
+	                    AndTweetService.d(TAG, "", e);
 					}
 					break;
 				}
@@ -760,7 +787,7 @@ public class TweetListActivity extends TimelineActivity {
 				try {
 					dismissDialog(DIALOG_TIMELINE_LOADING);
 				} catch (IllegalArgumentException e) {
-					Log.d(TAG, e.toString());
+                    AndTweetService.d(TAG, "", e);
 				}
 				mIsLoading = false;
 				Toast.makeText(TweetListActivity.this, R.string.timeline_reloaded, Toast.LENGTH_SHORT).show();
@@ -805,14 +832,14 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						dismissDialog(DIALOG_TIMELINE_LOADING);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.toString());
+	                    AndTweetService.d(TAG, "", e);
 					}
 					break;
 				case MSG_UPDATE_STATUS:
 					try {
 						dismissDialog(DIALOG_SENDING_MESSAGE);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.toString());
+	                    AndTweetService.d(TAG, "", e);
 					}
 					break;
 				}
@@ -837,7 +864,7 @@ public class TweetListActivity extends TimelineActivity {
 				try {
 					dismissDialog(DIALOG_EXECUTING_COMMAND);
 				} catch (IllegalArgumentException e) {
-					Log.d(TAG, e.toString());
+                    AndTweetService.d(TAG, "", e);
 				}
 				break;
 
@@ -867,7 +894,7 @@ public class TweetListActivity extends TimelineActivity {
 				try {
 					dismissDialog(DIALOG_EXECUTING_COMMAND);
 				} catch (IllegalArgumentException e) {
-					Log.d(TAG, e.toString());
+                    AndTweetService.d(TAG, "", e);
 				}
 				break;
 
@@ -897,7 +924,7 @@ public class TweetListActivity extends TimelineActivity {
 				try {
 					dismissDialog(DIALOG_EXECUTING_COMMAND);
 				} catch (IllegalArgumentException e) {
-					Log.d(TAG, e.toString());
+                    AndTweetService.d(TAG, "", e);
 				}
 				break;
 
@@ -909,7 +936,7 @@ public class TweetListActivity extends TimelineActivity {
 					try {
 						dismissDialog(DIALOG_EXECUTING_COMMAND);
 					} catch (IllegalArgumentException e) {
-						Log.d(TAG, e.toString());
+	                    AndTweetService.d(TAG, "", e);
 					}
 					break;
 				}
@@ -973,10 +1000,22 @@ public class TweetListActivity extends TimelineActivity {
 			try {
 				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_REPLY, mInitializing);
 				aReplyCount = friendTimeline.replyCount();
+				
+				// TODO: Make it better... 
+                long lastTweetId1 = friendTimeline.lastId();
+                // Create friendTimeline again because otherwise we'll download tweets since last reply only!
+				friendTimeline = new FriendTimeline(getContentResolver(), username, password, lastTweetId);
+				
 				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, mInitializing);
 				aNewTweets = friendTimeline.newCount();
 				aReplyCount += friendTimeline.replyCount();
 				lastTweetId = friendTimeline.lastId();
+				
+				// TODO: Maybe these should be two different stored values... not one "last_timeline_id" ?!
+				if  (lastTweetId < lastTweetId1) {
+				    lastTweetId = lastTweetId1;
+				}
+
 				prefsEditor.putLong("last_timeline_id", lastTweetId);
 				prefsEditor.commit();
 			} catch (ConnectionException e) {
@@ -1003,7 +1042,8 @@ public class TweetListActivity extends TimelineActivity {
 	};
 
 	/**
-	 * Load more items into the list.
+	 * Load more items from the database into the list
+	 * This procedure doesn't download any new tweets from the Internet
 	 */
 	protected Runnable mLoadListItems = new Runnable() {
 		public void run() {

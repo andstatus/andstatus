@@ -16,10 +16,15 @@
 
 package com.xorcode.andtweet.data;
 
+import java.util.Arrays;
+
+import com.xorcode.andtweet.AndTweetService;
+
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FilterQueryProvider;
@@ -30,6 +35,8 @@ import android.widget.SimpleCursorAdapter;
  *
  */
 public class PagedCursorAdapter extends SimpleCursorAdapter implements FilterQueryProvider {
+
+    private static final String TAG = PagedCursorAdapter.class.getSimpleName();
 
 	private ContentResolver mContentResolver;
 	private String[] mProjection;
@@ -67,6 +74,9 @@ public class PagedCursorAdapter extends SimpleCursorAdapter implements FilterQue
 				mSortOrder = newSortOrder;
 			}
 			mSortOrder += " " + constraint.toString().trim();
+		}
+		if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+		    Log.v(TAG, "runQuery, mUri=" + mUri + "; mProjection=" + Arrays.toString(mProjection) + "; mSortOrder=" + mSortOrder + ";");
 		}
 		return mContentResolver.query(mUri, mProjection, null, null, mSortOrder);
 	}

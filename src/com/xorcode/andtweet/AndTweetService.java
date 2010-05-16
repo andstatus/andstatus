@@ -834,4 +834,25 @@ public class AndTweetService extends Service {
         serviceIntent.putExtra(AndTweetService.EXTRA_MSGTYPE, AndTweetService.ACTION_RESTART_ALARM);
         context.startService(serviceIntent);
     }
+
+    /**
+     * Shortcut for debugging messages of the application 
+     */
+    public static int d(String tag, String msg) {
+        int i = 0;
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+            i = Log.d(TAG, msg);
+        }
+        return i;
+    }    
+    /**
+     * Shortcut for debugging messages of the application 
+     */
+    public static int d(String tag, String msg, Throwable tr) {
+        int i = 0;
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+          i = Log.d(TAG, msg, tr);
+        }
+        return i;
+    }
 }

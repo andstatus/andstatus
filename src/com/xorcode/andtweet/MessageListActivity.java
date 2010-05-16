@@ -57,7 +57,7 @@ import com.xorcode.andtweet.net.ConnectionUnavailableException;
  */
 public class MessageListActivity extends TimelineActivity {
 
-	public static final String TAG = "AndTweet";
+    private static final String TAG = MessageListActivity.class.getSimpleName();
 
 	// Context menu items
 	public static final int CONTEXT_MENU_ITEM_REPLY = Menu.FIRST + 3;
@@ -95,6 +95,10 @@ public class MessageListActivity extends TimelineActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onCreate");
+        }
 
 		if (savedInstanceState != null) {
 			if (savedInstanceState.containsKey(BUNDLE_KEY_CURRENT_PAGE)) {

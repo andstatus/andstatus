@@ -17,6 +17,7 @@
 package com.xorcode.andtweet;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
@@ -53,7 +54,7 @@ import com.xorcode.andtweet.data.AndTweetDatabase.Users;
  */
 public class AndTweetProvider extends ContentProvider {
 
-	private static final String TAG = "AndTweetProvider";
+    private static final String TAG = AndTweetProvider.class.getSimpleName();
 
 	private static final String DATABASE_DIRECTORY = "andtweet";
 	private static final String DATABASE_NAME = "andtweet.sqlite";
@@ -214,7 +215,7 @@ public class AndTweetProvider extends ContentProvider {
 
 		@Override
 		public void onCreate(SQLiteDatabase db) {
-			Log.d(TAG, "Creating tables");
+            Log.d(TAG, "Creating tables");
 			db.execSQL("CREATE TABLE " + TWEETS_TABLE_NAME + " ("
 					+ Tweets._ID + " INTEGER PRIMARY KEY," 
 					+ Tweets.AUTHOR_ID + " TEXT," 
@@ -573,9 +574,16 @@ public class AndTweetProvider extends ContentProvider {
 		case TWEET_SEARCH:
 			qb.setTables(TWEETS_TABLE_NAME);
 			qb.setProjectionMap(sTweetsProjectionMap);
-			qb.appendWhere(Tweets.AUTHOR_ID + " LIKE ? OR " + Tweets.MESSAGE + " LIKE ?");
-			selectionArgs = new String[2];
-			selectionArgs[0] = selectionArgs[1] = "%" + uri.getLastPathSegment() + "%";
+			String s1 = uri.getLastPathSegment();
+            if (s1 != null) {
+                // These two lines don't work:
+                //qb.appendWhere(Tweets.AUTHOR_ID + " LIKE '%" + s1 + "%' OR " + Tweets.MESSAGE + " LIKE '%" + s1 + "%'");
+                //qb.appendWhere(Tweets.AUTHOR_ID + " LIKE \"%" + s1 + "%\" OR " + Tweets.MESSAGE + " LIKE \"%" + s1 + "%\"");
+                // ...so we have to use selectionArgs
+                qb.appendWhere(Tweets.AUTHOR_ID + " LIKE ?  OR " + Tweets.MESSAGE + " LIKE ?");
+                selectionArgs = addBeforeArray(selectionArgs, "%" + s1 + "%");
+                selectionArgs = addBeforeArray(selectionArgs, "%" + s1 + "%");
+            }
 			break;
 
 		case DIRECTMESSAGES:
@@ -634,10 +642,33 @@ public class AndTweetProvider extends ContentProvider {
 		SQLiteDatabase db = mOpenHelper.getReadableDatabase();
 		Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
 
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "query, uri=" + uri + "; projection=" + Arrays.toString(projection)
+                    + "; selection=" + selection);
+            Log.v(TAG, "; selectionArgs=" + Arrays.toString(selectionArgs) + "; sortOrder="
+                    + sortOrder);
+            Log.v(TAG, "; qb.getTables=" + qb.getTables() + "; orderBy=" + orderBy);
+        }
+		
 		// Tell the cursor what Uri to watch, so it knows when its source data changes
 		c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}
+	
+	private static String[] addBeforeArray(String[] array, String s)
+	{  
+	    int length = 0;
+	    if (array != null) {
+	        length = array.length;
+	    }
+	    String ans[] = new String[length + 1];
+	    if (length>0) {
+	        System.arraycopy(array, 0, ans, 1,   array.length);
+	    }
+	    ans[0] = s;
+	    return ans;
+	}
+
 
 	/**
 	 * Update a record in the database

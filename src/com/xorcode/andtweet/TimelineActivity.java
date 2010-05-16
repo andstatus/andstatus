@@ -154,7 +154,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		Log.d(TAG, "onCreate");
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onCreate");
+        }
 
 		// Set up preference manager
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -196,12 +198,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
 		// Set up notification manager
 		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		
-		loadPosition();
 	}
 	
 	@Override
 	protected void onResume() {
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onResume");
+        }
 		super.onResume();
 		loadPosition();
 	}
@@ -241,12 +244,16 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
 
 	private void setSelectionAtBottom(int scrollPos) {
-		Log.d(TAG, "############## 1");
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "setSelectionAtBottom, 1");
+        }
 		final int viewHeight = getListView().getHeight();
 		final int childHeight;
 			childHeight = 30;
 		final int y = viewHeight - childHeight;
-		Log.d(TAG, "set position of last item to " + y);
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "set position of last item to " + y);
+        }
 		getListView().setSelectionFromTop(scrollPos, y);
 	}
 
@@ -263,7 +270,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		boolean itemFound = false;
 		final ListView lv = getListView();
 		final int itemCount = lv.getCount();
-		Log.d(TAG, "item count: "+ itemCount);
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "item count: "+ itemCount);
+        }
 		for (listPos = 0; (!itemFound && (listPos < itemCount)); listPos++) {
 			long itemId = lv.getItemIdAtPosition(listPos);
 			itemFound = (itemId == searchedId);
@@ -279,7 +288,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	@Override
 	public void onContentChanged() {
 		super.onContentChanged();
-		Log.d(TAG, "CONTENT CHANGED");
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+            Log.d(TAG, "Content changed");
+        }
 	}
 	
 	
@@ -448,6 +459,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			intent = new Intent(this, TweetListActivity.class);
 			appDataBundle = new Bundle();
 			appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.SEARCH_URI);
+			// TODO: Do we really need these "selection" and "selectionArgs"?
+			// There are NO other tweet types (yet) except 1 and 2...
 			appDataBundle.putString("selection", AndTweetDatabase.Tweets.TWEET_TYPE + " IN (?, ?)");
 			appDataBundle.putStringArray("selectionArgs", new String[] { String.valueOf(Tweets.TWEET_TYPE_TWEET), String.valueOf(Tweets.TWEET_TYPE_REPLY) });
 			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
@@ -469,6 +482,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			break;
 
 		case R.id.mentions_menu_id:
+		    // Mentions is now query of the TweetList view...
 			intent = new Intent(this, TweetListActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			String username = mSP.getString("twitter_username", null);
