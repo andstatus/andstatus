@@ -19,9 +19,6 @@ package com.xorcode.andtweet;
 import java.net.SocketTimeoutException;
 import java.text.MessageFormat;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -41,7 +38,6 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.RingtonePreference;
 import android.preference.Preference.OnPreferenceChangeListener;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.xorcode.andtweet.net.Connection;
@@ -54,8 +50,6 @@ import com.xorcode.andtweet.net.ConnectionUnavailableException;
  * 
  */
 public class PreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
-
-	private static final String TAG = "AndTweetPreferences";
 
 	private static final int DIALOG_AUTHENTICATION_FAILED = 1;
 	private static final int DIALOG_CHECKING_CREDENTIALS = 2;
@@ -316,15 +310,24 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
 	private Runnable mCheckCredentials = new Runnable() {
 		public void run() {
-			Connection c = new Connection(mEditTextUsername.getText(), mEditTextPassword.getText());
+		    
+		    // TODO: Do we need to store them?
+		    /*
+	        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(PreferencesActivity.this);
+	        synchronized (sp) {
+	            SharedPreferences.Editor prefsEditor = sp.edit();
+	            prefsEditor.putString("twitter_username", mEditTextUsername.getText() );
+                prefsEditor.putString("twitter_password", mEditTextPassword.getText() );
+	            prefsEditor.commit();
+	        }
+	        */
+	        
+			Connection c = new Connection(PreferencesActivity.this);
 			try {
-				JSONObject jo = c.verifyCredentials();
-				if (jo.optInt("id") > 0) {
+				if (c.verifyCredentials()) {
 					mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCOUNT_VALID, 1, 0));
 					return;
 				}
-			} catch (JSONException e) {
-				Log.e(TAG, e.toString());
 			} catch (ConnectionException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION, 1, 0, e.toString()));
 				return;

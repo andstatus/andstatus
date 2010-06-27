@@ -20,12 +20,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -43,6 +39,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.xorcode.andtweet.util.Base64;
@@ -57,14 +56,11 @@ public class Connection {
 	private static final String BASE_URL = "http://twitter.com";
 	private static final String EXTENSION = ".json";
 
-	private static final String STATUSES_PUBLIC_TIMELINE_URL = BASE_URL + "/statuses/public_timeline" + EXTENSION;
 	private static final String STATUSES_FRIENDS_TIMELINE_URL = BASE_URL + "/statuses/friends_timeline" + EXTENSION;
 	private static final String STATUSES_MENTIONS_TIMELINE_URL = BASE_URL + "/statuses/mentions" + EXTENSION;
-	private static final String STATUSES_FOLLOWERS_URL = BASE_URL + "/statuses/followers" + EXTENSION;
 	private static final String STATUSES_UPDATE_URL = BASE_URL + "/statuses/update" + EXTENSION;
 	private static final String STATUSES_DESTROY_URL = BASE_URL + "/statuses/destroy/";
 	private static final String DIRECT_MESSAGES_URL = BASE_URL + "/direct_messages" + EXTENSION;
-	private static final String DIRECT_MESSAGES_SENT_URL = BASE_URL + "/direct_messages/sent" + EXTENSION;
 	private static final String ACCOUNT_VERIFY_CREDENTIALS_URL = BASE_URL + "/account/verify_credentials" + EXTENSION;
 	private static final String ACCOUNT_RATE_LIMIT_STATUS_URL = BASE_URL + "/account/rate_limit_status" + EXTENSION;
 	private static final String FAVORITES_CREATE_BASE_URL = BASE_URL + "/favorites/create/";
@@ -72,6 +68,12 @@ public class Connection {
 	private static final String USER_AGENT = "AndTweet/1.0";
 	private static final String SOURCE_PARAMETER = "andtweet";
 	private static final String TAG = "AndTweetConnection";
+	
+	/* TODO: Not implemented (yet?)
+    private static final String STATUSES_PUBLIC_TIMELINE_URL = BASE_URL + "/statuses/public_timeline" + EXTENSION;
+    private static final String STATUSES_FOLLOWERS_URL = BASE_URL + "/statuses/followers" + EXTENSION;
+    private static final String DIRECT_MESSAGES_SENT_URL = BASE_URL + "/direct_messages/sent" + EXTENSION;
+	 */
 
 	private static final Integer DEFAULT_GET_REQUEST_TIMEOUT = 15000;
 	private static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 20000;
@@ -81,73 +83,38 @@ public class Connection {
 	private long mSinceId;
 	private int mLimit = 200;
 
-	private final DateFormat mDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
-
 	/**
 	 * Creates a new Connection instance.
 	 * 
-	 * Requires a user name and password.
-	 * 
-	 * @param username
-	 * @param password
 	 */
-	public Connection(String username, String password) {
-		mUsername = username;
-		mPassword = password;
+	public Connection(Context context) {
+	    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+	    mUsername = prefs.getString("twitter_username", null);
+        mPassword = prefs.getString("twitter_password", null);
 	}
 
-	/**
-	 * Creates a new Connection instance, specifying a last ID.
-	 * 
-	 * Requires a user name and password as well as a last run time.
-	 * 
-	 * @param username
-	 * @param password
-	 * @param lastId
-	 */
-	public Connection(String username, String password, long sinceId) {
-		mUsername = username;
-		mPassword = password;
-		mSinceId = sinceId;
+	protected long getSinceId() {
+        return mSinceId;
 	}
+	protected long setSinceId(long sinceId) {
+        if (sinceId>0) {
+            mSinceId = sinceId;
+        }
+        return mSinceId;
+    }
 
-	/**
-	 * Creates a new Connection instance, specifying a last ID.
-	 * 
-	 * Requires a user name and password as well as a last run time.
-	 * 
-	 * @param username
-	 * @param password
-	 * @param lastId
-	 */
-	public Connection(String username, String password, long sinceId, int limit) {
-		mUsername = username;
-		mPassword = password;
-		mSinceId = sinceId;
-		mLimit = limit;
-		if (mLimit < 1) mLimit = 1;
-		if (mLimit > 200) mLimit = 200;
-	}
-
-	/**
-	 * Get the user's public timeline.
-	 * 
-	 * Returns the 20 most recent statuses from non-protected users who have set
-	 * a custom user icon. Does not require authentication. Note that the public
-	 * timeline is cached for 60 seconds so requesting it more often than that
-	 * is a waste of resources.
-	 * 
-	 * @return JSONArray
-	 * @throws JSONException
-	 * @throws ConnectionException 
-	 * @throws ConnectionUnavailableException 
-	 * @throws ConnectionAuthenticationException 
-	 * @throws SocketTimeoutException 
-	 */
-	public JSONArray getPublicTimeline() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		return new JSONArray(getRequest(STATUSES_PUBLIC_TIMELINE_URL));
-	}
-
+    protected int getLimit() {
+        return mLimit;
+    }
+    protected int setLimit(int limit) {
+        if (limit>0) {
+            mLimit = limit;
+            if (mLimit > 200) mLimit = 200;
+        }
+        return mLimit;
+    }
+	
 	/**
 	 * Get the user's own and friends timeline.
 	 * 
@@ -160,7 +127,10 @@ public class Connection {
 	 * @throws ConnectionUnavailableException 
 	 * @throws SocketTimeoutException 
 	 */
-	public JSONArray getFriendsTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	public JSONArray getFriendsTimeline(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	    setSinceId(sinceId);
+	    setLimit(limit);
+	    
 		String url = STATUSES_FRIENDS_TIMELINE_URL;
 		url += "?count=" + mLimit;
 		if (mSinceId > 0) {
@@ -196,41 +166,15 @@ public class Connection {
 	 * @throws ConnectionUnavailableException 
 	 * @throws SocketTimeoutException 
 	 */
-	public JSONArray getMentionsTimeline() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		String url = STATUSES_MENTIONS_TIMELINE_URL;
+	public JSONArray getMentionsTimeline(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+        setSinceId(sinceId);
+        setLimit(limit);
+
+        String url = STATUSES_MENTIONS_TIMELINE_URL;
 		url += "?count=" + mLimit;
 		if (mSinceId > 0) {
 			url += "&since_id=" + mSinceId;
 		}
-		JSONArray jArr = null;
-		String request = getRequest(url);
-		try {
-			jArr = new JSONArray(request);
-		} catch (JSONException e) {
-			try {
-				JSONObject jObj = new JSONObject(request);
-				String error = jObj.optString("error");
-				if ("Could not authenticate you.".equals(error)) {
-					throw new ConnectionAuthenticationException(error);
-				}
-			} catch (JSONException e1) {
-				throw new ConnectionException(e);
-			}
-		}
-		return jArr;
-	}
-
-	/**
-	 * Get the user's followers from the Twitter REST API.
-	 * 
-	 * @return JSONArray
-	 * @throws ConnectionException
-	 * @throws ConnectionAuthenticationException
-	 * @throws ConnectionUnavailableException
-	 * @throws SocketTimeoutException
-	 */
-	public JSONArray getFollowers() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		String url = STATUSES_FOLLOWERS_URL;
 		JSONArray jArr = null;
 		String request = getRequest(url);
 		try {
@@ -260,43 +204,11 @@ public class Connection {
 	 * @throws ConnectionUnavailableException 
 	 * @throws SocketTimeoutException 
 	 */
-	public JSONArray getDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		String url = DIRECT_MESSAGES_URL;
-		url += "?count=" + mLimit;
-		if (mSinceId > 0) {
-			url += "&since_id=" + mSinceId;
-		}
-		JSONArray jArr = null;
-		String request = getRequest(url);
-		try {
-			jArr = new JSONArray(request);
-		} catch (JSONException e) {
-			try {
-				JSONObject jObj = new JSONObject(request);
-				String error = jObj.optString("error");
-				if ("Could not authenticate you.".equals(error)) {
-					throw new ConnectionAuthenticationException(error);
-				}
-			} catch (JSONException e1) {
-				throw new ConnectionException(e);
-			}
-		}
-		return jArr;
-	}
+	public JSONArray getDirectMessages(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+        setSinceId(sinceId);
+        setLimit(limit);
 
-	/**
-	 * Get the user's own and friends timeline.
-	 * 
-	 * Returns the 100 most recent sent messages for the authenticating user.
-	 * 
-	 * @return JSONArray
-	 * @throws ConnectionException 
-	 * @throws ConnectionAuthenticationException 
-	 * @throws ConnectionUnavailableException 
-	 * @throws SocketTimeoutException 
-	 */
-	public JSONArray getSentDirectMessages() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		String url = DIRECT_MESSAGES_SENT_URL;
+		String url = DIRECT_MESSAGES_URL;
 		url += "?count=" + mLimit;
 		if (mSinceId > 0) {
 			url += "&since_id=" + mSinceId;
@@ -443,19 +355,35 @@ public class Connection {
 	/**
 	 * Verify the user's credentials.
 	 * 
-	 * Returns an HTTP 200 OK response code and a representation of the
-	 * requesting user if authentication was successful; returns a 401 status
-	 * code and an error message if not.
+	 * Returns true if authentication was successful
 	 * 
-	 * @return JSONObject
-	 * @throws JSONException
+	 * @return boolean
 	 * @throws ConnectionException 
 	 * @throws ConnectionUnavailableException 
 	 * @throws ConnectionAuthenticationException 
 	 * @throws SocketTimeoutException 
 	 */
-	public JSONObject verifyCredentials() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		return new JSONObject(getRequest(ACCOUNT_VERIFY_CREDENTIALS_URL, new DefaultHttpClient(new BasicHttpParams())));
+	public boolean verifyCredentials() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	    boolean isOk = false;
+	    /**
+         * Returns an HTTP 200 OK response code and a representation of the
+         * requesting user if authentication was successful; returns a 401 status
+         * code and an error message if not.
+         * @see <a
+         *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-account%C2%A0verify_credentials">Twitter
+         *      REST API Method: account verify_credentials</a>
+	     */
+
+        try {
+            JSONObject jo = new JSONObject(getRequest(ACCOUNT_VERIFY_CREDENTIALS_URL, new DefaultHttpClient(new BasicHttpParams())));
+            if ( jo.optInt("id") > 0) {
+                isOk = true;
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "verifyCredentials: " + e.toString());
+        }
+	    
+		return isOk;
 	}
 
 	/**
@@ -467,6 +395,9 @@ public class Connection {
 	 * credentials are provided, the rate limit status for the authenticating 
 	 * user is returned.  Otherwise, the rate limit status for the requester's 
 	 * IP address is returned.
+     * @see <a
+     *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-account%C2%A0rate_limit_status">Twitter
+     *      REST API Method: account rate_limit_status</a>
 	 * 
 	 * @return JSONObject
 	 * @throws JSONException
@@ -489,7 +420,7 @@ public class Connection {
 	 * @throws ConnectionAuthenticationException 
 	 * @throws SocketTimeoutException 
 	 */
-	protected String getRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	private String getRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		return getRequest(url, new DefaultHttpClient(new BasicHttpParams()));
 	}
 
@@ -504,7 +435,7 @@ public class Connection {
 	 * @throws ConnectionAuthenticationException 
 	 * @throws SocketTimeoutException 
 	 */
-	protected String getRequest(String url, HttpClient client) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	private String getRequest(String url, HttpClient client) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		String result = null;
 		int statusCode = 0;
 		HttpGet getMethod = new HttpGet(url);
@@ -538,7 +469,7 @@ public class Connection {
 	 * @throws ConnectionAuthenticationException 
 	 * @throws SocketTimeoutException 
 	 */
-	protected String postRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	private String postRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), null);
 	}
 
@@ -552,7 +483,7 @@ public class Connection {
 	 * @throws ConnectionAuthenticationException 
 	 * @throws SocketTimeoutException 
 	 */
-	protected String postRequest(String url, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	private String postRequest(String url, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), formParams);
 	}
 
@@ -566,7 +497,7 @@ public class Connection {
 	 * @throws ConnectionUnavailableException 
 	 * @throws ConnectionAuthenticationException 
 	 */
-	protected String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	private String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		String result = null;
 		int statusCode = 0;
 		HttpPost postMethod = new HttpPost(url);
@@ -599,7 +530,7 @@ public class Connection {
 	 * @param httpEntity
 	 * @return String
 	 */
-	protected String retrieveInputStream(HttpEntity httpEntity) {
+	private String retrieveInputStream(HttpEntity httpEntity) {
 		int length = (int) httpEntity.getContentLength();
 		StringBuffer stringBuffer = new StringBuffer(length);
 		try {
@@ -624,7 +555,7 @@ public class Connection {
 	 * 
 	 * @return String
 	 */
-	protected String getCredentials() {
+	private String getCredentials() {
 		return new String(Base64.encodeBytes((mUsername + ":" + mPassword).getBytes()));
 	}
 
@@ -637,7 +568,7 @@ public class Connection {
 	 * @throws ConnectionAuthenticationException
 	 * @throws ConnectionUnavailableException
 	 */
-	protected void parseStatusCode(int code, String path) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	private void parseStatusCode(int code, String path) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
 		switch (code) {
 		case 200:
 		case 304:
@@ -652,18 +583,6 @@ public class Connection {
 		case 502:
 		case 503:
 			throw new ConnectionUnavailableException(String.valueOf(code));
-		}
-	}
-
-	/**
-	 * Format a Date in the twitter date format.
-	 * 
-	 * @param time
-	 * @return
-	 */
-	protected String getTwitterDate(long time) {
-		synchronized (mDateFormat) {
-			return mDateFormat.format(new Date(time));
 		}
 	}
 }

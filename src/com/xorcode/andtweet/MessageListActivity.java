@@ -443,9 +443,7 @@ public class MessageListActivity extends TimelineActivity {
 	protected Runnable mManualReload = new Runnable() {
 		public void run() {
 			mIsLoading = true;
-			String username = mSP.getString("twitter_username", null);
-			String password = mSP.getString("twitter_password", null);
-			DirectMessages directMessages = new DirectMessages(getContentResolver(), username, password, mSP.getLong("last_messages_runtime", System.currentTimeMillis()));
+			DirectMessages directMessages = new DirectMessages(getContentResolver(), MessageListActivity.this, mSP.getLong("last_messages_runtime", System.currentTimeMillis()));
 			int aNewMessages = 0;
 			try {
 				directMessages.loadMessages();

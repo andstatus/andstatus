@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.text.Html;
@@ -46,7 +47,7 @@ public class DirectMessages {
 	private static final String TAG = "DirectMessages";
 
 	private ContentResolver mContentResolver;
-	private String mUsername, mPassword;
+    private Context mContext;
 	private int mNewMessages;
 	private long mLastMessageId = 0;
 
@@ -58,10 +59,9 @@ public class DirectMessages {
 	 * @param password
 	 * @param lastRunTime
 	 */
-	public DirectMessages(ContentResolver contentResolver, String username, String password, long lastMessageId) {
+	public DirectMessages(ContentResolver contentResolver, Context context, long lastMessageId) {
 		mContentResolver = contentResolver;
-		mUsername = username;
-		mPassword = password;
+        mContext = context;
 		mLastMessageId = lastMessageId;
 	}
 
@@ -77,26 +77,21 @@ public class DirectMessages {
 	 */
 	public void loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		mNewMessages = 0;
-		if (mUsername != null && mUsername.length() > 0) {
-			Connection aConn;
-			if (mLastMessageId > 0) {
-				aConn = new Connection(mUsername, mPassword, mLastMessageId);
-			} else {
-				aConn = new Connection(mUsername, mPassword);
-			}
-			JSONArray jArr = aConn.getDirectMessages();
-			for (int index = 0; index < jArr.length(); index++) {
-				JSONObject jo = jArr.getJSONObject(index);
-				long lId = jo.getLong("id");
-				if (lId > mLastMessageId) {
-					mLastMessageId = lId;
-				}
-				insertFromJSONObject(jo);
-			}
-			if (mNewMessages > 0) {
-				mContentResolver.notifyChange(AndTweetDatabase.DirectMessages.CONTENT_URI, null);
-			}
-		}
+		Connection aConn = new Connection(mContext);
+		if (aConn.verifyCredentials()) {
+    		JSONArray jArr = aConn.getDirectMessages(mLastMessageId, 0);
+    		for (int index = 0; index < jArr.length(); index++) {
+    			JSONObject jo = jArr.getJSONObject(index);
+    			long lId = jo.getLong("id");
+    			if (lId > mLastMessageId) {
+    				mLastMessageId = lId;
+    			}
+    			insertFromJSONObject(jo);
+    		}
+    		if (mNewMessages > 0) {
+    			mContentResolver.notifyChange(AndTweetDatabase.DirectMessages.CONTENT_URI, null);
+    		}
+        }
 	}
 
 	/**

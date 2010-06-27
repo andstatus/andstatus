@@ -26,8 +26,11 @@ import org.json.JSONObject;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.text.Html;
 import android.util.Log;
 
@@ -47,15 +50,17 @@ public class FriendTimeline {
 	private static final String TAG = "FriendTimeline";
 
 	private ContentResolver mContentResolver;
-	private String mUsername, mPassword;
+	private String mUsername;
+    private Context mContext;
 	private long mLastStatusId = 0;
 	private int mNewTweets;
 	private int mReplies;
 
-	public FriendTimeline(ContentResolver contentResolver, String username, String password, long lastStatusId) {
+	public FriendTimeline(ContentResolver contentResolver, Context context, long lastStatusId) {
 		mContentResolver = contentResolver;
-		mUsername = username;
-		mPassword = password;
+        mContext = context;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        mUsername = sp.getString("twitter_username", null);
 		mLastStatusId = lastStatusId;
 	}
 
@@ -107,15 +112,15 @@ public class FriendTimeline {
 		if (firstRun) {
 			limit = 20;
 		}
-		if (mUsername != null && mUsername.length() > 0) {
-			Connection aConn = new Connection(mUsername, mPassword, mLastStatusId, limit);
+        Connection aConn = new Connection(mContext);
+        if (aConn.verifyCredentials()) {
 			JSONArray jArr = null;
 			switch (tweetType) {
 			case AndTweetDatabase.Tweets.TWEET_TYPE_TWEET:
-				jArr = aConn.getFriendsTimeline();
+				jArr = aConn.getFriendsTimeline(mLastStatusId, limit);
 				break;
 			case AndTweetDatabase.Tweets.TWEET_TYPE_REPLY:
-				jArr = aConn.getMentionsTimeline();
+				jArr = aConn.getMentionsTimeline(mLastStatusId, limit);
 				break;
 			default:
 				Log.e(TAG, "Got unhandled tweet type: " + tweetType);

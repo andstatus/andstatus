@@ -692,7 +692,6 @@ public class TweetListActivity extends TimelineActivity {
 		public void handleMessage(Message msg) {
 			JSONObject result = null;
 			String username = mSP.getString("twitter_username", null);
-			String password = mSP.getString("twitter_password", null);
 			switch (msg.what) {
 			case MSG_TWEETS_CHANGED:
 				int numTweets = msg.arg1;
@@ -720,7 +719,7 @@ public class TweetListActivity extends TimelineActivity {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
 				    // The tweet was sent successfully
-					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_id", 0));
+					FriendTimeline fl = new FriendTimeline(getContentResolver(), TweetListActivity.this, mSP.getLong("last_timeline_id", 0));
 					try {
 						fl.insertFromJSONObject(result, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, true);
 					} catch (JSONException e) {
@@ -852,7 +851,7 @@ public class TweetListActivity extends TimelineActivity {
 				if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
-					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
+					FriendTimeline fl = new FriendTimeline(getContentResolver(),  TweetListActivity.this, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
 					try {
 						fl.destroyStatus(result.getLong("id"));
 					} catch (JSONException e) {
@@ -873,7 +872,7 @@ public class TweetListActivity extends TimelineActivity {
 				if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
-					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
+					FriendTimeline fl = new FriendTimeline(getContentResolver(), TweetListActivity.this, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
 					try {
 						Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result.getLong("id"));
 						Cursor c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE }, null, null, null);
@@ -903,7 +902,7 @@ public class TweetListActivity extends TimelineActivity {
 				if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
-					FriendTimeline fl = new FriendTimeline(getContentResolver(), username, password, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
+					FriendTimeline fl = new FriendTimeline(getContentResolver(), TweetListActivity.this, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
 					try {
 						Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result.getLong("id"));
 						Cursor c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE }, null, null, null);
@@ -958,10 +957,8 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	protected Runnable mSendUpdate = new Runnable() {
 		public void run() {
-			String username = mSP.getString("twitter_username", null);
-			String password = mSP.getString("twitter_password", null);
 			String message = mEditText.getText().toString();
-			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(username, password);
+			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(TweetListActivity.this);
 			JSONObject result = new JSONObject();
 			try {
 				result = aConn.updateStatus(message.trim(), mReplyId);
@@ -991,10 +988,8 @@ public class TweetListActivity extends TimelineActivity {
 		public void run() {
 			mIsLoading = true;
 			final SharedPreferences.Editor prefsEditor = mSP.edit();
-			String username = mSP.getString("twitter_username", null);
-			String password = mSP.getString("twitter_password", null);
 			long lastTweetId = mSP.getLong("last_timeline_id", 0);
-			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), username, password, lastTweetId);
+			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), TweetListActivity.this, lastTweetId);
 			int aNewTweets = 0;
 			int aReplyCount = 0;
 			try {
@@ -1004,7 +999,7 @@ public class TweetListActivity extends TimelineActivity {
 				// TODO: Make it better... 
                 long lastTweetId1 = friendTimeline.lastId();
                 // Create friendTimeline again because otherwise we'll download tweets since last reply only!
-				friendTimeline = new FriendTimeline(getContentResolver(), username, password, lastTweetId);
+				friendTimeline = new FriendTimeline(getContentResolver(), TweetListActivity.this, lastTweetId);
 				
 				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, mInitializing);
 				aNewTweets = friendTimeline.newCount();
@@ -1057,9 +1052,7 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	protected Runnable mUpdateTitle = new Runnable() {
 		public void run() {
-			String username = mSP.getString("twitter_username", null);
-			String password = mSP.getString("twitter_password", null);
-			Connection c = new Connection(username, password);
+			Connection c = new Connection(TweetListActivity.this);
 			try {
 				JSONObject status = c.rateLimitStatus();
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATED_TITLE, status));
@@ -1077,9 +1070,7 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	protected Runnable mDestroyStatus = new Runnable() {
 		public void run() {
-			String username = mSP.getString("twitter_username", null);
-			String password = mSP.getString("twitter_password", null);
-			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(username, password);
+			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(TweetListActivity.this);
 			JSONObject result = new JSONObject();
 			try {
 				result = aConn.destroyStatus(mCurrentId);
@@ -1108,9 +1099,7 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	protected Runnable mCreateFavorite = new Runnable() {
 		public void run() {
-			String username = mSP.getString("twitter_username", null);
-			String password = mSP.getString("twitter_password", null);
-			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(username, password);
+			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(TweetListActivity.this);
 			JSONObject result = new JSONObject();
 			try {
 				result = aConn.createFavorite(mCurrentId);
@@ -1139,9 +1128,7 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	protected Runnable mDestroyFavorite = new Runnable() {
 		public void run() {
-			String username = mSP.getString("twitter_username", null);
-			String password = mSP.getString("twitter_password", null);
-			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(username, password);
+			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(TweetListActivity.this);
 			JSONObject result = new JSONObject();
 			try {
 				result = aConn.destroyFavorite(mCurrentId);

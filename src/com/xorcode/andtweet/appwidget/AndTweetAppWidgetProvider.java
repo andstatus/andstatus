@@ -201,7 +201,7 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
                         + "; msgType=" + msgType);
             }
 
-			// TODO:
+			// TODO: Do we need AlarmManager here?
 			// see /ApiDemos/src/com/example/android/apis/app/AlarmController.java
 			// on how to implement AlarmManager...
 

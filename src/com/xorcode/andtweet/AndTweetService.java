@@ -20,9 +20,7 @@ import java.net.SocketTimeoutException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -32,9 +30,6 @@ import android.app.SearchManager;
 import android.app.Service;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -57,7 +52,6 @@ import com.xorcode.andtweet.appwidget.AndTweetAppWidgetProvider;
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.DirectMessages;
 import com.xorcode.andtweet.data.FriendTimeline;
-import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
@@ -153,7 +147,6 @@ public class AndTweetService extends Service {
 	private static final int MILLISECONDS = 1000;
 	private static final int MSG_UPDATE_TIMELINE = 1;
 	private static final int MSG_UPDATE_DIRECT_MESSAGES = 2;
-	private static final int MSG_UPDATE_FOLLOWERS = 5;
 
     /**
      * A sentinel value that this class will never use as a msgType
@@ -176,8 +169,6 @@ public class AndTweetService extends Service {
     // TODO: Maybe this should be additional setting...
     public static boolean updateWidgetsOnEveryUpdate = true;
 
-	private String mUsername;
-	private String mPassword;
 	private boolean mNotificationsEnabled;
 	private boolean mNotificationsVibrate;
 
@@ -273,7 +264,6 @@ public class AndTweetService extends Service {
 			Log.d(TAG, "ACTION_FETCH");
             mHandler.sendEmptyMessage(MSG_UPDATE_TIMELINE);
             mHandler.sendEmptyMessage(MSG_UPDATE_DIRECT_MESSAGES);
-            mHandler.sendEmptyMessage(MSG_UPDATE_FOLLOWERS);
 		}
 		else if (ACTION_START_ALARM.equals(action)) {
 			Log.d(TAG, "ACTION_START_ALARM");
@@ -421,8 +411,6 @@ public class AndTweetService extends Service {
 
             SharedPreferences sp = getSp();
             synchronized (sp) {
-                mUsername = sp.getString("twitter_username", null);
-                mPassword = sp.getString("twitter_password", null);
 
                 mNotificationsEnabled = sp.getBoolean("notifications_enabled", false);
                 mNotificationsVibrate = sp.getBoolean("vibration", false);
@@ -435,11 +423,6 @@ public class AndTweetService extends Service {
             }
 
 			switch (msg.what) {
-				case MSG_UPDATE_FOLLOWERS: {
-					Thread t = new Thread(mLoadFollowers);
-					t.start();
-					break;
-				}
 				case MSG_UPDATE_TIMELINE: {
 					Thread t = new Thread(mLoadTimeline);
 					t.start();
@@ -546,7 +529,7 @@ public class AndTweetService extends Service {
 			messageTitle = R.string.notification_title_mentions;
 			Intent intent = new Intent(getApplicationContext(),
 					TweetListActivity.class);
-			intent.putExtra(SearchManager.QUERY, "@" + mUsername);
+			intent.putExtra(SearchManager.QUERY, "@" + sp.getString("twitter_username", null));
 			Bundle appDataBundle = new Bundle();
 			appDataBundle.putParcelable("content_uri",
 					AndTweetDatabase.Tweets.SEARCH_URI);
@@ -609,13 +592,7 @@ public class AndTweetService extends Service {
             }
 		    final int N = startStuff(this, "Getting tweets and replies.");
 		    
-	        SharedPreferences sp = getSp();
-	        synchronized (sp) {
-    			mUsername = sp.getString("twitter_username", null);
-    			mPassword = sp.getString("twitter_password", null);
-	        }
-
-			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), mUsername, mPassword, mLastTweetId);
+			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), AndTweetService.this.getApplicationContext(), mLastTweetId);
 			int aNewTweets = 0;
 			int aReplyCount = 0;
 			try {
@@ -689,12 +666,7 @@ public class AndTweetService extends Service {
 		    }
 			final int N = startStuff(this, "Getting direct messages.");
 
-            SharedPreferences sp = getSp();
-            synchronized (sp) {
-                mUsername = sp.getString("twitter_username", null);
-                mPassword = sp.getString("twitter_password", null);
-            }
-			DirectMessages directMessages = new DirectMessages(getContentResolver(), mUsername, mPassword, mLastMessageId);
+			DirectMessages directMessages = new DirectMessages(getContentResolver(), getApplicationContext(), mLastMessageId);
 			int aNewMessages = 0;
 			try {
 				directMessages.loadMessages();
@@ -743,61 +715,6 @@ public class AndTweetService extends Service {
 
 		notifyNewTweets(messagesChanged, NOTIFY_DIRECT_MESSAGE);
 	}
-	
-	
-	
-	protected Runnable mLoadFollowers = new Runnable() {
-		public void run() {
-            if (stuffRunning(this)) {
-                return;
-            }
-		    startStuff(this, "Getting followers list.");
-		    
-			final ContentResolver contentResolver = getContentResolver();
-            SharedPreferences sp = getSp();
-            synchronized (sp) {
-                mUsername = sp.getString("twitter_username", null);
-                mPassword = sp.getString("twitter_password", null);
-            }
-			if (mUsername != null && mUsername.length() > 0) {
-				Connection aConn = new Connection(mUsername, mPassword);
-				try {
-					JSONArray jArr = aConn.getFollowers();
-					if (jArr != null) {
-						for (int index = 0; index < jArr.length(); index++) {
-							JSONObject jo = jArr.getJSONObject(index);
-							ContentValues values = new ContentValues();
-		
-							// Construct the Uri to existing record
-							Long lUserId = Long.parseLong(jo.getString("id"));
-							Uri aUserUri = ContentUris.withAppendedId(AndTweetDatabase.Users.CONTENT_URI, lUserId);
-		
-							values.put(AndTweetDatabase.Users._ID, lUserId.toString());
-							values.put(AndTweetDatabase.Users.AUTHOR_ID, jo.getString("screen_name"));
-
-							if ((contentResolver.update(aUserUri, values, null, null)) == 0) {
-								contentResolver.insert(AndTweetDatabase.Users.CONTENT_URI, values);
-							}
-						}
-						getContentResolver().notifyChange(AndTweetDatabase.Users.CONTENT_URI, null);
-					}
-				} catch (JSONException e) {
-					Log.e(TAG, e.toString());
-				} catch (ConnectionException e) {
-					Log.e(TAG, "loadFollowers Connection Exception: " + e.toString());
-				} catch (ConnectionAuthenticationException e) {
-					Log.e(TAG, "loadFollowers Authentication Exception: " + e.toString());
-				} catch (ConnectionUnavailableException e) {
-					Log.e(TAG, "loadFollowers FAIL Whale Exception: " + e.toString());
-				} catch (SocketTimeoutException e) {
-					Log.e(TAG, "loadFollowers Timeout Exception: " + e.toString());
-				}
-
-			}
-			
-			endStuff(this, "Ended getting followers list.");
-		}
-	};
 
     /**
      * Utility method to send the Intent to the {@link AndTweetService} that
