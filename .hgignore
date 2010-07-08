@@ -4,3 +4,7 @@ syntax: regexp
 ^gen$
 syntax: regexp
 ^bin$
+syntax: regexp
+^src/com/xorcode/andtweet/net/MyKeys\.java$
+syntax: regexp
+^src/com/xorcode/andtweet/net/MyOAuthKeys\.java$

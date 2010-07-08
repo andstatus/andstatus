@@ -64,7 +64,6 @@ import com.xorcode.andtweet.data.TimelineSearchSuggestionProvider;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.data.AndTweetDatabase.Users;
-import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
@@ -715,7 +714,9 @@ public class TweetListActivity extends TimelineActivity {
 
 			case MSG_UPDATE_STATUS:
 				result = (JSONObject) msg.obj;
-				if (result.optString("error").length() > 0) {
+				if (result == null) {
+                    Toast.makeText(TweetListActivity.this, R.string.error_connection_error  , Toast.LENGTH_LONG).show();
+				} else if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
 				    // The tweet was sent successfully
@@ -819,7 +820,11 @@ public class TweetListActivity extends TimelineActivity {
 			case MSG_UPDATED_TITLE:
 				JSONObject status = (JSONObject) msg.obj;
 				try {
-					setTitle(getString(R.string.activity_title_format, new Object[] {getTitle(), username}), status.getInt("remaining_hits") + "/" + status.getInt("hourly_limit"));
+				    if (status != null) {
+	                    setTitle(getString(R.string.activity_title_format, new Object[] {getTitle(), username}), status.getInt("remaining_hits") + "/" + status.getInt("hourly_limit"));
+				    } else {
+                        setTitle("(msg is null)");
+				    }
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -958,14 +963,16 @@ public class TweetListActivity extends TimelineActivity {
 	protected Runnable mSendUpdate = new Runnable() {
 		public void run() {
 			String message = mEditText.getText().toString();
-			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(TweetListActivity.this);
+	        TwitterUser tu = TwitterUser.getTwitterUser(TweetListActivity.this, false);
 			JSONObject result = new JSONObject();
 			try {
-				result = aConn.updateStatus(message.trim(), mReplyId);
+				result = tu.getConnection().updateStatus(message.trim(), mReplyId);
 			} catch (UnsupportedEncodingException e) {
 				Log.e(TAG, e.toString());
+                mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_UPDATE_STATUS, 0));
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mSendUpdate Connection Exception: " + e.toString());
+                mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_UPDATE_STATUS, 0));
 				return;
 			} catch (ConnectionAuthenticationException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_UPDATE_STATUS, 0));
@@ -976,6 +983,10 @@ public class TweetListActivity extends TimelineActivity {
 			} catch (SocketTimeoutException e) {
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_UPDATE_STATUS, 0));
 				return;
+            } catch (Exception e) {
+                e.printStackTrace();
+                mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_UPDATE_STATUS, 0));
+                return;
 			}
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_STATUS, result));
 		}
@@ -1052,9 +1063,8 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	protected Runnable mUpdateTitle = new Runnable() {
 		public void run() {
-			Connection c = new Connection(TweetListActivity.this);
 			try {
-				JSONObject status = c.rateLimitStatus();
+				JSONObject status = TwitterUser.getTwitterUser(TweetListActivity.this, false).getConnection().rateLimitStatus();
 				mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATED_TITLE, status));
 			} catch (JSONException e) {
 			} catch (ConnectionException e) {
@@ -1070,10 +1080,9 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	protected Runnable mDestroyStatus = new Runnable() {
 		public void run() {
-			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(TweetListActivity.this);
-			JSONObject result = new JSONObject();
+            JSONObject result = new JSONObject();
 			try {
-				result = aConn.destroyStatus(mCurrentId);
+			    result = TwitterUser.getTwitterUser(TweetListActivity.this, false).getConnection().destroyStatus(mCurrentId);
 			} catch (UnsupportedEncodingException e) {
 				Log.e(TAG, e.toString());
 			} catch (ConnectionException e) {
@@ -1099,10 +1108,9 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	protected Runnable mCreateFavorite = new Runnable() {
 		public void run() {
-			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(TweetListActivity.this);
 			JSONObject result = new JSONObject();
 			try {
-				result = aConn.createFavorite(mCurrentId);
+                result = TwitterUser.getTwitterUser(TweetListActivity.this, false).getConnection().createFavorite(mCurrentId);
 			} catch (UnsupportedEncodingException e) {
 				Log.e(TAG, e.toString());
 			} catch (ConnectionException e) {
@@ -1128,10 +1136,9 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	protected Runnable mDestroyFavorite = new Runnable() {
 		public void run() {
-			com.xorcode.andtweet.net.Connection aConn = new com.xorcode.andtweet.net.Connection(TweetListActivity.this);
 			JSONObject result = new JSONObject();
 			try {
-				result = aConn.destroyFavorite(mCurrentId);
+                result = TwitterUser.getTwitterUser(TweetListActivity.this, false).getConnection().destroyFavorite(mCurrentId);
 			} catch (UnsupportedEncodingException e) {
 				Log.e(TAG, e.toString());
 			} catch (ConnectionException e) {

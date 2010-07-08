@@ -16,6 +16,8 @@
 
 package com.xorcode.andtweet;
 
+import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
+
 import java.text.MessageFormat;
 
 import android.app.Activity;
@@ -115,11 +117,9 @@ public class SplashActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		String username = mSP.getString("twitter_username", null);
-		String password = mSP.getString("twitter_password", null);
-		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
-			mSkipPreferences = true;
-		}
+        if (TwitterUser.getTwitterUser(this, false).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+            mSkipPreferences = true;
+        }
 		if (mSkipPreferences) {
 			Intent intent = new Intent(this, TweetListActivity.class);
 			intent.setAction("com.xorcode.andtweet.INITIALIZE");

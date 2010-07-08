@@ -32,7 +32,7 @@ import android.net.Uri;
 import android.text.Html;
 import android.util.Log;
 
-import com.xorcode.andtweet.net.Connection;
+import com.xorcode.andtweet.TwitterUser;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
@@ -55,9 +55,8 @@ public class DirectMessages {
 	 * Class constructor.
 	 * 
 	 * @param contentResolver
-	 * @param username
-	 * @param password
-	 * @param lastRunTime
+	 * @param Context
+	 * @param long lastMessageId
 	 */
 	public DirectMessages(ContentResolver contentResolver, Context context, long lastMessageId) {
 		mContentResolver = contentResolver;
@@ -77,20 +76,23 @@ public class DirectMessages {
 	 */
 	public void loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		mNewMessages = 0;
-		Connection aConn = new Connection(mContext);
-		if (aConn.verifyCredentials()) {
-    		JSONArray jArr = aConn.getDirectMessages(mLastMessageId, 0);
-    		for (int index = 0; index < jArr.length(); index++) {
-    			JSONObject jo = jArr.getJSONObject(index);
-    			long lId = jo.getLong("id");
-    			if (lId > mLastMessageId) {
-    				mLastMessageId = lId;
-    			}
-    			insertFromJSONObject(jo);
-    		}
-    		if (mNewMessages > 0) {
-    			mContentResolver.notifyChange(AndTweetDatabase.DirectMessages.CONTENT_URI, null);
-    		}
+		
+		TwitterUser tu = TwitterUser.getTwitterUser(mContext, false);
+		if (tu.verifyCredentials(false)) {
+    		JSONArray jArr = tu.getConnection().getDirectMessages(mLastMessageId, 0);
+            if (jArr != null) {
+        		for (int index = 0; index < jArr.length(); index++) {
+        			JSONObject jo = jArr.getJSONObject(index);
+        			long lId = jo.getLong("id");
+        			if (lId > mLastMessageId) {
+        				mLastMessageId = lId;
+        			}
+        			insertFromJSONObject(jo);
+        		}
+        		if (mNewMessages > 0) {
+        			mContentResolver.notifyChange(AndTweetDatabase.DirectMessages.CONTENT_URI, null);
+        		}
+            }
         }
 	}
 

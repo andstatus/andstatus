@@ -22,6 +22,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import com.xorcode.andtweet.AndTweetService;
 import com.xorcode.andtweet.R;
+import com.xorcode.andtweet.util.SharedPreferencesUtil;
 
 import java.io.IOException;
 
@@ -169,40 +170,6 @@ public class AndTweetAppWidgetData {
 	 * Delete the preferences file!
 	 * */
 	public boolean delete() {
-		boolean isDeleted = false;
-
-		// Delete preferences file
-		java.io.File prefFile = new java.io.File("/data/data/"
-				+ mContext.getPackageName() + "/shared_prefs/" + prefsFileName
-				+ ".xml");
-		if (prefFile.exists()) {
-			// Commit any changes left
-			SharedPreferences.Editor prefs = mContext.getSharedPreferences(
-					prefsFileName, MODE_PRIVATE).edit();
-			if (prefs != null) {
-				prefs.commit();
-				prefs = null;
-			}
-
-			isDeleted = prefFile.delete();
-			try {
-	            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-	                Log.v(TAG, "The prefs file '" + prefFile.getCanonicalPath()
-	                        + "' was " + (isDeleted ? "" : "not ") + " deleted");
-	            }
-			} catch (IOException e) {
-				Log.e(TAG, e.toString());
-			}
-		} else {
-			try {
-	            if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
-	                Log.d(TAG, "The prefs file '" + prefFile.getCanonicalPath()
-	                        + "' was not found");
-	            }
-			} catch (IOException e) {
-				Log.e(TAG, e.toString());
-			}
-		}
-		return isDeleted;
+	    return SharedPreferencesUtil.delete(mContext, prefsFileName); 
 	}
 }

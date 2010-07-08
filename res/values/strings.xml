@@ -22,13 +22,13 @@
 	<string name="activity_title_search">Search</string>
 	<string name="activity_title_timeline">Friends</string>
 
-    <string name="appwidget_configure_instructions">Customize 
-    AndTweet Widget message, shown in a case there is nothing new:</string>
+    <string name="appwidget_configure_instructions">Customize AndTweet Widget message, shown in a case there is nothing new:</string>
     <string name="appwidget_nothing_default">Nothing new since:</string>
 	<string name="appwidget_new_tweet_format">{0}</string>
 	<string name="appwidget_new_message_format">{0}</string>
 	<string name="appwidget_new_mention_format">{0}</string>
 
+	<string name="authentication_never">Didn\'t authenticate yet</string>
 	<string name="authentication_successful">Authentication successful!</string>
 	<string name="button_send">Send</string>
 	<string name="cannot_send_empty_message">Cannot send empty message.</string>
@@ -82,6 +82,7 @@
 	<string name="menu_item_view_profile">View Profile</string>
 	<string name="message_sent">Your message has been sent.</string>
 	<string name="messages_activity">Direct Messages</string>
+	<string name="not_set">not set</string>
 	<string name="notification_title">AndTweet</string>
 	<string name="notification_tweet_singular">{0} new tweet</string>
 	<string name="notification_tweet_plural">{0,number} new tweets</string>
@@ -94,6 +95,7 @@
 	<string name="notification_mention_plural">{0,number} new mentions</string>
 	<string name="notification_new_mention_format">You have {0}.</string>
 	<string name="notification_title_mentions">New Mentions</string>
+	<string name="oauth_activity_label">OAuth</string>
 	<string name="options_menu_about">About AndTweet</string>
 	<string name="options_menu_about_cond">About</string>
 	<string name="options_menu_direct_messages">Direct Messages</string>
@@ -144,6 +146,8 @@
 	<string name="summary_preference_notifications_timeline">Notify on new tweets?</string>
 	<string name="summary_preference_notifications_timeline_off">No notification for Tweets</string>
 	<string name="summary_preference_notifications_timeline_on">You will be notified of new tweets</string>
+	<string name="summary_preference_oauth_off">Basic authentication</string>
+	<string name="summary_preference_oauth_on">OAuth (secure authentication) is on</string>
 	<string name="summary_preference_password">Your Twitter password</string>
 	<string name="summary_preference_storage">Where to store data and images</string>
 	<string name="summary_preference_storage_external_off">Store data in Internal Memory</string>
@@ -168,6 +172,7 @@
 	<string name="title_preference_notifications_messages">Notify on new DMs</string>
 	<string name="title_preference_notifications_mentions">Notify on new Mentions</string>
 	<string name="title_preference_notifications_timeline">Notify on new Tweets</string>
+	<string name="title_preference_oauth">OAuth</string>
 	<string name="title_preference_password">Password</string>
 	<string name="title_preference_storage">Storage</string>
 	<string name="title_preference_storage_external">Use External Storage</string>

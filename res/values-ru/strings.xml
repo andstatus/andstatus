@@ -25,14 +25,11 @@
     <string name="appwidget_configure_instructions">Настройте сообщение Виджета, которое показывается в том случае, если нет ничего нового:</string>
     <string name="appwidget_nothing_default">Ничего нового после:</string>
 	<string name="appwidget_new_tweet_format">{0}</string>
-	<string name="appwidget_message_singular">{0} сообщение</string>
-	<string name="appwidget_message_plural">{0,number} сообщений</string>
 	<string name="appwidget_new_message_format">{0}</string>
-	<string name="appwidget_mention_singular">{0} упоминание</string>
-	<string name="appwidget_mention_plural">{0,number} упоминаний</string>
 	<string name="appwidget_new_mention_format">{0}</string>
 
-	<string name="authentication_successful">Успешная проверка логина и пароля!</string>
+	<string name="authentication_never">Пока не аутентифицирован</string>
+	<string name="authentication_successful">Успешная аутентификация (проверка логина и пароля...)!</string>
 	<string name="button_send">Отправить</string>
 	<string name="cannot_send_empty_message">Невозможно отправить пустое сообщение.</string>
 	<string name="category_title_preference_appearance">Внешний вид</string>
@@ -85,6 +82,7 @@
 	<string name="menu_item_view_profile">Посмотреть профиль</string>
 	<string name="message_sent">Ваше сообщение отправлено.</string>
 	<string name="messages_activity">Личные сообщения</string>
+	<string name="not_set">не задан</string>
 	<string name="notification_title">AndTweet</string>
 	<string name="notification_tweet_singular">{0} новый твит</string>
 	<string name="notification_tweet_plural">{0,number} новых твитов</string>
@@ -97,6 +95,7 @@
 	<string name="notification_mention_plural">{0,number} новых упоминаний</string>
 	<string name="notification_new_mention_format">У вас {0}.</string>
 	<string name="notification_title_mentions">Новые упоминания</string>
+	<string name="oauth_activity_label">OAuth</string>
 	<string name="options_menu_about">О программе AndTweet</string>
 	<string name="options_menu_about_cond">Информация</string>
 	<string name="options_menu_direct_messages">Личные сообщения</string>
@@ -147,6 +146,8 @@
 	<string name="summary_preference_notifications_timeline">Сообщать о новых твитах?</string>
 	<string name="summary_preference_notifications_timeline_off">Уведомления о новых твитах отключены</string>
 	<string name="summary_preference_notifications_timeline_on">Вы будете оведомлены о новых твитах</string>
+	<string name="summary_preference_oauth_off">Базовая аутентификация</string>
+	<string name="summary_preference_oauth_on">OAuth (защищённая аутентификация)</string>
 	<string name="summary_preference_password">Ваш пароль в Твиттере</string>
 	<string name="summary_preference_storage">Где сохранять данные и изображения</string>
 	<string name="summary_preference_storage_external_off">Сохранять данные во внутренней памяти</string>
@@ -171,6 +172,7 @@
 	<string name="title_preference_notifications_messages">Новые личные сообщениях</string>
 	<string name="title_preference_notifications_mentions">Новые упоминания</string>
 	<string name="title_preference_notifications_timeline">Новые твиты друзей</string>
+	<string name="title_preference_oauth">OAuth</string>
 	<string name="title_preference_password">Пароль</string>
 	<string name="title_preference_storage">Память</string>
 	<string name="title_preference_storage_external">Использовать внешнюю память</string>

@@ -39,95 +39,34 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.xorcode.andtweet.PreferencesActivity;
 import com.xorcode.andtweet.util.Base64;
 
 /**
- * Handles connection to the Twitter REST API.
+ * Handles connection to the Twitter REST API using Basic Authentication
  * 
  * @author torgny.bjers
  */
-public class Connection {
+public class ConnectionBasicAuth extends Connection {
 
-	private static final String BASE_URL = "http://twitter.com";
-	private static final String EXTENSION = ".json";
-
-	private static final String STATUSES_FRIENDS_TIMELINE_URL = BASE_URL + "/statuses/friends_timeline" + EXTENSION;
-	private static final String STATUSES_MENTIONS_TIMELINE_URL = BASE_URL + "/statuses/mentions" + EXTENSION;
-	private static final String STATUSES_UPDATE_URL = BASE_URL + "/statuses/update" + EXTENSION;
-	private static final String STATUSES_DESTROY_URL = BASE_URL + "/statuses/destroy/";
-	private static final String DIRECT_MESSAGES_URL = BASE_URL + "/direct_messages" + EXTENSION;
-	private static final String ACCOUNT_VERIFY_CREDENTIALS_URL = BASE_URL + "/account/verify_credentials" + EXTENSION;
-	private static final String ACCOUNT_RATE_LIMIT_STATUS_URL = BASE_URL + "/account/rate_limit_status" + EXTENSION;
-	private static final String FAVORITES_CREATE_BASE_URL = BASE_URL + "/favorites/create/";
-	private static final String FAVORITES_DESTROY_BASE_URL = BASE_URL + "/favorites/destroy/";
 	private static final String USER_AGENT = "AndTweet/1.0";
-	private static final String SOURCE_PARAMETER = "andtweet";
-	private static final String TAG = "AndTweetConnection";
-	
-	/* TODO: Not implemented (yet?)
-    private static final String STATUSES_PUBLIC_TIMELINE_URL = BASE_URL + "/statuses/public_timeline" + EXTENSION;
-    private static final String STATUSES_FOLLOWERS_URL = BASE_URL + "/statuses/followers" + EXTENSION;
-    private static final String DIRECT_MESSAGES_SENT_URL = BASE_URL + "/direct_messages/sent" + EXTENSION;
-	 */
+	private static final String TAG = ConnectionBasicAuth.class.getSimpleName();
 
-	private static final Integer DEFAULT_GET_REQUEST_TIMEOUT = 15000;
-	private static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 20000;
-
-	private String mUsername;
 	private String mPassword;
-	private long mSinceId;
-	private int mLimit = 200;
 
-	/**
-	 * Creates a new Connection instance.
-	 * 
-	 */
-	public Connection(Context context) {
-	    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-	    mUsername = prefs.getString("twitter_username", null);
-        mPassword = prefs.getString("twitter_password", null);
-	}
-
-	protected long getSinceId() {
-        return mSinceId;
-	}
-	protected long setSinceId(long sinceId) {
-        if (sinceId>0) {
-            mSinceId = sinceId;
-        }
-        return mSinceId;
+    /**
+     * Creates a new ConnectionBasicAuth instance.
+     */
+    protected ConnectionBasicAuth(SharedPreferences sp) {
+        super(sp);
+        mPassword = mSp.getString(PreferencesActivity.KEY_TWITTER_PASSWORD, null);
     }
 
-    protected int getLimit() {
-        return mLimit;
-    }
-    protected int setLimit(int limit) {
-        if (limit>0) {
-            mLimit = limit;
-            if (mLimit > 200) mLimit = 200;
-        }
-        return mLimit;
-    }
-	
-	/**
-	 * Get the user's own and friends timeline.
-	 * 
-	 * Returns the 100 most recent statuses posted by the authenticating user and
-	 * that user's friends. This is the equivalent of /home on the Web.
-	 * 
-	 * @return JSONArray
-	 * @throws ConnectionException 
-	 * @throws ConnectionAuthenticationException 
-	 * @throws ConnectionUnavailableException 
-	 * @throws SocketTimeoutException 
-	 */
-	public JSONArray getFriendsTimeline(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	@Override
+    public JSONArray getFriendsTimeline(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 	    setSinceId(sinceId);
 	    setLimit(limit);
 	    
@@ -154,19 +93,8 @@ public class Connection {
 		return jArr;
 	}
 
-	/**
-	 * Get the user's replies.
-	 * 
-	 * Returns the 20 most recent @replies (status updates prefixed with @username) 
-	 * for the authenticating user.
-	 * 
-	 * @return JSONArray
-	 * @throws ConnectionException 
-	 * @throws ConnectionAuthenticationException 
-	 * @throws ConnectionUnavailableException 
-	 * @throws SocketTimeoutException 
-	 */
-	public JSONArray getMentionsTimeline(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	@Override
+    public JSONArray getMentionsTimeline(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
         setSinceId(sinceId);
         setLimit(limit);
 
@@ -193,18 +121,8 @@ public class Connection {
 		return jArr;
 	}
 
-	/**
-	 * Get the user's own and friends timeline.
-	 * 
-	 * Returns the 100 most recent direct messages for the authenticating user.
-	 * 
-	 * @return JSONArray
-	 * @throws ConnectionException 
-	 * @throws ConnectionAuthenticationException 
-	 * @throws ConnectionUnavailableException 
-	 * @throws SocketTimeoutException 
-	 */
-	public JSONArray getDirectMessages(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	@Override
+    public JSONArray getDirectMessages(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
         setSinceId(sinceId);
         setLimit(limit);
 
@@ -231,26 +149,15 @@ public class Connection {
 		return jArr;
 	}
 
-	/**
-	 * Update user status by posting to the Twitter REST API.
-	 * 
-	 * Updates the authenticating user's status. Requires the status parameter
-	 * specified. Request must be a POST. A status update with text identical to
-	 * the authenticating user's current status will be ignored.
-	 * 
-	 * @param message
-	 * @return JSONObject
-	 * @throws UnsupportedEncodingException
-	 * @throws ConnectionException 
-	 * @throws ConnectionAuthenticationException 
-	 * @throws ConnectionUnavailableException 
-	 * @throws SocketTimeoutException 
-	 */
-	public JSONObject updateStatus(String message, long inReplyToId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	@Override
+    public JSONObject updateStatus(String message, long inReplyToId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		String url = STATUSES_UPDATE_URL;
 		List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
-		formParams.add(new BasicNameValuePair("source", SOURCE_PARAMETER));
+		
+		// This parameter was removed from API:
+		// formParams.add(new BasicNameValuePair("source", SOURCE_PARAMETER));
+		
 		if (inReplyToId > 0) {
 			formParams.add(new BasicNameValuePair("in_reply_to_status_id", String.valueOf(inReplyToId)));
 		}
@@ -267,19 +174,8 @@ public class Connection {
 		return jObj;
 	}
 
-	/**
-	 * Destroys the status specified by the required ID parameter.
-	 * The authenticating user must be the author of the specified status.
-	 * 
-	 * @param statusId
-	 * @return JSONObject
-	 * @throws UnsupportedEncodingException
-	 * @throws ConnectionException
-	 * @throws ConnectionAuthenticationException
-	 * @throws ConnectionUnavailableException
-	 * @throws SocketTimeoutException
-	 */
-	public JSONObject destroyStatus(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	@Override
+    public JSONObject destroyStatus(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		StringBuilder url = new StringBuilder(STATUSES_DESTROY_URL);
 		url.append(String.valueOf(statusId));
 		url.append(EXTENSION);
@@ -296,19 +192,8 @@ public class Connection {
 		return jObj;
 	}
 
-	/**
-	 * Favorites the status specified in the ID parameter as the authenticating user.
-	 * Returns the favorite status when successful.
-	 * 
-	 * @param statusId
-	 * @return JSONObject
-	 * @throws UnsupportedEncodingException
-	 * @throws ConnectionException
-	 * @throws ConnectionAuthenticationException
-	 * @throws ConnectionUnavailableException
-	 * @throws SocketTimeoutException
-	 */
-	public JSONObject createFavorite(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	@Override
+    public JSONObject createFavorite(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		StringBuilder url = new StringBuilder(FAVORITES_CREATE_BASE_URL);
 		url.append(String.valueOf(statusId));
 		url.append(EXTENSION);
@@ -325,17 +210,8 @@ public class Connection {
 		return jObj;
 	}
 
-	/**
-	 * 
-	 * @param statusId
-	 * @return JSONObject
-	 * @throws UnsupportedEncodingException
-	 * @throws ConnectionException
-	 * @throws ConnectionAuthenticationException
-	 * @throws ConnectionUnavailableException
-	 * @throws SocketTimeoutException
-	 */
-	public JSONObject destroyFavorite(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	@Override
+    public JSONObject destroyFavorite(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		StringBuilder url = new StringBuilder(FAVORITES_DESTROY_BASE_URL);
 		url.append(String.valueOf(statusId));
 		url.append(EXTENSION);
@@ -352,64 +228,55 @@ public class Connection {
 		return jObj;
 	}
 
-	/**
-	 * Verify the user's credentials.
-	 * 
-	 * Returns true if authentication was successful
-	 * 
-	 * @return boolean
-	 * @throws ConnectionException 
-	 * @throws ConnectionUnavailableException 
-	 * @throws ConnectionAuthenticationException 
-	 * @throws SocketTimeoutException 
-	 */
-	public boolean verifyCredentials() throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-	    boolean isOk = false;
-	    /**
+	@Override
+    public boolean getCredentialsPresent() {
+        boolean yes = false;
+        if (mUsername != null && mPassword != null && mUsername.length() > 0 && mPassword.length() > 0) {
+            yes = true;
+        }
+        return yes;
+    }
+
+    @Override
+    public JSONObject verifyCredentials() throws ConnectionException,
+            ConnectionAuthenticationException, ConnectionUnavailableException,
+            SocketTimeoutException {
+        /**
          * Returns an HTTP 200 OK response code and a representation of the
-         * requesting user if authentication was successful; returns a 401 status
-         * code and an error message if not.
+         * requesting user if authentication was successful; returns a 401
+         * status code and an error message if not.
+         * 
          * @see <a
          *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-account%C2%A0verify_credentials">Twitter
          *      REST API Method: account verify_credentials</a>
-	     */
-
+         */
+        JSONObject jo = null;
         try {
-            JSONObject jo = new JSONObject(getRequest(ACCOUNT_VERIFY_CREDENTIALS_URL, new DefaultHttpClient(new BasicHttpParams())));
-            if ( jo.optInt("id") > 0) {
-                isOk = true;
-            }
+            jo = new JSONObject(getRequest(ACCOUNT_VERIFY_CREDENTIALS_URL,
+                    new DefaultHttpClient(new BasicHttpParams())));
         } catch (JSONException e) {
             Log.e(TAG, "verifyCredentials: " + e.toString());
         }
-	    
-		return isOk;
-	}
 
-	/**
-	 * Check API requests status.
-	 * 
-	 * Returns the remaining number of API requests available to the requesting 
-	 * user before the API limit is reached for the current hour. Calls to 
-	 * rate_limit_status do not count against the rate limit.  If authentication 
-	 * credentials are provided, the rate limit status for the authenticating 
-	 * user is returned.  Otherwise, the rate limit status for the requester's 
-	 * IP address is returned.
-     * @see <a
-     *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-account%C2%A0rate_limit_status">Twitter
-     *      REST API Method: account rate_limit_status</a>
-	 * 
-	 * @return JSONObject
-	 * @throws JSONException
-	 * @throws ConnectionException
-	 * @throws ConnectionAuthenticationException
-	 * @throws ConnectionUnavailableException
-	 * @throws SocketTimeoutException 
-	 */
-	public JSONObject rateLimitStatus() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+        return jo;
+    }
+
+	@Override
+    public JSONObject rateLimitStatus() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		return new JSONObject(getRequest(ACCOUNT_RATE_LIMIT_STATUS_URL, new DefaultHttpClient(new BasicHttpParams())));
 	}
 
+    
+    @Override
+    public void clearAuthInformation() {
+        synchronized (mSp) {
+            mPassword = "";
+            SharedPreferences.Editor editor = mSp.edit();
+            editor.remove(PreferencesActivity.KEY_TWITTER_PASSWORD);
+            editor.commit();
+        }
+    }
+	
 	/**
 	 * Execute a GET request against the Twitter REST API.
 	 * 

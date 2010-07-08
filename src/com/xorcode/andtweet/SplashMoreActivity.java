@@ -16,6 +16,8 @@
 
 package com.xorcode.andtweet;
 
+import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -42,7 +44,6 @@ public class SplashMoreActivity extends Activity {
 	boolean mSkipPreferences = false;
 
 	// Local objects
-	private SharedPreferences mSP;
 	private ViewFlipper mFlipper;
 
 	@Override
@@ -50,7 +51,6 @@ public class SplashMoreActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-		mSP = PreferenceManager.getDefaultSharedPreferences(this);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -80,11 +80,9 @@ public class SplashMoreActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		String username = mSP.getString("twitter_username", null);
-		String password = mSP.getString("twitter_password", null);
-		if (username != null && username.length() > 0 && password != null && password.length() > 0) {
-			mSkipPreferences = true;
-		}
+        if (TwitterUser.getTwitterUser(this, false).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+            mSkipPreferences = true;
+        }
 		if (mSkipPreferences) {
 			Intent intent = new Intent(this, TweetListActivity.class);
 			intent.setAction("com.xorcode.andtweet.INITIALIZE");

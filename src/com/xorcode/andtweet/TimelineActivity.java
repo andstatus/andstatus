@@ -52,6 +52,7 @@ import android.widget.TextView;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
+import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 
 /**
  * @author torgny.bjers
@@ -165,9 +166,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		// Request window features before loading the content view
 		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 
-		String username = mSP.getString("twitter_username", null);
-		String password = mSP.getString("twitter_password", null);
-		if (username == null || "".equals(username) || password == null || "".equals(password)) {
+		if (TwitterUser.getTwitterUser(this, false).getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
 			startActivity(new Intent(this, SplashActivity.class));
 			finish();
 		}

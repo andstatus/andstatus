@@ -34,8 +34,8 @@ import android.preference.PreferenceManager;
 import android.text.Html;
 import android.util.Log;
 
+import com.xorcode.andtweet.TwitterUser;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
-import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
@@ -93,52 +93,56 @@ public class FriendTimeline {
 		loadTimeline(tweetType, false);
 	}
 
-	/**
-	 * Load the user and friends timeline.
-	 * 
-	 * @param tweetType
-	 * @param firstRun
-	 * @throws ConnectionException
-	 * @throws JSONException
-	 * @throws SQLiteConstraintException
-	 * @throws ConnectionAuthenticationException
-	 * @throws ConnectionUnavailableException
-	 * @throws SocketTimeoutException 
-	 */
-	public void loadTimeline(int tweetType, boolean firstRun) throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		mNewTweets = 0;
-		mReplies = 0;
-		int limit = 200;
-		if (firstRun) {
-			limit = 20;
-		}
-        Connection aConn = new Connection(mContext);
-        if (aConn.verifyCredentials()) {
-			JSONArray jArr = null;
-			switch (tweetType) {
-			case AndTweetDatabase.Tweets.TWEET_TYPE_TWEET:
-				jArr = aConn.getFriendsTimeline(mLastStatusId, limit);
-				break;
-			case AndTweetDatabase.Tweets.TWEET_TYPE_REPLY:
-				jArr = aConn.getMentionsTimeline(mLastStatusId, limit);
-				break;
-			default:
-				Log.e(TAG, "Got unhandled tweet type: " + tweetType);
-				break;
-			}
-			for (int index = 0; index < jArr.length(); index++) {
-				JSONObject jo = jArr.getJSONObject(index);
-				long lId = jo.getLong("id");
-				if (lId > mLastStatusId) {
-					mLastStatusId = lId;
-				}
-				insertFromJSONObject(jo, tweetType);
-			}
-			if (mNewTweets > 0) {
-				mContentResolver.notifyChange(AndTweetDatabase.Tweets.CONTENT_URI, null);
-			}
-		}
-	}
+    /**
+     * Load the user and friends timeline.
+     * 
+     * @param tweetType
+     * @param firstRun
+     * @throws ConnectionException
+     * @throws JSONException
+     * @throws SQLiteConstraintException
+     * @throws ConnectionAuthenticationException
+     * @throws ConnectionUnavailableException
+     * @throws SocketTimeoutException
+     */
+    public void loadTimeline(int tweetType, boolean firstRun) throws ConnectionException,
+            JSONException, SQLiteConstraintException, ConnectionAuthenticationException,
+            ConnectionUnavailableException, SocketTimeoutException {
+        mNewTweets = 0;
+        mReplies = 0;
+        int limit = 200;
+        if (firstRun) {
+            limit = 20;
+        }
+        TwitterUser tu = TwitterUser.getTwitterUser(mContext, false);
+        if (tu.verifyCredentials(false)) {
+            JSONArray jArr = null;
+            switch (tweetType) {
+                case AndTweetDatabase.Tweets.TWEET_TYPE_TWEET:
+                    jArr = tu.getConnection().getFriendsTimeline(mLastStatusId, limit);
+                    break;
+                case AndTweetDatabase.Tweets.TWEET_TYPE_REPLY:
+                    jArr = tu.getConnection().getMentionsTimeline(mLastStatusId, limit);
+                    break;
+                default:
+                    Log.e(TAG, "Got unhandled tweet type: " + tweetType);
+                    break;
+            }
+            if (jArr != null) {
+                for (int index = 0; index < jArr.length(); index++) {
+                    JSONObject jo = jArr.getJSONObject(index);
+                    long lId = jo.getLong("id");
+                    if (lId > mLastStatusId) {
+                        mLastStatusId = lId;
+                    }
+                    insertFromJSONObject(jo, tweetType);
+                }
+            }
+            if (mNewTweets > 0) {
+                mContentResolver.notifyChange(AndTweetDatabase.Tweets.CONTENT_URI, null);
+            }
+        }
+    }
 
 	/**
 	 * Insert a row from a JSONObject.

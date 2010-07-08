@@ -15,7 +15,7 @@
 	limitations under the License.
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.xorcode.andtweet" android:versionName="0.2.5" android:versionCode="25">
+	package="com.xorcode.andtweet" android:versionName="0.2.6" android:versionCode="26">
 
 	<uses-sdk android:minSdkVersion="3"/>
 
@@ -118,6 +118,16 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
+        </activity>
+
+        <activity android:name=".net.OAuthActivity"
+			android:label="@string/oauth_activity_label">
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				<data android:scheme="andtweet-oauth" android:host="twitt" />
+			</intent-filter>
         </activity>
 
 	</application>
