@@ -66,21 +66,13 @@ public class ConnectionOAuth extends Connection {
     private static final String TAG = ConnectionOAuth.class.getSimpleName();
 
     public static final String USER_TOKEN = "user_token";
-
     public static final String USER_SECRET = "user_secret";
-
     public static final String REQUEST_TOKEN = "request_token";
-
     public static final String REQUEST_SECRET = "request_secret";
-
     public static final String REQUEST_SUCCEEDED = "request_succeeded";
-
-    public static final String TWITTER_REQUEST_TOKEN_URL = "http://twitter.com/oauth/request_token";
-
-    public static final String TWITTER_ACCESS_TOKEN_URL = "http://twitter.com/oauth/access_token";
-
-    public static final String TWITTER_AUTHORIZE_URL = "http://twitter.com/oauth/authorize";
-
+    public static final String TWITTER_REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token";
+    public static final String TWITTER_ACCESS_TOKEN_URL = "https://api.twitter.com/oauth/access_token";
+    public static final String TWITTER_AUTHORIZE_URL = "https://api.twitter.com/oauth/authorize";
     private OAuthConsumer mConsumer = null;
 
     /**

@@ -47,7 +47,6 @@ public class OAuthActivity extends Activity {
     private static final Uri CALLBACK_URI = Uri.parse("andtweet-oauth://twitt");
 
     private OAuthConsumer mConsumer = null;
-
     private OAuthProvider mProvider = null;
 
     SharedPreferences mSp;
