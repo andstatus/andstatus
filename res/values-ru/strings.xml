@@ -64,6 +64,8 @@
 	<string name="dialog_title_timeline_loading">Обновление ленты времени...</string>
 	<string name="error_twitter_404">Страница не найдена! Пожалуйста, сообщите об этой ошибке!</string>
 	<string name="error_connection_error">Произошла ошибка соединения. Сообщите об этой ошибке!</string>
+	<string name="error_set_username">Не смог установить имя Пользователя: </string>
+	<string name="error_credentials_of_other_user">Идентифицирован ДРУГОЙ пользователь?!</string>
 	<string name="favorite_created">Твит добавлен в избранное.</string>
 	<string name="favorite_destroyed">Твит удалён из избранного.</string>
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
@@ -156,6 +158,8 @@
 	<string name="summary_preference_use_avatars_off">Аватары пользователей не будут показаны</string>
 	<string name="summary_preference_use_avatars_on">Аватары пользователей будут показаны</string>
 	<string name="summary_preference_username">Ваше имя пользователя в Твиттере</string>
+	<string name="summary_preference_verify_credentials">Щёлкните здесь для аунтификации пользователя и включения данного аккаунта пользователя</string>
+	<string name="summary_preference_credentials_verified">Данный аккаунт пользователя успешно аутентифицирован (проверен) и включён. Щёлкните здесь для повторной аунтификации</string>
 	<string name="summary_preference_vibration">Виброзвонок при входящем твите</string>
 	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>
 	<string name="summary_preference_vibration_on">Виброзвонок при входящем твите включён</string>

@@ -1,5 +1,6 @@
 /* 
  * Copyright (C) 2008 Torgny Bjers
+ * Copyright (C) 2010 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,13 +38,14 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
+import com.xorcode.andtweet.net.ConnectionCredentialsOfOtherUserException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
 import com.xorcode.andtweet.net.OAuthActivity;
@@ -57,14 +59,6 @@ import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 public class PreferencesActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
     private static final String TAG = PreferencesActivity.class.getSimpleName();
-
-    private static final int DIALOG_AUTHENTICATION_FAILED = 1;
-
-    private static final int DIALOG_CHECKING_CREDENTIALS = 2;
-
-    private static final int DIALOG_SERVICE_UNAVAILABLE = 3;
-
-    private static final int DIALOG_CONNECTION_TIMEOUT = 4;
 
     public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
 
@@ -81,6 +75,11 @@ public class PreferencesActivity extends PreferenceActivity implements
      * of password/OAuth...
      */
     public static final String KEY_CREDENTIALS_VERIFIED = "credentials_verified";
+
+    /**
+     * This is sort of button to start verification of credentials
+     */
+    public static final String KEY_VERIFY_CREDENTIALS = "verify_credentials";
 
     /**
      * Process of authentication was started (by {@link #PreferencesActivity})
@@ -109,6 +108,9 @@ public class PreferencesActivity extends PreferenceActivity implements
 
     // public static final String KEY_EXTERNAL_STORAGE = "storage_use_external";
 
+    /**
+     * This is single list of (in fact, enums...) of Message/Dialog IDs
+     */
     public static final int MSG_ACCOUNT_VALID = 1;
 
     public static final int MSG_ACCOUNT_INVALID = 2;
@@ -118,6 +120,12 @@ public class PreferencesActivity extends PreferenceActivity implements
     public static final int MSG_CONNECTION_EXCEPTION = 4;
 
     public static final int MSG_SOCKET_TIMEOUT_EXCEPTION = 5;
+
+    public static final int MSG_CREDENTIALS_OF_OTHER_USER = 6;
+
+    private static final int DIALOG_CHECKING_CREDENTIALS = 7;
+
+    // End Of the list ----------------------------------------
 
     private CheckBoxPreference mAutomaticUpdates;
 
@@ -134,6 +142,8 @@ public class PreferencesActivity extends PreferenceActivity implements
 
     private EditTextPreference mEditTextPassword;
 
+    private Preference mVerifyCredentials;
+
     private RingtonePreference mNotificationRingtone;
 
     private ProgressDialog mProgressDialog;
@@ -143,9 +153,6 @@ public class PreferencesActivity extends PreferenceActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mUser = TwitterUser.getTwitterUser(this, false);
-        mUser.updateDefaultSharedPreferences();
 
         addPreferencesFromResource(R.xml.preferences);
         mHistorySizePreference = (ListPreference) getPreferenceScreen().findPreference(
@@ -163,6 +170,8 @@ public class PreferencesActivity extends PreferenceActivity implements
                 KEY_TWITTER_USERNAME);
         mEditTextPassword = (EditTextPreference) getPreferenceScreen().findPreference(
                 KEY_TWITTER_PASSWORD);
+        mVerifyCredentials = (Preference) getPreferenceScreen().findPreference(
+                KEY_VERIFY_CREDENTIALS);
 
         mNotificationRingtone.setOnPreferenceChangeListener(this);
         /*
@@ -180,62 +189,73 @@ public class PreferencesActivity extends PreferenceActivity implements
                 KEY_RINGTONE_PREFERENCE, null));
     }
 
-    /** 
+    /**
      * Some "preferences" may be changed in TwitterUser object
      */
     private void showUserProperties() {
-        if (mUser.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
+        mUser.updateDefaultSharedPreferences();
+        if (mEditTextUsername.getText() == null
+                || mUser.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
             mEditTextUsername.setText(mUser.getUsername());
         }
         StringBuilder sb = new StringBuilder(this.getText(R.string.summary_preference_username));
-        if (mEditTextUsername.getText().length() > 0) {
-            sb.append(": " + mEditTextUsername.getText());
+        if (mUser.getUsername().length() > 0) {
+            sb.append(": " + mUser.getUsername());
         } else {
             sb.append(": (" + this.getText(R.string.not_set) + ")");
         }
-        sb.append("\n(");
-        switch (mUser.getCredentialsVerified()) {
-            case NEVER:
-                sb.append(this.getText(R.string.authentication_never));
-                break;
-            case SUCCEEDED:
-                sb.append(this.getText(R.string.authentication_successful));
-                break;
-            case FAILED:
-                sb.append(this.getText(R.string.dialog_title_authentication_failed));
-                break;
-        }
-        sb.append(")");
         mEditTextUsername.setSummary(sb);
 
         if (mUser.isOAuth() != mOAuth.isChecked()) {
             mOAuth.setChecked(mUser.isOAuth());
         }
 
-        if (mUser.getPassword().compareTo(mEditTextPassword.getText()) != 0) {
+        if (mEditTextPassword.getText() == null
+                || mUser.getPassword().compareTo(mEditTextPassword.getText()) != 0) {
             mEditTextPassword.setText(mUser.getPassword());
         }
         sb = new StringBuilder(this.getText(R.string.summary_preference_password));
-        if (mEditTextPassword.getText().length() == 0) {
+        if (mUser.getPassword().length() == 0) {
             sb.append(": (" + this.getText(R.string.not_set) + ")");
         }
         mEditTextPassword.setSummary(sb);
         mEditTextPassword.setEnabled(!mOAuth.isChecked());
+
+        if (mUser.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+            sb = new StringBuilder(this.getText(R.string.summary_preference_credentials_verified));
+        } else {
+            sb = new StringBuilder(this.getText(R.string.summary_preference_verify_credentials));
+            sb.append("\n(");
+            switch (mUser.getCredentialsVerified()) {
+                case NEVER:
+                    sb.append(this.getText(R.string.authentication_never));
+                    break;
+                case FAILED:
+                    sb.append(this.getText(R.string.dialog_title_authentication_failed));
+                    break;
+            }
+            sb.append(")");
+        }
+        
+        mVerifyCredentials.setSummary(sb);
+        mVerifyCredentials.setEnabled(mUser.getCredentialsPresent() || mUser.isOAuth());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        mUser = TwitterUser.getTwitterUser(this, false);
         showUserProperties();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-        verifyCredentials();
+        verifyCredentials(false);
     }
-    
+
     /**
-     * Verify credentials if we didn't do this yet...
+     * Verify credentials
+     * @param true -  Verify only if we didn't do this yet
      */
-    private void verifyCredentials() {
-        if (mUser.getCredentialsVerified() == CredentialsVerified.NEVER) {
+    private void verifyCredentials(boolean reVerify) {
+        if (reVerify || mUser.getCredentialsVerified() == CredentialsVerified.NEVER) {
             if (mUser.getCredentialsPresent()) {
                 // Let's verify credentials
                 // This is needed even for OAuth - to know Twitter Username
@@ -248,7 +268,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                     startActivity(i);
                 }
             }
-            
+
         }
     }
 
@@ -357,22 +377,20 @@ public class PreferencesActivity extends PreferenceActivity implements
                 if (mUser.isOAuth() != mOAuth.isChecked()) {
                     mUser = TwitterUser.getTwitterUser(this, true);
                     showUserProperties();
-                    verifyCredentials();
                 }
             }
             if (key.equals(KEY_TWITTER_USERNAME)) {
                 if (mUser.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
-                    // Try to find existing TwitterUser object without clearing Auth information
+                    // Try to find existing TwitterUser object without clearing
+                    // Auth information
                     mUser = TwitterUser.getTwitterUser(this, mEditTextUsername.getText());
                     showUserProperties();
-                    verifyCredentials();
                 }
             }
             if (key.equals(KEY_TWITTER_PASSWORD)) {
                 if (mUser.getPassword().compareTo(mEditTextPassword.getText()) != 0) {
                     mUser = TwitterUser.getTwitterUser(this, true);
                     showUserProperties();
-                    verifyCredentials();
                 }
             }
         } finally {
@@ -390,20 +408,32 @@ public class PreferencesActivity extends PreferenceActivity implements
 
     @Override
     protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            case DIALOG_AUTHENTICATION_FAILED:
-                return new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle(R.string.dialog_title_authentication_failed).setMessage(
-                                R.string.dialog_summary_authentication_failed).setPositiveButton(
-                                android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface Dialog, int whichButton) {
-                                    }
-                                }).create();
+        int titleId = 0;
+        int summaryId = 0;
 
-            case DIALOG_SERVICE_UNAVAILABLE:
+        switch (id) {
+            case MSG_ACCOUNT_INVALID:
+                if (titleId == 0) {
+                    titleId = R.string.dialog_title_authentication_failed;
+                    summaryId = R.string.dialog_summary_authentication_failed;
+                }
+            case MSG_SERVICE_UNAVAILABLE_ERROR:
+                if (titleId == 0) {
+                    titleId = R.string.dialog_title_service_unavailable;
+                    summaryId = R.string.dialog_summary_service_unavailable;
+                }
+            case MSG_SOCKET_TIMEOUT_EXCEPTION:
+                if (titleId == 0) {
+                    titleId = R.string.dialog_title_connection_timeout;
+                    summaryId = R.string.dialog_summary_connection_timeout;
+                }
+            case MSG_CREDENTIALS_OF_OTHER_USER:
+                if (titleId == 0) {
+                    titleId = R.string.dialog_title_authentication_failed;
+                    summaryId = R.string.error_credentials_of_other_user;
+                }
                 return new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle(R.string.dialog_title_service_unavailable).setMessage(
-                                R.string.dialog_summary_service_unavailable).setPositiveButton(
+                        .setTitle(titleId).setMessage(summaryId).setPositiveButton(
                                 android.R.string.ok, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface Dialog, int whichButton) {
                                     }
@@ -414,15 +444,6 @@ public class PreferencesActivity extends PreferenceActivity implements
                 mProgressDialog.setTitle(R.string.dialog_title_checking_credentials);
                 mProgressDialog.setMessage(getText(R.string.dialog_summary_checking_credentials));
                 return mProgressDialog;
-
-            case DIALOG_CONNECTION_TIMEOUT:
-                return new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle(R.string.dialog_title_connection_timeout).setMessage(
-                                R.string.dialog_summary_connection_timeout).setPositiveButton(
-                                android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface Dialog, int whichButton) {
-                                    }
-                                }).create();
 
             default:
                 return super.onCreateDialog(id);
@@ -443,11 +464,11 @@ public class PreferencesActivity extends PreferenceActivity implements
                             Toast.LENGTH_SHORT).show();
                     break;
                 case MSG_ACCOUNT_INVALID:
-                    mAutomaticUpdates.setEnabled(false);
-                    showDialog(DIALOG_AUTHENTICATION_FAILED);
-                    break;
                 case MSG_SERVICE_UNAVAILABLE_ERROR:
-                    showDialog(DIALOG_SERVICE_UNAVAILABLE);
+                case MSG_SOCKET_TIMEOUT_EXCEPTION:
+                case MSG_CREDENTIALS_OF_OTHER_USER:
+                    mAutomaticUpdates.setEnabled(false);
+                    showDialog(msg.what);
                     break;
                 case MSG_CONNECTION_EXCEPTION:
                     int mId = 0;
@@ -465,9 +486,6 @@ public class PreferencesActivity extends PreferenceActivity implements
                     }
                     Toast.makeText(PreferencesActivity.this, mId, Toast.LENGTH_LONG).show();
                     break;
-                case MSG_SOCKET_TIMEOUT_EXCEPTION:
-                    showDialog(DIALOG_CONNECTION_TIMEOUT);
-                    break;
             }
 
             showUserProperties();
@@ -475,10 +493,11 @@ public class PreferencesActivity extends PreferenceActivity implements
     };
 
     /**
-     * This semaphore helps to avoid ripple effect:
-     * changes in TwitterUser cause changes in this activity ...
+     * This semaphore helps to avoid ripple effect: changes in TwitterUser cause
+     * changes in this activity ...
      */
-    private boolean mCredentialsAreBeingVerified = false; 
+    private boolean mCredentialsAreBeingVerified = false;
+
     private class VerifyCredentials implements Runnable {
         public void run() {
             if (PreferencesActivity.this.mCredentialsAreBeingVerified) {
@@ -489,8 +508,8 @@ public class PreferencesActivity extends PreferenceActivity implements
                 PreferencesActivity.this.mCredentialsAreBeingVerified = true;
                 try {
                     if (mUser.verifyCredentials(true)) {
-                        mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler.obtainMessage(
-                                MSG_ACCOUNT_VALID, 1, 0));
+                        mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler
+                                .obtainMessage(MSG_ACCOUNT_VALID, 1, 0));
                         return;
                     }
                 } catch (ConnectionException e) {
@@ -500,6 +519,10 @@ public class PreferencesActivity extends PreferenceActivity implements
                 } catch (ConnectionAuthenticationException e) {
                     mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler.obtainMessage(
                             MSG_ACCOUNT_INVALID, 1, 0));
+                    return;
+                } catch (ConnectionCredentialsOfOtherUserException e) {
+                    mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler.obtainMessage(
+                            MSG_CREDENTIALS_OF_OTHER_USER, 1, 0));
                     return;
                 } catch (ConnectionUnavailableException e) {
                     mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler.obtainMessage(
@@ -516,5 +539,19 @@ public class PreferencesActivity extends PreferenceActivity implements
                 PreferencesActivity.this.mCredentialsAreBeingVerified = false;
             }
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @seeandroid.preference.PreferenceActivity#onPreferenceTreeClick(android.
+     * preference.PreferenceScreen, android.preference.Preference)
+     */
+    @Override
+    public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
+        Log.d(TAG, "Preference clicked:" + preference.toString());
+        if (preference.getKey().compareTo(KEY_VERIFY_CREDENTIALS) == 0) {
+            verifyCredentials(true);
+        }
+        return super.onPreferenceTreeClick(preferenceScreen, preference);
     };
 }

@@ -17,11 +17,9 @@
 package com.xorcode.andtweet;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.xorcode.andtweet.PreferencesActivity.KEY_TWITTER_USERNAME;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.hardware.Camera.PreviewCallback;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -31,7 +29,7 @@ import java.util.Vector;
 
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
-import com.xorcode.andtweet.net.ConnectionBasicAuth;
+import com.xorcode.andtweet.net.ConnectionCredentialsOfOtherUserException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
 import com.xorcode.andtweet.util.SharedPreferencesUtil;
@@ -40,7 +38,8 @@ import org.json.JSONObject;
 
 /**
  * The object holds Twitter User's specific information including connection
- * TODO: Impement different data (tweets and their counters...) for different Users.
+ * TODO: Implement different data (tweets and their counters...) for different
+ * Users.
  * 
  * @author Yuri Volkov
  */
@@ -55,7 +54,7 @@ public class TwitterUser {
     private String mUsername = "";
 
     /**
-     * Was this user ever authenticated?
+     * Was this user _ever_ authenticated?
      */
     private boolean mWasAuthenticated = false;
 
@@ -68,16 +67,16 @@ public class TwitterUser {
     private String mPrefsFileName = "";
 
     /**
-     * TODO: These preferences will be per User
+     * These preferences are per User
      */
     protected SharedPreferences mSp;
 
     /**
      * Is this user authenticated with OAuth?
      */
-    private boolean mOAuth;
+    private boolean mOAuth = false;
 
-    private String mPassword;
+    private String mPassword = "";
 
     private Connection mConnection;
 
@@ -90,7 +89,9 @@ public class TwitterUser {
         private static final String KEY = "credentials_verified";
 
         public static CredentialsVerified load(SharedPreferences sp) {
-            return values()[sp.getInt(KEY, NEVER.ordinal())];
+            int ind = sp.getInt(KEY, NEVER.ordinal());
+            CredentialsVerified cv = CredentialsVerified.values()[ind];
+            return cv;
         }
 
         public void save(SharedPreferences sp) {
@@ -126,11 +127,6 @@ public class TwitterUser {
     public void setCredentialsVerified(CredentialsVerified cv) {
         mCredentialsVerified = cv;
         mCredentialsVerified.save(mSp);
-        if (!mWasAuthenticated
-                && (mCredentialsVerified.compareTo(CredentialsVerified.SUCCEEDED) == 0)) {
-            mWasAuthenticated = true;
-            mSp.edit().putBoolean(PreferencesActivity.KEY_WAS_AUTHENTICATED, true).commit();
-        }
     }
 
     /**
@@ -146,8 +142,8 @@ public class TwitterUser {
     }
 
     /**
-     * Get (stored) user instance based on explicitly provided username.
-     * Global SharedPreferences will be updated.
+     * Get (stored) user instance based on explicitly provided username. Global
+     * SharedPreferences will be updated.
      * 
      * @param Context
      * @param username in Twitter
@@ -173,26 +169,34 @@ public class TwitterUser {
         // Find TwitterUser object for this user
         boolean found = false;
         int ind = -1;
+        int indTemp = -1;
         TwitterUser tu = null;
 
-        if (username == null) {
-            username = "";
-        }
-        username = username.trim();
+        username = fixUsername(username);
         if (copyGlobal || (username.length() == 0)) {
             SharedPreferences dsp = PreferenceManager.getDefaultSharedPreferences(context);
-            username = dsp.getString(PreferencesActivity.KEY_TWITTER_USERNAME, "");
+            username = fixUsername(dsp.getString(PreferencesActivity.KEY_TWITTER_USERNAME, ""));
         }
-        if (!isUsernameValid(username)) {
-            // We need the object anyway, so let's put empty name
-            username = "";
-        }
-        for (ind=0; ind<mTu.size(); ind++) {
+        for (ind = 0; ind < mTu.size(); ind++) {
             if (mTu.elementAt(ind).getUsername().compareTo(username) == 0) {
                 found = true;
                 break;
             }
-            
+            if (!mTu.elementAt(ind).wasAuthenticated()) {
+                indTemp = ind;
+            }
+        }
+        if (!found) {
+            if (!SharedPreferencesUtil.exists(context, SharedPreferencesUtil
+                    .prefsFileNameForUser(username))
+                    && indTemp >= 0) {
+                // This is new User, so
+                // Let's reuse existing temp file and forget previous User who
+                // wasn't ever authenticated
+                ind = indTemp;
+                mTu.elementAt(ind).setUsername(username, true);
+                found = true;
+            }
         }
         if (found) {
             tu = mTu.elementAt(ind);
@@ -206,9 +210,39 @@ public class TwitterUser {
         return tu;
     }
 
+    private static String fixUsername(String username) {
+        if (username == null) {
+            username = "";
+        }
+        username = username.trim();
+        if (!isUsernameValid(username)) {
+            username = "";
+        }
+        return username;
+    }
+
     private TwitterUser(Context context, String username, boolean copyGlobal) {
         mContext = context;
-        setUsername(username, copyGlobal);
+        username = fixUsername(username);
+        mPrefsFileName = SharedPreferencesUtil.prefsFileNameForUser(username);
+        boolean isNewUser = !SharedPreferencesUtil.exists(mContext, mPrefsFileName);
+        if (isNewUser) {
+            // There was no data stored for this User
+            // so let's start from temp file
+            mPrefsFileName = SharedPreferencesUtil.prefsFileNameForUser("");
+        }
+        mSp = mContext.getSharedPreferences(mPrefsFileName, MODE_PRIVATE);
+        setUsername(username, isNewUser);
+        if (!isNewUser) {
+            // Load stored data for the User
+            mWasAuthenticated = mSp.getBoolean(PreferencesActivity.KEY_WAS_AUTHENTICATED, false);
+            mCredentialsVerified = CredentialsVerified.load(mSp);
+            mOAuth = mSp.getBoolean(PreferencesActivity.KEY_OAUTH, false);
+            mPassword = mSp.getString(PreferencesActivity.KEY_TWITTER_PASSWORD, "");
+        }
+        if (copyGlobal) {
+            copyGlobal();
+        }
     }
 
     /**
@@ -219,71 +253,81 @@ public class TwitterUser {
     }
 
     /**
-     * @param username the Username to set.
-     * @param copyGlobal - Set User's data according to the Global (Default)
-     *            Shared properties
+     * set Username for the User who was first time authenticated
+     * 
+     * @param username - new Username to set.
      */
-    private void setUsername(String username, boolean copyGlobal) {
-        if (username == null) {
-            username = "";
-        }
-        username = username.trim();
-        SharedPreferences dsp = PreferenceManager.getDefaultSharedPreferences(mContext);
-        if (copyGlobal || (username.length() == 0)) {
-            username = dsp.getString(PreferencesActivity.KEY_TWITTER_USERNAME, "");
-        }
-        if (!isUsernameValid(username)) {
-            username = getUsername();
-            if ((username.length() > 0) && !isUsernameValid(username)) {
-                username = "";
-            }
-        }
-        boolean newUser = (mSp == null || (mUsername.compareTo(username) != 0));
+    private boolean setUsernameAuthenticated(String username) {
+        username = fixUsername(username);
+        String newPrefsFileName = SharedPreferencesUtil.prefsFileNameForUser(username);
+        boolean ok = false;
 
-        if (copyGlobal || newUser) {
-            mConnection = null;
-            if (newUser) {
+        if (!mWasAuthenticated) {
+            // Do we really need to change it?
+            ok = (mPrefsFileName.compareTo(newPrefsFileName) == 0);
+            if (!ok) {
+                mConnection = null;
                 mSp = null;
-                if (mUsername.length() > 0) {
-                    // Delete data for users that were not authenticated
-                    deleteData(true);
-                }
+                ok = SharedPreferencesUtil.rename(mContext, mPrefsFileName, newPrefsFileName);
 
-                mUsername = username;
-                mPrefsFileName = "user_" + mUsername;
+                if (ok) {
+                    mPrefsFileName = newPrefsFileName;
+                }
                 mSp = mContext.getSharedPreferences(mPrefsFileName, MODE_PRIVATE);
-                // Load stored data for other user
-                boolean isNewFile = mSp.getString(PreferencesActivity.KEY_TWITTER_USERNAME,
-                        "(not set)").compareTo(mUsername) != 0;
-                if (isNewFile) {
-                    mSp.edit().putString(PreferencesActivity.KEY_TWITTER_USERNAME, mUsername)
-                            .commit();
+                if (ok) {
+                    // Now we know the name of this User!
+                    setUsername(username, false);
                 }
-
-                mWasAuthenticated = mSp
-                        .getBoolean(PreferencesActivity.KEY_WAS_AUTHENTICATED, false);
-                mCredentialsVerified = CredentialsVerified.load(mSp);
-
-                mOAuth = mSp.getBoolean(PreferencesActivity.KEY_OAUTH, false);
-                mPassword = mSp.getString(PreferencesActivity.KEY_TWITTER_PASSWORD, "");
             }
-            if (copyGlobal || !mWasAuthenticated) {
-                copyGlobal();
+            if (ok) {
+                mWasAuthenticated = true;
+                mSp.edit().putBoolean(PreferencesActivity.KEY_WAS_AUTHENTICATED, true).commit();
             }
         }
-        updateDefaultSharedPreferences();
+        return ok;
+    }
+
+    /**
+     * @param username
+     * @param isNewUser true is this object is reused for new user
+     */
+    private void setUsername(String username, boolean isNewUser) {
+        mConnection = null;
+        username = fixUsername(username);
+
+        if (username.compareTo(mUsername) != 0) {
+            if (isNewUser) {
+                setCredentialsVerified(CredentialsVerified.NEVER);
+                mSp.edit().putString(PreferencesActivity.KEY_TWITTER_USERNAME, mUsername).commit();
+            }
+            mConnection = null;
+            mUsername = username;
+
+            // Propagate the changes to the global properties
+            PreferenceManager.getDefaultSharedPreferences(mContext).edit().putString(
+                    PreferencesActivity.KEY_TWITTER_USERNAME, mUsername).commit();
+        }
+    }
+
+    /**
+     * Is this object - temporal (for user who was never authenticated)
+     * 
+     * @return
+     */
+    private boolean wasAuthenticated() {
+        return mWasAuthenticated;
     }
 
     /**
      * Copy global (DefaultShared) preferences to this User's properties
      */
     private void copyGlobal() {
+        // So the Connection object may reinitialize
+        mConnection = null;
         SharedPreferences dsp = PreferenceManager.getDefaultSharedPreferences(mContext);
         boolean oauth = dsp.getBoolean(PreferencesActivity.KEY_OAUTH, false);
         if (mOAuth != oauth) {
-            if (mWasAuthenticated) {
-                clearAuthInformation();
-            }
+            clearAuthInformation();
             setOAuth(oauth);
         }
         setPassword(dsp.getString(PreferencesActivity.KEY_TWITTER_PASSWORD, ""));
@@ -306,14 +350,11 @@ public class TwitterUser {
      * @param forNonAuthenticatedOnly
      * @return
      */
-    public boolean deleteData(boolean forNonAuthenticatedOnly) {
+    public boolean deleteData() {
         boolean isDeleted = false;
-        if ((!forNonAuthenticatedOnly || !mWasAuthenticated) && mPrefsFileName.length() > 0) {
+        if (mPrefsFileName.length() > 0) {
             // Old preferences file may be deleted, if it exists...
             isDeleted = SharedPreferencesUtil.delete(mContext, mPrefsFileName);
-            if (isDeleted && Log.isLoggable(AndTweetService.APPTAG, Log.INFO)) {
-                Log.i(TAG, "Data of the \"" + getUsername() + "\" User was deleted");
-            }
         }
         return isDeleted;
     }
@@ -387,10 +428,11 @@ public class TwitterUser {
      * @throws ConnectionUnavailableException
      * @throws ConnectionAuthenticationException
      * @throws SocketTimeoutException
+     * @throws ConnectionCredentialsOfOtherUserException
      */
     public boolean verifyCredentials(boolean reVerify) throws ConnectionException,
             ConnectionUnavailableException, ConnectionAuthenticationException,
-            SocketTimeoutException {
+            SocketTimeoutException, ConnectionCredentialsOfOtherUserException {
         boolean ok = false;
         if (!reVerify) {
             if (getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
@@ -404,6 +446,8 @@ public class TwitterUser {
                 ok = (jso != null);
             } finally {
                 String newName = null;
+                boolean credentialsOfOtherUser = false;
+                boolean errorSettingUsername = false;
                 if (ok) {
                     if (jso.optInt("id") < 1) {
                         ok = false;
@@ -411,27 +455,40 @@ public class TwitterUser {
                 }
                 if (ok) {
                     newName = Connection.getScreenName(jso);
-                    if ((newName == null) || (newName.length() == 0)) {
-                        ok = false;
-                    }
+                    ok = isUsernameValid(newName);
                 }
+
                 if (ok) {
-                    if (getUsername().length() == 0) {
-                        setUsername(newName, false);
-                    } else {
-                        if (getUsername().compareTo(newName) != 0) {
-                            // Credentials belong to other User ??
-                            ok = false;
-                        }
+                    if (getUsername().length() > 0 && getUsername().compareTo(newName) != 0) {
+                        // Credentials belong to other User ??
+                        ok = false;
+                        credentialsOfOtherUser = true;
                     }
                 }
                 if (ok) {
                     setCredentialsVerified(CredentialsVerified.SUCCEEDED);
-                } else {
+                }
+                if (ok && !mWasAuthenticated) {
+                    // Now we know the name of this User!
+                    ok = setUsernameAuthenticated(newName);
+                    if (!ok) {
+                        errorSettingUsername = true;
+                    }
+                }
+                if (!ok) {
                     clearAuthInformation();
                     setCredentialsVerified(CredentialsVerified.FAILED);
                 }
-                updateDefaultSharedPreferences();
+
+                if (credentialsOfOtherUser) {
+                    Log.e(TAG, mContext.getText(R.string.error_credentials_of_other_user) + ": " + newName);
+                    throw (new ConnectionCredentialsOfOtherUserException());
+                }
+                if (errorSettingUsername) {
+                    String msg = mContext.getText(R.string.error_set_username) + newName;
+                    Log.e(TAG, msg);
+                    throw (new ConnectionAuthenticationException(msg));
+                }
             }
         }
         return ok;

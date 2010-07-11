@@ -64,6 +64,8 @@
 	<string name="dialog_title_timeline_loading">Updating Timeline...</string>
 	<string name="error_twitter_404">The page cannot be found. Please report this error!</string>
 	<string name="error_connection_error">A connection error has occurred. Please report this error!</string>
+	<string name="error_set_username">Couldn\'t set the Username to: </string>
+	<string name="error_credentials_of_other_user">These are credentials of other user</string>
 	<string name="favorite_created">Favorite created.</string>
 	<string name="favorite_destroyed">Favorite removed.</string>
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
@@ -156,6 +158,8 @@
 	<string name="summary_preference_use_avatars_off">User avatars will not be displayed</string>
 	<string name="summary_preference_use_avatars_on">User avatars will be displayed</string>
 	<string name="summary_preference_username">Your Twitter username</string>
+	<string name="summary_preference_verify_credentials">Tap here to verify credentials and enable this User Account</string>
+	<string name="summary_preference_credentials_verified">This User account has been successfully verified and hence enabled. Tap here to verify the user\'s credentials again.</string>
 	<string name="summary_preference_vibration">Vibrate on incoming message</string>
 	<string name="summary_preference_vibration_off">Vibration turned off</string>
 	<string name="summary_preference_vibration_on">Vibrating on incoming message</string>
@@ -179,6 +183,7 @@
 	<string name="title_preference_theme">Theme</string>
 	<string name="title_preference_username">Username</string>
 	<string name="title_preference_use_avatars">Display Avatars</string>
+	<string name="title_preference_verify_credentials">Verify credentials</string>
 	<string name="title_preference_vibration">Vibration</string>
 	<string name="tweet_activity">Tweet</string>
 	<string name="tweet_source_from">%1$s from %2$s %3$s</string>

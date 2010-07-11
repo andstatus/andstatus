@@ -13,60 +13,153 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.xorcode.andtweet.util;
 
 import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Environment;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.File;
 
 import com.xorcode.andtweet.AndTweetService;
 
 public class SharedPreferencesUtil {
     private static final String TAG = SharedPreferencesUtil.class.getSimpleName();
+    
+    public static final String FILE_EXTENSION = ".xml";
 
     /**
-     * Delete the preferences file!
-     * return Was the file deleted?
-     * */
-    public static boolean delete(Context context, String prefsFileName) {
-        boolean isDeleted = false;
+     * @param Context
+     * @return Directory for files of SharedPreferences
+     */
+    public static String prefsDirectory(Context context) {
+        File dir1 = new File(Environment.getDataDirectory(), "data/"
+                + context.getPackageName());
+        File dir2 = new File(dir1, "shared_prefs");
+        return dir2.getAbsolutePath();
+    }
 
-        // Delete preferences file
-        java.io.File prefFile = new java.io.File("/data/data/"
-                + context.getPackageName() + "/shared_prefs/" + prefsFileName
-                + ".xml");
-        if (prefFile.exists()) {
-            // Commit any changes left
-            SharedPreferences.Editor prefs = context.getSharedPreferences(
-                    prefsFileName, MODE_PRIVATE).edit();
-            if (prefs != null) {
-                prefs.commit();
-                prefs = null;
-            }
+    /**
+     * @param username
+     * @return Name without path and extension
+     */
+    public static String prefsFileNameForUser(String username) {
+        if (username == null) {
+            username = "";
+        }
+        String fileName = "user_" + username;
+        return fileName;
+    }
 
-            isDeleted = prefFile.delete();
-            try {
-                if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-                    Log.v(TAG, "The prefs file '" + prefFile.getCanonicalPath()
-                            + "' was " + (isDeleted ? "" : "not ") + " deleted");
-                }
-            } catch (IOException e) {
-                Log.e(TAG, e.toString());
-            }
+    /**
+     * Does the preferences file exist?
+     */
+    public static boolean exists(Context context, String prefsFileName) {
+        boolean yes = false;
+
+        if (context == null || prefsFileName == null || prefsFileName.length() == 0) {
+            // no
         } else {
             try {
-                if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
-                    Log.d(TAG, "The prefs file '" + prefFile.getCanonicalPath()
-                            + "' was not found");
-                }
-            } catch (IOException e) {
+                File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
+                yes = prefFile.exists();
+            } catch (Exception e) {
                 Log.e(TAG, e.toString());
             }
         }
+        return yes;
+    }
+
+    /**
+     * Delete the preferences file!
+     * 
+     * @return Was the file deleted?
+     */
+    public static boolean delete(Context context, String prefsFileName) {
+        boolean isDeleted = false;
+
+        if (context == null || prefsFileName == null || prefsFileName.length() == 0) {
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "delete: Nothing to do");
+            }
+        } else {
+            File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
+            if (prefFile.exists()) {
+                // Commit any changes left
+                SharedPreferences.Editor prefs = context.getSharedPreferences(prefsFileName,
+                        MODE_PRIVATE).edit();
+                if (prefs != null) {
+                    prefs.commit();
+                    prefs = null;
+                }
+
+                isDeleted = prefFile.delete();
+                if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                    Log.v(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was "
+                            + (isDeleted ? "" : "not ") + " deleted");
+                }
+            } else {
+                if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+                    Log.d(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was not found");
+                }
+            }
+        }
         return isDeleted;
+    }
+
+    /**
+     * Rename the preferences file
+     * 
+     * @return Was the file renamed?
+     */
+    public static boolean rename(Context context, String oldPrefsFileName, String newPrefsFileName) {
+        boolean isRenamed = false;
+
+        if (context == null || oldPrefsFileName == null || oldPrefsFileName.length() == 0
+                || newPrefsFileName == null || newPrefsFileName.length() == 0) {
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "rename: Nothing to do");
+            }
+        } else {
+            File newPrefFile = new File(prefsDirectory(context), newPrefsFileName + FILE_EXTENSION);
+            if (newPrefFile.exists()) {
+                try {
+                    if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                        Log.v(TAG, "rename: New file already exists: \""
+                                + newPrefFile.getCanonicalPath() + "\"");
+                    }
+                } catch (IOException e) {
+                    Log.e(TAG, e.toString());
+                }
+            } else {
+                File oldPrefFile = new File(prefsDirectory(context), oldPrefsFileName + FILE_EXTENSION);
+                if (oldPrefFile.exists()) {
+                    // Commit any changes left
+                    SharedPreferences.Editor prefs = context.getSharedPreferences(oldPrefsFileName,
+                            MODE_PRIVATE).edit();
+                    if (prefs != null) {
+                        prefs.commit();
+                        prefs = null;
+                    }
+
+                    isRenamed = oldPrefFile.renameTo(newPrefFile);
+                    if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                        Log.v(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath() + "' was "
+                                + (isRenamed ? "" : "not ") + " renamed");
+                    }
+                } else {
+                    if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+                        Log.d(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath()
+                                + "' was not found");
+                    }
+                }
+            }
+        }
+        return isRenamed;
     }
 }

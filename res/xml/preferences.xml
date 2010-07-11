@@ -31,6 +31,10 @@
 			android:dialogTitle="@string/dialog_title_preference_password"
 			android:summary="@string/summary_preference_password"
 			android:password="true" android:singleLine="true" />
+		<Preference android:key="verify_credentials"
+			android:title="@string/title_preference_verify_credentials"
+			android:summary="@string/summary_preference_verify_credentials"
+			android:persistent="false" />
 	</PreferenceCategory>
 
 	<!-- SETTINGS -->
