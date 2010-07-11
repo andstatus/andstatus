@@ -58,6 +58,7 @@ import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
  */
 public class PreferencesActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
+        
     private static final String TAG = PreferencesActivity.class.getSimpleName();
 
     public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
@@ -108,6 +109,14 @@ public class PreferencesActivity extends PreferenceActivity implements
 
     // public static final String KEY_EXTERNAL_STORAGE = "storage_use_external";
 
+    public static final String KEY_CONTACT_DEVELOPER = "contact_developer";
+
+    public static final String KEY_REPORT_BUG = "report_bug";
+
+    public static final String KEY_CHANGE_LOG = "change_log";
+
+    public static final String KEY_ABOUT_APPLICATION = "about_application";
+
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs
      */
@@ -130,6 +139,7 @@ public class PreferencesActivity extends PreferenceActivity implements
     private CheckBoxPreference mAutomaticUpdates;
 
     // private CheckBoxPreference mUseExternalStorage;
+    
     private ListPreference mHistorySizePreference;
 
     private ListPreference mHistoryTimePreference;
@@ -149,6 +159,8 @@ public class PreferencesActivity extends PreferenceActivity implements
     private ProgressDialog mProgressDialog;
 
     private TwitterUser mUser;
+
+    private boolean onSharedPreferenceChanged_busy = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -174,6 +186,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                 KEY_VERIFY_CREDENTIALS);
 
         mNotificationRingtone.setOnPreferenceChangeListener(this);
+        
         /*
          * mUseExternalStorage = (CheckBoxPreference)
          * getPreferenceScreen().findPreference(KEY_EXTERNAL_STORAGE); if
@@ -182,6 +195,7 @@ public class PreferencesActivity extends PreferenceActivity implements
          * mUseExternalStorage.setEnabled(false);
          * mUseExternalStorage.setChecked(false); }
          */
+        
         updateFrequency();
         updateHistorySize();
         updateHistoryTime();
@@ -355,8 +369,6 @@ public class PreferencesActivity extends PreferenceActivity implements
             mNotificationRingtone.setSummary(rt.getTitle(this));
         }
     }
-
-    private boolean onSharedPreferenceChanged_busy = false;
 
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (PreferencesActivity.this.mCredentialsAreBeingVerified) {
