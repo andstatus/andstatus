@@ -35,25 +35,25 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="appwidget_message_formats">
-		<item>"{0} message"</item>
-		<item>"{0} messages"</item>
+		<item>"{0} meddelande"</item>
+		<item>"{0} meddelanden"</item>
 	</string-array>
 	<string-array name="appwidget_message_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
 	<string-array name="fetch_frequency_values">
-		<item>3 minutes</item>
-		<item>5 minutes</item>
-		<item>10 minutes</item>
-		<item>15 minutes</item>
-		<item>30 minutes</item>
-		<item>1 hour</item>
-		<item>2 hours</item>
-		<item>4 hours</item>
-		<item>8 hours</item>
-		<item>12 hours</item>
-		<item>1 day</item>
+		<item>3 minuter</item>
+		<item>5 minuter</item>
+		<item>10 minuter</item>
+		<item>15 minuter</item>
+		<item>30 minuter</item>
+		<item>1 timme</item>
+		<item>2 timmar</item>
+		<item>4 timmar</item>
+		<item>8 timmar</item>
+		<item>12 timmar</item>
+		<item>1 dag</item>
 	</string-array>
 	<string-array name="fetch_frequency_keys">
 		<item>180</item>
@@ -69,22 +69,22 @@
 		<item>86400</item>
 	</string-array>
 	<string-array name="fetch_frequency_display">
-		<item>3 minutes</item>
-		<item>5 minutes</item>
-		<item>10 minutes</item>
-		<item>15 minutes</item>
-		<item>30 minutes</item>
-		<item>hour</item>
-		<item>2 hours</item>
-		<item>4 hours</item>
-		<item>8 hours</item>
-		<item>12 hours</item>
-		<item>day</item>
+		<item>3 minuter</item>
+		<item>5 minuter</item>
+		<item>10 minuter</item>
+		<item>15 minuter</item>
+		<item>30 minuter</item>
+		<item>timme</item>
+		<item>2 timmar</item>
+		<item>4 timmar</item>
+		<item>8 timmar</item>
+		<item>12 timmar</item>
+		<item>dag</item>
 	</string-array>
 	<string-array name="theme_values">
-		<item>Small</item>
-		<item>Standard</item>
-		<item>Large</item>
+		<item>Mindre</item>
+		<item>Normal</item>
+		<item>Stor</item>
 	</string-array>
 	<string-array name="theme_keys">
 		<item>AndTweet.Small</item>
@@ -122,13 +122,13 @@
 		<item>100000 tweets</item>
 	</string-array>
 	<string-array name="history_time_values">
-		<item>1 day</item>
-		<item>2 days</item>
-		<item>3 days</item>
-		<item>4 days</item>
-		<item>5 days</item>
-		<item>6 days</item>
-		<item>1 week</item>
+		<item>1 dag</item>
+		<item>2 dagar</item>
+		<item>3 dagar</item>
+		<item>4 dagar</item>
+		<item>5 dagar</item>
+		<item>6 dagar</item>
+		<item>1 vecka</item>
 	</string-array>
 	<string-array name="history_time_keys">
 		<item>1</item>
@@ -140,17 +140,17 @@
 		<item>7</item>
 	</string-array>
 	<string-array name="history_time_display">
-		<item>1 day</item>
-		<item>2 days</item>
-		<item>3 days</item>
-		<item>4 days</item>
-		<item>5 days</item>
-		<item>6 days</item>
-		<item>1 week</item>
+		<item>1 dag</item>
+		<item>2 dagar</item>
+		<item>3 dagar</item>
+		<item>4 dagar</item>
+		<item>5 dagar</item>
+		<item>6 dagar</item>
+		<item>1 vecka</item>
 	</string-array>
 	<string-array name="notification_tweet_formats">
-		<item>"{0} new tweet"</item>
-		<item>"{0} new tweets"</item>
+		<item>"{0} nya tweet"</item>
+		<item>"{0} nya tweets"</item>
 	</string-array>
 	<string-array name="notification_tweet_patterns">
 		<item>"1"</item>
@@ -165,25 +165,25 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="notification_message_formats">
-		<item>"{0} new message"</item>
-		<item>"{0} new messages"</item>
+		<item>"{0} nytt meddelande"</item>
+		<item>"{0} nya meddelanden"</item>
 	</string-array>
 	<string-array name="notification_message_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
 	<string-array name="reltime_days_ago_formats">
-		<item>"yesterday"</item>
-		<item>"{0} days ago"</item>
+		<item>"igår"</item>
+		<item>"{0} dagar sedan"</item>
 	</string-array>
 	<string-array name="reltime_days_ago_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
 	<string-array name="reltime_hours_ago_formats">
-		<item>"an hour ago"</item>
-		<item>"two hours ago"</item>
-		<item>"{0} hours ago"</item>
+		<item>"en timme sedan"</item>
+		<item>"två timmar sedan"</item>
+		<item>"{0} timmar sedan"</item>
 	</string-array>
 	<string-array name="reltime_hours_ago_patterns">
 		<item>"1"</item>
@@ -191,9 +191,9 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="reltime_minutes_ago_formats">
-		<item>"a minute ago"</item>
-		<item>"two minutes ago"</item>
-		<item>"{0} minutes ago"</item>
+		<item>"en minut sedan"</item>
+		<item>"två minuter sedan"</item>
+		<item>"{0} minuter sedan"</item>
 	</string-array>
 	<string-array name="reltime_minutes_ago_patterns">
 		<item>"1"</item>
@@ -201,16 +201,16 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="reltime_months_ago_formats">
-		<item>"one month ago"</item>
-		<item>"{0} months ago"</item>
+		<item>"en månad sedan"</item>
+		<item>"{0} månader sedan"</item>
 	</string-array>
 	<string-array name="reltime_months_ago_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
 	<string-array name="reltime_seconds_ago_formats">
-		<item>"one second ago"</item>
-		<item>"{0} seconds ago"</item>
+		<item>"en sekund sedan"</item>
+		<item>"{0} sekunder sedan"</item>
 	</string-array>
 	<string-array name="reltime_seconds_ago_patterns">
 		<item>"1"</item>
