@@ -91,28 +91,33 @@ public class AndTweetService extends Service {
      * @see AppWidgetProvider#onUpdate AppWidgetProvider.onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
      */
 	private static final String ACTIONPREFIX = packageName + ".action.";
+
 	/**
 	 * The message string that triggers an update of the widget.
 	 */
     public static final String ACTION_APPWIDGET_UPDATE = ACTIONPREFIX + "APPWIDGET_UPDATE";
-	/**
+
+    /**
 	 * The message string that is send to AndTweetService to signal that
 	 * the recurring alarm that is used to implement recurring tweet downloads
 	 * should be started.
 	 */
     public static final String ACTION_START_ALARM = ACTIONPREFIX + "START_ALARM";
-	/**
+
+    /**
 	 * The message string that is send to AndTweetService to signal that
 	 * the recurring alarm that is used to implement recurring tweet downloads
 	 * should be stopped.
 	 */
 	public static final String ACTION_STOP_ALARM = ACTIONPREFIX + "STOP_ALARM";
+
 	/**
 	 * The message string that is send to AndTweetService to signal that
 	 * the recurring alarm that is used to implement recurring tweet downloads
 	 * should be restarted.
 	 */
 	public static final String ACTION_RESTART_ALARM = ACTIONPREFIX + "RESTART_ALARM";
+
 	/**
 	 * The message string that the recurring alarm sends to signal
 	 * to AndTweetService that it should fetch the tweets and
@@ -120,18 +125,18 @@ public class AndTweetService extends Service {
 	 */
 	private static final String ACTION_FETCH = ACTIONPREFIX + "FETCH";
 
-    
     /**	
      * These names of extras are used in the Intent-notification of new Tweets
      * (e.g. to notify Widget).
      * For types of messages see {@link #NOTIFY_DIRECT_MESSAGE}
      */
     public static final String EXTRA_MSGTYPE = packageName + ".MSGTYPE";
+
     /**	
      * Number of new tweets...
      */
     public static final String EXTRA_NUMTWEETS = packageName + ".NUMTWEETS";
-    
+
 	/**
 	 * This is a list of callbacks that have been registered with the service.
 	 */
@@ -206,7 +211,6 @@ public class AndTweetService extends Service {
 		registerReceiver(intentReceiver, new IntentFilter(ACTION_FETCH));
 	}
 
-
 	private BroadcastReceiver intentReceiver = new BroadcastReceiver() {
 
 		@Override
@@ -216,7 +220,7 @@ public class AndTweetService extends Service {
 		}
 
 	};
-	
+
 	@Override
 	public void onDestroy() {
 		// Unregister all callbacks.
@@ -240,7 +244,6 @@ public class AndTweetService extends Service {
 		return null;
 	}
 
-	
 	@Override
 	public void onStart(Intent intent, int startId) {
 		super.onStart(intent, startId); 
@@ -252,7 +255,6 @@ public class AndTweetService extends Service {
 		}
 	}
 
-	
 	/**
 	 * Handles the action that came with an incoming intent and is used to update 
 	 * the alarm setting and to start fetching.
@@ -280,7 +282,6 @@ public class AndTweetService extends Service {
 		}
 	}
 
-	
 	private PowerManager.WakeLock getWakeLock() {
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		PowerManager.WakeLock wakeLock = pm.newWakeLock(
@@ -289,7 +290,6 @@ public class AndTweetService extends Service {
 		return wakeLock;
 	}
 
-	
 	/**
 	 * Bookkeeping method that should be called before a Twitter transaction is to be performed.
 	 * 
@@ -308,8 +308,7 @@ public class AndTweetService extends Service {
 	    
 	    return mBroadcastListenerCount;
 	}
-	
-	
+
 	/**
 	 * Bookkeeping method that should be called after a Twitter transaction was performed.
 	 * 
@@ -325,8 +324,7 @@ public class AndTweetService extends Service {
 	        mCallbacks.finishBroadcast();
 	    }
 	}
-	
-	
+
 	/**
 	 * Returns if a specific Twitter connection is still running.
 	 * 
@@ -336,8 +334,7 @@ public class AndTweetService extends Service {
 	private boolean stuffRunning(Runnable runnable) {
 	    return mFetchingThreads.contains(runnable);
 	}
-	
-	
+
 	/**
 	 * Returns the number of milliseconds between two fetch actions. 
 	 *  
@@ -347,7 +344,6 @@ public class AndTweetService extends Service {
 		int frequencyS =  Integer.parseInt(getSp().getString("fetch_frequency", "180"));
 		return (frequencyS * MILLISECONDS);
 	}
-	
 
 	/**
 	 * Starts the repeating Alarm that sends the fetch Intent.
@@ -361,7 +357,6 @@ public class AndTweetService extends Service {
         Log.d(TAG, "Started repeating alarm in a " + frequencyMs + "ms rhythm.");
 	}
 
-
 	/**
 	 * Cancels the repeating Alarm that sends the fetch Intent.
 	 */
@@ -372,7 +367,6 @@ public class AndTweetService extends Service {
 		Log.d(TAG, "Cancelled repeating alarm.");
 	}
 
-	
 	/**
 	 * Returns the recurring AlarmHandler Intent.
 	 * @return the Intent 
@@ -383,7 +377,6 @@ public class AndTweetService extends Service {
 		return pIntent;
 	}
 
-	
 	/**
 	 * The IAndTweetService is defined through IDL
 	 */
@@ -582,9 +575,6 @@ public class AndTweetService extends Service {
 		sendBroadcast(intent);
 	}
 
-	
-	
-	
 	protected Runnable mLoadTimeline = new Runnable() {
 		public void run() {
             if (stuffRunning(this)) {
@@ -624,7 +614,6 @@ public class AndTweetService extends Service {
 		}
 	};
 
-	
 	private void finishUpdateTimeline(int tweetsChanged, int repliesChanged,
 			final int N) {
 	    
@@ -657,8 +646,6 @@ public class AndTweetService extends Service {
 		}
 	}
 
-	
-	
 	protected Runnable mLoadMessages = new Runnable() {
 		public void run() {
 		    if (stuffRunning(this)) {
@@ -693,9 +680,7 @@ public class AndTweetService extends Service {
 		}
 	};
 
-	
 	private void finishUpdateDirectMessages(int messagesChanged, final int N) {
-
         SharedPreferences sp = getSp();
         synchronized (sp) {
             SharedPreferences.Editor prefsEditor = sp.edit();
@@ -761,7 +746,8 @@ public class AndTweetService extends Service {
             i = Log.d(TAG, msg);
         }
         return i;
-    }    
+    }
+
     /**
      * Shortcut for debugging messages of the application 
      */

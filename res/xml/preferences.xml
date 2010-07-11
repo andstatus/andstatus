@@ -36,20 +36,6 @@
 	<!-- SETTINGS -->
 	<PreferenceCategory android:title="@string/category_title_preference_settings">
 
-		<!-- STORAGE -->
-		<!--
-		<PreferenceScreen android:key="preference_screen_storage"
-			android:title="@string/title_preference_storage" 
-			android:summary="@string/summary_preference_storage">
-			<PreferenceCategory android:title="@string/title_preference_storage">
-				<CheckBoxPreference android:key="storage_use_external"
-					android:title="@string/title_preference_storage_external"
-					android:summaryOff="@string/summary_preference_storage_external_off"
-					android:summaryOn="@string/summary_preference_storage_external_on" />
-			</PreferenceCategory>
-		</PreferenceScreen>
-		-->
-
 		<!-- APPEARANCE -->
 		<PreferenceScreen android:key="preference_screen_apperance"
 			android:summary="@string/summary_preference_appearance"
@@ -152,4 +138,21 @@
 			</PreferenceCategory>
 		</PreferenceScreen>
 	</PreferenceCategory>
+
+	<!-- SETTINGS -->
+	<PreferenceCategory android:title="@string/category_title_preference_information">
+		<Preference android:key="contact_developer" android:title="@string/title_preference_contact_developer">
+			<intent android:action="android.intent.action.VIEW" android:data="http://andtweet.com/appcontact" />
+		</Preference>
+		<Preference android:key="report_bug" android:title="@string/title_preference_report_bug">
+			<intent android:action="android.intent.action.VIEW" android:data="http://code.google.com/p/andtweet/issues/entry" />
+		</Preference>
+		<Preference android:key="change_log" android:title="@string/title_preference_change_log">
+			<intent android:action="android.intent.action.VIEW" android:data="http://andtweet.com/appchangelog" />
+		</Preference>
+		<Preference android:key="about_application" android:title="@string/title_preference_about_application">
+			<intent android:action="android.intent.action.VIEW" android:data="http://andtweet.com/appabout" />
+		</Preference>
+	</PreferenceCategory>
+
 </PreferenceScreen>
