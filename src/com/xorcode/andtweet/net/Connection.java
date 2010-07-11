@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.xorcode.andtweet.PreferencesActivity;
 import com.xorcode.andtweet.net.Connection;
 
 /**
@@ -96,7 +97,7 @@ public abstract class Connection {
     
     protected Connection(SharedPreferences sp) {
         mSp = sp;
-        mUsername = mSp.getString("twitter_username", "");
+        mUsername = mSp.getString(PreferencesActivity.KEY_TWITTER_USERNAME, "");
     }
 
     public String getUsername() {

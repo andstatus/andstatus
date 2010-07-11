@@ -24,8 +24,6 @@ import com.xorcode.andtweet.AndTweetService;
 import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.util.SharedPreferencesUtil;
 
-import java.io.IOException;
-
 /**
  * The class maintains the appWidget instance (defined by mappWidgetId): - state
  * (that changes when new tweets etc. arrive); - preferences (that are set once

@@ -33,6 +33,7 @@ import android.text.Html;
 import android.util.Log;
 
 import com.xorcode.andtweet.TwitterUser;
+import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
@@ -78,7 +79,7 @@ public class DirectMessages {
 		mNewMessages = 0;
 		
 		TwitterUser tu = TwitterUser.getTwitterUser(mContext, false);
-		if (tu.verifyCredentials(false)) {
+		if (tu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
     		JSONArray jArr = tu.getConnection().getDirectMessages(mLastMessageId, 0);
             if (jArr != null) {
         		for (int index = 0; index < jArr.length(); index++) {

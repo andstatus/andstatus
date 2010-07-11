@@ -35,6 +35,7 @@ import android.text.Html;
 import android.util.Log;
 
 import com.xorcode.andtweet.TwitterUser;
+import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
@@ -115,7 +116,7 @@ public class FriendTimeline {
             limit = 20;
         }
         TwitterUser tu = TwitterUser.getTwitterUser(mContext, false);
-        if (tu.verifyCredentials(false)) {
+        if (tu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
             JSONArray jArr = null;
             switch (tweetType) {
                 case AndTweetDatabase.Tweets.TWEET_TYPE_TWEET:
