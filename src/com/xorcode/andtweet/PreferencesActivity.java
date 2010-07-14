@@ -233,7 +233,7 @@ public class PreferencesActivity extends PreferenceActivity implements
             sb.append(": (" + this.getText(R.string.not_set) + ")");
         }
         mEditTextPassword.setSummary(sb);
-        mEditTextPassword.setEnabled(!mOAuth.isChecked());
+        mEditTextPassword.setEnabled(mUser.getConnection().isPasswordNeeded());
 
         if (mUser.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
             sb = new StringBuilder(this.getText(R.string.summary_preference_credentials_verified));
@@ -252,7 +252,7 @@ public class PreferencesActivity extends PreferenceActivity implements
         }
         
         mVerifyCredentials.setSummary(sb);
-        mVerifyCredentials.setEnabled(mUser.getCredentialsPresent() || mUser.isOAuth());
+        mVerifyCredentials.setEnabled(mUser.getConnection().getCredentialsPresent() || mUser.isOAuth());
     }
 
     @Override
@@ -270,7 +270,7 @@ public class PreferencesActivity extends PreferenceActivity implements
      */
     private void verifyCredentials(boolean reVerify) {
         if (reVerify || mUser.getCredentialsVerified() == CredentialsVerified.NEVER) {
-            if (mUser.getCredentialsPresent()) {
+            if (mUser.getConnection().getCredentialsPresent()) {
                 // Let's verify credentials
                 // This is needed even for OAuth - to know Twitter Username
                 showDialog(DIALOG_CHECKING_CREDENTIALS);

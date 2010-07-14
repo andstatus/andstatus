@@ -75,6 +75,9 @@ public abstract class Connection {
     protected int mLimit = 200;
 
     protected String mUsername;
+
+    protected String mPassword;
+
     /**
      * TODO: These preferences will be per User
      */
@@ -98,6 +101,7 @@ public abstract class Connection {
     protected Connection(SharedPreferences sp) {
         mSp = sp;
         mUsername = mSp.getString(PreferencesActivity.KEY_TWITTER_USERNAME, "");
+        mPassword = mSp.getString(PreferencesActivity.KEY_TWITTER_PASSWORD, "");
     }
 
     public String getUsername() {
@@ -149,6 +153,29 @@ public abstract class Connection {
             ConnectionAuthenticationException, ConnectionUnavailableException,
             SocketTimeoutException;
 
+    /**
+     * Do we need password to be set?
+     * By default password is not needed and is ignored
+     */
+    public boolean isPasswordNeeded() {
+        return false;
+    }
+    /**
+     * Set User's password if the Connection object needs it
+     */
+    public void setPassword(String password) {
+        if (password == null) {
+            password = "";
+        }
+        if (password.compareTo(mPassword) != 0) {
+            mPassword = password;
+            mSp.edit().putString(PreferencesActivity.KEY_TWITTER_PASSWORD, mPassword).commit();
+        }
+    }
+    public String getPassword() {
+        return mPassword;
+    }
+    
     /**
      * Do we have enough credentials to verify them?
      * @return true == yes

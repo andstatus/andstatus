@@ -55,14 +55,11 @@ public class ConnectionBasicAuth extends Connection {
 	private static final String USER_AGENT = "AndTweet/1.0";
 	private static final String TAG = ConnectionBasicAuth.class.getSimpleName();
 
-	private String mPassword;
-
     /**
      * Creates a new ConnectionBasicAuth instance.
      */
     protected ConnectionBasicAuth(SharedPreferences sp) {
         super(sp);
-        mPassword = mSp.getString(PreferencesActivity.KEY_TWITTER_PASSWORD, null);
     }
 
 	@Override
@@ -266,15 +263,9 @@ public class ConnectionBasicAuth extends Connection {
 		return new JSONObject(getRequest(ACCOUNT_RATE_LIMIT_STATUS_URL, new DefaultHttpClient(new BasicHttpParams())));
 	}
 
-    
     @Override
     public void clearAuthInformation() {
-        synchronized (mSp) {
-            mPassword = "";
-            SharedPreferences.Editor editor = mSp.edit();
-            editor.remove(PreferencesActivity.KEY_TWITTER_PASSWORD);
-            editor.commit();
-        }
+        setPassword("");
     }
 	
 	/**
@@ -452,4 +443,9 @@ public class ConnectionBasicAuth extends Connection {
 			throw new ConnectionUnavailableException(String.valueOf(code));
 		}
 	}
+
+    @Override
+    public boolean isPasswordNeeded() {
+        return true;
+    }
 }
