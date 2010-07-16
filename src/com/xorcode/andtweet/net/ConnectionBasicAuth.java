@@ -42,7 +42,6 @@ import org.json.JSONObject;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import com.xorcode.andtweet.PreferencesActivity;
 import com.xorcode.andtweet.util.Base64;
 
 /**

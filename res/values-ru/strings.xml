@@ -38,6 +38,7 @@
 	<string name="category_title_preference_notifications">Уведомления</string>
 	<string name="category_title_preference_settings">Настройки</string>
 	<string name="category_title_preference_updates">Обновления</string>
+	<string name="dialog_summary_acquiring_a_request_token">Пожалуйста подождите завершения получения токена запроса для OAuth</string>
 	<string name="dialog_summary_authentication_failed">Пожалуйста проверьте Ваши имя пользователя и пароль.</string>
 	<string name="dialog_summary_checking_credentials">Пожалуйста подождите завершения проверки имени пользователя и пароля аккаунта.</string>
 	<string name="dialog_summary_connection_timeout">Время соединения закончилось. Пожалуйста, повторите попытку позднее.</string>
@@ -47,6 +48,7 @@
 	<string name="dialog_summary_sending_message">Пожалуйста подождите завершения отправки сообщения.</string>
 	<string name="dialog_summary_service_unavailable">Сервис Твиттера сейчас перегружен. Пожалуйста, попробуйте обратиться позже.</string>
 	<string name="dialog_summary_timeline_loading">Подождите завершения обновления ленты времени. Эта процедура может занять несколько минут, в зависимости от качества соединения.</string>
+	<string name="dialog_title_acquiring_a_request_token">Получаем токен запроса</string>
 	<string name="dialog_title_authentication_failed">Аутентификация (проверка имени пользователя и пароля) завершилась неудачей</string>
 	<string name="dialog_title_checking_credentials">Проверка...</string>
 	<string name="dialog_title_connection_timeout">Время соединения завершилось</string>
@@ -158,7 +160,7 @@
 	<string name="summary_preference_use_avatars_off">Аватары пользователей не будут показаны</string>
 	<string name="summary_preference_use_avatars_on">Аватары пользователей будут показаны</string>
 	<string name="summary_preference_username">Ваше имя пользователя в Твиттере</string>
-	<string name="summary_preference_verify_credentials">Щёлкните здесь для аунтификации пользователя и включения данного аккаунта пользователя</string>
+	<string name="summary_preference_verify_credentials">Щёлкните здесь для аутентификации пользователя и включения данного аккаунта пользователя</string>
 	<string name="summary_preference_credentials_verified">Данный аккаунт пользователя успешно аутентифицирован (проверен) и включён. Щёлкните здесь для повторной аунтификации</string>
 	<string name="summary_preference_vibration">Виброзвонок при входящем твите</string>
 	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>

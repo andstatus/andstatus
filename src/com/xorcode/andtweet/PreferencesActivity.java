@@ -1,5 +1,6 @@
 /* 
  * Copyright (C) 2008 Torgny Bjers
+ * Copyright (C) 2010 Brion N. Emde, "BLOA" example, http://github.com/brione/Brion-Learns-OAuth 
  * Copyright (C) 2010 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +31,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -38,6 +40,7 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -47,9 +50,23 @@ import android.widget.Toast;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionCredentialsOfOtherUserException;
 import com.xorcode.andtweet.net.ConnectionException;
+import com.xorcode.andtweet.net.ConnectionOAuth;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
 import com.xorcode.andtweet.net.OAuthActivity;
+import com.xorcode.andtweet.net.OAuthKeys;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
+
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.OAuthProvider;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
+import oauth.signpost.exception.OAuthCommunicationException;
+import oauth.signpost.exception.OAuthExpectationFailedException;
+import oauth.signpost.exception.OAuthMessageSignerException;
+import oauth.signpost.exception.OAuthNotAuthorizedException;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Application settings
@@ -58,7 +75,7 @@ import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
  */
 public class PreferencesActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
-        
+
     private static final String TAG = PreferencesActivity.class.getSimpleName();
 
     public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
@@ -139,7 +156,7 @@ public class PreferencesActivity extends PreferenceActivity implements
     private CheckBoxPreference mAutomaticUpdates;
 
     // private CheckBoxPreference mUseExternalStorage;
-    
+
     private ListPreference mHistorySizePreference;
 
     private ListPreference mHistoryTimePreference;
@@ -186,7 +203,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                 KEY_VERIFY_CREDENTIALS);
 
         mNotificationRingtone.setOnPreferenceChangeListener(this);
-        
+
         /*
          * mUseExternalStorage = (CheckBoxPreference)
          * getPreferenceScreen().findPreference(KEY_EXTERNAL_STORAGE); if
@@ -195,7 +212,7 @@ public class PreferencesActivity extends PreferenceActivity implements
          * mUseExternalStorage.setEnabled(false);
          * mUseExternalStorage.setChecked(false); }
          */
-        
+
         updateFrequency();
         updateHistorySize();
         updateHistoryTime();
@@ -250,9 +267,10 @@ public class PreferencesActivity extends PreferenceActivity implements
             }
             sb.append(")");
         }
-        
+
         mVerifyCredentials.setSummary(sb);
-        mVerifyCredentials.setEnabled(mUser.getConnection().getCredentialsPresent() || mUser.isOAuth());
+        mVerifyCredentials.setEnabled(mUser.getConnection().getCredentialsPresent()
+                || mUser.isOAuth());
     }
 
     @Override
@@ -266,7 +284,8 @@ public class PreferencesActivity extends PreferenceActivity implements
 
     /**
      * Verify credentials
-     * @param true -  Verify only if we didn't do this yet
+     * 
+     * @param true - Verify only if we didn't do this yet
      */
     private void verifyCredentials(boolean reVerify) {
         if (reVerify || mUser.getCredentialsVerified() == CredentialsVerified.NEVER) {
@@ -277,9 +296,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                 new Thread(new VerifyCredentials()).start();
             } else {
                 if (mUser.isOAuth()) {
-                    // For OAuth we get credentials in special activity
-                    Intent i = new Intent(this, OAuthActivity.class);
-                    startActivity(i);
+                    new OAuthAcquireRequestTokenTask().execute();
                 }
             }
 
@@ -566,4 +583,138 @@ public class PreferencesActivity extends PreferenceActivity implements
         }
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     };
+
+    /**
+     * @author yvolk
+     * This code is based on "BLOA" example, http://github.com/brione/Brion-Learns-OAuth
+     * yvolk: I had to move this code from OAuthActivity here in order to be able
+     * to show ProgressDialog 
+     */
+    private class OAuthAcquireRequestTokenTask extends AsyncTask<Void, Void, JSONObject> {
+        private OAuthConsumer mConsumer = null;
+
+        private OAuthProvider mProvider = null;
+
+        private SharedPreferences mSp;
+
+        private ProgressDialog dlg;
+
+        @Override
+        protected void onPreExecute() {
+            dlg = ProgressDialog.show(PreferencesActivity.this,
+                    getText(R.string.dialog_title_acquiring_a_request_token),
+                    getText(R.string.dialog_summary_acquiring_a_request_token), true, // indeterminate
+                    // duration
+                    false); // not cancel-able
+
+            // TODO: This will be the same Shared Preferences as in Connection
+            // (per
+            // User...)
+            mSp = PreferenceManager.getDefaultSharedPreferences(PreferencesActivity.this);
+        }
+
+        @Override
+        protected JSONObject doInBackground(Void... arg0) {
+            JSONObject jso = null;
+
+            // We don't need to worry about any saved states: we can reconstruct
+            // the
+            // state
+            mConsumer = new CommonsHttpOAuthConsumer(OAuthKeys.TWITTER_CONSUMER_KEY,
+                    OAuthKeys.TWITTER_CONSUMER_SECRET);
+
+            mProvider = new CommonsHttpOAuthProvider(ConnectionOAuth.TWITTER_REQUEST_TOKEN_URL,
+                    ConnectionOAuth.TWITTER_ACCESS_TOKEN_URL, ConnectionOAuth.TWITTER_AUTHORIZE_URL);
+
+            // It turns out this was the missing thing to making standard
+            // Activity
+            // launch mode work
+            mProvider.setOAuth10a(true);
+
+            boolean requestSucceeded = false;
+            String message = "";
+            String message2 = "";
+            try {
+                // This is really important. If you were able to register your
+                // real callback Uri with Twitter, and not some fake Uri
+                // like I registered when I wrote this example, you need to send
+                // null as the callback Uri in this function call. Then
+                // Twitter will correctly process your callback redirection
+                String authUrl = mProvider.retrieveRequestToken(mConsumer,
+                        OAuthActivity.CALLBACK_URI.toString());
+                OAuthActivity.saveRequestInformation(mSp, mConsumer.getToken(), mConsumer.getTokenSecret());
+
+                PreferencesActivity.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
+                        .parse(authUrl)));
+
+                requestSucceeded = true;
+            } catch (OAuthMessageSignerException e) {
+                message = e.getMessage();
+                e.printStackTrace();
+            } catch (OAuthNotAuthorizedException e) {
+                message = e.getMessage();
+                e.printStackTrace();
+            } catch (OAuthExpectationFailedException e) {
+                message = e.getMessage();
+                e.printStackTrace();
+            } catch (OAuthCommunicationException e) {
+                message = e.getMessage();
+                e.printStackTrace();
+            }
+
+            try {
+                // mSp.edit().putBoolean(ConnectionOAuth.REQUEST_SUCCEEDED,
+                // requestSucceeded).commit();
+                if (!requestSucceeded) {
+                    message2 = PreferencesActivity.this
+                            .getString(R.string.dialog_title_authentication_failed);
+                    if (message != null && message.length() > 0) {
+                        message2 = message2 + ": " + message;
+                    }
+                    Log.d(TAG, message2);
+                }
+
+                // This also works sometimes, but message2 may have quotes...
+                //String jss = "{\n\"succeeded\": \"" + requestSucceeded
+                //        + "\",\n\"message\": \"" + message2 + "\"}";
+                //jso = new JSONObject(jss);
+
+                jso = new JSONObject();
+                jso.put("succeeded", requestSucceeded);
+                jso.put("message", message2);
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return jso;
+        }
+
+        // This is in the UI thread, so we can mess with the UI
+        protected void onPostExecute(JSONObject jso) {
+            dlg.dismiss();
+            if (jso != null) {
+                try {
+                    boolean succeeded = jso.getBoolean("succeeded");
+                    String message = jso.getString("message");
+
+                    if (succeeded) {
+                        // For OAuth we get credentials in special activity
+                        Intent i = new Intent(PreferencesActivity.this, OAuthActivity.class);
+                        startActivity(i);
+                    } else {
+                        Toast.makeText(PreferencesActivity.this, message, Toast.LENGTH_LONG).show();
+
+                        TwitterUser tu = TwitterUser.getTwitterUser(PreferencesActivity.this, false);
+                        tu.clearAuthInformation();
+                        tu.setCredentialsVerified(CredentialsVerified.FAILED);
+                        showUserProperties();
+                    }
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
 }

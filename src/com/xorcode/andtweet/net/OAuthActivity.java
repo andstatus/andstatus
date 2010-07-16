@@ -33,10 +33,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.xorcode.andtweet.PreferencesActivity;
-import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.TwitterUser;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 
@@ -44,12 +42,13 @@ public class OAuthActivity extends Activity {
     private static final String TAG = "OAuthActivity";
 
     // The URI is consistent with "scheme" and "host" in AndroidManifest
-    private static final Uri CALLBACK_URI = Uri.parse("andtweet-oauth://twitt");
+    public static final Uri CALLBACK_URI = Uri.parse("andtweet-oauth://twitt");
 
     private OAuthConsumer mConsumer = null;
+
     private OAuthProvider mProvider = null;
 
-    SharedPreferences mSp;
+    private SharedPreferences mSp;
 
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -69,118 +68,75 @@ public class OAuthActivity extends Activity {
         // TODO: This will be the same Shared Preferences as in Connection (per
         // User...)
         mSp = PreferenceManager.getDefaultSharedPreferences(this);
-
-        boolean requestSucceeded = false;
-        String message = "";
-        Intent i = this.getIntent();
-        if (i.getData() == null) {
-            try {
-                // This is really important. If you were able to register your
-                // real callback Uri with Twitter, and not some fake Uri
-                // like I registered when I wrote this example, you need to send
-                // null as the callback Uri in this function call. Then
-                // Twitter will correctly process your callback redirection
-                String authUrl = mProvider.retrieveRequestToken(mConsumer, CALLBACK_URI.toString());
-                saveRequestInformation(mSp, mConsumer.getToken(), mConsumer.getTokenSecret());
-                this.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl)));
-
-                requestSucceeded = true;
-            } catch (OAuthMessageSignerException e) {
-                message = e.getMessage();
-                e.printStackTrace();
-            } catch (OAuthNotAuthorizedException e) {
-                message = e.getMessage();
-                e.printStackTrace();
-            } catch (OAuthExpectationFailedException e) {
-                message = e.getMessage();
-                e.printStackTrace();
-            } catch (OAuthCommunicationException e) {
-                message = e.getMessage();
-                e.printStackTrace();
-            }
-
-            mSp.edit().putBoolean(ConnectionOAuth.REQUEST_SUCCEEDED, requestSucceeded).commit();
-            if (!requestSucceeded) {
-                String message2 = this.getString(R.string.dialog_title_authentication_failed);
-                if (message != null && message.length() > 0) {
-                    message2 = message2 + ": " + message;
-                }
-                Toast.makeText(this, message2, Toast.LENGTH_LONG).show();
-                Log.d(TAG, message2);
-            }
-        }
     }
 
     @Override
     protected void onResume() {
-        boolean requestSucceeded = mSp.getBoolean(ConnectionOAuth.REQUEST_SUCCEEDED, false);
-        Log.d(TAG, "onResume, " + (requestSucceeded ? "Ok" : "Failed"));
+        Log.d(TAG, "onResume");
         super.onResume();
 
-        boolean done = !requestSucceeded;
+        boolean done = false;
         boolean authenticated = false;
         TwitterUser tu = TwitterUser.getTwitterUser(this, false);
 
-        if (requestSucceeded) {
-            Uri uri = getIntent().getData();
-            if (uri != null && CALLBACK_URI.getScheme().equals(uri.getScheme())) {
-                String token = mSp.getString(ConnectionOAuth.REQUEST_TOKEN, null);
-                String secret = mSp.getString(ConnectionOAuth.REQUEST_SECRET, null);
+        Uri uri = getIntent().getData();
+        if (uri != null && CALLBACK_URI.getScheme().equals(uri.getScheme())) {
+            String token = mSp.getString(ConnectionOAuth.REQUEST_TOKEN, null);
+            String secret = mSp.getString(ConnectionOAuth.REQUEST_SECRET, null);
 
-                tu.clearAuthInformation();
-                if (!tu.isOAuth()) {
-                    Log.e(TAG, "Connection is not of OAuth type ???");
-                } else {
-                    ConnectionOAuth conn = ((ConnectionOAuth) tu.getConnection());
-                    try {
-                        // Clear the request stuff, we've used it already
-                        OAuthActivity.saveRequestInformation(mSp, null, null);
+            tu.clearAuthInformation();
+            if (!tu.isOAuth()) {
+                Log.e(TAG, "Connection is not of OAuth type ???");
+            } else {
+                ConnectionOAuth conn = ((ConnectionOAuth) tu.getConnection());
+                try {
+                    // Clear the request stuff, we've used it already
+                    OAuthActivity.saveRequestInformation(mSp, null, null);
 
-                        if (!(token == null || secret == null)) {
-                            mConsumer.setTokenWithSecret(token, secret);
-                        }
-                        String otoken = uri.getQueryParameter(OAuth.OAUTH_TOKEN);
-                        String verifier = uri.getQueryParameter(OAuth.OAUTH_VERIFIER);
+                    if (!(token == null || secret == null)) {
+                        mConsumer.setTokenWithSecret(token, secret);
+                    }
+                    String otoken = uri.getQueryParameter(OAuth.OAUTH_TOKEN);
+                    String verifier = uri.getQueryParameter(OAuth.OAUTH_VERIFIER);
 
-                        /*
-                         * yvolk 2010-07-08: It appeared that this may be not
-                         * true: Assert.assertEquals(otoken,
-                         * mConsumer.getToken()); (e.g. if User denied access
-                         * during OAuth...) hence this is not Assert :-)
-                         */
-                        if (otoken != null || mConsumer.getToken() != null) {
-                            // We send out and save the request token, but the
-                            // secret is not the same as the verifier
-                            // Apparently, the verifier is decoded to get the
-                            // secret, which is then compared - crafty
-                            // This is a sanity check which should never fail -
-                            // hence the assertion
-                            // Assert.assertEquals(otoken,
-                            // mConsumer.getToken());
+                    /*
+                     * yvolk 2010-07-08: It appeared that this may be not true:
+                     * Assert.assertEquals(otoken, mConsumer.getToken()); (e.g.
+                     * if User denied access during OAuth...) hence this is not
+                     * Assert :-)
+                     */
+                    if (otoken != null || mConsumer.getToken() != null) {
+                        // We send out and save the request token, but the
+                        // secret is not the same as the verifier
+                        // Apparently, the verifier is decoded to get the
+                        // secret, which is then compared - crafty
+                        // This is a sanity check which should never fail -
+                        // hence the assertion
+                        // Assert.assertEquals(otoken,
+                        // mConsumer.getToken());
 
-                            // This is the moment of truth - we could throw here
-                            mProvider.retrieveAccessToken(mConsumer, verifier);
-                            // Now we can retrieve the goodies
-                            token = mConsumer.getToken();
-                            secret = mConsumer.getTokenSecret();
-                            authenticated = true;
-                        }
-                    } catch (OAuthMessageSignerException e) {
-                        e.printStackTrace();
-                    } catch (OAuthNotAuthorizedException e) {
-                        e.printStackTrace();
-                    } catch (OAuthExpectationFailedException e) {
-                        e.printStackTrace();
-                    } catch (OAuthCommunicationException e) {
-                        e.printStackTrace();
-                    } finally {
-                        if (authenticated) {
-                            conn.saveAuthInformation(token, secret);
-                        }
+                        // This is the moment of truth - we could throw here
+                        mProvider.retrieveAccessToken(mConsumer, verifier);
+                        // Now we can retrieve the goodies
+                        token = mConsumer.getToken();
+                        secret = mConsumer.getTokenSecret();
+                        authenticated = true;
+                    }
+                } catch (OAuthMessageSignerException e) {
+                    e.printStackTrace();
+                } catch (OAuthNotAuthorizedException e) {
+                    e.printStackTrace();
+                } catch (OAuthExpectationFailedException e) {
+                    e.printStackTrace();
+                } catch (OAuthCommunicationException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (authenticated) {
+                        conn.saveAuthInformation(token, secret);
                     }
                 }
-                done = true;
             }
+            done = true;
         }
         if (done) {
             if (!authenticated) {
@@ -195,7 +151,7 @@ public class OAuthActivity extends Activity {
         }
     }
 
-    private static void saveRequestInformation(SharedPreferences settings, String token,
+    public static void saveRequestInformation(SharedPreferences settings, String token,
             String secret) {
         // null means to clear the old values
         SharedPreferences.Editor editor = settings.edit();
@@ -216,5 +172,4 @@ public class OAuthActivity extends Activity {
         editor.commit();
 
     }
-
 }
