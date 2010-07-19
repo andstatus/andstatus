@@ -45,18 +45,6 @@ public class SharedPreferencesUtil {
     }
 
     /**
-     * @param username
-     * @return Name without path and extension
-     */
-    public static String prefsFileNameForUser(String username) {
-        if (username == null) {
-            username = "";
-        }
-        String fileName = "user_" + username;
-        return fileName;
-    }
-
-    /**
      * Does the preferences file exist?
      */
     public static boolean exists(Context context, String prefsFileName) {

@@ -23,6 +23,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.io.File;
 import java.net.SocketTimeoutException;
 import java.util.regex.Pattern;
 import java.util.Vector;
@@ -45,6 +46,11 @@ import org.json.JSONObject;
  */
 public class TwitterUser {
     private static final String TAG = TwitterUser.class.getSimpleName();
+
+    /**
+     * Prefix of the user's Preferences file
+     */
+    public static final String FILE_PREFIX = "user_";
 
     private Context mContext = null;
 
@@ -139,16 +145,67 @@ public class TwitterUser {
     }
 
     // Array of TwitterUser objects
-    private static Vector<TwitterUser> mTu = new Vector<TwitterUser>();
+    private static Vector<TwitterUser> mTu = null;
+
+    /**
+     * Get list of all Users, including temporary (never authenticated) one For
+     * the purpose of using these "accounts" elsewhere: 1. Value of
+     * {@link #getCredentialsVerified()} is the main differentiator. 
+     * 
+     * @param context
+     * @return Array of users
+     */
+    public static TwitterUser[] list(Context context) {
+        initilizeList(context);
+        return mTu.toArray(new TwitterUser[mTu.size()]);
+    }
+
+    /**
+     * Initialize User's list if it wasn't initialized yet.
+     * 
+     * @param context
+     */
+    private static void initilizeList(Context context) {
+        if (mTu == null) {
+            mTu = new Vector<TwitterUser>();
+
+            // Currently we doesn't hold user's list anywhere
+            // So let's search user's files
+            java.io.File prefsdir = new File(SharedPreferencesUtil.prefsDirectory(context));
+            java.io.File files[] = prefsdir.listFiles();
+            for (int ind = 0; ind < files.length; ind++) {
+                if (files[ind].getName().startsWith(FILE_PREFIX)) {
+                    String username = files[ind].getName().substring(FILE_PREFIX.length());
+                    int indExtension = username.indexOf(".");
+                    if (indExtension >= 0) {
+                        username = username.substring(0, indExtension);
+                    }
+                    TwitterUser tu = new TwitterUser(context, username);
+                    mTu.add(tu);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param username
+     * @return Name without path and extension
+     */
+    public static String prefsFileNameForUser(String username) {
+        username = fixUsername(username);
+        String fileName = FILE_PREFIX + username;
+        return fileName;
+    }
 
     /**
      * Factory of TwitterUser-s
      * 
      * @param Context
      * @param username in Twitter
-     * @param copyGlobal globally stored User preferences are used, including
-     *            Username, OAuth, password
-     * @return TwitterUser
+     * @param copyGlobal globally stored User preferences are used, including:
+     *            Username, OAuth, password. New User will be created if didn't
+     *            exist yet.
+     * @return TwitterUser - existed or newly created
      */
     private static TwitterUser getTwitterUser(Context context, String username, boolean copyGlobal) {
         // Find TwitterUser object for this user
@@ -156,6 +213,8 @@ public class TwitterUser {
         int ind = -1;
         int indTemp = -1;
         TwitterUser tu = null;
+
+        initilizeList(context);
 
         username = fixUsername(username);
         if (copyGlobal || (username.length() == 0)) {
@@ -171,17 +230,11 @@ public class TwitterUser {
                 indTemp = ind;
             }
         }
-        if (!found) {
-            if (!SharedPreferencesUtil.exists(context, SharedPreferencesUtil
-                    .prefsFileNameForUser(username))
-                    && indTemp >= 0) {
-                // This is new User, so
-                // Let's reuse existing temp file and forget previous User who
-                // wasn't ever authenticated
-                ind = indTemp;
-                mTu.elementAt(ind).setUsername(username, true);
-                found = true;
-            }
+        if (!found && indTemp >= 0) {
+            // Let's don't keep more than one Temporary (never authenticated)
+            // users. So delete previous User who wasn't ever authenticated.
+            String tempUser = mTu.elementAt(indTemp).getUsername();
+            delete(context, tempUser);
         }
         if (found) {
             tu = mTu.elementAt(ind);
@@ -193,6 +246,42 @@ public class TwitterUser {
             tu.copyGlobal();
         }
         return tu;
+    }
+
+    /**
+     * Delete everything about the user
+     * 
+     * @return Was the User deleted?
+     */
+    public static boolean delete(Context context, String username) {
+        boolean isDeleted = false;
+
+        username = fixUsername(username);
+        if (context == null) {
+            Log.e(TAG, "delete: context is null ???");
+        } else {
+            initilizeList(context);
+
+            // Delete the User's object from the list
+            int ind = -1;
+            boolean found = false;
+            for (ind = 0; ind < mTu.size(); ind++) {
+                if (mTu.elementAt(ind).getUsername().compareTo(username) == 0) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                TwitterUser tu = mTu.get(ind);
+                tu.deleteData();
+
+                // And delete the object from the list
+                mTu.removeElementAt(ind);
+
+                isDeleted = true;
+            }
+        }
+        return isDeleted;
     }
 
     private static String fixUsername(String username) {
@@ -214,15 +303,8 @@ public class TwitterUser {
         mContext = context;
         username = fixUsername(username);
         // Try to find saved User data
-        mPrefsFileName = SharedPreferencesUtil.prefsFileNameForUser(username);
+        mPrefsFileName = prefsFileNameForUser(username);
         boolean isNewUser = !SharedPreferencesUtil.exists(mContext, mPrefsFileName);
-        if (isNewUser) {
-            // There was no data stored for this User
-            // so let's start from temporary file in order not to create many files
-            // for users, who won't be ever authenticated...
-            //
-            mPrefsFileName = SharedPreferencesUtil.prefsFileNameForUser("");
-        }
         mSp = mContext.getSharedPreferences(mPrefsFileName, MODE_PRIVATE);
         setUsername(username, isNewUser);
         if (!isNewUser) {
@@ -247,7 +329,7 @@ public class TwitterUser {
      */
     private boolean setUsernameAuthenticated(String username) {
         username = fixUsername(username);
-        String newPrefsFileName = SharedPreferencesUtil.prefsFileNameForUser(username);
+        String newPrefsFileName = prefsFileNameForUser(username);
         boolean ok = false;
 
         if (!mWasAuthenticated) {
@@ -264,7 +346,7 @@ public class TwitterUser {
                 mSp = mContext.getSharedPreferences(mPrefsFileName, MODE_PRIVATE);
                 if (ok) {
                     // Now we know the name of this User!
-                    setUsername(username, false);
+                    setUsername(username, true);
                 }
             }
             if (ok) {
@@ -277,19 +359,15 @@ public class TwitterUser {
 
     /**
      * @param username
-     * @param isNewUser true is this object is reused for new user
+     * @param isNewUser true if we are creating new user
      */
     private void setUsername(String username, boolean isNewUser) {
         username = fixUsername(username);
-
         if (username.compareTo(mUsername) != 0) {
-            if (isNewUser) {
-            }
             mConnection = null;
             mUsername = username;
             if (isNewUser) {
                 mSp.edit().putString(PreferencesActivity.KEY_TWITTER_USERNAME, mUsername).commit();
-                clearAuthInformation();
             }
 
             // Propagate the changes to the global properties
@@ -334,17 +412,23 @@ public class TwitterUser {
     }
 
     /**
-     * Delete preferences file for this user
+     * Delete all User's data
      * 
      * @param forNonAuthenticatedOnly
      * @return
      */
-    public boolean deleteData() {
+    private boolean deleteData() {
         boolean isDeleted = false;
+
+        if (wasAuthenticated()) {
+            // TODO: Delete databases for this User
+
+        }
         if (mPrefsFileName.length() > 0) {
             // Old preferences file may be deleted, if it exists...
             isDeleted = SharedPreferencesUtil.delete(mContext, mPrefsFileName);
         }
+
         return isDeleted;
     }
 
