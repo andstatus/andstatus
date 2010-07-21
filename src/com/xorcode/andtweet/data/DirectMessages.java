@@ -50,6 +50,7 @@ public class DirectMessages {
 	private ContentResolver mContentResolver;
     private Context mContext;
 	private int mNewMessages;
+    private TwitterUser mTu;
 	private long mLastMessageId = 0;
 
 	/**
@@ -59,10 +60,11 @@ public class DirectMessages {
 	 * @param Context
 	 * @param long lastMessageId
 	 */
-	public DirectMessages(ContentResolver contentResolver, Context context, long lastMessageId) {
-		mContentResolver = contentResolver;
+	public DirectMessages(Context context) {
         mContext = context;
-		mLastMessageId = lastMessageId;
+        mContentResolver = mContext.getContentResolver();
+        mTu = TwitterUser.getTwitterUser(mContext, false);
+        mLastMessageId = mTu.getSharedPreferences().getLong("last_message_id", 0);
 	}
 
 	/**
@@ -78,21 +80,25 @@ public class DirectMessages {
 	public void loadMessages() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
 		mNewMessages = 0;
 		
-		TwitterUser tu = TwitterUser.getTwitterUser(mContext, false);
-		if (tu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-    		JSONArray jArr = tu.getConnection().getDirectMessages(mLastMessageId, 0);
+        long lastId = mLastMessageId;
+		if (mTu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+    		JSONArray jArr = mTu.getConnection().getDirectMessages(mLastMessageId, 0);
             if (jArr != null) {
         		for (int index = 0; index < jArr.length(); index++) {
         			JSONObject jo = jArr.getJSONObject(index);
         			long lId = jo.getLong("id");
-        			if (lId > mLastMessageId) {
-        				mLastMessageId = lId;
+        			if (lId > lastId) {
+        			    lastId = lId;
         			}
         			insertFromJSONObject(jo);
         		}
         		if (mNewMessages > 0) {
         			mContentResolver.notifyChange(AndTweetDatabase.DirectMessages.CONTENT_URI, null);
         		}
+                if (lastId > mLastMessageId) {
+                    mLastMessageId = lastId;
+                    mTu.getSharedPreferences().edit().putLong("last_message_id", mLastMessageId).commit();
+                }
             }
         }
 	}
@@ -151,19 +157,22 @@ public class DirectMessages {
 		return aMessageUri;
 	}
 
-	/**
-	 * Prune old records from the database to keep the size down.
-	 * 
-	 * @param sinceTimestamp
-	 * @return int
-	 */
-	public int pruneOldRecords(long sinceTimestamp) {
-		if (sinceTimestamp == 0) {
-			sinceTimestamp = System.currentTimeMillis();
-		}
-		return mContentResolver.delete(AndTweetDatabase.DirectMessages.CONTENT_URI, AndTweetDatabase.DirectMessages.CREATED_DATE + " < " + sinceTimestamp, null);
-	}
-
+    /**
+     * Remove old records to ensure that the database does not grow too large.
+     * Maximum number of records is configured in "history_size" preference
+     * 
+     * @return Number of deleted records
+     */
+    public int pruneOldRecords() {
+        int maxSize = mTu.getSharedPreferences().getInt("history_size", 0);
+        if (maxSize < 1) {
+            maxSize = 2000;
+        }
+        // TODO:
+        //return mContentResolver.delete(AndTweetDatabase.DirectMessages.CONTENT_URI, AndTweetDatabase.DirectMessages.CREATED_DATE + " < " + sinceTimestamp, null);
+        return 0;
+    }
+	
 	public int newCount() {
 		return mNewMessages;
 	}

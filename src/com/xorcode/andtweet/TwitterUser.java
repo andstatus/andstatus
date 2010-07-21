@@ -150,7 +150,7 @@ public class TwitterUser {
     /**
      * Get list of all Users, including temporary (never authenticated) one For
      * the purpose of using these "accounts" elsewhere: 1. Value of
-     * {@link #getCredentialsVerified()} is the main differentiator. 
+     * {@link #getCredentialsVerified()} is the main differentiator.
      * 
      * @param context
      * @return Array of users
@@ -320,6 +320,13 @@ public class TwitterUser {
      */
     public String getUsername() {
         return mUsername;
+    }
+
+    /**
+     * @return SharedPreferences of this User
+     */
+    public SharedPreferences getSharedPreferences() {
+        return mSp;
     }
 
     /**

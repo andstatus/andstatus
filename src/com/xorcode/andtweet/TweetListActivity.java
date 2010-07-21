@@ -720,9 +720,9 @@ public class TweetListActivity extends TimelineActivity {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
 				    // The tweet was sent successfully
-					FriendTimeline fl = new FriendTimeline(getContentResolver(), TweetListActivity.this, mSP.getLong("last_timeline_id", 0));
+					FriendTimeline fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET);
 					try {
-						fl.insertFromJSONObject(result, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, true);
+						fl.insertFromJSONObject(result, true);
 					} catch (JSONException e) {
 						Toast.makeText(TweetListActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
 					}
@@ -856,7 +856,7 @@ public class TweetListActivity extends TimelineActivity {
 				if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
-					FriendTimeline fl = new FriendTimeline(getContentResolver(),  TweetListActivity.this, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
+					FriendTimeline fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET);
 					try {
 						fl.destroyStatus(result.getLong("id"));
 					} catch (JSONException e) {
@@ -877,13 +877,13 @@ public class TweetListActivity extends TimelineActivity {
 				if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
-					FriendTimeline fl = new FriendTimeline(getContentResolver(), TweetListActivity.this, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
 					try {
 						Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result.getLong("id"));
 						Cursor c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE }, null, null, null);
 						try {
 							c.moveToFirst();
-							fl.insertFromJSONObject(result, c.getInt(c.getColumnIndex(Tweets.TWEET_TYPE)), true);
+		                    FriendTimeline fl = new FriendTimeline(TweetListActivity.this, c.getInt(c.getColumnIndex(Tweets.TWEET_TYPE)));
+							fl.insertFromJSONObject(result, true);
 						} catch (Exception e) {
 			                Log.e(TAG, "handleMessage: " + e.toString());
 						} finally {
@@ -907,13 +907,13 @@ public class TweetListActivity extends TimelineActivity {
 				if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
-					FriendTimeline fl = new FriendTimeline(getContentResolver(), TweetListActivity.this, mSP.getLong("last_timeline_runtime", System.currentTimeMillis()));
 					try {
 						Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result.getLong("id"));
 						Cursor c = getContentResolver().query(uri, new String[] { Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE }, null, null, null);
 						try {
 							c.moveToFirst();
-							fl.insertFromJSONObject(result, c.getInt(c.getColumnIndex(Tweets.TWEET_TYPE)), true);
+                            FriendTimeline fl = new FriendTimeline(TweetListActivity.this, c.getInt(c.getColumnIndex(Tweets.TWEET_TYPE)));
+							fl.insertFromJSONObject(result, true);
 						} catch (Exception e) {
                             Log.e(TAG, "handleMessage: " + e.toString());
 						} finally {
@@ -998,32 +998,17 @@ public class TweetListActivity extends TimelineActivity {
 	protected Runnable mManualReload = new Runnable() {
 		public void run() {
 			mIsLoading = true;
-			final SharedPreferences.Editor prefsEditor = mSP.edit();
-			long lastTweetId = mSP.getLong("last_timeline_id", 0);
-			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), TweetListActivity.this, lastTweetId);
 			int aNewTweets = 0;
 			int aReplyCount = 0;
 			try {
-				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_REPLY, mInitializing);
-				aReplyCount = friendTimeline.replyCount();
+	            FriendTimeline fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TWEET_TYPE_REPLY);
+				fl.loadTimeline(mInitializing);
+				aReplyCount = fl.replyCount();
 				
-				// TODO: Make it better... 
-                long lastTweetId1 = friendTimeline.lastId();
-                // Create friendTimeline again because otherwise we'll download tweets since last reply only!
-				friendTimeline = new FriendTimeline(getContentResolver(), TweetListActivity.this, lastTweetId);
-				
-				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, mInitializing);
-				aNewTweets = friendTimeline.newCount();
-				aReplyCount += friendTimeline.replyCount();
-				lastTweetId = friendTimeline.lastId();
-				
-				// TODO: Maybe these should be two different stored values... not one "last_timeline_id" ?!
-				if  (lastTweetId < lastTweetId1) {
-				    lastTweetId = lastTweetId1;
-				}
-
-				prefsEditor.putLong("last_timeline_id", lastTweetId);
-				prefsEditor.commit();
+				fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET);
+				fl.loadTimeline(mInitializing);
+				aNewTweets = fl.newCount();
+				aReplyCount += fl.replyCount();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mManualReload Connection Exception: " + e.toString());
 				return;

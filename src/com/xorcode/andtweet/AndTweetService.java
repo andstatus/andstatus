@@ -146,7 +146,6 @@ public class AndTweetService extends Service {
 	int mReportValue = 0;
 	long mLastRunTime = 0;
 	long mLastMessageRunTime = 0;
-	long mLastTweetId = 0;
 	long mLastMessageId = 0;
 
 	private static final int MILLISECONDS = 1000;
@@ -410,9 +409,6 @@ public class AndTweetService extends Service {
 
                 mLastRunTime = sp.getLong("last_timeline_runtime", System.currentTimeMillis());
                 mLastMessageRunTime = sp.getLong("last_messages_runtime", System.currentTimeMillis());
-
-                mLastTweetId = sp.getLong("last_timeline_id", 0);
-                mLastMessageId = sp.getLong("last_message_id", 0);
             }
 
 			switch (msg.what) {
@@ -582,16 +578,19 @@ public class AndTweetService extends Service {
             }
 		    final int N = startStuff(this, "Getting tweets and replies.");
 		    
-			FriendTimeline friendTimeline = new FriendTimeline(getContentResolver(), AndTweetService.this.getApplicationContext(), mLastTweetId);
 			int aNewTweets = 0;
 			int aReplyCount = 0;
 			try {
-				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_REPLY);
-				aReplyCount = friendTimeline.replyCount();
-				friendTimeline.loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_TWEET);
-				aNewTweets = friendTimeline.newCount();
-				aReplyCount += friendTimeline.replyCount();
-				mLastTweetId = friendTimeline.lastId();
+	            FriendTimeline fl = new FriendTimeline(AndTweetService.this.getApplicationContext(), AndTweetDatabase.Tweets.TWEET_TYPE_REPLY);
+				fl.loadTimeline();
+				aReplyCount = fl.replyCount();
+                
+				fl = new FriendTimeline(AndTweetService.this.getApplicationContext(), AndTweetDatabase.Tweets.TWEET_TYPE_TWEET);
+				fl.loadTimeline();
+				aNewTweets = fl.newCount();
+				aReplyCount += fl.replyCount();
+				
+				fl.pruneOldRecords();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mLoadTimeline Connection Exception: " + e.toString());
 			} catch (SQLiteConstraintException e) {
@@ -605,7 +604,6 @@ public class AndTweetService extends Service {
 			} catch (SocketTimeoutException e) {
 				Log.e(TAG, "mLoadTimeline Connection Timeout: " + e.toString());
 			}
-			friendTimeline.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
 
 			finishUpdateTimeline(aNewTweets, aReplyCount, N);
 
@@ -622,7 +620,6 @@ public class AndTweetService extends Service {
             SharedPreferences.Editor prefsEditor = sp.edit();
             mLastRunTime = Long.valueOf(System.currentTimeMillis());
             prefsEditor.putLong("last_timeline_runtime", mLastRunTime);
-            prefsEditor.putLong("last_timeline_id", mLastTweetId);
             prefsEditor.commit();
         }
 
@@ -653,12 +650,12 @@ public class AndTweetService extends Service {
 		    }
 			final int N = startStuff(this, "Getting direct messages.");
 
-			DirectMessages directMessages = new DirectMessages(getContentResolver(), getApplicationContext(), mLastMessageId);
 			int aNewMessages = 0;
 			try {
-				directMessages.loadMessages();
-				aNewMessages = directMessages.newCount();
-				mLastMessageId = directMessages.lastId();
+	            DirectMessages dm = new DirectMessages(getApplicationContext());
+				dm.loadMessages();
+				aNewMessages = dm.newCount();
+				dm.pruneOldRecords();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mLoadMessages Connection Exception: " + e.toString());
 			} catch (SQLiteConstraintException e) {
@@ -672,7 +669,6 @@ public class AndTweetService extends Service {
 			} catch (SocketTimeoutException e) {
 				Log.e(TAG, "mLoadMessages Connection Timeout: " + e.toString());
 			}
-			directMessages.pruneOldRecords(System.currentTimeMillis() - (86400 * 3 * MILLISECONDS));
 
 			finishUpdateDirectMessages(aNewMessages, N);
 
@@ -686,7 +682,6 @@ public class AndTweetService extends Service {
             SharedPreferences.Editor prefsEditor = sp.edit();
             mLastMessageRunTime = Long.valueOf(System.currentTimeMillis());
             prefsEditor.putLong("last_messages_runtime", mLastMessageRunTime);
-            prefsEditor.putLong("last_message_id", mLastMessageId);
             prefsEditor.commit();
         }
 

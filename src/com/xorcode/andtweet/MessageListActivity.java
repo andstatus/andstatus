@@ -443,7 +443,7 @@ public class MessageListActivity extends TimelineActivity {
 	protected Runnable mManualReload = new Runnable() {
 		public void run() {
 			mIsLoading = true;
-			DirectMessages directMessages = new DirectMessages(getContentResolver(), MessageListActivity.this, mSP.getLong("last_messages_runtime", System.currentTimeMillis()));
+			DirectMessages directMessages = new DirectMessages(MessageListActivity.this);
 			int aNewMessages = 0;
 			try {
 				directMessages.loadMessages();

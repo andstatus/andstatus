@@ -27,10 +27,8 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.text.Html;
 import android.util.Log;
 
@@ -51,18 +49,19 @@ public class FriendTimeline {
 	private static final String TAG = "FriendTimeline";
 
 	private ContentResolver mContentResolver;
-	private String mUsername;
     private Context mContext;
 	private long mLastStatusId = 0;
 	private int mNewTweets;
 	private int mReplies;
+	private TwitterUser mTu;
+	private int tweetType;
 
-	public FriendTimeline(ContentResolver contentResolver, Context context, long lastStatusId) {
-		mContentResolver = contentResolver;
+	public FriendTimeline(Context context, int tweetType) {
         mContext = context;
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        mUsername = sp.getString("twitter_username", null);
-		mLastStatusId = lastStatusId;
+        mContentResolver = mContext.getContentResolver();
+        mTu = TwitterUser.getTwitterUser(mContext, false);
+        this.tweetType = tweetType;
+		mLastStatusId = mTu.getSharedPreferences().getLong("last_timeline_id" + tweetType, 0);
 	}
 
 	/**
@@ -76,28 +75,12 @@ public class FriendTimeline {
 	 * @throws SocketTimeoutException 
 	 */
 	public void loadTimeline() throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		loadTimeline(AndTweetDatabase.Tweets.TWEET_TYPE_TWEET, false);
-	}
-
-	/**
-	 * Load the user and friends timeline.
-	 * 
-	 * @param tweetType
-	 * @throws ConnectionException
-	 * @throws JSONException
-	 * @throws SQLiteConstraintException
-	 * @throws ConnectionAuthenticationException
-	 * @throws ConnectionUnavailableException
-	 * @throws SocketTimeoutException 
-	 */
-	public void loadTimeline(int tweetType) throws ConnectionException, JSONException, SQLiteConstraintException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		loadTimeline(tweetType, false);
+		loadTimeline(false);
 	}
 
     /**
      * Load the user and friends timeline.
      * 
-     * @param tweetType
      * @param firstRun
      * @throws ConnectionException
      * @throws JSONException
@@ -106,24 +89,24 @@ public class FriendTimeline {
      * @throws ConnectionUnavailableException
      * @throws SocketTimeoutException
      */
-    public void loadTimeline(int tweetType, boolean firstRun) throws ConnectionException,
+    public void loadTimeline(boolean firstRun) throws ConnectionException,
             JSONException, SQLiteConstraintException, ConnectionAuthenticationException,
             ConnectionUnavailableException, SocketTimeoutException {
         mNewTweets = 0;
         mReplies = 0;
+        long lastId = mLastStatusId;
         int limit = 200;
         if (firstRun) {
             limit = 20;
         }
-        TwitterUser tu = TwitterUser.getTwitterUser(mContext, false);
-        if (tu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+        if (mTu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
             JSONArray jArr = null;
             switch (tweetType) {
                 case AndTweetDatabase.Tweets.TWEET_TYPE_TWEET:
-                    jArr = tu.getConnection().getFriendsTimeline(mLastStatusId, limit);
+                    jArr = mTu.getConnection().getFriendsTimeline(lastId, limit);
                     break;
                 case AndTweetDatabase.Tweets.TWEET_TYPE_REPLY:
-                    jArr = tu.getConnection().getMentionsTimeline(mLastStatusId, limit);
+                    jArr = mTu.getConnection().getMentionsTimeline(lastId, limit);
                     break;
                 default:
                     Log.e(TAG, "Got unhandled tweet type: " + tweetType);
@@ -133,14 +116,18 @@ public class FriendTimeline {
                 for (int index = 0; index < jArr.length(); index++) {
                     JSONObject jo = jArr.getJSONObject(index);
                     long lId = jo.getLong("id");
-                    if (lId > mLastStatusId) {
-                        mLastStatusId = lId;
+                    if (lId > lastId) {
+                        lastId = lId;
                     }
-                    insertFromJSONObject(jo, tweetType);
+                    insertFromJSONObject(jo);
                 }
             }
             if (mNewTweets > 0) {
                 mContentResolver.notifyChange(AndTweetDatabase.Tweets.CONTENT_URI, null);
+            }
+            if (lastId > mLastStatusId) {
+                mLastStatusId = lastId;
+                mTu.getSharedPreferences().edit().putLong("last_timeline_id" + tweetType, mLastStatusId).commit();
             }
         }
     }
@@ -154,7 +141,7 @@ public class FriendTimeline {
 	 * @throws JSONException
 	 * @throws SQLiteConstraintException
 	 */
-	public Uri insertFromJSONObject(JSONObject jo, int tweetType) throws JSONException, SQLiteConstraintException {
+	public Uri insertFromJSONObject(JSONObject jo) throws JSONException, SQLiteConstraintException {
 		JSONObject user;
 		user = jo.getJSONObject("user");
 
@@ -183,9 +170,10 @@ public class FriendTimeline {
 		}
 
 		if ((mContentResolver.update(aTweetUri, values, null, null)) == 0) {
+		    // There was no such row so add new one
 			mContentResolver.insert(AndTweetDatabase.Tweets.CONTENT_URI, values);
 			mNewTweets++;
-			if (mUsername.equals(jo.getString("in_reply_to_screen_name")) || message.contains("@" + mUsername)) {
+			if (mTu.getUsername().equals(jo.getString("in_reply_to_screen_name")) || message.contains("@" + mTu.getUsername())) {
 				mReplies++;
 			}
 		}
@@ -203,23 +191,26 @@ public class FriendTimeline {
 	 * @throws JSONException
 	 * @throws SQLiteConstraintException
 	 */
-	public Uri insertFromJSONObject(JSONObject jo, int tweetType, boolean notify) throws JSONException, SQLiteConstraintException {
-		Uri aTweetUri = insertFromJSONObject(jo, tweetType);
+	public Uri insertFromJSONObject(JSONObject jo, boolean notify) throws JSONException, SQLiteConstraintException {
+		Uri aTweetUri = insertFromJSONObject(jo);
 		if (notify) mContentResolver.notifyChange(aTweetUri, null);
 		return aTweetUri;
 	}
 
 	/**
 	 * Remove old records to ensure that the database does not grow too large.
+	 * Maximum number of records is configured in "history_size" preference
 	 * 
-	 * @param sinceTimestamp
 	 * @return Number of deleted records
 	 */
-	public int pruneOldRecords(long sinceTimestamp) {
-		if (sinceTimestamp == 0) {
-			sinceTimestamp = System.currentTimeMillis();
-		}
-		return mContentResolver.delete(AndTweetDatabase.Tweets.CONTENT_URI, AndTweetDatabase.Tweets.CREATED_DATE + " < " + sinceTimestamp, null);
+	public int pruneOldRecords() {
+	    int maxSize = mTu.getSharedPreferences().getInt("history_size", 0);
+	    if (maxSize < 1) {
+	        maxSize = 2000;
+	    }
+	    // TODO:
+		//return mContentResolver.delete(AndTweetDatabase.Tweets.CONTENT_URI, AndTweetDatabase.Tweets.CREATED_DATE + " < " + sinceTimestamp, null);
+	    return 0;
 	}
 
 	/**

@@ -18,10 +18,7 @@ package com.xorcode.andtweet;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Locale;
-import java.util.TimeZone;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -486,8 +483,8 @@ public class AndTweetProvider extends ContentProvider {
 
 		ContentValues values;
 		long rowId;
-		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("America/New_York"), Locale.US);
-		Long now = Long.valueOf(cal.getTimeInMillis());
+		// 2010-07-21 yvolk: "now" is calculated exactly like it is in other parts of the code
+		Long now = System.currentTimeMillis();
 		SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
 		String table;
