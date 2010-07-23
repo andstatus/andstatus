@@ -151,6 +151,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	 */
 	protected boolean mIsLoading;
 
+	/**
+	 * TODO: enum from com.xorcode.andtweet.data.AndTweetDatabase.Tweets.TIMELINE_TYPE_...
+	 */
+    protected int mTimelineType = Tweets.TIMELINE_TYPE_FRIENDS;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -171,10 +176,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			finish();
 		}
 
+        Intent intent = getIntent();
+        mTimelineType = intent.getIntExtra(AndTweetService.EXTRA_TIMELINE_TYPE, Tweets.TIMELINE_TYPE_FRIENDS);
+		
 		loadTheme();
 		setContentView(R.layout.tweetlist);
 		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.timeline_title);
-		updateTitle();
 
 		/*
 		if (mSP.getBoolean("storage_use_external", false)) {
@@ -205,6 +212,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             Log.v(TAG, "onResume");
         }
 		super.onResume();
+        updateTitle();
 		loadPosition();
 	}
 	
@@ -461,8 +469,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			// TODO: Do we really need these "selection" and "selectionArgs"?
 			// There are NO other tweet types (yet) except 1 and 2...
 			appDataBundle.putString("selection", AndTweetDatabase.Tweets.TWEET_TYPE + " IN (?, ?)");
-			appDataBundle.putStringArray("selectionArgs", new String[] { String.valueOf(Tweets.TWEET_TYPE_TWEET), String.valueOf(Tweets.TWEET_TYPE_REPLY) });
+			appDataBundle.putStringArray("selectionArgs", new String[] { String.valueOf(Tweets.TIMELINE_TYPE_FRIENDS), String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS) });
 			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+            intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE, AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
 			intent.setAction(Intent.ACTION_SEARCH);
 			startActivity(intent);
 			break;
@@ -472,6 +481,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			appDataBundle = new Bundle();
 			appDataBundle.putParcelable("content_uri", AndTweetDatabase.DirectMessages.SEARCH_URI);
 			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+            intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE, AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
 			intent.setAction(Intent.ACTION_SEARCH);
 			startActivity(intent);
 			break;
@@ -491,6 +501,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			appDataBundle = new Bundle();
 			appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.SEARCH_URI);
 			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+            intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE, AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
 			intent.setAction(Intent.ACTION_SEARCH);
 			startActivity(intent);
 			break;
@@ -546,11 +557,27 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	/**
 	 * Updates the activity title.
 	 */
-	public void updateTitle() {
+	public void updateTitle(String arg) {
+	    String timelinename = "??";
+	    switch(mTimelineType) {
+	        case Tweets.TIMELINE_TYPE_FRIENDS:
+	            timelinename = getString(R.string.activity_title_timeline);
+	            break;
+            case Tweets.TIMELINE_TYPE_MENTIONS:
+                timelinename = getString(R.string.activity_title_mentions);
+                break;
+            case Tweets.TIMELINE_TYPE_MESSAGES:
+                timelinename = getString(R.string.activity_title_direct_messages);
+                break;
+	    }
 		String username = mSP.getString("twitter_username", null);
-		setTitle(getString(R.string.activity_title_format, new Object[] {getTitle(), username}), "");
+		setTitle(getString(R.string.activity_title_format, new Object[] {timelinename, username}), arg);
 	}
 
+    public void updateTitle() {
+        updateTitle("");
+    }
+	
 	/**
 	 * Retrieve the text that is currently in the editor.
 	 * 
@@ -699,4 +726,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			mHandler.sendMessage(mHandler.obtainMessage(MSG_REPLIES_CHANGED, value, 0));
 		}
 	};
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        mTimelineType = intent.getIntExtra(AndTweetService.EXTRA_TIMELINE_TYPE, Tweets.TIMELINE_TYPE_FRIENDS);
+    }
 }

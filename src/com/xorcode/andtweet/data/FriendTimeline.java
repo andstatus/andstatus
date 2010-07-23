@@ -54,14 +54,14 @@ public class FriendTimeline {
 	private int mNewTweets;
 	private int mReplies;
 	private TwitterUser mTu;
-	private int tweetType;
+	private int mTimelineType;
 
-	public FriendTimeline(Context context, int tweetType) {
+	public FriendTimeline(Context context, int timelineType) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
         mTu = TwitterUser.getTwitterUser(mContext, false);
-        this.tweetType = tweetType;
-		mLastStatusId = mTu.getSharedPreferences().getLong("last_timeline_id" + tweetType, 0);
+        mTimelineType = timelineType;
+		mLastStatusId = mTu.getSharedPreferences().getLong("last_timeline_id" + timelineType, 0);
 	}
 
 	/**
@@ -101,15 +101,15 @@ public class FriendTimeline {
         }
         if (mTu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
             JSONArray jArr = null;
-            switch (tweetType) {
-                case AndTweetDatabase.Tweets.TWEET_TYPE_TWEET:
+            switch (mTimelineType) {
+                case AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS:
                     jArr = mTu.getConnection().getFriendsTimeline(lastId, limit);
                     break;
-                case AndTweetDatabase.Tweets.TWEET_TYPE_REPLY:
+                case AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS:
                     jArr = mTu.getConnection().getMentionsTimeline(lastId, limit);
                     break;
                 default:
-                    Log.e(TAG, "Got unhandled tweet type: " + tweetType);
+                    Log.e(TAG, "Got unhandled tweet type: " + mTimelineType);
                     break;
             }
             if (jArr != null) {
@@ -127,7 +127,7 @@ public class FriendTimeline {
             }
             if (lastId > mLastStatusId) {
                 mLastStatusId = lastId;
-                mTu.getSharedPreferences().edit().putLong("last_timeline_id" + tweetType, mLastStatusId).commit();
+                mTu.getSharedPreferences().edit().putLong("last_timeline_id" + mTimelineType, mLastStatusId).commit();
             }
         }
     }
@@ -136,7 +136,6 @@ public class FriendTimeline {
 	 * Insert a row from a JSONObject.
 	 * 
 	 * @param jo
-	 * @param tweetType
 	 * @return
 	 * @throws JSONException
 	 * @throws SQLiteConstraintException
@@ -157,7 +156,7 @@ public class FriendTimeline {
 		String message = Html.fromHtml(jo.getString("text")).toString();
 		values.put(AndTweetDatabase.Tweets.MESSAGE, message);
 		values.put(AndTweetDatabase.Tweets.SOURCE, jo.getString("source"));
-		values.put(AndTweetDatabase.Tweets.TWEET_TYPE, tweetType);
+		values.put(AndTweetDatabase.Tweets.TWEET_TYPE, mTimelineType);
 		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_STATUS_ID, jo.getString("in_reply_to_status_id"));
 		values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_AUTHOR_ID, jo.getString("in_reply_to_screen_name"));
 		values.put(AndTweetDatabase.Tweets.FAVORITED, jo.getBoolean("favorited") ? 1 : 0);
@@ -185,7 +184,6 @@ public class FriendTimeline {
 	 * Takes an optional parameter to notify listeners of the change.
 	 * 
 	 * @param jo
-	 * @param tweetType
 	 * @param notify
 	 * @return Uri
 	 * @throws JSONException
@@ -229,15 +227,6 @@ public class FriendTimeline {
 	 */
 	public int replyCount() {
 		return mReplies;
-	}
-
-	/**
-	 * Get the last status ID.
-	 * 
-	 * @return long
-	 */
-	public long lastId() {
-		return mLastStatusId;
 	}
 
 	/**

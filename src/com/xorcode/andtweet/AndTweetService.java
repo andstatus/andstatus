@@ -137,16 +137,15 @@ public class AndTweetService extends Service {
      */
     public static final String EXTRA_NUMTWEETS = packageName + ".NUMTWEETS";
 
+    /**
+     * This extra is used to determine which timeline to show in TimelineActivity 
+     */
+    public static final String EXTRA_TIMELINE_TYPE = packageName + ".TIMELINE_TYPE";
+    
 	/**
 	 * This is a list of callbacks that have been registered with the service.
 	 */
 	final RemoteCallbackList<IAndTweetServiceCallback> mCallbacks = new RemoteCallbackList<IAndTweetServiceCallback>();
-
-	int mTimelineValue = 0;
-	int mReportValue = 0;
-	long mLastRunTime = 0;
-	long mLastMessageRunTime = 0;
-	long mLastMessageId = 0;
 
 	private static final int MILLISECONDS = 1000;
 	private static final int MSG_UPDATE_TIMELINE = 1;
@@ -403,12 +402,8 @@ public class AndTweetService extends Service {
 
             SharedPreferences sp = getSp();
             synchronized (sp) {
-
                 mNotificationsEnabled = sp.getBoolean("notifications_enabled", false);
                 mNotificationsVibrate = sp.getBoolean("vibration", false);
-
-                mLastRunTime = sp.getLong("last_timeline_runtime", System.currentTimeMillis());
-                mLastMessageRunTime = sp.getLong("last_messages_runtime", System.currentTimeMillis());
             }
 
 			switch (msg.what) {
@@ -581,11 +576,11 @@ public class AndTweetService extends Service {
 			int aNewTweets = 0;
 			int aReplyCount = 0;
 			try {
-	            FriendTimeline fl = new FriendTimeline(AndTweetService.this.getApplicationContext(), AndTweetDatabase.Tweets.TWEET_TYPE_REPLY);
+	            FriendTimeline fl = new FriendTimeline(AndTweetService.this.getApplicationContext(), AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
 				fl.loadTimeline();
 				aReplyCount = fl.replyCount();
                 
-				fl = new FriendTimeline(AndTweetService.this.getApplicationContext(), AndTweetDatabase.Tweets.TWEET_TYPE_TWEET);
+				fl = new FriendTimeline(AndTweetService.this.getApplicationContext(), AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
 				fl.loadTimeline();
 				aNewTweets = fl.newCount();
 				aReplyCount += fl.replyCount();
@@ -615,14 +610,6 @@ public class AndTweetService extends Service {
 	private void finishUpdateTimeline(int tweetsChanged, int repliesChanged,
 			final int N) {
 	    
-        SharedPreferences sp = getSp();
-        synchronized (sp) {
-            SharedPreferences.Editor prefsEditor = sp.edit();
-            mLastRunTime = Long.valueOf(System.currentTimeMillis());
-            prefsEditor.putLong("last_timeline_runtime", mLastRunTime);
-            prefsEditor.commit();
-        }
-
 		for (int i = 0; i < N; i++) {
 			try {
 				Log.d(TAG, "Notifying callback no. " + i);
@@ -677,13 +664,6 @@ public class AndTweetService extends Service {
 	};
 
 	private void finishUpdateDirectMessages(int messagesChanged, final int N) {
-        SharedPreferences sp = getSp();
-        synchronized (sp) {
-            SharedPreferences.Editor prefsEditor = sp.edit();
-            mLastMessageRunTime = Long.valueOf(System.currentTimeMillis());
-            prefsEditor.putLong("last_messages_runtime", mLastMessageRunTime);
-            prefsEditor.commit();
-        }
 
 		for (int i = 0; i < N; i++) {
 			try {

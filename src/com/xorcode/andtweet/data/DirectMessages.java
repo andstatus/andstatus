@@ -176,8 +176,4 @@ public class DirectMessages {
 	public int newCount() {
 		return mNewMessages;
 	}
-
-	public long lastId() {
-		return mLastMessageId;
-	}
 }

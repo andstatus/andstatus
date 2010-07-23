@@ -278,7 +278,7 @@ public class AndTweetProvider extends ContentProvider {
 							+ Tweets.SENT_DATE + " INTEGER," 
 							+ Tweets.CREATED_DATE + " INTEGER"
 							+ ");");
-					db.execSQL("INSERT INTO " + TWEETS_TABLE_NAME + " SELECT " + Tweets._ID + ", " + Tweets.AUTHOR_ID + ", " + Tweets.MESSAGE + ", " + Tweets.SOURCE + ", " + Tweets.TWEET_TYPE_TWEET + ", " + Tweets.IN_REPLY_TO_AUTHOR_ID + ", " + Tweets.IN_REPLY_TO_STATUS_ID + ", null, " + Tweets.SENT_DATE + ", " + Tweets.CREATED_DATE + " FROM " + TWEETS_TABLE_NAME + "_backup;");
+					db.execSQL("INSERT INTO " + TWEETS_TABLE_NAME + " SELECT " + Tweets._ID + ", " + Tweets.AUTHOR_ID + ", " + Tweets.MESSAGE + ", " + Tweets.SOURCE + ", " + Tweets.TIMELINE_TYPE_FRIENDS + ", " + Tweets.IN_REPLY_TO_AUTHOR_ID + ", " + Tweets.IN_REPLY_TO_STATUS_ID + ", null, " + Tweets.SENT_DATE + ", " + Tweets.CREATED_DATE + " FROM " + TWEETS_TABLE_NAME + "_backup;");
 					db.execSQL("DROP TABLE " + TWEETS_TABLE_NAME + "_backup;");
 
 					/*
@@ -507,7 +507,7 @@ public class AndTweetProvider extends ContentProvider {
 			if (values.containsKey(Tweets.AUTHOR_ID) == false) values.put(Tweets.AUTHOR_ID, "");
 			if (values.containsKey(Tweets.MESSAGE) == false) values.put(Tweets.MESSAGE, "");
 			if (values.containsKey(Tweets.SOURCE) == false) values.put(Tweets.SOURCE, "");
-			if (values.containsKey(Tweets.TWEET_TYPE) == false) values.put(Tweets.TWEET_TYPE, Tweets.TWEET_TYPE_TWEET);
+			if (values.containsKey(Tweets.TWEET_TYPE) == false) values.put(Tweets.TWEET_TYPE, Tweets.TIMELINE_TYPE_FRIENDS);
 			if (values.containsKey(Tweets.IN_REPLY_TO_AUTHOR_ID) == false) values.put(Tweets.IN_REPLY_TO_AUTHOR_ID, "");
 			if (values.containsKey(Tweets.FAVORITED) == false) values.put(Tweets.FAVORITED, 0);
 			break;

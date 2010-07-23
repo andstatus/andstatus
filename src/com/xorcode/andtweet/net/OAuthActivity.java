@@ -31,7 +31,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.xorcode.andtweet.PreferencesActivity;
@@ -48,8 +47,6 @@ public class OAuthActivity extends Activity {
 
     private OAuthProvider mProvider = null;
 
-    private SharedPreferences mSp;
-
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
 
@@ -65,9 +62,6 @@ public class OAuthActivity extends Activity {
         // launch mode work
         mProvider.setOAuth10a(true);
 
-        // TODO: This will be the same Shared Preferences as in Connection (per
-        // User...)
-        mSp = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
@@ -81,8 +75,8 @@ public class OAuthActivity extends Activity {
 
         Uri uri = getIntent().getData();
         if (uri != null && CALLBACK_URI.getScheme().equals(uri.getScheme())) {
-            String token = mSp.getString(ConnectionOAuth.REQUEST_TOKEN, null);
-            String secret = mSp.getString(ConnectionOAuth.REQUEST_SECRET, null);
+            String token = tu.getSharedPreferences().getString(ConnectionOAuth.REQUEST_TOKEN, null);
+            String secret = tu.getSharedPreferences().getString(ConnectionOAuth.REQUEST_SECRET, null);
 
             tu.clearAuthInformation();
             if (!tu.isOAuth()) {
@@ -91,7 +85,7 @@ public class OAuthActivity extends Activity {
                 ConnectionOAuth conn = ((ConnectionOAuth) tu.getConnection());
                 try {
                     // Clear the request stuff, we've used it already
-                    OAuthActivity.saveRequestInformation(mSp, null, null);
+                    OAuthActivity.saveRequestInformation(tu.getSharedPreferences(), null, null);
 
                     if (!(token == null || secret == null)) {
                         mConsumer.setTokenWithSecret(token, secret);

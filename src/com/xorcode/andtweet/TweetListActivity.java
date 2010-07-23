@@ -26,7 +26,6 @@ import android.app.SearchManager;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDiskIOException;
@@ -255,7 +254,7 @@ public class TweetListActivity extends TimelineActivity {
 		    doSearchQuery(intent);
 		} else {
 		    // TODO: do we need to specify tweet types...
-			mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, Tweets.TWEET_TYPE + " IN (?, ?)", new String[] { String.valueOf(Tweets.TWEET_TYPE_TWEET), String.valueOf(Tweets.TWEET_TYPE_REPLY) }, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
+			mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, Tweets.TWEET_TYPE + " IN (?, ?)", new String[] { String.valueOf(Tweets.TIMELINE_TYPE_FRIENDS), String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS) }, Tweets.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
 			createAdapters();
 		}
 		if (hasHardwareKeyboard()) {
@@ -674,6 +673,9 @@ public class TweetListActivity extends TimelineActivity {
 	 */
 	@Override
 	public void updateTitle() {
+	    // First set less detailed title
+	    super.updateTitle();
+	    // Then start asynchronous task that will set detailed info
 		Thread thread = new Thread(mUpdateTitle);
 		thread.start();
 	}
@@ -720,7 +722,7 @@ public class TweetListActivity extends TimelineActivity {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
 				    // The tweet was sent successfully
-					FriendTimeline fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET);
+					FriendTimeline fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
 					try {
 						fl.insertFromJSONObject(result, true);
 					} catch (JSONException e) {
@@ -797,9 +799,6 @@ public class TweetListActivity extends TimelineActivity {
 					mInitializing = false;
 					bindToService();
 				}
-				SharedPreferences.Editor prefsEditor = mSP.edit();
-				prefsEditor.putLong("last_timeline_runtime", System.currentTimeMillis());
-				prefsEditor.commit();
 				break;
 
 			case MSG_LOAD_ITEMS:
@@ -821,7 +820,7 @@ public class TweetListActivity extends TimelineActivity {
 				JSONObject status = (JSONObject) msg.obj;
 				try {
 				    if (status != null) {
-	                    setTitle(getString(R.string.activity_title_format, new Object[] {getTitle(), username}), status.getInt("remaining_hits") + "/" + status.getInt("hourly_limit"));
+	                    TweetListActivity.super.updateTitle( status.getInt("remaining_hits") + "/" + status.getInt("hourly_limit"));
 				    } else {
                         setTitle("(msg is null)");
 				    }
@@ -856,7 +855,7 @@ public class TweetListActivity extends TimelineActivity {
 				if (result.optString("error").length() > 0) {
 					Toast.makeText(TweetListActivity.this, (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
 				} else {
-					FriendTimeline fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET);
+					FriendTimeline fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
 					try {
 						fl.destroyStatus(result.getLong("id"));
 					} catch (JSONException e) {
@@ -1001,11 +1000,11 @@ public class TweetListActivity extends TimelineActivity {
 			int aNewTweets = 0;
 			int aReplyCount = 0;
 			try {
-	            FriendTimeline fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TWEET_TYPE_REPLY);
+	            FriendTimeline fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
 				fl.loadTimeline(mInitializing);
 				aReplyCount = fl.replyCount();
 				
-				fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TWEET_TYPE_TWEET);
+				fl = new FriendTimeline(TweetListActivity.this, AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
 				fl.loadTimeline(mInitializing);
 				aNewTweets = fl.newCount();
 				aReplyCount += fl.replyCount();

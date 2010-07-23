@@ -56,8 +56,13 @@ public final class AndTweetDatabase {
 		public static final String CREATED_DATE = "created";
 		public static final String SENT_DATE = "sent";
 
-		public static final int TWEET_TYPE_TWEET = 1;
-		public static final int TWEET_TYPE_REPLY = 2;
+		public static final int TIMELINE_TYPE_FRIENDS = 1;
+		public static final int TIMELINE_TYPE_MENTIONS = 2;
+		/**
+		 * Messages are stored in separate database table, but we see them through the same base activity class,
+		 * this is why the type is here...
+		 */
+        public static final int TIMELINE_TYPE_MESSAGES = 3;
 	}
 
 	/**
