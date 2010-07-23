@@ -79,7 +79,7 @@ public abstract class Connection {
     protected String mPassword;
 
     /**
-     * TODO: These preferences will be per User
+     * These preferences are per User
      */
     protected SharedPreferences mSp;
 
