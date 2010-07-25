@@ -577,7 +577,18 @@ public class AndTweetProvider extends ContentProvider {
                 //qb.appendWhere(Tweets.AUTHOR_ID + " LIKE '%" + s1 + "%' OR " + Tweets.MESSAGE + " LIKE '%" + s1 + "%'");
                 //qb.appendWhere(Tweets.AUTHOR_ID + " LIKE \"%" + s1 + "%\" OR " + Tweets.MESSAGE + " LIKE \"%" + s1 + "%\"");
                 // ...so we have to use selectionArgs
-                qb.appendWhere(Tweets.AUTHOR_ID + " LIKE ?  OR " + Tweets.MESSAGE + " LIKE ?");
+                
+                //1. This works:
+                //qb.appendWhere(Tweets.AUTHOR_ID + " LIKE ?  OR " + Tweets.MESSAGE + " LIKE ?");
+                
+                //2. This works also, but yvolk likes it more :-)
+                if (selection != null && selection.length()>0) {
+                    selection = " AND (" + selection + ")";
+                } else {
+                    selection = "";
+                }
+                selection = "(" + Tweets.AUTHOR_ID + " LIKE ?  OR " + Tweets.MESSAGE + " LIKE ?)" + selection;
+                
                 selectionArgs = addBeforeArray(selectionArgs, "%" + s1 + "%");
                 selectionArgs = addBeforeArray(selectionArgs, "%" + s1 + "%");
             }
@@ -635,17 +646,17 @@ public class AndTweetProvider extends ContentProvider {
 			orderBy = sortOrder;
 		}
 
-		// Get the database and run the query
-		SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-		Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
-
         if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-            Log.v(TAG, "query, uri=" + uri + "; projection=" + Arrays.toString(projection)
-                    + "; selection=" + selection);
+            Log.v(TAG, "query, uri=" + uri + "; projection=" + Arrays.toString(projection));
+            Log.v(TAG, "; selection=" + selection);
             Log.v(TAG, "; selectionArgs=" + Arrays.toString(selectionArgs) + "; sortOrder="
                     + sortOrder);
             Log.v(TAG, "; qb.getTables=" + qb.getTables() + "; orderBy=" + orderBy);
         }
+
+        // Get the database and run the query
+		SQLiteDatabase db = mOpenHelper.getReadableDatabase();
+		Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
 		
 		// Tell the cursor what Uri to watch, so it knows when its source data changes
 		c.setNotificationUri(getContext().getContentResolver(), uri);

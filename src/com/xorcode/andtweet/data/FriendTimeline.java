@@ -59,7 +59,7 @@ public class FriendTimeline {
 	public FriendTimeline(Context context, int timelineType) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
-        mTu = TwitterUser.getTwitterUser(mContext, false);
+        mTu = TwitterUser.getTwitterUser(mContext);
         mTimelineType = timelineType;
 		mLastStatusId = mTu.getSharedPreferences().getLong("last_timeline_id" + timelineType, 0);
 	}

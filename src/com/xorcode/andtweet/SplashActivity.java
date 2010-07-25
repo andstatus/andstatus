@@ -117,7 +117,7 @@ public class SplashActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-        if (TwitterUser.getTwitterUser(this, false).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+        if (TwitterUser.getTwitterUser(this).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
             mSkipPreferences = true;
         }
 		if (mSkipPreferences) {

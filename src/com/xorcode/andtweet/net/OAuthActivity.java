@@ -71,7 +71,7 @@ public class OAuthActivity extends Activity {
 
         boolean done = false;
         boolean authenticated = false;
-        TwitterUser tu = TwitterUser.getTwitterUser(this, false);
+        TwitterUser tu = TwitterUser.getTwitterUser(this);
 
         Uri uri = getIntent().getData();
         if (uri != null && CALLBACK_URI.getScheme().equals(uri.getScheme())) {

@@ -63,7 +63,7 @@ public class DirectMessages {
 	public DirectMessages(Context context) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
-        mTu = TwitterUser.getTwitterUser(mContext, false);
+        mTu = TwitterUser.getTwitterUser(mContext);
         mLastMessageId = mTu.getSharedPreferences().getLong("last_message_id", 0);
 	}
 

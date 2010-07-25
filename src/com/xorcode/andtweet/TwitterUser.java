@@ -121,20 +121,31 @@ public class TwitterUser {
     }
 
     /**
-     * Get user instance based on global twitter_username
+     * Get current user instance
      * 
      * @param Context
-     * @param copyGlobal globally stored User preferences are used, including
-     *            username, oauth, password
      * @return TwitterUser
      */
-    public static TwitterUser getTwitterUser(Context context, boolean copyGlobal) {
-        return getTwitterUser(context, null, copyGlobal);
+    public static TwitterUser getTwitterUser(Context context) {
+        return getTwitterUser(context, null, false);
     }
 
     /**
-     * Get (stored) user instance based on explicitly provided username. Global
-     * SharedPreferences will be updated.
+     * Get user instance based on global twitter_username. Globally stored User
+     * preferences are being set for the user, including username, oauth,
+     * password. New User is being created if user with such twitter_username
+     * didn't exist. This user becomes current user.
+     * 
+     * @param Context
+     * @return TwitterUser
+     */
+    public static TwitterUser getAddEditTwitterUser(Context context) {
+        return getTwitterUser(context, null, true);
+    }
+
+    /**
+     * Get (stored) user instance by explicitly provided username. This user
+     * becomes current user (Global SharedPreferences are being updated).
      * 
      * @param Context
      * @param username in Twitter
@@ -173,15 +184,17 @@ public class TwitterUser {
             // So let's search user's files
             java.io.File prefsdir = new File(SharedPreferencesUtil.prefsDirectory(context));
             java.io.File files[] = prefsdir.listFiles();
-            for (int ind = 0; ind < files.length; ind++) {
-                if (files[ind].getName().startsWith(FILE_PREFIX)) {
-                    String username = files[ind].getName().substring(FILE_PREFIX.length());
-                    int indExtension = username.indexOf(".");
-                    if (indExtension >= 0) {
-                        username = username.substring(0, indExtension);
+            if (files != null) {
+                for (int ind = 0; ind < files.length; ind++) {
+                    if (files[ind].getName().startsWith(FILE_PREFIX)) {
+                        String username = files[ind].getName().substring(FILE_PREFIX.length());
+                        int indExtension = username.indexOf(".");
+                        if (indExtension >= 0) {
+                            username = username.substring(0, indExtension);
+                        }
+                        TwitterUser tu = new TwitterUser(context, username);
+                        mTu.add(tu);
                     }
-                    TwitterUser tu = new TwitterUser(context, username);
-                    mTu.add(tu);
                 }
             }
         }

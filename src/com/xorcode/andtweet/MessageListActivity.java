@@ -153,7 +153,7 @@ public class MessageListActivity extends TimelineActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, null, null, AndTweetDatabase.DirectMessages.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * 20));
+		mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, null, null, AndTweetDatabase.DirectMessages.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * PAGE_SIZE));
 		mFriendsCursor = getContentResolver().query(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null, Users.DEFAULT_SORT_ORDER);
 		createAdapters();
 		setProgressBarIndeterminateVisibility(mIsLoading);
@@ -476,7 +476,7 @@ public class MessageListActivity extends TimelineActivity {
 	 */
 	protected Runnable mLoadListItems  = new Runnable() {
 		public void run() {
-			mCursor = ((PagedCursorAdapter) MessageListActivity.this.getListAdapter()).runQuery("LIMIT 0," + (++mCurrentPage * 20));
+			mCursor = ((PagedCursorAdapter) MessageListActivity.this.getListAdapter()).runQuery("LIMIT 0," + (++mCurrentPage * PAGE_SIZE));
 			mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_LOAD_ITEMS, STATUS_LOAD_ITEMS_SUCCESS, 0), 400);
 		}
 	};

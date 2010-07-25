@@ -40,7 +40,6 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.RingtonePreference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -256,7 +255,12 @@ public class PreferencesActivity extends PreferenceActivity implements
             sb = new StringBuilder(this.getText(R.string.summary_preference_credentials_verified));
         } else {
             sb = new StringBuilder(this.getText(R.string.summary_preference_verify_credentials));
-            sb.append("\n(");
+            if (com.xorcode.andtweet.util.Build.VERSION.SDK_INT >= 8) {
+                // Froyo can show more than two lines
+                sb.append("\n(");
+            } else {
+                sb.append(" (");
+            }
             switch (mUser.getCredentialsVerified()) {
                 case NEVER:
                     sb.append(this.getText(R.string.authentication_never));
@@ -276,7 +280,7 @@ public class PreferencesActivity extends PreferenceActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        mUser = TwitterUser.getTwitterUser(this, false);
+        mUser = TwitterUser.getTwitterUser(this);
         showUserProperties();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         verifyCredentials(false);
@@ -404,13 +408,13 @@ public class PreferencesActivity extends PreferenceActivity implements
                 // Here and below:
                 // Check if there are changes to avoid "ripples"
                 if (mUser.isOAuth() != mOAuth.isChecked()) {
-                    mUser = TwitterUser.getTwitterUser(this, true);
+                    mUser = TwitterUser.getAddEditTwitterUser(this);
                     showUserProperties();
                 }
             }
             if (key.equals(KEY_TWITTER_USERNAME)) {
                 if (mUser.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
-                    // Try to find existing TwitterUser object without clearing
+                    // Try to find existing TwitterUser by username without clearing
                     // Auth information
                     mUser = TwitterUser.getTwitterUser(this, mEditTextUsername.getText());
                     showUserProperties();
@@ -418,7 +422,7 @@ public class PreferencesActivity extends PreferenceActivity implements
             }
             if (key.equals(KEY_TWITTER_PASSWORD)) {
                 if (mUser.getPassword().compareTo(mEditTextPassword.getText()) != 0) {
-                    mUser = TwitterUser.getTwitterUser(this, true);
+                    mUser = TwitterUser.getAddEditTwitterUser(this);
                     showUserProperties();
                 }
             }
@@ -595,8 +599,6 @@ public class PreferencesActivity extends PreferenceActivity implements
 
         private OAuthProvider mProvider = null;
 
-        private SharedPreferences mSp;
-
         private ProgressDialog dlg;
 
         @Override
@@ -606,11 +608,6 @@ public class PreferencesActivity extends PreferenceActivity implements
                     getText(R.string.dialog_summary_acquiring_a_request_token), true, // indeterminate
                     // duration
                     false); // not cancel-able
-
-            // TODO: This will be the same Shared Preferences as in Connection
-            // (per
-            // User...)
-            mSp = PreferenceManager.getDefaultSharedPreferences(PreferencesActivity.this);
         }
 
         @Override
@@ -642,7 +639,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                 // Twitter will correctly process your callback redirection
                 String authUrl = mProvider.retrieveRequestToken(mConsumer,
                         OAuthActivity.CALLBACK_URI.toString());
-                OAuthActivity.saveRequestInformation(mSp, mConsumer.getToken(), mConsumer.getTokenSecret());
+                OAuthActivity.saveRequestInformation(PreferencesActivity.this.mUser.getSharedPreferences(), mConsumer.getToken(), mConsumer.getTokenSecret());
 
                 PreferencesActivity.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
                         .parse(authUrl)));
@@ -704,7 +701,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                     } else {
                         Toast.makeText(PreferencesActivity.this, message, Toast.LENGTH_LONG).show();
 
-                        TwitterUser tu = TwitterUser.getTwitterUser(PreferencesActivity.this, false);
+                        TwitterUser tu = TwitterUser.getTwitterUser(PreferencesActivity.this);
                         tu.clearAuthInformation();
                         tu.setCredentialsVerified(CredentialsVerified.FAILED);
                         showUserProperties();

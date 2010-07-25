@@ -56,6 +56,7 @@ public final class AndTweetDatabase {
 		public static final String CREATED_DATE = "created";
 		public static final String SENT_DATE = "sent";
 
+        public static final int TIMELINE_TYPE_NONE = 0;
 		public static final int TIMELINE_TYPE_FRIENDS = 1;
 		public static final int TIMELINE_TYPE_MENTIONS = 2;
 		/**

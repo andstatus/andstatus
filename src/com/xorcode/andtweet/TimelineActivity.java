@@ -104,7 +104,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	public static final String BUNDLE_KEY_CURRENT_PAGE = "currentPage";
 	public static final String BUNDLE_KEY_IS_LOADING = "isLoading";
 
-	private static final String LAST_POS_KEY = "last_position";
+	protected static final String LAST_POS_KEY = "last_position";
 	
 	public static final int MILLISECONDS = 1000;
 
@@ -128,9 +128,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	 *  in a case User scrolls down to the end of list.
 	 * This value limits _maximum_ number of rows queried from AndTweetProvider (query 'limit'),
 	 *  so actual number of Tweets loaded may be less...
-	 * TODO: Now "page size" is hard coded = 20 ... 
 	 */
 	protected int mCurrentPage = 1;
+	protected final static int PAGE_SIZE = 20; 
+	protected boolean positionLoaded = false;
+	
 	/**
 	 * Number of items (Tweets) in the list.
 	 * It is used to find out when we need to load more items.
@@ -164,20 +166,19 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             Log.v(TAG, "onCreate");
         }
 
+        if (TwitterUser.getTwitterUser(this).getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
+            startActivity(new Intent(this, SplashActivity.class));
+            finish();
+        }
+
 		// Set up preference manager
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		mSP = PreferenceManager.getDefaultSharedPreferences(this);
 
+        setTimelineType(getIntent());
+		
 		// Request window features before loading the content view
 		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
-
-		if (TwitterUser.getTwitterUser(this, false).getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
-			startActivity(new Intent(this, SplashActivity.class));
-			finish();
-		}
-
-        Intent intent = getIntent();
-        mTimelineType = intent.getIntExtra(AndTweetService.EXTRA_TIMELINE_TYPE, Tweets.TIMELINE_TYPE_FRIENDS);
 		
 		loadTheme();
 		setContentView(R.layout.tweetlist);
@@ -215,15 +216,17 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         updateTitle();
 		loadPosition();
 	}
-	
-	private void savePosition() {
-		final int firstItem = getListView().getFirstVisiblePosition();
-		final long firstItemId = getListView().getAdapter().getItemId(firstItem);
-		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-		final SharedPreferences.Editor prefsEditor = sp.edit();
-		prefsEditor.putLong(LAST_POS_KEY, firstItemId);
-		prefsEditor.commit();
-	}
+
+	/**
+	 * Position is being saved per User and per TimeleneType
+	 */
+    private void savePosition() {
+        int firstItem = getListView().getFirstVisiblePosition();
+        long firstItemId = getListView().getAdapter().getItemId(firstItem);
+        TwitterUser tu = TwitterUser.getTwitterUser(this);
+        tu.getSharedPreferences().edit().putLong(LAST_POS_KEY + mTimelineType, firstItemId).commit();
+        positionLoaded = false;
+    }
 
 	/**
 	 * TODO: This won't work in a case the tweet was not loaded into the list. 
@@ -231,9 +234,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	 *  ... maybe not :-)
 	 */
 	private void loadPosition() {
-		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		SharedPreferences sp = TwitterUser.getTwitterUser(this).getSharedPreferences();
 		try {
-			final long firstItemId = sp.getLong(LAST_POS_KEY, -1);
+			long firstItemId = sp.getLong(LAST_POS_KEY + mTimelineType, -1);
 			int scrollPos = listPosForId(firstItemId);
 			if (scrollPos > 0) {
 				getListView().setSelectionFromTop(scrollPos - 1, 0);
@@ -244,9 +247,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 			}
 		} catch (Exception e) {
 			Editor ed = sp.edit();
-			ed.remove(LAST_POS_KEY);
+			ed.remove(LAST_POS_KEY + mTimelineType);
 			ed.commit();
 		}
+        positionLoaded = true;
 	}
 
 
@@ -254,10 +258,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
             Log.v(TAG, "setSelectionAtBottom, 1");
         }
-		final int viewHeight = getListView().getHeight();
-		final int childHeight;
+		int viewHeight = getListView().getHeight();
+		int childHeight;
 			childHeight = 30;
-		final int y = viewHeight - childHeight;
+		int y = viewHeight - childHeight;
         if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
             Log.v(TAG, "set position of last item to " + y);
         }
@@ -275,8 +279,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	private int listPosForId(long searchedId) {
 		int listPos;
 		boolean itemFound = false;
-		final ListView lv = getListView();
-		final int itemCount = lv.getCount();
+		ListView lv = getListView();
+		int itemCount = lv.getCount();
         if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
             Log.v(TAG, "item count: "+ itemCount);
         }
@@ -465,12 +469,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		case R.id.friends_timeline_menu_id:
 			intent = new Intent(this, TweetListActivity.class);
 			appDataBundle = new Bundle();
-			appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.SEARCH_URI);
+			appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.CONTENT_URI);
 			// TODO: Do we really need these "selection" and "selectionArgs"?
 			// There are NO other tweet types (yet) except 1 and 2...
 			appDataBundle.putString("selection", AndTweetDatabase.Tweets.TWEET_TYPE + " IN (?, ?)");
 			appDataBundle.putStringArray("selectionArgs", new String[] { String.valueOf(Tweets.TIMELINE_TYPE_FRIENDS), String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS) });
 			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+            intent.putExtra(SearchManager.QUERY, "");
+            //intent.removeExtra(SearchManager.QUERY);
             intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE, AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
 			intent.setAction(Intent.ACTION_SEARCH);
 			startActivity(intent);
@@ -479,8 +485,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 		case R.id.direct_messages_menu_id:
 			intent = new Intent(this, MessageListActivity.class);
 			appDataBundle = new Bundle();
-			appDataBundle.putParcelable("content_uri", AndTweetDatabase.DirectMessages.SEARCH_URI);
+			appDataBundle.putParcelable("content_uri", AndTweetDatabase.DirectMessages.CONTENT_URI);
 			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+            intent.removeExtra(SearchManager.QUERY);
             intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE, AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
 			intent.setAction(Intent.ACTION_SEARCH);
 			startActivity(intent);
@@ -557,7 +564,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	/**
 	 * Updates the activity title.
 	 */
-	public void updateTitle(String arg) {
+	public void updateTitle(String rightText) {
 	    String timelinename = "??";
 	    switch(mTimelineType) {
 	        case Tweets.TIMELINE_TYPE_FRIENDS:
@@ -571,7 +578,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
 	    }
 		String username = mSP.getString("twitter_username", null);
-		setTitle(getString(R.string.activity_title_format, new Object[] {timelinename, username}), arg);
+		setTitle(getString(R.string.activity_title_format, new Object[] {timelinename, username}), rightText);
 	}
 
     public void updateTitle() {
@@ -730,6 +737,27 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        mTimelineType = intent.getIntExtra(AndTweetService.EXTRA_TIMELINE_TYPE, Tweets.TIMELINE_TYPE_FRIENDS);
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onNewIntent");
+        }
+        setTimelineType(intent);
+    }
+    
+    private void setTimelineType(Intent intentNew) {
+        mTimelineType = intentNew.getIntExtra(AndTweetService.EXTRA_TIMELINE_TYPE, Tweets.TIMELINE_TYPE_NONE);
+        if (mTimelineType == Tweets.TIMELINE_TYPE_NONE) {
+            mTimelineType = Tweets.TIMELINE_TYPE_FRIENDS;
+            // For some reason Android remembers last Query and adds it even if
+            // the Activity was started from the Widget...
+            Intent intent = getIntent();
+            intent.removeExtra(SearchManager.QUERY);
+            intent.removeExtra(SearchManager.APP_DATA);
+            intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE, mTimelineType);
+            intent.setData(AndTweetDatabase.Tweets.CONTENT_URI);
+            intent.setAction(Intent.ACTION_SEARCH);
+        }
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "setTimelineType; type=\"" + mTimelineType + "\"");
+        }
     }
 }
