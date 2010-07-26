@@ -221,7 +221,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 	 * Position is being saved per User and per TimeleneType
 	 */
     private void savePosition() {
-        int firstItem = getListView().getFirstVisiblePosition();
+        int firstItem = getListView().getLastVisiblePosition();
         long firstItemId = getListView().getAdapter().getItemId(firstItem);
         TwitterUser tu = TwitterUser.getTwitterUser(this);
         tu.getSharedPreferences().edit().putLong(LAST_POS_KEY + mTimelineType, firstItemId).commit();
@@ -229,9 +229,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     }
 
 	/**
-	 * TODO: This won't work in a case the tweet was not loaded into the list. 
-	 *  So maybe we need to control that "Number of pages of tweets" (mCurrentPage) also
-	 *  ... maybe not :-)
+	 * Load position saved for this user and for this type of timeline
 	 */
 	private void loadPosition() {
 		SharedPreferences sp = TwitterUser.getTwitterUser(this).getSharedPreferences();

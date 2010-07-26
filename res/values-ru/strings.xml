@@ -161,7 +161,8 @@
 	<string name="summary_preference_use_avatars_on">Аватары пользователей будут показаны</string>
 	<string name="summary_preference_username">Ваше имя пользователя в Твиттере</string>
 	<string name="summary_preference_verify_credentials">Щёлкните здесь для аутентификации пользователя и включения данного аккаунта пользователя</string>
-	<string name="summary_preference_credentials_verified">Данный аккаунт пользователя успешно аутентифицирован (проверен) и включён. Щёлкните здесь для повторной аунтификации</string>
+	<string name="summary_preference_credentials_verified">Данный аккаунт пользователя успешно аутентифицирован (проверен) и включён. Щёлкните здесь для повторной проверки</string>
+	<string name="summary_preference_credentials_verified_2lines">Успешно аутентифицирован (проверен). Щёлкните здесь для повторной проверки</string>
 	<string name="summary_preference_vibration">Виброзвонок при входящем твите</string>
 	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>
 	<string name="summary_preference_vibration_on">Виброзвонок при входящем твите включён</string>

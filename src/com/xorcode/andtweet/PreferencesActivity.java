@@ -252,7 +252,10 @@ public class PreferencesActivity extends PreferenceActivity implements
         mEditTextPassword.setEnabled(mUser.getConnection().isPasswordNeeded());
 
         if (mUser.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-            sb = new StringBuilder(this.getText(R.string.summary_preference_credentials_verified));
+            sb = new StringBuilder(
+                    this
+                            .getText((com.xorcode.andtweet.util.Build.VERSION.SDK_INT >= 8) ? R.string.summary_preference_credentials_verified
+                                    : R.string.summary_preference_credentials_verified_2lines));
         } else {
             sb = new StringBuilder(this.getText(R.string.summary_preference_verify_credentials));
             if (com.xorcode.andtweet.util.Build.VERSION.SDK_INT >= 8) {
@@ -414,7 +417,8 @@ public class PreferencesActivity extends PreferenceActivity implements
             }
             if (key.equals(KEY_TWITTER_USERNAME)) {
                 if (mUser.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
-                    // Try to find existing TwitterUser by username without clearing
+                    // Try to find existing TwitterUser by username without
+                    // clearing
                     // Auth information
                     mUser = TwitterUser.getTwitterUser(this, mEditTextUsername.getText());
                     showUserProperties();
@@ -492,7 +496,6 @@ public class PreferencesActivity extends PreferenceActivity implements
             dismissDialog(DIALOG_CHECKING_CREDENTIALS);
             switch (msg.what) {
                 case MSG_ACCOUNT_VALID:
-                    mAutomaticUpdates.setEnabled(true);
                     Toast.makeText(PreferencesActivity.this, R.string.authentication_successful,
                             Toast.LENGTH_SHORT).show();
                     break;
@@ -500,7 +503,6 @@ public class PreferencesActivity extends PreferenceActivity implements
                 case MSG_SERVICE_UNAVAILABLE_ERROR:
                 case MSG_SOCKET_TIMEOUT_EXCEPTION:
                 case MSG_CREDENTIALS_OF_OTHER_USER:
-                    mAutomaticUpdates.setEnabled(false);
                     showDialog(msg.what);
                     break;
                 case MSG_CONNECTION_EXCEPTION:
@@ -589,10 +591,10 @@ public class PreferencesActivity extends PreferenceActivity implements
     };
 
     /**
-     * @author yvolk
-     * This code is based on "BLOA" example, http://github.com/brione/Brion-Learns-OAuth
-     * yvolk: I had to move this code from OAuthActivity here in order to be able
-     * to show ProgressDialog 
+     * @author yvolk This code is based on "BLOA" example,
+     *         http://github.com/brione/Brion-Learns-OAuth yvolk: I had to move
+     *         this code from OAuthActivity here in order to be able to show
+     *         ProgressDialog
      */
     private class OAuthAcquireRequestTokenTask extends AsyncTask<Void, Void, JSONObject> {
         private OAuthConsumer mConsumer = null;
@@ -639,7 +641,8 @@ public class PreferencesActivity extends PreferenceActivity implements
                 // Twitter will correctly process your callback redirection
                 String authUrl = mProvider.retrieveRequestToken(mConsumer,
                         OAuthActivity.CALLBACK_URI.toString());
-                OAuthActivity.saveRequestInformation(PreferencesActivity.this.mUser.getSharedPreferences(), mConsumer.getToken(), mConsumer.getTokenSecret());
+                OAuthActivity.saveRequestInformation(PreferencesActivity.this.mUser
+                        .getSharedPreferences(), mConsumer.getToken(), mConsumer.getTokenSecret());
 
                 PreferencesActivity.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
                         .parse(authUrl)));
@@ -672,9 +675,9 @@ public class PreferencesActivity extends PreferenceActivity implements
                 }
 
                 // This also works sometimes, but message2 may have quotes...
-                //String jss = "{\n\"succeeded\": \"" + requestSucceeded
-                //        + "\",\n\"message\": \"" + message2 + "\"}";
-                //jso = new JSONObject(jss);
+                // String jss = "{\n\"succeeded\": \"" + requestSucceeded
+                // + "\",\n\"message\": \"" + message2 + "\"}";
+                // jso = new JSONObject(jss);
 
                 jso = new JSONObject();
                 jso.put("succeeded", requestSucceeded);

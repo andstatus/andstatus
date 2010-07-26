@@ -163,6 +163,7 @@
 	<string name="summary_preference_username">Your Twitter username</string>
 	<string name="summary_preference_verify_credentials">Tap here to verify credentials and enable this User Account</string>
 	<string name="summary_preference_credentials_verified">This User account has been successfully verified and hence enabled. Tap here to verify the user\'s credentials again.</string>
+	<string name="summary_preference_credentials_verified_2lines">Successfully verified. Tap here to verify the user\'s credentials again.</string>
 	<string name="summary_preference_vibration">Vibrate on incoming message</string>
 	<string name="summary_preference_vibration_off">Vibration turned off</string>
 	<string name="summary_preference_vibration_on">Vibrating on incoming message</string>
