@@ -152,8 +152,6 @@ public class PreferencesActivity extends PreferenceActivity implements
 
     // End Of the list ----------------------------------------
 
-    private CheckBoxPreference mAutomaticUpdates;
-
     // private CheckBoxPreference mUseExternalStorage;
 
     private ListPreference mHistorySizePreference;
@@ -189,8 +187,6 @@ public class PreferencesActivity extends PreferenceActivity implements
                 KEY_HISTORY_TIME);
         mFetchFrequencyPreference = (ListPreference) getPreferenceScreen().findPreference(
                 KEY_FETCH_FREQUENCY);
-        mAutomaticUpdates = (CheckBoxPreference) getPreferenceScreen().findPreference(
-                KEY_AUTOMATIC_UPDATES);
         mNotificationRingtone = (RingtonePreference) getPreferenceScreen().findPreference(
                 KEY_RINGTONE_PREFERENCE);
         mOAuth = (CheckBoxPreference) getPreferenceScreen().findPreference(KEY_OAUTH);

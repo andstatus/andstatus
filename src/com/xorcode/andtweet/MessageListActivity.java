@@ -101,9 +101,6 @@ public class MessageListActivity extends TimelineActivity {
         }
 
 		if (savedInstanceState != null) {
-			if (savedInstanceState.containsKey(BUNDLE_KEY_CURRENT_PAGE)) {
-				mCurrentPage = savedInstanceState.getInt(BUNDLE_KEY_CURRENT_PAGE);
-			}
 			if (savedInstanceState.containsKey(BUNDLE_KEY_IS_LOADING)) {
 				mIsLoading = savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING);
 			}
@@ -176,7 +173,6 @@ public class MessageListActivity extends TimelineActivity {
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		outState.putInt(BUNDLE_KEY_CURRENT_PAGE, mCurrentPage);
 		outState.putBoolean(BUNDLE_KEY_IS_LOADING, mIsLoading);
 		super.onSaveInstanceState(outState);
 	}

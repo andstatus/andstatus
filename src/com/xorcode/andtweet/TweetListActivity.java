@@ -154,9 +154,6 @@ public class TweetListActivity extends TimelineActivity {
             if (savedInstanceState.containsKey(BUNDLE_KEY_REPLY_ID)) {
                 mReplyId = savedInstanceState.getLong(BUNDLE_KEY_REPLY_ID);
             }
-            if (savedInstanceState.containsKey(BUNDLE_KEY_CURRENT_PAGE)) {
-                mCurrentPage = savedInstanceState.getInt(BUNDLE_KEY_CURRENT_PAGE);
-            }
             if (savedInstanceState.containsKey(BUNDLE_KEY_IS_LOADING)) {
                 mIsLoading = savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING);
             }
@@ -203,6 +200,7 @@ public class TweetListActivity extends TimelineActivity {
 
     protected void doSearchQuery(Intent queryIntent, boolean otherThread) {
         // The search query is provided as an "extra" string in the query intent
+        // TODO maybe use mQueryString here...
         String queryString = queryIntent.getStringExtra(SearchManager.QUERY);
         Intent intent = getIntent();
 
@@ -269,9 +267,7 @@ public class TweetListActivity extends TimelineActivity {
         if (!positionLoaded) {
             // We have to ensure that saved position will be
             // loaded from database into the list
-
-            SharedPreferences sp = TwitterUser.getTwitterUser(this).getSharedPreferences();
-            firstItemId = sp.getLong(LAST_POS_KEY + mTimelineType, -1);
+            firstItemId = getSavedPosition();
         }
         if (firstItemId > 0) {
             selection = "(" + selection + ") AND (" + Tweets._ID + " >= ?)";
@@ -381,7 +377,6 @@ public class TweetListActivity extends TimelineActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putLong(BUNDLE_KEY_REPLY_ID, mReplyId);
-        outState.putInt(BUNDLE_KEY_CURRENT_PAGE, mCurrentPage);
         outState.putBoolean(BUNDLE_KEY_IS_LOADING, mIsLoading);
         outState.putLong(BUNDLE_KEY_CURRENT_ID, mCurrentId);
         super.onSaveInstanceState(outState);
