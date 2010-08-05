@@ -151,14 +151,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected Handler mHandler;
 
     /**
-     * "Number of pages of tweets" loaded into the list of Tweets. Start from
-     * one page and increase it (and load more Tweets) in a case User scrolls
-     * down to the end of list. This value limits _maximum_ number of rows
-     * queried from AndTweetProvider (query 'limit'), so actual number of Tweets
-     * loaded may be less...
+     * Tweets are being loaded into the list starting from one page. More Tweets
+     * are being loaded in a case User scrolls down to the end of list.
      */
-    protected int mCurrentPage = 1;
-
     protected final static int PAGE_SIZE = 20;
 
     protected boolean positionLoaded = false;
@@ -302,7 +297,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                             + firstItemId);
                 }
             } else {
-                scrollPos = getListView().getCount() - 1;
+                // There is no stored position
+                if (mSearchMode) {
+                    // In search mode start from the most recent tweet!
+                    scrollPos = 1;
+                } else {
+                    scrollPos = getListView().getCount() - 1;
+                }
                 setSelectionAtBottom(scrollPos);
             }
         } catch (Exception e) {
@@ -324,7 +325,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected long getSavedPosition() {
         TwitterUser tu = TwitterUser.getTwitterUser(this);
         long firstItemId = -3;
-        mCurrentPage = 1;
         if (!mSearchMode
                 || (mQueryString.compareTo(tu.getSharedPreferences().getString(
                         positionQueryStringKey(), "")) == 0)) {
@@ -334,7 +334,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
         return firstItemId;
     }
-    
+
     /**
      * @return Key to store position (tweet id)
      */

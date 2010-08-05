@@ -17,9 +17,6 @@
 package com.xorcode.andtweet;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.net.SocketTimeoutException;
 
 import org.json.JSONException;
@@ -29,7 +26,6 @@ import android.app.SearchManager;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDiskIOException;
@@ -195,17 +191,23 @@ public class TweetListActivity extends TimelineActivity {
         super.onNewIntent(newIntent);
         // All actions are actually search actions...
         // So get and process search query here
-        doSearchQuery(newIntent, false);
+        doSearchQuery(newIntent, false, false);
     }
 
-    protected void doSearchQuery(Intent queryIntent, boolean otherThread) {
+    /**
+     * @param queryIntent
+     * @param otherThread This method is being accessed from other thread
+     * @param loadOneMorePage load one more page of tweets
+     */
+    protected void doSearchQuery(Intent queryIntent, boolean otherThread, boolean loadOneMorePage) {
         // The search query is provided as an "extra" string in the query intent
         // TODO maybe use mQueryString here...
         String queryString = queryIntent.getStringExtra(SearchManager.QUERY);
         Intent intent = getIntent();
 
         if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-            Log.v(TAG, "doSearchQuery; queryString=\"" + queryString + "\"; TimelineType=" + mTimelineType);
+            Log.v(TAG, "doSearchQuery; queryString=\"" + queryString + "\"; TimelineType="
+                    + mTimelineType);
         }
 
         if (queryString != null && queryString.length() > 0) {
@@ -225,12 +227,12 @@ public class TweetListActivity extends TimelineActivity {
         }
         intent.putExtra(SearchManager.QUERY, queryString);
 
-        // TODO: Too many contentUri assignments :-( 
+        // TODO: Too many contentUri assignments :-(
         Uri contentUri = Tweets.CONTENT_URI;
         if (queryString != null && queryString.length() > 0) {
             contentUri = Tweets.SEARCH_URI;
         }
-        
+
         String selection = "";
         String sortOrder = Tweets.DEFAULT_SORT_ORDER;
         String[] selectionArgs = new String[] {};
@@ -242,10 +244,6 @@ public class TweetListActivity extends TimelineActivity {
             selection = appData.getString("selection");
             selectionArgs = appData.getStringArray("selectionArgs");
             contentUri = appData.getParcelable("content_uri");
-            if (contentUri != null) {
-                // TODO: Is this right?
-                mCurrentPage = 1;
-            }
         }
         if (queryString != null && queryString.length() > 0) {
             contentUri = Uri.withAppendedPath(contentUri, Uri.encode(queryString));
@@ -269,6 +267,19 @@ public class TweetListActivity extends TimelineActivity {
             // loaded from database into the list
             firstItemId = getSavedPosition();
         }
+
+        int nTweets = 0;
+        if (mCursor != null && !mCursor.isClosed()) {
+            if (positionLoaded) {
+                // If position is NOT loaded - this cursor is from other timeline/search
+                // and we shouldn't care how much rows are there.
+                nTweets = mCursor.getCount();
+            }
+            if (!otherThread) {
+                mCursor.close();
+            }
+        }
+
         if (firstItemId > 0) {
             selection = "(" + selection + ") AND (" + Tweets._ID + " >= ?)";
             selectionArgs = new String[] {
@@ -276,23 +287,16 @@ public class TweetListActivity extends TimelineActivity {
                     String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS), String.valueOf(firstItemId)
             };
         } else {
-            sortOrder += " LIMIT 0," + (mCurrentPage * PAGE_SIZE);
+            if (loadOneMorePage) {
+                nTweets += PAGE_SIZE;
+            } else if (nTweets < PAGE_SIZE) {
+                nTweets = PAGE_SIZE;
+            }
+            sortOrder += " LIMIT 0," + nTweets;
         }
 
-        if (mCursor != null && !mCursor.isClosed()) {
-            if (!otherThread) {
-                mCursor.close();
-            }
-        }
         mCursor = getContentResolver().query(contentUri, PROJECTION, selection, selectionArgs,
                 sortOrder);
-        if (firstItemId > 0) {
-            // Calculate current page number based on actual number of
-            // tweets in the Cursor
-            BigDecimal aNumber = new BigDecimal(mCursor.getCount() / PAGE_SIZE);
-            MathContext mc = new MathContext(0, RoundingMode.UP);
-            mCurrentPage = (int) aNumber.abs(mc).longValue();
-        }
         if (!otherThread) {
             createAdapters();
         }
@@ -315,7 +319,7 @@ public class TweetListActivity extends TimelineActivity {
             showDialog(DIALOG_EXTERNAL_STORAGE_MISSING);
             return;
         }
-        doSearchQuery(intent, false);
+        doSearchQuery(intent, false, false);
 
         if (hasHardwareKeyboard()) {
             mEditText.requestFocus();
@@ -1154,8 +1158,7 @@ public class TweetListActivity extends TimelineActivity {
      */
     protected Runnable mLoadListItems = new Runnable() {
         public void run() {
-            mCurrentPage += 1;
-            doSearchQuery(TweetListActivity.this.getIntent(), true);
+            doSearchQuery(TweetListActivity.this.getIntent(), true, true);
             mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_LOAD_ITEMS,
                     STATUS_LOAD_ITEMS_SUCCESS, 0), 400);
         }

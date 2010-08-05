@@ -68,6 +68,9 @@ public class MessageListActivity extends TimelineActivity {
 	public static final int CONTEXT_MENU_ITEM_RETWEET = Menu.FIRST + 8;
 	public static final int CONTEXT_MENU_ITEM_PROFILE = Menu.FIRST + 9;
 
+	// TODO: get rid of this variable just like in TweetListActivity...
+	private int mCurrentPage = 1;	
+	
 	// Database cursors
 	private Cursor mFriendsCursor;
 
