@@ -49,6 +49,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.AbsListView.OnScrollListener;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
@@ -403,6 +404,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // The activity just lost its focus,
         // so we have to start notifying the User about new events after his
         // moment.
+
+        // Get rid of the "fast scroll thumb"
+        ((ListView) findViewById(android.R.id.list)).setFastScrollEnabled(false);
         clearNotifications();
         savePosition();
         positionLoaded = false;
@@ -630,6 +634,16 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     }
 
     public void onScrollStateChanged(AbsListView view, int scrollState) {
+        switch (scrollState) {
+            case OnScrollListener.SCROLL_STATE_IDLE:
+                break;
+            case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
+                break;
+            case OnScrollListener.SCROLL_STATE_FLING:
+                // Turn the "fast scroll thumb" on
+                view.setFastScrollEnabled(true);
+                break;
+        }
     }
 
     /**

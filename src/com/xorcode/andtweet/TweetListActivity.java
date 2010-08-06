@@ -723,6 +723,7 @@ public class TweetListActivity extends TimelineActivity {
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
+        super.onScrollStateChanged(view, scrollState);
         if (mIsLoading) {
             return;
         }
