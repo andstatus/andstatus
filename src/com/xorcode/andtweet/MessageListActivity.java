@@ -42,7 +42,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
-import com.xorcode.andtweet.data.DirectMessages;
+import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.data.PagedCursorAdapter;
 import com.xorcode.andtweet.data.SearchableCursorAdapter;
 import com.xorcode.andtweet.data.TweetBinder;
@@ -442,10 +442,10 @@ public class MessageListActivity extends TimelineActivity {
 	protected Runnable mManualReload = new Runnable() {
 		public void run() {
 			mIsLoading = true;
-			DirectMessages directMessages = new DirectMessages(MessageListActivity.this);
+			FriendTimeline directMessages = new FriendTimeline(MessageListActivity.this, AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
 			int aNewMessages = 0;
 			try {
-				directMessages.loadMessages();
+				directMessages.loadTimeline();
 				aNewMessages = directMessages.newCount();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mManualReload Connection Exception: " + e.toString());

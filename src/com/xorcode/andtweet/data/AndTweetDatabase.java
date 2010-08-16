@@ -41,6 +41,7 @@ public final class AndTweetDatabase {
 	public static final class Tweets implements BaseColumns {
 		public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/tweets");
 		public static final Uri SEARCH_URI = Uri.parse("content://" + AUTHORITY + "/tweets/search");
+        public static final Uri CONTENT_COUNT_URI = Uri.parse("content://" + AUTHORITY + "/tweets/count");
 		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.xorcode.andtweet.tweet";
 		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.xorcode.andtweet.tweet";
 		public static final String DEFAULT_SORT_ORDER = "sent DESC";
@@ -74,6 +75,7 @@ public final class AndTweetDatabase {
 	public static final class DirectMessages implements BaseColumns {
 		public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/directmessages");
 		public static final Uri SEARCH_URI = Uri.parse("content://" + AUTHORITY + "/directmessages/search");
+        public static final Uri CONTENT_COUNT_URI = Uri.parse("content://" + AUTHORITY + "/directmessages/count");
 		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.xorcode.andtweet.directmessage";
 		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.xorcode.andtweet.directmessage";
 		public static final String DEFAULT_SORT_ORDER = "sent DESC";

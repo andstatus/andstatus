@@ -129,6 +129,7 @@
 		<item>5 days</item>
 		<item>6 days</item>
 		<item>1 week</item>
+		<item>1 month</item>
 	</string-array>
 	<string-array name="history_time_keys">
 		<item>1</item>
@@ -138,6 +139,7 @@
 		<item>5</item>
 		<item>6</item>
 		<item>7</item>
+		<item>31</item>
 	</string-array>
 	<string-array name="history_time_display">
 		<item>1 day</item>
@@ -147,6 +149,7 @@
 		<item>5 days</item>
 		<item>6 days</item>
 		<item>1 week</item>
+		<item>1 month</item>
 	</string-array>
 	<string-array name="notification_tweet_formats">
 		<item>"{0} new tweet"</item>

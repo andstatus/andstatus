@@ -271,7 +271,8 @@ public class TweetListActivity extends TimelineActivity {
         int nTweets = 0;
         if (mCursor != null && !mCursor.isClosed()) {
             if (positionLoaded) {
-                // If position is NOT loaded - this cursor is from other timeline/search
+                // If position is NOT loaded - this cursor is from other
+                // timeline/search
                 // and we shouldn't care how much rows are there.
                 nTweets = mCursor.getCount();
             }
@@ -294,6 +295,16 @@ public class TweetListActivity extends TimelineActivity {
             }
             sortOrder += " LIMIT 0," + nTweets;
         }
+
+        // This is for testing pruneOldRecords
+//        try {
+//            FriendTimeline fl = new FriendTimeline(TweetListActivity.this,
+//                    AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
+//            fl.pruneOldRecords();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         mCursor = getContentResolver().query(contentUri, PROJECTION, selection, selectionArgs,
                 sortOrder);
@@ -334,13 +345,10 @@ public class TweetListActivity extends TimelineActivity {
             getContentResolver().delete(AndTweetDatabase.Tweets.CONTENT_URI, null, null);
             getContentResolver().delete(AndTweetDatabase.DirectMessages.CONTENT_URI, null, null);
             getContentResolver().delete(AndTweetDatabase.Users.CONTENT_URI, null, null);
-            // Display the indeterminate progress bar
-            showDialog(DIALOG_TIMELINE_LOADING);
-            // Display the list footer progress bar
-            mListFooter.setVisibility(View.VISIBLE);
-            // Start the manual reload thread
-            Thread thread = new Thread(mManualReload);
-            thread.start();
+
+            // TODO: Manual reload should start for every new user, not only for
+            // "first run" of the application
+            manualReload();
         } else {
             bindToService();
         }
@@ -390,16 +398,20 @@ public class TweetListActivity extends TimelineActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.reload_menu_item:
-                // Only newer tweets (newer that last loaded) are being loaded
-                // from the Internet,
-                // old tweets are not reloaded.
-                showDialog(DIALOG_TIMELINE_LOADING);
-                mListFooter.setVisibility(View.VISIBLE);
-                Thread thread = new Thread(mManualReload);
-                thread.start();
+                manualReload();
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void manualReload() {
+        // Only newer tweets (newer that last loaded) are being loaded
+        // from the Internet,
+        // old tweets are not reloaded.
+        showDialog(DIALOG_TIMELINE_LOADING);
+        mListFooter.setVisibility(View.VISIBLE);
+        Thread thread = new Thread(mManualReload);
+        thread.start();
     }
 
     @Override

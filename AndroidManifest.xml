@@ -15,11 +15,11 @@
 	limitations under the License.
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.xorcode.andtweet" android:versionName="1.0.4" android:versionCode="31">
+	package="com.xorcode.andtweet" android:versionName="1.0.5" android:versionCode="32">
 
 	<uses-sdk android:minSdkVersion="3"/>
 
-	<application android:label="@string/app_name" android:icon="@drawable/icon">
+	<application android:label="@string/app_name" android:icon="@drawable/icon" android:debuggable="true">
 
 		<meta-data android:name="android.app.default_searchable" android:value=".TweetListActivity"></meta-data>
 

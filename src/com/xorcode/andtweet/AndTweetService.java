@@ -50,7 +50,6 @@ import android.util.Log;
 
 import com.xorcode.andtweet.appwidget.AndTweetAppWidgetProvider;
 import com.xorcode.andtweet.data.AndTweetDatabase;
-import com.xorcode.andtweet.data.DirectMessages;
 import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
@@ -630,6 +629,7 @@ public class AndTweetService extends Service {
 		}
 	}
 
+	// TODO: Merge this with mLoadTimeline
 	protected Runnable mLoadMessages = new Runnable() {
 		public void run() {
 		    if (stuffRunning(this)) {
@@ -639,10 +639,10 @@ public class AndTweetService extends Service {
 
 			int aNewMessages = 0;
 			try {
-	            DirectMessages dm = new DirectMessages(getApplicationContext());
-				dm.loadMessages();
-				aNewMessages = dm.newCount();
-				dm.pruneOldRecords();
+	            FriendTimeline fl = new FriendTimeline(getApplicationContext(), AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
+				fl.loadTimeline();
+				aNewMessages = fl.newCount();
+				fl.pruneOldRecords();
 			} catch (ConnectionException e) {
 				Log.e(TAG, "mLoadMessages Connection Exception: " + e.toString());
 			} catch (SQLiteConstraintException e) {

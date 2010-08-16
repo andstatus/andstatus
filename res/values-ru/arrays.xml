@@ -134,6 +134,7 @@
 		<item>"5 дней"</item>
 		<item>"6 дней"</item>
 		<item>"1 неделя"</item>
+		<item>"1 месяц"</item>
 	</string-array>
 	<string-array name="history_time_keys">
 		<item>1</item>
@@ -143,6 +144,7 @@
 		<item>5</item>
 		<item>6</item>
 		<item>7</item>
+		<item>31</item>
 	</string-array>
 	<string-array name="history_time_display">
 		<item>"1 день"</item>
@@ -152,6 +154,7 @@
 		<item>"5 дней"</item>
 		<item>"6 дней"</item>
 		<item>"1 неделя"</item>
+		<item>"1 месяц"</item>
 	</string-array>
 	<string-array name="notification_tweet_formats">
 		<item>"{0} новый твит"</item>
