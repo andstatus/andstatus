@@ -706,7 +706,23 @@ public class AndTweetProvider extends ContentProvider {
             orderBy = sortOrder;
         }
 
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        // Get the database and run the query
+        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
+        Cursor c = null;
+        boolean logQuery = Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE);
+        try {
+            if (sql.length() > 0) {
+                c = db.rawQuery(sql, selectionArgs);
+            } else {
+                c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
+            }
+        } catch (Exception e) {
+            logQuery = true;
+            Log.e(TAG, "Database query failed");
+            e.printStackTrace();
+        }
+
+        if (logQuery) {
             if (sql.length() > 0) {
                 Log.v(TAG, "query, SQL=\"" + sql + "\"");
                 if (selectionArgs != null && selectionArgs.length > 0) {
@@ -720,19 +736,12 @@ public class AndTweetProvider extends ContentProvider {
                 Log.v(TAG, "; qb.getTables=" + qb.getTables() + "; orderBy=" + orderBy);
             }
         }
-
-        // Get the database and run the query
-        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-        Cursor c = null;
-        if (sql.length() > 0) {
-            c = db.rawQuery(sql, selectionArgs);
-        } else {
-            c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
+        
+        if (c != null) {
+            // Tell the cursor what Uri to watch, so it knows when its source data
+            // changes
+            c.setNotificationUri(getContext().getContentResolver(), uri);
         }
-
-        // Tell the cursor what Uri to watch, so it knows when its source data
-        // changes
-        c.setNotificationUri(getContext().getContentResolver(), uri);
         return c;
     }
 

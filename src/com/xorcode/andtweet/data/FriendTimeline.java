@@ -42,6 +42,7 @@ import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
+import com.xorcode.andtweet.util.SelectionAndArgs;
 
 /**
  * Handles loading data from JSON into database.
@@ -265,8 +266,14 @@ public class FriendTimeline {
         long sinceTimestamp = 0;
         if (maxDays > 0) {
             sinceTimestamp = System.currentTimeMillis() - maxDays * (1000L * 60 * 60 * 24);
-            nDeletedTime = mContentResolver.delete(mContentUri, AndTweetDatabase.Tweets.SENT_DATE
-                    + " < " + sinceTimestamp, null);
+
+            SelectionAndArgs sa = new SelectionAndArgs();
+            sa.addSelection(AndTweetDatabase.Tweets.SENT_DATE + " <  ?", 
+                    new String[]{String.valueOf(sinceTimestamp)} );
+            // Don't delete Favorites!
+            sa.addSelection(AndTweetDatabase.Tweets.FAVORITED + " = ?", 
+                    new String[]{"0"} );
+            nDeletedTime = mContentResolver.delete(mContentUri, sa.selection, sa.selectionArgs);
         }
 
         int nTweets = 0;
@@ -295,9 +302,12 @@ public class FriendTimeline {
                     }
                     cursor.close();
                     if (sinceTimestampSize > 0) {
-                        nDeletedSize = mContentResolver.delete(mContentUri,
-                                AndTweetDatabase.Tweets.SENT_DATE + " <= " + sinceTimestampSize,
-                                null);
+                        SelectionAndArgs sa = new SelectionAndArgs();
+                        sa.addSelection(AndTweetDatabase.Tweets.SENT_DATE + " <=  ?", 
+                                new String[]{String.valueOf(sinceTimestampSize)} );
+                        sa.addSelection(AndTweetDatabase.Tweets.FAVORITED + " = ?", 
+                                new String[]{"0"} );
+                        nDeletedSize = mContentResolver.delete(mContentUri, sa.selection, sa.selectionArgs);
                     }
                 }
             } catch (Exception e) {

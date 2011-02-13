@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-	Copyright (C) 2010 Yuri Volkov, yvolk@yurivolkov.com
+	Copyright (C) 2010-2011 Yuri Volkov, yvolk@yurivolkov.com
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<string name="app_name">AndTweet</string>
 	<string name="activity_title_direct_messages">Личные сообщения</string>
+	<string name="activity_title_favorites">Избранное</string>
 	<string name="activity_title_format">%1$s: %2$s</string>
 	<string name="activity_title_mentions">Упоминания</string>
 	<string name="activity_title_search">Поиск</string>
@@ -35,6 +36,7 @@
 	<string name="category_title_preference_appearance">Внешний вид</string>
 	<string name="category_title_preference_automatic_updates">Обновления</string>
 	<string name="category_title_preference_credentials">Имя пользователя и пароль</string>
+	<string name="category_title_preference_information">Информация</string>
 	<string name="category_title_preference_notifications">Уведомления</string>
 	<string name="category_title_preference_settings">Настройки</string>
 	<string name="category_title_preference_updates">Обновления</string>
@@ -75,7 +77,7 @@
 	<string name="message_edit_hint">Что происходит?</string>
 	<string name="message_characters_left">Осталось символов:</string>
 	<string name="menu_item_block">Блокировать</string>
-	<string name="menu_item_destroy_favorite">Идалить из избранного</string>
+	<string name="menu_item_destroy_favorite">Удалить из избранного</string>
 	<string name="menu_item_destroy_status">Удалить твит</string>
 	<string name="menu_item_direct_message">Личное сообщение</string>
 	<string name="menu_item_favorite">Добавить в избранное</string>
@@ -104,6 +106,8 @@
 	<string name="options_menu_about_cond">Информация</string>
 	<string name="options_menu_direct_messages">Личные сообщения</string>
 	<string name="options_menu_direct_messages_cond">Сообщения</string>
+	<string name="options_menu_favorites_timeline">Линия времени Избранного</string>
+	<string name="options_menu_favorites_timeline_cond">Избранное</string>
 	<string name="options_menu_friends_timeline">Линии времени друзей</string>
 	<string name="options_menu_friends_timeline_cond">Друзья</string>
 	<string name="options_menu_help">Помощь</string>
@@ -167,8 +171,11 @@
 	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>
 	<string name="summary_preference_vibration_on">Виброзвонок при входящем твите включён</string>
 	<string name="timeline_reloaded">Лента времени обновлена.</string>
+	<string name="title_preference_about_application">О программе AndTweet</string>
 	<string name="title_preference_appearance">Внешний вид</string>
 	<string name="title_preference_automatic_updates">Автоматические обновления</string>
+	<string name="title_preference_change_log">Журнал изменений</string>
+	<string name="title_preference_contact_developer">Свяжитесь с разработчиками</string>
 	<string name="title_preference_frequency">Частота обновлений</string>
 	<string name="title_preference_history_size">Размер истории</string>
 	<string name="title_preference_history_time">Длительность хранения истории</string>
@@ -181,11 +188,13 @@
 	<string name="title_preference_notifications_timeline">Новые твиты друзей</string>
 	<string name="title_preference_oauth">OAuth</string>
 	<string name="title_preference_password">Пароль</string>
+	<string name="title_preference_report_bug">Сообщить об ошибке</string>
 	<string name="title_preference_storage">Память</string>
 	<string name="title_preference_storage_external">Использовать внешнюю память</string>
 	<string name="title_preference_theme">Тема</string>
 	<string name="title_preference_username">Имя пользователя</string>
 	<string name="title_preference_use_avatars">Показывать аватары</string>
+	<string name="title_preference_verify_credentials">Проверить аккаунт</string>
 	<string name="title_preference_vibration">Виброзвонок</string>
 	<string name="tweet_activity">Твиты</string>
 	<string name="tweet_source_from">%1$s из %2$s %3$s</string>

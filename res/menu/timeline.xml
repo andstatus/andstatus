@@ -21,6 +21,9 @@
 		<item android:id="@+id/friends_timeline_menu_id" android:title="@string/options_menu_friends_timeline"
 			android:alphabeticShortcut="f" android:titleCondensed="@string/options_menu_friends_timeline_cond"
 			android:icon="@drawable/ic_menu_timeline"></item>
+		<item android:id="@+id/favorites_timeline_menu_id" android:title="@string/options_menu_favorites_timeline"
+			android:alphabeticShortcut="a" android:titleCondensed="@string/options_menu_favorites_timeline_cond"
+			android:icon="@drawable/ic_menu_favorites"></item>
 		<item android:title="@string/options_menu_mentions" android:id="@+id/mentions_menu_id"
 			android:icon="@drawable/ic_menu_mentions" android:alphabeticShortcut="e"></item>
 		<item android:id="@+id/direct_messages_menu_id" android:title="@string/options_menu_direct_messages"

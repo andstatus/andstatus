@@ -17,6 +17,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<string name="app_name">AndTweet</string>
 	<string name="activity_title_direct_messages">Messages</string>
+	<string name="activity_title_favorites">Favorites</string>
 	<string name="activity_title_format">%1$s: %2$s</string>
 	<string name="activity_title_mentions">Mentions</string>
 	<string name="activity_title_search">Search</string>
@@ -105,6 +106,8 @@
 	<string name="options_menu_about_cond">About</string>
 	<string name="options_menu_direct_messages">Direct Messages</string>
 	<string name="options_menu_direct_messages_cond">Messages</string>
+	<string name="options_menu_favorites_timeline">Favorites Timeline</string>
+	<string name="options_menu_favorites_timeline_cond">Favorites</string>
 	<string name="options_menu_friends_timeline">Friends Timeline</string>
 	<string name="options_menu_friends_timeline_cond">Friends</string>
 	<string name="options_menu_help">Help</string>

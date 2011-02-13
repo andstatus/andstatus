@@ -66,6 +66,7 @@ import com.xorcode.andtweet.data.AndTweetDatabase.Users;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
+import com.xorcode.andtweet.util.SelectionAndArgs;
 
 /**
  * @author torgny.bjers
@@ -233,16 +234,14 @@ public class TweetListActivity extends TimelineActivity {
             contentUri = Tweets.SEARCH_URI;
         }
 
-        String selection = "";
+        SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = Tweets.DEFAULT_SORT_ORDER;
-        String[] selectionArgs = new String[] {};
         long firstItemId = -1;
 
         // Extract content URI from the search data
         Bundle appData = queryIntent.getBundleExtra(SearchManager.APP_DATA);
         if (appData != null) {
-            selection = appData.getString("selection");
-            selectionArgs = appData.getStringArray("selectionArgs");
+            sa.addSelection(appData.getString("selection"), appData.getStringArray("selectionArgs"));
             contentUri = appData.getParcelable("content_uri");
         }
         if (queryString != null && queryString.length() > 0) {
@@ -254,12 +253,23 @@ public class TweetListActivity extends TimelineActivity {
             intent.setData(contentUri);
         }
 
-        if (appData == null || selection == null || selectionArgs == null) {
-            selection = Tweets.TWEET_TYPE + " IN (?, ?)";
-            selectionArgs = new String[] {
-                    String.valueOf(Tweets.TIMELINE_TYPE_FRIENDS),
-                    String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS)
-            };
+        if (appData == null || sa.nArgs == 0) {
+            // In fact this is needed every time you want to load next page of
+            // tweets.
+            // So we have to duplicate here everything we set in
+            // com.xorcode.andtweet.TimelineActivity.onOptionsItemSelected()
+            sa.clear();
+            sa.addSelection(
+                    Tweets.TWEET_TYPE + " IN (?, ?)",
+                    new String[] {
+                            String.valueOf(Tweets.TIMELINE_TYPE_FRIENDS),
+                            String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS)
+                    });
+            if (mTimelineType == Tweets.TIMELINE_TYPE_FAVORITES) {
+                sa.addSelection(AndTweetDatabase.Tweets.FAVORITED + " = ?", new String[] {
+                    "1"
+                });
+            }
         }
 
         if (!positionLoaded) {
@@ -282,11 +292,17 @@ public class TweetListActivity extends TimelineActivity {
         }
 
         if (firstItemId > 0) {
-            selection = "(" + selection + ") AND (" + Tweets._ID + " >= ?)";
-            selectionArgs = new String[] {
-                    String.valueOf(Tweets.TIMELINE_TYPE_FRIENDS),
-                    String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS), String.valueOf(firstItemId)
-            };
+            if (sa.nArgs == 0) {
+                sa.addSelection(
+                        "AndTweetDatabase.Tweets.TWEET_TYPE" + " IN (?, ?)" + ")",
+                        new String[] {
+                                String.valueOf(Tweets.TIMELINE_TYPE_FRIENDS),
+                                String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS)
+                        });
+            }
+            sa.addSelection(Tweets._ID + " >= ?", new String[] {
+                String.valueOf(firstItemId)
+            });
         } else {
             if (loadOneMorePage) {
                 nTweets += PAGE_SIZE;
@@ -306,8 +322,8 @@ public class TweetListActivity extends TimelineActivity {
 //            e.printStackTrace();
 //        }
 
-        mCursor = getContentResolver().query(contentUri, PROJECTION, selection, selectionArgs,
-                sortOrder);
+        mCursor = getContentResolver().query(contentUri, PROJECTION, sa.selection,
+                sa.selectionArgs, sortOrder);
         if (!otherThread) {
             createAdapters();
         }
@@ -818,9 +834,8 @@ public class TweetListActivity extends TimelineActivity {
                         try {
                             fl.insertFromJSONObject(result, true);
                         } catch (JSONException e) {
-                            Toast
-                                    .makeText(TweetListActivity.this, e.toString(),
-                                            Toast.LENGTH_SHORT).show();
+                            Toast.makeText(TweetListActivity.this, e.toString(), Toast.LENGTH_SHORT)
+                                    .show();
                         }
                         Toast.makeText(TweetListActivity.this, R.string.message_sent,
                                 Toast.LENGTH_SHORT).show();
@@ -959,9 +974,8 @@ public class TweetListActivity extends TimelineActivity {
                         try {
                             fl.destroyStatus(result.getLong("id"));
                         } catch (JSONException e) {
-                            Toast
-                                    .makeText(TweetListActivity.this, e.toString(),
-                                            Toast.LENGTH_SHORT).show();
+                            Toast.makeText(TweetListActivity.this, e.toString(), Toast.LENGTH_SHORT)
+                                    .show();
                         }
                         Toast.makeText(TweetListActivity.this, R.string.status_destroyed,
                                 Toast.LENGTH_SHORT).show();
@@ -981,15 +995,15 @@ public class TweetListActivity extends TimelineActivity {
                                 (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
                     } else {
                         try {
-                            Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result
-                                    .getLong("id"));
+                            Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI,
+                                    result.getLong("id"));
                             Cursor c = getContentResolver().query(uri, new String[] {
                                     Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE
                             }, null, null, null);
                             try {
                                 c.moveToFirst();
-                                FriendTimeline fl = new FriendTimeline(TweetListActivity.this, c
-                                        .getInt(c.getColumnIndex(Tweets.TWEET_TYPE)));
+                                FriendTimeline fl = new FriendTimeline(TweetListActivity.this,
+                                        c.getInt(c.getColumnIndex(Tweets.TWEET_TYPE)));
                                 fl.insertFromJSONObject(result, true);
                             } catch (Exception e) {
                                 Log.e(TAG, "handleMessage: " + e.toString());
@@ -998,9 +1012,8 @@ public class TweetListActivity extends TimelineActivity {
                                     c.close();
                             }
                         } catch (JSONException e) {
-                            Toast
-                                    .makeText(TweetListActivity.this, e.toString(),
-                                            Toast.LENGTH_SHORT).show();
+                            Toast.makeText(TweetListActivity.this, e.toString(), Toast.LENGTH_SHORT)
+                                    .show();
                         }
                         Toast.makeText(TweetListActivity.this, R.string.favorite_created,
                                 Toast.LENGTH_SHORT).show();
@@ -1020,15 +1033,15 @@ public class TweetListActivity extends TimelineActivity {
                                 (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
                     } else {
                         try {
-                            Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result
-                                    .getLong("id"));
+                            Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI,
+                                    result.getLong("id"));
                             Cursor c = getContentResolver().query(uri, new String[] {
                                     Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE
                             }, null, null, null);
                             try {
                                 c.moveToFirst();
-                                FriendTimeline fl = new FriendTimeline(TweetListActivity.this, c
-                                        .getInt(c.getColumnIndex(Tweets.TWEET_TYPE)));
+                                FriendTimeline fl = new FriendTimeline(TweetListActivity.this,
+                                        c.getInt(c.getColumnIndex(Tweets.TWEET_TYPE)));
                                 fl.insertFromJSONObject(result, true);
                             } catch (Exception e) {
                                 Log.e(TAG, "handleMessage: " + e.toString());
@@ -1037,9 +1050,8 @@ public class TweetListActivity extends TimelineActivity {
                                     c.close();
                             }
                         } catch (JSONException e) {
-                            Toast
-                                    .makeText(TweetListActivity.this, e.toString(),
-                                            Toast.LENGTH_SHORT).show();
+                            Toast.makeText(TweetListActivity.this, e.toString(), Toast.LENGTH_SHORT)
+                                    .show();
                         }
                         Toast.makeText(TweetListActivity.this, R.string.favorite_destroyed,
                                 Toast.LENGTH_SHORT).show();
@@ -1160,8 +1172,7 @@ public class TweetListActivity extends TimelineActivity {
                         MSG_MANUAL_RELOAD, 0));
                 return;
             }
-            mHandler
-                    .sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewTweets, aReplyCount));
+            mHandler.sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewTweets, aReplyCount));
         }
     };
 
@@ -1172,8 +1183,8 @@ public class TweetListActivity extends TimelineActivity {
     protected Runnable mLoadListItems = new Runnable() {
         public void run() {
             doSearchQuery(TweetListActivity.this.getIntent(), true, true);
-            mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_LOAD_ITEMS,
-                    STATUS_LOAD_ITEMS_SUCCESS, 0), 400);
+            mHandler.sendMessageDelayed(
+                    mHandler.obtainMessage(MSG_LOAD_ITEMS, STATUS_LOAD_ITEMS_SUCCESS, 0), 400);
         }
     };
 

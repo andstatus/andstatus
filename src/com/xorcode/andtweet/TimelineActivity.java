@@ -563,6 +563,22 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 startActivity(new Intent(this, PreferencesActivity.class));
                 break;
 
+            case R.id.favorites_timeline_menu_id:
+                intent = new Intent(this, TweetListActivity.class);
+                appDataBundle = new Bundle();
+                appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.CONTENT_URI);
+                appDataBundle.putString("selection", AndTweetDatabase.Tweets.FAVORITED
+                        + " = ?");
+                appDataBundle.putStringArray("selectionArgs", new String[] {"1"});
+                intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+                intent.putExtra(SearchManager.QUERY, "");
+                // intent.removeExtra(SearchManager.QUERY);
+                intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
+                        AndTweetDatabase.Tweets.TIMELINE_TYPE_FAVORITES);
+                intent.setAction(Intent.ACTION_SEARCH);
+                startActivity(intent);
+                break;
+
             case R.id.friends_timeline_menu_id:
                 intent = new Intent(this, TweetListActivity.class);
                 appDataBundle = new Bundle();
@@ -687,6 +703,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     public void updateTitle(String rightText) {
         String timelinename = "??";
         switch (mTimelineType) {
+            case Tweets.TIMELINE_TYPE_FAVORITES:
+                timelinename = getString(R.string.activity_title_favorites);
+                break;
             case Tweets.TIMELINE_TYPE_FRIENDS:
                 timelinename = getString(R.string.activity_title_timeline);
                 break;

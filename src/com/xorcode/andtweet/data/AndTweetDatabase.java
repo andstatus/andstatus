@@ -65,6 +65,7 @@ public final class AndTweetDatabase {
 		 * this is why the type is here...
 		 */
         public static final int TIMELINE_TYPE_MESSAGES = 3;
+        public static final int TIMELINE_TYPE_FAVORITES = 4;
 	}
 
 	/**
