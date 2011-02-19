@@ -184,7 +184,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * TODO: enum from
      * com.xorcode.andtweet.data.AndTweetDatabase.Tweets.TIMELINE_TYPE_...
      */
-    protected int mTimelineType = Tweets.TIMELINE_TYPE_FRIENDS;
+    protected int mTimelineType = Tweets.TIMELINE_TYPE_NONE;
 
     /**
      * True if this timeline is filtered using query string ("Mentions" are not
@@ -565,39 +565,20 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
             case R.id.favorites_timeline_menu_id:
                 intent = new Intent(this, TweetListActivity.class);
-                appDataBundle = new Bundle();
-                appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.CONTENT_URI);
-                appDataBundle.putString("selection", AndTweetDatabase.Tweets.FAVORITED
-                        + " = ?");
-                appDataBundle.putStringArray("selectionArgs", new String[] {"1"});
-                intent.putExtra(SearchManager.APP_DATA, appDataBundle);
-                intent.putExtra(SearchManager.QUERY, "");
-                // intent.removeExtra(SearchManager.QUERY);
+                intent.removeExtra(SearchManager.QUERY);
                 intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
                         AndTweetDatabase.Tweets.TIMELINE_TYPE_FAVORITES);
-                intent.setAction(Intent.ACTION_SEARCH);
+                // We don't use the Action anywhere, so there is no need it setting it.
+                //   - we're analyzing query instead!
+                //intent.setAction(Intent.ACTION_SEARCH);
                 startActivity(intent);
                 break;
 
             case R.id.friends_timeline_menu_id:
                 intent = new Intent(this, TweetListActivity.class);
-                appDataBundle = new Bundle();
-                appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.CONTENT_URI);
-                // TODO: Do we really need these "selection" and
-                // "selectionArgs"?
-                // There are NO other tweet types (yet) except 1 and 2...
-                appDataBundle.putString("selection", AndTweetDatabase.Tweets.TWEET_TYPE
-                        + " IN (?, ?)");
-                appDataBundle.putStringArray("selectionArgs", new String[] {
-                        String.valueOf(Tweets.TIMELINE_TYPE_FRIENDS),
-                        String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS)
-                });
-                intent.putExtra(SearchManager.APP_DATA, appDataBundle);
-                intent.putExtra(SearchManager.QUERY, "");
-                // intent.removeExtra(SearchManager.QUERY);
+                intent.removeExtra(SearchManager.QUERY);
                 intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
                         AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
-                intent.setAction(Intent.ACTION_SEARCH);
                 startActivity(intent);
                 break;
 
@@ -610,7 +591,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 intent.removeExtra(SearchManager.QUERY);
                 intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
                         AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
-                intent.setAction(Intent.ACTION_SEARCH);
                 startActivity(intent);
                 break;
 
@@ -619,21 +599,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
 
             case R.id.mentions_menu_id:
-                // Mentions is now query of the TweetList view...
                 intent = new Intent(this, TweetListActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                String username = mSP.getString("twitter_username", null);
-                if (username != null) {
-                    intent.putExtra(SearchManager.QUERY, "@" + username);
-                }
-                appDataBundle = new Bundle();
-                appDataBundle.putParcelable("content_uri", AndTweetDatabase.Tweets.SEARCH_URI);
-                intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+                intent.removeExtra(SearchManager.QUERY);
                 intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
                         AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
-                intent.setAction(Intent.ACTION_SEARCH);
                 startActivity(intent);
                 break;
+                
         }
         return super.onOptionsItemSelected(item);
     }
@@ -886,8 +858,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     }
 
     private void setTimelineType(Intent intentNew) {
-        mTimelineType = intentNew.getIntExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
+        int timelineType_new  = intentNew.getIntExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
                 Tweets.TIMELINE_TYPE_NONE);
+        if (timelineType_new != Tweets.TIMELINE_TYPE_NONE) {
+            mTimelineType = timelineType_new;
+        }
 
         positionLoaded = false;
         mQueryString = intentNew.getStringExtra(SearchManager.QUERY);
@@ -909,8 +884,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             intent.removeExtra(SearchManager.APP_DATA);
             intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE, mTimelineType);
             intent.setData(AndTweetDatabase.Tweets.CONTENT_URI);
-            intent.setAction(Intent.ACTION_SEARCH);
-        }
+       }
         if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
             Log.v(TAG, "setTimelineType; type=\"" + mTimelineType + "\"");
         }

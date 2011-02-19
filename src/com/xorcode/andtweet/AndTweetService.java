@@ -26,7 +26,6 @@ import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.SearchManager;
 import android.app.Service;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
@@ -48,6 +47,7 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import com.xorcode.andtweet.appwidget.AndTweetAppWidgetProvider;
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.FriendTimeline;
@@ -423,25 +423,24 @@ public class AndTweetService extends Service {
 		}
 	};
 
-	/**
-	 * Notify the user of new tweets.
-	 * 
-	 * @param numTweets
-	 */
-	private void notifyNewTweets(int numTweets, int msgType) {
-		Log.d(TAG, "notifyNewTweets n=" + numTweets + "; msgType=" + msgType);
+    /**
+     * Notify the user of new tweets.
+     * 
+     * @param numTweets
+     */
+    private void notifyNewTweets(int numTweets, int msgType) {
+        Log.d(TAG, "notifyNewTweets n=" + numTweets + "; msgType=" + msgType);
 
-		if (updateWidgetsOnEveryUpdate) {
+        if (updateWidgetsOnEveryUpdate) {
             // Notify widgets even about the fact, that update occurred
-		    //   even if there was nothing new
-    		updateWidgets(numTweets, msgType);
-		}
+            // even if there was nothing new
+            updateWidgets(numTweets, msgType);
+        }
 
-		
-		// If no notifications are enabled, return
-		if (!mNotificationsEnabled || numTweets == 0) {
-			return;
-		}
+        // If no notifications are enabled, return
+        if (!mNotificationsEnabled || numTweets == 0) {
+            return;
+        }
 
         boolean notificationsMessages = false;
         boolean notificationsReplies = false;
@@ -453,105 +452,107 @@ public class AndTweetService extends Service {
             notificationsReplies = sp.getBoolean("notifications_mentions", false);
             notificationsTimeline = sp.getBoolean("notifications_timeline", false);
             ringtone = sp.getString(PreferencesActivity.KEY_RINGTONE_PREFERENCE, null);
-        }		
+        }
 
-		// Make sure that notifications haven't been turned off for the message
-		// type
-		switch (msgType) {
-		case NOTIFY_REPLIES:
-			if (!notificationsReplies)
-				return;
-			break;
-		case NOTIFY_DIRECT_MESSAGE:
-			if (!notificationsMessages)
-				return;
-			break;
-		case NOTIFY_TIMELINE:
-			if (!notificationsTimeline)
-				return;
-			break;
-		}
+        // Make sure that notifications haven't been turned off for the message
+        // type
+        switch (msgType) {
+            case NOTIFY_REPLIES:
+                if (!notificationsReplies)
+                    return;
+                break;
+            case NOTIFY_DIRECT_MESSAGE:
+                if (!notificationsMessages)
+                    return;
+                break;
+            case NOTIFY_TIMELINE:
+                if (!notificationsTimeline)
+                    return;
+                break;
+        }
 
-		// Set up the notification to display to the user
-		Notification notification = new Notification(
-				R.drawable.notification_icon,
-				(String) getText(R.string.notification_title), System
-						.currentTimeMillis());
+        // Set up the notification to display to the user
+        Notification notification = new Notification(R.drawable.notification_icon,
+                (String) getText(R.string.notification_title), System.currentTimeMillis());
 
-		notification.vibrate = null;
-		if (mNotificationsVibrate) {
-			notification.vibrate = new long[] { 200, 300, 200, 300 };
-		}
+        notification.vibrate = null;
+        if (mNotificationsVibrate) {
+            notification.vibrate = new long[] {
+                    200, 300, 200, 300
+            };
+        }
 
-		notification.flags = Notification.FLAG_SHOW_LIGHTS
-				| Notification.FLAG_AUTO_CANCEL;
-		notification.ledOffMS = 1000;
-		notification.ledOnMS = 500;
-		notification.ledARGB = Color.GREEN;
+        notification.flags = Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
+        notification.ledOffMS = 1000;
+        notification.ledOnMS = 500;
+        notification.ledARGB = Color.GREEN;
 
-		if ("".equals(ringtone) || ringtone == null) {
-			notification.sound = null;
-		} else {
-			Uri ringtoneUri = Uri.parse(ringtone);
-			notification.sound = ringtoneUri;
-		}
+        if ("".equals(ringtone) || ringtone == null) {
+            notification.sound = null;
+        } else {
+            Uri ringtoneUri = Uri.parse(ringtone);
+            notification.sound = ringtoneUri;
+        }
 
-		// Set up the pending intent
-		PendingIntent contentIntent;
+        // Set up the pending intent
+        PendingIntent contentIntent;
 
-		int messageTitle;
-        String aMessage = ""; 
+        int messageTitle;
+        Intent intent;
+        String aMessage = "";
 
-		switch (msgType) {
-		case NOTIFY_REPLIES:
-			aMessage = I18n.formatQuantityMessage(getApplicationContext(),
-			        R.string.notification_new_mention_format,
-			        numTweets,
-                    R.array.notification_mention_patterns,
-                    R.array.notification_mention_formats);
-			messageTitle = R.string.notification_title_mentions;
-			Intent intent = new Intent(getApplicationContext(),
-					TweetListActivity.class);
-			intent.putExtra(SearchManager.QUERY, "@" + sp.getString("twitter_username", null));
-			Bundle appDataBundle = new Bundle();
-			appDataBundle.putParcelable("content_uri",
-					AndTweetDatabase.Tweets.SEARCH_URI);
-			intent.putExtra(SearchManager.APP_DATA, appDataBundle);
-			intent.setAction(Intent.ACTION_SEARCH);
-			contentIntent = PendingIntent.getActivity(getApplicationContext(),
-					numTweets, intent, 0);
-			break;
+        // Prepare "intent" to launch timeline activities exactly like in
+        // com.xorcode.andtweet.TimelineActivity.onOptionsItemSelected
+        switch (msgType) {
+            case NOTIFY_REPLIES:
+                aMessage = I18n
+                        .formatQuantityMessage(getApplicationContext(),
+                                R.string.notification_new_mention_format, numTweets,
+                                R.array.notification_mention_patterns,
+                                R.array.notification_mention_formats);
+                messageTitle = R.string.notification_title_mentions;
+                intent = new Intent(getApplicationContext(), TweetListActivity.class);
+                intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
+                        AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
+                contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
+                        intent, 0);
+                break;
 
-		case NOTIFY_DIRECT_MESSAGE:
-            aMessage = I18n.formatQuantityMessage(getApplicationContext(),
-                    R.string.notification_new_message_format,
-                    numTweets,
-                    R.array.notification_message_patterns,
-                    R.array.notification_message_formats);
-			messageTitle = R.string.notification_title_messages;
-			contentIntent = PendingIntent.getActivity(this, numTweets,
-					new Intent(this, MessageListActivity.class), 0);
-			break;
+            case NOTIFY_DIRECT_MESSAGE:
+                aMessage = I18n
+                        .formatQuantityMessage(getApplicationContext(),
+                                R.string.notification_new_message_format, numTweets,
+                                R.array.notification_message_patterns,
+                                R.array.notification_message_formats);
+                messageTitle = R.string.notification_title_messages;
+                intent = new Intent(getApplicationContext(), MessageListActivity.class);
+                intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
+                        AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
+                contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
+                        intent, 0);
+                break;
 
-		case NOTIFY_TIMELINE:
-		default:
-            aMessage = I18n.formatQuantityMessage(getApplicationContext(),
-                    R.string.notification_new_tweet_format,
-                    numTweets,
-                    R.array.notification_tweet_patterns,
-                    R.array.notification_tweet_formats);
-			messageTitle = R.string.notification_title;
-			contentIntent = PendingIntent.getActivity(this, numTweets, new Intent(this, TweetListActivity.class), 0);
-			break;
-		}
+            case NOTIFY_TIMELINE:
+            default:
+                aMessage = I18n.formatQuantityMessage(getApplicationContext(),
+                        R.string.notification_new_tweet_format, numTweets,
+                        R.array.notification_tweet_patterns, R.array.notification_tweet_formats);
+                messageTitle = R.string.notification_title;
+                intent = new Intent(getApplicationContext(), TweetListActivity.class);
+                intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
+                        AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
+                contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
+                        intent, 0);
+                break;
+        }
 
-		// Set up the scrolling message of the notification
-		notification.tickerText = aMessage;
+        // Set up the scrolling message of the notification
+        notification.tickerText = aMessage;
 
-		// Set the latest event information and send the notification
-		notification.setLatestEventInfo(this, getText(messageTitle), aMessage, contentIntent);
-		mNM.notify(msgType, notification);
-	}
+        // Set the latest event information and send the notification
+        notification.setLatestEventInfo(this, getText(messageTitle), aMessage, contentIntent);
+        mNM.notify(msgType, notification);
+    }
 
 	/** 
 	 * Send Update intent to AndTweet Widget(s),
@@ -572,32 +573,38 @@ public class AndTweetService extends Service {
             }
 		    final int N = startStuff(this, "Getting tweets and replies.");
 		    
-			int aNewTweets = 0;
+            // TODO: Cycle for all users...
+
+		    int aNewTweets = 0;
 			int aReplyCount = 0;
-			try {
-	            FriendTimeline fl = new FriendTimeline(AndTweetService.this.getApplicationContext(), AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
-				fl.loadTimeline();
-				aReplyCount = fl.replyCount();
-                
-				fl = new FriendTimeline(AndTweetService.this.getApplicationContext(), AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
-				fl.loadTimeline();
-				aNewTweets = fl.newCount();
-				aReplyCount += fl.replyCount();
-				
-				fl.pruneOldRecords();
-			} catch (ConnectionException e) {
-				Log.e(TAG, "mLoadTimeline Connection Exception: " + e.toString());
-			} catch (SQLiteConstraintException e) {
-				Log.e(TAG, "mLoadTimeline SQLite Exception: " + e.toString());
-			} catch (JSONException e) {
-				Log.e(TAG, "mLoadTimeline JSON Exception: " + e.toString());
-			} catch (ConnectionAuthenticationException e) {
-				Log.e(TAG, "mLoadTimeline Authentication Exception: " + e.toString());
-			} catch (ConnectionUnavailableException e) {
-				Log.e(TAG, "mLoadTimeline FAIL Whale: " + e.toString());
-			} catch (SocketTimeoutException e) {
-				Log.e(TAG, "mLoadTimeline Connection Timeout: " + e.toString());
-			}
+
+	        if (TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext()).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+	            // Only if User was authenticated already
+    			try {
+    	            FriendTimeline fl = new FriendTimeline(AndTweetService.this.getApplicationContext(), AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
+    				fl.loadTimeline();
+    				aReplyCount = fl.replyCount();
+                    
+    				fl = new FriendTimeline(AndTweetService.this.getApplicationContext(), AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
+    				fl.loadTimeline();
+    				aNewTweets = fl.newCount();
+    				aReplyCount += fl.replyCount();
+    				
+    				fl.pruneOldRecords();
+    			} catch (ConnectionException e) {
+    				Log.e(TAG, "mLoadTimeline Connection Exception: " + e.toString());
+    			} catch (SQLiteConstraintException e) {
+    				Log.e(TAG, "mLoadTimeline SQLite Exception: " + e.toString());
+    			} catch (JSONException e) {
+    				Log.e(TAG, "mLoadTimeline JSON Exception: " + e.toString());
+    			} catch (ConnectionAuthenticationException e) {
+    				Log.e(TAG, "mLoadTimeline Authentication Exception: " + e.toString());
+    			} catch (ConnectionUnavailableException e) {
+    				Log.e(TAG, "mLoadTimeline FAIL Whale: " + e.toString());
+    			} catch (SocketTimeoutException e) {
+    				Log.e(TAG, "mLoadTimeline Connection Timeout: " + e.toString());
+    			}
+            }
 
 			finishUpdateTimeline(aNewTweets, aReplyCount, N);
 
@@ -638,24 +645,28 @@ public class AndTweetService extends Service {
 			final int N = startStuff(this, "Getting direct messages.");
 
 			int aNewMessages = 0;
-			try {
-	            FriendTimeline fl = new FriendTimeline(getApplicationContext(), AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
-				fl.loadTimeline();
-				aNewMessages = fl.newCount();
-				fl.pruneOldRecords();
-			} catch (ConnectionException e) {
-				Log.e(TAG, "mLoadMessages Connection Exception: " + e.toString());
-			} catch (SQLiteConstraintException e) {
-				Log.e(TAG, "mLoadMessages SQLite Exception: " + e.toString());
-			} catch (JSONException e) {
-				Log.e(TAG, "mLoadMessages JSON Exception: " + e.toString());
-			} catch (ConnectionAuthenticationException e) {
-				Log.e(TAG, "mLoadMessages Authentication Exception: " + e.toString());
-			} catch (ConnectionUnavailableException e) {
-				Log.e(TAG, "mLoadMessages FAIL Whale: " + e.toString());
-			} catch (SocketTimeoutException e) {
-				Log.e(TAG, "mLoadMessages Connection Timeout: " + e.toString());
-			}
+			
+            if (TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext()).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+                // Only if User was authenticated already
+    			try {
+    	            FriendTimeline fl = new FriendTimeline(getApplicationContext(), AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
+    				fl.loadTimeline();
+    				aNewMessages = fl.newCount();
+    				fl.pruneOldRecords();
+    			} catch (ConnectionException e) {
+    				Log.e(TAG, "mLoadMessages Connection Exception: " + e.toString());
+    			} catch (SQLiteConstraintException e) {
+    				Log.e(TAG, "mLoadMessages SQLite Exception: " + e.toString());
+    			} catch (JSONException e) {
+    				Log.e(TAG, "mLoadMessages JSON Exception: " + e.toString());
+    			} catch (ConnectionAuthenticationException e) {
+    				Log.e(TAG, "mLoadMessages Authentication Exception: " + e.toString());
+    			} catch (ConnectionUnavailableException e) {
+    				Log.e(TAG, "mLoadMessages FAIL Whale: " + e.toString());
+    			} catch (SocketTimeoutException e) {
+    				Log.e(TAG, "mLoadMessages Connection Timeout: " + e.toString());
+    			}
+            }
 
 			finishUpdateDirectMessages(aNewMessages, N);
 

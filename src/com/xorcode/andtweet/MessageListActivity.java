@@ -110,13 +110,7 @@ public class MessageListActivity extends TimelineActivity {
 		}
 
 		final Intent intent = getIntent();
-        final String queryAction = intent.getAction();
-		if (intent.getData() == null) {
-			intent.setData(AndTweetDatabase.DirectMessages.CONTENT_URI);
-		}
-        if (Intent.ACTION_SEARCH.equals(queryAction)) {
-            //doSearchQuery(intent, "onCreate()");
-        }
+		intent.setData(AndTweetDatabase.DirectMessages.CONTENT_URI);
 
 		findViewById(R.id.tweetlist_info).setVisibility(View.GONE);
 		findViewById(R.id.tweetlist_editor).setVisibility(View.GONE);

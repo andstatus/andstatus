@@ -25,7 +25,8 @@
 		<CheckBoxPreference android:key="oauth"
 			android:title="@string/title_preference_oauth"
 			android:summaryOff="@string/summary_preference_oauth_off"
-			android:summaryOn="@string/summary_preference_oauth_on" />
+			android:summaryOn="@string/summary_preference_oauth_on"
+			android:defaultValue="true" />
 		<EditTextPreference android:key="twitter_password"
 			android:title="@string/title_preference_password"
 			android:dialogTitle="@string/dialog_title_preference_password"

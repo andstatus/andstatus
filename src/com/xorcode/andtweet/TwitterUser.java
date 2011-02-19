@@ -80,7 +80,7 @@ public class TwitterUser {
     /**
      * Is this user authenticated with OAuth?
      */
-    private boolean mOAuth = false;
+    private boolean mOAuth = true;
 
     private Connection mConnection = null;
 
@@ -159,8 +159,8 @@ public class TwitterUser {
     private static Vector<TwitterUser> mTu = null;
 
     /**
-     * Get list of all Users, including temporary (never authenticated) one For
-     * the purpose of using these "accounts" elsewhere: 1. Value of
+     * Get list of all Users, including temporary (never authenticated) user
+     * for the purpose of using these "accounts" elsewhere. Value of
      * {@link #getCredentialsVerified()} is the main differentiator.
      * 
      * @param context
@@ -324,7 +324,7 @@ public class TwitterUser {
             // Load stored data for the User
             mWasAuthenticated = mSp.getBoolean(PreferencesActivity.KEY_WAS_AUTHENTICATED, false);
             mCredentialsVerified = CredentialsVerified.load(mSp);
-            mOAuth = mSp.getBoolean(PreferencesActivity.KEY_OAUTH, false);
+            mOAuth = mSp.getBoolean(PreferencesActivity.KEY_OAUTH, true);
         }
     }
 
@@ -412,7 +412,7 @@ public class TwitterUser {
         SharedPreferences dsp = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         // Retrieve new values before changes so they won't be overridden
-        boolean oauth = dsp.getBoolean(PreferencesActivity.KEY_OAUTH, false);
+        boolean oauth = dsp.getBoolean(PreferencesActivity.KEY_OAUTH, true);
         String password = dsp.getString(PreferencesActivity.KEY_TWITTER_PASSWORD, "");
 
         // Make changes
@@ -606,7 +606,8 @@ public class TwitterUser {
         ed.putBoolean(PreferencesActivity.KEY_OAUTH, isOAuth());
         getCredentialsVerified().put(ed);
         if (getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
-            ed.putBoolean(PreferencesActivity.KEY_AUTOMATIC_UPDATES, false);
+            // Don't turn off Automatic updates
+            // ed.putBoolean(PreferencesActivity.KEY_AUTOMATIC_UPDATES, false);
         }
         ed.commit();
     }

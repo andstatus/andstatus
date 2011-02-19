@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2011 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,11 @@ import android.text.format.Time;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.xorcode.andtweet.MessageListActivity;
 import com.xorcode.andtweet.R;
 import com.xorcode.andtweet.AndTweetService;
+import com.xorcode.andtweet.TweetListActivity;
+import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.util.I18n;
 import com.xorcode.andtweet.util.RelativeTime;
 
@@ -323,13 +326,26 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 			}
 			views.setTextViewText(R.id.appwidget_time, widgetTime);
 
-			// When user clicks on widget, launch main AndTweet activity
-			// Intent defineIntent = new Intent(android.content.Intent.ACTION_MAIN);
-			Intent defineIntent = new Intent(context,
-					com.xorcode.andtweet.TweetListActivity.class);
-
+			// When user clicks on widget, launch main AndTweet activity,
+			//   Open timeline, where there are new tweets, or "Friends" timeline
+			Intent intent;
+			int timeLineType = AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS;
+			if (data.numMessages > 0) {
+	            intent = new Intent(context, MessageListActivity.class);
+			    timeLineType = AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES;
+			} else {
+	            intent = new Intent(context, TweetListActivity.class);
+			    if (data.numMentions > 0) {
+	                timeLineType = AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS;
+			    }
+			}
+            intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
+                    timeLineType);
+            // This line is necessary to actually bring Extra to the target intent
+            // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
+            intent.setData((android.net.Uri.parse(AndTweetDatabase.Tweets.CONTENT_URI.toString() + "#" + android.os.SystemClock.elapsedRealtime())));
 			PendingIntent pendingIntent = PendingIntent.getActivity(context,
-					0 /* no requestCode */, defineIntent, 0 /* no flags */);
+					0 /* no requestCode */, intent, 0 /* no flags */);
 			views.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
 			// Tell the widget manager
@@ -404,58 +420,6 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 					widgetTime += strEnd;
 				}
 			}
-			
-			
-			/*
-			if (DateUtils.isToday(endMillis)) {
-	            flags |= DateUtils.FORMAT_SHOW_TIME;
-	            if (DateFormat.is24HourFormat(context)) {
-	                flags |= DateUtils.FORMAT_24HOUR;
-	            }
-			} else {
-	            flags |= DateUtils.FORMAT_SHOW_DATE;
-			}
-
-			widgetTime = DateUtils.formatDateRange(context, startMillis, endMillis, flags);
-			*/
-
-			/*
-			if (timeStart.yearDay < timeEnd.yearDay) {
-				strStart = new RelativeTime(startMillis).getDifference(context, timeNow.toMillis(false));
-				if (DateUtils.isToday(endMillis)) {
-					// End - today
-				} else {
-					strEnd = new RelativeTime(endMillis).getDifference(context, timeNow.toMillis(false));
-				}
-			}
-			
-			widgetTime = android.text.format.DateUtils
-					.formatDateTime(
-							context,
-							startMillis,
-							android.text.format.DateUtils.FORMAT_SHOW_TIME
-									| android.text.format.DateUtils.FORMAT_SHOW_DATE
-									| android.text.format.DateUtils.FORMAT_SHOW_WEEKDAY);
-			  widgetTime = RelativeTime.getDifference(context,
-			  startMillis);
-	
-	
-			widgetTime = android.text.format.DateUtils.formatSameDayTime(
-					startMillis, System.currentTimeMillis(),
-					java.text.DateFormat.SHORT, java.text.DateFormat.SHORT)
-					.toString();
-	
-			if (endMillis != startMillis) {
-				String widgetTime2 = android.text.format.DateUtils
-						.formatSameDayTime(endMillis,
-								System.currentTimeMillis(),
-								java.text.DateFormat.SHORT,
-								java.text.DateFormat.SHORT).toString();
-				if (widgetTime.compareTo(widgetTime2) != 0) {
-					widgetTime += " - " + widgetTime2;
-				}
-			}
-			 */
 		}		
 		
 		return widgetTime;

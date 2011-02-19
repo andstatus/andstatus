@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	Copyright (C) 2011 yvolk (Yuri Volkov), http://yurivolkov.com
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	     http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+
+	I didn't find any "standard" way to store Recent changes... yet,
+	so let them be here for awhile :-)
+ -->
+<document xmlns:android="http://schemas.android.com/apk/res/android">
+	<package android:versionName="1.0.5" android:versionCode="35" versionDate="2011-02-19">
+	+ "Favorites" list added.
+	+ Favorites are protected from automatic deletion (unlike other old tweets)
+	+ Click on Widget opens the timeline, that has something new, in this order: messages, mentions, tweets
+	# Maximum History time (to store tweets) is 1 year now
+	# OAuth is On By Default.
+	# Mentions are not "quick Search" any more, they are just another type of "Timeline".
+	  So we may search in Mentions also.
+	# "Automatic updates" setting is not being turned off by the System.
+	(in beta1:)
+	# Fixed issue: Old records are not being deleted
+	</package>
+</document>

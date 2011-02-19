@@ -268,11 +268,16 @@ public class FriendTimeline {
             sinceTimestamp = System.currentTimeMillis() - maxDays * (1000L * 60 * 60 * 24);
 
             SelectionAndArgs sa = new SelectionAndArgs();
-            sa.addSelection(AndTweetDatabase.Tweets.SENT_DATE + " <  ?", 
-                    new String[]{String.valueOf(sinceTimestamp)} );
-            // Don't delete Favorites!
-            sa.addSelection(AndTweetDatabase.Tweets.FAVORITED + " = ?", 
-                    new String[]{"0"} );
+            sa.addSelection(AndTweetDatabase.Tweets.SENT_DATE + " <  ?", new String[] {
+                String.valueOf(sinceTimestamp)
+            });
+
+            if (mTimelineType != AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES) {
+                // Don't delete Favorites!
+                sa.addSelection(AndTweetDatabase.Tweets.FAVORITED + " = ?", new String[] {
+                    "0"
+                });
+            }
             nDeletedTime = mContentResolver.delete(mContentUri, sa.selection, sa.selectionArgs);
         }
 
@@ -303,11 +308,17 @@ public class FriendTimeline {
                     cursor.close();
                     if (sinceTimestampSize > 0) {
                         SelectionAndArgs sa = new SelectionAndArgs();
-                        sa.addSelection(AndTweetDatabase.Tweets.SENT_DATE + " <=  ?", 
-                                new String[]{String.valueOf(sinceTimestampSize)} );
-                        sa.addSelection(AndTweetDatabase.Tweets.FAVORITED + " = ?", 
-                                new String[]{"0"} );
-                        nDeletedSize = mContentResolver.delete(mContentUri, sa.selection, sa.selectionArgs);
+                        sa.addSelection(AndTweetDatabase.Tweets.SENT_DATE + " <=  ?", new String[] {
+                            String.valueOf(sinceTimestampSize)
+                        });
+                        if (mTimelineType != AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES) {
+                            sa.addSelection(AndTweetDatabase.Tweets.FAVORITED + " = ?",
+                                    new String[] {
+                                        "0"
+                                    });
+                        }
+                        nDeletedSize = mContentResolver.delete(mContentUri, sa.selection,
+                                sa.selectionArgs);
                     }
                 }
             } catch (Exception e) {
@@ -317,9 +328,10 @@ public class FriendTimeline {
         }
         nDeleted = nDeletedTime + nDeletedSize;
         if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-            Log.v(TAG, "pruneOldRecords; History time=" + maxDays + " days; deleted "
-                    + nDeletedTime + " , since " + sinceTimestamp + ", now="
-                    + System.currentTimeMillis() + ")");
+            Log.v(TAG,
+                    "pruneOldRecords; History time=" + maxDays + " days; deleted " + nDeletedTime
+                            + " , since " + sinceTimestamp + ", now=" + System.currentTimeMillis()
+                            + ")");
             Log.v(TAG, "pruneOldRecords; History size=" + maxSize + " tweets; deleted "
                     + nDeletedSize + " of " + nTweets + " tweets, since " + sinceTimestampSize);
         }

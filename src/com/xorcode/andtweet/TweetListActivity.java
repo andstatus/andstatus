@@ -211,6 +211,12 @@ public class TweetListActivity extends TimelineActivity {
                     + mTimelineType);
         }
 
+        Uri contentUri = Tweets.CONTENT_URI;
+
+        SelectionAndArgs sa = new SelectionAndArgs();
+        String sortOrder = Tweets.DEFAULT_SORT_ORDER;
+        long firstItemId = -1;
+        
         if (queryString != null && queryString.length() > 0) {
             // Record the query string in the recent queries suggestions
             // provider
@@ -218,42 +224,17 @@ public class TweetListActivity extends TimelineActivity {
                     TimelineSearchSuggestionProvider.AUTHORITY,
                     TimelineSearchSuggestionProvider.MODE);
             suggestions.saveRecentQuery(queryString, null);
-        } else {
-            // It looks like Android resets the Query we've set for Mentions...
-            // Maybe we should define Mentions in other way?!
-            queryString = "";
-            if (mTimelineType == Tweets.TIMELINE_TYPE_MENTIONS) {
-                queryString = "@" + TwitterUser.getTwitterUser(this).getUsername();
-            }
+
+            contentUri = Tweets.SEARCH_URI;
+            contentUri = Uri.withAppendedPath(contentUri, Uri.encode(queryString));
         }
         intent.putExtra(SearchManager.QUERY, queryString);
 
-        // TODO: Too many contentUri assignments :-(
-        Uri contentUri = Tweets.CONTENT_URI;
-        if (queryString != null && queryString.length() > 0) {
-            contentUri = Tweets.SEARCH_URI;
-        }
-
-        SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = Tweets.DEFAULT_SORT_ORDER;
-        long firstItemId = -1;
-
-        // Extract content URI from the search data
-        Bundle appData = queryIntent.getBundleExtra(SearchManager.APP_DATA);
-        if (appData != null) {
-            sa.addSelection(appData.getString("selection"), appData.getStringArray("selectionArgs"));
-            contentUri = appData.getParcelable("content_uri");
-        }
-        if (queryString != null && queryString.length() > 0) {
-            contentUri = Uri.withAppendedPath(contentUri, Uri.encode(queryString));
-        } else {
-            contentUri = Tweets.CONTENT_URI;
-        }
         if (!contentUri.equals(intent.getData())) {
             intent.setData(contentUri);
         }
 
-        if (appData == null || sa.nArgs == 0) {
+        if (sa.nArgs == 0) {
             // In fact this is needed every time you want to load next page of
             // tweets.
             // So we have to duplicate here everything we set in
@@ -269,6 +250,11 @@ public class TweetListActivity extends TimelineActivity {
                 sa.addSelection(AndTweetDatabase.Tweets.FAVORITED + " = ?", new String[] {
                     "1"
                 });
+            }
+            if (mTimelineType == Tweets.TIMELINE_TYPE_MENTIONS) {
+                sa.addSelection(Tweets.MESSAGE + " LIKE ?", new String[] {
+                        "%@" + TwitterUser.getTwitterUser(this).getUsername() + "%"
+                    });
             }
         }
 
