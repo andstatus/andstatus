@@ -298,7 +298,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                 showDialog(DIALOG_CHECKING_CREDENTIALS);
                 new Thread(new VerifyCredentials()).start();
             } else {
-                if (mUser.isOAuth()) {
+                if (mUser.isOAuth() && reVerify) {
                     new OAuthAcquireRequestTokenTask().execute();
                 }
             }
