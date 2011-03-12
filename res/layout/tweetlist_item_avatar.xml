@@ -33,9 +33,9 @@
 		android:layout_width="fill_parent"
 		android:layout_toRightOf="@id/tweet_avatar_image"
 		android:layout_alignParentTop="true"
-		android:textStyle="?com.xorcode.andtweet:attr/tweetUsernameStyle"
-		android:textColor="?com.xorcode.andtweet:attr/tweetUsernameColor"
-		android:textAppearance="?com.xorcode.andtweet:attr/tweetUsernameAppearance"/>
+		android:textStyle="?attr/tweetUsernameStyle"
+		android:textColor="?attr/tweetUsernameColor"
+		android:textAppearance="?attr/tweetUsernameAppearance"/>
 
 	<TextView android:id="@+id/tweet_message"
 		android:layout_height="wrap_content"
@@ -43,9 +43,9 @@
 		android:layout_toRightOf="@id/tweet_avatar_image"
 		android:layout_alignParentRight="true"
 		android:layout_alignWithParentIfMissing="true"
-		android:textStyle="?com.xorcode.andtweet:attr/tweetMessageStyle"
-		android:textColor="?com.xorcode.andtweet:attr/tweetMessageColor"
-		android:textAppearance="?com.xorcode.andtweet:attr/tweetMessageAppearance"
+		android:textStyle="?attr/tweetMessageStyle"
+		android:textColor="?attr/tweetMessageColor"
+		android:textAppearance="?attr/tweetMessageAppearance"
 		android:layout_below="@id/tweet_screen_name"/>
 
 	<TextView android:id="@+id/tweet_sent"
@@ -54,8 +54,8 @@
 		android:layout_toRightOf="@id/tweet_avatar_image"
 		android:layout_alignParentRight="true"
 		android:layout_alignWithParentIfMissing="true"
-		android:textStyle="?com.xorcode.andtweet:attr/tweetSentDateStyle"
-		android:textColor="?com.xorcode.andtweet:attr/tweetSentDateColor"
-		android:textAppearance="?com.xorcode.andtweet:attr/tweetSentDateAppearance"
+		android:textStyle="?attr/tweetSentDateStyle"
+		android:textColor="?attr/tweetSentDateColor"
+		android:textAppearance="?attr/tweetSentDateAppearance"
 		android:layout_below="@id/tweet_message"/>
 </RelativeLayout>

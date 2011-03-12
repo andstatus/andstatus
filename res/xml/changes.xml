@@ -18,15 +18,19 @@
 	so let them be here for awhile :-)
  -->
 <document xmlns:android="http://schemas.android.com/apk/res/android">
+	<package android:versionName="1.1.0" android:versionCode="36" versionDate="2011-03-12">
+	# Fixed "black on black" tweet text on "Single tweet" window on Android v.2.3.3
+	^ Style definitions in "res/values/themes.xml" reworked
+	</package>
 	<package android:versionName="1.0.5" android:versionCode="35" versionDate="2011-02-19">
 	+ "Favorites" list added.
 	+ Favorites are protected from automatic deletion (unlike other old tweets)
 	+ Click on Widget opens the timeline, that has something new, in this order: messages, mentions, tweets
-	# Maximum History time (to store tweets) is 1 year now
-	# OAuth is On By Default.
-	# Mentions are not "quick Search" any more, they are just another type of "Timeline".
+	^ Maximum History time (to store tweets) is 1 year now
+	^ OAuth is On By Default.
+	^ Mentions are not "quick Search" any more, they are just another type of "Timeline".
 	  So we may search in Mentions also.
-	# "Automatic updates" setting is not being turned off by the System.
+	^ "Automatic updates" setting is not being turned off by the System.
 	(in beta1:)
 	# Fixed issue: Old records are not being deleted
 	</package>

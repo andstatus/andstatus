@@ -25,21 +25,21 @@
 			android:layout_weight="1">
 		<TextView android:id="@+id/tweet_screen_name"
 			android:layout_weight="1"
-			android:textStyle="?com.xorcode.andtweet:attr/tweetUsernameStyle"
-			android:textAppearance="?com.xorcode.andtweet:attr/tweetUsernameAppearance"
+			android:textStyle="?attr/tweetUsernameStyle"
+			android:textAppearance="?attr/tweetUsernameAppearance"
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content" />
 	</LinearLayout>
 
 	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_message"
 		android:layout_width="fill_parent"
-		android:textStyle="?com.xorcode.andtweet:attr/tweetMessageStyle"
-		android:textColor="?com.xorcode.andtweet:attr/tweetMessageColor"
-		android:textAppearance="?com.xorcode.andtweet:attr/tweetMessageAppearance" />
+		android:textStyle="?attr/tweetMessageStyle"
+		android:textColor="?attr/tweetMessageColor"
+		android:textAppearance="?attr/tweetMessageAppearance" />
 	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_sent"
 		android:layout_width="fill_parent"
-		android:textStyle="?com.xorcode.andtweet:attr/tweetSentDateStyle"
-		android:textColor="?com.xorcode.andtweet:attr/tweetSentDateColor"
-		android:textAppearance="?com.xorcode.andtweet:attr/tweetSentDateAppearance" />
+		android:textStyle="?attr/tweetSentDateStyle"
+		android:textColor="?attr/tweetSentDateColor"
+		android:textAppearance="?attr/tweetSentDateAppearance" />
 
 </LinearLayout>

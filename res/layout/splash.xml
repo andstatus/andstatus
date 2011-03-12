@@ -33,7 +33,7 @@
 			android:focusableInTouchMode="false"></TextView>
 		<TextView android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:textSize="5pt"
-			android:id="@+id/splash_application_version" android:text="application_version"
+			android:id="@+id/splash_application_version" android:text="(application version)"
 			android:textColor="#ff7bc7cb"></TextView>
 	</LinearLayout>
 	<LinearLayout android:layout_width="fill_parent"

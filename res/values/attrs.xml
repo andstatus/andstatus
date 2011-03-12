@@ -15,7 +15,7 @@
 	limitations under the License.
  -->
 <resources>
-	<declare-styleable name="Theme.AndTweet">
+	<declare-styleable name="StyledAttributes">
 		<attr name="tweetUsernameAppearance" format="reference" />
 		<attr name="tweetUsernameColor" format="reference|color" />
 		<attr name="tweetUsernameStyle">

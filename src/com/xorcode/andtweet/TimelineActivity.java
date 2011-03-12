@@ -657,20 +657,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     }
 
     /**
+     * Updates the activity title.
      * Sets the title with a left and right title.
      * 
-     * @param leftText Left title part
      * @param rightText Right title part
-     */
-    public void setTitle(CharSequence leftText, CharSequence rightText) {
-        TextView leftTitle = (TextView) findViewById(R.id.custom_title_left_text);
-        TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
-        leftTitle.setText(leftText);
-        rightTitle.setText(rightText);
-    }
-
-    /**
-     * Updates the activity title.
      */
     public void updateTitle(String rightText) {
         String timelinename = "??";
@@ -689,9 +679,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
         }
         String username = mSP.getString("twitter_username", null);
-        setTitle(getString(R.string.activity_title_format, new Object[] {
+        String leftText = getString(R.string.activity_title_format, new Object[] {
                 timelinename, username + (mSearchMode ? " *" : "")
-        }), rightText);
+        }); 
+        TextView leftTitle = (TextView) findViewById(R.id.custom_title_left_text);
+        TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
+        leftTitle.setText(leftText);
+        rightTitle.setText(rightText);
     }
 
     public void updateTitle() {
