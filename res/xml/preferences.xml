@@ -17,6 +17,10 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 	<!-- USER CREDENTIALS -->
 	<PreferenceCategory android:title="@string/category_title_preference_credentials">
+		<Preference android:key="verify_credentials"
+			android:title="@string/title_preference_verify_credentials"
+			android:summary="@string/summary_preference_verify_credentials"
+			android:persistent="false" />
 		<EditTextPreference android:key="twitter_username"
 			android:title="@string/title_preference_username"
 			android:dialogTitle="@string/dialog_title_preference_username"
@@ -32,10 +36,6 @@
 			android:dialogTitle="@string/dialog_title_preference_password"
 			android:summary="@string/summary_preference_password"
 			android:password="true" android:singleLine="true" />
-		<Preference android:key="verify_credentials"
-			android:title="@string/title_preference_verify_credentials"
-			android:summary="@string/summary_preference_verify_credentials"
-			android:persistent="false" />
 	</PreferenceCategory>
 
 	<!-- SETTINGS -->

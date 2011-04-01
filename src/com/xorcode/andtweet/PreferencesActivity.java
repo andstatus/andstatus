@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2008 Torgny Bjers
  * Copyright (C) 2010 Brion N. Emde, "BLOA" example, http://github.com/brione/Brion-Learns-OAuth 
- * Copyright (C) 2010 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2011 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
@@ -51,10 +49,10 @@ import com.xorcode.andtweet.net.ConnectionCredentialsOfOtherUserException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionOAuth;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
-import com.xorcode.andtweet.net.OAuthActivity;
 import com.xorcode.andtweet.net.OAuthKeys;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 
+import oauth.signpost.OAuth;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
@@ -80,6 +78,10 @@ public class PreferencesActivity extends PreferenceActivity implements
     public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
 
     public static final String KEY_OAUTH = "oauth";
+    /** 
+     * The URI is consistent with "scheme" and "host" in AndroidManifest
+     */
+    public static final Uri CALLBACK_URI = Uri.parse("andtweet-oauth://twitt");
 
     /**
      * Was this user ever authenticated?
@@ -136,6 +138,8 @@ public class PreferencesActivity extends PreferenceActivity implements
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs
      */
+    public static final int MSG_NONE = 7;
+
     public static final int MSG_ACCOUNT_VALID = 1;
 
     public static final int MSG_ACCOUNT_INVALID = 2;
@@ -147,8 +151,6 @@ public class PreferencesActivity extends PreferenceActivity implements
     public static final int MSG_SOCKET_TIMEOUT_EXCEPTION = 5;
 
     public static final int MSG_CREDENTIALS_OF_OTHER_USER = 6;
-
-    private static final int DIALOG_CHECKING_CREDENTIALS = 7;
 
     // End Of the list ----------------------------------------
 
@@ -169,8 +171,6 @@ public class PreferencesActivity extends PreferenceActivity implements
     private Preference mVerifyCredentials;
 
     private RingtonePreference mNotificationRingtone;
-
-    private ProgressDialog mProgressDialog;
 
     private TwitterUser mUser;
 
@@ -282,7 +282,20 @@ public class PreferencesActivity extends PreferenceActivity implements
         mUser = TwitterUser.getTwitterUser(this);
         showUserProperties();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-        verifyCredentials(false);
+        
+        Uri uri = getIntent().getData();
+        if (uri != null) {
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+                Log.d(TAG, "uri=" + uri.toString());
+            }
+            if (CALLBACK_URI.getScheme().equals(uri.getScheme())) {
+                // To prevent repeating of this task
+                getIntent().setData(null);
+                // This activity was started by Twitter ("Service Provider")
+                // so start second step of OAuth Authentication process
+                new OAuthAcquireAccessTokenTask().execute(uri);
+            }
+        }
     }
 
     /**
@@ -293,12 +306,13 @@ public class PreferencesActivity extends PreferenceActivity implements
     private void verifyCredentials(boolean reVerify) {
         if (reVerify || mUser.getCredentialsVerified() == CredentialsVerified.NEVER) {
             if (mUser.getConnection().getCredentialsPresent()) {
-                // Let's verify credentials
+                // Credentials are present, so we may verify them
                 // This is needed even for OAuth - to know Twitter Username
-                showDialog(DIALOG_CHECKING_CREDENTIALS);
-                new Thread(new VerifyCredentials()).start();
+                new VerifyCredentialsTask().execute();
             } else {
                 if (mUser.isOAuth() && reVerify) {
+                    // Credentials are not present,
+                    // so start asynchronous OAuth Authentication process 
                     new OAuthAcquireRequestTokenTask().execute();
                 }
             }
@@ -472,105 +486,16 @@ public class PreferencesActivity extends PreferenceActivity implements
                                     }
                                 }).create();
 
-            case DIALOG_CHECKING_CREDENTIALS:
-                mProgressDialog = new ProgressDialog(this);
-                mProgressDialog.setTitle(R.string.dialog_title_checking_credentials);
-                mProgressDialog.setMessage(getText(R.string.dialog_summary_checking_credentials));
-                return mProgressDialog;
-
             default:
                 return super.onCreateDialog(id);
         }
     }
-
-    private Handler mVerifyCredentialsHandler = new Handler() {
-        @Override
-        /**
-         * Credentials were verified just now!
-         */
-        public void handleMessage(Message msg) {
-            dismissDialog(DIALOG_CHECKING_CREDENTIALS);
-            switch (msg.what) {
-                case MSG_ACCOUNT_VALID:
-                    Toast.makeText(PreferencesActivity.this, R.string.authentication_successful,
-                            Toast.LENGTH_SHORT).show();
-                    break;
-                case MSG_ACCOUNT_INVALID:
-                case MSG_SERVICE_UNAVAILABLE_ERROR:
-                case MSG_SOCKET_TIMEOUT_EXCEPTION:
-                case MSG_CREDENTIALS_OF_OTHER_USER:
-                    showDialog(msg.what);
-                    break;
-                case MSG_CONNECTION_EXCEPTION:
-                    int mId = 0;
-                    try {
-                        mId = Integer.parseInt((String) msg.obj);
-                    } catch (Exception e) {
-                    }
-                    switch (mId) {
-                        case 404:
-                            mId = R.string.error_twitter_404;
-                            break;
-                        default:
-                            mId = R.string.error_connection_error;
-                            break;
-                    }
-                    Toast.makeText(PreferencesActivity.this, mId, Toast.LENGTH_LONG).show();
-                    break;
-            }
-
-            showUserProperties();
-        }
-    };
 
     /**
      * This semaphore helps to avoid ripple effect: changes in TwitterUser cause
      * changes in this activity ...
      */
     private boolean mCredentialsAreBeingVerified = false;
-
-    private class VerifyCredentials implements Runnable {
-        public void run() {
-            if (PreferencesActivity.this.mCredentialsAreBeingVerified) {
-                return;
-            }
-
-            try {
-                PreferencesActivity.this.mCredentialsAreBeingVerified = true;
-                try {
-                    if (mUser.verifyCredentials(true)) {
-                        mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler
-                                .obtainMessage(MSG_ACCOUNT_VALID, 1, 0));
-                        return;
-                    }
-                } catch (ConnectionException e) {
-                    mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler.obtainMessage(
-                            MSG_CONNECTION_EXCEPTION, 1, 0, e.toString()));
-                    return;
-                } catch (ConnectionAuthenticationException e) {
-                    mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler.obtainMessage(
-                            MSG_ACCOUNT_INVALID, 1, 0));
-                    return;
-                } catch (ConnectionCredentialsOfOtherUserException e) {
-                    mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler.obtainMessage(
-                            MSG_CREDENTIALS_OF_OTHER_USER, 1, 0));
-                    return;
-                } catch (ConnectionUnavailableException e) {
-                    mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler.obtainMessage(
-                            MSG_SERVICE_UNAVAILABLE_ERROR, 1, 0));
-                    return;
-                } catch (SocketTimeoutException e) {
-                    mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler.obtainMessage(
-                            MSG_SOCKET_TIMEOUT_EXCEPTION, 1, 0));
-                    return;
-                }
-                mVerifyCredentialsHandler.sendMessage(mVerifyCredentialsHandler.obtainMessage(
-                        MSG_ACCOUNT_INVALID, 1, 0));
-            } finally {
-                PreferencesActivity.this.mCredentialsAreBeingVerified = false;
-            }
-        }
-    }
 
     /*
      * (non-Javadoc)
@@ -585,12 +510,153 @@ public class PreferencesActivity extends PreferenceActivity implements
         }
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     };
-
+   
     /**
-     * @author yvolk This code is based on "BLOA" example,
+     * Assuming we already have credentials to verify, verify them
+     * @author yvolk
+     *
+     */
+    private class VerifyCredentialsTask extends AsyncTask<Void, Void, JSONObject> {
+        private ProgressDialog dlg;
+        private boolean skip = false;
+
+        @Override
+        protected void onPreExecute() {
+            dlg = ProgressDialog.show(PreferencesActivity.this,
+                    getText(R.string.dialog_title_checking_credentials),
+                    getText(R.string.dialog_summary_checking_credentials), true, // indeterminate
+                    // duration
+                    false); // not cancel-able
+
+            if (PreferencesActivity.this.mCredentialsAreBeingVerified) {
+                skip = true;
+            } else {
+                PreferencesActivity.this.mCredentialsAreBeingVerified = true;
+            }
+        }
+
+        @Override
+        protected JSONObject doInBackground(Void... arg0) {
+            JSONObject jso = null;
+
+            int what = MSG_NONE;
+            String message = "";
+            
+            if (!skip) {
+                what = MSG_ACCOUNT_INVALID;
+                try {
+                    if (mUser.verifyCredentials(true)) {
+                        what = MSG_ACCOUNT_VALID;
+                    }
+                } catch (ConnectionException e) {
+                    what = MSG_CONNECTION_EXCEPTION;
+                    message = e.toString();
+                } catch (ConnectionAuthenticationException e) {
+                    what = MSG_ACCOUNT_INVALID;
+                } catch (ConnectionCredentialsOfOtherUserException e) {
+                    what = MSG_CREDENTIALS_OF_OTHER_USER;
+                } catch (ConnectionUnavailableException e) {
+                    what = MSG_SERVICE_UNAVAILABLE_ERROR;
+                } catch (SocketTimeoutException e) {
+                    what = MSG_SOCKET_TIMEOUT_EXCEPTION;
+                }
+            }
+
+            try {
+                jso = new JSONObject();
+                jso.put("what", what);
+                jso.put("message", message);
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return jso;
+        }
+
+        /**
+         * Credentials were verified just now!
+         * This is in the UI thread, so we can mess with the UI
+         */
+        protected void onPostExecute(JSONObject jso) {
+            try {
+                dlg.dismiss();
+            } catch (Exception e1) { 
+                // Ignore this error  
+            }
+            boolean succeeded = false;
+            if (jso != null) {
+                try {
+                    int what = jso.getInt("what");
+                    String message = jso.getString("message");
+
+                    switch (what) {
+                        case MSG_ACCOUNT_VALID:
+                            Toast.makeText(PreferencesActivity.this, R.string.authentication_successful,
+                                    Toast.LENGTH_SHORT).show();
+                            succeeded = true;
+                            break;
+                        case MSG_ACCOUNT_INVALID:
+                        case MSG_SERVICE_UNAVAILABLE_ERROR:
+                        case MSG_SOCKET_TIMEOUT_EXCEPTION:
+                        case MSG_CREDENTIALS_OF_OTHER_USER:
+                            showDialog(what);
+                            break;
+                        case MSG_CONNECTION_EXCEPTION:
+                            int mId = 0;
+                            try {
+                                mId = Integer.parseInt(message);
+                            } catch (Exception e) {
+                            }
+                            switch (mId) {
+                                case 404:
+                                    mId = R.string.error_twitter_404;
+                                    break;
+                                default:
+                                    mId = R.string.error_connection_error;
+                                    break;
+                            }
+                            Toast.makeText(PreferencesActivity.this, mId, Toast.LENGTH_LONG).show();
+                            break;
+
+                    }
+                    showUserProperties();
+                } catch (JSONException e) {
+                    // Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            if (!skip) {
+                if (succeeded) {
+                    mUser.setCredentialsVerified(CredentialsVerified.SUCCEEDED);
+                } else {
+                    mUser.setCredentialsVerified(CredentialsVerified.FAILED);
+                }
+                PreferencesActivity.this.mCredentialsAreBeingVerified = false;
+            }
+        }
+    }
+    
+    /**
+     * Task 1 of 2 required for OAuth Authentication.
+     * See http://www.snipe.net/2009/07/writing-your-first-twitter-application-with-oauth/
+     * for good OAuth Authentication flow explanation.
+     *  
+     * During this task:
+     * 1. AndTweet ("Consumer") Requests "Request Token" from Twitter ("Service provider"), 
+     * 2. Waits that Request Token
+     * 3. Consumer directs User to Service Provider: opens Twitter site in Internet Browser window
+     *    in order to Obtain User Authorization.
+     * 4. This task ends.
+     * 
+     * What will occur later:
+     * 5. After User Authorized AndTweet in the Internet Browser,
+     *    Twitter site will redirect User back to
+     *    AndTweet and then the second OAuth task, , will start.
+     *   
+     * @author yvolk. This code is based on "BLOA" example,
      *         http://github.com/brione/Brion-Learns-OAuth yvolk: I had to move
      *         this code from OAuthActivity here in order to be able to show
-     *         ProgressDialog
+     *         ProgressDialog and to get rid of any "Black blank screens"
      */
     private class OAuthAcquireRequestTokenTask extends AsyncTask<Void, Void, JSONObject> {
         private OAuthConsumer mConsumer = null;
@@ -630,16 +696,18 @@ public class PreferencesActivity extends PreferenceActivity implements
             String message = "";
             String message2 = "";
             try {
+                TwitterUser tu = TwitterUser.getTwitterUser(PreferencesActivity.this);
+
                 // This is really important. If you were able to register your
                 // real callback Uri with Twitter, and not some fake Uri
                 // like I registered when I wrote this example, you need to send
                 // null as the callback Uri in this function call. Then
                 // Twitter will correctly process your callback redirection
                 String authUrl = mProvider.retrieveRequestToken(mConsumer,
-                        OAuthActivity.CALLBACK_URI.toString());
-                OAuthActivity.saveRequestInformation(PreferencesActivity.this.mUser
-                        .getSharedPreferences(), mConsumer.getToken(), mConsumer.getTokenSecret());
+                        CALLBACK_URI.toString());
+                saveRequestInformation(tu.getSharedPreferences(), mConsumer.getToken(), mConsumer.getTokenSecret());
 
+                // Start Internet Browser
                 PreferencesActivity.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
                         .parse(authUrl)));
 
@@ -687,16 +755,21 @@ public class PreferencesActivity extends PreferenceActivity implements
 
         // This is in the UI thread, so we can mess with the UI
         protected void onPostExecute(JSONObject jso) {
-            dlg.dismiss();
+            try {
+                dlg.dismiss();
+            } catch (Exception e1) { 
+                // Ignore this error  
+            }
             if (jso != null) {
                 try {
                     boolean succeeded = jso.getBoolean("succeeded");
                     String message = jso.getString("message");
 
                     if (succeeded) {
-                        // For OAuth we get credentials in special activity
-                        Intent i = new Intent(PreferencesActivity.this, OAuthActivity.class);
-                        startActivity(i);
+                        // This may be necessary in order to start properly 
+                        // after redirection from Twitter
+                        // Because of initializations in onCreate...
+                        PreferencesActivity.this.finish();
                     } else {
                         Toast.makeText(PreferencesActivity.this, message, Toast.LENGTH_LONG).show();
 
@@ -712,5 +785,201 @@ public class PreferencesActivity extends PreferenceActivity implements
             }
         }
     }
+    
+    /**
+     * Task 2 of 2 required for OAuth Authentication.
+     *  
+     * During this task:
+     * 1. AndTweet ("Consumer") exchanges "Request Token", 
+     *    obtained earlier from Twitter ("Service provider"),
+     *    for "Access Token". 
+     * 2. Stores the Access token for all future interactions with Twitter.
+     * 
+     * @author yvolk. This code is based on "BLOA" example,
+     *         http://github.com/brione/Brion-Learns-OAuth yvolk: I had to move
+     *         this code from OAuthActivity here in order to be able to show
+     *         ProgressDialog and to get rid of any "Black blank screens"
+     */
+    private class OAuthAcquireAccessTokenTask extends AsyncTask<Uri, Void, JSONObject> {
+        private OAuthConsumer mConsumer = null;
 
+        private OAuthProvider mProvider = null;
+
+        private ProgressDialog dlg;
+
+        @Override
+        protected void onPreExecute() {
+            dlg = ProgressDialog.show(PreferencesActivity.this,
+                    getText(R.string.dialog_title_acquiring_an_access_token),
+                    getText(R.string.dialog_summary_acquiring_an_access_token), true, // indeterminate
+                    // duration
+                    false); // not cancel-able
+        }
+
+        @Override
+        protected JSONObject doInBackground(Uri... uris) {
+            JSONObject jso = null;
+
+            // We don't need to worry about any saved states: we can reconstruct
+            // the state
+            mConsumer = new CommonsHttpOAuthConsumer(OAuthKeys.TWITTER_CONSUMER_KEY,
+                    OAuthKeys.TWITTER_CONSUMER_SECRET);
+
+            mProvider = new CommonsHttpOAuthProvider(ConnectionOAuth.TWITTER_REQUEST_TOKEN_URL,
+                    ConnectionOAuth.TWITTER_ACCESS_TOKEN_URL, ConnectionOAuth.TWITTER_AUTHORIZE_URL);
+
+            // It turns out this was the missing thing to making standard
+            // Activity launch mode work
+            mProvider.setOAuth10a(true);
+
+            String message = "";
+            
+            boolean authenticated = false;
+            TwitterUser tu = TwitterUser.getTwitterUser(PreferencesActivity.this);
+
+            Uri uri = uris[0];
+            if (uri != null && CALLBACK_URI.getScheme().equals(uri.getScheme())) {
+                String token = tu.getSharedPreferences().getString(ConnectionOAuth.REQUEST_TOKEN, null);
+                String secret = tu.getSharedPreferences().getString(ConnectionOAuth.REQUEST_SECRET, null);
+
+                tu.clearAuthInformation();
+                if (!tu.isOAuth()) {
+                    Log.e(TAG, "Connection is not of OAuth type ???");
+                } else {
+                    ConnectionOAuth conn = ((ConnectionOAuth) tu.getConnection());
+                    try {
+                        // Clear the request stuff, we've used it already
+                        saveRequestInformation(tu.getSharedPreferences(), null, null);
+
+                        if (!(token == null || secret == null)) {
+                            mConsumer.setTokenWithSecret(token, secret);
+                        }
+                        String otoken = uri.getQueryParameter(OAuth.OAUTH_TOKEN);
+                        String verifier = uri.getQueryParameter(OAuth.OAUTH_VERIFIER);
+
+                        /*
+                         * yvolk 2010-07-08: It appeared that this may be not true:
+                         * Assert.assertEquals(otoken, mConsumer.getToken()); (e.g.
+                         * if User denied access during OAuth...) hence this is not
+                         * Assert :-)
+                         */
+                        if (otoken != null || mConsumer.getToken() != null) {
+                            // We send out and save the request token, but the
+                            // secret is not the same as the verifier
+                            // Apparently, the verifier is decoded to get the
+                            // secret, which is then compared - crafty
+                            // This is a sanity check which should never fail -
+                            // hence the assertion
+                            // Assert.assertEquals(otoken,
+                            // mConsumer.getToken());
+
+                            // This is the moment of truth - we could throw here
+                            mProvider.retrieveAccessToken(mConsumer, verifier);
+                            // Now we can retrieve the goodies
+                            token = mConsumer.getToken();
+                            secret = mConsumer.getTokenSecret();
+                            authenticated = true;
+                        }
+                    } catch (OAuthMessageSignerException e) {
+                        message = e.getMessage();
+                        e.printStackTrace();
+                    } catch (OAuthNotAuthorizedException e) {
+                        message = e.getMessage();
+                        e.printStackTrace();
+                    } catch (OAuthExpectationFailedException e) {
+                        message = e.getMessage();
+                        e.printStackTrace();
+                    } catch (OAuthCommunicationException e) {
+                        message = e.getMessage();
+                        e.printStackTrace();
+                    } finally {
+                        if (authenticated) {
+                            conn.saveAuthInformation(token, secret);
+                        }
+                    }
+                }
+            }
+
+            try {
+                jso = new JSONObject();
+                jso.put("succeeded", authenticated);
+                jso.put("message", message);
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return jso;
+        }
+
+        // This is in the UI thread, so we can mess with the UI
+        protected void onPostExecute(JSONObject jso) {
+            try {
+                dlg.dismiss();
+            } catch (Exception e1) { 
+                // Ignore this error  
+            }
+            if (jso != null) {
+                try {
+                    boolean succeeded = jso.getBoolean("succeeded");
+                    String message = jso.getString("message");
+
+                    Log.d(TAG, this.getClass().getName() + " ended, "
+                            + (succeeded ? "authenticated" : "authentication failed"));
+                    
+                    if (succeeded) {
+                        // Credentials are present, so we may verify them
+                        // This is needed even for OAuth - to know Twitter Username
+                        new VerifyCredentialsTask().execute();
+
+                    } else {
+                        String message2 = PreferencesActivity.this
+                        .getString(R.string.dialog_title_authentication_failed);
+                        if (message != null && message.length() > 0) {
+                            message2 = message2 + ": " + message;
+                            Log.d(TAG, message);
+                        }
+                        Toast.makeText(PreferencesActivity.this, message2, Toast.LENGTH_LONG).show();
+
+                        TwitterUser tu = TwitterUser.getTwitterUser(PreferencesActivity.this);
+                        tu.clearAuthInformation();
+                        tu.setCredentialsVerified(CredentialsVerified.FAILED);
+                        showUserProperties();
+                    }
+                    
+                    // Now we can return to the PreferencesActivity
+                    // We need new Intent in order to forget that URI from OAuth Service Provider
+                    //Intent intent = new Intent(PreferencesActivity.this, PreferencesActivity.class);
+                    //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    //startActivity(intent);
+                    
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static void saveRequestInformation(SharedPreferences settings, String token,
+            String secret) {
+        // null means to clear the old values
+        SharedPreferences.Editor editor = settings.edit();
+        if (token == null) {
+            editor.remove(ConnectionOAuth.REQUEST_TOKEN);
+            Log.d(TAG, "Clearing Request Token");
+        } else {
+            editor.putString(ConnectionOAuth.REQUEST_TOKEN, token);
+            Log.d(TAG, "Saving Request Token: " + token);
+        }
+        if (secret == null) {
+            editor.remove(ConnectionOAuth.REQUEST_SECRET);
+            Log.d(TAG, "Clearing Request Secret");
+        } else {
+            editor.putString(ConnectionOAuth.REQUEST_SECRET, secret);
+            Log.d(TAG, "Saving Request Secret: " + secret);
+        }
+        editor.commit();
+
+    }
+    
 }

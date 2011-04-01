@@ -16,8 +16,23 @@
 
 	I didn't find any "standard" way to store Recent changes... yet,
 	so let them be here for awhile :-)
+	
+Legend:
+
+ * -> Security Fix
+ # -> Bug Fix
+ $ -> Language fix or change
+ + -> Addition
+ ^ -> Change
+ - -> Removed
+ ! -> Note  	
  -->
 <document xmlns:android="http://schemas.android.com/apk/res/android">
+	<package android:versionName="1.1.1" android:versionCode="37" versionDate="2011-04-01">
+	^ Blank screen in Preferences activity during authentication after redirect from Twitter web site
+	^ "Verify" preference moved to the top of the "User Credentials" preference's section,
+		because User can really start from tapping it (typing Username is not required for OAuth)!
+	</package>
 	<package android:versionName="1.1.0" android:versionCode="36" versionDate="2011-03-12">
 	# Fixed "black on black" tweet text on "Single tweet" window on Android v.2.3.3
 	^ Style definitions in "res/values/themes.xml" reworked

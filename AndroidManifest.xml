@@ -15,7 +15,7 @@
 	limitations under the License.
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.xorcode.andtweet" android:versionName="1.1.0" android:versionCode="36">
+	package="com.xorcode.andtweet" android:versionName="1.1.1" android:versionCode="37">
 
 	<uses-sdk android:minSdkVersion="3"/>
 
@@ -88,9 +88,15 @@
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"></action>
 			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				<data android:scheme="andtweet-oauth" android:host="twitt" />
+			</intent-filter>
 		</activity>
 
-		<activity android:name=".SplashActivity" android:launchMode="singleTask">
+		<activity android:name=".SplashActivity" android:launchMode="singleTop">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"></action>
 				<category android:name="android.intent.category.DEFAULT"></category>
@@ -98,7 +104,7 @@
 		</activity>
 
 		<activity android:name=".SplashMoreActivity"
-			android:launchMode="singleTask">
+			android:launchMode="singleTop">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"></action>
 				<category android:name="android.intent.category.DEFAULT"></category>
@@ -118,16 +124,6 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
-        </activity>
-
-        <activity android:name=".net.OAuthActivity"
-			android:label="@string/oauth_activity_label">
-			<intent-filter>
-				<action android:name="android.intent.action.VIEW" />
-				<category android:name="android.intent.category.DEFAULT" />
-				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="andtweet-oauth" android:host="twitt" />
-			</intent-filter>
         </activity>
 
 	</application>
