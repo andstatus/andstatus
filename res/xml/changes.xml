@@ -1,52 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
-	Copyright (C) 2011 yvolk (Yuri Volkov), http://yurivolkov.com
-	
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-	
-	     http://www.apache.org/licenses/LICENSE-2.0
-	
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
-
-	I didn't find any "standard" way to store Recent changes... yet,
-	so let them be here for awhile :-)
-	
-Legend:
-
- * -> Security Fix
- # -> Bug Fix
- $ -> Language fix or change
- + -> Addition
- ^ -> Change
- - -> Removed
- ! -> Note  	
- -->
+<!-- Copyright (C) 2011 yvolk (Yuri Volkov), http://yurivolkov.com Licensed 
+	under the Apache License, Version 2.0 (the "License"); you may not use this 
+	file except in compliance with the License. You may obtain a copy of the 
+	License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by 
+	applicable law or agreed to in writing, software distributed under the License 
+	is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY 
+	KIND, either express or implied. See the License for the specific language 
+	governing permissions and limitations under the License. I didn't find any 
+	"standard" way to store Recent changes... yet, so let them be here for awhile 
+	:-) Legend: * -> Security Fix # -> Bug Fix $ -> Language fix or change + 
+	-> Addition ^ -> Change - -> Removed ! -> Note -->
 <document xmlns:android="http://schemas.android.com/apk/res/android">
-	<package android:versionName="1.1.1" android:versionCode="37" versionDate="2011-04-01">
-	^ Blank screen in Preferences activity during authentication after redirect from Twitter web site
-	^ "Verify" preference moved to the top of the "User Credentials" preference's section,
-		because User can really start from tapping it (typing Username is not required for OAuth)!
+	<package android:versionName="1.1.2" android:versionCode="38"
+		versionDate="2011-04-29">
+		1. Fixed bug preventing timeline position restore.
+		2. Fixed
+		errors loading data from the Internet due to parallel OAuth requests.
+		(e.g. during initial loading of the User's timeline)
+		3. Another pass of
+		timeline code cleaning. Now AndTweet timelines open faster due to less
+		requests and redrawing.
+		4. Made first step in switching from parallel
+		and, in fact, synchronous requests (Twitter commands) processing to
+		the sequential and queued processing, see {@link
+		com.xorcode.andtweet.TimelineActivity#queueIntent}
 	</package>
-	<package android:versionName="1.1.0" android:versionCode="36" versionDate="2011-03-12">
-	# Fixed "black on black" tweet text on "Single tweet" window on Android v.2.3.3
-	^ Style definitions in "res/values/themes.xml" reworked
+	<package android:versionName="1.1.1" android:versionCode="37"
+		versionDate="2011-04-01">
+		1. Blank screen in Preferences activity during
+		authentication after redirect from Twitter web site
+		2. "Verify"
+		preference moved to the top of the "User Credentials" preference's
+		section, because User can really start from tapping it (typing
+		Username is not required for OAuth)!
 	</package>
-	<package android:versionName="1.0.5" android:versionCode="35" versionDate="2011-02-19">
-	+ "Favorites" list added.
-	+ Favorites are protected from automatic deletion (unlike other old tweets)
-	+ Click on Widget opens the timeline, that has something new, in this order: messages, mentions, tweets
-	^ Maximum History time (to store tweets) is 1 year now
-	^ OAuth is On By Default.
-	^ Mentions are not "quick Search" any more, they are just another type of "Timeline".
-	  So we may search in Mentions also.
-	^ "Automatic updates" setting is not being turned off by the System.
-	(in beta1:)
-	# Fixed issue: Old records are not being deleted
+	<package android:versionName="1.1.0" android:versionCode="36"
+		versionDate="2011-03-12">
+		1. Fixed "black on black" tweet text on "Single tweet"
+		window on Android v.2.3.3
+		2. Style definitions in
+		"res/values/themes.xml" reworked
+	</package>
+	<package android:versionName="1.0.5" android:versionCode="35"
+		versionDate="2011-02-19">
+		1. "Favorites" list added.
+		2. Favorites are protected from
+		automatic deletion (unlike other old tweets)
+		3. Click on Widget opens
+		the timeline, that has something new, in this order: messages,
+		mentions, tweets
+		4. Maximum History time (to store tweets) is 1 year
+		now
+		5. OAuth is On By Default.
+		6. Mentions are not "quick Search" any
+		more, they are just another type of "Timeline". So we may search in
+		Mentions also.
+		7. "Automatic updates" setting is not being turned off
+		by the System. (in beta1:)
+		8. Fixed issue: Old records are not being
+		deleted
 	</package>
 </document>

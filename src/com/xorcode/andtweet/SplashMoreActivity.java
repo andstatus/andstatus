@@ -39,9 +39,6 @@ public class SplashMoreActivity extends Activity {
 	// Constants
 	public static final String TAG = "SplashMoreActivity";
 
-	// Local parameters
-	boolean mSkipPreferences = false;
-
 	// Local objects
 	private ViewFlipper mFlipper;
 
@@ -80,11 +77,7 @@ public class SplashMoreActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
         if (TwitterUser.getTwitterUser(this).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-            mSkipPreferences = true;
-        }
-		if (mSkipPreferences) {
 			Intent intent = new Intent(this, TweetListActivity.class);
-			intent.setAction("com.xorcode.andtweet.INITIALIZE");
 			startActivity(intent);
 			finish();
 		}

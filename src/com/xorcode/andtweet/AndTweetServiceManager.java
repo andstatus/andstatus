@@ -31,6 +31,12 @@ public class AndTweetServiceManager extends BroadcastReceiver {
 
     public static final String TAG = "AndTweetServiceManager";
 
+    /**
+     * Is the service started. See
+     * http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d
+     */
+    public static boolean isStarted = false;
+    
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
@@ -52,6 +58,7 @@ public class AndTweetServiceManager extends BroadcastReceiver {
      * @return
      */
     public static void startAndTweetService(Context context) {
+        isStarted = true;
         SharedPreferences mSP = PreferenceManager.getDefaultSharedPreferences(context);
         if (mSP.contains("automatic_updates") && mSP.getBoolean("automatic_updates", false)) {
             Log.d(TAG, "Automatic updates turned on, so starting repeating alarm.");
@@ -62,4 +69,9 @@ public class AndTweetServiceManager extends BroadcastReceiver {
         }
     }
 
+    public static void stopAndTweetService(Context context) {
+        isStarted = false;
+        context.stopService(new Intent(IAndTweetService.class.getName()));
+    }
+    
 }

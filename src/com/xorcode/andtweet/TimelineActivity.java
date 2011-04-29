@@ -23,7 +23,6 @@ import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -50,6 +49,9 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.AbsListView.OnScrollListener;
+
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
@@ -130,6 +132,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     public static final String BUNDLE_KEY_IS_LOADING = "isLoading";
 
+    /**
+     * Key prefix for the stored list position
+     */
     protected static final String LAST_POS_KEY = "last_position";
 
     public static final int MILLISECONDS = 1000;
@@ -157,7 +162,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      */
     protected final static int PAGE_SIZE = 20;
 
-    protected boolean positionLoaded = false;
+    /**
+     * Is saved position restored (or some default positions set)?
+     */
+    protected boolean positionRestored = false;
 
     /**
      * Number of items (Tweets) in the list. It is used to find out when we need
@@ -171,7 +179,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected boolean mIsBound;
 
     /**
-     * See mServiceCallback also
+     * See {@link #mServiceCallback} also
      */
     protected IAndTweetService mService;
 
@@ -250,97 +258,131 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
             Log.v(TAG, "onResume");
         }
+        bindToService();
         updateTitle();
-        loadPosition();
+        restorePosition();
     }
 
     /**
-     * Position is being saved per User and per TimeleneType
+     * Save Position per User and per TimeleneType Actually we save two Item
+     * IDs: firstItemId - the first visible Tweet lastItemId - the last tweet we
+     * should retrieve before restoring position
      */
     private void savePosition() {
-        int firstItem = getListView().getLastVisiblePosition();
-        long firstItemId = getListView().getAdapter().getItemId(firstItem);
-        if (firstItemId < 1) {
-            // Maybe we can find previous tweet
-            firstItemId = getListView().getAdapter().getItemId(firstItem - 1);
+        long firstItemId = 0;
+        long lastItemId = 0;
+        int firstScrollPos = getListView().getFirstVisiblePosition();
+        int lastScrollPos = -1;
+        android.widget.ListAdapter la = getListView().getAdapter();
+        if (firstScrollPos >= la.getCount() - 1) {
+            // Skip footer
+            firstScrollPos = la.getCount() - 2;
         }
-        TwitterUser tu = TwitterUser.getTwitterUser(this);
-        tu.getSharedPreferences().edit().putLong(positionKey(), firstItemId).commit();
-        if (mSearchMode) {
-            // Remember query string for which the position was saved
-            tu.getSharedPreferences().edit().putString(positionQueryStringKey(), mQueryString)
-                    .commit();
+        if (firstScrollPos >= 0) {
+            // for (int ind =0; ind < la.getCount(); ind++) {
+            // Log.v(TAG, "itemId[" + ind + "]=" + la.getItemId(ind));
+            // }
+            firstItemId = la.getItemId(firstScrollPos);
+            // We will load one more "page of tweets" below (older) current top
+            // item
+            lastScrollPos = firstScrollPos + PAGE_SIZE;
+            if (lastScrollPos >= la.getCount() - 1) {
+                // Skip footer
+                lastScrollPos = la.getCount() - 2;
+            }
+            // Log.v(TAG, "lastScrollPos=" + lastScrollPos);
+            if (lastScrollPos >= 0) {
+                lastItemId = la.getItemId(lastScrollPos);
+            } else {
+                lastItemId = firstItemId;
+            }
         }
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-            Log.v(TAG, "Saved position " + tu.getUsername() + "-" + positionKey() + "="
-                    + firstItemId + "; list position=" + firstItem);
+        if (firstItemId > 0) {
+            TwitterUser tu = TwitterUser.getTwitterUser(this);
+            tu.getSharedPreferences().edit().putLong(positionKey(false), firstItemId)
+                    .putLong(positionKey(true), lastItemId).commit();
+            if (mSearchMode) {
+                // Remember query string for which the position was saved
+                tu.getSharedPreferences().edit().putString(positionQueryStringKey(), mQueryString)
+                        .commit();
+            }
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "Saved position " + tu.getUsername() + "-" + positionKey(false) + "="
+                        + firstItemId + "; index=" + firstScrollPos + "; lastId="
+                        + lastItemId + "; index=" + lastScrollPos);
+            }
         }
     }
 
     /**
-     * Load position saved for this user and for this type of timeline
+     * Restore (First visible item) position saved for this user and for this type of timeline
      */
-    private void loadPosition() {
+    private void restorePosition() {
         TwitterUser tu = TwitterUser.getTwitterUser(this);
         boolean loaded = false;
         long firstItemId = -3;
         try {
             int scrollPos = -1;
-            firstItemId = getSavedPosition();
+            firstItemId = getSavedPosition(false);
             if (firstItemId > 0) {
                 scrollPos = listPosForId(firstItemId);
             }
-            if (scrollPos > 0) {
-                getListView().setSelectionFromTop(scrollPos - 1, 0);
+            if (scrollPos >= 0) {
+                getListView().setSelectionFromTop(scrollPos, 0);
                 loaded = true;
                 if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-                    Log.v(TAG, "Loaded position " + tu.getUsername() + "-" + positionKey() + "="
-                            + firstItemId);
+                    Log.v(TAG, "Restored position " + tu.getUsername() + "-" + positionKey(false) + "="
+                            + firstItemId +"; list index=" + scrollPos);
                 }
             } else {
                 // There is no stored position
                 if (mSearchMode) {
                     // In search mode start from the most recent tweet!
-                    scrollPos = 1;
+                    scrollPos = 0;
                 } else {
-                    scrollPos = getListView().getCount() - 1;
+                    scrollPos = getListView().getCount() - 2;
                 }
-                setSelectionAtBottom(scrollPos);
+                if (scrollPos >= 0) {
+                    setSelectionAtBottom(scrollPos);
+                }
             }
         } catch (Exception e) {
             Editor ed = tu.getSharedPreferences().edit();
-            ed.remove(positionKey());
+            ed.remove(positionKey(false));
             ed.commit();
             firstItemId = -2;
         }
         if (!loaded && Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-            Log.v(TAG, "Didn't load position " + tu.getUsername() + "-" + positionKey() + "="
+            Log.v(TAG, "Didn't restore position " + tu.getUsername() + "-" + positionKey(false) + "="
                     + firstItemId);
         }
-        positionLoaded = true;
+        positionRestored = true;
     }
 
     /**
-     * @return Saved position (tweet id) or <0 if none found...
+     * @param lastRow Key for First visible row (false) or Last row that will be retrieved (true)
+     * @return Saved Tweet id or < 0 if none was found.
      */
-    protected long getSavedPosition() {
+    protected long getSavedPosition(boolean lastRow) {
         TwitterUser tu = TwitterUser.getTwitterUser(this);
-        long firstItemId = -3;
+        long savedItemId = -3;
         if (!mSearchMode
                 || (mQueryString.compareTo(tu.getSharedPreferences().getString(
                         positionQueryStringKey(), "")) == 0)) {
             // Load saved position in Search mode only if that position was
             // saved for the same query string
-            firstItemId = tu.getSharedPreferences().getLong(positionKey(), -1);
+            savedItemId = tu.getSharedPreferences().getLong(positionKey(lastRow), -1);
         }
-        return firstItemId;
+        return savedItemId;
     }
 
     /**
-     * @return Key to store position (tweet id)
+     * Two rows are store for each position:
+     * @param lastRow Key for First visible row (false) or Last row that will be retrieved (true)
+     * @return Key to store position (tweet id of the first visible row)
      */
-    private String positionKey() {
-        return LAST_POS_KEY + mTimelineType + (mSearchMode ? "_search" : "");
+    private String positionKey(boolean lastRow) {
+        return LAST_POS_KEY + mTimelineType + (mSearchMode ? "_search" : "") + (lastRow ? "_last" : "");
     }
 
     /**
@@ -381,7 +423,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
         for (listPos = 0; (!itemFound && (listPos < itemCount)); listPos++) {
             long itemId = lv.getItemIdAtPosition(listPos);
-            itemFound = (itemId == searchedId);
+            if (itemId == searchedId) {
+                itemFound = true;
+                break;
+            }
         }
 
         if (!itemFound) {
@@ -401,6 +446,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     @Override
     protected void onPause() {
         super.onPause();
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            Log.v(TAG, "onPause");
+        }
         // The activity just lost its focus,
         // so we have to start notifying the User about new events after his
         // moment.
@@ -409,9 +457,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         ((ListView) findViewById(android.R.id.list)).setFastScrollEnabled(false);
         clearNotifications();
         savePosition();
-        positionLoaded = false;
+        positionRestored = false;
+        disconnectService();
     }
-
+   
     private void clearNotifications() {
         try {
             // TODO: Check if there are any notifications
@@ -428,6 +477,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        disconnectService();
+    }
+    
     @Override
     protected Dialog onCreateDialog(int id) {
         switch (id) {
@@ -739,13 +794,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * Initialize service and bind to it.
      */
     protected void bindToService() {
-        if (mSP.contains("automatic_updates") && mSP.getBoolean("automatic_updates", false)) {
+        if (!mIsBound) {
+            mIsBound = true;
             Intent serviceIntent = new Intent(IAndTweetService.class.getName());
-            if (!mIsBound) {
-                startService(serviceIntent);
-                mIsBound = true;
+            if (!AndTweetServiceManager.isStarted) {
+                // Ensure that AndTweetService is running
+                AndTweetServiceManager.startAndTweetService(this);
             }
-            bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
+            // startService(serviceIntent);
+            bindService(serviceIntent, mServiceConnection, 0);
         }
     }
 
@@ -760,8 +817,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 } catch (RemoteException e) {
                     // Service crashed, not much we can do.
                 }
+                mService = null;
             }
-            unbindService(mConnection);
+            unbindService(mServiceConnection);
+            //AndTweetServiceManager.stopAndTweetService(this);
             mIsBound = false;
         }
     }
@@ -779,13 +838,18 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     /**
      * Service connection handler.
      */
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName name, IBinder service) {
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "onServiceConnected");
+            }
             mService = IAndTweetService.Stub.asInterface(service);
             // We want to monitor the service for as long as we are
             // connected to it.
             try {
                 mService.registerCallback(mServiceCallback);
+                // Push the queue
+                queueIntent(null);
             } catch (RemoteException e) {
                 // Service has already crashed, nothing much we can do
                 // except hope that it will restart.
@@ -798,6 +862,39 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     };
 
     /**
+     * Intents queue to be send to the AndTweetService
+     */
+    private BlockingQueue<Intent> queueCommands = new ArrayBlockingQueue<Intent>(100, true);
+    
+    /**
+     * Send broadcast with the intent to the AndTweet Service after it will be
+     * connected to this activity. We should wait for the connection because
+     * otherwise we won't receive callback from the service
+     * 
+     * @param intent Intent to send, null if we only want to push the queue
+     */
+    protected synchronized void queueIntent(Intent intent) {
+        if (intent != null) {
+            if (!queueCommands.contains(intent)) {
+                if (!queueCommands.offer(intent)) {
+                    Log.e(TAG, "queueCommands is full?");
+                }
+            }
+        }
+        if (mService != null) {
+            // Service is connected, so we can send queued Intents
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "Sendings " + queueCommands.size() + " broadcasts");
+            }
+            while (true) {
+                Intent element = queueCommands.poll();
+                if (element == null) { break; }
+                sendBroadcast(element);
+            }
+        }
+    }
+    
+    /**
      * Service callback handler.
      */
     protected IAndTweetServiceCallback mServiceCallback = new IAndTweetServiceCallback.Stub() {
@@ -808,6 +905,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
          * @throws RemoteException
          */
         public void tweetsChanged(int value) throws RemoteException {
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "tweetsChanged value=" + value);
+            }
             mHandler.sendMessage(mHandler.obtainMessage(MSG_TWEETS_CHANGED, value, 0));
         }
 
@@ -818,6 +918,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
          * @throws RemoteException
          */
         public void dataLoading(int value) throws RemoteException {
+            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                Log.v(TAG, "dataLoading value=" + value);
+            }
             mHandler.sendMessage(mHandler.obtainMessage(MSG_DATA_LOADING, value, 0));
         }
 
@@ -858,7 +961,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             mTimelineType = timelineType_new;
         }
 
-        positionLoaded = false;
         mQueryString = intentNew.getStringExtra(SearchManager.QUERY);
         mSearchMode = (mQueryString != null && mQueryString.length() > 0);
         if (mSearchMode) {

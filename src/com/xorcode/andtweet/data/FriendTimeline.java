@@ -108,7 +108,7 @@ public class FriendTimeline {
     }
 
     /**
-     * Load the user and friends timeline.
+     * Load the user and friends timeline from the Internet to the device
      * 
      * @param firstRun
      * @throws ConnectionException

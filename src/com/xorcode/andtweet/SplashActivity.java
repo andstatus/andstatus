@@ -54,8 +54,6 @@ public class SplashActivity extends Activity {
 	private SharedPreferences mSP;
 	private LinearLayout mContainer;
 
-	boolean mSkipPreferences = false;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -118,11 +116,7 @@ public class SplashActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
         if (TwitterUser.getTwitterUser(this).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-            mSkipPreferences = true;
-        }
-		if (mSkipPreferences) {
 			Intent intent = new Intent(this, TweetListActivity.class);
-			intent.setAction("com.xorcode.andtweet.INITIALIZE");
 			startActivity(intent);
 			finish();
 		}

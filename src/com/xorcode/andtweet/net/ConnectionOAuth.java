@@ -16,6 +16,8 @@
 
 package com.xorcode.andtweet.net;
 
+import com.xorcode.andtweet.AndTweetService;
+
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.exception.OAuthCommunicationException;
@@ -292,9 +294,15 @@ public class ConnectionOAuth extends Connection {
             e.printStackTrace();
         } catch (OAuthCommunicationException e) {
             e.printStackTrace();
+        } catch (NullPointerException e) {
+            // It looks like a bug in the library, but we have to catch it 
+            Log.e(TAG, "NullPointerException was caught, URL='" + url + "'");
+            e.printStackTrace();
         }
-        Log.d(TAG, "getTimeline '" + url + "' "
-                + (ok ? "OK, " + jArr.length() + " statuses" : "FAILED"));
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+            Log.d(TAG, "getTimeline '" + url + "' "
+                    + (ok ? "OK, " + jArr.length() + " statuses" : "FAILED"));
+        }
         return jArr;
     }
 

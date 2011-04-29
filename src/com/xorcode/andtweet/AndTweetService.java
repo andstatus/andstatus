@@ -122,7 +122,7 @@ public class AndTweetService extends Service {
 	 * to AndTweetService that it should fetch the tweets and
 	 * other information.
 	 */
-	private static final String ACTION_FETCH = ACTIONPREFIX + "FETCH";
+	public static final String ACTION_FETCH = ACTIONPREFIX + "FETCH";
 
     /**	
      * These names of extras are used in the Intent-notification of new Tweets
@@ -170,7 +170,7 @@ public class AndTweetService extends Service {
 	 */
     // TODO: Maybe this should be additional setting...
     public static boolean updateWidgetsOnEveryUpdate = true;
-
+    
 	private boolean mNotificationsEnabled;
 	private boolean mNotificationsVibrate;
 
@@ -220,7 +220,7 @@ public class AndTweetService extends Service {
 
 	@Override
 	public void onDestroy() {
-		// Unregister all callbacks.
+	    // Unregister all callbacks.
 		mCallbacks.kill();
 
 		cancelRepeatingAlarm();
@@ -261,8 +261,10 @@ public class AndTweetService extends Service {
 	private void handleIntent(String action) {
 		if (ACTION_FETCH.equals(action)) {
 			Log.d(TAG, "ACTION_FETCH");
+            // TODO: Maybe we shouldn't call them both at once?!
+			// Now everything is in one thread
             mHandler.sendEmptyMessage(MSG_UPDATE_TIMELINE);
-            mHandler.sendEmptyMessage(MSG_UPDATE_DIRECT_MESSAGES);
+            //mHandler.sendEmptyMessage(MSG_UPDATE_DIRECT_MESSAGES);
 		}
 		else if (ACTION_START_ALARM.equals(action)) {
 			Log.d(TAG, "ACTION_START_ALARM");
@@ -290,6 +292,9 @@ public class AndTweetService extends Service {
 	/**
 	 * Bookkeeping method that should be called before a Twitter transaction is to be performed.
 	 * 
+	 * TODO: Switch from parallel requests processing to the sequential and queued processing!
+	 * See  {@link com.xorcode.andtweet.TimelineActivity#queueIntent}
+	 * 
 	 * @param runnable the {@link Runnable} that is about to connect to Twitter
 	 * @param logMsg a log message to include for debugging
 	 * @return the number of broadcast receivers
@@ -298,9 +303,9 @@ public class AndTweetService extends Service {
 	    Log.d(TAG, logMsg);
 	    mFetchingThreads.add(runnable);
 	    if (mFetchingThreads.size() == 1) {
-	        Log.d(TAG, "No other threads running so starting new broadcast.");
 	        mWakeLock = getWakeLock();
 	        mBroadcastListenerCount = mCallbacks.beginBroadcast();
+            Log.d(TAG, "No other threads running so starting new broadcast for " + mBroadcastListenerCount  + " listeners");
 	    }
 	    
 	    return mBroadcastListenerCount;
@@ -571,12 +576,13 @@ public class AndTweetService extends Service {
             if (stuffRunning(this)) {
                 return;
             }
-		    final int N = startStuff(this, "Getting tweets and replies.");
+		    final int N = startStuff(this, "Getting tweets, replies and messages.");
 		    
             // TODO: Cycle for all users...
 
 		    int aNewTweets = 0;
 			int aReplyCount = 0;
+            int aNewMessages = 0;
 
 	        if (TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext()).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
 	            // Only if User was authenticated already
@@ -589,8 +595,14 @@ public class AndTweetService extends Service {
     				fl.loadTimeline();
     				aNewTweets = fl.newCount();
     				aReplyCount += fl.replyCount();
-    				
-    				fl.pruneOldRecords();
+                    
+                    fl.pruneOldRecords();
+
+                    fl = new FriendTimeline(AndTweetService.this.getApplicationContext(), AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
+                    fl.loadTimeline();
+                    aNewMessages = fl.newCount();
+                    fl.pruneOldRecords();
+
     			} catch (ConnectionException e) {
     				Log.e(TAG, "mLoadTimeline Connection Exception: " + e.toString());
     			} catch (SQLiteConstraintException e) {
@@ -606,37 +618,52 @@ public class AndTweetService extends Service {
     			}
             }
 
-			finishUpdateTimeline(aNewTweets, aReplyCount, N);
+			finishUpdateTimeline(aNewTweets, aReplyCount, aNewMessages, N);
 
-			endStuff(this, "Ended getting " + aNewTweets + " tweets and "
-			        + aReplyCount + " replies.");
+			endStuff(this, "Ended getting " + aNewTweets + " tweets, "
+			        + aReplyCount + " replies and " + aNewMessages + " messages.");
 		}
 	};
 
-	private void finishUpdateTimeline(int tweetsChanged, int repliesChanged,
+	private void finishUpdateTimeline(int tweetsChanged, int repliesChanged, int messagesChanged,
 			final int N) {
 	    
 		for (int i = 0; i < N; i++) {
 			try {
-				Log.d(TAG, "Notifying callback no. " + i);
+				Log.d(TAG, "finishUpdateTimeline, Notifying callback no. " + i);
 				IAndTweetServiceCallback cb = mCallbacks.getBroadcastItem(i);
 				if (cb != null) {
-					cb.tweetsChanged(tweetsChanged);
-					cb.repliesChanged(repliesChanged);
+				    if (tweetsChanged > 0) {
+				        cb.tweetsChanged(tweetsChanged);
+				    }
+				    if (repliesChanged > 0) {
+				        cb.repliesChanged(repliesChanged);
+				    }
+				    if (messagesChanged > 0) {
+				        cb.messagesChanged(messagesChanged);
+				    }
+					cb.dataLoading(0);
 				}
 			} catch (RemoteException e) {
 				Log.e(TAG, e.toString());
 			}
 		}
-		if (tweetsChanged > 0 || repliesChanged == 0) {
-			notifyNewTweets(tweetsChanged, NOTIFY_TIMELINE);
-		}
+		boolean notified = false;
 		if (repliesChanged > 0) {
 			notifyNewTweets(repliesChanged, NOTIFY_REPLIES);
+            notified = true;
 		}
+        if (messagesChanged > 0) {
+            notifyNewTweets(messagesChanged, NOTIFY_DIRECT_MESSAGE);
+            notified = true;
+        }
+        if (tweetsChanged > 0 || !notified) {
+            notifyNewTweets(tweetsChanged, NOTIFY_TIMELINE);
+            notified = true;
+        }
 	}
 
-	// TODO: Merge this with mLoadTimeline
+	// TODO: Delete this: This is Merged with mLoadTimeline
 	protected Runnable mLoadMessages = new Runnable() {
 		public void run() {
 		    if (stuffRunning(this)) {
@@ -678,7 +705,13 @@ public class AndTweetService extends Service {
 
 		for (int i = 0; i < N; i++) {
 			try {
-				mCallbacks.getBroadcastItem(i).messagesChanged(messagesChanged);
+                Log.d(TAG, "finishUpdateDirectMessages, Notifying callback no. " + i);
+                IAndTweetServiceCallback cb = mCallbacks.getBroadcastItem(i);
+                if (cb != null) {
+                    cb.messagesChanged(messagesChanged);
+                    cb.dataLoading(0);
+                }
+				
 			} catch (RemoteException e) {
 				Log.e(TAG, e.toString());
 			}
