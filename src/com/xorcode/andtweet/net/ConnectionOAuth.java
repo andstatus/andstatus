@@ -202,30 +202,24 @@ public class ConnectionOAuth extends Connection {
     }
 
     private JSONObject getRequest(HttpGet get) throws ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+            ConnectionAuthenticationException {
         JSONObject jso = null;
+        boolean ok = false;
         try {
             mConsumer.sign(get);
             String response = mClient.execute(get, new BasicResponseHandler());
             jso = new JSONObject(response);
             // Log.d(TAG, "authenticatedQuery: " + jso.toString(2));
-        } catch (JSONException e) {
-            e.printStackTrace();
-            throw new ConnectionException(e);
-        } catch (OAuthMessageSignerException e) {
-            e.printStackTrace();
-        } catch (OAuthExpectationFailedException e) {
-            e.printStackTrace();
-        } catch (OAuthCommunicationException e) {
-            e.printStackTrace();
+            ok = true;
         } catch (HttpResponseException e) {
             e.printStackTrace();
             throw new ConnectionAuthenticationException(e.getLocalizedMessage());
-        } catch (ClientProtocolException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            throw new ConnectionException(e.getLocalizedMessage());
+        }
+        if (!ok) {
+            jso = null;
         }
         return jso;
     }
@@ -322,9 +316,9 @@ public class ConnectionOAuth extends Connection {
     }
 
     private JSONObject postRequest(HttpPost post) throws ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+            ConnectionAuthenticationException {
         JSONObject jso = null;
+        boolean ok = false;
         try {
             // Maybe we'll need this:
             // post.setParams(...);
@@ -333,34 +327,24 @@ public class ConnectionOAuth extends Connection {
             mConsumer.sign(post);
             String response = mClient.execute(post, new BasicResponseHandler());
             jso = new JSONObject(response);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (OAuthMessageSignerException e) {
-            e.printStackTrace();
-        } catch (OAuthExpectationFailedException e) {
-            e.printStackTrace();
-        } catch (OAuthCommunicationException e) {
-            e.printStackTrace();
+            ok = true;
         } catch (HttpResponseException e) {
             e.printStackTrace();
             throw new ConnectionAuthenticationException(e.getLocalizedMessage());
-        } catch (ClientProtocolException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } finally {
-
+            throw new ConnectionException(e.getLocalizedMessage());
+        }
+        if (!ok) {
+            jso = null;
         }
         return jso;
     }
 
     @Override
     public JSONObject updateStatus(String message, long inReplyToId)
-            throws UnsupportedEncodingException, ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+            throws UnsupportedEncodingException, ConnectionException, 
+            ConnectionAuthenticationException {
         HttpPost post = new HttpPost(STATUSES_UPDATE_URL);
         LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
         out.add(new BasicNameValuePair("status", message));

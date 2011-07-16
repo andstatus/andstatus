@@ -59,7 +59,7 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 	private static final String TAG = AndTweetAppWidgetProvider.class
 			.getSimpleName();
 
-	private int msgType = AndTweetService.NOTIFY_INVALID;
+	private AndTweetService.CommandEnum msgType = AndTweetService.CommandEnum.UNKNOWN;
 	private int numSomethingReceived = 0;
 	private static Object xlock = new Object();
 	private long instanceId = Math.abs(new java.util.Random().nextInt());
@@ -78,7 +78,7 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
             }
 			Bundle extras = intent.getExtras();
 			if (extras != null) {
-				msgType = extras.getInt(AndTweetService.EXTRA_MSGTYPE);
+				msgType = AndTweetService.CommandEnum.load(extras.getString(AndTweetService.EXTRA_MSGTYPE));
 				numSomethingReceived = extras
 						.getInt(AndTweetService.EXTRA_NUMTWEETS);
 				int[] appWidgetIds = extras
@@ -219,19 +219,19 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 		        }
 				// Calculate new values
 				switch (msgType) {
-				case AndTweetService.NOTIFY_REPLIES:
+				case NOTIFY_REPLIES:
 					data.numMentions += numSomethingReceived;
 					break;
 		
-				case AndTweetService.NOTIFY_DIRECT_MESSAGE:
+				case NOTIFY_DIRECT_MESSAGE:
 					data.numMessages += numSomethingReceived;
 					break;
 		
-				case AndTweetService.NOTIFY_TIMELINE:
+				case NOTIFY_TIMELINE:
 					data.numTweets += numSomethingReceived;
 					break;
 		
-				case AndTweetService.NOTIFY_CLEAR:
+				case NOTIFY_CLEAR:
 					data.clear();
 					break;
 		

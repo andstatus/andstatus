@@ -273,8 +273,7 @@ public abstract class Connection {
      */
     public abstract JSONObject updateStatus(String message, long inReplyToId)
             throws UnsupportedEncodingException, ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException;
+            ConnectionAuthenticationException;
 
     /**
      * Get the user's own and friends timeline.

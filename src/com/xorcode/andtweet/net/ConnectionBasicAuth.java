@@ -146,7 +146,7 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONObject updateStatus(String message, long inReplyToId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+    public JSONObject updateStatus(String message, long inReplyToId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException {
 		String url = STATUSES_UPDATE_URL;
 		List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
@@ -336,11 +336,9 @@ public class ConnectionBasicAuth extends Connection {
 	 * @param url
 	 * @return String
 	 * @throws ConnectionException 
-	 * @throws ConnectionUnavailableException 
 	 * @throws ConnectionAuthenticationException 
-	 * @throws SocketTimeoutException 
 	 */
-	private String postRequest(String url, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	private String postRequest(String url, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException {
 		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), formParams);
 	}
 
@@ -351,10 +349,9 @@ public class ConnectionBasicAuth extends Connection {
 	 * @param client
 	 * @return String
 	 * @throws ConnectionException
-	 * @throws ConnectionUnavailableException 
 	 * @throws ConnectionAuthenticationException 
 	 */
-	private String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	private String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException {
 		String result = null;
 		int statusCode = 0;
 		HttpPost postMethod = new HttpPost(url);
@@ -369,8 +366,6 @@ public class ConnectionBasicAuth extends Connection {
 			HttpResponse httpResponse = client.execute(postMethod);
 			statusCode = httpResponse.getStatusLine().getStatusCode();
 			result = retrieveInputStream(httpResponse.getEntity());
-		} catch (SocketTimeoutException e) {
-			throw e;
 		} catch (Exception e) {
             Log.e(TAG, "postRequest: " + e.toString());
 			throw new ConnectionException(e);
@@ -423,9 +418,8 @@ public class ConnectionBasicAuth extends Connection {
 	 * @param path
 	 * @throws ConnectionException
 	 * @throws ConnectionAuthenticationException
-	 * @throws ConnectionUnavailableException
 	 */
-	private void parseStatusCode(int code, String path) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException {
+	private void parseStatusCode(int code, String path) throws ConnectionException, ConnectionAuthenticationException {
 		switch (code) {
 		case 200:
 		case 304:
@@ -439,7 +433,7 @@ public class ConnectionBasicAuth extends Connection {
 		case 500:
 		case 502:
 		case 503:
-			throw new ConnectionUnavailableException(String.valueOf(code));
+			throw new ConnectionException(String.valueOf(code));
 		}
 	}
 

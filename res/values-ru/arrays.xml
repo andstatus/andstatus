@@ -189,6 +189,16 @@
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>
 	</string-array>
+	<string-array name="notification_queue_formats">
+		<item>"{0} неотправленное cообщение"</item>
+		<item>"{0} неотправленных сообщения"</item>
+		<item>"{0} неотправленных сообщений"</item>
+	</string-array>
+	<string-array name="notification_queue_patterns">
+		<item>".*[^1]1|1"</item>
+		<item>".*[^1][234]|2|3|4"</item>
+		<item>".*"</item>
+	</string-array>
 	<string-array name="reltime_days_ago_formats">
 		<item>"вчера"</item>
 		<item>"{0} день назад"</item>

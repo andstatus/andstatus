@@ -90,15 +90,9 @@
 	<string name="messages_activity">Личные сообщения</string>
 	<string name="not_set">не задан</string>
 	<string name="notification_title">AndTweet</string>
-	<string name="notification_tweet_singular">{0} новый твит</string>
-	<string name="notification_tweet_plural">{0,number} новых твитов</string>
 	<string name="notification_new_tweet_format">У вас {0}.</string>
-	<string name="notification_message_singular">{0} новое сообщение</string>
-	<string name="notification_message_plural">{0,number} новых сообщений</string>
 	<string name="notification_new_message_format">У вас {0}.</string>
 	<string name="notification_title_messages">Новые личные сообщения</string>
-	<string name="notification_mention_singular">{0} новое упоминание</string>
-	<string name="notification_mention_plural">{0,number} новых упоминаний</string>
 	<string name="notification_new_mention_format">У вас {0}.</string>
 	<string name="notification_title_mentions">Новые упоминания</string>
 	<string name="oauth_activity_label">OAuth</string>

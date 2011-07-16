@@ -1,5 +1,6 @@
 /* 
  * Copyright (C) 2008 Torgny Bjers
+ * Copyright (c) 2011 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +56,7 @@ import java.util.concurrent.BlockingQueue;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
+import com.xorcode.andtweet.AndTweetService.CommandEnum;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 
 /**
@@ -106,13 +108,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     // Dialog identifier codes
     public static final int DIALOG_AUTHENTICATION_FAILED = 1;
 
-    public static final int DIALOG_SENDING_MESSAGE = 2;
-
     public static final int DIALOG_SERVICE_UNAVAILABLE = 3;
 
     public static final int DIALOG_EXTERNAL_STORAGE = 4;
-
-    public static final int DIALOG_TIMELINE_LOADING = 5;
 
     public static final int DIALOG_EXTERNAL_STORAGE_MISSING = 6;
 
@@ -461,16 +459,23 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         disconnectService();
     }
    
+    /**
+     *  Cancel notifications of loading timeline
+     *  They were set in 
+     *  @see com.xorcode.andtweet.AndTweetService.CommandExecutor#notifyNewTweets(int, CommandEnum)
+     */
     private void clearNotifications() {
         try {
             // TODO: Check if there are any notifications
             // and if none than don't waist time for this:
 
-            mNM.cancelAll();
+            mNM.cancel(AndTweetService.CommandEnum.NOTIFY_TIMELINE.ordinal());
+            mNM.cancel(AndTweetService.CommandEnum.NOTIFY_REPLIES.ordinal());
+            mNM.cancel(AndTweetService.CommandEnum.NOTIFY_DIRECT_MESSAGE.ordinal());
 
             // Reset notifications on AppWidget(s)
             Intent intent = new Intent(AndTweetService.ACTION_APPWIDGET_UPDATE);
-            intent.putExtra(AndTweetService.EXTRA_MSGTYPE, AndTweetService.NOTIFY_CLEAR);
+            intent.putExtra(AndTweetService.EXTRA_MSGTYPE, AndTweetService.CommandEnum.NOTIFY_CLEAR.save());
             sendBroadcast(intent);
         } finally {
             // Nothing yet...
@@ -505,20 +510,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                                     public void onClick(DialogInterface Dialog, int whichButton) {
                                     }
                                 }).create();
-
-            case DIALOG_SENDING_MESSAGE:
-                mProgressDialog = new ProgressDialog(this);
-                mProgressDialog.setIcon(android.R.drawable.ic_dialog_info);
-                mProgressDialog.setTitle(R.string.dialog_title_sending_message);
-                mProgressDialog.setMessage(getText(R.string.dialog_summary_sending_message));
-                return mProgressDialog;
-
-            case DIALOG_TIMELINE_LOADING:
-                mProgressDialog = new ProgressDialog(this);
-                mProgressDialog.setIcon(android.R.drawable.ic_dialog_info);
-                mProgressDialog.setTitle(R.string.dialog_title_timeline_loading);
-                mProgressDialog.setMessage(getText(R.string.dialog_summary_timeline_loading));
-                return mProgressDialog;
 
             case DIALOG_EXTERNAL_STORAGE:
                 return new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_info)
@@ -661,6 +652,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 startActivity(intent);
                 break;
                 
+            case R.id.reload_menu_item:
+                manualReload();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -849,7 +843,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             try {
                 mService.registerCallback(mServiceCallback);
                 // Push the queue
-                queueIntent(null);
+                sendCommand(null);
             } catch (RemoteException e) {
                 // Service has already crashed, nothing much we can do
                 // except hope that it will restart.
@@ -864,34 +858,47 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     /**
      * Intents queue to be send to the AndTweetService
      */
-    private BlockingQueue<Intent> queueCommands = new ArrayBlockingQueue<Intent>(100, true);
+    private BlockingQueue<Intent> mCommands = new ArrayBlockingQueue<Intent>(100, true);
     
     /**
-     * Send broadcast with the intent to the AndTweet Service after it will be
+     * Send broadcast with the command (in the form of Intent) to the AndTweet Service after it will be
      * connected to this activity. We should wait for the connection because
      * otherwise we won't receive callback from the service
      * 
      * @param intent Intent to send, null if we only want to push the queue
      */
-    protected synchronized void queueIntent(Intent intent) {
+    protected synchronized void sendCommand(Intent intent) {
         if (intent != null) {
-            if (!queueCommands.contains(intent)) {
-                if (!queueCommands.offer(intent)) {
-                    Log.e(TAG, "queueCommands is full?");
+            if (!mCommands.contains(intent)) {
+                if (!mCommands.offer(intent)) {
+                    Log.e(TAG, "mCommands is full?");
                 }
             }
         }
         if (mService != null) {
             // Service is connected, so we can send queued Intents
             if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-                Log.v(TAG, "Sendings " + queueCommands.size() + " broadcasts");
+                Log.v(TAG, "Sendings " + mCommands.size() + " broadcasts");
             }
             while (true) {
-                Intent element = queueCommands.poll();
+                Intent element = mCommands.poll();
                 if (element == null) { break; }
                 sendBroadcast(element);
             }
         }
+    }
+
+    /**
+     * Prepare command to be sent to the AndTweetService.
+     * Some parameters of this command (Extras) may be added to the prepared intent 
+     * before calling {@link #sendCommand(Intent)}
+     * @param command to be prepared
+     * @return intent to be sent
+     */
+    protected Intent prepareCommand(CommandEnum command) {
+        Intent intent = new Intent(AndTweetService.ACTION_GO);
+        intent.putExtra(AndTweetService.EXTRA_MSGTYPE, command.save());
+        return intent;
     }
     
     /**
@@ -985,4 +992,21 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             Log.v(TAG, "setTimelineType; type=\"" + mTimelineType + "\"");
         }
     }
+
+    protected void manualReload() {
+        // Only newer tweets (newer that last loaded) are being loaded
+        // from the Internet,
+        // old tweets are not being reloaded.
+//        showDialog(DIALOG_TIMELINE_LOADING);
+//        mListFooter.setVisibility(View.VISIBLE);
+        
+        // Ask service to load data for this mTimelineType
+        AndTweetService.CommandEnum command = CommandEnum.FETCH_TIMELINE;
+        switch (mTimelineType) {
+            case Tweets.TIMELINE_TYPE_MESSAGES:
+                command = CommandEnum.FETCH_MESSAGES;
+        }
+        sendCommand(prepareCommand(command));
+    }
+    
 }

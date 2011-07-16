@@ -16,14 +16,9 @@
 
 package com.xorcode.andtweet;
 
-import java.net.SocketTimeoutException;
-
-import org.json.JSONException;
-
 import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -42,14 +37,10 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
-import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.data.PagedCursorAdapter;
 import com.xorcode.andtweet.data.SearchableCursorAdapter;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweetDatabase.Users;
-import com.xorcode.andtweet.net.ConnectionAuthenticationException;
-import com.xorcode.andtweet.net.ConnectionException;
-import com.xorcode.andtweet.net.ConnectionUnavailableException;
 
 /**
  * @author torgny.bjers
@@ -172,19 +163,6 @@ public class MessageListActivity extends TimelineActivity {
 	protected void onSaveInstanceState(Bundle outState) {
 		outState.putBoolean(BUNDLE_KEY_IS_LOADING, mIsLoading);
 		super.onSaveInstanceState(outState);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.reload_menu_item:
-			setProgressBarIndeterminateVisibility(true);
-			mListFooter.setVisibility(View.VISIBLE);
-			Thread thread = new Thread(mManualReload);
-			thread.start();
-			break;
-		}
-		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
@@ -427,40 +405,6 @@ public class MessageListActivity extends TimelineActivity {
 	 */
 	protected Runnable mSendMessage = new Runnable() {
 		public void run() {
-		}
-	};
-
-	/**
-	 * Handles threaded manual reload of the timeline.
-	 */
-	protected Runnable mManualReload = new Runnable() {
-		public void run() {
-			mIsLoading = true;
-			FriendTimeline directMessages = new FriendTimeline(MessageListActivity.this, AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
-			int aNewMessages = 0;
-			try {
-				directMessages.loadTimeline();
-				aNewMessages = directMessages.newCount();
-			} catch (ConnectionException e) {
-				Log.e(TAG, "mManualReload Connection Exception: " + e.toString());
-				return;
-			} catch (SQLiteConstraintException e) {
-				Log.e(TAG, "mManualReload database exception: " + e.toString());
-				return;
-			} catch (JSONException e) {
-				Log.e(TAG, "mManualReload JSON exception: " + e.toString());
-				return;
-			} catch (ConnectionAuthenticationException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_MANUAL_RELOAD, 0));
-				return;
-			} catch (ConnectionUnavailableException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR, MSG_MANUAL_RELOAD, 0));
-				return;
-			} catch (SocketTimeoutException e) {
-				mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION, MSG_MANUAL_RELOAD, 0));
-				return;
-			}
-			mHandler.sendMessage(mHandler.obtainMessage(MSG_MANUAL_RELOAD, aNewMessages, 0));
 		}
 	};
 

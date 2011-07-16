@@ -39,7 +39,7 @@
 		1. Fixed "black on black" tweet text on "Single tweet"
 		window on Android v.2.3.3
 		2. Style definitions in
-		"res/values/themes.xml" reworked
+		"res/values/themes.xml" reworked.
 	</package>
 	<package android:versionName="1.0.5" android:versionCode="35"
 		versionDate="2011-02-19">
@@ -58,6 +58,31 @@
 		7. "Automatic updates" setting is not being turned off
 		by the System. (in beta1:)
 		8. Fixed issue: Old records are not being
-		deleted
+		deleted.
+	</package>
+	<package android:versionName="1.1.3" android:versionCode="39"
+		versionDate="2011-07-16">
+		1. Queued tweet sending implemented. Now User doesn't
+		have to wait for the "Command execution on a Server"
+		and may continue reading and writing tweets.
+		Moreover, the same "(close to the) Guaranteed message delivery"
+		approach works
+		for the other commands also: Timeline reload, 
+		Favorites creation and deletion.
+		AndTweet retries to send commands to the server on every
+		automatic update and during any manual command or message 
+		(Reload or Status update). User is being notified
+		about number of messages currently in the queue 
+		(If Notifications are being enabled).
+		2. Changes in the application permissions. 
+		Two (location) permissions were removed,
+		one permission was added to help asynchronous message delivery
+		(ACCESS_NETWORK_STATE). 
+		3. Fixed bug preventing timeline position restore.
+		4. Fixed errors loading data from the Internet due to parallel
+		 OAuth requests. (e.g. during initial loading of the User's
+		  timeline).
+		5. Another pass of timeline code cleaning. Now AndTweet's 
+		timelines open faster thanks to less requests and redrawing.
 	</package>
 </document>

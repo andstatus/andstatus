@@ -178,6 +178,14 @@
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
+	<string-array name="notification_queue_formats">
+		<item>"{0} message is"</item>
+		<item>"{0} messages are"</item>
+	</string-array>
+	<string-array name="notification_queue_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
 	<string-array name="reltime_days_ago_formats">
 		<item>"yesterday"</item>
 		<item>"{0} days ago"</item>

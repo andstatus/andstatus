@@ -101,10 +101,10 @@ public class FriendTimeline {
      * @throws ConnectionUnavailableException
      * @throws SocketTimeoutException
      */
-    public void loadTimeline() throws ConnectionException, JSONException,
+    public boolean loadTimeline() throws ConnectionException, JSONException,
             SQLiteConstraintException, ConnectionAuthenticationException,
             ConnectionUnavailableException, SocketTimeoutException {
-        loadTimeline(false);
+        return loadTimeline(false);
     }
 
     /**
@@ -118,9 +118,10 @@ public class FriendTimeline {
      * @throws ConnectionUnavailableException
      * @throws SocketTimeoutException
      */
-    public void loadTimeline(boolean firstRun) throws ConnectionException, JSONException,
+    public boolean loadTimeline(boolean firstRun) throws ConnectionException, JSONException,
             SQLiteConstraintException, ConnectionAuthenticationException,
             ConnectionUnavailableException, SocketTimeoutException {
+        boolean ok = false;
         mNewTweets = 0;
         mReplies = 0;
         long lastId = mLastStatusId;
@@ -145,6 +146,7 @@ public class FriendTimeline {
                     break;
             }
             if (jArr != null) {
+                ok = true;
                 for (int index = 0; index < jArr.length(); index++) {
                     JSONObject jo = jArr.getJSONObject(index);
                     long lId = jo.getLong("id");
@@ -163,6 +165,7 @@ public class FriendTimeline {
                         mLastStatusId).commit();
             }
         }
+        return ok;
     }
 
     /**
