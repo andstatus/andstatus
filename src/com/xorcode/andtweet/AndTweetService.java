@@ -17,8 +17,6 @@
 
 package com.xorcode.andtweet;
 
-import java.io.UnsupportedEncodingException;
-import java.net.SocketTimeoutException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -59,9 +57,7 @@ import com.xorcode.andtweet.appwidget.AndTweetAppWidgetProvider;
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
-import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
-import com.xorcode.andtweet.net.ConnectionUnavailableException;
 import com.xorcode.andtweet.util.I18n;
 
 /**
@@ -192,7 +188,10 @@ public class AndTweetService extends Service {
         DESTROY_FAVORITE("destroy-favorite"),
 
         UPDATE_STATUS("update-status"),
+        DESTROY_STATUS("destroy-status"),
 
+        RATE_LIMIT_STATUS("rate-limit-status"),
+        
         /**
          * Notify User about commands in the Queue
          */
@@ -200,6 +199,7 @@ public class AndTweetService extends Service {
         
         /**
          * Commands to the Widget
+         * New tweets|messages were successfully loaded from the server
          */
         NOTIFY_DIRECT_MESSAGE("notify-direct-message"),
         NOTIFY_TIMELINE("notify-timeline"),
@@ -652,6 +652,14 @@ public class AndTweetService extends Service {
                         ok = updateStatus(status, inReplyToId);
                         retry = !ok;
                         break;
+                    case DESTROY_STATUS:
+                        ok = destroyStatus(commandData.itemId);
+                        // Retry in a case of an error
+                        retry = !ok;
+                        break;
+                    case RATE_LIMIT_STATUS:
+                        ok = rateLimitStatus();
+                        break;
                     default:
                         Log.e(TAG, "Unexpected command here " + commandData);
                 }
@@ -712,7 +720,6 @@ public class AndTweetService extends Service {
                             break;
                     }
                 } catch (JSONException e) {
-                    // Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -720,7 +727,6 @@ public class AndTweetService extends Service {
         }
         
         /**
-         * 
          * @param create true - create, false - destroy
          * @param statusId
          * @return boolean ok
@@ -737,16 +743,8 @@ public class AndTweetService extends Service {
                     .destroyFavorite(statusId);
                 }
                 ok = (result != null);
-            } catch (UnsupportedEncodingException e) {
-                Log.e(TAG, e.toString());
             } catch (ConnectionException e) {
                 Log.e(TAG, (create ? "create" : "destroy") + "Favorite Connection Exception: " + e.toString());
-            } catch (ConnectionAuthenticationException e) {
-
-            } catch (ConnectionUnavailableException e) {
-
-            } catch (SocketTimeoutException e) {
-
             }
 
             if (ok) {
@@ -779,6 +777,38 @@ public class AndTweetService extends Service {
         }
 
         /**
+         * @param statusId
+         * @return boolean ok
+         */
+        private boolean destroyStatus(long statusId) {
+            boolean ok = false;
+            JSONObject result = new JSONObject();
+            try {
+                result = TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext()).getConnection()
+                    .destroyStatus(statusId);
+                ok = (result != null);
+            } catch (ConnectionException e) {
+                Log.e(TAG, "destroyStatus Connection Exception: " + e.toString());
+            }
+
+            if (ok) {
+                // And delete the status from the local storage
+                try {
+                    FriendTimeline fl = new FriendTimeline(AndTweetService.this.getApplicationContext(),
+                            AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
+                    fl.destroyStatus(statusId);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error destroying status locally: " + e.toString());
+                }
+            }
+            
+            // TODO: Maybe we need to notify the caller about the result?!
+
+            d(TAG, "Destroying status " + (ok ? "succeded" : "failed") + ", id=" + statusId);
+            return ok;
+        }
+
+        /**
          * 
          * @param status
          * @param inReplyToId
@@ -791,12 +821,8 @@ public class AndTweetService extends Service {
                 result = TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext()).getConnection()
                 .updateStatus(status.trim(), inReplyToId);
                 ok = (result != null);
-            } catch (UnsupportedEncodingException e) {
-                Log.e(TAG, e.toString());
             } catch (ConnectionException e) {
-                Log.e(TAG, "updateStatus Connection Exception: " + e.toString());
-            } catch (ConnectionAuthenticationException e) {
-                Log.e(TAG, "updateStatus Connection Authentication Exception: " + e.toString());
+                Log.e(TAG, "updateStatus Exception: " + e.toString());
             }
             if (ok) {
                 // The tweet was sent successfully
@@ -859,14 +885,6 @@ public class AndTweetService extends Service {
                     Log.e(TAG, "mLoadTimeline Connection Exception: " + e.toString());
                 } catch (SQLiteConstraintException e) {
                     Log.e(TAG, "mLoadTimeline SQLite Exception: " + e.toString());
-                } catch (JSONException e) {
-                    Log.e(TAG, "mLoadTimeline JSON Exception: " + e.toString());
-                } catch (ConnectionAuthenticationException e) {
-                    Log.e(TAG, "mLoadTimeline Authentication Exception: " + e.toString());
-                } catch (ConnectionUnavailableException e) {
-                    Log.e(TAG, "mLoadTimeline FAIL Whale: " + e.toString());
-                } catch (SocketTimeoutException e) {
-                    Log.e(TAG, "mLoadTimeline Connection Timeout: " + e.toString());
                 }
             }
 
@@ -1070,6 +1088,41 @@ public class AndTweetService extends Service {
             intent.putExtra(EXTRA_MSGTYPE, msgType.save());
             intent.putExtra(EXTRA_NUMTWEETS, numTweets);
             sendBroadcast(intent);
+        }
+        
+
+        /**
+         * Ask the the Twitter service of 
+         * how many more requests are allowed: number of remaining API calls.
+         * @return ok
+         */
+        private boolean rateLimitStatus() {
+            boolean ok = false;
+            JSONObject result = new JSONObject();
+            try {
+                result = TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext()).getConnection()
+                .rateLimitStatus();
+                ok = (result != null);
+            } catch (ConnectionException e) {
+                Log.e(TAG, "rateLimitStatus Exception: " + e.toString());
+            }
+            
+            if (ok){
+                for (int i = 0; i < mBroadcastListenerCount; i++) {
+                    try {
+                        IAndTweetServiceCallback cb = mCallbacks.getBroadcastItem(i);
+                        if (cb != null) {
+                            cb.rateLimitStatus(result.getInt("remaining_hits")
+                                    , result.getInt("hourly_limit"));
+                        }
+                    } catch (RemoteException e) {
+                        d(TAG, e.toString());
+                    } catch (JSONException e) {
+                        Log.e(TAG, e.toString());
+                    }
+                }
+            }
+            return ok;
         }
     }
       

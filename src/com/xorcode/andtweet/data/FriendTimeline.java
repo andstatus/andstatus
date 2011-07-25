@@ -16,7 +16,6 @@
 
 package com.xorcode.andtweet.data;
 
-import java.net.SocketTimeoutException;
 import java.util.Date;
 
 import org.json.JSONArray;
@@ -39,9 +38,7 @@ import com.xorcode.andtweet.PreferencesActivity;
 import com.xorcode.andtweet.TwitterUser;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
-import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionException;
-import com.xorcode.andtweet.net.ConnectionUnavailableException;
 import com.xorcode.andtweet.util.SelectionAndArgs;
 
 /**
@@ -95,15 +92,8 @@ public class FriendTimeline {
      * Load the user and friends timeline.
      * 
      * @throws ConnectionException
-     * @throws JSONException
-     * @throws SQLiteConstraintException
-     * @throws ConnectionAuthenticationException
-     * @throws ConnectionUnavailableException
-     * @throws SocketTimeoutException
      */
-    public boolean loadTimeline() throws ConnectionException, JSONException,
-            SQLiteConstraintException, ConnectionAuthenticationException,
-            ConnectionUnavailableException, SocketTimeoutException {
+    public boolean loadTimeline() throws ConnectionException {
         return loadTimeline(false);
     }
 
@@ -112,15 +102,8 @@ public class FriendTimeline {
      * 
      * @param firstRun
      * @throws ConnectionException
-     * @throws JSONException
-     * @throws SQLiteConstraintException
-     * @throws ConnectionAuthenticationException
-     * @throws ConnectionUnavailableException
-     * @throws SocketTimeoutException
      */
-    public boolean loadTimeline(boolean firstRun) throws ConnectionException, JSONException,
-            SQLiteConstraintException, ConnectionAuthenticationException,
-            ConnectionUnavailableException, SocketTimeoutException {
+    public boolean loadTimeline(boolean firstRun) throws ConnectionException {
         boolean ok = false;
         mNewTweets = 0;
         mReplies = 0;
@@ -147,13 +130,17 @@ public class FriendTimeline {
             }
             if (jArr != null) {
                 ok = true;
-                for (int index = 0; index < jArr.length(); index++) {
-                    JSONObject jo = jArr.getJSONObject(index);
-                    long lId = jo.getLong("id");
-                    if (lId > lastId) {
-                        lastId = lId;
+                try {
+                    for (int index = 0; index < jArr.length(); index++) {
+                        JSONObject jo = jArr.getJSONObject(index);
+                        long lId = jo.getLong("id");
+                        if (lId > lastId) {
+                            lastId = lId;
+                        }
+                        insertFromJSONObject(jo);
                     }
-                    insertFromJSONObject(jo);
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
             if (mNewTweets > 0) {

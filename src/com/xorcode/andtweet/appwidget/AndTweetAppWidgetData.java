@@ -58,9 +58,9 @@ public class AndTweetAppWidgetData {
 	 */
 	public static final String PREF_DATECLEARED_KEY = "datecleared";
 	/**
-	 *	Date and time when data was updated last time
+	 *	Date and time when data was checked on the server last time
 	 */
-	public static final String PREF_DATEUPDATED_KEY = "dateupdated";
+	public static final String PREF_DATECHECKED_KEY = "datechecked";
 
 	private Context mContext;
 	private int mappWidgetId;
@@ -76,10 +76,16 @@ public class AndTweetAppWidgetData {
 	public int numMentions = 0;
 	public int numMessages = 0;
 
-	// When counters where cleared
+    /**
+     *  When server was successfully checked for new tweets
+     *  If there was some new data on the server, it was loaded that time.
+     */
+    public long dateChecked = 0;
+	/**
+	 *  dateChecked before counters were cleared.
+	 */
 	public long dateCleared = 0;
-	// When data was updated  last time
-	public long dateUpdated = 0;
+	
  	public boolean changed = false;
 	
 	public AndTweetAppWidgetData(Context context, int appWidgetId) {
@@ -88,14 +94,28 @@ public class AndTweetAppWidgetData {
 		prefsFileName = PREFS_FILE_NAME + mappWidgetId;
 	}
 
-	public void clear() {
+	/**
+	 * Clear counters
+	 */
+	public void clearCounters() {
 		numMentions = 0;
 		numMessages = 0;
 		numTweets = 0;
-		dateCleared = Long.valueOf(System.currentTimeMillis());
-		dateUpdated = dateCleared;
+		// New Tweets etc. will be since dateChecked ! 
+		dateCleared = dateChecked;
 		changed = true;
 	}
+
+    /**
+     * Data on the server was successfully checked now
+     */
+    public void checked() {
+        dateChecked = Long.valueOf(System.currentTimeMillis());
+        if (dateCleared == 0) {
+            clearCounters();
+        }
+        changed = true;
+    }
 	
 	public boolean load() {
 		boolean Ok = false;
@@ -107,20 +127,20 @@ public class AndTweetAppWidgetData {
 			nothingPref = prefs.getString(PREF_NOTHING_KEY, null);
 			if (nothingPref == null) {
 				nothingPref = mContext
-						.getString(R.string.appwidget_nothing_default);
+						.getString(R.string.appwidget_nothingnew_default);
 				// TODO Add AndTweet Debug option...
 //				if (debug) {
 //					nothingPref += " (" + mappWidgetId + ")";
 //				}
 			}
-			dateCleared = prefs.getLong(PREF_DATECLEARED_KEY, 0);
-			if (dateCleared == 0) {
-				clear();
+            dateChecked = prefs.getLong(PREF_DATECHECKED_KEY, 0);
+			if (dateChecked == 0) {
+				clearCounters();
 			} else {
 				numTweets = prefs.getInt(PREF_NUM_TWEETS_KEY, 0);
 				numMentions = prefs.getInt(PREF_NUM_MENTIONS_KEY, 0);
 				numMessages = prefs.getInt(PREF_NUM_MESSAGES_KEY, 0);
-				dateUpdated = prefs.getLong(PREF_DATEUPDATED_KEY, 0);
+	            dateCleared = prefs.getLong(PREF_DATECLEARED_KEY, 0);
 			}
 
 	        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
@@ -148,11 +168,8 @@ public class AndTweetAppWidgetData {
 				prefs.putInt(PREF_NUM_MENTIONS_KEY, numMentions);
 				prefs.putInt(PREF_NUM_MESSAGES_KEY, numMessages);
 				
+                prefs.putLong(PREF_DATECHECKED_KEY, dateChecked);
 				prefs.putLong(PREF_DATECLEARED_KEY, dateCleared);
-				if (changed) {
-					dateUpdated = Long.valueOf(System.currentTimeMillis());
-					prefs.putLong(PREF_DATEUPDATED_KEY, dateUpdated);
-				}
 				prefs.commit();
 	            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
     				Log.v(TAG, "Prefs for appWidgetId=" + mappWidgetId

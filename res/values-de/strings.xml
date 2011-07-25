@@ -29,7 +29,7 @@
 
     <string name="appwidget_configure_instructions">Passe die Mitteilung an, die im AndTweet
     widget gezeigt wird, falls sich nichts geändert hat:</string>
-    <string name="appwidget_nothing_default">Nichts Neues seit:</string>
+    <string name="appwidget_nothingnew_default">Nichts Neues seit:</string>
 
 	<string name="button_send">Senden</string>
 	<string name="cannot_send_empty_message">Kann keine leere Nachricht senden.</string>

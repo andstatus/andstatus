@@ -190,9 +190,9 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="notification_queue_formats">
-		<item>"{0} неотправленное cообщение"</item>
-		<item>"{0} неотправленных сообщения"</item>
-		<item>"{0} неотправленных сообщений"</item>
+		<item>"{0} неотправленное cообщение ожидает"</item>
+		<item>"{0} неотправленных сообщения ожидают"</item>
+		<item>"{0} неотправленных сообщений ожидают"</item>
 	</string-array>
 	<string-array name="notification_queue_patterns">
 		<item>".*[^1]1|1"</item>

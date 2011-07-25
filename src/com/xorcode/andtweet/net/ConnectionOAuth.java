@@ -20,14 +20,9 @@ import com.xorcode.andtweet.AndTweetService;
 
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.exception.OAuthCommunicationException;
-import oauth.signpost.exception.OAuthExpectationFailedException;
-import oauth.signpost.exception.OAuthMessageSignerException;
 
 import org.apache.http.HttpVersion;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -45,16 +40,13 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.SocketTimeoutException;
 import java.util.LinkedList;
 
 /**
@@ -153,9 +145,7 @@ public class ConnectionOAuth extends Connection {
     }
 
     @Override
-    public JSONObject createFavorite(long statusId) throws UnsupportedEncodingException,
-            ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+    public JSONObject createFavorite(long statusId) throws ConnectionException {
         StringBuilder url = new StringBuilder(FAVORITES_CREATE_BASE_URL);
         url.append(String.valueOf(statusId));
         url.append(EXTENSION);
@@ -164,9 +154,7 @@ public class ConnectionOAuth extends Connection {
     }
 
     @Override
-    public JSONObject destroyFavorite(long statusId) throws UnsupportedEncodingException,
-            ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+    public JSONObject destroyFavorite(long statusId) throws ConnectionException {
         StringBuilder url = new StringBuilder(FAVORITES_DESTROY_BASE_URL);
         url.append(String.valueOf(statusId));
         url.append(EXTENSION);
@@ -175,9 +163,7 @@ public class ConnectionOAuth extends Connection {
     }
 
     @Override
-    public JSONObject destroyStatus(long statusId) throws UnsupportedEncodingException,
-            ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+    public JSONObject destroyStatus(long statusId) throws ConnectionException {
         StringBuilder url = new StringBuilder(STATUSES_DESTROY_URL);
         url.append(String.valueOf(statusId));
         url.append(EXTENSION);
@@ -186,23 +172,18 @@ public class ConnectionOAuth extends Connection {
     }
 
     @Override
-    public JSONArray getDirectMessages(long sinceId, int limit) throws ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+    public JSONArray getDirectMessages(long sinceId, int limit) throws ConnectionException {
         String url = DIRECT_MESSAGES_URL;
         return getTimeline(url, sinceId, 0, limit, 0);
     }
 
     @Override
-    public JSONArray getFriendsTimeline(long sinceId, int limit) throws ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+    public JSONArray getFriendsTimeline(long sinceId, int limit) throws ConnectionException {
         String url = STATUSES_FRIENDS_TIMELINE_URL;
         return getTimeline(url, sinceId, 0, limit, 0);
     }
 
-    private JSONObject getRequest(HttpGet get) throws ConnectionException,
-            ConnectionAuthenticationException {
+    private JSONObject getRequest(HttpGet get) throws ConnectionException {
         JSONObject jso = null;
         boolean ok = false;
         try {
@@ -211,9 +192,6 @@ public class ConnectionOAuth extends Connection {
             jso = new JSONObject(response);
             // Log.d(TAG, "authenticatedQuery: " + jso.toString(2));
             ok = true;
-        } catch (HttpResponseException e) {
-            e.printStackTrace();
-            throw new ConnectionAuthenticationException(e.getLocalizedMessage());
         } catch (Exception e) {
             e.printStackTrace();
             throw new ConnectionException(e.getLocalizedMessage());
@@ -224,9 +202,7 @@ public class ConnectionOAuth extends Connection {
         return jso;
     }
 
-    private JSONObject getUrl(String url) throws ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+    private JSONObject getUrl(String url) throws ConnectionException {
         HttpGet get = new HttpGet(url);
         return getRequest(get);
     }
@@ -241,13 +217,9 @@ public class ConnectionOAuth extends Connection {
      * @param page
      * @return
      * @throws ConnectionException
-     * @throws ConnectionAuthenticationException
-     * @throws ConnectionUnavailableException
-     * @throws SocketTimeoutException
      */
     private JSONArray getTimeline(String url, long sinceId, long maxId, int limit, int page)
-            throws ConnectionException, ConnectionAuthenticationException,
-            ConnectionUnavailableException, SocketTimeoutException {
+            throws ConnectionException {
         setSinceId(sinceId);
         setLimit(limit);
 
@@ -272,26 +244,13 @@ public class ConnectionOAuth extends Connection {
             String response = mClient.execute(get, new BasicResponseHandler());
             jArr = new JSONArray(response);
             ok = (jArr != null);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            throw new ConnectionException(e);
-        } catch (OAuthMessageSignerException e) {
-            e.printStackTrace();
-        } catch (OAuthExpectationFailedException e) {
-            e.printStackTrace();
-        } catch (HttpResponseException e) {
-            e.printStackTrace();
-            throw new ConnectionAuthenticationException(e.getLocalizedMessage());
-        } catch (ClientProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (OAuthCommunicationException e) {
-            e.printStackTrace();
         } catch (NullPointerException e) {
             // It looks like a bug in the library, but we have to catch it 
             Log.e(TAG, "NullPointerException was caught, URL='" + url + "'");
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ConnectionException(e.getLocalizedMessage());
         }
         if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
             Log.d(TAG, "getTimeline '" + url + "' "
@@ -301,22 +260,17 @@ public class ConnectionOAuth extends Connection {
     }
 
     @Override
-    public JSONArray getMentionsTimeline(long sinceId, int limit) throws ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+    public JSONArray getMentionsTimeline(long sinceId, int limit) throws ConnectionException {
         String url = STATUSES_MENTIONS_TIMELINE_URL;
         return getTimeline(url, sinceId, 0, limit, 0);
     }
 
     @Override
-    public JSONObject rateLimitStatus() throws JSONException, ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+    public JSONObject rateLimitStatus() throws ConnectionException {
         return getUrl(ACCOUNT_RATE_LIMIT_STATUS_URL);
     }
 
-    private JSONObject postRequest(HttpPost post) throws ConnectionException,
-            ConnectionAuthenticationException {
+    private JSONObject postRequest(HttpPost post) throws ConnectionException {
         JSONObject jso = null;
         boolean ok = false;
         try {
@@ -328,10 +282,9 @@ public class ConnectionOAuth extends Connection {
             String response = mClient.execute(post, new BasicResponseHandler());
             jso = new JSONObject(response);
             ok = true;
-        } catch (HttpResponseException e) {
-            e.printStackTrace();
-            throw new ConnectionAuthenticationException(e.getLocalizedMessage());
         } catch (Exception e) {
+            // We don't catch other exceptions because in fact it's vary difficult to tell
+            // what was a real cause of it. So let's make code clearer.
             e.printStackTrace();
             throw new ConnectionException(e.getLocalizedMessage());
         }
@@ -343,15 +296,18 @@ public class ConnectionOAuth extends Connection {
 
     @Override
     public JSONObject updateStatus(String message, long inReplyToId)
-            throws UnsupportedEncodingException, ConnectionException, 
-            ConnectionAuthenticationException {
+            throws ConnectionException {
         HttpPost post = new HttpPost(STATUSES_UPDATE_URL);
         LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
         out.add(new BasicNameValuePair("status", message));
         if (inReplyToId > 0) {
             out.add(new BasicNameValuePair("in_reply_to_status_id", String.valueOf(inReplyToId)));
         }
-        post.setEntity(new UrlEncodedFormEntity(out, HTTP.UTF_8));
+        try {
+            post.setEntity(new UrlEncodedFormEntity(out, HTTP.UTF_8));
+        } catch (UnsupportedEncodingException e) {
+            Log.e(TAG, e.toString());
+        }
         return postRequest(post);
     }
 
@@ -372,9 +328,7 @@ public class ConnectionOAuth extends Connection {
     }
 
     @Override
-    public JSONObject verifyCredentials() throws ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+    public JSONObject verifyCredentials() throws ConnectionException {
         return getUrl(ACCOUNT_VERIFY_CREDENTIALS_URL);
     }
 }

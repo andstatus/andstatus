@@ -24,7 +24,7 @@
 
     <string name="appwidget_configure_instructions">Anpassa
     AndTweet Widget meddelande, visas när inget nytt finns:</string>
-    <string name="appwidget_nothing_default">Inget nytt sedan:</string>
+    <string name="appwidget_nothingnew_default">Inget nytt sedan:</string>
 	<string name="appwidget_new_tweet_format">{0}</string>
 	<string name="appwidget_new_message_format">{0}</string>
 	<string name="appwidget_new_mention_format">{0}</string>

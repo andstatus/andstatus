@@ -19,7 +19,6 @@ package com.xorcode.andtweet.net;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,7 +61,7 @@ public class ConnectionBasicAuth extends Connection {
     }
 
 	@Override
-    public JSONArray getFriendsTimeline(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+    public JSONArray getFriendsTimeline(long sinceId, int limit) throws ConnectionException {
 	    setSinceId(sinceId);
 	    setLimit(limit);
 	    
@@ -80,7 +79,7 @@ public class ConnectionBasicAuth extends Connection {
 				JSONObject jObj = new JSONObject(request);
 				String error = jObj.optString("error");
 				if ("Could not authenticate you.".equals(error)) {
-					throw new ConnectionAuthenticationException(error);
+					throw new ConnectionException(error);
 				}
 			} catch (JSONException e1) {
 				throw new ConnectionException(e);
@@ -90,7 +89,7 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONArray getMentionsTimeline(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+    public JSONArray getMentionsTimeline(long sinceId, int limit) throws ConnectionException {
         setSinceId(sinceId);
         setLimit(limit);
 
@@ -108,7 +107,7 @@ public class ConnectionBasicAuth extends Connection {
 				JSONObject jObj = new JSONObject(request);
 				String error = jObj.optString("error");
 				if ("Could not authenticate you.".equals(error)) {
-					throw new ConnectionAuthenticationException(error);
+					throw new ConnectionException(error);
 				}
 			} catch (JSONException e1) {
 				throw new ConnectionException(e);
@@ -118,7 +117,7 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONArray getDirectMessages(long sinceId, int limit) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+    public JSONArray getDirectMessages(long sinceId, int limit) throws ConnectionException {
         setSinceId(sinceId);
         setLimit(limit);
 
@@ -136,7 +135,7 @@ public class ConnectionBasicAuth extends Connection {
 				JSONObject jObj = new JSONObject(request);
 				String error = jObj.optString("error");
 				if ("Could not authenticate you.".equals(error)) {
-					throw new ConnectionAuthenticationException(error);
+					throw new ConnectionException(error);
 				}
 			} catch (JSONException e1) {
 				throw new ConnectionException(e);
@@ -146,7 +145,7 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONObject updateStatus(String message, long inReplyToId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException {
+    public JSONObject updateStatus(String message, long inReplyToId) throws ConnectionException {
 		String url = STATUSES_UPDATE_URL;
 		List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
@@ -162,8 +161,10 @@ public class ConnectionBasicAuth extends Connection {
 			jObj = new JSONObject(postRequest(url, new UrlEncodedFormEntity(formParams, HTTP.UTF_8)));
 			String error = jObj.optString("error");
 			if ("Could not authenticate you.".equals(error)) {
-				throw new ConnectionAuthenticationException(error);
+				throw new ConnectionException(error);
 			}
+        } catch (UnsupportedEncodingException e) {
+            Log.e(TAG, e.toString());
 		} catch (JSONException e) {
 			throw new ConnectionException(e);
 		}
@@ -171,7 +172,7 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONObject destroyStatus(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+    public JSONObject destroyStatus(long statusId) throws ConnectionException {
 		StringBuilder url = new StringBuilder(STATUSES_DESTROY_URL);
 		url.append(String.valueOf(statusId));
 		url.append(EXTENSION);
@@ -180,7 +181,7 @@ public class ConnectionBasicAuth extends Connection {
 			jObj = new JSONObject(postRequest(url.toString()));
 			String error = jObj.optString("error");
 			if ("Could not authenticate you.".equals(error)) {
-				throw new ConnectionAuthenticationException(error);
+				throw new ConnectionException(error);
 			}
 		} catch (JSONException e) {
 			throw new ConnectionException(e);
@@ -189,7 +190,7 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONObject createFavorite(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+    public JSONObject createFavorite(long statusId) throws ConnectionException {
 		StringBuilder url = new StringBuilder(FAVORITES_CREATE_BASE_URL);
 		url.append(String.valueOf(statusId));
 		url.append(EXTENSION);
@@ -198,7 +199,7 @@ public class ConnectionBasicAuth extends Connection {
 			jObj = new JSONObject(postRequest(url.toString()));
 			String error = jObj.optString("error");
 			if ("Could not authenticate you.".equals(error)) {
-				throw new ConnectionAuthenticationException(error);
+				throw new ConnectionException(error);
 			}
 		} catch (JSONException e) {
 			throw new ConnectionException(e);
@@ -207,7 +208,7 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONObject destroyFavorite(long statusId) throws UnsupportedEncodingException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+    public JSONObject destroyFavorite(long statusId) throws ConnectionException {
 		StringBuilder url = new StringBuilder(FAVORITES_DESTROY_BASE_URL);
 		url.append(String.valueOf(statusId));
 		url.append(EXTENSION);
@@ -216,7 +217,7 @@ public class ConnectionBasicAuth extends Connection {
 			jObj = new JSONObject(postRequest(url.toString()));
 			String error = jObj.optString("error");
 			if ("Could not authenticate you.".equals(error)) {
-				throw new ConnectionAuthenticationException(error);
+				throw new ConnectionException(error);
 			}
 		} catch (JSONException e) {
 			throw new ConnectionException(e);
@@ -234,9 +235,7 @@ public class ConnectionBasicAuth extends Connection {
     }
 
     @Override
-    public JSONObject verifyCredentials() throws ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException {
+    public JSONObject verifyCredentials() throws ConnectionException {
         /**
          * Returns an HTTP 200 OK response code and a representation of the
          * requesting user if authentication was successful; returns a 401
@@ -258,8 +257,14 @@ public class ConnectionBasicAuth extends Connection {
     }
 
 	@Override
-    public JSONObject rateLimitStatus() throws JSONException, ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
-		return new JSONObject(getRequest(ACCOUNT_RATE_LIMIT_STATUS_URL, new DefaultHttpClient(new BasicHttpParams())));
+    public JSONObject rateLimitStatus() throws ConnectionException {
+        JSONObject jo = null;
+		try {
+            jo = new JSONObject(getRequest(ACCOUNT_RATE_LIMIT_STATUS_URL, new DefaultHttpClient(new BasicHttpParams())));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jo;
 	}
 
     @Override
@@ -273,11 +278,8 @@ public class ConnectionBasicAuth extends Connection {
 	 * @param url
 	 * @return String
 	 * @throws ConnectionException 
-	 * @throws ConnectionUnavailableException 
-	 * @throws ConnectionAuthenticationException 
-	 * @throws SocketTimeoutException 
 	 */
-	private String getRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	private String getRequest(String url) throws ConnectionException {
 		return getRequest(url, new DefaultHttpClient(new BasicHttpParams()));
 	}
 
@@ -288,11 +290,8 @@ public class ConnectionBasicAuth extends Connection {
 	 * @param client
 	 * @return String
 	 * @throws ConnectionException
-	 * @throws ConnectionUnavailableException 
-	 * @throws ConnectionAuthenticationException 
-	 * @throws SocketTimeoutException 
 	 */
-	private String getRequest(String url, HttpClient client) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	private String getRequest(String url, HttpClient client) throws ConnectionException {
 		String result = null;
 		int statusCode = 0;
 		HttpGet getMethod = new HttpGet(url);
@@ -304,8 +303,6 @@ public class ConnectionBasicAuth extends Connection {
 			HttpResponse httpResponse = client.execute(getMethod);
 			statusCode = httpResponse.getStatusLine().getStatusCode();
 			result = retrieveInputStream(httpResponse.getEntity());
-		} catch (SocketTimeoutException e) {
-			throw e;
 		} catch (Exception e) {
             Log.e(TAG, "getRequest: " + e.toString());
 			throw new ConnectionException(e);
@@ -322,11 +319,8 @@ public class ConnectionBasicAuth extends Connection {
 	 * @param url
 	 * @return String
 	 * @throws ConnectionException 
-	 * @throws ConnectionUnavailableException 
-	 * @throws ConnectionAuthenticationException 
-	 * @throws SocketTimeoutException 
 	 */
-	private String postRequest(String url) throws ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException, SocketTimeoutException {
+	private String postRequest(String url) throws ConnectionException {
 		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), null);
 	}
 
@@ -336,9 +330,8 @@ public class ConnectionBasicAuth extends Connection {
 	 * @param url
 	 * @return String
 	 * @throws ConnectionException 
-	 * @throws ConnectionAuthenticationException 
 	 */
-	private String postRequest(String url, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException {
+	private String postRequest(String url, UrlEncodedFormEntity formParams) throws ConnectionException {
 		return postRequest(url, new DefaultHttpClient(new BasicHttpParams()), formParams);
 	}
 
@@ -349,9 +342,8 @@ public class ConnectionBasicAuth extends Connection {
 	 * @param client
 	 * @return String
 	 * @throws ConnectionException
-	 * @throws ConnectionAuthenticationException 
 	 */
-	private String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams) throws ConnectionException, ConnectionAuthenticationException {
+	private String postRequest(String url, HttpClient client, UrlEncodedFormEntity formParams) throws ConnectionException {
 		String result = null;
 		int statusCode = 0;
 		HttpPost postMethod = new HttpPost(url);
@@ -417,15 +409,14 @@ public class ConnectionBasicAuth extends Connection {
 	 * @param code
 	 * @param path
 	 * @throws ConnectionException
-	 * @throws ConnectionAuthenticationException
 	 */
-	private void parseStatusCode(int code, String path) throws ConnectionException, ConnectionAuthenticationException {
+	private void parseStatusCode(int code, String path) throws ConnectionException {
 		switch (code) {
 		case 200:
 		case 304:
 			break;
 		case 401:
-			throw new ConnectionAuthenticationException(String.valueOf(code));
+			throw new ConnectionException(String.valueOf(code));
 		case 400:
 		case 403:
 		case 404:

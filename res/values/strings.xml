@@ -24,10 +24,11 @@
 	<string name="activity_title_timeline">Friends</string>
 
     <string name="appwidget_configure_instructions">Customize AndTweet Widget message, shown in a case there is nothing new:</string>
-    <string name="appwidget_nothing_default">Nothing new since:</string>
+    <string name="appwidget_nothingnew_default">Nothing new since:</string>
 	<string name="appwidget_new_tweet_format">{0}</string>
 	<string name="appwidget_new_message_format">{0}</string>
 	<string name="appwidget_new_mention_format">{0}</string>
+    <string name="appwidget_nodata">No data yet.</string>
 
 	<string name="authentication_never">Didn\'t authenticate yet</string>
 	<string name="authentication_successful">Authentication successful!</string>

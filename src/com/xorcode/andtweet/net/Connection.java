@@ -17,9 +17,6 @@
 
 package com.xorcode.andtweet.net;
 
-import java.io.UnsupportedEncodingException;
-import java.net.SocketTimeoutException;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -143,15 +140,9 @@ public abstract class Connection {
      *      REST API Method: account rate_limit_status</a>
      * 
      * @return JSONObject
-     * @throws JSONException
      * @throws ConnectionException
-     * @throws ConnectionAuthenticationException
-     * @throws ConnectionUnavailableException
-     * @throws SocketTimeoutException 
      */
-    public abstract JSONObject rateLimitStatus() throws JSONException, ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException;
+    public abstract JSONObject rateLimitStatus() throws ConnectionException;
 
     /**
      * Do we need password to be set?
@@ -192,27 +183,16 @@ public abstract class Connection {
      * 
      * @return JSONObject - user
      * @throws ConnectionException 
-     * @throws ConnectionUnavailableException 
-     * @throws ConnectionAuthenticationException 
-     * @throws SocketTimeoutException 
      */
-    public abstract JSONObject verifyCredentials() throws ConnectionException,
-            ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException;
+    public abstract JSONObject verifyCredentials() throws ConnectionException;
 
     /**
      * 
      * @param statusId
      * @return JSONObject
-     * @throws UnsupportedEncodingException
      * @throws ConnectionException
-     * @throws ConnectionAuthenticationException
-     * @throws ConnectionUnavailableException
-     * @throws SocketTimeoutException
      */
-    public abstract JSONObject destroyFavorite(long statusId) throws UnsupportedEncodingException,
-            ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException;
+    public abstract JSONObject destroyFavorite(long statusId) throws ConnectionException;
 
     /**
      * Favorites the status specified in the ID parameter as the authenticating user.
@@ -223,15 +203,9 @@ public abstract class Connection {
      * 
      * @param statusId
      * @return JSONObject
-     * @throws UnsupportedEncodingException
      * @throws ConnectionException
-     * @throws ConnectionAuthenticationException
-     * @throws ConnectionUnavailableException
-     * @throws SocketTimeoutException
      */
-    public abstract JSONObject createFavorite(long statusId) throws UnsupportedEncodingException,
-            ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException;
+    public abstract JSONObject createFavorite(long statusId) throws ConnectionException;
 
     /**
      * Destroys the status specified by the required ID parameter.
@@ -242,15 +216,9 @@ public abstract class Connection {
      * 
      * @param statusId
      * @return JSONObject
-     * @throws UnsupportedEncodingException
      * @throws ConnectionException
-     * @throws ConnectionAuthenticationException
-     * @throws ConnectionUnavailableException
-     * @throws SocketTimeoutException
      */
-    public abstract JSONObject destroyStatus(long statusId) throws UnsupportedEncodingException,
-            ConnectionException, ConnectionAuthenticationException, ConnectionUnavailableException,
-            SocketTimeoutException;
+    public abstract JSONObject destroyStatus(long statusId) throws ConnectionException;
 
     /**
      * Update user status by posting to the Twitter REST API.
@@ -260,35 +228,24 @@ public abstract class Connection {
      * the authenticating user's current status will be ignored.
      * 
      * @param message
-     * @return JSONObject
-     * @throws UnsupportedEncodingException
      * @throws ConnectionException 
-     * @throws ConnectionAuthenticationException 
-     * @throws ConnectionUnavailableException 
-     * @throws SocketTimeoutException 
      *
      * @see <a
      *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses%C2%A0update">Twitter
      *      REST API Method: statuses/update</a>
      */
     public abstract JSONObject updateStatus(String message, long inReplyToId)
-            throws UnsupportedEncodingException, ConnectionException,
-            ConnectionAuthenticationException;
+            throws ConnectionException;
 
     /**
      * Get the user's own and friends timeline.
      * 
      * Returns the 100 most recent direct messages for the authenticating user.
      * 
-     * @return JSONArray
      * @throws ConnectionException 
-     * @throws ConnectionAuthenticationException 
-     * @throws ConnectionUnavailableException 
-     * @throws SocketTimeoutException 
      */
     public abstract JSONArray getDirectMessages(long sinceId, int limit)
-            throws ConnectionException, ConnectionAuthenticationException,
-            ConnectionUnavailableException, SocketTimeoutException;
+            throws ConnectionException;
 
     /**
      * Get the user's replies.
@@ -298,13 +255,9 @@ public abstract class Connection {
      * 
      * @return JSONArray
      * @throws ConnectionException 
-     * @throws ConnectionAuthenticationException 
-     * @throws ConnectionUnavailableException 
-     * @throws SocketTimeoutException 
      */
     public abstract JSONArray getMentionsTimeline(long sinceId, int limit)
-            throws ConnectionException, ConnectionAuthenticationException,
-            ConnectionUnavailableException, SocketTimeoutException;
+            throws ConnectionException;
 
     /**
      * Get the user's own and friends timeline.
@@ -314,13 +267,9 @@ public abstract class Connection {
      * 
      * @return JSONArray
      * @throws ConnectionException 
-     * @throws ConnectionAuthenticationException 
-     * @throws ConnectionUnavailableException 
-     * @throws SocketTimeoutException 
      */
     public abstract JSONArray getFriendsTimeline(long sinceId, int limit)
-            throws ConnectionException, ConnectionAuthenticationException,
-            ConnectionUnavailableException, SocketTimeoutException;
+            throws ConnectionException;
 
     protected long getSinceId() {
         return mSinceId;

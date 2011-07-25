@@ -221,18 +221,21 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 				switch (msgType) {
 				case NOTIFY_REPLIES:
 					data.numMentions += numSomethingReceived;
+					data.checked();
 					break;
 		
 				case NOTIFY_DIRECT_MESSAGE:
 					data.numMessages += numSomethingReceived;
+                    data.checked();
 					break;
 		
 				case NOTIFY_TIMELINE:
 					data.numTweets += numSomethingReceived;
+                    data.checked();
 					break;
 		
 				case NOTIFY_CLEAR:
-					data.clear();
+					data.clearCounters();
 					break;
 		
 				default:
@@ -245,50 +248,49 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 
 			// TODO: Widget design...
 
-			// "Text" is what is show in bold
+			// "Text" is what is shown in bold
 			String widgetText = "";
 			// And the "Comment" is less visible, below the "Text"
 			String widgetComment = "";
 
 			// Construct period of counting...
 			String widgetTime = "";
-			if (data.dateUpdated == 0) {
-				widgetTime = "==0 ???";
-                Log.e(TAG, "data.dateUpdated==0");
+			if (data.dateChecked == 0) {
+                Log.e(TAG, "data.dateChecked==0");
+                widgetComment = context.getString(R.string.appwidget_nodata);
 			} else {
-				widgetTime = formatWidgetTime(context, data.dateCleared, data.dateUpdated);
-			}
+				widgetTime = formatWidgetTime(context, data.dateCleared, data.dateChecked);
+	            boolean isFound = false;
 
-			boolean isFound = false;
-
-			if (data.numMentions > 0) {
-				isFound = true;
-				widgetText += (widgetText.length() > 0 ? "\n" : "")
-						+ I18n.formatQuantityMessage(context,
-								R.string.appwidget_new_mention_format,
-								data.numMentions,
-								R.array.appwidget_mention_patterns,
-								R.array.appwidget_mention_formats);
-			}
-			if (data.numMessages > 0) {
-				isFound = true;
-				widgetText += (widgetText.length() > 0 ? "\n" : "")
-						+ I18n.formatQuantityMessage(context,
-								R.string.appwidget_new_message_format,
-								data.numMessages,
-								R.array.appwidget_message_patterns,
-								R.array.appwidget_message_formats);
-			}
-			if (data.numTweets > 0) {
-				isFound = true;
-				widgetText += (widgetText.length() > 0 ? "\n" : "")
-						+ I18n.formatQuantityMessage(context,
-								R.string.appwidget_new_tweet_format,
-								data.numTweets, R.array.appwidget_tweet_patterns,
-								R.array.appwidget_tweet_formats);
-			}
-			if (!isFound) {
-				widgetComment = data.nothingPref;
+	            if (data.numMentions > 0) {
+	                isFound = true;
+	                widgetText += (widgetText.length() > 0 ? "\n" : "")
+	                        + I18n.formatQuantityMessage(context,
+	                                R.string.appwidget_new_mention_format,
+	                                data.numMentions,
+	                                R.array.appwidget_mention_patterns,
+	                                R.array.appwidget_mention_formats);
+	            }
+	            if (data.numMessages > 0) {
+	                isFound = true;
+	                widgetText += (widgetText.length() > 0 ? "\n" : "")
+	                        + I18n.formatQuantityMessage(context,
+	                                R.string.appwidget_new_message_format,
+	                                data.numMessages,
+	                                R.array.appwidget_message_patterns,
+	                                R.array.appwidget_message_formats);
+	            }
+	            if (data.numTweets > 0) {
+	                isFound = true;
+	                widgetText += (widgetText.length() > 0 ? "\n" : "")
+	                        + I18n.formatQuantityMessage(context,
+	                                R.string.appwidget_new_tweet_format,
+	                                data.numTweets, R.array.appwidget_tweet_patterns,
+	                                R.array.appwidget_tweet_formats);
+	            }
+	            if (!isFound) {
+	                widgetComment = data.nothingPref;
+	            }
 			}
 
             if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {

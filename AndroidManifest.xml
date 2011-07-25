@@ -16,7 +16,7 @@
 	limitations under the License.
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.xorcode.andtweet" android:versionName="1.1.3" android:versionCode="39">
+	package="com.xorcode.andtweet" android:versionName="1.1.4" android:versionCode="40">
 
 	<uses-sdk android:minSdkVersion="3"/>
 

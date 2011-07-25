@@ -16,10 +16,6 @@
 
 package com.xorcode.andtweet;
 
-import java.io.UnsupportedEncodingException;
-import java.net.SocketTimeoutException;
-
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.SearchManager;
@@ -56,14 +52,10 @@ import android.widget.Toast;
 import com.xorcode.andtweet.AndTweetService.CommandEnum;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import com.xorcode.andtweet.data.AndTweetDatabase;
-import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.data.PagedCursorAdapter;
 import com.xorcode.andtweet.data.TimelineSearchSuggestionProvider;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
-import com.xorcode.andtweet.net.ConnectionAuthenticationException;
-import com.xorcode.andtweet.net.ConnectionException;
-import com.xorcode.andtweet.net.ConnectionUnavailableException;
 import com.xorcode.andtweet.util.SelectionAndArgs;
 
 /**
@@ -427,7 +419,7 @@ public class TweetListActivity extends TimelineActivity {
 
         Uri uri;
         Cursor c;
-        Thread thread;
+        Intent intent;
 
         switch (item.getItemId()) {
             case CONTEXT_MENU_ITEM_REPLY:
@@ -487,13 +479,13 @@ public class TweetListActivity extends TimelineActivity {
                 return true;
 
             case CONTEXT_MENU_ITEM_DESTROY_STATUS:
-                showDialog(DIALOG_EXECUTING_COMMAND);
-                thread = new Thread(mDestroyStatus);
-                thread.start();
+                intent = prepareCommand(CommandEnum.DESTROY_STATUS);
+                intent.putExtra(AndTweetService.EXTRA_TWEETID, mCurrentId);
+                sendCommand(intent);
                 return true;
 
             case CONTEXT_MENU_ITEM_FAVORITE:
-                Intent intent = prepareCommand(CommandEnum.CREATE_FAVORITE);
+                intent = prepareCommand(CommandEnum.CREATE_FAVORITE);
                 intent.putExtra(AndTweetService.EXTRA_TWEETID, mCurrentId);
                 sendCommand(intent);
                 return true;
@@ -690,32 +682,6 @@ public class TweetListActivity extends TimelineActivity {
         }
     }
 
-    @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
-        super.onScrollStateChanged(view, scrollState);
-//        if (mIsLoading) {
-//            return;
-//        }
-//        switch (scrollState) {
-//            case SCROLL_STATE_IDLE:
-//                // TODO: This doesn't work sometimes in Gingerbread
-//                if (view.getLastVisiblePosition() >= mTotalItemCount - 1 && mTotalItemCount > 0) {
-//                    if (getListView().getFooterViewsCount() == 1 && !mIsLoading) {
-//                        mIsLoading = true;
-//                        // setProgressBarIndeterminateVisibility(true);
-//                        mListFooter.setVisibility(View.VISIBLE);
-//                        Thread thread = new Thread(mLoadListItems);
-//                        thread.start();
-//                    }
-//                }
-//                break;
-//            case SCROLL_STATE_TOUCH_SCROLL:
-//                break;
-//            case SCROLL_STATE_FLING:
-//                break;
-//        }
-    }
-
     /**
      * Updates the activity title.
      */
@@ -724,8 +690,7 @@ public class TweetListActivity extends TimelineActivity {
         // First set less detailed title
         super.updateTitle();
         // Then start asynchronous task that will set detailed info
-        Thread thread = new Thread(mUpdateTitle);
-        thread.start();
+        sendCommand(prepareCommand(CommandEnum.RATE_LIMIT_STATUS));
     }
 
     {
@@ -815,16 +780,8 @@ public class TweetListActivity extends TimelineActivity {
                     break;
 
                 case MSG_UPDATED_TITLE:
-                    JSONObject status = (JSONObject) msg.obj;
-                    try {
-                        if (status != null) {
-                            TweetListActivity.super.updateTitle(status.getInt("remaining_hits")
-                                    + "/" + status.getInt("hourly_limit"));
-                        } else {
-                            setTitle("(msg is null)");
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    if (msg.arg1 > 0) {
+                        TweetListActivity.super.updateTitle(msg.arg1 + "/" + msg.arg2);
                     }
                     break;
 
@@ -842,22 +799,9 @@ public class TweetListActivity extends TimelineActivity {
                         Toast.makeText(TweetListActivity.this,
                                 (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
                     } else {
-                        FriendTimeline fl = new FriendTimeline(TweetListActivity.this,
-                                AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
-                        try {
-                            fl.destroyStatus(result.getLong("id"));
-                        } catch (JSONException e) {
-                            Toast.makeText(TweetListActivity.this, e.toString(), Toast.LENGTH_SHORT)
-                                    .show();
-                        }
                         Toast.makeText(TweetListActivity.this, R.string.status_destroyed,
                                 Toast.LENGTH_SHORT).show();
                         mCurrentId = 0;
-                    }
-                    try {
-                        dismissDialog(DIALOG_EXECUTING_COMMAND);
-                    } catch (IllegalArgumentException e) {
-                        AndTweetService.d(TAG, "", e);
                     }
                     break;
 
@@ -928,88 +872,5 @@ public class TweetListActivity extends TimelineActivity {
                     mHandler.obtainMessage(MSG_LOAD_ITEMS, STATUS_LOAD_ITEMS_SUCCESS, 0), 400);
         }
     };
-
-    /**
-     * Update the title with the number of remaining API calls.
-     */
-    protected Runnable mUpdateTitle = new Runnable() {
-        public void run() {
-            try {
-                JSONObject status = TwitterUser.getTwitterUser(TweetListActivity.this)
-                        .getConnection().rateLimitStatus();
-                mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATED_TITLE, status));
-            } catch (JSONException e) {
-            } catch (ConnectionException e) {
-            } catch (ConnectionAuthenticationException e) {
-            } catch (ConnectionUnavailableException e) {
-            } catch (SocketTimeoutException e) {
-            }
-        }
-    };
-
-    /**
-     * Handles threaded removal of statuses.
-     */
-    protected Runnable mDestroyStatus = new Runnable() {
-        public void run() {
-            JSONObject result = new JSONObject();
-            try {
-                result = TwitterUser.getTwitterUser(TweetListActivity.this).getConnection()
-                        .destroyStatus(mCurrentId);
-            } catch (UnsupportedEncodingException e) {
-                Log.e(TAG, e.toString());
-            } catch (ConnectionException e) {
-                Log.e(TAG, "mDestroyStatus Connection Exception: " + e.toString());
-                mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION,
-                        MSG_STATUS_DESTROY, Integer.parseInt(e.toString())));
-                return;
-            } catch (ConnectionAuthenticationException e) {
-                mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR,
-                        MSG_STATUS_DESTROY, 0));
-                return;
-            } catch (ConnectionUnavailableException e) {
-                mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR,
-                        MSG_STATUS_DESTROY, 0));
-                return;
-            } catch (SocketTimeoutException e) {
-                mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION,
-                        MSG_STATUS_DESTROY, 0));
-                return;
-            }
-            mHandler.sendMessage(mHandler.obtainMessage(MSG_STATUS_DESTROY, result));
-        }
-    };
-
-    /**
-     * Handles threaded creation of favorites
-     */
-    protected Runnable mDestroyFavorite = new Runnable() {
-        public void run() {
-            JSONObject result = new JSONObject();
-            try {
-                result = TwitterUser.getTwitterUser(TweetListActivity.this).getConnection()
-                        .destroyFavorite(mCurrentId);
-            } catch (UnsupportedEncodingException e) {
-                Log.e(TAG, e.toString());
-            } catch (ConnectionException e) {
-                Log.e(TAG, "mDestroyFavorite Connection Exception: " + e.toString());
-                mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_EXCEPTION,
-                        MSG_FAVORITE_DESTROY, Integer.parseInt(e.toString())));
-                return;
-            } catch (ConnectionAuthenticationException e) {
-                mHandler.sendMessage(mHandler.obtainMessage(MSG_AUTHENTICATION_ERROR,
-                        MSG_FAVORITE_DESTROY, 0));
-                return;
-            } catch (ConnectionUnavailableException e) {
-                mHandler.sendMessage(mHandler.obtainMessage(MSG_SERVICE_UNAVAILABLE_ERROR,
-                        MSG_FAVORITE_DESTROY, 0));
-                return;
-            } catch (SocketTimeoutException e) {
-                mHandler.sendMessage(mHandler.obtainMessage(MSG_CONNECTION_TIMEOUT_EXCEPTION,
-                        MSG_FAVORITE_DESTROY, 0));
-                return;
-            }
-            mHandler.sendMessage(mHandler.obtainMessage(MSG_FAVORITE_DESTROY, result));
-        }
-    };
 }
+

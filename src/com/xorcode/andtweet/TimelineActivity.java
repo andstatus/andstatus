@@ -950,6 +950,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         public void repliesChanged(int value) throws RemoteException {
             mHandler.sendMessage(mHandler.obtainMessage(MSG_REPLIES_CHANGED, value, 0));
         }
+
+        public void rateLimitStatus(int remaining_hits, int hourly_limit) throws RemoteException {
+            mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATED_TITLE, remaining_hits, hourly_limit));
+        }
     };
 
     @Override
@@ -997,8 +1001,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // Only newer tweets (newer that last loaded) are being loaded
         // from the Internet,
         // old tweets are not being reloaded.
-//        showDialog(DIALOG_TIMELINE_LOADING);
-//        mListFooter.setVisibility(View.VISIBLE);
         
         // Ask service to load data for this mTimelineType
         AndTweetService.CommandEnum command = CommandEnum.FETCH_TIMELINE;

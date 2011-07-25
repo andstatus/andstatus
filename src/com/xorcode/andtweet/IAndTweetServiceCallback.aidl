@@ -40,4 +40,9 @@ oneway interface IAndTweetServiceCallback {
 	 * Called when the service is loading data.
 	 */
 	void dataLoading(int value);
+
+	/**
+	 * Called when the service got rateLimitStatus.
+	 */
+	void rateLimitStatus(int remaining_hits, int hourly_limit);
 }

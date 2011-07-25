@@ -88,7 +88,7 @@ public class AndTweetAppWidgetConfigure extends Activity {
 			// When the button is clicked, save configuration settings in our prefs
 			// and return that they clicked OK.
 			appWidgetData.nothingPref = mAppWidgetTitle.getText().toString();
-			appWidgetData.clear();
+			appWidgetData.clearCounters();
 			appWidgetData.save();
 
 			// Push widget update to surface with newly set prefix
