@@ -226,7 +226,7 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public boolean getCredentialsPresent() {
+    public boolean getCredentialsPresent(SharedPreferences sp) {
         boolean yes = false;
         if (mUsername != null && mPassword != null && mUsername.length() > 0 && mPassword.length() > 0) {
             yes = true;
@@ -268,8 +268,8 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
     @Override
-    public void clearAuthInformation() {
-        setPassword("");
+    public void clearAuthInformation(SharedPreferences sp) {
+        setPassword(sp, "");
     }
 	
 	/**

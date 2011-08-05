@@ -37,9 +37,9 @@ public class I18n {
 	 *  
 	 * E.g. in Russian we need at least three different messages notifying User 
 	 *  about the number of new tweets:
-	 *  1 твит  (same for 21, 31, ...)
-	 *  2 твита ( same for 3, 4, 22, ... )
-	 *  5 твитов (same for 5, ... 11, 12, 20 ...)
+	 *  1 С‚РІРёС‚  (same for 21, 31, ...)
+	 *  2 С‚РІРёС‚Р° ( same for 3, 4, 22, ... )
+	 *  5 С‚РІРёС‚РѕРІ (same for 5, ... 11, 12, 20 ...)
 	 *  ...
 	 *  see /res/values-ru/arrays.xml (R.array.appwidget_tweet_patterns)
 	 * 

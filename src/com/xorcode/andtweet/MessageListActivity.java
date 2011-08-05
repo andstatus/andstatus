@@ -37,6 +37,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
+import com.xorcode.andtweet.data.AndTweetPreferences;
 import com.xorcode.andtweet.data.PagedCursorAdapter;
 import com.xorcode.andtweet.data.SearchableCursorAdapter;
 import com.xorcode.andtweet.data.TweetBinder;
@@ -224,7 +225,7 @@ public class MessageListActivity extends TimelineActivity {
 
 	private void createAdapters() {
 		int listItemId = R.layout.messagelist_item;
-		if (mSP.getBoolean("appearance_use_avatars", false)) {
+		if (AndTweetPreferences.getDefaultSharedPreferences().getBoolean("appearance_use_avatars", false)) {
 			listItemId = R.layout.messagelist_item_avatar;
 		}
 		PagedCursorAdapter directMessagesAdapter = new PagedCursorAdapter(

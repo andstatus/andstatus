@@ -98,14 +98,14 @@ public class ConnectionOAuth extends Connection {
 
         mConsumer = new CommonsHttpOAuthConsumer(OAuthKeys.TWITTER_CONSUMER_KEY,
                 OAuthKeys.TWITTER_CONSUMER_SECRET);
-        loadSavedKeys();
+        loadSavedKeys(sp);
     }
     
-    private void loadSavedKeys() {
+    private void loadSavedKeys(SharedPreferences sp) {
         // We look for saved user keys
-        if (mSp.contains(ConnectionOAuth.USER_TOKEN) && mSp.contains(ConnectionOAuth.USER_SECRET)) {
-            mToken = mSp.getString(ConnectionOAuth.USER_TOKEN, null);
-            mSecret = mSp.getString(ConnectionOAuth.USER_SECRET, null);
+        if (sp.contains(ConnectionOAuth.USER_TOKEN) && sp.contains(ConnectionOAuth.USER_SECRET)) {
+            mToken = sp.getString(ConnectionOAuth.USER_TOKEN, null);
+            mSecret = sp.getString(ConnectionOAuth.USER_SECRET, null);
             if (!(mToken == null || mSecret == null)) {
                 mConsumer.setTokenWithSecret(mToken, mSecret);
             }
@@ -116,9 +116,9 @@ public class ConnectionOAuth extends Connection {
      * @param token null means to clear the old values
      * @param secret
      */
-    public void saveAuthInformation(String token, String secret) {
-        synchronized (mSp) {
-            SharedPreferences.Editor editor = mSp.edit();
+    public void saveAuthInformation(SharedPreferences sp, String token, String secret) {
+        synchronized (sp) {
+            SharedPreferences.Editor editor = sp.edit();
             if (token == null) {
                 editor.remove(ConnectionOAuth.USER_TOKEN);
                 Log.d(TAG, "Clearing OAuth Token");
@@ -135,13 +135,13 @@ public class ConnectionOAuth extends Connection {
             }
             editor.commit();
             // Keys changed so we have to reload them
-            loadSavedKeys();
+            loadSavedKeys(sp);
         }
     }
 
     @Override
-    public void clearAuthInformation() {
-        saveAuthInformation(null, null);
+    public void clearAuthInformation(SharedPreferences sp) {
+        saveAuthInformation(sp, null, null);
     }
 
     @Override
@@ -315,11 +315,11 @@ public class ConnectionOAuth extends Connection {
      * @see com.xorcode.andtweet.net.Connection#getCredentialsPresent()
      */
     @Override
-    public boolean getCredentialsPresent() {
+    public boolean getCredentialsPresent(SharedPreferences sp) {
         boolean yes = false;
-        if (mSp.contains(ConnectionOAuth.USER_TOKEN) && mSp.contains(ConnectionOAuth.USER_SECRET)) {
-            mToken = mSp.getString(ConnectionOAuth.USER_TOKEN, null);
-            mSecret = mSp.getString(ConnectionOAuth.USER_SECRET, null);
+        if (sp.contains(ConnectionOAuth.USER_TOKEN) && sp.contains(ConnectionOAuth.USER_SECRET)) {
+            mToken = sp.getString(ConnectionOAuth.USER_TOKEN, null);
+            mSecret = sp.getString(ConnectionOAuth.USER_SECRET, null);
             if (!(mToken == null || mSecret == null)) {
                 yes = true;
             }

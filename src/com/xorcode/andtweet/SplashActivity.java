@@ -21,16 +21,11 @@ import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import java.text.MessageFormat;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -51,15 +46,11 @@ public class SplashActivity extends Activity {
 
 	public static final String TAG = "SplashActivity";
 
-	private SharedPreferences mSP;
 	private LinearLayout mContainer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-		mSP = PreferenceManager.getDefaultSharedPreferences(this);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -115,7 +106,7 @@ public class SplashActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-        if (TwitterUser.getTwitterUser(this).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+        if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
 			Intent intent = new Intent(this, TweetListActivity.class);
 			startActivity(intent);
 			finish();
@@ -126,34 +117,5 @@ public class SplashActivity extends Activity {
 	protected void onStart() {
 		super.onStart();
 		mContainer.setVisibility(View.VISIBLE);
-	}
-
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		switch (id) {
-		case TimelineActivity.DIALOG_EXTERNAL_STORAGE:
-			return new AlertDialog.Builder(this)
-				.setIcon(android.R.drawable.ic_dialog_alert)
-				.setTitle(R.string.dialog_title_external_storage)
-				.setMessage(R.string.dialog_summary_external_storage)
-				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface Dialog, int whichButton) {
-						SharedPreferences.Editor editor = mSP.edit();
-						editor.putBoolean("confirmed_external_storage_use", true);
-						editor.putBoolean("storage_use_external", true);
-						editor.commit();
-					}
-				})
-				.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface Dialog, int whichButton) {
-						SharedPreferences.Editor editor = mSP.edit();
-						editor.putBoolean("confirmed_external_storage_use", true);
-						editor.commit();
-					}
-				}).create();
-
-		default:
-			return super.onCreateDialog(id);
-		}
 	}
 }

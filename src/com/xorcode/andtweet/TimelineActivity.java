@@ -55,7 +55,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
+import com.xorcode.andtweet.data.AndTweetPreferences;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
+import com.xorcode.andtweet.AndTweetService.CommandData;
 import com.xorcode.andtweet.AndTweetService.CommandEnum;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 
@@ -122,10 +124,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
 
     // Bundle identifier keys
-    public static final String BUNDLE_KEY_REPLY_ID = "replyId";
-
-    public static final String BUNDLE_KEY_CURRENT_ID = "currentId";
-
     public static final String BUNDLE_KEY_CURRENT_PAGE = "currentPage";
 
     public static final String BUNDLE_KEY_IS_LOADING = "isLoading";
@@ -147,8 +145,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected Cursor mCursor;
 
     protected NotificationManager mNM;
-
-    protected SharedPreferences mSP;
 
     protected ProgressDialog mProgressDialog;
 
@@ -187,6 +183,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected boolean mIsLoading;
 
     /**
+     * We are going to finish/restart onResume this Activity
+     */
+    protected boolean mIsFinishingOnResume = false;
+  
+    /**
      * TODO: enum from
      * com.xorcode.andtweet.data.AndTweetDatabase.Tweets.TIMELINE_TYPE_...
      */
@@ -204,22 +205,37 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      */
     protected String mQueryString = "";
 
+    /**
+     * Time when shared preferences where changed
+     */
+    protected long preferencesChangeTime = 0;
+    
+    /**
+     * This method is the first of the whole application to be called 
+     * when the application starts for the very first time.
+     * So we may put some Application initialization code here. 
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-            Log.v(TAG, "onCreate");
+        AndTweetPreferences.initialize(this, this);
+        preferencesChangeTime = AndTweetPreferences.getDefaultSharedPreferences().getLong(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, 0);
+        
+        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+            AndTweetService.d(TAG, "onCreate, preferencesChangeTime=" + preferencesChangeTime);
         }
 
-        if (TwitterUser.getTwitterUser(this).getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
+        if (!AndTweetPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
+            Log.i(TAG, "We are running the Application for the very first time?");
             startActivity(new Intent(this, SplashActivity.class));
             finish();
         }
-
-        // Set up preference manager
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-        mSP = PreferenceManager.getDefaultSharedPreferences(this);
+        if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.NEVER) {
+            Log.i(TAG, "TwitterUser '" + TwitterUser.getTwitterUser().getUsername() + "' was not ever verified?");
+            startActivity(new Intent(this, SplashActivity.class));
+            finish();
+        }
 
         setTimelineType(getIntent());
 
@@ -253,12 +269,23 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     @Override
     protected void onResume() {
         super.onResume();
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-            Log.v(TAG, "onResume");
+        AndTweetService.v(TAG, "onResume");
+        if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.NEVER) {
+            AndTweetService.v(TAG, "Finishing this Activity because user was not ever authenticated");
+            mIsFinishingOnResume = true;
+            finish();
+        } else if (AndTweetPreferences.getDefaultSharedPreferences().getLong(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, 0) > preferencesChangeTime) {
+            mIsFinishingOnResume = true;
+
+            AndTweetService.v(TAG, "Restarting the activity to apply any new changes");
+            finish();
+            switchTimelineActivity(mTimelineType);
         }
-        bindToService();
-        updateTitle();
-        restorePosition();
+        if (!mIsFinishingOnResume) {
+            bindToService();
+            updateTitle();
+            restorePosition();
+        }
     }
 
     /**
@@ -296,16 +323,35 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
         }
         if (firstItemId > 0) {
-            TwitterUser tu = TwitterUser.getTwitterUser(this);
-            tu.getSharedPreferences().edit().putLong(positionKey(false), firstItemId)
-                    .putLong(positionKey(true), lastItemId).commit();
-            if (mSearchMode) {
-                // Remember query string for which the position was saved
-                tu.getSharedPreferences().edit().putString(positionQueryStringKey(), mQueryString)
-                        .commit();
+            TwitterUser tu = TwitterUser.getTwitterUser();
+            
+            // Variant 2 is overkill... but let's try...
+            // I have a feeling that saving preferences while finishing activity sometimes doesn't work...
+            //  - Maybe this was fixed introducing AndTweetPreferences class?! 
+            boolean saveSync = true;
+            boolean saveAsync = false;
+            if (saveSync) {
+                // 1. Synchronous saving
+                tu.getSharedPreferences().edit().putLong(positionKey(false), firstItemId)
+                .putLong(positionKey(true), lastItemId).commit();
+                if (mSearchMode) {
+                    // Remember query string for which the position was saved
+                    tu.getSharedPreferences().edit().putString(positionQueryStringKey(), mQueryString)
+                            .commit();
+                }
             }
+            if (saveAsync) {
+                // 2. Asynchronous saving of user's preferences
+                sendCommand(new CommandData(positionKey(false), firstItemId, tu.getUsername()));
+                sendCommand(new CommandData(positionKey(true), lastItemId, tu.getUsername()));
+                if (mSearchMode) {
+                    // Remember query string for which the position was saved
+                    sendCommand(new CommandData(positionQueryStringKey(), mQueryString, tu.getUsername()));
+                }
+            } 
+            
             if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-                Log.v(TAG, "Saved position " + tu.getUsername() + "-" + positionKey(false) + "="
+                Log.v(TAG, "Saved position " + tu.getUsername() + "; " + positionKey(false) + "="
                         + firstItemId + "; index=" + firstScrollPos + "; lastId="
                         + lastItemId + "; index=" + lastScrollPos);
             }
@@ -316,7 +362,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * Restore (First visible item) position saved for this user and for this type of timeline
      */
     private void restorePosition() {
-        TwitterUser tu = TwitterUser.getTwitterUser(this);
+        TwitterUser tu = TwitterUser.getTwitterUser();
         boolean loaded = false;
         long firstItemId = -3;
         try {
@@ -329,7 +375,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 getListView().setSelectionFromTop(scrollPos, 0);
                 loaded = true;
                 if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-                    Log.v(TAG, "Restored position " + tu.getUsername() + "-" + positionKey(false) + "="
+                    Log.v(TAG, "Restored position " + tu.getUsername() + "; " + positionKey(false) + "="
                             + firstItemId +"; list index=" + scrollPos);
                 }
             } else {
@@ -351,7 +397,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             firstItemId = -2;
         }
         if (!loaded && Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-            Log.v(TAG, "Didn't restore position " + tu.getUsername() + "-" + positionKey(false) + "="
+            Log.v(TAG, "Didn't restore position " + tu.getUsername() + "; " + positionKey(false) + "="
                     + firstItemId);
         }
         positionRestored = true;
@@ -362,7 +408,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * @return Saved Tweet id or < 0 if none was found.
      */
     protected long getSavedPosition(boolean lastRow) {
-        TwitterUser tu = TwitterUser.getTwitterUser(this);
+        TwitterUser tu = TwitterUser.getTwitterUser();
         long savedItemId = -3;
         if (!mSearchMode
                 || (mQueryString.compareTo(tu.getSharedPreferences().getString(
@@ -451,10 +497,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // so we have to start notifying the User about new events after his
         // moment.
 
-        // Get rid of the "fast scroll thumb"
-        ((ListView) findViewById(android.R.id.list)).setFastScrollEnabled(false);
-        clearNotifications();
-        savePosition();
+        if (!mIsFinishingOnResume) {
+            // Get rid of the "fast scroll thumb"
+            ((ListView) findViewById(android.R.id.list)).setFastScrollEnabled(false);
+            clearNotifications();
+            savePosition();
+        }        
         positionRestored = false;
         disconnectService();
     }
@@ -517,7 +565,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                                 R.string.dialog_summary_external_storage).setPositiveButton(
                                 android.R.string.ok, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface Dialog, int whichButton) {
-                                        SharedPreferences.Editor editor = mSP.edit();
+                                        SharedPreferences.Editor editor = AndTweetPreferences.getDefaultSharedPreferences().edit();
                                         editor.putBoolean("confirmed_external_storage_use", true);
                                         editor.putBoolean("storage_use_external", true);
                                         editor.commit();
@@ -531,7 +579,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                                 }).setNegativeButton(android.R.string.cancel,
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface Dialog, int whichButton) {
-                                        SharedPreferences.Editor editor = mSP.edit();
+                                        SharedPreferences.Editor editor = AndTweetPreferences.getDefaultSharedPreferences().edit();
                                         editor.putBoolean("confirmed_external_storage_use", true);
                                         editor.commit();
                                     }
@@ -544,7 +592,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                         .setPositiveButton(android.R.string.ok,
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface Dialog, int whichButton) {
-                                        SharedPreferences.Editor editor = mSP.edit();
+                                        SharedPreferences.Editor editor = AndTweetPreferences.getDefaultSharedPreferences().edit();
                                         editor.putBoolean("confirmed_external_storage_use", true);
                                         editor.putBoolean("storage_use_external", false);
                                         editor.commit();
@@ -601,43 +649,22 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Intent intent;
-        Bundle appDataBundle;
 
         switch (item.getItemId()) {
             case R.id.preferences_menu_id:
-                startActivity(new Intent(this, PreferencesActivity.class));
+                startPreferencesActivity();
                 break;
 
             case R.id.favorites_timeline_menu_id:
-                intent = new Intent(this, TweetListActivity.class);
-                intent.removeExtra(SearchManager.QUERY);
-                intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
-                        AndTweetDatabase.Tweets.TIMELINE_TYPE_FAVORITES);
-                // We don't use the Action anywhere, so there is no need it setting it.
-                //   - we're analyzing query instead!
-                //intent.setAction(Intent.ACTION_SEARCH);
-                startActivity(intent);
+                switchTimelineActivity(Tweets.TIMELINE_TYPE_FAVORITES);
                 break;
 
             case R.id.friends_timeline_menu_id:
-                intent = new Intent(this, TweetListActivity.class);
-                intent.removeExtra(SearchManager.QUERY);
-                intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
-                        AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
-                startActivity(intent);
+                switchTimelineActivity(Tweets.TIMELINE_TYPE_FRIENDS);
                 break;
 
             case R.id.direct_messages_menu_id:
-                intent = new Intent(this, MessageListActivity.class);
-                appDataBundle = new Bundle();
-                appDataBundle.putParcelable("content_uri",
-                        AndTweetDatabase.DirectMessages.CONTENT_URI);
-                intent.putExtra(SearchManager.APP_DATA, appDataBundle);
-                intent.removeExtra(SearchManager.QUERY);
-                intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
-                        AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
-                startActivity(intent);
+                switchTimelineActivity(Tweets.TIMELINE_TYPE_MESSAGES);
                 break;
 
             case R.id.search_menu_id:
@@ -645,11 +672,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
 
             case R.id.mentions_menu_id:
-                intent = new Intent(this, TweetListActivity.class);
-                intent.removeExtra(SearchManager.QUERY);
-                intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
-                        AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
-                startActivity(intent);
+                switchTimelineActivity(Tweets.TIMELINE_TYPE_MENTIONS);
                 break;
                 
             case R.id.reload_menu_item:
@@ -687,9 +710,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * Load the theme for preferences.
      */
     public void loadTheme() {
-        boolean light = mSP.getBoolean("appearance_light_theme", false);
+        boolean light = AndTweetPreferences.getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
         StringBuilder theme = new StringBuilder();
-        String name = mSP.getString("theme", "AndTweet");
+        String name = AndTweetPreferences.getDefaultSharedPreferences().getString("theme", "AndTweet");
         if (name.indexOf("Theme.") > -1) {
             name = name.substring(name.indexOf("Theme."));
         }
@@ -727,7 +750,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 timelinename = getString(R.string.activity_title_direct_messages);
                 break;
         }
-        String username = mSP.getString("twitter_username", null);
+        String username = AndTweetPreferences.getDefaultSharedPreferences().getString(PreferencesActivity.KEY_TWITTER_USERNAME, null);
         String leftText = getString(R.string.activity_title_format, new Object[] {
                 timelinename, username + (mSearchMode ? " *" : "")
         }); 
@@ -791,9 +814,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         if (!mIsBound) {
             mIsBound = true;
             Intent serviceIntent = new Intent(IAndTweetService.class.getName());
-            if (!AndTweetServiceManager.isStarted) {
+            if (!AndTweetServiceManager.isStarted()) {
                 // Ensure that AndTweetService is running
-                AndTweetServiceManager.startAndTweetService(this);
+                AndTweetServiceManager.startAndTweetService(this, new CommandData(CommandEnum.EMPTY));
             }
             // startService(serviceIntent);
             bindService(serviceIntent, mServiceConnection, 0);
@@ -858,19 +881,21 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     /**
      * Intents queue to be send to the AndTweetService
      */
-    private BlockingQueue<Intent> mCommands = new ArrayBlockingQueue<Intent>(100, true);
+    private BlockingQueue<CommandData> mCommands = new ArrayBlockingQueue<CommandData>(100, true);
     
     /**
      * Send broadcast with the command (in the form of Intent) to the AndTweet Service after it will be
      * connected to this activity. We should wait for the connection because
      * otherwise we won't receive callback from the service
      * 
-     * @param intent Intent to send, null if we only want to push the queue
+     * Plus this method restarts this Activity if command is PUT_BOOLEAN_PREFERENCE with KEY_PREFERENCES_CHANGE_TIME 
+     * 
+     * @param commandData Intent to send, null if we only want to push the queue
      */
-    protected synchronized void sendCommand(Intent intent) {
-        if (intent != null) {
-            if (!mCommands.contains(intent)) {
-                if (!mCommands.offer(intent)) {
+    protected synchronized void sendCommand(CommandData commandData) {
+        if (commandData != null) {
+            if (!mCommands.contains(commandData)) {
+                if (!mCommands.offer(commandData)) {
                     Log.e(TAG, "mCommands is full?");
                 }
             }
@@ -881,24 +906,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 Log.v(TAG, "Sendings " + mCommands.size() + " broadcasts");
             }
             while (true) {
-                Intent element = mCommands.poll();
+                AndTweetService.CommandData element = mCommands.poll();
                 if (element == null) { break; }
-                sendBroadcast(element);
+                sendBroadcast(element.toIntent());
             }
         }
-    }
-
-    /**
-     * Prepare command to be sent to the AndTweetService.
-     * Some parameters of this command (Extras) may be added to the prepared intent 
-     * before calling {@link #sendCommand(Intent)}
-     * @param command to be prepared
-     * @return intent to be sent
-     */
-    protected Intent prepareCommand(CommandEnum command) {
-        Intent intent = new Intent(AndTweetService.ACTION_GO);
-        intent.putExtra(AndTweetService.EXTRA_MSGTYPE, command.save());
-        return intent;
     }
     
     /**
@@ -1001,6 +1013,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // Only newer tweets (newer that last loaded) are being loaded
         // from the Internet,
         // old tweets are not being reloaded.
+
+        // Show something to the user...
+        mListFooter.setVisibility(View.VISIBLE);
         
         // Ask service to load data for this mTimelineType
         AndTweetService.CommandEnum command = CommandEnum.FETCH_TIMELINE;
@@ -1008,7 +1023,45 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             case Tweets.TIMELINE_TYPE_MESSAGES:
                 command = CommandEnum.FETCH_MESSAGES;
         }
-        sendCommand(prepareCommand(command));
+        sendCommand( new CommandData(command));
     }
     
+    protected void startPreferencesActivity() {
+        // We need to restart this Activity after exiting PreferencesActivity
+        // So let's set the flag:
+        //AndTweetPreferences.getDefaultSharedPreferences().edit()
+        //        .putBoolean(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, true).commit();
+        startActivity(new Intent(this, PreferencesActivity.class));
+    }
+
+    /**
+     * Switch type of presented timeline
+     */
+    protected void switchTimelineActivity(int timelineType) {
+        Intent intent;
+        switch (timelineType) {
+            case Tweets.TIMELINE_TYPE_MESSAGES:
+                intent = new Intent(this, MessageListActivity.class);
+                Bundle appDataBundle = new Bundle();
+                appDataBundle.putParcelable("content_uri",
+                        AndTweetDatabase.DirectMessages.CONTENT_URI);
+                intent.putExtra(SearchManager.APP_DATA, appDataBundle);
+                break;
+            default:
+                timelineType = Tweets.TIMELINE_TYPE_FRIENDS;
+            case Tweets.TIMELINE_TYPE_MENTIONS:
+            case Tweets.TIMELINE_TYPE_FAVORITES:
+            case Tweets.TIMELINE_TYPE_FRIENDS:
+                intent = new Intent(this, TweetListActivity.class);
+                break;
+
+        }
+
+        intent.removeExtra(SearchManager.QUERY);
+        intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE, timelineType);
+        // We don't use the Action anywhere, so there is no need it setting it.
+        // - we're analyzing query instead!
+        // intent.setAction(Intent.ACTION_SEARCH);
+        startActivity(intent);
+    }
 }

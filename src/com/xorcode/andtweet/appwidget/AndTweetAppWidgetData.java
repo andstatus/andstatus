@@ -22,6 +22,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import com.xorcode.andtweet.AndTweetService;
 import com.xorcode.andtweet.R;
+import com.xorcode.andtweet.data.AndTweetPreferences;
 import com.xorcode.andtweet.util.SharedPreferencesUtil;
 
 /**
@@ -92,6 +93,7 @@ public class AndTweetAppWidgetData {
 		mContext = context;
 		mappWidgetId = appWidgetId;
 		prefsFileName = PREFS_FILE_NAME + mappWidgetId;
+		AndTweetPreferences.initialize(context, this);
 	}
 
 	/**
@@ -119,7 +121,7 @@ public class AndTweetAppWidgetData {
 	
 	public boolean load() {
 		boolean Ok = false;
-		SharedPreferences prefs = mContext.getSharedPreferences(prefsFileName,
+		SharedPreferences prefs = AndTweetPreferences.getSharedPreferences(prefsFileName,
 				MODE_PRIVATE);
 		if (prefs == null) {
 			Log.e(TAG, "The prefs file '" + prefsFileName + "' was not loaded");
@@ -158,7 +160,7 @@ public class AndTweetAppWidgetData {
 		if (!isLoaded) {
 			Log.e(TAG, "Save without load is not possible");
 		} else {
-			SharedPreferences.Editor prefs = mContext.getSharedPreferences(
+			SharedPreferences.Editor prefs = AndTweetPreferences.getSharedPreferences(
 					prefsFileName, MODE_PRIVATE).edit();
 			if (prefs == null) {
 				Log.e(TAG, "Prefs Editor was not loaded");

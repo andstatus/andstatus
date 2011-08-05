@@ -35,7 +35,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -43,6 +42,7 @@ import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.AndTweetDatabase.DirectMessages;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.data.AndTweetDatabase.Users;
+import com.xorcode.andtweet.data.AndTweetPreferences;
 
 /**
  * Database provider for the AndTweetDatabase database.
@@ -99,6 +99,7 @@ public class AndTweetProvider extends ContentProvider {
      * @author torgny.bjers
      */
     private static class DatabaseHelper extends SQLiteOpenHelper {
+        private static final String TAG = AndTweetProvider.class.getSimpleName();
 
         private SQLiteDatabase mDatabase;
 
@@ -108,7 +109,8 @@ public class AndTweetProvider extends ContentProvider {
 
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
-            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+            AndTweetPreferences.initialize(context, this);
+            SharedPreferences sp = AndTweetPreferences.getDefaultSharedPreferences();
             mUseExternalStorage = sp.getBoolean("storage_use_external", false);
         }
 

@@ -71,7 +71,7 @@ public class FriendTimeline {
     public FriendTimeline(Context context, int timelineType) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
-        mTu = TwitterUser.getTwitterUser(mContext);
+        mTu = TwitterUser.getTwitterUser();
         mTimelineType = timelineType;
         mLastStatusId = mTu.getSharedPreferences().getLong("last_timeline_id" + timelineType, 0);
         switch (mTimelineType) {
@@ -250,8 +250,8 @@ public class FriendTimeline {
         int nDeleted = 0;
         int nDeletedTime = 0;
         // We're using global preferences here
-        SharedPreferences sp = android.preference.PreferenceManager
-                .getDefaultSharedPreferences(mContext);
+        SharedPreferences sp = AndTweetPreferences
+                .getDefaultSharedPreferences();
         int maxDays = Integer.parseInt(sp.getString(PreferencesActivity.KEY_HISTORY_TIME, "3"));
         long sinceTimestamp = 0;
         if (maxDays > 0) {
@@ -320,8 +320,7 @@ public class FriendTimeline {
         if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
             Log.v(TAG,
                     "pruneOldRecords; History time=" + maxDays + " days; deleted " + nDeletedTime
-                            + " , since " + sinceTimestamp + ", now=" + System.currentTimeMillis()
-                            + ")");
+                            + " , since " + sinceTimestamp + ", now=" + System.currentTimeMillis());
             Log.v(TAG, "pruneOldRecords; History size=" + maxSize + " tweets; deleted "
                     + nDeletedSize + " of " + nTweets + " tweets, since " + sinceTimestampSize);
         }

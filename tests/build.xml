@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="AndTweet" default="help">
+<project name="tests" default="help">
 
 <!-- The local.properties file is created and updated by the 'android'
      tool.
@@ -35,7 +35,8 @@
 
     <!-- Required pre-setup import -->
     <import file="${sdk.dir}/tools/ant/pre_setup.xml" />
-	
+
+
 <!-- extension targets. Uncomment the ones where you want to do custom work
      in between standard targets -->
 <!--
@@ -73,13 +74,6 @@
                below to <setup import="false" />.
              - customize to your needs.
     -->
-    <setup import="false" />
-
-	<!-- This is done to get rid of the error: 
-			"Default target help does not exist in this project"
-			see http://stackoverflow.com/questions/5135763/using-android-build-xml-in-eclipse
-	-->
-	<import file="${sdk.dir}/tools/ant/main_rules.xml" />
-
+    <setup />
 
 </project>

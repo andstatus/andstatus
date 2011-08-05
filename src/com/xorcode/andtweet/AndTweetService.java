@@ -49,15 +49,16 @@ import android.os.PowerManager;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import com.xorcode.andtweet.appwidget.AndTweetAppWidgetProvider;
 import com.xorcode.andtweet.data.AndTweetDatabase;
+import com.xorcode.andtweet.data.AndTweetPreferences;
 import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.net.ConnectionException;
+import com.xorcode.andtweet.util.ForegroundCheckTask;
 import com.xorcode.andtweet.util.I18n;
 
 /**
@@ -65,11 +66,12 @@ import com.xorcode.andtweet.util.I18n;
  * and Twitter. Other applications can interact with it via IPC.
  */
 public class AndTweetService extends Service {
-	private static final String TAG = AndTweetService.class.getSimpleName();
-	/**
-	 * Use this tag to change logging level of the whole application
-	 * Is used is isLoggable(APPTAG, ... ) calls
-	 */
+    private static final String TAG = AndTweetService.class.getSimpleName();
+
+    /**
+     * Use this tag to change logging level of the whole application Is used is
+     * isLoggable(APPTAG, ... ) calls
+     */
     public static final String APPTAG = "AndTweet";
 
     private static final String packageName = AndTweetService.class.getPackage().getName();
@@ -80,41 +82,56 @@ public class AndTweetService extends Service {
     private static final String ACTIONPREFIX = packageName + ".action.";
 
     /**
-     * Intent with this action sent when it is time to update AndTweet AppWidget.
-     *
-     * <p>This may be sent in response to some new information
-     * is ready for notification (some changes...),
-     * or the system booting.
-     *
+     * Intent with this action sent when it is time to update AndTweet
+     * AppWidget.
+     * <p>
+     * This may be sent in response to some new information is ready for
+     * notification (some changes...), or the system booting.
      * <p>
      * The intent will contain the following extras:
      * <ul>
-     *  <li>{@link #EXTRA_MSGTYPE}</li>
-     *  <li>{@link #EXTRA_NUMTWEETSMSGTYPE}</li>
-     *  <li>{@link android.appwidget.AppWidgetManager#EXTRA_APPWIDGET_IDS}<br/>
-     *     The appWidgetIds to update.  This may be all of the AppWidgets created for this
-     *     provider, or just a subset.  The system tries to send updates for as few AppWidget
-     *     instances as possible.</li>
+     * <li>{@link #EXTRA_MSGTYPE}</li>
+     * <li>{@link #EXTRA_NUMTWEETSMSGTYPE}</li>
+     * <li>{@link android.appwidget.AppWidgetManager#EXTRA_APPWIDGET_IDS}<br/>
+     * The appWidgetIds to update. This may be all of the AppWidgets created for
+     * this provider, or just a subset. The system tries to send updates for as
+     * few AppWidget instances as possible.</li>
      * 
-     * @see AppWidgetProvider#onUpdate AppWidgetProvider.onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
+     * @see AppWidgetProvider#onUpdate AppWidgetProvider.onUpdate(Context
+     *      context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
      */
     public static final String ACTION_APPWIDGET_UPDATE = ACTIONPREFIX + "APPWIDGET_UPDATE";
+    
+    /**
+     * Repeating alarm was triggered.
+     * @see AndTweetService#scheduleRepeatingAlarm()
+     */
+    public static final String ACTION_ALARM = ACTIONPREFIX + "ALARM";
 
     /**
-     * This action is used in any intent sent to this service
-     * Actual command to perform by this service is in the {@link #EXTRA_MSGTYPE} extra of the intent 
-     * @see CommandEnum 
+     * This action is being sent by {@link AndTweetService} to notify that it
+     * was stopped
+     */
+    public static final String ACTION_SERVICE_STOPPED = ACTIONPREFIX + "SERVICE_STOPPED";
+
+    /**
+     * This action is used in any intent sent to this service. Actual command to
+     * perform by this service is in the {@link #EXTRA_MSGTYPE} extra of the
+     * intent
+     * 
+     * @see CommandEnum
      */
     public static final String ACTION_GO = ACTIONPREFIX + "GO";
-	
-    /**	
+
+    /**
      * These names of extras are used in the Intent-notification of new Tweets
      * (e.g. to notify Widget).
      */
 
-	/**
-     * This extra is used as a command to perform by AndTweetService and AndTweetAppWidgetProvider
-     * Value of this extra is string code of CommandEnum (not serialized enum !)
+    /**
+     * This extra is used as a command to perform by AndTweetService and
+     * AndTweetAppWidgetProvider Value of this extra is string code of
+     * CommandEnum (not serialized enum !)
      */
     public static final String EXTRA_MSGTYPE = packageName + ".MSGTYPE";
 
@@ -129,24 +146,37 @@ public class AndTweetService extends Service {
     public static final String EXTRA_STATUS = packageName + ".STATUS";
 
     /**
+     * User name
+     */
+    public static final String EXTRA_USERNAME = packageName + ".USERNAME";
+
+    /**
+     * Name of the preference to set
+     */
+    public static final String EXTRA_PREFERENCE_KEY = packageName + ".PREFERENCE_KEY";
+
+    public static final String EXTRA_PREFERENCE_VALUE = packageName + ".PREFERENCE_VALUE";
+
+    /**
      * Reply to
      */
     public static final String EXTRA_INREPLYTOID = packageName + ".INREPLYTOID";
-        
-    /**	
+
+    /**
      * Number of new tweets. Value is integer
      */
     public static final String EXTRA_NUMTWEETS = packageName + ".NUMTWEETS";
 
     /**
-     * This extra is used to determine which timeline to show in TimelineActivity
-     * Value is integer (TODO: enum...) 
+     * This extra is used to determine which timeline to show in
+     * TimelineActivity Value is integer (TODO: enum...)
      */
     public static final String EXTRA_TIMELINE_TYPE = packageName + ".TIMELINE_TYPE";
-    
+
     /**
-     * The command to the AndTweetService or to AndTweetAppWidgetProvider as a enum
-     * We use 'code' for persistence
+     * The command to the AndTweetService or to AndTweetAppWidgetProvider as a
+     * enum We use 'code' for persistence
+     * 
      * @author yvolk
      */
     public enum CommandEnum {
@@ -154,10 +184,14 @@ public class AndTweetService extends Service {
         /**
          * The action is unknown
          */
-        UNKNOWN("unknown"), 
+        UNKNOWN("unknown"),
         /**
-         * The action is being sent by recurring alarm to
-         * fetch the tweets, replies and other information in the background
+         * There is no action
+         */
+        EMPTY("empty"),
+        /**
+         * The action is being sent by recurring alarm to fetch the tweets,
+         * replies and other information in the background
          */
         AUTOMATIC_UPDATE("automatic-update"),
         /**
@@ -169,46 +203,56 @@ public class AndTweetService extends Service {
          */
         FETCH_MESSAGES("fetch-messages"),
         /**
-         * The recurring alarm that is used to implement recurring tweet downloads
-         * should be started.
+         * The recurring alarm that is used to implement recurring tweet
+         * downloads should be started.
          */
         START_ALARM("start-alarm"),
         /**
-        * The recurring alarm that is used to implement recurring tweet downloads
-        * should be stopped.
-        */
+         * The recurring alarm that is used to implement recurring tweet
+         * downloads should be stopped.
+         */
         STOP_ALARM("stop-alarm"),
         /**
-         * The recurring alarm that is used to implement recurring tweet downloads
-         * should be restarted.
+         * The recurring alarm that is used to implement recurring tweet
+         * downloads should be restarted.
          */
         RESTART_ALARM("restart-alarm"),
 
-        CREATE_FAVORITE("create-favorite"),
-        DESTROY_FAVORITE("destroy-favorite"),
+        CREATE_FAVORITE("create-favorite"), DESTROY_FAVORITE("destroy-favorite"),
 
-        UPDATE_STATUS("update-status"),
-        DESTROY_STATUS("destroy-status"),
+        UPDATE_STATUS("update-status"), DESTROY_STATUS("destroy-status"),
 
         RATE_LIMIT_STATUS("rate-limit-status"),
-        
+
         /**
          * Notify User about commands in the Queue
          */
         NOTIFY_QUEUE("notify-queue"),
-        
+
         /**
-         * Commands to the Widget
-         * New tweets|messages were successfully loaded from the server
+         * Commands to the Widget New tweets|messages were successfully loaded
+         * from the server
          */
-        NOTIFY_DIRECT_MESSAGE("notify-direct-message"),
-        NOTIFY_TIMELINE("notify-timeline"),
-        NOTIFY_REPLIES("notify-replies"),
+        NOTIFY_DIRECT_MESSAGE("notify-direct-message"), NOTIFY_TIMELINE("notify-timeline"), NOTIFY_REPLIES(
+                "notify-replies"),
         /**
-         * Clear previous notifications (because e.g. user open tweet list...) 
+         * Clear previous notifications (because e.g. user open tweet list...)
          */
-        NOTIFY_CLEAR("notify-clear")
-        ;
+        NOTIFY_CLEAR("notify-clear"),
+
+        /**
+         * Reload all preferences...
+         */
+        PREFERENCES_CHANGED("preferences-changed"),
+
+        /**
+         * Save SharePreverence. We try to use it because sometimes Android
+         * doesn't actually store these values to the disk... and the
+         * preferences get lost. I think this is mainly because of several
+         * processes using the same preferences
+         */
+        PUT_BOOLEAN_PREFERENCE("put-boolean-preference"), PUT_LONG_PREFERENCE("put-long-preference"), PUT_STRING_PREFERENCE(
+                "put-string-preference");
 
         /**
          * code of the enum that is used in messages
@@ -227,8 +271,7 @@ public class AndTweetService extends Service {
         }
 
         /**
-         * Returns the enum for a String action code
-         * or UNKNOWN 
+         * Returns the enum for a String action code or UNKNOWN
          */
         public static CommandEnum load(String strCode) {
             for (CommandEnum serviceCommand : CommandEnum.values()) {
@@ -240,26 +283,93 @@ public class AndTweetService extends Service {
         }
 
     }
-    
+
     /**
      * Command data store (message...)
+     * 
      * @author yvolk
      */
-    private class CommandData {
+    public static class CommandData {
         public CommandEnum command;
+
         public long itemId = 0;
+
         /**
          * Other command parameters
          */
-        public Bundle bundle;
+        public Bundle bundle = new Bundle();
 
         private int hashcode = 0;
-        
+
         /**
          * Number of retries left
          */
         public int retriesLeft = 0;
-        
+
+        public CommandData(CommandEnum commandIn) {
+            command = commandIn;
+        }
+
+        public CommandData(CommandEnum commandIn, long itemIdIn) {
+            command = commandIn;
+            itemId = itemIdIn;
+        }
+
+        /**
+         * Initialize command to put SharedPreference
+         * 
+         * @param preferenceKey
+         * @param value
+         * @param username - preferences for this user, or null if Global
+         *            preferences
+         */
+        public CommandData(String preferenceKey, boolean value, String username) {
+            command = CommandEnum.PUT_BOOLEAN_PREFERENCE;
+            bundle.putString(EXTRA_PREFERENCE_KEY, preferenceKey);
+            bundle.putBoolean(EXTRA_PREFERENCE_VALUE, value);
+            if (username != null) {
+                bundle.putString(EXTRA_USERNAME, username);
+            }
+        }
+
+        /**
+         * Initialize command to put SharedPreference
+         * 
+         * @param preferenceKey
+         * @param value
+         * @param username - preferences for this user, or null if Global
+         *            preferences
+         */
+        public CommandData(String preferenceKey, long value, String username) {
+            command = CommandEnum.PUT_LONG_PREFERENCE;
+            bundle.putString(EXTRA_PREFERENCE_KEY, preferenceKey);
+            bundle.putLong(EXTRA_PREFERENCE_VALUE, value);
+            if (username != null) {
+                bundle.putString(EXTRA_USERNAME, username);
+            }
+        }
+
+        /**
+         * Initialize command to put SharedPreference
+         * 
+         * @param preferenceKey
+         * @param value
+         * @param username - preferences for this user
+         */
+        public CommandData(String preferenceKey, String value, String username) {
+            command = CommandEnum.PUT_STRING_PREFERENCE;
+            bundle.putString(EXTRA_PREFERENCE_KEY, preferenceKey);
+            bundle.putString(EXTRA_PREFERENCE_VALUE, value);
+            if (username != null) {
+                bundle.putString(EXTRA_USERNAME, username);
+            }
+        }
+
+        /**
+         * Used to decode command from the Intent upon receiving it
+         * 
+         * @param intent
+         */
         public CommandData(Intent intent) {
             bundle = intent.getExtras();
             // Decode command
@@ -272,39 +382,74 @@ public class AndTweetService extends Service {
         }
 
         /**
-         * It's used in equals() method
-         * We need to distinguish duplicated commands
+         * It's used in equals() method We need to distinguish duplicated
+         * commands
          */
         @Override
         public int hashCode() {
             if (hashcode == 0) {
+                String text = Long.toString(command.ordinal());
                 if (itemId != 0) {
-                    hashcode =  (int) ((itemId << 4) & 0xFFFFFFFF);
-                    hashcode |= command.ordinal();
+                    text += Long.toString(itemId);
                 }
-                if (hashcode == 0) {
-                    if (command == CommandEnum.UPDATE_STATUS) {
-                       String text = bundle.getString(EXTRA_STATUS);
-                       hashcode = text.hashCode();
-                    }
+                switch (command) {
+                    case UPDATE_STATUS:
+                        text += bundle.getString(EXTRA_STATUS);
+                        break;
+                    case PUT_BOOLEAN_PREFERENCE:
+                        text += bundle.getString(EXTRA_PREFERENCE_KEY)
+                                + bundle.getString(EXTRA_USERNAME)
+                                + bundle.getBoolean(EXTRA_PREFERENCE_VALUE);
+                        break;
+                    case PUT_LONG_PREFERENCE:
+                        text += bundle.getString(EXTRA_PREFERENCE_KEY)
+                                + bundle.getString(EXTRA_USERNAME)
+                                + bundle.getLong(EXTRA_PREFERENCE_VALUE);
+                        break;
+                    case PUT_STRING_PREFERENCE:
+                        text += bundle.getString(EXTRA_PREFERENCE_KEY)
+                                + bundle.getString(EXTRA_USERNAME)
+                                + bundle.getString(EXTRA_PREFERENCE_VALUE);
+                        break;
                 }
-                if (hashcode == 0) {
-                    hashcode += command.ordinal();
-                }
+                hashcode = text.hashCode();
             }
             return hashcode;
         }
-        
+
         /**
          * @see java.lang.Object#toString()
          */
         @Override
         public String toString() {
-            return "CommandData [" 
-                + "command=" + command.save() 
-                + ( itemId == 0 ? "" :  "; id=" + itemId) 
-                + ", hashCode=" + hashCode() 
-                + "]";            
+            return "CommandData [" + "command=" + command.save()
+                    + (itemId == 0 ? "" : "; id=" + itemId) + ", hashCode=" + hashCode() + "]";
+        }
+
+        /**
+         * @return Intent to be sent to this.AndTweetService
+         */
+        public Intent toIntent() {
+            return toIntent(null);
+        }
+
+        /**
+         * @return Intent to be sent to this.AndTweetService
+         */
+        public Intent toIntent(Intent intent_in) {
+            Intent intent = intent_in;
+            if (intent == null) {
+                intent = new Intent(AndTweetService.ACTION_GO);
+            }
+            if (bundle == null) {
+                bundle = new Bundle();
+            }
+            bundle.putString(AndTweetService.EXTRA_MSGTYPE, command.save());
+            if (itemId != 0) {
+                bundle.putLong(AndTweetService.EXTRA_TWEETID, itemId);
+            }
+            intent.putExtras(bundle);
+            return intent;
         }
 
         @Override
@@ -318,135 +463,172 @@ public class AndTweetService extends Service {
             if (obj.getClass() != getClass()) {
                 return false;
             }
-            return (this.hashCode() == ((CommandData)obj).hashCode());
+            return (this.hashCode() == ((CommandData) obj).hashCode());
         }
     }
-    
-	/**
-	 * This is a list of callbacks that have been registered with the service.
-	 */
-	final RemoteCallbackList<IAndTweetServiceCallback> mCallbacks = new RemoteCallbackList<IAndTweetServiceCallback>();
 
-	private static final int MILLISECONDS = 1000;
+    /**
+     * This is a list of callbacks that have been registered with the service.
+     */
+    final RemoteCallbackList<IAndTweetServiceCallback> mCallbacks = new RemoteCallbackList<IAndTweetServiceCallback>();
 
-	/**
-	 * Send broadcast to Widgets even if there are no new tweets
-	 */
+    private static final int MILLISECONDS = 1000;
+
+    /**
+     * Send broadcast to Widgets even if there are no new tweets
+     */
     // TODO: Maybe this should be additional setting...
     public static boolean updateWidgetsOnEveryUpdate = true;
-    
-	private boolean mNotificationsEnabled;
-	private boolean mNotificationsVibrate;
 
-	private NotificationManager mNM;
+    private boolean mNotificationsEnabled;
+
+    private boolean mNotificationsVibrate;
 
     /**
      * Commands queue to be processed by the Service
      */
     private BlockingQueue<CommandData> mCommands = new ArrayBlockingQueue<CommandData>(100, true);
+
     /**
      * Retry Commands queue
      */
     private BlockingQueue<CommandData> mRetryQueue = new ArrayBlockingQueue<CommandData>(100, true);
-	
-	/**
-	 * The set of threads that are currently executing commands
-	 * For now let's have only ONE working thread 
-	 * (it seems there is some problem in parallel execution...)
-	 */
-	private Set<CommandExecutor> mExecutors = new HashSet<CommandExecutor>();
-	/**
-	 * The number of listeners returned by the last broadcast start call.
-	 */
-	private volatile int mBroadcastListenerCount = 0;
-	/**
-	 * The reference to the wake lock used to keep the CPU from stopping
-	 * during downloads.
-	 */
-	private volatile PowerManager.WakeLock mWakeLock = null;
 
-    /** 
-     * @return Single instance of SharedPreferences is returned, this is why we may synchronize on the object
+    /**
+     * The set of threads that are currently executing commands For now let's
+     * have only ONE working thread (it seems there is some problem in parallel
+     * execution...)
+     */
+    private Set<CommandExecutor> mExecutors = new HashSet<CommandExecutor>();
+
+    /**
+     * The number of listeners returned by the last broadcast start call.
+     */
+    private volatile int mBroadcastListenerCount = 0;
+
+    /**
+     * The reference to the wake lock used to keep the CPU from stopping during
+     * downloads.
+     */
+    private volatile PowerManager.WakeLock mWakeLock = null;
+
+    /**
+     * Time when shared preferences where changed
+     */
+    protected long preferencesChangeTime = 0;
+    /**
+     * Time when shared preferences where analyzed
+     */
+    protected long preferencesExamineTime = 0;
+    
+    /**
+     * @return Single instance of Default SharedPreferences is returned, this is why we
+     *         may synchronize on the object
      */
     private SharedPreferences getSp() {
-       return PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        return AndTweetPreferences.getDefaultSharedPreferences();
     }
 
-	@Override
-	public void onCreate() {
-		d(TAG, "Service created in context: "
-				+ getApplication().getApplicationContext().getPackageName());
-
-		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+    /**
+     * The idea is to have SharePreferences, that are being edited by
+     * the service process only (to avoid problems of concurrent access.
+     * @return Single instance of SharedPreferences, specific to the class
+     */
+    private SharedPreferences getServiceSp() {
+        return AndTweetPreferences.getSharedPreferences(TAG, MODE_PRIVATE);
+    }
+    
+    @Override
+    public void onCreate() {
+        AndTweetPreferences.initialize(this, this);
+        preferencesChangeTime = AndTweetPreferences.getDefaultSharedPreferences().getLong(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, 0);
+        preferencesExamineTime = getServiceSp().getLong(PreferencesActivity.KEY_PREFERENCES_EXAMINE_TIME, 0);
+        d(TAG, "Service created, preferencesChangeTime=" + preferencesChangeTime + ", examined=" + preferencesExamineTime);
 
         registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
-	}
+    }
 
-	private BroadcastReceiver intentReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver intentReceiver = new BroadcastReceiver() {
 
-		@Override
-		public void onReceive(Context arg0, Intent intent) {
-			d(TAG, "onReceive()");
-			receiveCommand(intent);
-		}
+        @Override
+        public void onReceive(Context arg0, Intent intent) {
+            v(TAG, "onReceive " + intent.toString());
+            receiveCommand(intent);
+        }
 
-	};
+    };
 
-	@Override
-	public void onDestroy() {
-	    // Unregister all callbacks.
-		mCallbacks.kill();
+    @Override
+    public void onDestroy() {
+        sendBroadcast(new Intent(ACTION_SERVICE_STOPPED));
+        
+        // Unregister all callbacks.
+        mCallbacks.kill();
 
-		cancelRepeatingAlarm();
-		
-		unregisterReceiver(intentReceiver);
+        unregisterReceiver(intentReceiver);
 
-		d(TAG, "Service destroyed");
-	}
+        // Clear notifications if any
+        int count = notifyOfQueue(true);
+        
+        AndTweetPreferences.forget();
 
-	@Override
-	public IBinder onBind(Intent intent) {
-		// Select the interface to return. If your service only implements
-		// a single interface, you can just return it here without checking
-		// the Intent.
-		if (IAndTweetService.class.getName().equals(intent.getAction())) {
-			return mBinder;
-		}
-		return null;
-	}
+        d(TAG, "Service destroyed" + (count>0 ? ", " + count + " msg in the Queue" : ""));
+    }
 
-	@Override
-	public void onStart(Intent intent, int startId) {
-		super.onStart(intent, startId); 
-		d(TAG, "onStart(): startid: " + startId);
-		receiveCommand(intent);
-	}
+    @Override
+    public IBinder onBind(Intent intent) {
+        // Select the interface to return. If your service only implements
+        // a single interface, you can just return it here without checking
+        // the Intent.
+        if (IAndTweetService.class.getName().equals(intent.getAction())) {
+            return mBinder;
+        }
+        return null;
+    }
 
-	/**
-	 * Put Intent to the Command's queue
-	 * and Start Execution thread if none is already running 
-	 * 
-	 * @param Intent containing command and it's parameters. 
-	 * It may be null to initialize execution only.
-	 */
-	private synchronized void receiveCommand(Intent intent) {
-	    if (mCommands.isEmpty()) {
-	        // This is a good place to send commands from retry Queue
-	        while (!mRetryQueue.isEmpty()) {
-	           CommandData commandData = mRetryQueue.poll(); 
-	           if (!mCommands.contains(commandData)) {
-	               if (!mCommands.offer(commandData)) {
-	                   Log.e(TAG, "mCommands is full?");
-	               }
-	           }
-	        }
-	    }
-	    
+    @Override
+    public void onStart(Intent intent, int startId) {
+        super.onStart(intent, startId);
+        d(TAG, "onStart(): startid: " + startId);
+        receiveCommand(intent);
+    }
+
+    /**
+     * Put Intent to the Command's queue and Start Execution thread if none is
+     * already running
+     * 
+     * @param Intent containing command and it's parameters. It may be null to
+     *            initialize execution only.
+     */
+    private synchronized void receiveCommand(Intent intent) {
+        
+        long preferencesChangeTimeNew = AndTweetPreferences.getDefaultSharedPreferences().getLong(
+                PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, 0);
+        if (preferencesChangeTime != preferencesChangeTimeNew
+                || preferencesExamineTime < preferencesChangeTimeNew) {
+            examinePreferences();
+        }
+        
+        if (mCommands.isEmpty()) {
+            // This is a good place to send commands from retry Queue
+            while (!mRetryQueue.isEmpty()) {
+                CommandData commandData = mRetryQueue.poll();
+                if (!mCommands.contains(commandData)) {
+                    if (!mCommands.offer(commandData)) {
+                        Log.e(TAG, "mCommands is full?");
+                    }
+                }
+            }
+        }
+
         if (intent != null) {
-            CommandData commandData = new CommandData(intent); 
-            
-            // Maybe this command may be processed synchronously without Internet connection?
-            if (processCommandImmediately(commandData)) {
+            CommandData commandData = new CommandData(intent);
+            if (commandData.command == CommandEnum.UNKNOWN) {
+                // Ignore unknown commands
+
+                // Maybe this command may be processed synchronously without
+                // Internet connection?
+            } else if (processCommandImmediately(commandData)) {
                 // Don't add to the queue
             } else if (mCommands.contains(commandData)) {
                 d(TAG, "Duplicated " + commandData);
@@ -457,10 +639,10 @@ public class AndTweetService extends Service {
                 }
             }
         }
-        
+
         // Start Executor if necessary
         startEndStuff(true, null, null);
-	}
+    }
 
     /**
      * @param commandData
@@ -470,10 +652,20 @@ public class AndTweetService extends Service {
         boolean processed = false;
         // Processed successfully?
         boolean ok = true;
+        boolean skipped = false;
+
+        /**
+         * Flag for debugging. It looks like for now we don't need to edit
+         * SharedPreferences from this part of code
+         */
+        boolean putPreferences = false;
+
         processed = (commandData == null);
         if (!processed) {
             processed = true;
             switch (commandData.command) {
+
+                // TODO: Do we really need these three commands?
                 case START_ALARM:
                     ok = scheduleRepeatingAlarm();
                     break;
@@ -484,18 +676,126 @@ public class AndTweetService extends Service {
                     ok = cancelRepeatingAlarm();
                     ok = scheduleRepeatingAlarm();
                     break;
+
+                case UNKNOWN:
+                case EMPTY:
+                    // Nothing to do
+                    break;
+                case PREFERENCES_CHANGED:
+                    examinePreferences();
+                    break;
+
+                case PUT_BOOLEAN_PREFERENCE:
+                    if (!putPreferences) {
+                        skipped = true;
+                        break;
+                    }
+                    String key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
+                    boolean boolValue = commandData.bundle.getBoolean(EXTRA_PREFERENCE_VALUE);
+                    String username = commandData.bundle.getString(EXTRA_USERNAME);
+                    v(TAG, "Put boolean Preference '" + key + "'=" + boolValue
+                            + ((username != null) ? " user='" + username + "'" : " global"));
+                    SharedPreferences sp = null;
+                    if (username != null) {
+                        sp = TwitterUser.getTwitterUser(username).getSharedPreferences();
+                    } else {
+                        sp = getSp();
+                    }
+                    synchronized (sp) {
+                        sp.edit().putBoolean(key, boolValue).commit();
+                    }
+                    break;
+                case PUT_LONG_PREFERENCE:
+                    if (!putPreferences) {
+                        skipped = true;
+                        break;
+                    }
+                    key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
+                    long longValue = commandData.bundle.getLong(EXTRA_PREFERENCE_VALUE);
+                    username = commandData.bundle.getString(EXTRA_USERNAME);
+                    v(TAG, "Put long Preference '" + key + "'=" + longValue
+                            + ((username != null) ? " user='" + username + "'" : " global"));
+                    if (username != null) {
+                        sp = TwitterUser.getTwitterUser(username).getSharedPreferences();
+                    } else {
+                        sp = getSp();
+                    }
+                    synchronized (sp) {
+                        sp.edit().putLong(key, longValue).commit();
+                    }
+                    break;
+                case PUT_STRING_PREFERENCE:
+                    if (!putPreferences) {
+                        skipped = true;
+                        break;
+                    }
+                    key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
+                    String stringValue = commandData.bundle.getString(EXTRA_PREFERENCE_VALUE);
+                    username = commandData.bundle.getString(EXTRA_USERNAME);
+                    v(TAG, "Put String Preference '" + key + "'=" + stringValue
+                            + ((username != null) ? " user='" + username + "'" : " global"));
+                    if (username != null) {
+                        sp = TwitterUser.getTwitterUser(username).getSharedPreferences();
+                    } else {
+                        sp = getSp();
+                    }
+                    synchronized (sp) {
+                        sp.edit().putString(key, stringValue).commit();
+                    }
+                    break;
                 default:
                     processed = false;
                     break;
             }
             if (processed) {
-                d(TAG, (ok ? "Succeeded" : "Failed") + " " + commandData);
+                d(TAG, (skipped ? "Skipped" : (ok ? "Succeeded" : "Failed")) + " " + commandData);
             }
         }
         return processed;
     }
-	
-	
+
+    /**
+     * Examine changed preferences and behave accordingly
+     * Clear all (including static) members, that depend on preferences
+     * and need to be reread...
+     */
+    private boolean examinePreferences() {
+        boolean ok = true;
+        
+        // Check when preferences were changed
+        long preferencesChangeTimeNew = AndTweetPreferences.getDefaultSharedPreferences().getLong(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, 0);
+        long preferencesExamineTimeNew = java.lang.System.currentTimeMillis();
+        
+        if (preferencesChangeTimeNew > preferencesExamineTime) {
+            d(TAG, "Examine at=" + preferencesExamineTimeNew + " Preferences changed at=" + preferencesChangeTimeNew);
+        } else if (preferencesChangeTimeNew > preferencesChangeTime) {
+            d(TAG, "Preferences changed at=" + preferencesChangeTimeNew);
+        } else if (preferencesChangeTimeNew == preferencesChangeTime) {
+            d(TAG, "Preferences didn't change, still at=" + preferencesChangeTimeNew);
+        } else {
+            Log.e(TAG, "Preferences change time error, time=" + preferencesChangeTimeNew);
+        }
+        preferencesChangeTime = preferencesChangeTimeNew;
+        preferencesExamineTime = preferencesExamineTimeNew;
+        getServiceSp().edit().putLong(PreferencesActivity.KEY_PREFERENCES_EXAMINE_TIME, preferencesExamineTime).commit();
+
+        // Forget and reload preferences...
+        AndTweetPreferences.forget();
+        AndTweetPreferences.initialize(this, this);
+
+        // Stop existing alarm in any case
+        ok = cancelRepeatingAlarm();
+
+        SharedPreferences sp = AndTweetPreferences.getDefaultSharedPreferences();
+        if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
+            /**
+             * Schedule Automatic updates according to the preferences.
+             */
+            ok = scheduleRepeatingAlarm();
+        }
+        return ok;
+    }
+
     /**
      * Start Execution thread if none is already running or stop execution
      * 
@@ -508,6 +808,7 @@ public class AndTweetService extends Service {
             SharedPreferences sp = getSp();
             mNotificationsEnabled = sp.getBoolean("notifications_enabled", false);
             mNotificationsVibrate = sp.getBoolean("vibration", false);
+            sp = null;
 
             if (!mCommands.isEmpty()) {
                 // Don't even launch executor if we're not online
@@ -533,7 +834,7 @@ public class AndTweetService extends Service {
                         executor.execute();
                     }
                 } else {
-                    notifyOfQueue();
+                    notifyOfQueue(false);
                 }
             }
         } else {
@@ -546,19 +847,27 @@ public class AndTweetService extends Service {
                 d(TAG, "Ending last thread so also ending broadcast.");
                 mWakeLock.release();
                 mCallbacks.finishBroadcast();
-                notifyOfQueue();
+                if (notifyOfQueue(false) == 0) {
+                    if (! ForegroundCheckTask.isAppOnForeground(AndTweetPreferences.getContext())) {
+                        d(TAG, "App is on Background so stop this Service");
+                        stopSelf();
+                    }
+                }
             }
         }
     }
-    
+
     /**
      * Notify user of the commands Queue size
+     * 
+     * @return total size of Queues
      */
-    private void notifyOfQueue() {
+    private int notifyOfQueue(boolean clearNotification) {
         int count = mRetryQueue.size() + mCommands.size();
-        if (count == 0) {
+        NotificationManager nM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (count == 0 || clearNotification) {
             // Clear notification
-            mNM.cancel(CommandEnum.NOTIFY_QUEUE.ordinal());
+            nM.cancel(CommandEnum.NOTIFY_QUEUE.ordinal());
         } else if (mNotificationsEnabled) {
             if (mRetryQueue.size() > 0) {
                 d(TAG, mRetryQueue.size() + " commands in Retry Queue.");
@@ -575,8 +884,8 @@ public class AndTweetService extends Service {
             String aMessage = "";
 
             aMessage = I18n.formatQuantityMessage(getApplicationContext(),
-                    R.string.notification_queue_format, count,
-                    R.array.notification_queue_patterns, R.array.notification_queue_formats);
+                    R.string.notification_queue_format, count, R.array.notification_queue_patterns,
+                    R.array.notification_queue_formats);
             messageTitle = R.string.notification_title_queue;
 
             // Set up the scrolling message of the notification
@@ -585,18 +894,29 @@ public class AndTweetService extends Service {
             /**
              * Set the latest event information and send the notification
              * Actually don't start any intent
-             * @see http://stackoverflow.com/questions/4232006/android-notification-pendingintent-problem 
-            */
-            PendingIntent pi = PendingIntent.getActivity(this, 0, null, 0); 
+             * 
+             * @see http
+             *      ://stackoverflow.com/questions/4232006/android-notification
+             *      -pendingintent-problem
+             */
+            // PendingIntent pi = PendingIntent.getActivity(this, 0, null, 0);
+
+            /**
+             * Kick the commands queue by sending empty command
+             */
+            PendingIntent pi = PendingIntent.getBroadcast(this, 0, new CommandData(
+                    CommandEnum.EMPTY).toIntent(), 0);
+
             notification.setLatestEventInfo(this, getText(messageTitle), aMessage, pi);
-            mNM.notify(CommandEnum.NOTIFY_QUEUE.ordinal(), notification);
+            nM.notify(CommandEnum.NOTIFY_QUEUE.ordinal(), notification);
         }
+        return count;
     }
 
     /**
      * Command executor
+     * 
      * @author yvolk
-     *
      */
     private class CommandExecutor extends AsyncTask<Void, Void, JSONObject> {
         // private boolean skip = false;
@@ -612,21 +932,22 @@ public class AndTweetService extends Service {
 
             int what = 0;
             String message = "";
-            
+            d(TAG, "CommandExecutor, " + mCommands.size() + " commands to process");
+
             do {
                 boolean ok = false;
-                // Get commands from the Queue one by one and execute them 
+                // Get commands from the Queue one by one and execute them
                 // The queue is Blocking, so we can do this
                 CommandData commandData = mCommands.poll();
-                if (commandData == null) { 
+                if (commandData == null) {
                     // All work is done
                     break;
                 }
-                
+
                 commandData.retriesLeft -= 1;
                 boolean retry = false;
                 d(TAG, "Executing " + commandData);
-                
+
                 switch (commandData.command) {
                     case AUTOMATIC_UPDATE:
                         d(TAG, "Getting tweets, replies and messages");
@@ -642,7 +963,9 @@ public class AndTweetService extends Service {
                         break;
                     case CREATE_FAVORITE:
                     case DESTROY_FAVORITE:
-                        ok = createOrDestroyFavorite(commandData.command == CommandEnum.CREATE_FAVORITE, commandData.itemId);
+                        ok = createOrDestroyFavorite(
+                                commandData.command == CommandEnum.CREATE_FAVORITE,
+                                commandData.itemId);
                         // Retry in a case of an error
                         retry = !ok;
                         break;
@@ -667,11 +990,13 @@ public class AndTweetService extends Service {
                 if (retry) {
                     if (commandData.retriesLeft < 0) {
                         // This means that retriesLeft was not set yet,
-                        // so let's set it to some default value, the same for any command
+                        // so let's set it to some default value, the same for
+                        // any command
                         // that needs to be retried...
                         commandData.retriesLeft = 9;
                     }
-                    // Check if any retries left (actually 0 means this was the last retry)
+                    // Check if any retries left (actually 0 means this was the
+                    // last retry)
                     if (commandData.retriesLeft > 0) {
                         // Put the command to the retry queue
                         if (!mRetryQueue.contains(commandData)) {
@@ -701,12 +1026,13 @@ public class AndTweetService extends Service {
         }
 
         /**
-         * TODO: Delete unnecessary lines...
-         * This is in the UI thread, so we can mess with the UI
+         * TODO: Delete unnecessary lines... This is in the UI thread, so we can
+         * mess with the UI
+         * 
          * @return ok
          */
         protected void onPostExecute(JSONObject jso) {
-            //boolean succeeded = false;
+            // boolean succeeded = false;
             String message = null;
             if (jso != null) {
                 try {
@@ -715,8 +1041,8 @@ public class AndTweetService extends Service {
 
                     switch (what) {
                         case 0:
-                            
-                            //succeeded = true;
+
+                            // succeeded = true;
                             break;
                     }
                 } catch (JSONException e) {
@@ -725,7 +1051,7 @@ public class AndTweetService extends Service {
             }
             startEndStuff(false, this, message);
         }
-        
+
         /**
          * @param create true - create, false - destroy
          * @param statusId
@@ -736,28 +1062,28 @@ public class AndTweetService extends Service {
             JSONObject result = new JSONObject();
             try {
                 if (create) {
-                    result = TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext()).getConnection()
-                    .createFavorite(statusId);
+                    result = TwitterUser.getTwitterUser().getConnection().createFavorite(statusId);
                 } else {
-                    result = TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext()).getConnection()
-                    .destroyFavorite(statusId);
+                    result = TwitterUser.getTwitterUser().getConnection().destroyFavorite(statusId);
                 }
                 ok = (result != null);
             } catch (ConnectionException e) {
-                Log.e(TAG, (create ? "create" : "destroy") + "Favorite Connection Exception: " + e.toString());
+                Log.e(TAG,
+                        (create ? "create" : "destroy") + "Favorite Connection Exception: "
+                                + e.toString());
             }
 
             if (ok) {
                 try {
-                    Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI,
-                            result.getLong("id"));
+                    Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result.getLong("id"));
                     Cursor c = getContentResolver().query(uri, new String[] {
                             Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE
                     }, null, null, null);
                     try {
                         c.moveToFirst();
-                        FriendTimeline fl = new FriendTimeline(AndTweetService.this.getApplicationContext(),
-                                c.getInt(c.getColumnIndex(Tweets.TWEET_TYPE)));
+                        FriendTimeline fl = new FriendTimeline(
+                                AndTweetService.this.getApplicationContext(), c.getInt(c
+                                        .getColumnIndex(Tweets.TWEET_TYPE)));
                         fl.insertFromJSONObject(result, true);
                     } catch (Exception e) {
                         Log.e(TAG, "e: " + e.toString());
@@ -766,13 +1092,16 @@ public class AndTweetService extends Service {
                             c.close();
                     }
                 } catch (JSONException e) {
-                    Log.e(TAG, "Error marking as " + (create ? "" : "not ") + "favorite: " + e.toString());
+                    Log.e(TAG,
+                            "Error marking as " + (create ? "" : "not ") + "favorite: "
+                                    + e.toString());
                 }
             }
-            
+
             // TODO: Maybe we need to notify the caller about the result?!
 
-            d(TAG, (create ? "Creating" : "Destroying") + " favorite " + (ok ? "succeded" : "failed") + ", id=" + statusId);
+            d(TAG, (create ? "Creating" : "Destroying") + " favorite "
+                    + (ok ? "succeded" : "failed") + ", id=" + statusId);
             return ok;
         }
 
@@ -784,8 +1113,7 @@ public class AndTweetService extends Service {
             boolean ok = false;
             JSONObject result = new JSONObject();
             try {
-                result = TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext()).getConnection()
-                    .destroyStatus(statusId);
+                result = TwitterUser.getTwitterUser().getConnection().destroyStatus(statusId);
                 ok = (result != null);
             } catch (ConnectionException e) {
                 Log.e(TAG, "destroyStatus Connection Exception: " + e.toString());
@@ -794,14 +1122,15 @@ public class AndTweetService extends Service {
             if (ok) {
                 // And delete the status from the local storage
                 try {
-                    FriendTimeline fl = new FriendTimeline(AndTweetService.this.getApplicationContext(),
+                    FriendTimeline fl = new FriendTimeline(
+                            AndTweetService.this.getApplicationContext(),
                             AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
                     fl.destroyStatus(statusId);
                 } catch (Exception e) {
                     Log.e(TAG, "Error destroying status locally: " + e.toString());
                 }
             }
-            
+
             // TODO: Maybe we need to notify the caller about the result?!
 
             d(TAG, "Destroying status " + (ok ? "succeded" : "failed") + ", id=" + statusId);
@@ -809,7 +1138,6 @@ public class AndTweetService extends Service {
         }
 
         /**
-         * 
          * @param status
          * @param inReplyToId
          * @return ok
@@ -818,15 +1146,16 @@ public class AndTweetService extends Service {
             boolean ok = false;
             JSONObject result = new JSONObject();
             try {
-                result = TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext()).getConnection()
-                .updateStatus(status.trim(), inReplyToId);
+                result = TwitterUser.getTwitterUser().getConnection()
+                        .updateStatus(status.trim(), inReplyToId);
                 ok = (result != null);
             } catch (ConnectionException e) {
                 Log.e(TAG, "updateStatus Exception: " + e.toString());
             }
             if (ok) {
                 // The tweet was sent successfully
-                FriendTimeline fl = new FriendTimeline(AndTweetService.this.getApplicationContext(),
+                FriendTimeline fl = new FriendTimeline(
+                        AndTweetService.this.getApplicationContext(),
                         AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
                 try {
                     fl.insertFromJSONObject(result, true);
@@ -836,9 +1165,8 @@ public class AndTweetService extends Service {
             }
             return ok;
         }
-        
+
         /**
-         * 
          * @param loadTweets - Should we load tweets
          * @param loadMessages - Should we load messages
          * @return ok
@@ -851,19 +1179,21 @@ public class AndTweetService extends Service {
             int aReplyCount = 0;
             int aNewMessages = 0;
 
-            if (TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext())
-                    .getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+            if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
                 // Only if User was authenticated already
+                String descr = "(starting)";
                 try {
                     FriendTimeline fl = null;
                     ok = true;
                     if (ok && loadTweets) {
+                        descr = "loading Mentions";
                         fl = new FriendTimeline(AndTweetService.this.getApplicationContext(),
                                 AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
                         ok = fl.loadTimeline();
                         aReplyCount = fl.replyCount();
 
                         if (ok) {
+                            descr = "loading Friends";
                             fl = new FriendTimeline(AndTweetService.this.getApplicationContext(),
                                     AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
                             ok = fl.loadTimeline();
@@ -875,6 +1205,7 @@ public class AndTweetService extends Service {
                     }
 
                     if (ok && loadMessages) {
+                        descr = "loading Messages";
                         fl = new FriendTimeline(AndTweetService.this.getApplicationContext(),
                                 AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
                         ok = fl.loadTimeline();
@@ -882,9 +1213,9 @@ public class AndTweetService extends Service {
                         fl.pruneOldRecords();
                     }
                 } catch (ConnectionException e) {
-                    Log.e(TAG, "mLoadTimeline Connection Exception: " + e.toString());
+                    Log.e(TAG, descr + ", Connection Exception: " + e.toString());
                 } catch (SQLiteConstraintException e) {
-                    Log.e(TAG, "mLoadTimeline SQLite Exception: " + e.toString());
+                    Log.e(TAG, descr + ", SQLite Exception: " + e.toString());
                 }
             }
 
@@ -906,12 +1237,13 @@ public class AndTweetService extends Service {
 
             return ok;
         }
-        
-        private void notifyOfUpdatedTimeline(int tweetsChanged, int repliesChanged, int messagesChanged) {
 
-            // TODO: It's not so simple... I think :-) 
+        private void notifyOfUpdatedTimeline(int tweetsChanged, int repliesChanged,
+                int messagesChanged) {
+
+            // TODO: It's not so simple... I think :-)
             int N = mBroadcastListenerCount;
-            
+
             for (int i = 0; i < N; i++) {
                 try {
                     d(TAG, "finishUpdateTimeline, Notifying callback no. " + i);
@@ -977,8 +1309,10 @@ public class AndTweetService extends Service {
                 notificationsTimeline = sp.getBoolean("notifications_timeline", false);
                 ringtone = sp.getString(PreferencesActivity.KEY_RINGTONE_PREFERENCE, null);
             }
+            sp = null;
 
-            // Make sure that notifications haven't been turned off for the message
+            // Make sure that notifications haven't been turned off for the
+            // message
             // type
             switch (msgType) {
                 case NOTIFY_REPLIES:
@@ -1029,11 +1363,10 @@ public class AndTweetService extends Service {
             // com.xorcode.andtweet.TimelineActivity.onOptionsItemSelected
             switch (msgType) {
                 case NOTIFY_REPLIES:
-                    aMessage = I18n
-                            .formatQuantityMessage(getApplicationContext(),
-                                    R.string.notification_new_mention_format, numTweets,
-                                    R.array.notification_mention_patterns,
-                                    R.array.notification_mention_formats);
+                    aMessage = I18n.formatQuantityMessage(getApplicationContext(),
+                            R.string.notification_new_mention_format, numTweets,
+                            R.array.notification_mention_patterns,
+                            R.array.notification_mention_formats);
                     messageTitle = R.string.notification_title_mentions;
                     intent = new Intent(getApplicationContext(), TweetListActivity.class);
                     intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
@@ -1043,11 +1376,10 @@ public class AndTweetService extends Service {
                     break;
 
                 case NOTIFY_DIRECT_MESSAGE:
-                    aMessage = I18n
-                            .formatQuantityMessage(getApplicationContext(),
-                                    R.string.notification_new_message_format, numTweets,
-                                    R.array.notification_message_patterns,
-                                    R.array.notification_message_formats);
+                    aMessage = I18n.formatQuantityMessage(getApplicationContext(),
+                            R.string.notification_new_message_format, numTweets,
+                            R.array.notification_message_patterns,
+                            R.array.notification_message_formats);
                     messageTitle = R.string.notification_title_messages;
                     intent = new Intent(getApplicationContext(), MessageListActivity.class);
                     intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
@@ -1058,9 +1390,11 @@ public class AndTweetService extends Service {
 
                 case NOTIFY_TIMELINE:
                 default:
-                    aMessage = I18n.formatQuantityMessage(getApplicationContext(),
-                            R.string.notification_new_tweet_format, numTweets,
-                            R.array.notification_tweet_patterns, R.array.notification_tweet_formats);
+                    aMessage = I18n
+                            .formatQuantityMessage(getApplicationContext(),
+                                    R.string.notification_new_tweet_format, numTweets,
+                                    R.array.notification_tweet_patterns,
+                                    R.array.notification_tweet_formats);
                     messageTitle = R.string.notification_title;
                     intent = new Intent(getApplicationContext(), TweetListActivity.class);
                     intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE,
@@ -1074,13 +1408,16 @@ public class AndTweetService extends Service {
             notification.tickerText = aMessage;
 
             // Set the latest event information and send the notification
-            notification.setLatestEventInfo(AndTweetService.this, getText(messageTitle), aMessage, contentIntent);
-            mNM.notify(msgType.ordinal(), notification);
+            notification.setLatestEventInfo(AndTweetService.this, getText(messageTitle), aMessage,
+                    contentIntent);
+            NotificationManager nM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            nM.notify(msgType.ordinal(), notification);
         }
 
-        /** 
-         * Send Update intent to AndTweet Widget(s),
-         * if there are some installed... (e.g. on the Home screen...) 
+        /**
+         * Send Update intent to AndTweet Widget(s), if there are some
+         * installed... (e.g. on the Home screen...)
+         * 
          * @see AndTweetAppWidgetProvider
          */
         private void updateWidgets(int numTweets, CommandEnum msgType) {
@@ -1089,31 +1426,30 @@ public class AndTweetService extends Service {
             intent.putExtra(EXTRA_NUMTWEETS, numTweets);
             sendBroadcast(intent);
         }
-        
 
         /**
-         * Ask the the Twitter service of 
-         * how many more requests are allowed: number of remaining API calls.
+         * Ask the the Twitter service of how many more requests are allowed:
+         * number of remaining API calls.
+         * 
          * @return ok
          */
         private boolean rateLimitStatus() {
             boolean ok = false;
             JSONObject result = new JSONObject();
             try {
-                result = TwitterUser.getTwitterUser(AndTweetService.this.getApplicationContext()).getConnection()
-                .rateLimitStatus();
+                result = TwitterUser.getTwitterUser().getConnection().rateLimitStatus();
                 ok = (result != null);
             } catch (ConnectionException e) {
                 Log.e(TAG, "rateLimitStatus Exception: " + e.toString());
             }
-            
-            if (ok){
+
+            if (ok) {
                 for (int i = 0; i < mBroadcastListenerCount; i++) {
                     try {
                         IAndTweetServiceCallback cb = mCallbacks.getBroadcastItem(i);
                         if (cb != null) {
-                            cb.rateLimitStatus(result.getInt("remaining_hits")
-                                    , result.getInt("hourly_limit"));
+                            cb.rateLimitStatus(result.getInt("remaining_hits"),
+                                    result.getInt("hourly_limit"));
                         }
                     } catch (RemoteException e) {
                         d(TAG, e.toString());
@@ -1125,78 +1461,80 @@ public class AndTweetService extends Service {
             return ok;
         }
     }
-      
-	private PowerManager.WakeLock getWakeLock() {
-		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		PowerManager.WakeLock wakeLock = pm.newWakeLock(
-				PowerManager.PARTIAL_WAKE_LOCK, TAG);
-		wakeLock.acquire();
-		return wakeLock;
-	}
 
-	/**
-	 * Returns the number of milliseconds between two fetch actions. 
-	 *  
-	 * @return the number of milliseconds
-	 */
-	private int getFetchFrequencyS() {
-		int frequencyS =  Integer.parseInt(getSp().getString("fetch_frequency", "180"));
-		return (frequencyS * MILLISECONDS);
-	}
+    private PowerManager.WakeLock getWakeLock() {
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+        wakeLock.acquire();
+        return wakeLock;
+    }
 
-	/**
-	 * Starts the repeating Alarm that sends the fetch Intent.
-	 */
-	private boolean scheduleRepeatingAlarm() {
-		final AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		final PendingIntent pIntent = getRepeatingIntent();
-		final int frequencyMs = getFetchFrequencyS();
+    /**
+     * Returns the number of milliseconds between two fetch actions.
+     * 
+     * @return the number of milliseconds
+     */
+    private int getFetchFrequencyS() {
+        int frequencyS = Integer.parseInt(getSp().getString("fetch_frequency", "180"));
+        return (frequencyS * MILLISECONDS);
+    }
+
+    /**
+     * Starts the repeating Alarm that sends the fetch Intent.
+     */
+    private boolean scheduleRepeatingAlarm() {
+        final AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        final PendingIntent pIntent = getRepeatingIntent();
+        final int frequencyMs = getFetchFrequencyS();
         final long firstTime = SystemClock.elapsedRealtime() + frequencyMs;
-        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, frequencyMs,   pIntent);
+        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, frequencyMs, pIntent);
         d(TAG, "Started repeating alarm in a " + frequencyMs + "ms rhythm.");
         return true;
-	}
+    }
 
-	/**
-	 * Cancels the repeating Alarm that sends the fetch Intent.
-	 */
-	private boolean cancelRepeatingAlarm() {
-		final AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		final PendingIntent pIntent = getRepeatingIntent();
-		am.cancel(pIntent);
-		d(TAG, "Cancelled repeating alarm.");
-		return true;
-	}
+    /**
+     * Cancels the repeating Alarm that sends the fetch Intent.
+     */
+    private boolean cancelRepeatingAlarm() {
+        final AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        final PendingIntent pIntent = getRepeatingIntent();
+        am.cancel(pIntent);
+        d(TAG, "Cancelled repeating alarm.");
+        return true;
+    }
 
-	/**
-	 * Returns the recurring AlarmHandler Intent.
-	 * @return the Intent 
-	 */
-	private PendingIntent getRepeatingIntent() {
-		Intent intent = new Intent(ACTION_GO);
+    /**
+     * Returns Intent to be send with Repeating Alarm.
+     * This alarm will be received by {@link AndTweetServiceManager}
+     * @return the Intent
+     */
+    private PendingIntent getRepeatingIntent() {
+        Intent intent = new Intent(ACTION_ALARM);
         intent.putExtra(AndTweetService.EXTRA_MSGTYPE, CommandEnum.AUTOMATIC_UPDATE.save());
-		PendingIntent pIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-		return pIntent;
-	}
+        PendingIntent pIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+        return pIntent;
+    }
 
-	/**
-	 * The IAndTweetService is defined through IDL
-	 */
-	private final IAndTweetService.Stub mBinder = new IAndTweetService.Stub() {
-		public void registerCallback(IAndTweetServiceCallback cb) {
-			if (cb != null)
-				mCallbacks.register(cb);
-		}
+    /**
+     * The IAndTweetService is defined through IDL
+     */
+    private final IAndTweetService.Stub mBinder = new IAndTweetService.Stub() {
+        public void registerCallback(IAndTweetServiceCallback cb) {
+            if (cb != null)
+                mCallbacks.register(cb);
+        }
 
-		public void unregisterCallback(IAndTweetServiceCallback cb) {
-			if (cb != null)
-				mCallbacks.unregister(cb);
-		}
-	};
+        public void unregisterCallback(IAndTweetServiceCallback cb) {
+            if (cb != null)
+                mCallbacks.unregister(cb);
+        }
+    };
 
     /**
      * We use this function before actual requests of Internet services Based on
-     * http://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-timeouts
+     * http
+     * ://stackoverflow.com/questions/1560788/how-to-check-internet-access-on
+     * -android-inetaddress-never-timeouts
      */
     public boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -1209,72 +1547,36 @@ public class AndTweetService extends Service {
             return false;
         }
     }
-	
-    /**
-     * Utility method to send the Intent to the {@link AndTweetService} that
-     * starts the recurring alarm.
-     * 
-     * @param context the context to use for sending the Intent
-     */
-    public static void startAutomaticUpdates(Context context) {
-        Intent serviceIntent = new Intent(IAndTweetService.class.getName());
-        serviceIntent.putExtra(AndTweetService.EXTRA_MSGTYPE, CommandEnum.START_ALARM.save());
-        context.startService(serviceIntent);
-    }
 
     /**
-     * Utility method to send the Intent to the {@link AndTweetService} that
-     * stops the recurring alarm.
-     * 
-     * @param context the context to use for sending the Intent
-     */
-    public static void stopAutomaticUpdates(Context context) {
-        Intent serviceIntent = new Intent(IAndTweetService.class.getName());
-        serviceIntent.putExtra(AndTweetService.EXTRA_MSGTYPE, CommandEnum.STOP_ALARM.save());
-        context.startService(serviceIntent);
-    }
-
-    /**
-     * Utility method to send the Intent to the {@link AndTweetService} that
-     * restarts the recurring alarm. This is useful for changing the frequency.
-     * 
-     * @param context the context to use for sending the Intent
-     */
-    public static void restartAutomaticUpdates(Context context) {
-        Intent serviceIntent = new Intent(IAndTweetService.class.getName());
-        serviceIntent.putExtra(AndTweetService.EXTRA_MSGTYPE, CommandEnum.RESTART_ALARM.save());
-        context.startService(serviceIntent);
-    }
-
-    /**
-     * Shortcut for debugging messages of the application 
+     * Shortcut for debugging messages of the application
      */
     public static int d(String tag, String msg) {
         int i = 0;
         if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
-            i = Log.d(TAG, msg);
+            i = Log.d(tag, msg);
         }
         return i;
     }
 
     /**
-     * Shortcut for debugging messages of the application 
+     * Shortcut for debugging messages of the application
      */
     public static int d(String tag, String msg, Throwable tr) {
         int i = 0;
         if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
-          i = Log.d(TAG, msg, tr);
+            i = Log.d(tag, msg, tr);
         }
         return i;
     }
-    
+
     /**
-     * Shortcut for verbose messages of the application 
+     * Shortcut for verbose messages of the application
      */
     public static int v(String tag, String msg) {
         int i = 0;
         if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-            i = Log.v(TAG, msg);
+            i = Log.v(tag, msg);
         }
         return i;
     }

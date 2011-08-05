@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2011 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,11 +76,9 @@ public abstract class Connection {
     protected String mPassword;
 
     /**
-     * These preferences are per User
+     * SharedPreferences - These preferences are per User
      */
-    protected SharedPreferences mSp;
-
-    public static Connection getConnection(SharedPreferences sp, boolean oauth) {
+     public static Connection getConnection(SharedPreferences sp, boolean oauth) {
         Connection conn;
         if (sp == null) {
             Log.e(TAG, "SharedPreferences are null ??" );
@@ -96,9 +94,8 @@ public abstract class Connection {
     }
     
     protected Connection(SharedPreferences sp) {
-        mSp = sp;
-        mUsername = mSp.getString(PreferencesActivity.KEY_TWITTER_USERNAME, "");
-        mPassword = mSp.getString(PreferencesActivity.KEY_TWITTER_PASSWORD, "");
+        mUsername = sp.getString(PreferencesActivity.KEY_TWITTER_USERNAME, "");
+        mPassword = sp.getString(PreferencesActivity.KEY_TWITTER_PASSWORD, "");
     }
 
     public String getUsername() {
@@ -124,7 +121,7 @@ public abstract class Connection {
         }
     }
 
-    public abstract void clearAuthInformation();
+    public abstract void clearAuthInformation(SharedPreferences sp);
     
     /**
      * Check API requests status.
@@ -154,13 +151,13 @@ public abstract class Connection {
     /**
      * Set User's password if the Connection object needs it
      */
-    public void setPassword(String password) {
+    public void setPassword(SharedPreferences sp, String password) {
         if (password == null) {
             password = "";
         }
         if (password.compareTo(mPassword) != 0) {
             mPassword = password;
-            mSp.edit().putString(PreferencesActivity.KEY_TWITTER_PASSWORD, mPassword).commit();
+            sp.edit().putString(PreferencesActivity.KEY_TWITTER_PASSWORD, mPassword).commit();
         }
     }
     public String getPassword() {
@@ -171,7 +168,7 @@ public abstract class Connection {
      * Do we have enough credentials to verify them?
      * @return true == yes
      */
-    public abstract boolean getCredentialsPresent();  
+    public abstract boolean getCredentialsPresent(SharedPreferences sp);  
     
     /**
      * Verify the user's credentials.

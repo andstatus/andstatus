@@ -21,7 +21,7 @@
 			android:title="@string/title_preference_verify_credentials"
 			android:summary="@string/summary_preference_verify_credentials"
 			android:persistent="false" />
-		<EditTextPreference android:key="twitter_username"
+		<EditTextPreference android:key="twitter_username_new"
 			android:title="@string/title_preference_username"
 			android:dialogTitle="@string/dialog_title_preference_username"
 			android:summary="@string/summary_preference_username"
@@ -125,7 +125,7 @@
 		<PreferenceScreen android:key="preference_screen_automatic_updates"
 			android:summary="@string/summary_preference_automatic_updates"
 			android:title="@string/title_preference_automatic_updates"
-			android:dependency="twitter_username"
+			android:dependency="twitter_username_new"
 			android:shouldDisableView="true">
 			<PreferenceCategory
 				android:title="@string/category_title_preference_automatic_updates">

@@ -21,7 +21,6 @@ import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -45,8 +44,6 @@ public class SplashMoreActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -76,7 +73,7 @@ public class SplashMoreActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-        if (TwitterUser.getTwitterUser(this).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+        if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
 			Intent intent = new Intent(this, TweetListActivity.class);
 			startActivity(intent);
 			finish();

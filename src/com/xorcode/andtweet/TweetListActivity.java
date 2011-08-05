@@ -49,9 +49,11 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.xorcode.andtweet.AndTweetService.CommandData;
 import com.xorcode.andtweet.AndTweetService.CommandEnum;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import com.xorcode.andtweet.data.AndTweetDatabase;
+import com.xorcode.andtweet.data.AndTweetPreferences;
 import com.xorcode.andtweet.data.PagedCursorAdapter;
 import com.xorcode.andtweet.data.TimelineSearchSuggestionProvider;
 import com.xorcode.andtweet.data.TweetBinder;
@@ -130,14 +132,14 @@ public class TweetListActivity extends TimelineActivity {
         }
 
         if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(BUNDLE_KEY_REPLY_ID)) {
-                mReplyId = savedInstanceState.getLong(BUNDLE_KEY_REPLY_ID);
+            if (savedInstanceState.containsKey(AndTweetService.EXTRA_INREPLYTOID)) {
+                mReplyId = savedInstanceState.getLong(AndTweetService.EXTRA_INREPLYTOID);
             }
             if (savedInstanceState.containsKey(BUNDLE_KEY_IS_LOADING)) {
                 mIsLoading = savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING);
             }
-            if (savedInstanceState.containsKey(BUNDLE_KEY_CURRENT_ID)) {
-                mCurrentId = savedInstanceState.getLong(BUNDLE_KEY_CURRENT_ID);
+            if (savedInstanceState.containsKey(AndTweetService.EXTRA_TWEETID)) {
+                mCurrentId = savedInstanceState.getLong(AndTweetService.EXTRA_TWEETID);
             }
         }
 
@@ -237,7 +239,7 @@ public class TweetListActivity extends TimelineActivity {
             }
             if (mTimelineType == Tweets.TIMELINE_TYPE_MENTIONS) {
                 sa.addSelection(Tweets.MESSAGE + " LIKE ?", new String[] {
-                        "%@" + TwitterUser.getTwitterUser(this).getUsername() + "%"
+                        "%@" + TwitterUser.getTwitterUser().getUsername() + "%"
                     });
             }
         }
@@ -323,9 +325,9 @@ public class TweetListActivity extends TimelineActivity {
             Log.v(TAG, "onResume");
         }
         
-        if (TwitterUser.getTwitterUser(this).getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-            if (!TwitterUser.getTwitterUser(this).getSharedPreferences().getBoolean("loadedOnce", false)) {
-                TwitterUser.getTwitterUser(this).getSharedPreferences().edit().putBoolean("loadedOnce", true).commit();
+        if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+            if (!TwitterUser.getTwitterUser().getSharedPreferences().getBoolean("loadedOnce", false)) {
+                TwitterUser.getTwitterUser().getSharedPreferences().edit().putBoolean("loadedOnce", true).commit();
                 // One-time "manually" load tweets from the Internet for the new TwitterUser
                 manualReload();
             }
@@ -345,9 +347,9 @@ public class TweetListActivity extends TimelineActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putLong(BUNDLE_KEY_REPLY_ID, mReplyId);
+        outState.putLong(AndTweetService.EXTRA_INREPLYTOID, mReplyId);
         outState.putBoolean(BUNDLE_KEY_IS_LOADING, mIsLoading);
-        outState.putLong(BUNDLE_KEY_CURRENT_ID, mCurrentId);
+        outState.putLong(AndTweetService.EXTRA_TWEETID, mCurrentId);
         super.onSaveInstanceState(outState);
     }
 
@@ -391,7 +393,7 @@ public class TweetListActivity extends TimelineActivity {
             } else {
                 menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, m++, R.string.menu_item_favorite);
             }
-            if (mSP.getString("twitter_username", null).equals(
+            if (AndTweetPreferences.getDefaultSharedPreferences().getString(PreferencesActivity.KEY_TWITTER_USERNAME, null).equals(
                     c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)))) {
                 menu.add(0, CONTEXT_MENU_ITEM_DESTROY_STATUS, m++,
                         R.string.menu_item_destroy_status);
@@ -419,7 +421,6 @@ public class TweetListActivity extends TimelineActivity {
 
         Uri uri;
         Cursor c;
-        Intent intent;
 
         switch (item.getItemId()) {
             case CONTEXT_MENU_ITEM_REPLY:
@@ -479,21 +480,15 @@ public class TweetListActivity extends TimelineActivity {
                 return true;
 
             case CONTEXT_MENU_ITEM_DESTROY_STATUS:
-                intent = prepareCommand(CommandEnum.DESTROY_STATUS);
-                intent.putExtra(AndTweetService.EXTRA_TWEETID, mCurrentId);
-                sendCommand(intent);
+                sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_FAVORITE:
-                intent = prepareCommand(CommandEnum.CREATE_FAVORITE);
-                intent.putExtra(AndTweetService.EXTRA_TWEETID, mCurrentId);
-                sendCommand(intent);
+                sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_DESTROY_FAVORITE:
-                intent = prepareCommand(CommandEnum.DESTROY_FAVORITE);
-                intent.putExtra(AndTweetService.EXTRA_TWEETID, mCurrentId);
-                sendCommand(intent);
+                sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_UNFOLLOW:
@@ -517,10 +512,10 @@ public class TweetListActivity extends TimelineActivity {
             Toast.makeText(TweetListActivity.this, R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
         } else {
-            Intent intent = prepareCommand(CommandEnum.UPDATE_STATUS);
-            intent.putExtra(AndTweetService.EXTRA_STATUS, status);
-            intent.putExtra(AndTweetService.EXTRA_INREPLYTOID, mReplyId);
-            sendCommand(intent);
+            CommandData commandData = new CommandData(CommandEnum.CREATE_FAVORITE, mCurrentId);
+            commandData.bundle.putString(AndTweetService.EXTRA_STATUS, status);
+            commandData.bundle.putLong(AndTweetService.EXTRA_INREPLYTOID, mReplyId);
+            sendCommand(commandData);
             closeSoftKeyboard();
 
             // Let's assume that everything will be Ok
@@ -615,7 +610,7 @@ public class TweetListActivity extends TimelineActivity {
      */
     private void createAdapters() {
         int listItemId = R.layout.tweetlist_item;
-        if (mSP.getBoolean("appearance_use_avatars", false)) {
+        if (AndTweetPreferences.getDefaultSharedPreferences().getBoolean("appearance_use_avatars", false)) {
             listItemId = R.layout.tweetlist_item_avatar;
         }
         PagedCursorAdapter tweetsAdapter = new PagedCursorAdapter(TweetListActivity.this,
@@ -690,7 +685,7 @@ public class TweetListActivity extends TimelineActivity {
         // First set less detailed title
         super.updateTitle();
         // Then start asynchronous task that will set detailed info
-        sendCommand(prepareCommand(CommandEnum.RATE_LIMIT_STATUS));
+        sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS));
     }
 
     {

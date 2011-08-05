@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.File;
 
 import com.xorcode.andtweet.AndTweetService;
+import com.xorcode.andtweet.data.AndTweetPreferences;
 
 public class SharedPreferencesUtil {
     private static final String TAG = SharedPreferencesUtil.class.getSimpleName();
@@ -79,7 +80,7 @@ public class SharedPreferencesUtil {
             File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
             if (prefFile.exists()) {
                 // Commit any changes left
-                SharedPreferences.Editor prefs = context.getSharedPreferences(prefsFileName,
+                SharedPreferences.Editor prefs = AndTweetPreferences.getSharedPreferences(prefsFileName,
                         MODE_PRIVATE).edit();
                 if (prefs != null) {
                     prefs.commit();
@@ -128,7 +129,7 @@ public class SharedPreferencesUtil {
                 File oldPrefFile = new File(prefsDirectory(context), oldPrefsFileName + FILE_EXTENSION);
                 if (oldPrefFile.exists()) {
                     // Commit any changes left
-                    SharedPreferences.Editor prefs = context.getSharedPreferences(oldPrefsFileName,
+                    SharedPreferences.Editor prefs = AndTweetPreferences.getSharedPreferences(oldPrefsFileName,
                             MODE_PRIVATE).edit();
                     if (prefs != null) {
                         prefs.commit();

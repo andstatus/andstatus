@@ -20,11 +20,9 @@ import java.util.Locale;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.util.Linkify;
 import android.util.Log;
@@ -32,6 +30,7 @@ import android.widget.TextView;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
+import com.xorcode.andtweet.data.AndTweetPreferences;
 import com.xorcode.andtweet.util.RelativeTime;
 
 /**
@@ -57,14 +56,10 @@ public class TweetActivity extends Activity {
 	private TextView mAuthor;
 	private TextView mMessage;
 	private TextView mSentDate;
-	private SharedPreferences mSP;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-		mSP = PreferenceManager.getDefaultSharedPreferences(this);
 
 		loadTheme();
 
@@ -121,9 +116,9 @@ public class TweetActivity extends Activity {
 	 * Load the theme for preferences.
 	 */
 	protected void loadTheme() {
-		boolean light = mSP.getBoolean("appearance_light_theme", false);
+		boolean light = AndTweetPreferences.getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
 		StringBuilder theme = new StringBuilder();
-		String name = mSP.getString("theme", "AndTweet");
+		String name = AndTweetPreferences.getDefaultSharedPreferences().getString("theme", "AndTweet");
 		if (name.indexOf("Theme.") > -1) {
 			name = name.substring(name.indexOf("Theme."));
 		}

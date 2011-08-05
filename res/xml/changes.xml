@@ -33,8 +33,8 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
  -->
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
-	<release android:versionName="1.1.4" android:versionCode="40"
-		versionDate="2011-07-25">
+	<release android:versionName="1.1.5" android:versionCode="41"
+		versionDate="2011-08-05">
     <changes>
         <change>
             Working offline or in bad connection conditions is
@@ -63,6 +63,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
             permissions were removed, one permission was added
             to help
             asynchronous message delivery (ACCESS_NETWORK_STATE).</change>
+        <change>Improved user experience during initial configuration till first tweets loading</change>
         <change>"Verify" preference moved to the top of the "User
             Credentials"
             preference's
@@ -74,6 +75,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
         <change>Another pass of timeline code cleaning. Now AndTweet's
             timelines open
             faster thanks to less requests and redrawing.</change>
+        <change>Fixed issue 12 "Themes do not apply until app is restarted"</change>
         <change>Fixed bug preventing timeline position restore.</change>
         <change>Fixed errors loading data from the Internet due to
             parallel
@@ -86,6 +88,11 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
             Android v.2.3.3</change>
     </changes>
 		<history>
+            <package android:versionName="1.1.5" android:versionCode="41"
+                versionDate="2011-08-05">
+                <change>Fixed issue 12 "Themes do not apply until app is restarted"</change>
+                <change>Improved user experience during initial configuration till first tweets loading</change>
+            </package>
 			<package android:versionName="1.1.4" android:versionCode="40"
 				versionDate="2011-07-25">
                 <change>"Destroy status" and Rate limit request made asynchronous also.</change>
@@ -93,7 +100,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
                 downloaded from the server,
                 not when there was last attempt to do this (maybe it failed...)</change>
 		
-	</package>
+	       </package>
 			<package android:versionName="1.1.3" android:versionCode="39"
 				versionDate="2011-07-16">
 				1. Queued tweet sending implemented. Now User doesn't

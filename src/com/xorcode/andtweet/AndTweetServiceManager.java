@@ -16,35 +16,49 @@
 
 package com.xorcode.andtweet;
 
+import com.xorcode.andtweet.AndTweetService.CommandEnum;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
+ * This receiver starts and stops {@link AndTweetService}
  * @author torgny.bjers
- *
  */
 public class AndTweetServiceManager extends BroadcastReceiver {
-
-    public static final String TAG = "AndTweetServiceManager";
+    private static final String TAG = AndTweetServiceManager.class.getSimpleName();
 
     /**
-     * Is the service started. See
-     * http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d
+     * Is the service started.
+     * @See <a href="http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d">here</a>
      */
-    public static boolean isStarted = false;
+    private static boolean isStarted = false;
+
+    /**
+     * If true repeating alarms will be ignored
+     */
+    private static boolean ignoreAlarms = false;
     
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
-            PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
-
-            Log.d(TAG, "Starting service on boot.");
-            startAndTweetService(context);
-        
+            AndTweetService.d(TAG, "Starting service on boot.");
+            // Assume preferences were changed
+            startAndTweetService(context, new AndTweetService.CommandData(
+                    CommandEnum.PREFERENCES_CHANGED));
+        } else if (intent.getAction().equals(AndTweetService.ACTION_ALARM)) {
+            if (ignoreAlarms) {
+                AndTweetService.d(TAG, "Repeating Alarm: Ignore");
+            } else {
+                AndTweetService.d(TAG, "Repeating Alarm: Automatic update");
+                startAndTweetService(context, new AndTweetService.CommandData(
+                        CommandEnum.AUTOMATIC_UPDATE));
+            }
+        } else if (intent.getAction().equals(AndTweetService.ACTION_SERVICE_STOPPED)) {
+            AndTweetService.d(TAG, "Notification received: Service stopped");
+            isStarted = false;
         } else {
             Log.e(TAG, "Received unexpected intent: " + intent.toString());
         }
@@ -55,23 +69,35 @@ public class AndTweetServiceManager extends BroadcastReceiver {
      * and schedule Automatic updates according to the preferences.
      * 
      * @param context 
-     * @return
+     * @param commandData to the service or null 
      */
-    public static void startAndTweetService(Context context) {
+    public static void startAndTweetService(Context context, AndTweetService.CommandData commandData) {
         isStarted = true;
-        SharedPreferences mSP = PreferenceManager.getDefaultSharedPreferences(context);
-        if (mSP.contains("automatic_updates") && mSP.getBoolean("automatic_updates", false)) {
-            Log.d(TAG, "Automatic updates turned on, so starting repeating alarm.");
-            AndTweetService.startAutomaticUpdates(context);
-        } else {
-            Log.d(TAG, "Automatic updates turned off, so cancelling repeating alarm.");
-            AndTweetService.stopAutomaticUpdates(context);
+        ignoreAlarms = false;
+        Intent serviceIntent = new Intent(IAndTweetService.class.getName());
+        if (commandData != null) {
+            serviceIntent = commandData.toIntent(serviceIntent);
         }
+        context.startService(serviceIntent);
     }
 
-    public static void stopAndTweetService(Context context) {
+    /**
+     * Stop  {@link AndTweetService}
+     * @param context
+     * @param ignoreAlarms - if true repeating alarms will be ignored also
+     */
+    public static void stopAndTweetService(Context context, boolean ignoreAlarms_in) {
         isStarted = false;
+        ignoreAlarms = ignoreAlarms_in;
         context.stopService(new Intent(IAndTweetService.class.getName()));
+    }
+
+    /**
+     * Is the service started. 
+     * @See <a href="http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d">here</a>
+     */
+    public static boolean isStarted() {
+        return isStarted;
     }
     
 }
