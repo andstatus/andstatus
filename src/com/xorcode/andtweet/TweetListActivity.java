@@ -512,7 +512,7 @@ public class TweetListActivity extends TimelineActivity {
             Toast.makeText(TweetListActivity.this, R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
         } else {
-            CommandData commandData = new CommandData(CommandEnum.CREATE_FAVORITE, mCurrentId);
+            CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS);
             commandData.bundle.putString(AndTweetService.EXTRA_STATUS, status);
             commandData.bundle.putLong(AndTweetService.EXTRA_INREPLYTOID, mReplyId);
             sendCommand(commandData);
