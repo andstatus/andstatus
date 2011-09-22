@@ -15,8 +15,8 @@
  */
 package com.xorcode.andtweet.data;
 
-import com.xorcode.andtweet.AndTweetService;
 import com.xorcode.andtweet.TwitterUser;
+import com.xorcode.andtweet.util.MyLog;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -27,15 +27,69 @@ import android.util.Log;
  * This is central point of accessing SharedPreferences, used by AndTweet
  * @author yuvolkov
  */
-public class AndTweetPreferences {
-    private static final String TAG = AndTweetPreferences.class.getSimpleName();
+public class MyPreferences {
+    private static final String TAG = MyPreferences.class.getSimpleName();
     /**
      * Single context object for which we will request SharedPreferences
      */
     private static Context context;
     private static String origin;
+    
+    public static final String KEY_OAUTH = "oauth";
+    /**
+     * Was this user ever authenticated?
+     */
+    public static final String KEY_WAS_AUTHENTICATED = "was_authenticated";
+    /**
+     * Was current user ( user set in global preferences) authenticated last
+     * time credentials were verified? CredentialsVerified.NEVER - after changes
+     * of password/OAuth...
+     */
+    public static final String KEY_CREDENTIALS_VERIFIED = "credentials_verified";
+    /**
+     * This is sort of button to start verification of credentials
+     */
+    public static final String KEY_VERIFY_CREDENTIALS = "verify_credentials";
+    /**
+     * Process of authentication was started (by {@link #PreferencesActivity})
+     */
+    public static final String KEY_AUTHENTICATING = "authenticating";
+    /**
+     * Current User
+     */
+    public static final String KEY_TWITTER_USERNAME = "twitter_username";
+    /**
+     * New Username typed / selected in UI
+     * It doesn't immediately change "Current User"
+     */
+    public static final String KEY_TWITTER_USERNAME_NEW = "twitter_username_new";
+    public static final String KEY_TWITTER_PASSWORD = "twitter_password";
+    public static final String KEY_HISTORY_SIZE = "history_size";
+    public static final String KEY_HISTORY_TIME = "history_time";
+    public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
+    public static final String KEY_AUTOMATIC_UPDATES = "automatic_updates";
+    public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
+    public static final String KEY_CONTACT_DEVELOPER = "contact_developer";
+    public static final String KEY_REPORT_BUG = "report_bug";
+    public static final String KEY_CHANGE_LOG = "change_log";
+    public static final String KEY_ABOUT_APPLICATION = "about_application";
+    /**
+     * System time when shared preferences were changed
+     */
+    public static final String KEY_PREFERENCES_CHANGE_TIME = "preferences_change_time";
+    /**
+     * Minimum logging level for the whole application (i.e. for any tag)
+     */
+    public static final String KEY_MIN_LOG_LEVEL = "min_log_level";
+    
+    /**
+     * System time when shared preferences were examined and took into account
+     * by some receiver. We use this for the Service to track time when it
+     * recreated alarms last time...
+     */
+    public static final String KEY_PREFERENCES_EXAMINE_TIME = "preferences_examine_time";
 
-    private AndTweetPreferences(){
+    private MyPreferences(){
     }
     
     /**
@@ -50,9 +104,9 @@ public class AndTweetPreferences {
             context = context_in.getApplicationContext();
             origin = origin_in;
             TwitterUser.initialize();
-            AndTweetService.v(TAG, "Initialized by " + origin);
+            MyLog.v(TAG, "Initialized by " + origin);
         } else {
-            AndTweetService.v(TAG, "Already initialized by " + origin +  " (called by: " + origin_in + ")");
+            MyLog.v(TAG, "Already initialized by " + origin +  " (called by: " + origin_in + ")");
         }
     }
 
@@ -64,6 +118,7 @@ public class AndTweetPreferences {
         context = null;
         origin = null;
         TwitterUser.forget();
+        MyLog.forget();
     }
     
     public static boolean isInitialized() {

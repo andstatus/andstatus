@@ -18,8 +18,6 @@ package com.xorcode.andtweet.util;
 import android.content.Context;
 import android.util.Log;
 
-import com.xorcode.andtweet.AndTweetService;
-
 import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -71,7 +69,7 @@ public class I18n {
 	        message = mf.format(new Object[] { submessage });
 		}
 
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "formatMessage, num=" + toMatch + "; subformat=" + subformat 
     				+ "; submessage=" + submessage + "; message=" + message);
         }

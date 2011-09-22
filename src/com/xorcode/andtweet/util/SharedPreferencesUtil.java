@@ -26,8 +26,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.File;
 
-import com.xorcode.andtweet.AndTweetService;
-import com.xorcode.andtweet.data.AndTweetPreferences;
+import com.xorcode.andtweet.data.MyPreferences;
 
 public class SharedPreferencesUtil {
     private static final String TAG = SharedPreferencesUtil.class.getSimpleName();
@@ -73,14 +72,14 @@ public class SharedPreferencesUtil {
         boolean isDeleted = false;
 
         if (context == null || prefsFileName == null || prefsFileName.length() == 0) {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "delete: Nothing to do");
             }
         } else {
             File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
             if (prefFile.exists()) {
                 // Commit any changes left
-                SharedPreferences.Editor prefs = AndTweetPreferences.getSharedPreferences(prefsFileName,
+                SharedPreferences.Editor prefs = MyPreferences.getSharedPreferences(prefsFileName,
                         MODE_PRIVATE).edit();
                 if (prefs != null) {
                     prefs.commit();
@@ -88,12 +87,12 @@ public class SharedPreferencesUtil {
                 }
 
                 isDeleted = prefFile.delete();
-                if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                     Log.v(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was "
                             + (isDeleted ? "" : "not ") + " deleted");
                 }
             } else {
-                if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+                if (MyLog.isLoggable(TAG, Log.DEBUG)) {
                     Log.d(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was not found");
                 }
             }
@@ -111,14 +110,14 @@ public class SharedPreferencesUtil {
 
         if (context == null || oldPrefsFileName == null || oldPrefsFileName.length() == 0
                 || newPrefsFileName == null || newPrefsFileName.length() == 0) {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "rename: Nothing to do");
             }
         } else {
             File newPrefFile = new File(prefsDirectory(context), newPrefsFileName + FILE_EXTENSION);
             if (newPrefFile.exists()) {
                 try {
-                    if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                    if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                         Log.v(TAG, "rename: New file already exists: \""
                                 + newPrefFile.getCanonicalPath() + "\"");
                     }
@@ -129,7 +128,7 @@ public class SharedPreferencesUtil {
                 File oldPrefFile = new File(prefsDirectory(context), oldPrefsFileName + FILE_EXTENSION);
                 if (oldPrefFile.exists()) {
                     // Commit any changes left
-                    SharedPreferences.Editor prefs = AndTweetPreferences.getSharedPreferences(oldPrefsFileName,
+                    SharedPreferences.Editor prefs = MyPreferences.getSharedPreferences(oldPrefsFileName,
                             MODE_PRIVATE).edit();
                     if (prefs != null) {
                         prefs.commit();
@@ -137,12 +136,12 @@ public class SharedPreferencesUtil {
                     }
 
                     isRenamed = oldPrefFile.renameTo(newPrefFile);
-                    if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                    if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                         Log.v(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath() + "' was "
                                 + (isRenamed ? "" : "not ") + " renamed");
                     }
                 } else {
-                    if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+                    if (MyLog.isLoggable(TAG, Log.DEBUG)) {
                         Log.d(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath()
                                 + "' was not found");
                     }

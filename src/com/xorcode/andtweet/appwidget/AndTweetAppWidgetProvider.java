@@ -36,6 +36,7 @@ import com.xorcode.andtweet.AndTweetService;
 import com.xorcode.andtweet.TweetListActivity;
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.util.I18n;
+import com.xorcode.andtweet.util.MyLog;
 import com.xorcode.andtweet.util.RelativeTime;
 
 /**
@@ -66,14 +67,14 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onReceive; intent=" + intent);
         }
 		boolean done = false;
 		String action = intent.getAction();
 
 		if (AndTweetService.ACTION_APPWIDGET_UPDATE.equals(action)) {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "inst=" + instanceId + "; Intent from AndTweetService received!");
             }
 			Bundle extras = intent.getExtras();
@@ -104,11 +105,11 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 						AppWidgetManager.INVALID_APPWIDGET_ID);
 				done = true;
 			}
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "inst=" + instanceId + "; Intent from AndTweetService processed");
             }
 		} else if (AppWidgetManager.ACTION_APPWIDGET_DELETED.equals(action)) {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "Action APPWIDGET_DELETED was received");
             }
 			Bundle extras = intent.getExtras();
@@ -130,7 +131,7 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 				}
 			}
 			if (!done) {
-	            if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+	            if (MyLog.isLoggable(TAG, Log.DEBUG)) {
 	                Log.d(TAG, "Deletion was not done, extras='"
 	                        + extras.toString() + "'");
 	            }
@@ -144,7 +145,7 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onUpdate");
         }
 		// For each widget that needs an update, get the text that we should
@@ -161,7 +162,7 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 
 	@Override
 	public void onDeleted(Context context, int[] appWidgetIds) {
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onDeleted");
         }
 		// When the user deletes the widget, delete all preferences associated
@@ -174,14 +175,14 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 
 	@Override
 	public void onEnabled(Context context) {
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onEnabled");
         }
 	}
 
 	@Override
 	public void onDisabled(Context context) {
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onDisabled");
         }
 
@@ -199,7 +200,7 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 			int appWidgetId) {
 		boolean Ok = false;
 		try {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "inst=" + instanceId + "; updateAppWidget appWidgetId=" + appWidgetId 
                         + "; msgType=" + msgType);
             }
@@ -293,7 +294,7 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 	            }
 			}
 
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "updateAppWidget text=\"" + widgetText.replaceAll("\n", "; ") + "\"; comment=\""
                         + widgetComment + "\"");
             }
@@ -364,7 +365,7 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 			Log.e(TAG, "inst=" + instanceId + "; updateAppWidget exception: " + e.toString() );
 			
 		} finally {
-            if ( !Ok || Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if ( !Ok || MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.d(TAG, "inst=" + instanceId + "; updateAppWidget " + (Ok ? "succeded" : "failed") );
             }
 		}

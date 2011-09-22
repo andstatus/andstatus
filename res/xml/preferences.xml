@@ -152,6 +152,11 @@
 		<Preference android:key="report_bug" android:title="@string/title_preference_report_bug">
 			<intent android:action="android.intent.action.VIEW" android:data="http://code.google.com/p/andtweet/issues/entry" />
 		</Preference>
+        <ListPreference android:entryValues="@array/log_level_keys"
+            android:entries="@array/log_level_values" android:summary="@string/summary_preference_min_log_level"
+            android:dialogTitle="@string/dialog_title_preference_min_log_level"
+            android:title="@string/title_preference_min_log_level" android:key="min_log_level"
+            android:defaultValue="4" />
 		<Preference android:key="change_log" android:title="@string/title_preference_change_log">
 			<intent android:action="android.intent.action.VIEW" android:data="http://andtweet.com/appchangelog" />
 		</Preference>

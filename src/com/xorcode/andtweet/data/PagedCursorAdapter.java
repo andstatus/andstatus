@@ -18,7 +18,7 @@ package com.xorcode.andtweet.data;
 
 import java.util.Arrays;
 
-import com.xorcode.andtweet.AndTweetService;
+import com.xorcode.andtweet.util.MyLog;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -75,7 +75,7 @@ public class PagedCursorAdapter extends SimpleCursorAdapter implements FilterQue
 			}
 			mSortOrder += " " + constraint.toString().trim();
 		}
-		if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+		if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
 		    Log.v(TAG, "runQuery, mUri=" + mUri + "; mProjection=" + Arrays.toString(mProjection) + "; mSortOrder=" + mSortOrder + ";");
 		}
 		return mContentResolver.query(mUri, mProjection, null, null, mSortOrder);

@@ -42,7 +42,8 @@ import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.AndTweetDatabase.DirectMessages;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.data.AndTweetDatabase.Users;
-import com.xorcode.andtweet.data.AndTweetPreferences;
+import com.xorcode.andtweet.data.MyPreferences;
+import com.xorcode.andtweet.util.MyLog;
 
 /**
  * Database provider for the AndTweetDatabase database.
@@ -109,8 +110,8 @@ public class AndTweetProvider extends ContentProvider {
 
         DatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
-            AndTweetPreferences.initialize(context, this);
-            SharedPreferences sp = AndTweetPreferences.getDefaultSharedPreferences();
+            MyPreferences.initialize(context, this);
+            SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
             mUseExternalStorage = sp.getBoolean("storage_use_external", false);
         }
 
@@ -711,7 +712,7 @@ public class AndTweetProvider extends ContentProvider {
         // Get the database and run the query
         SQLiteDatabase db = mOpenHelper.getReadableDatabase();
         Cursor c = null;
-        boolean logQuery = Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE);
+        boolean logQuery = MyLog.isLoggable(TAG, Log.VERBOSE);
         try {
             if (sql.length() > 0) {
                 c = db.rawQuery(sql, selectionArgs);

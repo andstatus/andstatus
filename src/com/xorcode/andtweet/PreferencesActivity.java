@@ -46,13 +46,14 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
-import com.xorcode.andtweet.data.AndTweetPreferences;
+import com.xorcode.andtweet.data.MyPreferences;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionCredentialsOfOtherUserException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionOAuth;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
 import com.xorcode.andtweet.net.OAuthKeys;
+import com.xorcode.andtweet.util.MyLog;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 
 import oauth.signpost.OAuth;
@@ -80,79 +81,11 @@ public class PreferencesActivity extends PreferenceActivity implements
 
     public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
 
-    public static final String KEY_OAUTH = "oauth";
     /** 
      * The URI is consistent with "scheme" and "host" in AndroidManifest
      */
     public static final Uri CALLBACK_URI = Uri.parse("andtweet-oauth://twitt");
 
-    /**
-     * Was this user ever authenticated?
-     */
-    public static final String KEY_WAS_AUTHENTICATED = "was_authenticated";
-
-    /**
-     * Was current user ( user set in global preferences) authenticated last
-     * time credentials were verified? CredentialsVerified.NEVER - after changes
-     * of password/OAuth...
-     */
-    public static final String KEY_CREDENTIALS_VERIFIED = "credentials_verified";
-
-    /**
-     * This is sort of button to start verification of credentials
-     */
-    public static final String KEY_VERIFY_CREDENTIALS = "verify_credentials";
-
-    /**
-     * Process of authentication was started (by {@link #PreferencesActivity})
-     */
-    public static final String KEY_AUTHENTICATING = "authenticating";
-
-    /**
-     * Current User
-     */
-    public static final String KEY_TWITTER_USERNAME = "twitter_username";
-
-    /**
-     * New Username typed / selected in UI
-     * It doesn't immediately change "Current User"
-     */
-    public static final String KEY_TWITTER_USERNAME_NEW = "twitter_username_new";
-    
-    public static final String KEY_TWITTER_PASSWORD = "twitter_password";
-
-    public static final String KEY_HISTORY_SIZE = "history_size";
-
-    public static final String KEY_HISTORY_TIME = "history_time";
-
-    public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
-
-    public static final String KEY_AUTOMATIC_UPDATES = "automatic_updates";
-
-    public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
-
-    // public static final String KEY_EXTERNAL_STORAGE = "storage_use_external";
-
-    public static final String KEY_CONTACT_DEVELOPER = "contact_developer";
-
-    public static final String KEY_REPORT_BUG = "report_bug";
-
-    public static final String KEY_CHANGE_LOG = "change_log";
-
-    public static final String KEY_ABOUT_APPLICATION = "about_application";
-
-    /**
-     * System time when shared preferences were changed
-     */
-    public static final String KEY_PREFERENCES_CHANGE_TIME = "preferences_change_time";
-
-    /**
-     * System time when shared preferences were examined and took into account
-     * by some receiver. We use this for the Service to track time when it
-     * recreated alarms last time...
-     */
-    public static final String KEY_PREFERENCES_EXAMINE_TIME = "preferences_examine_time";
-    
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs
      */
@@ -173,12 +106,6 @@ public class PreferencesActivity extends PreferenceActivity implements
     // End Of the list ----------------------------------------
 
     // private CheckBoxPreference mUseExternalStorage;
-
-    private ListPreference mHistorySizePreference;
-
-    private ListPreference mHistoryTimePreference;
-
-    private ListPreference mFetchFrequencyPreference;
 
     private CheckBoxPreference mOAuth;
 
@@ -204,19 +131,16 @@ public class PreferencesActivity extends PreferenceActivity implements
         addPreferencesFromResource(R.xml.preferences);
         // Default values for the preferences will be set only once
         // and in one place: here
-        AndTweetPreferences.setDefaultValues(R.xml.preferences, false);
-        if (!AndTweetPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
+        MyPreferences.setDefaultValues(R.xml.preferences, false);
+        if (!MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
           Log.e(TAG, "Default values were not set?!");   
         }
         
-        mHistorySizePreference = (ListPreference) findPreference(KEY_HISTORY_SIZE);
-        mHistoryTimePreference = (ListPreference) findPreference(KEY_HISTORY_TIME);
-        mFetchFrequencyPreference = (ListPreference) findPreference(KEY_FETCH_FREQUENCY);
-        mNotificationRingtone = (RingtonePreference) findPreference(KEY_RINGTONE_PREFERENCE);
-        mOAuth = (CheckBoxPreference) findPreference(KEY_OAUTH);
-        mEditTextUsername = (EditTextPreference) findPreference(KEY_TWITTER_USERNAME_NEW);
-        mEditTextPassword = (EditTextPreference) findPreference(KEY_TWITTER_PASSWORD);
-        mVerifyCredentials = (Preference) findPreference(KEY_VERIFY_CREDENTIALS);
+        mNotificationRingtone = (RingtonePreference) findPreference(MyPreferences.KEY_RINGTONE_PREFERENCE);
+        mOAuth = (CheckBoxPreference) findPreference(MyPreferences.KEY_OAUTH);
+        mEditTextUsername = (EditTextPreference) findPreference(MyPreferences.KEY_TWITTER_USERNAME_NEW);
+        mEditTextPassword = (EditTextPreference) findPreference(MyPreferences.KEY_TWITTER_PASSWORD);
+        mVerifyCredentials = (Preference) findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
 
         mNotificationRingtone.setOnPreferenceChangeListener(this);
 
@@ -303,11 +227,11 @@ public class PreferencesActivity extends PreferenceActivity implements
         AndTweetServiceManager.stopAndTweetService(this, true);
         
         showAllPreferences();
-        AndTweetPreferences.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+        MyPreferences.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         
         Uri uri = getIntent().getData();
         if (uri != null) {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+            if (MyLog.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "uri=" + uri.toString());
             }
             if (CALLBACK_URI.getScheme().equals(uri.getScheme())) {
@@ -348,7 +272,7 @@ public class PreferencesActivity extends PreferenceActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        AndTweetPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(
+        MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(
                 this);
     }
 
@@ -363,64 +287,51 @@ public class PreferencesActivity extends PreferenceActivity implements
         showFrequency();
         showHistorySize();
         showHistoryTime();
-        showRingtone(AndTweetPreferences.getDefaultSharedPreferences().getString(
-                KEY_RINGTONE_PREFERENCE, null));
+        showRingtone(MyPreferences.getDefaultSharedPreferences().getString(
+                MyPreferences.KEY_RINGTONE_PREFERENCE, null));
+        showMinLogLevel();
     }
     
     protected void showHistorySize() {
-        String[] k = getResources().getStringArray(R.array.history_size_keys);
-        String[] d = getResources().getStringArray(R.array.history_size_display);
-        String displayHistorySize = d[0];
-        String historySize = mHistorySizePreference.getValue();
-        for (int i = 0; i < k.length; i++) {
-            if (historySize.equals(k[i])) {
-                displayHistorySize = d[i];
-                break;
-            }
-        }
-        MessageFormat sf = new MessageFormat(getText(R.string.summary_preference_history_size)
-                .toString());
-        mHistorySizePreference.setSummary(sf.format(new Object[] {
-            displayHistorySize
-        }));
+        showListPreference(MyPreferences.KEY_HISTORY_SIZE, R.array.history_size_keys, R.array.history_size_display, R.string.summary_preference_history_size);
     }
 
     protected void showHistoryTime() {
-        String[] k = getResources().getStringArray(R.array.history_time_keys);
-        String[] d = getResources().getStringArray(R.array.history_time_display);
-        String displayHistoryTime = d[0];
-        String historyTime = mHistoryTimePreference.getValue();
-        for (int i = 0; i < k.length; i++) {
-            if (historyTime.equals(k[i])) {
-                displayHistoryTime = d[i];
-                break;
-            }
-        }
-        MessageFormat sf = new MessageFormat(getText(R.string.summary_preference_history_time)
-                .toString());
-        mHistoryTimePreference.setSummary(sf.format(new Object[] {
-            displayHistoryTime
-        }));
+        showListPreference(MyPreferences.KEY_HISTORY_TIME, R.array.history_time_keys, R.array.history_time_display, R.string.summary_preference_history_time);
     }
 
     protected void showFrequency() {
-        String[] k = getResources().getStringArray(R.array.fetch_frequency_keys);
-        String[] d = getResources().getStringArray(R.array.fetch_frequency_display);
-        String displayFrequency = d[0];
-        String frequency = mFetchFrequencyPreference.getValue();
-        for (int i = 0; i < k.length; i++) {
-            if (frequency.equals(k[i])) {
-                displayFrequency = d[i];
-                break;
-            }
-        }
-        MessageFormat sf = new MessageFormat(getText(R.string.summary_preference_frequency)
-                .toString());
-        mFetchFrequencyPreference.setSummary(sf.format(new Object[] {
-            displayFrequency
-        }));
+        showListPreference(MyPreferences.KEY_FETCH_FREQUENCY, R.array.fetch_frequency_keys, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
     }
 
+    protected void showMinLogLevel() {
+        showListPreference(MyPreferences.KEY_MIN_LOG_LEVEL, R.array.log_level_keys, R.array.log_level_display, R.string.summary_preference_min_log_level);
+    }
+
+    protected void showListPreference(String keyPreference, int keysR, int displayR, int summaryR) {
+        String displayParm = "";
+        ListPreference lP = (ListPreference) findPreference(keyPreference);
+        if (lP != null) {
+            String[] k = getResources().getStringArray(keysR);
+            String[] d = getResources().getStringArray(displayR);
+            displayParm = d[0];
+            String listValue = lP.getValue();
+            for (int i = 0; i < k.length; i++) {
+                if (listValue.equals(k[i])) {
+                    displayParm = d[i];
+                    break;
+                }
+            }
+        } else {
+            displayParm = keyPreference + " was not found";
+        }
+        MessageFormat sf = new MessageFormat(getText(summaryR)
+                .toString());
+        lP.setSummary(sf.format(new Object[] {
+            displayParm
+        }));
+    }
+    
     protected void showRingtone(Object newValue) {
         String ringtone = (String) newValue;
         Uri uri;
@@ -454,18 +365,18 @@ public class PreferencesActivity extends PreferenceActivity implements
                     value = "(not string)";
                 }
             }
-            AndTweetService.d(TAG, "onSharedPreferenceChanged: " + key + "='" + value + "'");
+            MyLog.d(TAG, "onSharedPreferenceChanged: " + key + "='" + value + "'");
 
             // Remember when last changes were made
             sharedPreferences
                     .edit()
-                    .putLong(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME,
+                    .putLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME,
                             java.lang.System.currentTimeMillis()).commit();
             
             TwitterUser tu = TwitterUser.getTwitterUser();
-            String usernameNew = sharedPreferences.getString(KEY_TWITTER_USERNAME_NEW, "");
+            String usernameNew = sharedPreferences.getString(MyPreferences.KEY_TWITTER_USERNAME_NEW, "");
             
-            if (key.equals(KEY_OAUTH)) {
+            if (key.equals(MyPreferences.KEY_OAUTH)) {
                 // Here and below:
                 // Check if there are changes to avoid "ripples"
                 if (tu.isOAuth() != mOAuth.isChecked()) {
@@ -474,8 +385,8 @@ public class PreferencesActivity extends PreferenceActivity implements
                     showUserPreferences(tu);
                 }
             }
-            if (key.equals(KEY_TWITTER_USERNAME_NEW)) {
-                String usernameOld = sharedPreferences.getString(KEY_TWITTER_USERNAME, "");
+            if (key.equals(MyPreferences.KEY_TWITTER_USERNAME_NEW)) {
+                String usernameOld = sharedPreferences.getString(MyPreferences.KEY_TWITTER_USERNAME, "");
                 if (usernameNew.compareTo(usernameOld) != 0) {
                     // Try to find existing TwitterUser by the new Username 
                     // without clearing Auth information
@@ -484,25 +395,28 @@ public class PreferencesActivity extends PreferenceActivity implements
                     showUserPreferences(tu);
                 }
             }
-            if (key.equals(KEY_TWITTER_PASSWORD)) {
+            if (key.equals(MyPreferences.KEY_TWITTER_PASSWORD)) {
                 if (tu.getPassword().compareTo(mEditTextPassword.getText()) != 0) {
                     tu = TwitterUser.getAddEditTwitterUser(usernameNew);
                     tu.setCurrentUser();
                     showUserPreferences(tu);
                 }
             }
-            if (key.equals(KEY_FETCH_FREQUENCY)) {
+            if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY)) {
                 showFrequency();
             }
-            if (key.equals(KEY_RINGTONE_PREFERENCE)) {
+            if (key.equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {
                 // TODO: Try to move it here from onPreferenceChange...
                 // updateRingtone();
             }
-            if (key.equals(KEY_HISTORY_SIZE)) {
+            if (key.equals(MyPreferences.KEY_HISTORY_SIZE)) {
                 showHistorySize();
             }
-            if (key.equals(KEY_HISTORY_TIME)) {
+            if (key.equals(MyPreferences.KEY_HISTORY_TIME)) {
                 showHistoryTime();
+            }
+            if (key.equals(MyPreferences.KEY_MIN_LOG_LEVEL)) {
+                showMinLogLevel();
             }
         } finally {
             onSharedPreferenceChanged_busy = false;
@@ -510,7 +424,7 @@ public class PreferencesActivity extends PreferenceActivity implements
     };
 
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (preference.getKey().equals(KEY_RINGTONE_PREFERENCE)) {
+        if (preference.getKey().equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {
             showRingtone(newValue);
             return true;
         }
@@ -568,8 +482,8 @@ public class PreferencesActivity extends PreferenceActivity implements
      */
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
-        AndTweetService.d(TAG, "Preference clicked:" + preference.toString());
-        if (preference.getKey().compareTo(KEY_VERIFY_CREDENTIALS) == 0) {
+        MyLog.d(TAG, "Preference clicked:" + preference.toString());
+        if (preference.getKey().compareTo(MyPreferences.KEY_VERIFY_CREDENTIALS) == 0) {
             verifyCredentials(true);
         }
         return super.onPreferenceTreeClick(preferenceScreen, preference);
@@ -609,18 +523,18 @@ public class PreferencesActivity extends PreferenceActivity implements
             if (!skip) {
                 what = MSG_ACCOUNT_INVALID;
                 try {
-                    String usernameUI = AndTweetPreferences
-                    .getDefaultSharedPreferences().getString(KEY_TWITTER_USERNAME_NEW, "");
+                    String usernameUI = MyPreferences
+                    .getDefaultSharedPreferences().getString(MyPreferences.KEY_TWITTER_USERNAME_NEW, "");
                     TwitterUser tu  = TwitterUser.getTwitterUser();
                     if (tu.verifyCredentials(true)) {
                         what = MSG_ACCOUNT_VALID;
                         tu.setCurrentUser();
                         // Maybe after successful Verification we should change Current User?
                         if (tu.getUsername().compareTo(usernameUI) !=0) {
-                            AndTweetService.v(TAG, "Changing Username for UI from '" + usernameUI 
+                            MyLog.v(TAG, "Changing Username for UI from '" + usernameUI 
                                     + "' to '" + tu.getUsername() + "'");
-                            AndTweetPreferences
-                            .getDefaultSharedPreferences().edit().putString(KEY_TWITTER_USERNAME_NEW, tu.getUsername()).commit();
+                            MyPreferences
+                            .getDefaultSharedPreferences().edit().putString(MyPreferences.KEY_TWITTER_USERNAME_NEW, tu.getUsername()).commit();
                         }
                     }
                 } catch (ConnectionException e) {

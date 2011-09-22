@@ -55,8 +55,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
-import com.xorcode.andtweet.data.AndTweetPreferences;
+import com.xorcode.andtweet.data.MyPreferences;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
+import com.xorcode.andtweet.util.MyLog;
 import com.xorcode.andtweet.AndTweetService.CommandData;
 import com.xorcode.andtweet.AndTweetService.CommandEnum;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
@@ -219,14 +220,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        AndTweetPreferences.initialize(this, this);
-        preferencesChangeTime = AndTweetPreferences.getDefaultSharedPreferences().getLong(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, 0);
+        MyPreferences.initialize(this, this);
+        preferencesChangeTime = MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0);
         
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
-            AndTweetService.d(TAG, "onCreate, preferencesChangeTime=" + preferencesChangeTime);
+        if (MyLog.isLoggable(TAG, Log.DEBUG)) {
+            MyLog.d(TAG, "onCreate, preferencesChangeTime=" + preferencesChangeTime);
         }
 
-        if (!AndTweetPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
+        if (!MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
             Log.i(TAG, "We are running the Application for the very first time?");
             startActivity(new Intent(this, SplashActivity.class));
             finish();
@@ -269,15 +270,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     @Override
     protected void onResume() {
         super.onResume();
-        AndTweetService.v(TAG, "onResume");
+        MyLog.v(TAG, "onResume");
         if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.NEVER) {
-            AndTweetService.v(TAG, "Finishing this Activity because user was not ever authenticated");
+            MyLog.v(TAG, "Finishing this Activity because user was not ever authenticated");
             mIsFinishingOnResume = true;
             finish();
-        } else if (AndTweetPreferences.getDefaultSharedPreferences().getLong(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, 0) > preferencesChangeTime) {
+        } else if (MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0) > preferencesChangeTime) {
             mIsFinishingOnResume = true;
 
-            AndTweetService.v(TAG, "Restarting the activity to apply any new changes");
+            MyLog.v(TAG, "Restarting the activity to apply any new changes");
             finish();
             switchTimelineActivity(mTimelineType);
         }
@@ -327,7 +328,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             
             // Variant 2 is overkill... but let's try...
             // I have a feeling that saving preferences while finishing activity sometimes doesn't work...
-            //  - Maybe this was fixed introducing AndTweetPreferences class?! 
+            //  - Maybe this was fixed introducing MyPreferences class?! 
             boolean saveSync = true;
             boolean saveAsync = false;
             if (saveSync) {
@@ -350,7 +351,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 }
             } 
             
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "Saved position " + tu.getUsername() + "; " + positionKey(false) + "="
                         + firstItemId + "; index=" + firstScrollPos + "; lastId="
                         + lastItemId + "; index=" + lastScrollPos);
@@ -374,7 +375,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             if (scrollPos >= 0) {
                 getListView().setSelectionFromTop(scrollPos, 0);
                 loaded = true;
-                if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                     Log.v(TAG, "Restored position " + tu.getUsername() + "; " + positionKey(false) + "="
                             + firstItemId +"; list index=" + scrollPos);
                 }
@@ -396,7 +397,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             ed.commit();
             firstItemId = -2;
         }
-        if (!loaded && Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (!loaded && MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "Didn't restore position " + tu.getUsername() + "; " + positionKey(false) + "="
                     + firstItemId);
         }
@@ -437,14 +438,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     }
 
     private void setSelectionAtBottom(int scrollPos) {
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "setSelectionAtBottom, 1");
         }
         int viewHeight = getListView().getHeight();
         int childHeight;
         childHeight = 30;
         int y = viewHeight - childHeight;
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "set position of last item to " + y + "px");
         }
         getListView().setSelectionFromTop(scrollPos, y);
@@ -462,7 +463,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         boolean itemFound = false;
         ListView lv = getListView();
         int itemCount = lv.getCount();
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "item count: " + itemCount);
         }
         for (listPos = 0; (!itemFound && (listPos < itemCount)); listPos++) {
@@ -482,7 +483,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     @Override
     public void onContentChanged() {
         super.onContentChanged();
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+        if (MyLog.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, "Content changed");
         }
     }
@@ -490,7 +491,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     @Override
     protected void onPause() {
         super.onPause();
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onPause");
         }
         // The activity just lost its focus,
@@ -565,7 +566,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                                 R.string.dialog_summary_external_storage).setPositiveButton(
                                 android.R.string.ok, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface Dialog, int whichButton) {
-                                        SharedPreferences.Editor editor = AndTweetPreferences.getDefaultSharedPreferences().edit();
+                                        SharedPreferences.Editor editor = MyPreferences.getDefaultSharedPreferences().edit();
                                         editor.putBoolean("confirmed_external_storage_use", true);
                                         editor.putBoolean("storage_use_external", true);
                                         editor.commit();
@@ -579,7 +580,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                                 }).setNegativeButton(android.R.string.cancel,
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface Dialog, int whichButton) {
-                                        SharedPreferences.Editor editor = AndTweetPreferences.getDefaultSharedPreferences().edit();
+                                        SharedPreferences.Editor editor = MyPreferences.getDefaultSharedPreferences().edit();
                                         editor.putBoolean("confirmed_external_storage_use", true);
                                         editor.commit();
                                     }
@@ -592,7 +593,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                         .setPositiveButton(android.R.string.ok,
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface Dialog, int whichButton) {
-                                        SharedPreferences.Editor editor = AndTweetPreferences.getDefaultSharedPreferences().edit();
+                                        SharedPreferences.Editor editor = MyPreferences.getDefaultSharedPreferences().edit();
                                         editor.putBoolean("confirmed_external_storage_use", true);
                                         editor.putBoolean("storage_use_external", false);
                                         editor.commit();
@@ -710,9 +711,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * Load the theme for preferences.
      */
     public void loadTheme() {
-        boolean light = AndTweetPreferences.getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
+        boolean light = MyPreferences.getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
         StringBuilder theme = new StringBuilder();
-        String name = AndTweetPreferences.getDefaultSharedPreferences().getString("theme", "AndTweet");
+        String name = MyPreferences.getDefaultSharedPreferences().getString("theme", "AndTweet");
         if (name.indexOf("Theme.") > -1) {
             name = name.substring(name.indexOf("Theme."));
         }
@@ -721,7 +722,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             theme.append("Light.");
         }
         theme.append(name);
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "loadTheme; theme=\"" + theme.toString() + "\"");
         }
         setTheme((int) getResources().getIdentifier(theme.toString(), "style",
@@ -750,7 +751,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 timelinename = getString(R.string.activity_title_direct_messages);
                 break;
         }
-        String username = AndTweetPreferences.getDefaultSharedPreferences().getString(PreferencesActivity.KEY_TWITTER_USERNAME, null);
+        String username = MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_TWITTER_USERNAME, null);
         String leftText = getString(R.string.activity_title_format, new Object[] {
                 timelinename, username + (mSearchMode ? " *" : "")
         }); 
@@ -857,7 +858,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      */
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName name, IBinder service) {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "onServiceConnected");
             }
             mService = IAndTweetService.Stub.asInterface(service);
@@ -902,7 +903,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
         if (mService != null) {
             // Service is connected, so we can send queued Intents
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "Sendings " + mCommands.size() + " broadcasts");
             }
             while (true) {
@@ -924,7 +925,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
          * @throws RemoteException
          */
         public void tweetsChanged(int value) throws RemoteException {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "tweetsChanged value=" + value);
             }
             mHandler.sendMessage(mHandler.obtainMessage(MSG_TWEETS_CHANGED, value, 0));
@@ -937,7 +938,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
          * @throws RemoteException
          */
         public void dataLoading(int value) throws RemoteException {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "dataLoading value=" + value);
             }
             mHandler.sendMessage(mHandler.obtainMessage(MSG_DATA_LOADING, value, 0));
@@ -971,7 +972,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onNewIntent");
         }
         setTimelineType(intent);
@@ -1004,7 +1005,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             intent.putExtra(AndTweetService.EXTRA_TIMELINE_TYPE, mTimelineType);
             intent.setData(AndTweetDatabase.Tweets.CONTENT_URI);
        }
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "setTimelineType; type=\"" + mTimelineType + "\"");
         }
     }
@@ -1029,7 +1030,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void startPreferencesActivity() {
         // We need to restart this Activity after exiting PreferencesActivity
         // So let's set the flag:
-        //AndTweetPreferences.getDefaultSharedPreferences().edit()
+        //MyPreferences.getDefaultSharedPreferences().edit()
         //        .putBoolean(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, true).commit();
         startActivity(new Intent(this, PreferencesActivity.class));
     }

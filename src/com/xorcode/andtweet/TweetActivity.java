@@ -30,7 +30,8 @@ import android.widget.TextView;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
-import com.xorcode.andtweet.data.AndTweetPreferences;
+import com.xorcode.andtweet.data.MyPreferences;
+import com.xorcode.andtweet.util.MyLog;
 import com.xorcode.andtweet.util.RelativeTime;
 
 /**
@@ -116,9 +117,9 @@ public class TweetActivity extends Activity {
 	 * Load the theme for preferences.
 	 */
 	protected void loadTheme() {
-		boolean light = AndTweetPreferences.getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
+		boolean light = MyPreferences.getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
 		StringBuilder theme = new StringBuilder();
-		String name = AndTweetPreferences.getDefaultSharedPreferences().getString("theme", "AndTweet");
+		String name = MyPreferences.getDefaultSharedPreferences().getString("theme", "AndTweet");
 		if (name.indexOf("Theme.") > -1) {
 			name = name.substring(name.indexOf("Theme."));
 		}
@@ -127,7 +128,7 @@ public class TweetActivity extends Activity {
 			theme.append("Light.");
 		}
 		theme.append(name);
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "loadTheme; theme=\"" + theme.toString() + "\"");
         }
 		setTheme((int) getResources().getIdentifier(theme.toString(), "style", "com.xorcode.andtweet"));

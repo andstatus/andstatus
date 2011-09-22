@@ -26,13 +26,14 @@ import java.net.SocketTimeoutException;
 import java.util.regex.Pattern;
 import java.util.Vector;
 
-import com.xorcode.andtweet.data.AndTweetPreferences;
+import com.xorcode.andtweet.data.MyPreferences;
 import com.xorcode.andtweet.net.Connection;
 import com.xorcode.andtweet.net.ConnectionAuthenticationException;
 import com.xorcode.andtweet.net.ConnectionCredentialsOfOtherUserException;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.net.ConnectionOAuth;
 import com.xorcode.andtweet.net.ConnectionUnavailableException;
+import com.xorcode.andtweet.util.MyLog;
 import com.xorcode.andtweet.util.SharedPreferencesUtil;
 
 import org.json.JSONObject;
@@ -203,7 +204,7 @@ public class TwitterUser {
 
             // Currently we don't hold user's list anywhere
             // So let's search user's files
-            java.io.File prefsdir = new File(SharedPreferencesUtil.prefsDirectory(AndTweetPreferences.getContext()));
+            java.io.File prefsdir = new File(SharedPreferencesUtil.prefsDirectory(MyPreferences.getContext()));
             java.io.File files[] = prefsdir.listFiles();
             if (files != null) {
                 for (int ind = 0; ind < files.length; ind++) {
@@ -218,10 +219,10 @@ public class TwitterUser {
                     }
                 }
             }
-            AndTweetService.v(TAG, "User's list initialized, " + mTu.size() + " users");
+            MyLog.v(TAG, "User's list initialized, " + mTu.size() + " users");
         }
         else {
-            AndTweetService.v(TAG, "Already initialized, " + mTu.size() + " users");
+            MyLog.v(TAG, "Already initialized, " + mTu.size() + " users");
         }
     }
 
@@ -254,8 +255,8 @@ public class TwitterUser {
 
         username = fixUsername(username);
         if (copyGlobal || (username.length() == 0)) {
-            SharedPreferences dsp = AndTweetPreferences.getDefaultSharedPreferences();
-            username = fixUsername(dsp.getString(PreferencesActivity.KEY_TWITTER_USERNAME, ""));
+            SharedPreferences dsp = MyPreferences.getDefaultSharedPreferences();
+            username = fixUsername(dsp.getString(MyPreferences.KEY_TWITTER_USERNAME, ""));
         }
         for (ind = 0; ind < mTu.size(); ind++) {
             if (mTu.elementAt(ind).getUsername().compareTo(username) == 0) {
@@ -277,7 +278,7 @@ public class TwitterUser {
             // AndTweetService.v(TAG, "User '" + tu.getUsername() + "' was found");
         } else {
             tu = new TwitterUser(username);
-            AndTweetService.v(TAG, "New user '" + tu.getUsername() + "' was created");
+            MyLog.v(TAG, "New user '" + tu.getUsername() + "' was created");
             mTu.add(tu);
         }
         if (copyGlobal) {
@@ -339,14 +340,14 @@ public class TwitterUser {
         username = fixUsername(username);
         // Try to find saved User data
         mPrefsFileName = prefsFileNameForUser(username);
-        boolean isNewUser = !SharedPreferencesUtil.exists(AndTweetPreferences.getContext(), mPrefsFileName);
+        boolean isNewUser = !SharedPreferencesUtil.exists(MyPreferences.getContext(), mPrefsFileName);
         setUsername(username, isNewUser);
         if (!isNewUser) {
             // Load stored data for the User
             SharedPreferences sp = getSharedPreferences();
-            mWasAuthenticated = sp.getBoolean(PreferencesActivity.KEY_WAS_AUTHENTICATED, false);
+            mWasAuthenticated = sp.getBoolean(MyPreferences.KEY_WAS_AUTHENTICATED, false);
             mCredentialsVerified = CredentialsVerified.load(sp);
-            mOAuth = sp.getBoolean(PreferencesActivity.KEY_OAUTH, true);
+            mOAuth = sp.getBoolean(MyPreferences.KEY_OAUTH, true);
         }
     }
 
@@ -364,7 +365,7 @@ public class TwitterUser {
         SharedPreferences sp = null;
         if (mPrefsFileName.length() > 0) {
             try {
-                sp = AndTweetPreferences.getSharedPreferences(mPrefsFileName, MODE_PRIVATE);
+                sp = MyPreferences.getSharedPreferences(mPrefsFileName, MODE_PRIVATE);
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.e(TAG, "Cound't get preferences '" + mPrefsFileName + "'");
@@ -389,7 +390,7 @@ public class TwitterUser {
             ok = (mPrefsFileName.compareTo(newPrefsFileName) == 0);
             if (!ok) {
                 mConnection = null;
-                ok = SharedPreferencesUtil.rename(AndTweetPreferences.getContext(), mPrefsFileName, newPrefsFileName);
+                ok = SharedPreferencesUtil.rename(MyPreferences.getContext(), mPrefsFileName, newPrefsFileName);
 
                 if (ok) {
                     mPrefsFileName = newPrefsFileName;
@@ -401,7 +402,7 @@ public class TwitterUser {
             }
             if (ok) {
                 mWasAuthenticated = true;
-                getSharedPreferences().edit().putBoolean(PreferencesActivity.KEY_WAS_AUTHENTICATED, true).commit();
+                getSharedPreferences().edit().putBoolean(MyPreferences.KEY_WAS_AUTHENTICATED, true).commit();
             }
         }
         return ok;
@@ -418,11 +419,11 @@ public class TwitterUser {
             mConnection = null;
             mUsername = username;
             if (isNewUser) {
-                getSharedPreferences().edit().putString(PreferencesActivity.KEY_TWITTER_USERNAME, mUsername).commit();
+                getSharedPreferences().edit().putString(MyPreferences.KEY_TWITTER_USERNAME, mUsername).commit();
                 // TODO: global method:
                 getSharedPreferences()
                 .edit()
-                .putLong(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME,
+                .putLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME,
                         java.lang.System.currentTimeMillis()).commit();
 
             }
@@ -442,11 +443,11 @@ public class TwitterUser {
      * Copy global (DefaultShared) preferences to this User's properties
      */
     private void copyGlobal() {
-        SharedPreferences dsp = AndTweetPreferences.getDefaultSharedPreferences();
+        SharedPreferences dsp = MyPreferences.getDefaultSharedPreferences();
 
         // Retrieve new values before changes so they won't be overridden
-        boolean oauth = dsp.getBoolean(PreferencesActivity.KEY_OAUTH, true);
-        String password = dsp.getString(PreferencesActivity.KEY_TWITTER_PASSWORD, "");
+        boolean oauth = dsp.getBoolean(MyPreferences.KEY_OAUTH, true);
+        String password = dsp.getString(MyPreferences.KEY_TWITTER_PASSWORD, "");
 
         // Make changes
         setOAuth(oauth);
@@ -457,7 +458,7 @@ public class TwitterUser {
         boolean ok = false;
         if (username != null && (username.length() > 0)) {
             ok = Pattern.matches("[a-zA-Z_0-9\\.\\-\\(\\)]+", username);
-            if (!ok && Log.isLoggable(AndTweetService.APPTAG, Log.INFO)) {
+            if (!ok && MyLog.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "The Username is not valid: \"" + username + "\"");
             }
         }
@@ -479,7 +480,7 @@ public class TwitterUser {
         }
         if (mPrefsFileName.length() > 0) {
             // Old preferences file may be deleted, if it exists...
-            isDeleted = SharedPreferencesUtil.delete(AndTweetPreferences.getContext(), mPrefsFileName);
+            isDeleted = SharedPreferencesUtil.delete(MyPreferences.getContext(), mPrefsFileName);
         }
 
         return isDeleted;
@@ -522,10 +523,10 @@ public class TwitterUser {
             // So the Connection object may be reinitialized
             mConnection = null;
             mOAuth = oauth;
-            getSharedPreferences().edit().putBoolean(PreferencesActivity.KEY_OAUTH, oauth).commit();
+            getSharedPreferences().edit().putBoolean(MyPreferences.KEY_OAUTH, oauth).commit();
             // Propagate the changes to the global properties
-            AndTweetPreferences.getDefaultSharedPreferences().edit().putBoolean(
-                    PreferencesActivity.KEY_OAUTH, mOAuth).commit();
+            MyPreferences.getDefaultSharedPreferences().edit().putBoolean(
+                    MyPreferences.KEY_OAUTH, mOAuth).commit();
         }
     }
 
@@ -539,8 +540,8 @@ public class TwitterUser {
             setCredentialsVerified(CredentialsVerified.NEVER);
             getConnection().setPassword(getSharedPreferences(), password);
             // Propagate the changes to the global properties
-            AndTweetPreferences.getDefaultSharedPreferences().edit().putString(
-                    PreferencesActivity.KEY_TWITTER_PASSWORD, getConnection().getPassword())
+            MyPreferences.getDefaultSharedPreferences().edit().putString(
+                    MyPreferences.KEY_TWITTER_PASSWORD, getConnection().getPassword())
                     .commit();
         }
     }
@@ -613,12 +614,12 @@ public class TwitterUser {
                 }
 
                 if (credentialsOfOtherUser) {
-                    Log.e(TAG, AndTweetPreferences.getContext().getText(R.string.error_credentials_of_other_user) + ": "
+                    Log.e(TAG, MyPreferences.getContext().getText(R.string.error_credentials_of_other_user) + ": "
                             + newName);
                     throw (new ConnectionCredentialsOfOtherUserException());
                 }
                 if (errorSettingUsername) {
-                    String msg = AndTweetPreferences.getContext().getText(R.string.error_set_username) + newName;
+                    String msg = MyPreferences.getContext().getText(R.string.error_set_username) + newName;
                     Log.e(TAG, msg);
                     throw (new ConnectionAuthenticationException(msg));
                 }
@@ -633,20 +634,20 @@ public class TwitterUser {
      */
     public synchronized void setCurrentUser() {
         // Update global SharedPreferences
-        SharedPreferences sp = AndTweetPreferences.getDefaultSharedPreferences();
-        String usernameOld = sp.getString(PreferencesActivity.KEY_TWITTER_USERNAME, "");
+        SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
+        String usernameOld = sp.getString(MyPreferences.KEY_TWITTER_USERNAME, "");
         String usernameNew = getUsername();
         SharedPreferences.Editor ed = sp.edit();
         if (usernameNew.compareTo(usernameOld) != 0) {
-            AndTweetService.v(TAG, "Changing current user from '" + usernameOld + "' " 
+            MyLog.v(TAG, "Changing current user from '" + usernameOld + "' " 
                     + "to '" + usernameNew + "'");
             // This preference is being set by PreferenceActivity etc.
             //ed.putString(PreferencesActivity.KEY_TWITTER_USERNAME_NEW, getUsername());
             // This preference is being set by this code only
-            ed.putString(PreferencesActivity.KEY_TWITTER_USERNAME, getUsername());
+            ed.putString(MyPreferences.KEY_TWITTER_USERNAME, getUsername());
         }
-        ed.putString(PreferencesActivity.KEY_TWITTER_PASSWORD, getConnection().getPassword());
-        ed.putBoolean(PreferencesActivity.KEY_OAUTH, isOAuth());
+        ed.putString(MyPreferences.KEY_TWITTER_PASSWORD, getConnection().getPassword());
+        ed.putBoolean(MyPreferences.KEY_OAUTH, isOAuth());
         getCredentialsVerified().put(ed);
         if (getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
             // Don't turn off Automatic updates

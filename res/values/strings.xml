@@ -63,6 +63,7 @@
 	<string name="dialog_title_preference_frequency">Update Frequency</string>
 	<string name="dialog_title_preference_history_size">History Size</string>
 	<string name="dialog_title_preference_history_time">History Time</string>
+    <string name="dialog_title_preference_min_log_level">Minimum logging level</string>
 	<string name="dialog_title_preference_password">Password</string>
 	<string name="dialog_title_preference_theme">Select a Theme</string>
 	<string name="dialog_title_preference_username">Username</string>
@@ -139,6 +140,7 @@
 	<string name="summary_preference_history_time">Remember tweet history up to {0}.</string>
 	<string name="summary_preference_light_theme_off">The standard theme will be used.</string>
 	<string name="summary_preference_light_theme_on">The light theme will be used.</string>
+    <string name="summary_preference_min_log_level">The level is {0}.</string>
 	<string name="summary_preference_no_ringtone">Silent</string>
 	<string name="summary_preference_notifications">Change notification options</string>
 	<string name="summary_preference_notifications_enabled">Should notifications be enabled?</string>
@@ -179,6 +181,7 @@
 	<string name="title_preference_history_size">History Size</string>
 	<string name="title_preference_history_time">History Time</string>
 	<string name="title_preference_light_theme">Light Theme</string>
+    <string name="title_preference_min_log_level">Minimum logging level</string>
 	<string name="title_preference_notification_sound">Notification Ringtone</string>
 	<string name="title_preference_notifications">Notifications</string>
 	<string name="title_preference_notifications_enabled">Enable Notifications</string>

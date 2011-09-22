@@ -20,9 +20,9 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import static android.content.Context.MODE_PRIVATE;
 
-import com.xorcode.andtweet.AndTweetService;
 import com.xorcode.andtweet.R;
-import com.xorcode.andtweet.data.AndTweetPreferences;
+import com.xorcode.andtweet.data.MyPreferences;
+import com.xorcode.andtweet.util.MyLog;
 import com.xorcode.andtweet.util.SharedPreferencesUtil;
 
 /**
@@ -93,7 +93,7 @@ public class AndTweetAppWidgetData {
 		mContext = context;
 		mappWidgetId = appWidgetId;
 		prefsFileName = PREFS_FILE_NAME + mappWidgetId;
-		AndTweetPreferences.initialize(context, this);
+		MyPreferences.initialize(context, this);
 	}
 
 	/**
@@ -121,7 +121,7 @@ public class AndTweetAppWidgetData {
 	
 	public boolean load() {
 		boolean Ok = false;
-		SharedPreferences prefs = AndTweetPreferences.getSharedPreferences(prefsFileName,
+		SharedPreferences prefs = MyPreferences.getSharedPreferences(prefsFileName,
 				MODE_PRIVATE);
 		if (prefs == null) {
 			Log.e(TAG, "The prefs file '" + prefsFileName + "' was not loaded");
@@ -145,7 +145,7 @@ public class AndTweetAppWidgetData {
 	            dateCleared = prefs.getLong(PREF_DATECLEARED_KEY, 0);
 			}
 
-	        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+	        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
 	            Log.v(TAG, "Prefs for appWidgetId=" + mappWidgetId
 	                    + " were loaded");
 	        }
@@ -160,7 +160,7 @@ public class AndTweetAppWidgetData {
 		if (!isLoaded) {
 			Log.e(TAG, "Save without load is not possible");
 		} else {
-			SharedPreferences.Editor prefs = AndTweetPreferences.getSharedPreferences(
+			SharedPreferences.Editor prefs = MyPreferences.getSharedPreferences(
 					prefsFileName, MODE_PRIVATE).edit();
 			if (prefs == null) {
 				Log.e(TAG, "Prefs Editor was not loaded");
@@ -173,7 +173,7 @@ public class AndTweetAppWidgetData {
                 prefs.putLong(PREF_DATECHECKED_KEY, dateChecked);
 				prefs.putLong(PREF_DATECLEARED_KEY, dateCleared);
 				prefs.commit();
-	            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+	            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
     				Log.v(TAG, "Prefs for appWidgetId=" + mappWidgetId
     				        + " were saved, nothing='" + nothingPref + "'");
 	            }

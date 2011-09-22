@@ -24,7 +24,7 @@ import org.json.JSONObject;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import com.xorcode.andtweet.PreferencesActivity;
+import com.xorcode.andtweet.data.MyPreferences;
 import com.xorcode.andtweet.net.Connection;
 
 /**
@@ -94,8 +94,8 @@ public abstract class Connection {
     }
     
     protected Connection(SharedPreferences sp) {
-        mUsername = sp.getString(PreferencesActivity.KEY_TWITTER_USERNAME, "");
-        mPassword = sp.getString(PreferencesActivity.KEY_TWITTER_PASSWORD, "");
+        mUsername = sp.getString(MyPreferences.KEY_TWITTER_USERNAME, "");
+        mPassword = sp.getString(MyPreferences.KEY_TWITTER_PASSWORD, "");
     }
 
     public String getUsername() {
@@ -157,7 +157,7 @@ public abstract class Connection {
         }
         if (password.compareTo(mPassword) != 0) {
             mPassword = password;
-            sp.edit().putString(PreferencesActivity.KEY_TWITTER_PASSWORD, mPassword).commit();
+            sp.edit().putString(MyPreferences.KEY_TWITTER_PASSWORD, mPassword).commit();
         }
     }
     public String getPassword() {

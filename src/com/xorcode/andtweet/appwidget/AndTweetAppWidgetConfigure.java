@@ -24,9 +24,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
-// class is in a sub-package.
-import com.xorcode.andtweet.AndTweetService;
 import com.xorcode.andtweet.R;
+import com.xorcode.andtweet.util.MyLog;
 
 /**
  * The configuration screen for the AndTweetAppWidgetProvider widget.
@@ -66,7 +65,7 @@ public class AndTweetAppWidgetConfigure extends Activity {
 			mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
 					AppWidgetManager.INVALID_APPWIDGET_ID);
 		}
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "mAppWidgetId=" + mAppWidgetId);
         }
 

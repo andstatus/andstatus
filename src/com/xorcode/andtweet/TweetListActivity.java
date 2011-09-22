@@ -53,11 +53,12 @@ import com.xorcode.andtweet.AndTweetService.CommandData;
 import com.xorcode.andtweet.AndTweetService.CommandEnum;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import com.xorcode.andtweet.data.AndTweetDatabase;
-import com.xorcode.andtweet.data.AndTweetPreferences;
+import com.xorcode.andtweet.data.MyPreferences;
 import com.xorcode.andtweet.data.PagedCursorAdapter;
 import com.xorcode.andtweet.data.TimelineSearchSuggestionProvider;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
+import com.xorcode.andtweet.util.MyLog;
 import com.xorcode.andtweet.util.SelectionAndArgs;
 
 /**
@@ -127,7 +128,7 @@ public class TweetListActivity extends TimelineActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onCreate");
         }
 
@@ -191,7 +192,7 @@ public class TweetListActivity extends TimelineActivity {
         String queryString = queryIntent.getStringExtra(SearchManager.QUERY);
         Intent intent = getIntent();
 
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "doSearchQuery; queryString=\"" + queryString + "\"; TimelineType="
                     + mTimelineType);
         }
@@ -305,7 +306,7 @@ public class TweetListActivity extends TimelineActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onStart");
         }
         Intent intent = getIntent();
@@ -321,7 +322,7 @@ public class TweetListActivity extends TimelineActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onResume");
         }
         
@@ -393,7 +394,7 @@ public class TweetListActivity extends TimelineActivity {
             } else {
                 menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, m++, R.string.menu_item_favorite);
             }
-            if (AndTweetPreferences.getDefaultSharedPreferences().getString(PreferencesActivity.KEY_TWITTER_USERNAME, null).equals(
+            if (MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_TWITTER_USERNAME, null).equals(
                     c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)))) {
                 menu.add(0, CONTEXT_MENU_ITEM_DESTROY_STATUS, m++,
                         R.string.menu_item_destroy_status);
@@ -610,7 +611,7 @@ public class TweetListActivity extends TimelineActivity {
      */
     private void createAdapters() {
         int listItemId = R.layout.tweetlist_item;
-        if (AndTweetPreferences.getDefaultSharedPreferences().getBoolean("appearance_use_avatars", false)) {
+        if (MyPreferences.getDefaultSharedPreferences().getBoolean("appearance_use_avatars", false)) {
             listItemId = R.layout.tweetlist_item_avatar;
         }
         PagedCursorAdapter tweetsAdapter = new PagedCursorAdapter(TweetListActivity.this,
@@ -635,7 +636,7 @@ public class TweetListActivity extends TimelineActivity {
      */
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onItemClick, id=" + id);
         }
         if (id <= 0) {
@@ -644,12 +645,12 @@ public class TweetListActivity extends TimelineActivity {
         Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, id);
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+            if (MyLog.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "onItemClick, setData=" + uri);
             }
             setResult(RESULT_OK, new Intent().setData(uri));
         } else {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+            if (MyLog.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "onItemClick, startActivity=" + uri);
             }
             startActivity(new Intent(Intent.ACTION_VIEW, uri));
@@ -838,7 +839,7 @@ public class TweetListActivity extends TimelineActivity {
                             try {
                                 dismissDialog(DIALOG_EXECUTING_COMMAND);
                             } catch (IllegalArgumentException e) {
-                                AndTweetService.d(TAG, "", e);
+                                MyLog.d(TAG, "", e);
                             }
                             break;
                     }
@@ -859,7 +860,7 @@ public class TweetListActivity extends TimelineActivity {
      */
     protected Runnable mLoadListItems = new Runnable() {
         public void run() {
-            if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "mLoadListItems run");
             }
             queryListData(TweetListActivity.this.getIntent(), true, true);

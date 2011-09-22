@@ -16,7 +16,7 @@
 
 package com.xorcode.andtweet.net;
 
-import com.xorcode.andtweet.AndTweetService;
+import com.xorcode.andtweet.util.MyLog;
 
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
@@ -252,7 +252,7 @@ public class ConnectionOAuth extends Connection {
             e.printStackTrace();
             throw new ConnectionException(e.getLocalizedMessage());
         }
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
+        if (MyLog.isLoggable(TAG, Log.DEBUG)) {
             Log.d(TAG, "getTimeline '" + url + "' "
                     + (ok ? "OK, " + jArr.length() + " statuses" : "FAILED"));
         }

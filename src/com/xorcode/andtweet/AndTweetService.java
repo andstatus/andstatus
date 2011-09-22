@@ -54,12 +54,13 @@ import android.util.Log;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import com.xorcode.andtweet.appwidget.AndTweetAppWidgetProvider;
 import com.xorcode.andtweet.data.AndTweetDatabase;
-import com.xorcode.andtweet.data.AndTweetPreferences;
+import com.xorcode.andtweet.data.MyPreferences;
 import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.util.ForegroundCheckTask;
 import com.xorcode.andtweet.util.I18n;
+import com.xorcode.andtweet.util.MyLog;
 
 /**
  * This is an application service that serves as a connection between Android
@@ -526,7 +527,7 @@ public class AndTweetService extends Service {
      *         may synchronize on the object
      */
     private SharedPreferences getSp() {
-        return AndTweetPreferences.getDefaultSharedPreferences();
+        return MyPreferences.getDefaultSharedPreferences();
     }
 
     /**
@@ -535,15 +536,15 @@ public class AndTweetService extends Service {
      * @return Single instance of SharedPreferences, specific to the class
      */
     private SharedPreferences getServiceSp() {
-        return AndTweetPreferences.getSharedPreferences(TAG, MODE_PRIVATE);
+        return MyPreferences.getSharedPreferences(TAG, MODE_PRIVATE);
     }
     
     @Override
     public void onCreate() {
-        AndTweetPreferences.initialize(this, this);
-        preferencesChangeTime = AndTweetPreferences.getDefaultSharedPreferences().getLong(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, 0);
-        preferencesExamineTime = getServiceSp().getLong(PreferencesActivity.KEY_PREFERENCES_EXAMINE_TIME, 0);
-        d(TAG, "Service created, preferencesChangeTime=" + preferencesChangeTime + ", examined=" + preferencesExamineTime);
+        MyPreferences.initialize(this, this);
+        preferencesChangeTime = MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0);
+        preferencesExamineTime = getServiceSp().getLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, 0);
+        MyLog.d(TAG, "Service created, preferencesChangeTime=" + preferencesChangeTime + ", examined=" + preferencesExamineTime);
 
         registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
     }
@@ -552,7 +553,7 @@ public class AndTweetService extends Service {
 
         @Override
         public void onReceive(Context arg0, Intent intent) {
-            v(TAG, "onReceive " + intent.toString());
+            MyLog.v(TAG, "onReceive " + intent.toString());
             receiveCommand(intent);
         }
 
@@ -570,9 +571,8 @@ public class AndTweetService extends Service {
         // Clear notifications if any
         int count = notifyOfQueue(true);
         
-        AndTweetPreferences.forget();
-
-        d(TAG, "Service destroyed" + (count>0 ? ", " + count + " msg in the Queue" : ""));
+        MyLog.d(TAG, "Service destroyed" + (count>0 ? ", " + count + " msg in the Queue" : ""));
+        MyPreferences.forget();
     }
 
     @Override
@@ -589,7 +589,7 @@ public class AndTweetService extends Service {
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
-        d(TAG, "onStart(): startid: " + startId);
+        MyLog.d(TAG, "onStart(): startid: " + startId);
         receiveCommand(intent);
     }
 
@@ -602,8 +602,8 @@ public class AndTweetService extends Service {
      */
     private synchronized void receiveCommand(Intent intent) {
         
-        long preferencesChangeTimeNew = AndTweetPreferences.getDefaultSharedPreferences().getLong(
-                PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, 0);
+        long preferencesChangeTimeNew = MyPreferences.getDefaultSharedPreferences().getLong(
+                MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0);
         if (preferencesChangeTime != preferencesChangeTimeNew
                 || preferencesExamineTime < preferencesChangeTimeNew) {
             examinePreferences();
@@ -631,9 +631,9 @@ public class AndTweetService extends Service {
             } else if (processCommandImmediately(commandData)) {
                 // Don't add to the queue
             } else if (mCommands.contains(commandData)) {
-                d(TAG, "Duplicated " + commandData);
+                MyLog.d(TAG, "Duplicated " + commandData);
             } else {
-                d(TAG, "Adding to the queue " + commandData);
+                MyLog.d(TAG, "Adding to the queue " + commandData);
                 if (!mCommands.offer(commandData)) {
                     Log.e(TAG, "mCommands is full?");
                 }
@@ -693,7 +693,7 @@ public class AndTweetService extends Service {
                     String key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     boolean boolValue = commandData.bundle.getBoolean(EXTRA_PREFERENCE_VALUE);
                     String username = commandData.bundle.getString(EXTRA_USERNAME);
-                    v(TAG, "Put boolean Preference '" + key + "'=" + boolValue
+                    MyLog.v(TAG, "Put boolean Preference '" + key + "'=" + boolValue
                             + ((username != null) ? " user='" + username + "'" : " global"));
                     SharedPreferences sp = null;
                     if (username != null) {
@@ -713,7 +713,7 @@ public class AndTweetService extends Service {
                     key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     long longValue = commandData.bundle.getLong(EXTRA_PREFERENCE_VALUE);
                     username = commandData.bundle.getString(EXTRA_USERNAME);
-                    v(TAG, "Put long Preference '" + key + "'=" + longValue
+                    MyLog.v(TAG, "Put long Preference '" + key + "'=" + longValue
                             + ((username != null) ? " user='" + username + "'" : " global"));
                     if (username != null) {
                         sp = TwitterUser.getTwitterUser(username).getSharedPreferences();
@@ -732,7 +732,7 @@ public class AndTweetService extends Service {
                     key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     String stringValue = commandData.bundle.getString(EXTRA_PREFERENCE_VALUE);
                     username = commandData.bundle.getString(EXTRA_USERNAME);
-                    v(TAG, "Put String Preference '" + key + "'=" + stringValue
+                    MyLog.v(TAG, "Put String Preference '" + key + "'=" + stringValue
                             + ((username != null) ? " user='" + username + "'" : " global"));
                     if (username != null) {
                         sp = TwitterUser.getTwitterUser(username).getSharedPreferences();
@@ -748,7 +748,7 @@ public class AndTweetService extends Service {
                     break;
             }
             if (processed) {
-                d(TAG, (skipped ? "Skipped" : (ok ? "Succeeded" : "Failed")) + " " + commandData);
+                MyLog.d(TAG, (skipped ? "Skipped" : (ok ? "Succeeded" : "Failed")) + " " + commandData);
             }
         }
         return processed;
@@ -763,30 +763,30 @@ public class AndTweetService extends Service {
         boolean ok = true;
         
         // Check when preferences were changed
-        long preferencesChangeTimeNew = AndTweetPreferences.getDefaultSharedPreferences().getLong(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, 0);
+        long preferencesChangeTimeNew = MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0);
         long preferencesExamineTimeNew = java.lang.System.currentTimeMillis();
         
         if (preferencesChangeTimeNew > preferencesExamineTime) {
-            d(TAG, "Examine at=" + preferencesExamineTimeNew + " Preferences changed at=" + preferencesChangeTimeNew);
+            MyLog.d(TAG, "Examine at=" + preferencesExamineTimeNew + " Preferences changed at=" + preferencesChangeTimeNew);
         } else if (preferencesChangeTimeNew > preferencesChangeTime) {
-            d(TAG, "Preferences changed at=" + preferencesChangeTimeNew);
+            MyLog.d(TAG, "Preferences changed at=" + preferencesChangeTimeNew);
         } else if (preferencesChangeTimeNew == preferencesChangeTime) {
-            d(TAG, "Preferences didn't change, still at=" + preferencesChangeTimeNew);
+            MyLog.d(TAG, "Preferences didn't change, still at=" + preferencesChangeTimeNew);
         } else {
             Log.e(TAG, "Preferences change time error, time=" + preferencesChangeTimeNew);
         }
         preferencesChangeTime = preferencesChangeTimeNew;
         preferencesExamineTime = preferencesExamineTimeNew;
-        getServiceSp().edit().putLong(PreferencesActivity.KEY_PREFERENCES_EXAMINE_TIME, preferencesExamineTime).commit();
+        getServiceSp().edit().putLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, preferencesExamineTime).commit();
 
         // Forget and reload preferences...
-        AndTweetPreferences.forget();
-        AndTweetPreferences.initialize(this, this);
+        MyPreferences.forget();
+        MyPreferences.initialize(this, this);
 
         // Stop existing alarm in any case
         ok = cancelRepeatingAlarm();
 
-        SharedPreferences sp = AndTweetPreferences.getDefaultSharedPreferences();
+        SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
         if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
             /**
              * Schedule Automatic updates according to the preferences.
@@ -822,13 +822,13 @@ public class AndTweetService extends Service {
                             executor = new CommandExecutor();
                         }
                         if (logMsg != null) {
-                            d(TAG, logMsg);
+                            MyLog.d(TAG, logMsg);
                         }
                         mExecutors.add(executor);
                         if (mExecutors.size() == 1) {
                             mWakeLock = getWakeLock();
                             mBroadcastListenerCount = mCallbacks.beginBroadcast();
-                            d(TAG, "No other threads running so starting new broadcast for "
+                            MyLog.d(TAG, "No other threads running so starting new broadcast for "
                                     + mBroadcastListenerCount + " listeners");
                         }
                         executor.execute();
@@ -840,16 +840,16 @@ public class AndTweetService extends Service {
         } else {
             // Stop
             if (logMsg != null) {
-                d(TAG, logMsg);
+                MyLog.d(TAG, logMsg);
             }
             mExecutors.remove(executorIn);
             if (mExecutors.size() == 0) {
-                d(TAG, "Ending last thread so also ending broadcast.");
+                MyLog.d(TAG, "Ending last thread so also ending broadcast.");
                 mWakeLock.release();
                 mCallbacks.finishBroadcast();
                 if (notifyOfQueue(false) == 0) {
-                    if (! ForegroundCheckTask.isAppOnForeground(AndTweetPreferences.getContext())) {
-                        d(TAG, "App is on Background so stop this Service");
+                    if (! ForegroundCheckTask.isAppOnForeground(MyPreferences.getContext())) {
+                        MyLog.d(TAG, "App is on Background so stop this Service");
                         stopSelf();
                     }
                 }
@@ -870,10 +870,10 @@ public class AndTweetService extends Service {
             nM.cancel(CommandEnum.NOTIFY_QUEUE.ordinal());
         } else if (mNotificationsEnabled) {
             if (mRetryQueue.size() > 0) {
-                d(TAG, mRetryQueue.size() + " commands in Retry Queue.");
+                MyLog.d(TAG, mRetryQueue.size() + " commands in Retry Queue.");
             }
             if (mCommands.size() > 0) {
-                d(TAG, mCommands.size() + " commands in Main Queue.");
+                MyLog.d(TAG, mCommands.size() + " commands in Main Queue.");
             }
 
             // Set up the notification to display to the user
@@ -932,7 +932,7 @@ public class AndTweetService extends Service {
 
             int what = 0;
             String message = "";
-            d(TAG, "CommandExecutor, " + mCommands.size() + " commands to process");
+            MyLog.d(TAG, "CommandExecutor, " + mCommands.size() + " commands to process");
 
             do {
                 boolean ok = false;
@@ -946,19 +946,19 @@ public class AndTweetService extends Service {
 
                 commandData.retriesLeft -= 1;
                 boolean retry = false;
-                d(TAG, "Executing " + commandData);
+                MyLog.d(TAG, "Executing " + commandData);
 
                 switch (commandData.command) {
                     case AUTOMATIC_UPDATE:
-                        d(TAG, "Getting tweets, replies and messages");
+                        MyLog.d(TAG, "Getting tweets, replies and messages");
                         ok = loadTimeline(true, true);
                         break;
                     case FETCH_TIMELINE:
-                        d(TAG, "Getting tweets and replies");
+                        MyLog.d(TAG, "Getting tweets and replies");
                         ok = loadTimeline(true, false);
                         break;
                     case FETCH_MESSAGES:
-                        d(TAG, "Getting messages");
+                        MyLog.d(TAG, "Getting messages");
                         ok = loadTimeline(false, true);
                         break;
                     case CREATE_FAVORITE:
@@ -986,7 +986,7 @@ public class AndTweetService extends Service {
                     default:
                         Log.e(TAG, "Unexpected command here " + commandData);
                 }
-                d(TAG, (ok ? "Succeeded" : "Failed") + " " + commandData);
+                MyLog.d(TAG, (ok ? "Succeeded" : "Failed") + " " + commandData);
                 if (retry) {
                     if (commandData.retriesLeft < 0) {
                         // This means that retriesLeft was not set yet,
@@ -1100,7 +1100,7 @@ public class AndTweetService extends Service {
 
             // TODO: Maybe we need to notify the caller about the result?!
 
-            d(TAG, (create ? "Creating" : "Destroying") + " favorite "
+            MyLog.d(TAG, (create ? "Creating" : "Destroying") + " favorite "
                     + (ok ? "succeded" : "failed") + ", id=" + statusId);
             return ok;
         }
@@ -1133,7 +1133,7 @@ public class AndTweetService extends Service {
 
             // TODO: Maybe we need to notify the caller about the result?!
 
-            d(TAG, "Destroying status " + (ok ? "succeded" : "failed") + ", id=" + statusId);
+            MyLog.d(TAG, "Destroying status " + (ok ? "succeded" : "failed") + ", id=" + statusId);
             return ok;
         }
 
@@ -1233,7 +1233,7 @@ public class AndTweetService extends Service {
                 }
                 message += aNewMessages + " messages";
             }
-            AndTweetService.d(TAG, message);
+            MyLog.d(TAG, message);
 
             return ok;
         }
@@ -1246,7 +1246,7 @@ public class AndTweetService extends Service {
 
             for (int i = 0; i < N; i++) {
                 try {
-                    d(TAG, "finishUpdateTimeline, Notifying callback no. " + i);
+                    MyLog.d(TAG, "finishUpdateTimeline, Notifying callback no. " + i);
                     IAndTweetServiceCallback cb = mCallbacks.getBroadcastItem(i);
                     if (cb != null) {
                         if (tweetsChanged > 0) {
@@ -1285,7 +1285,7 @@ public class AndTweetService extends Service {
          * @param numTweets
          */
         private void notifyOfNewTweets(int numTweets, CommandEnum msgType) {
-            d(TAG, "notifyOfNewTweets n=" + numTweets + "; msgType=" + msgType);
+            MyLog.d(TAG, "notifyOfNewTweets n=" + numTweets + "; msgType=" + msgType);
 
             if (updateWidgetsOnEveryUpdate) {
                 // Notify widgets even about the fact, that update occurred
@@ -1307,7 +1307,7 @@ public class AndTweetService extends Service {
                 notificationsMessages = sp.getBoolean("notifications_messages", false);
                 notificationsReplies = sp.getBoolean("notifications_mentions", false);
                 notificationsTimeline = sp.getBoolean("notifications_timeline", false);
-                ringtone = sp.getString(PreferencesActivity.KEY_RINGTONE_PREFERENCE, null);
+                ringtone = sp.getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
             }
             sp = null;
 
@@ -1452,7 +1452,7 @@ public class AndTweetService extends Service {
                                     result.getInt("hourly_limit"));
                         }
                     } catch (RemoteException e) {
-                        d(TAG, e.toString());
+                        MyLog.d(TAG, e.toString());
                     } catch (JSONException e) {
                         Log.e(TAG, e.toString());
                     }
@@ -1488,7 +1488,7 @@ public class AndTweetService extends Service {
         final int frequencyMs = getFetchFrequencyS();
         final long firstTime = SystemClock.elapsedRealtime() + frequencyMs;
         am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, frequencyMs, pIntent);
-        d(TAG, "Started repeating alarm in a " + frequencyMs + "ms rhythm.");
+        MyLog.d(TAG, "Started repeating alarm in a " + frequencyMs + "ms rhythm.");
         return true;
     }
 
@@ -1499,7 +1499,7 @@ public class AndTweetService extends Service {
         final AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         final PendingIntent pIntent = getRepeatingIntent();
         am.cancel(pIntent);
-        d(TAG, "Cancelled repeating alarm.");
+        MyLog.d(TAG, "Cancelled repeating alarm.");
         return true;
     }
 
@@ -1543,41 +1543,8 @@ public class AndTweetService extends Service {
                 && cm.getActiveNetworkInfo().isConnected()) {
             return true;
         } else {
-            v(TAG, "Internet Connection Not Present");
+            MyLog.v(TAG, "Internet Connection Not Present");
             return false;
         }
-    }
-
-    /**
-     * Shortcut for debugging messages of the application
-     */
-    public static int d(String tag, String msg) {
-        int i = 0;
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
-            i = Log.d(tag, msg);
-        }
-        return i;
-    }
-
-    /**
-     * Shortcut for debugging messages of the application
-     */
-    public static int d(String tag, String msg, Throwable tr) {
-        int i = 0;
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.DEBUG)) {
-            i = Log.d(tag, msg, tr);
-        }
-        return i;
-    }
-
-    /**
-     * Shortcut for verbose messages of the application
-     */
-    public static int v(String tag, String msg) {
-        int i = 0;
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-            i = Log.v(tag, msg);
-        }
-        return i;
     }
 }

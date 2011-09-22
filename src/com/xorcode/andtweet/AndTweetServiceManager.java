@@ -17,6 +17,7 @@
 package com.xorcode.andtweet;
 
 import com.xorcode.andtweet.AndTweetService.CommandEnum;
+import com.xorcode.andtweet.util.MyLog;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -44,20 +45,20 @@ public class AndTweetServiceManager extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
-            AndTweetService.d(TAG, "Starting service on boot.");
+            MyLog.d(TAG, "Starting service on boot.");
             // Assume preferences were changed
             startAndTweetService(context, new AndTweetService.CommandData(
                     CommandEnum.PREFERENCES_CHANGED));
         } else if (intent.getAction().equals(AndTweetService.ACTION_ALARM)) {
             if (ignoreAlarms) {
-                AndTweetService.d(TAG, "Repeating Alarm: Ignore");
+                MyLog.d(TAG, "Repeating Alarm: Ignore");
             } else {
-                AndTweetService.d(TAG, "Repeating Alarm: Automatic update");
+                MyLog.d(TAG, "Repeating Alarm: Automatic update");
                 startAndTweetService(context, new AndTweetService.CommandData(
                         CommandEnum.AUTOMATIC_UPDATE));
             }
         } else if (intent.getAction().equals(AndTweetService.ACTION_SERVICE_STOPPED)) {
-            AndTweetService.d(TAG, "Notification received: Service stopped");
+            MyLog.d(TAG, "Notification received: Service stopped");
             isStarted = false;
         } else {
             Log.e(TAG, "Received unexpected intent: " + intent.toString());

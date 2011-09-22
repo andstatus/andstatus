@@ -63,6 +63,7 @@
 	<string name="dialog_title_preference_frequency">Частота обновления</string>
 	<string name="dialog_title_preference_history_size">Количество твитов в истории</string>
 	<string name="dialog_title_preference_history_time">Время хранения истории</string>
+    <string name="dialog_title_preference_min_log_level">Минимальный уровень журналирования</string>
 	<string name="dialog_title_preference_password">Пароль</string>
 	<string name="dialog_title_preference_theme">Выберите тему</string>
 	<string name="dialog_title_preference_username">Имя пользователя</string>
@@ -139,6 +140,7 @@
 	<string name="summary_preference_history_time">Хранить истории за {0}.</string>
 	<string name="summary_preference_light_theme_off">Будет использована стандартная тема.</string>
 	<string name="summary_preference_light_theme_on">Будет использована светлая тема.</string>
+    <string name="summary_preference_min_log_level">Уровень равен {0}.</string>
 	<string name="summary_preference_no_ringtone">Тишина</string>
 	<string name="summary_preference_notifications">Изменить параметры уведомлений</string>
 	<string name="summary_preference_notifications_enabled">Включить уведомления?</string>
@@ -179,6 +181,7 @@
 	<string name="title_preference_history_size">Размер истории</string>
 	<string name="title_preference_history_time">Длительность хранения истории</string>
 	<string name="title_preference_light_theme">Светлая тема</string>
+    <string name="title_preference_min_log_level">Минимальный уровень журналирования</string>
 	<string name="title_preference_notification_sound">Мелодия звонка для уведомлений</string>
 	<string name="title_preference_notifications">Уведомления</string>
 	<string name="title_preference_notifications_enabled">Разрешить уведомления</string>

@@ -33,12 +33,11 @@ import android.net.Uri;
 import android.text.Html;
 import android.util.Log;
 
-import com.xorcode.andtweet.AndTweetService;
-import com.xorcode.andtweet.PreferencesActivity;
 import com.xorcode.andtweet.TwitterUser;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.net.ConnectionException;
+import com.xorcode.andtweet.util.MyLog;
 import com.xorcode.andtweet.util.SelectionAndArgs;
 
 /**
@@ -250,9 +249,9 @@ public class FriendTimeline {
         int nDeleted = 0;
         int nDeletedTime = 0;
         // We're using global preferences here
-        SharedPreferences sp = AndTweetPreferences
+        SharedPreferences sp = MyPreferences
                 .getDefaultSharedPreferences();
-        int maxDays = Integer.parseInt(sp.getString(PreferencesActivity.KEY_HISTORY_TIME, "3"));
+        int maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
         long sinceTimestamp = 0;
         if (maxDays > 0) {
             sinceTimestamp = System.currentTimeMillis() - maxDays * (1000L * 60 * 60 * 24);
@@ -274,7 +273,7 @@ public class FriendTimeline {
         int nTweets = 0;
         int nToDeleteSize = 0;
         int nDeletedSize = 0;
-        int maxSize = Integer.parseInt(sp.getString(PreferencesActivity.KEY_HISTORY_SIZE, "2000"));
+        int maxSize = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_SIZE, "2000"));
         long sinceTimestampSize = 0;
         if (maxSize > 0) {
             try {
@@ -317,7 +316,7 @@ public class FriendTimeline {
             }
         }
         nDeleted = nDeletedTime + nDeletedSize;
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG,
                     "pruneOldRecords; History time=" + maxDays + " days; deleted " + nDeletedTime
                             + " , since " + sinceTimestamp + ", now=" + System.currentTimeMillis());

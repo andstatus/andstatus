@@ -37,11 +37,12 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.xorcode.andtweet.data.AndTweetDatabase;
-import com.xorcode.andtweet.data.AndTweetPreferences;
+import com.xorcode.andtweet.data.MyPreferences;
 import com.xorcode.andtweet.data.PagedCursorAdapter;
 import com.xorcode.andtweet.data.SearchableCursorAdapter;
 import com.xorcode.andtweet.data.TweetBinder;
 import com.xorcode.andtweet.data.AndTweetDatabase.Users;
+import com.xorcode.andtweet.util.MyLog;
 
 /**
  * @author torgny.bjers
@@ -91,9 +92,7 @@ public class MessageListActivity extends TimelineActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        if (Log.isLoggable(AndTweetService.APPTAG, Log.VERBOSE)) {
-            Log.v(TAG, "onCreate");
-        }
+        MyLog.v(TAG, "onCreate");
 
 		if (savedInstanceState != null) {
 			if (savedInstanceState.containsKey(BUNDLE_KEY_IS_LOADING)) {
@@ -225,7 +224,7 @@ public class MessageListActivity extends TimelineActivity {
 
 	private void createAdapters() {
 		int listItemId = R.layout.messagelist_item;
-		if (AndTweetPreferences.getDefaultSharedPreferences().getBoolean("appearance_use_avatars", false)) {
+		if (MyPreferences.getDefaultSharedPreferences().getBoolean("appearance_use_avatars", false)) {
 			listItemId = R.layout.messagelist_item_avatar;
 		}
 		PagedCursorAdapter directMessagesAdapter = new PagedCursorAdapter(
