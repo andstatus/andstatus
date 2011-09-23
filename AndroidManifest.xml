@@ -42,6 +42,9 @@
 				<action android:name="android.intent.action.BOOT_COMPLETED" />
 			</intent-filter>
             <intent-filter>
+                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
+            </intent-filter>
+            <intent-filter>
                 <action android:name="com.xorcode.andtweet.action.ALARM" />
                 <action android:name="com.xorcode.andtweet.action.SERVICE_STOPPED" />
             </intent-filter>

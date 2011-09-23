@@ -44,11 +44,16 @@ public class AndTweetServiceManager extends BroadcastReceiver {
     
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
+        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
             MyLog.d(TAG, "Starting service on boot.");
             // Assume preferences were changed
             startAndTweetService(context, new AndTweetService.CommandData(
                     CommandEnum.PREFERENCES_CHANGED));
+        } else if (intent.getAction().equals("android.intent.action.ACTION_SHUTDOWN")) {
+            // This system broadcast is Since: API Level 4
+            // We need this to persist unsaved data
+            MyLog.d(TAG, "Stopping service on Shutdown");
+            stopAndTweetService(context, true);
         } else if (intent.getAction().equals(AndTweetService.ACTION_ALARM)) {
             if (ignoreAlarms) {
                 MyLog.d(TAG, "Repeating Alarm: Ignore");

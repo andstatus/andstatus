@@ -61,6 +61,7 @@ import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.util.ForegroundCheckTask;
 import com.xorcode.andtweet.util.I18n;
 import com.xorcode.andtweet.util.MyLog;
+import com.xorcode.andtweet.util.SharedPreferencesUtil;
 
 /**
  * This is an application service that serves as a connection between Android
@@ -383,6 +384,29 @@ public class AndTweetService extends Service {
         }
 
         /**
+         * Restore the object from the SharedPreferences 
+         * @param sp
+         * @param index Index of the preference's name to be used
+         */
+        public CommandData(SharedPreferences sp, int index) {
+            bundle = new Bundle();
+            String si = Integer.toString(index);
+            // Decode command
+            String strCommand = sp.getString(EXTRA_MSGTYPE + si, CommandEnum.UNKNOWN.save());
+            itemId = sp.getLong(EXTRA_TWEETID + si, 0);
+            command = CommandEnum.load(strCommand);
+
+            switch (command) {
+                case UPDATE_STATUS:
+                    bundle.putString(EXTRA_STATUS, sp.getString(EXTRA_STATUS + si, ""));
+                    bundle.putLong(EXTRA_INREPLYTOID, sp.getLong(EXTRA_INREPLYTOID + si, 0));
+                    break;
+            }
+
+            MyLog.v(TAG, "Restored command " + (EXTRA_MSGTYPE + si) + " = " + strCommand);
+        }
+        
+        /**
          * It's used in equals() method We need to distinguish duplicated
          * commands
          */
@@ -466,6 +490,30 @@ public class AndTweetService extends Service {
             }
             return (this.hashCode() == ((CommandData) obj).hashCode());
         }
+
+        /**
+         * Persist the object to the SharedPreferences 
+         * We're not storing all types of commands here because not all commands
+         *   go to the queue
+         * @param sp
+         * @param index Index of the preference's name to be used
+         */
+        public void save(SharedPreferences sp, int index) {
+            String si = Integer.toString(index);
+
+            android.content.SharedPreferences.Editor ed = sp.edit();
+            ed.putString(EXTRA_MSGTYPE + si, command.save());
+            if (itemId != 0) {
+                ed.putLong(EXTRA_TWEETID + si, itemId);
+            }
+            switch (command) {
+                case UPDATE_STATUS:
+                    ed.putString(EXTRA_STATUS + si, bundle.getString(EXTRA_STATUS));
+                    ed.putLong(EXTRA_INREPLYTOID + si, bundle.getLong(EXTRA_INREPLYTOID));
+                    break;
+            }
+            ed.commit();
+        }
     }
 
     /**
@@ -484,6 +532,10 @@ public class AndTweetService extends Service {
     private boolean mNotificationsEnabled;
 
     private boolean mNotificationsVibrate;
+    /**
+     * Flag to control the Service state persistence
+     */
+    private boolean mStateRestored = false;
 
     /**
      * Commands queue to be processed by the Service
@@ -570,11 +622,86 @@ public class AndTweetService extends Service {
 
         // Clear notifications if any
         int count = notifyOfQueue(true);
+        saveState();
         
         MyLog.d(TAG, "Service destroyed" + (count>0 ? ", " + count + " msg in the Queue" : ""));
         MyPreferences.forget();
     }
+    
+    /**
+     * Persist everything that we'll need on next Service creation.
+     */
+    private void saveState() {
+        if (mStateRestored) {
+            int count = 0;
+            // TODO: Save Queues
+            count += saveQueue(mCommands, TAG + "_" + "mCommands");
+            count += saveQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
+            MyLog.d(TAG, "State saved" + (count>0 ? ", " + count + " msg in the Queues" : ""));
+        }
+        mStateRestored = false;
+    }
 
+    private int saveQueue(BlockingQueue<CommandData> q, String prefsFileName) {
+        Context context = MyPreferences.getContext();
+        int count = 0;
+        // Delete any existing saved queue
+        SharedPreferencesUtil.delete(context, prefsFileName);
+        if (q.size() > 0) {
+            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName, MODE_PRIVATE);
+            while (q.size() > 0) {
+                CommandData cd = q.poll();
+                cd.save(sp, count);
+                MyLog.v(TAG, "Command saved: " + cd.toString());
+                count += 1;
+            }
+            MyLog.d(TAG, "Queue saved to " + prefsFileName  + ", " + count + " msgs");
+        }
+        return count;
+    }
+    
+    /**
+     * Restore state if it was not restored yet
+     */
+    private void restoreState() {
+        if (!mStateRestored) {
+            int count = 0;
+            // TODO: Restore Queues
+            count += restoreQueue(mCommands, TAG + "_" + "mCommands");
+            count += restoreQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
+            MyLog.d(TAG, "State restored" + (count>0 ? ", " + count + " msg in the Queues" : ""));
+        }
+        mStateRestored = true;
+    }
+
+    private int restoreQueue(BlockingQueue<CommandData> q, String prefsFileName) {
+        Context context = MyPreferences.getContext();
+        int count = 0;
+        if (SharedPreferencesUtil.exists(context, prefsFileName)) {
+            boolean done = false;
+            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName, MODE_PRIVATE);
+            do {
+                CommandData cd = new CommandData(sp, count);
+                if (cd.command == CommandEnum.UNKNOWN) {
+                    done = true;
+                } else {
+                    try {
+                        q.put(cd);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    MyLog.v(TAG, "Command restored: " + cd.toString());
+                    count += 1;
+                }
+            } while (!done);
+            sp = null;
+            // Delete this saved queue
+            SharedPreferencesUtil.delete(context, prefsFileName);
+            MyLog.d(TAG, "Queue restored from " + prefsFileName  + ", " + count + " msgs");
+        }
+        return count;
+    }
+    
     @Override
     public IBinder onBind(Intent intent) {
         // Select the interface to return. If your service only implements
@@ -608,6 +735,8 @@ public class AndTweetService extends Service {
                 || preferencesExamineTime < preferencesChangeTimeNew) {
             examinePreferences();
         }
+        
+        restoreState();
         
         if (mCommands.isEmpty()) {
             // This is a good place to send commands from retry Queue

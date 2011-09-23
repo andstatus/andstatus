@@ -33,31 +33,26 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
  -->
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
-	<release android:versionName="1.1.5" android:versionCode="41"
-		versionDate="2011-08-05">
+	<release android:versionName="1.1.7" android:versionCode="43"
+		versionDate="2011-09-23">
     <changes>
         <change>
             Working offline or in bad connection conditions is
             implemented.
-            Now User
-            doesn't have to wait for the "Command execution
-            on a Server"
-            after
-            updating his status (i.e. sending a tweet) and may
-            continue
-            reading and
+            Now User doesn't have to wait for the "Command execution
+            on a Server" after updating his status (i.e. sending a tweet)
+            and may continue reading and
             writing tweets, making them Favorite etc.
-            while
-            AndTweet stores all the
+            while AndTweet stores all the
             commands in the queue and retries delivery
-            upon every automatic update
-            even and also
+            upon every automatic update and also
             during any manual command (Reload or Status update).
-            User
-            is being notified about number of messages
+            User is being notified about number of messages
             currently in the Output queue
             (If
-            Notifications are being enabled).</change>
+            Notifications are being enabled).
+            Queues of unsent commands persist in the phone's memory. 
+            Even after shutdown for Android v.1.6 and up.</change>
         <change>Changes in the application permissions.
             Two (location)
             permissions were removed, one permission was added
@@ -72,6 +67,8 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
         <change>Widget shows last time when data was successfully
             downloaded from the server, not when there was last attempt to do
             this (maybe it failed...)</change>
+        <change>New Preference "Minimum logging level" added to allow changing 
+            Logging level from within the application Preferences.</change>
         <change>Another pass of timeline code cleaning. Now AndTweet's
             timelines open
             faster thanks to less requests and redrawing.</change>
@@ -88,6 +85,13 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
             Android v.2.3.3</change>
     </changes>
 		<history>
+            <package android:versionName="1.1.7" android:versionCode="43"
+                versionDate="2011-09-23">
+                <change>New Preference "Minimum logging level" added to allow
+                  changing Logging level from within the application Preferences.</change>
+                <change>Queues of unsent commands persist in the phone's memory. 
+                  Even after shutdown for Android v.1.6 and up.</change>
+            </package>
             <package android:versionName="1.1.5" android:versionCode="41"
                 versionDate="2011-08-05">
                 <change>Fixed issue 12 "Themes do not apply until app is restarted"</change>

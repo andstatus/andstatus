@@ -97,7 +97,9 @@ public class MyLog {
                 val = MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_MIN_LOG_LEVEL,"(empty)");  
                 Log.e(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
             }
-            Log.i(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
+            if (Log.INFO >= minLogLevel) {
+                Log.i(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
+            }
         }
         if (level >= minLogLevel) {
             is = true;
