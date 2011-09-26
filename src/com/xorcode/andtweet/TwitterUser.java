@@ -616,7 +616,7 @@ public class TwitterUser {
                 if (credentialsOfOtherUser) {
                     Log.e(TAG, MyPreferences.getContext().getText(R.string.error_credentials_of_other_user) + ": "
                             + newName);
-                    throw (new ConnectionCredentialsOfOtherUserException());
+                    throw (new ConnectionCredentialsOfOtherUserException(newName));
                 }
                 if (errorSettingUsername) {
                     String msg = MyPreferences.getContext().getText(R.string.error_set_username) + newName;

@@ -45,6 +45,8 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
                    but doesn't change 'favorited' flag in the returned tweet.
                    Sometimes it fails, but doesn't indicate error...
                    (Maybe this is twitter.com feature...?!)</change>
+                <change>Fixed: Issue 45: Manually setting a username and authenticating with another does not work.</change>
+                <change>Fixed: Issue 50: tells me credentials. are for other user</change>
             </package>
         </history>
     </release>

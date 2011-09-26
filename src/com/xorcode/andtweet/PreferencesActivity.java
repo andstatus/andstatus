@@ -522,8 +522,9 @@ public class PreferencesActivity extends PreferenceActivity implements
             
             if (!skip) {
                 what = MSG_ACCOUNT_INVALID;
+                String usernameUI = "";
                 try {
-                    String usernameUI = MyPreferences
+                    usernameUI = MyPreferences
                     .getDefaultSharedPreferences().getString(MyPreferences.KEY_TWITTER_USERNAME_NEW, "");
                     TwitterUser tu  = TwitterUser.getTwitterUser();
                     if (tu.verifyCredentials(true)) {
@@ -544,6 +545,20 @@ public class PreferencesActivity extends PreferenceActivity implements
                     what = MSG_ACCOUNT_INVALID;
                 } catch (ConnectionCredentialsOfOtherUserException e) {
                     what = MSG_CREDENTIALS_OF_OTHER_USER;
+                    // Switch to this user
+                    // New User Name was stored in the Message of the Exception
+                    TwitterUser tu  = TwitterUser.getTwitterUser(e.getMessage());
+                    if (tu.getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
+                        tu.setCredentialsVerified(CredentialsVerified.SUCCEEDED);
+                    }
+                    what = MSG_ACCOUNT_VALID;
+
+                    tu.setCurrentUser();
+                    MyLog.v(TAG, "Changing Username for UI from '" + usernameUI 
+                            + "' to '" + tu.getUsername() + "'");
+                    MyPreferences
+                    .getDefaultSharedPreferences().edit().putString(MyPreferences.KEY_TWITTER_USERNAME_NEW, tu.getUsername()).commit();
+                    
                 } catch (ConnectionUnavailableException e) {
                     what = MSG_SERVICE_UNAVAILABLE_ERROR;
                 } catch (SocketTimeoutException e) {

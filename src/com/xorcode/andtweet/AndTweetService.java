@@ -1216,7 +1216,7 @@ public class AndTweetService extends Service {
                             // For the case we created favorite, let's change
                             // the flag manually.
                             // It's safe, because "delete favorite" works
-                            // even for not farited tweet :-)
+                            // even for not favorited tweet :-)
                             result.put("favorited", create);
 
                             // Let's try to assume that everything was Ok:
