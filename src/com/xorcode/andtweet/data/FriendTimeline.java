@@ -171,34 +171,34 @@ public class FriendTimeline {
 
         String message = Html.fromHtml(jo.getString("text")).toString();
 
-        // TODO: Unify databases!
-        switch (mTimelineType) {
-            case AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS:
-            case AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS:
-                JSONObject user;
-                user = jo.getJSONObject("user");
-
-                values.put(AndTweetDatabase.Tweets._ID, lTweetId.toString());
-                values.put(AndTweetDatabase.Tweets.AUTHOR_ID, user.getString("screen_name"));
-
-                values.put(AndTweetDatabase.Tweets.MESSAGE, message);
-                values.put(AndTweetDatabase.Tweets.SOURCE, jo.getString("source"));
-                values.put(AndTweetDatabase.Tweets.TWEET_TYPE, mTimelineType);
-                values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_STATUS_ID, jo
-                        .getString("in_reply_to_status_id"));
-                values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_AUTHOR_ID, jo
-                        .getString("in_reply_to_screen_name"));
-                values.put(AndTweetDatabase.Tweets.FAVORITED, jo.getBoolean("favorited") ? 1 : 0);
-                break;
-            case AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES:
-                values.put(AndTweetDatabase.DirectMessages._ID, lTweetId.toString());
-                values.put(AndTweetDatabase.DirectMessages.AUTHOR_ID, jo
-                        .getString("sender_screen_name"));
-                values.put(AndTweetDatabase.DirectMessages.MESSAGE, message);
-                break;
-        }
-
         try {
+            // TODO: Unify databases!
+            switch (mTimelineType) {
+                case AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS:
+                case AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS:
+                    JSONObject user;
+                    user = jo.getJSONObject("user");
+
+                    values.put(AndTweetDatabase.Tweets._ID, lTweetId.toString());
+                    values.put(AndTweetDatabase.Tweets.AUTHOR_ID, user.getString("screen_name"));
+
+                    values.put(AndTweetDatabase.Tweets.MESSAGE, message);
+                    values.put(AndTweetDatabase.Tweets.SOURCE, jo.getString("source"));
+                    values.put(AndTweetDatabase.Tweets.TWEET_TYPE, mTimelineType);
+                    values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_STATUS_ID, jo
+                            .getString("in_reply_to_status_id"));
+                    values.put(AndTweetDatabase.Tweets.IN_REPLY_TO_AUTHOR_ID, jo
+                            .getString("in_reply_to_screen_name"));
+                    values.put(AndTweetDatabase.Tweets.FAVORITED, jo.getBoolean("favorited") ? 1 : 0);
+                    break;
+                case AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES:
+                    values.put(AndTweetDatabase.DirectMessages._ID, lTweetId.toString());
+                    values.put(AndTweetDatabase.DirectMessages.AUTHOR_ID, jo
+                            .getString("sender_screen_name"));
+                    values.put(AndTweetDatabase.DirectMessages.MESSAGE, message);
+                    break;
+            }
+
             Long created = Date.parse(jo.getString("created_at"));
             values.put(Tweets.SENT_DATE, created);
         } catch (Exception e) {

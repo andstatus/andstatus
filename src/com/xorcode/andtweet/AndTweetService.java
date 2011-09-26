@@ -1201,6 +1201,34 @@ public class AndTweetService extends Service {
                         (create ? "create" : "destroy") + "Favorite Connection Exception: "
                                 + e.toString());
             }
+            if (ok) {
+                try {
+                    boolean favorited = result.getBoolean("favorited");
+                    if (favorited != create) {
+                        ok = false;
+                        
+                        // yvolk: 2011-09-26 This looks like twitter.com error/bug,
+                        // and we have to take it into account.
+                        Log.e(TAG,
+                                (create ? "create" : "destroy") + ". Favorited flag didn't change.");
+                        
+                        if (create) {
+                            // For the case we created favorite, let's change
+                            // the flag manually.
+                            // It's safe, because "delete favorite" works
+                            // even for not farited tweet :-)
+                            result.put("favorited", create);
+
+                            // Let's try to assume that everything was Ok:
+                            ok = true;
+                        }
+                    }
+                } catch (JSONException e) {
+                    Log.e(TAG,
+                            (create ? "create" : "destroy") + ". Checking resulted favorited flag: "
+                                    + e.toString());
+                }
+            }
 
             if (ok) {
                 try {
