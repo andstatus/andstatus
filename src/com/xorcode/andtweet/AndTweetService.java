@@ -1205,22 +1205,30 @@ public class AndTweetService extends Service {
                 try {
                     boolean favorited = result.getBoolean("favorited");
                     if (favorited != create) {
-                        ok = false;
-                        
-                        // yvolk: 2011-09-26 This looks like twitter.com error/bug,
-                        // and we have to take it into account.
-                        Log.e(TAG,
-                                (create ? "create" : "destroy") + ". Favorited flag didn't change.");
-                        
+                        /** 
+                         * yvolk: 2011-09-27 Twitter docs state that this may happen
+                         *  due to asynchronous nature of the process,
+                         *  see https://dev.twitter.com/docs/api/1/post/favorites/create/%3Aid
+                         */
                         if (create) {
                             // For the case we created favorite, let's change
                             // the flag manually.
-                            // It's safe, because "delete favorite" works
-                            // even for not favorited tweet :-)
                             result.put("favorited", create);
 
+                            MyLog.d(TAG,
+                                    (create ? "create" : "destroy") + ". Favorited flag didn't change yet.");
+                            
                             // Let's try to assume that everything was Ok:
                             ok = true;
+                        } else {
+                            // yvolk: 2011-09-27 Sometimes this twitter.com 'async' process doesn't work
+                            // so let's try another time...
+                            // This is safe, because "delete favorite" works
+                            // even for "Unfavorited" tweet :-)
+                            ok = false;
+
+                            Log.e(TAG,
+                                    (create ? "create" : "destroy") + ". Favorited flag didn't change yet.");
                         }
                     }
                 } catch (JSONException e) {
