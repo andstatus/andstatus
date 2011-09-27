@@ -103,7 +103,7 @@ public class MessageListActivity extends TimelineActivity {
 		final Intent intent = getIntent();
 		intent.setData(AndTweetDatabase.DirectMessages.CONTENT_URI);
 
-		findViewById(R.id.tweetlist_info).setVisibility(View.GONE);
+		findViewById(R.id.createMessageButton).setVisibility(View.GONE);
 		findViewById(R.id.tweetlist_editor).setVisibility(View.GONE);
 
 		// Create list footer for loading messages
@@ -131,7 +131,7 @@ public class MessageListActivity extends TimelineActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		findViewById(R.id.tweetlist_info).setVisibility(View.GONE);
+		findViewById(R.id.createMessageButton).setVisibility(View.GONE);
 		findViewById(R.id.tweetlist_editor).setVisibility(View.GONE);
 	}
 

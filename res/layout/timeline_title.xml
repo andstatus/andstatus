@@ -1,19 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_height="fill_parent" android:layout_width="fill_parent"
-	android:id="@+id/custom_title_left_right" android:orientation="vertical">
+	android:layout_width="fill_parent"
+	android:id="@+id/custom_title_left_right" 
+    android:orientation="vertical" 
+    android:layout_height="45dp">
 	<TextView android:id="@+id/custom_title_left_text"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
 		android:textColor="@android:color/primary_text_dark"
 		android:textSize="14dip" android:textStyle="bold"
 		android:text="(left)"/>
-	<TextView android:id="@+id/custom_title_right_text"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_alignParentRight="true"
-		android:textColor="@android:color/secondary_text_dark"
-		android:textSize="14dip" android:textStyle="normal"
-		android:text="(right)"/>
+	<Button android:text="Tweet" 
+        android:id="@+id/createMessageButton" 
+        android:layout_width="wrap_content" 
+        android:layout_alignParentRight="true" 
+        android:visibility="visible" 
+        android:layout_height="fill_parent" 
+        android:layout_centerVertical="true" 
+        android:focusable="false"/>
+    <TextView android:id="@+id/custom_title_right_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:textColor="@android:color/secondary_text_dark"
+        android:textSize="14dip" android:textStyle="normal"
+        android:text="(right)" 
+        android:layout_toLeftOf="@+id/createMessageButton"/>
 </RelativeLayout>

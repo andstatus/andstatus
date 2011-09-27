@@ -45,6 +45,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -210,6 +211,18 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * Time when shared preferences where changed
      */
     protected long preferencesChangeTime = 0;
+
+    /**
+     * Id of the Tweet that was selected (clicked, or whose context menu item
+     * was selected) TODO: clicked, restore position...
+     */
+    protected long mCurrentId = 0;
+
+    /** 
+     * Controls of the TweetEditor
+     */
+    protected Button createMessageButton;
+    protected TweetEditor mTweetEditor;
     
     /**
      * This method is the first of the whole application to be called 
@@ -247,6 +260,22 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         setContentView(R.layout.tweetlist);
         getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.timeline_title);
 
+        mTweetEditor = new TweetEditor(this);
+        // TODO: Maybe this should be a parameter
+        mTweetEditor.hide();
+
+        createMessageButton = (Button) findViewById(R.id.createMessageButton);
+
+        if (savedInstanceState != null) {
+            mTweetEditor.loadState(savedInstanceState);
+            if (savedInstanceState.containsKey(BUNDLE_KEY_IS_LOADING)) {
+                mIsLoading = savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING);
+            }
+            if (savedInstanceState.containsKey(AndTweetService.EXTRA_TWEETID)) {
+                mCurrentId = savedInstanceState.getLong(AndTweetService.EXTRA_TWEETID);
+            }
+        }
+        
         /*
          * if (mSP.getBoolean("storage_use_external", false)) { if
          * (!Environment.
@@ -712,20 +741,20 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      */
     public void loadTheme() {
         boolean light = MyPreferences.getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
-        StringBuilder theme = new StringBuilder();
+        StringBuilder themeName = new StringBuilder();
         String name = MyPreferences.getDefaultSharedPreferences().getString("theme", "AndTweet");
         if (name.indexOf("Theme.") > -1) {
             name = name.substring(name.indexOf("Theme."));
         }
-        theme.append("Theme.");
+        themeName.append("Theme.");
         if (light) {
-            theme.append("Light.");
+            themeName.append("Light.");
         }
-        theme.append(name);
+        themeName.append(name);
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "loadTheme; theme=\"" + theme.toString() + "\"");
+            Log.v(TAG, "loadTheme; theme=\"" + themeName.toString() + "\"");
         }
-        setTheme((int) getResources().getIdentifier(theme.toString(), "style",
+        setTheme((int) getResources().getIdentifier(themeName.toString(), "style",
                 "com.xorcode.andtweet"));
     }
 
@@ -790,6 +819,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // Attach listeners to the message list
         getListView().setOnCreateContextMenuListener(this);
         getListView().setOnItemClickListener(this);
+
+        createMessageButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mTweetEditor.toggleVisibility();
+            }
+        });
     }
 
     /**
@@ -1064,5 +1099,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // - we're analyzing query instead!
         // intent.setAction(Intent.ACTION_SEARCH);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        mTweetEditor.saveState(outState);
+        outState.putLong(AndTweetService.EXTRA_TWEETID, mCurrentId);
+
+        super.onSaveInstanceState(outState);
     }
 }

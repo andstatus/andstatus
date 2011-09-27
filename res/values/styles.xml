@@ -20,5 +20,8 @@
    </style>
    <style name="EmptyStyle">
         <item name="android:background">#00000000</item>
-   </style>    
+   </style>
+   <style name="title_bar">
+        <item name="android:singleLine">false</item>
+    </style>
 </resources>

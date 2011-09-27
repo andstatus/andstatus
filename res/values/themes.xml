@@ -34,6 +34,12 @@
 
 		<item name="textEditColor">?android:attr/textColorPrimaryInverse</item>
         <item name="windowBackgroundColor">?android:attr/colorBackground</item>
+        
+        <!-- On custom title see 
+          http://staticallytyped.wordpress.com/2011/03/18/android-dynamic-and-custom-title-bars/ 
+        -->
+        <item name="android:windowTitleStyle">@style/title_bar</item>
+        <item name="android:windowTitleSize">45dp</item>
 	</style>
 	
 	<style name="Theme.AndTweet">

@@ -21,32 +21,38 @@
 	<ListView android:id="@+android:id/list"
 		android:scrollbars="vertical" android:layout_width="fill_parent"
 		android:layout_height="80px" android:layout_weight="1" />
-	<LinearLayout android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:id="@+id/tweetlist_info">
-		<TextView android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:text="@string/message_characters_left"
-			android:paddingLeft="5dip" />
-		<TextView android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:id="@+id/messageEditCharsLeftTextView"
-			android:paddingLeft="5dip" />
-	</LinearLayout>
-
-	<LinearLayout android:layout_height="wrap_content"
-		android:layout_width="fill_parent" android:id="@+id/tweetlist_editor">
-		<LinearLayout android:layout_height="wrap_content"
-			android:layout_width="fill_parent" android:layout_weight="1">
-			<EditText android:id="@+id/edtTweetInput"
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content"
-				android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine|textImeMultiLine"
-				android:imeOptions="actionSend|flagNoEnterAction"
-				android:maxLines="4"
-				android:maxLength="160"
-				android:hint="@string/message_edit_hint" />
-		</LinearLayout>
-
-		<Button android:layout_width="wrap_content" android:text="@string/button_send"
-			android:layout_height="fill_parent" android:id="@+id/messageEditSendButton"
-			android:paddingLeft="16dip" android:paddingRight="16dip" />
+	<LinearLayout android:id="@+id/tweetlist_editor"
+        android:layout_height="wrap_content"
+		android:layout_width="fill_parent" 
+        android:visibility="visible"
+        android:orientation="vertical">
+        <LinearLayout android:layout_width="fill_parent"
+            android:layout_height="wrap_content" android:id="@+id/tweetlist_info">
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:text="@string/message_characters_left"
+                android:paddingLeft="5dip" />
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/messageEditCharsLeftTextView"
+                android:paddingLeft="5dip" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/tweetlist_editor2"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent">
+            <LinearLayout android:layout_height="wrap_content"
+                android:layout_width="fill_parent" android:layout_weight="1">
+                <EditText android:id="@+id/edtTweetInput"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine|textImeMultiLine"
+                    android:imeOptions="actionSend|flagNoEnterAction"
+                    android:maxLines="4"
+                    android:maxLength="160"
+                    android:hint="@string/message_edit_hint" />
+            </LinearLayout>
+    
+            <Button android:layout_width="wrap_content" android:text="@string/button_send"
+                android:layout_height="fill_parent" android:id="@+id/messageEditSendButton"
+                android:paddingLeft="16dip" android:paddingRight="16dip" />
+        </LinearLayout>
 	</LinearLayout>
 </LinearLayout>

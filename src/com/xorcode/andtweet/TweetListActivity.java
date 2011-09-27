@@ -20,7 +20,6 @@ import org.json.JSONObject;
 
 import android.app.SearchManager;
 import android.content.ContentUris;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -28,25 +27,17 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.SearchRecentSuggestions;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.xorcode.andtweet.AndTweetService.CommandData;
@@ -87,30 +78,7 @@ public class TweetListActivity extends TimelineActivity {
 
     public static final int CONTEXT_MENU_ITEM_DESTROY_STATUS = Menu.FIRST + 10;
 
-    // Views and widgets
-    private Button mSendButton;
-
-    private EditText mEditText;
-
-    private TextView mCharsLeftText;
-
-    // Text limits
-    private int mCurrentChars = 0;
-
-    private int mLimitChars = 140;
-
     private boolean mInitializing = false;
-
-    /**
-     * Id of the Tweet to which we are replying
-     */
-    protected long mReplyId = 0;
-
-    /**
-     * Id of the Tweet that was selected (clicked, or whose context menu item
-     * was selected) TODO: clicked, restore position...
-     */
-    protected long mCurrentId = 0;
 
     // Table columns to use for the tweets data
     private static final String[] PROJECTION = new String[] {
@@ -132,23 +100,6 @@ public class TweetListActivity extends TimelineActivity {
             Log.v(TAG, "onCreate");
         }
 
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(AndTweetService.EXTRA_INREPLYTOID)) {
-                mReplyId = savedInstanceState.getLong(AndTweetService.EXTRA_INREPLYTOID);
-            }
-            if (savedInstanceState.containsKey(BUNDLE_KEY_IS_LOADING)) {
-                mIsLoading = savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING);
-            }
-            if (savedInstanceState.containsKey(AndTweetService.EXTRA_TWEETID)) {
-                mCurrentId = savedInstanceState.getLong(AndTweetService.EXTRA_TWEETID);
-            }
-        }
-
-        // Set up views
-        mSendButton = (Button) findViewById(R.id.messageEditSendButton);
-        mEditText = (EditText) findViewById(R.id.edtTweetInput);
-        mCharsLeftText = (TextView) findViewById(R.id.messageEditCharsLeftTextView);
-
         // Create list footer for loading messages
         mListFooter = new LinearLayout(getApplicationContext());
         mListFooter.setClickable(false);
@@ -158,7 +109,7 @@ public class TweetListActivity extends TimelineActivity {
         mListFooter.addView(tv, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         mListFooter.setVisibility(View.INVISIBLE);
-
+        
         getListView().setOnScrollListener(this);
 
         initUI();
@@ -312,11 +263,10 @@ public class TweetListActivity extends TimelineActivity {
         Intent intent = getIntent();
         queryListData(intent, false, false);
 
-        if (hasHardwareKeyboard()) {
-            // TODO: Only if the EditText is visible!
-            mEditText.requestFocus();
+        if (mTweetEditor.isVisible()) {
+            // This is done to request focus (if we need this...)
+            mTweetEditor.show();
         }
-        
     }
 
     @Override
@@ -333,8 +283,6 @@ public class TweetListActivity extends TimelineActivity {
                 manualReload();
             }
         }
-        
-        mCharsLeftText.setText(String.valueOf(mLimitChars - mEditText.length()));
     }
 
     @Override
@@ -348,9 +296,7 @@ public class TweetListActivity extends TimelineActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putLong(AndTweetService.EXTRA_INREPLYTOID, mReplyId);
         outState.putBoolean(BUNDLE_KEY_IS_LOADING, mIsLoading);
-        outState.putLong(AndTweetService.EXTRA_TWEETID, mCurrentId);
         super.onSaveInstanceState(outState);
     }
 
@@ -431,13 +377,9 @@ public class TweetListActivity extends TimelineActivity {
                 }, null, null, null);
                 try {
                     c.moveToFirst();
-                    if (hasHardwareKeyboard()) {
-                        mEditText.requestFocus();
-                    }
                     String reply = "@" + c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)) + " ";
-                    mEditText.setText("");
-                    mEditText.append(reply, 0, reply.length());
-                    mReplyId = c.getLong(c.getColumnIndex(Tweets._ID));
+                    long replyId = c.getLong(c.getColumnIndex(Tweets._ID));
+                    mTweetEditor.startEditing(reply, replyId);
                 } catch (Exception e) {
                     Log.e(TAG, "onContextItemSelected: " + e.toString());
                     return false;
@@ -454,9 +396,7 @@ public class TweetListActivity extends TimelineActivity {
                 }, null, null, null);
                 try {
                     c.moveToFirst();
-                    if (hasHardwareKeyboard()) {
-                        mEditText.requestFocus();
-                    }
+
                     StringBuilder message = new StringBuilder();
                     String reply = "RT @" + c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)) + " ";
                     message.append(reply);
@@ -469,8 +409,7 @@ public class TweetListActivity extends TimelineActivity {
                     if (message.length() == 137) {
                         message.append("...");
                     }
-                    mEditText.setText("");
-                    mEditText.append(message, 0, message.length());
+                    mTweetEditor.startEditing(message.toString(), 0);
                 } catch (Exception e) {
                     Log.e(TAG, "onContextItemSelected: " + e.toString());
                     return false;
@@ -500,110 +439,6 @@ public class TweetListActivity extends TimelineActivity {
                 return true;
         }
         return false;
-    }
-
-    /**
-     * Handles threaded sending of the message, typed in the mEditText text box.
-     * Queued message sending is supported (if initial sending
-     * failed for some reason). 
-     */
-    void updateStatus() {
-        String status = mEditText.getText().toString();
-        if (TextUtils.isEmpty(status.trim())) {
-            Toast.makeText(TweetListActivity.this, R.string.cannot_send_empty_message,
-                    Toast.LENGTH_SHORT).show();
-        } else {
-            CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS);
-            commandData.bundle.putString(AndTweetService.EXTRA_STATUS, status);
-            commandData.bundle.putLong(AndTweetService.EXTRA_INREPLYTOID, mReplyId);
-            sendCommand(commandData);
-            closeSoftKeyboard();
-
-            // Let's assume that everything will be Ok
-            // so we may clear the text box with the sent tweet
-            // text...
-            mReplyId = 0;
-            mEditText.setText("");
-            if (hasHardwareKeyboard()) {
-                mEditText.requestFocus();
-            }
-            
-        }
-    }
-
-    /**
-     * Close the on-screen keyboard.
-     */
-    private void closeSoftKeyboard() {
-        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
-    }
-
-    /**
-     * Initialize UI
-     */
-    @Override
-    protected void initUI() {
-        super.initUI();
-
-        mSendButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                updateStatus();
-            }
-        });
-
-        mEditText.addTextChangedListener(new TextWatcher() {
-            public void afterTextChanged(Editable s) {
-                mCurrentChars = s.length();
-                mCharsLeftText.setText(String.valueOf(mLimitChars - mCurrentChars));
-            }
-
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-        });
-
-        mEditText.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    mCurrentChars = mEditText.length();
-                    if (mCurrentChars == 0) {
-                        mReplyId = 0;
-                    }
-                    switch (keyCode) {
-                        case KeyEvent.KEYCODE_DPAD_CENTER:
-                            updateStatus();
-                            return true;
-                        case KeyEvent.KEYCODE_ENTER:
-                            if (event.isAltPressed()) {
-                                mEditText.append("\n");
-                                return true;
-                            }
-                        default:
-                            if (keyCode != KeyEvent.KEYCODE_DEL && mCurrentChars > mLimitChars) {
-                                return true;
-                            }
-                            mCharsLeftText.setText(String.valueOf(mLimitChars - mCurrentChars));
-                            break;
-                    }
-                }
-                return false;
-            }
-        });
-
-        mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (event != null) {
-                    if (event.isAltPressed()) {
-                        return false;
-                    }
-                }
-                updateStatus();
-                return true;
-            }
-        });
     }
 
     /**

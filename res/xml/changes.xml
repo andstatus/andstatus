@@ -41,6 +41,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
         <history>
             <package android:versionName="1.2.0" android:versionCode="44"
                 versionDate="2011-09-26">
+                <change>Implemented 'Move Enter your tweet here field to it's own screen' request (Issue 60)</change>
                 <change>Fixed: Sometimes twitter.com succeeds to create/delete favorite, 
                    but doesn't change 'favorited' flag in the returned tweet.
                    Sometimes it fails, but doesn't indicate error...
