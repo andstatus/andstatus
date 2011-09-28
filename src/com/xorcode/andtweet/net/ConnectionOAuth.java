@@ -23,6 +23,7 @@ import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -282,6 +283,10 @@ public class ConnectionOAuth extends Connection {
             String response = mClient.execute(post, new BasicResponseHandler());
             jso = new JSONObject(response);
             ok = true;
+        } catch (HttpResponseException e) {
+            ConnectionException e2 = new ConnectionException(e.getStatusCode(), e.getLocalizedMessage());
+            Log.w(TAG, e2.getLocalizedMessage());
+            throw e2;
         } catch (Exception e) {
             // We don't catch other exceptions because in fact it's vary difficult to tell
             // what was a real cause of it. So let's make code clearer.

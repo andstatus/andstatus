@@ -221,7 +221,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     /** 
      * Controls of the TweetEditor
      */
-    protected Button createMessageButton;
     protected TweetEditor mTweetEditor;
     
     /**
@@ -263,8 +262,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         mTweetEditor = new TweetEditor(this);
         // TODO: Maybe this should be a parameter
         mTweetEditor.hide();
-
-        createMessageButton = (Button) findViewById(R.id.createMessageButton);
 
         if (savedInstanceState != null) {
             mTweetEditor.loadState(savedInstanceState);
@@ -785,9 +782,16 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 timelinename, username + (mSearchMode ? " *" : "")
         }); 
         TextView leftTitle = (TextView) findViewById(R.id.custom_title_left_text);
-        TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
         leftTitle.setText(leftText);
+        TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
         rightTitle.setText(rightText);
+
+        Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
+        if (mTimelineType != Tweets.TIMELINE_TYPE_MESSAGES) {
+            createMessageButton.setText(getString(R.string.button_create_tweet));
+        } else {
+            createMessageButton.setVisibility(View.GONE);
+        }
     }
 
     public void updateTitle() {
@@ -820,6 +824,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         getListView().setOnCreateContextMenuListener(this);
         getListView().setOnItemClickListener(this);
 
+        Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
         createMessageButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 mTweetEditor.toggleVisibility();

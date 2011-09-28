@@ -254,6 +254,9 @@ public class TweetListActivity extends TimelineActivity {
 
     }
 
+    /**
+     * TODO: Maybe this code should be moved to "onResume" ???
+     */
     @Override
     protected void onStart() {
         super.onStart();

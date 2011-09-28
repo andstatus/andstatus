@@ -613,19 +613,21 @@ public class AndTweetService extends Service {
 
     @Override
     public void onDestroy() {
-        sendBroadcast(new Intent(ACTION_SERVICE_STOPPED));
-        
-        // Unregister all callbacks.
-        mCallbacks.kill();
+        synchronized(this) {
+            sendBroadcast(new Intent(ACTION_SERVICE_STOPPED));
+            
+            // Unregister all callbacks.
+            mCallbacks.kill();
 
-        unregisterReceiver(intentReceiver);
+            unregisterReceiver(intentReceiver);
 
-        // Clear notifications if any
-        int count = notifyOfQueue(true);
-        saveState();
-        
-        MyLog.d(TAG, "Service destroyed" + (count>0 ? ", " + count + " msg in the Queue" : ""));
-        MyPreferences.forget();
+            // Clear notifications if any
+            int count = notifyOfQueue(true);
+            saveState();
+            
+            MyLog.d(TAG, "Service destroyed" + (count>0 ? ", " + count + " msg in the Queue" : ""));
+            MyPreferences.forget();
+        }
     }
     
     /**
@@ -664,14 +666,16 @@ public class AndTweetService extends Service {
      * Restore state if it was not restored yet
      */
     private void restoreState() {
-        if (!mStateRestored) {
-            int count = 0;
-            // TODO: Restore Queues
-            count += restoreQueue(mCommands, TAG + "_" + "mCommands");
-            count += restoreQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
-            MyLog.d(TAG, "State restored" + (count>0 ? ", " + count + " msg in the Queues" : ""));
-        }
-        mStateRestored = true;
+        synchronized(this) {
+            if (!mStateRestored) {
+                int count = 0;
+                // TODO: Restore Queues
+                count += restoreQueue(mCommands, TAG + "_" + "mCommands");
+                count += restoreQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
+                MyLog.d(TAG, "State restored" + (count>0 ? ", " + count + " msg in the Queues" : ""));
+            }
+            mStateRestored = true;
+        }        
     }
 
     private int restoreQueue(BlockingQueue<CommandData> q, String prefsFileName) {
@@ -1049,6 +1053,7 @@ public class AndTweetService extends Service {
      */
     private class CommandExecutor extends AsyncTask<Void, Void, JSONObject> {
         // private boolean skip = false;
+        private final String SERVICE_NOT_RESTORED_TEXT = "AndTweetService state is not restored";
 
         @Override
         protected void onPreExecute() {
@@ -1065,9 +1070,14 @@ public class AndTweetService extends Service {
 
             do {
                 boolean ok = false;
-                // Get commands from the Queue one by one and execute them
-                // The queue is Blocking, so we can do this
-                CommandData commandData = mCommands.poll();
+                CommandData commandData = null;
+                synchronized(AndTweetService.this) {
+                    if (mStateRestored) {
+                        // Get commands from the Queue one by one and execute them
+                        // The queue is Blocking, so we can do this
+                        commandData = mCommands.poll();
+                    }
+                }        
                 if (commandData == null) {
                     // All work is done
                     break;
@@ -1116,7 +1126,9 @@ public class AndTweetService extends Service {
                         Log.e(TAG, "Unexpected command here " + commandData);
                 }
                 MyLog.d(TAG, (ok ? "Succeeded" : "Failed") + " " + commandData);
+                
                 if (retry) {
+                    boolean ok2 = true;
                     if (commandData.retriesLeft < 0) {
                         // This means that retriesLeft was not set yet,
                         // so let's set it to some default value, the same for
@@ -1127,13 +1139,23 @@ public class AndTweetService extends Service {
                     // Check if any retries left (actually 0 means this was the
                     // last retry)
                     if (commandData.retriesLeft > 0) {
-                        // Put the command to the retry queue
-                        if (!mRetryQueue.contains(commandData)) {
-                            if (!mRetryQueue.offer(commandData)) {
-                                Log.e(TAG, "mRetryQueue is full?");
+                        synchronized(AndTweetService.this) {
+                            if (mStateRestored) {
+                                // Put the command to the retry queue
+                                if (!mRetryQueue.contains(commandData)) {
+                                    if (!mRetryQueue.offer(commandData)) {
+                                        Log.e(TAG, "mRetryQueue is full?");
+                                    }
+                                }
+                            } else {
+                                Log.e(TAG, SERVICE_NOT_RESTORED_TEXT);
+                                ok2 = false;
                             }
-                        }
+                        }        
                     } else {
+                        ok2 = false;
+                    }
+                    if (!ok2) {
                         Log.e(TAG, "Couldn't execute " + commandData);
                     }
                 }
@@ -1178,7 +1200,11 @@ public class AndTweetService extends Service {
                     e.printStackTrace();
                 }
             }
-            startEndStuff(false, this, message);
+            synchronized(AndTweetService.this) {
+                if (mStateRestored) {
+                    startEndStuff(false, this, message);
+                }
+            }        
         }
 
         /**
@@ -1202,65 +1228,72 @@ public class AndTweetService extends Service {
                                 + e.toString());
             }
             if (ok) {
-                try {
-                    boolean favorited = result.getBoolean("favorited");
-                    if (favorited != create) {
-                        /** 
-                         * yvolk: 2011-09-27 Twitter docs state that this may happen
-                         *  due to asynchronous nature of the process,
-                         *  see https://dev.twitter.com/docs/api/1/post/favorites/create/%3Aid
-                         */
-                        if (create) {
-                            // For the case we created favorite, let's change
-                            // the flag manually.
-                            result.put("favorited", create);
+                synchronized(AndTweetService.this) {
+                    if (mStateRestored) {
+                        try {
+                            boolean favorited = result.getBoolean("favorited");
+                            if (favorited != create) {
+                                /** 
+                                 * yvolk: 2011-09-27 Twitter docs state that this may happen
+                                 *  due to asynchronous nature of the process,
+                                 *  see https://dev.twitter.com/docs/api/1/post/favorites/create/%3Aid
+                                 */
+                                if (create) {
+                                    // For the case we created favorite, let's change
+                                    // the flag manually.
+                                    result.put("favorited", create);
 
-                            MyLog.d(TAG,
-                                    (create ? "create" : "destroy") + ". Favorited flag didn't change yet.");
-                            
-                            // Let's try to assume that everything was Ok:
-                            ok = true;
-                        } else {
-                            // yvolk: 2011-09-27 Sometimes this twitter.com 'async' process doesn't work
-                            // so let's try another time...
-                            // This is safe, because "delete favorite" works
-                            // even for "Unfavorited" tweet :-)
-                            ok = false;
+                                    MyLog.d(TAG,
+                                            (create ? "create" : "destroy") + ". Favorited flag didn't change yet.");
+                                    
+                                    // Let's try to assume that everything was Ok:
+                                    ok = true;
+                                } else {
+                                    // yvolk: 2011-09-27 Sometimes this twitter.com 'async' process doesn't work
+                                    // so let's try another time...
+                                    // This is safe, because "delete favorite" works
+                                    // even for "Unfavorited" tweet :-)
+                                    ok = false;
 
+                                    Log.e(TAG,
+                                            (create ? "create" : "destroy") + ". Favorited flag didn't change yet.");
+                                }
+                            }
+                        } catch (JSONException e) {
                             Log.e(TAG,
-                                    (create ? "create" : "destroy") + ". Favorited flag didn't change yet.");
+                                    (create ? "create" : "destroy") + ". Checking resulted favorited flag: "
+                                            + e.toString());
                         }
+                        
+                        if (ok) {
+                            try {
+                                Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result.getLong("id"));
+                                Cursor c = getContentResolver().query(uri, new String[] {
+                                        Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE
+                                }, null, null, null);
+                                try {
+                                    c.moveToFirst();
+                                    FriendTimeline fl = new FriendTimeline(
+                                            AndTweetService.this.getApplicationContext(), c.getInt(c
+                                                    .getColumnIndex(Tweets.TWEET_TYPE)));
+                                    fl.insertFromJSONObject(result, true);
+                                } catch (Exception e) {
+                                    Log.e(TAG, "e: " + e.toString());
+                                } finally {
+                                    if (c != null && !c.isClosed())
+                                        c.close();
+                                }
+                            } catch (JSONException e) {
+                                Log.e(TAG,
+                                        "Error marking as " + (create ? "" : "not ") + "favorite: "
+                                                + e.toString());
+                            }
+                        }
+                    } else {
+                        Log.e(TAG, (create ? "create" : "destroy") + "Favorite - " + SERVICE_NOT_RESTORED_TEXT);
                     }
-                } catch (JSONException e) {
-                    Log.e(TAG,
-                            (create ? "create" : "destroy") + ". Checking resulted favorited flag: "
-                                    + e.toString());
-                }
-            }
-
-            if (ok) {
-                try {
-                    Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result.getLong("id"));
-                    Cursor c = getContentResolver().query(uri, new String[] {
-                            Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE
-                    }, null, null, null);
-                    try {
-                        c.moveToFirst();
-                        FriendTimeline fl = new FriendTimeline(
-                                AndTweetService.this.getApplicationContext(), c.getInt(c
-                                        .getColumnIndex(Tweets.TWEET_TYPE)));
-                        fl.insertFromJSONObject(result, true);
-                    } catch (Exception e) {
-                        Log.e(TAG, "e: " + e.toString());
-                    } finally {
-                        if (c != null && !c.isClosed())
-                            c.close();
-                    }
-                } catch (JSONException e) {
-                    Log.e(TAG,
-                            "Error marking as " + (create ? "" : "not ") + "favorite: "
-                                    + e.toString());
-                }
+                }        
+                
             }
 
             // TODO: Maybe we need to notify the caller about the result?!
@@ -1281,19 +1314,30 @@ public class AndTweetService extends Service {
                 result = TwitterUser.getTwitterUser().getConnection().destroyStatus(statusId);
                 ok = (result != null);
             } catch (ConnectionException e) {
-                Log.e(TAG, "destroyStatus Connection Exception: " + e.toString());
+                if (e.getStatusCode() == 404) {
+                    // This means that there is no such "Status", so we may assume that it's Ok!
+                    ok = true;
+                } else {
+                    Log.e(TAG, "destroyStatus Connection Exception: " + e.toString());
+                }
             }
 
             if (ok) {
-                // And delete the status from the local storage
-                try {
-                    FriendTimeline fl = new FriendTimeline(
-                            AndTweetService.this.getApplicationContext(),
-                            AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
-                    fl.destroyStatus(statusId);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error destroying status locally: " + e.toString());
-                }
+                synchronized(AndTweetService.this) {
+                    if (mStateRestored) {
+                        // And delete the status from the local storage
+                        try {
+                            FriendTimeline fl = new FriendTimeline(
+                                    AndTweetService.this.getApplicationContext(),
+                                    AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
+                            fl.destroyStatus(statusId);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error destroying status locally: " + e.toString());
+                        }
+                    } else {
+                        Log.e(TAG, "destroyStatus - " + SERVICE_NOT_RESTORED_TEXT);
+                    }
+                }        
             }
 
             // TODO: Maybe we need to notify the caller about the result?!
@@ -1318,15 +1362,22 @@ public class AndTweetService extends Service {
                 Log.e(TAG, "updateStatus Exception: " + e.toString());
             }
             if (ok) {
-                // The tweet was sent successfully
-                FriendTimeline fl = new FriendTimeline(
-                        AndTweetService.this.getApplicationContext(),
-                        AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
-                try {
-                    fl.insertFromJSONObject(result, true);
-                } catch (JSONException e) {
-                    Log.e(TAG, "updateStatus JSONException: " + e.toString());
-                }
+                synchronized(AndTweetService.this) {
+                    if (mStateRestored) {
+                        try {
+                            // The tweet was sent successfully
+                            FriendTimeline fl = new FriendTimeline(
+                                    AndTweetService.this.getApplicationContext(),
+                                    AndTweetDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
+
+                            fl.insertFromJSONObject(result, true);
+                        } catch (JSONException e) {
+                            Log.e(TAG, "updateStatus JSONException: " + e.toString());
+                        }
+                    } else {
+                        Log.e(TAG, "updateStatus - " + SERVICE_NOT_RESTORED_TEXT);
+                    }
+                }        
             }
             return ok;
         }
@@ -1343,10 +1394,10 @@ public class AndTweetService extends Service {
             int aNewTweets = 0;
             int aReplyCount = 0;
             int aNewMessages = 0;
+            String descr = "(starting)";
 
             if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
                 // Only if User was authenticated already
-                String descr = "(starting)";
                 try {
                     FriendTimeline fl = null;
                     ok = true;
@@ -1356,7 +1407,15 @@ public class AndTweetService extends Service {
                                 AndTweetDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
                         ok = fl.loadTimeline();
                         aReplyCount = fl.replyCount();
-
+                        if (ok) {
+                            synchronized(AndTweetService.this) {
+                                if (!mStateRestored) {
+                                    Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
+                                    ok = false;
+                                }
+                            }
+                        }
+                        
                         if (ok) {
                             descr = "loading Friends";
                             fl = new FriendTimeline(AndTweetService.this.getApplicationContext(),
@@ -1365,8 +1424,16 @@ public class AndTweetService extends Service {
                             aNewTweets = fl.newCount();
                             aReplyCount += fl.replyCount();
                         }
-
-                        fl.pruneOldRecords();
+                        if (ok) {
+                            synchronized(AndTweetService.this) {
+                                if (mStateRestored) {
+                                    fl.pruneOldRecords();
+                                } else {
+                                    Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
+                                    ok = false;
+                                }
+                            }
+                        }
                     }
 
                     if (ok && loadMessages) {
@@ -1375,7 +1442,16 @@ public class AndTweetService extends Service {
                                 AndTweetDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
                         ok = fl.loadTimeline();
                         aNewMessages = fl.newCount();
-                        fl.pruneOldRecords();
+                        if (ok) {
+                            synchronized(AndTweetService.this) {
+                                if (mStateRestored) {
+                                    fl.pruneOldRecords();
+                                } else {
+                                    Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
+                                    ok = false;
+                                }
+                            }
+                        }
                     }
                 } catch (ConnectionException e) {
                     Log.e(TAG, descr + ", Connection Exception: " + e.toString());
@@ -1385,7 +1461,15 @@ public class AndTweetService extends Service {
             }
 
             if (ok) {
-                notifyOfUpdatedTimeline(aNewTweets, aReplyCount, aNewMessages);
+                descr = "notifying";
+                synchronized(AndTweetService.this) {
+                    if (mStateRestored) {
+                        notifyOfUpdatedTimeline(aNewTweets, aReplyCount, aNewMessages);
+                    } else {
+                        Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
+                        ok = false;
+                    }
+                }
             }
 
             String message = (ok ? "Succeeded" : "Failed") + " getting ";
@@ -1609,19 +1693,25 @@ public class AndTweetService extends Service {
             }
 
             if (ok) {
-                for (int i = 0; i < mBroadcastListenerCount; i++) {
-                    try {
-                        IAndTweetServiceCallback cb = mCallbacks.getBroadcastItem(i);
-                        if (cb != null) {
-                            cb.rateLimitStatus(result.getInt("remaining_hits"),
-                                    result.getInt("hourly_limit"));
+                synchronized(AndTweetService.this) {
+                    if (mStateRestored) {
+                        for (int i = 0; i < mBroadcastListenerCount; i++) {
+                            try {
+                                IAndTweetServiceCallback cb = mCallbacks.getBroadcastItem(i);
+                                if (cb != null) {
+                                    cb.rateLimitStatus(result.getInt("remaining_hits"),
+                                            result.getInt("hourly_limit"));
+                                }
+                            } catch (RemoteException e) {
+                                MyLog.d(TAG, e.toString());
+                            } catch (JSONException e) {
+                                Log.e(TAG, e.toString());
+                            }
                         }
-                    } catch (RemoteException e) {
-                        MyLog.d(TAG, e.toString());
-                    } catch (JSONException e) {
-                        Log.e(TAG, e.toString());
+                    } else {
+                        Log.e(TAG, "rateLimitStatus - " + SERVICE_NOT_RESTORED_TEXT);
                     }
-                }
+                }        
             }
             return ok;
         }

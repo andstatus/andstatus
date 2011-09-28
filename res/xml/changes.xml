@@ -34,20 +34,28 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
     <release android:versionName="1.2.0" android:versionCode="44"
-        versionDate="2011-09-26">
+        versionDate="2011-09-28">
         <changes>
-            <change></change>
+                <change>Implemented "Move Enter your tweet here field to it's own screen" request (Issue 60)</change>
+                <change>Fixed: Sometimes twitter.com succeeds to create/delete favorite, 
+                   but doesn't change 'favorited' flag in the returned tweet.
+                   Sometimes it fails, but doesn't indicate error.
+                   (This is twitter.com feature: asynchronous processes...)</change>
+                <change>Fixed: Issue 45: Manually setting a username and authenticating with another does not work.</change>
+                <change>Fixed: Issue 50: tells me credentials. are for other user</change>
+                <change>Fixed: Errors in the Service when it's stopped during command execution.</change>
         </changes>
         <history>
             <package android:versionName="1.2.0" android:versionCode="44"
-                versionDate="2011-09-26">
-                <change>Implemented 'Move Enter your tweet here field to it's own screen' request (Issue 60)</change>
+                versionDate="2011-09-28">
+                <change>Implemented "Move Enter your tweet here field to it's own screen" request (Issue 60)</change>
                 <change>Fixed: Sometimes twitter.com succeeds to create/delete favorite, 
                    but doesn't change 'favorited' flag in the returned tweet.
-                   Sometimes it fails, but doesn't indicate error...
-                   (Maybe this is twitter.com feature...?!)</change>
+                   Sometimes it fails, but doesn't indicate error.
+                   (This is twitter.com feature: asynchronous processes...)</change>
                 <change>Fixed: Issue 45: Manually setting a username and authenticating with another does not work.</change>
                 <change>Fixed: Issue 50: tells me credentials. are for other user</change>
+                <change>Fixed: Errors in the Service when it's stopped during command execution.</change>
             </package>
         </history>
     </release>

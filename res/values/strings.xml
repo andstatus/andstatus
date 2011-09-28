@@ -33,6 +33,7 @@
 	<string name="authentication_never">Didn\'t authenticate yet</string>
 	<string name="authentication_successful">Authentication successful!</string>
 	<string name="button_send">Send</string>
+    <string name="button_create_tweet">Tweet</string>
 	<string name="cannot_send_empty_message">Cannot send empty message.</string>
 	<string name="category_title_preference_appearance">Appearance</string>
 	<string name="category_title_preference_automatic_updates">Updates</string>

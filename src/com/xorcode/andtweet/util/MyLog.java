@@ -17,6 +17,7 @@ package com.xorcode.andtweet.util;
 
 import com.xorcode.andtweet.data.MyPreferences;
 
+import android.content.SharedPreferences;
 import android.util.Log;
 
 /**
@@ -84,18 +85,26 @@ public class MyLog {
         boolean is = false;
         if (minLogLevel > Log.ASSERT) {
             // The member was not initialized yet.
-            String val = "(not set)";  
+            String val = "(not set)";
             try {
-                /**
-                 * Due to the Android bug
-                 * ListPreference operate with String values only...
-                 * See http://code.google.com/p/android/issues/detail?id=2096
-                 */
-                val = MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_MIN_LOG_LEVEL,String.valueOf(Log.ASSERT));  
-                minLogLevel = Integer.parseInt(val);  
-            } catch (java.lang.ClassCastException e) {
-                val = MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_MIN_LOG_LEVEL,"(empty)");  
-                Log.e(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
+                SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();  
+                if (sp != null) {
+                    try {
+                        /**
+                         * Due to the Android bug
+                         * ListPreference operate with String values only...
+                         * See http://code.google.com/p/android/issues/detail?id=2096
+                         */
+                        val = sp.getString(MyPreferences.KEY_MIN_LOG_LEVEL, String.valueOf(Log.ASSERT));  
+                        minLogLevel = Integer.parseInt(val);  
+                    } catch (java.lang.ClassCastException e) {
+                        val = sp.getString(MyPreferences.KEY_MIN_LOG_LEVEL,"(empty)");  
+                        Log.e(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "Error in isLoggable");
             }
             if (Log.INFO >= minLogLevel) {
                 Log.i(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
