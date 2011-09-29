@@ -24,11 +24,11 @@
 
 		<meta-data android:name="android.app.default_searchable" android:value=".TweetListActivity"/>
 
-		<provider android:name=".AndTweetProvider"
-			android:authorities="com.xorcode.andtweet"/>
+		<provider android:name=".data.AndTweetProvider"
+			android:authorities="com.xorcode.andtweet.data.AndTweetProvider"/>
 
 		<provider android:name=".data.TimelineSearchSuggestionProvider" 
-			android:authorities="com.xorcode.andtweet.TimelineSuggestionProvider"/>
+			android:authorities="com.xorcode.andtweet.data.TimelineSuggestionProvider"/>
 
 		<service android:process=":remote" android:name=".AndTweetService">
 			<intent-filter>

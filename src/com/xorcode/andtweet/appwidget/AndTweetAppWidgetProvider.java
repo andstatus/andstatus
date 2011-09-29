@@ -366,7 +366,7 @@ public class AndTweetAppWidgetProvider extends AppWidgetProvider {
 			
 		} finally {
             if ( !Ok || MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.d(TAG, "inst=" + instanceId + "; updateAppWidget " + (Ok ? "succeded" : "failed") );
+                Log.v(TAG, "inst=" + instanceId + "; updateAppWidget " + (Ok ? "succeded" : "failed") );
             }
 		}
 	}

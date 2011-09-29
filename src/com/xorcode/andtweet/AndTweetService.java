@@ -55,7 +55,6 @@ import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 import com.xorcode.andtweet.appwidget.AndTweetAppWidgetProvider;
 import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.MyPreferences;
-import com.xorcode.andtweet.data.FriendTimeline;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.util.ForegroundCheckTask;

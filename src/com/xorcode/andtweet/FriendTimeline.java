@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.xorcode.andtweet.data;
+package com.xorcode.andtweet;
 
 import java.util.Date;
 
@@ -33,15 +33,25 @@ import android.net.Uri;
 import android.text.Html;
 import android.util.Log;
 
-import com.xorcode.andtweet.TwitterUser;
 import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
-import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
+import com.xorcode.andtweet.data.AndTweetDatabase;
+import com.xorcode.andtweet.data.MyPreferences;
 import com.xorcode.andtweet.net.ConnectionException;
 import com.xorcode.andtweet.util.MyLog;
 import com.xorcode.andtweet.util.SelectionAndArgs;
 
 /**
- * Handles loading data from JSON into database.
+ * The class automates several different processes 
+ * (and this is why maybe it needs to be refactored...):
+ * 1. Downloads ("loads") Friends and Messages timelines 
+ *  (i.e. Tweets and Messages) from the Internet 
+ *  (e.g. from twitter.com server) into local JSON objects.
+ * 2. Stores ("inserts" -  adds or updates) JSON-ed Tweets or Messages
+ *  in the database.
+ *  The Tweets/Messages come both from process "1" above and from other 
+ *  processes ("update status", "favorite/unfavorite", ...).
+ *  In also deletes Tweets/Messages from the database.
+ * 3. Purges old Tweets/Messages according to the User preferences.
  * 
  * @author torgny.bjers
  */
@@ -88,29 +98,17 @@ public class FriendTimeline {
     }
 
     /**
-     * Load the user and friends timeline.
+     * Load Timeline (Friends / Messages) from the Internet
+     * and store them in the local database.
      * 
      * @throws ConnectionException
      */
     public boolean loadTimeline() throws ConnectionException {
-        return loadTimeline(false);
-    }
-
-    /**
-     * Load the user and friends timeline from the Internet to the device
-     * 
-     * @param firstRun
-     * @throws ConnectionException
-     */
-    public boolean loadTimeline(boolean firstRun) throws ConnectionException {
         boolean ok = false;
         mNewTweets = 0;
         mReplies = 0;
         long lastId = mLastStatusId;
         int limit = 200;
-        if (firstRun) {
-            limit = 20;
-        }
         if (mTu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
             JSONArray jArr = null;
             switch (mTimelineType) {
@@ -200,7 +198,7 @@ public class FriendTimeline {
             }
 
             Long created = Date.parse(jo.getString("created_at"));
-            values.put(Tweets.SENT_DATE, created);
+            values.put(AndTweetDatabase.Tweets.SENT_DATE, created);
         } catch (Exception e) {
             Log.e(TAG, "insertFromJSONObject: " + e.toString());
         }
@@ -289,7 +287,7 @@ public class FriendTimeline {
                 if (nToDeleteSize > 0) {
                     // Find SENT_DATE of the most recent tweet to delete
                     cursor = mContentResolver.query(mContentUri, new String[] {
-                        Tweets.SENT_DATE
+                            AndTweetDatabase.Tweets.SENT_DATE
                     }, null, null, "sent ASC LIMIT 0," + nToDeleteSize);
                     if (cursor.moveToLast()) {
                         sinceTimestampSize = cursor.getLong(0);

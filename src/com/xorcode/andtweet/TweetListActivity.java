@@ -507,7 +507,7 @@ public class TweetListActivity extends TimelineActivity {
                     && (firstVisibleItem + visibleItemCount >= totalItemCount);
             if (loadMore) {
                 mIsLoading = true;
-                Log.d(TAG, "Start Loading more items, total=" + totalItemCount);
+                MyLog.d(TAG, "Start Loading more items, total=" + totalItemCount);
                 // setProgressBarIndeterminateVisibility(true);
                 mListFooter.setVisibility(View.VISIBLE);
                 Thread thread = new Thread(mLoadListItems);

@@ -122,17 +122,17 @@ public class ConnectionOAuth extends Connection {
             SharedPreferences.Editor editor = sp.edit();
             if (token == null) {
                 editor.remove(ConnectionOAuth.USER_TOKEN);
-                Log.d(TAG, "Clearing OAuth Token");
+                MyLog.d(TAG, "Clearing OAuth Token");
             } else {
                 editor.putString(ConnectionOAuth.USER_TOKEN, token);
-                Log.d(TAG, "Saving OAuth Token: " + token);
+                MyLog.d(TAG, "Saving OAuth Token: " + token);
             }
             if (secret == null) {
                 editor.remove(ConnectionOAuth.USER_SECRET);
-                Log.d(TAG, "Clearing OAuth Secret");
+                MyLog.d(TAG, "Clearing OAuth Secret");
             } else {
                 editor.putString(ConnectionOAuth.USER_SECRET, secret);
-                Log.d(TAG, "Saving OAuth Secret: " + secret);
+                MyLog.d(TAG, "Saving OAuth Secret: " + secret);
             }
             editor.commit();
             // Keys changed so we have to reload them

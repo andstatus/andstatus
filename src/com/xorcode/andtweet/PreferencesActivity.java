@@ -739,7 +739,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                     if (message != null && message.length() > 0) {
                         message2 = message2 + ": " + message;
                     }
-                    Log.d(TAG, message2);
+                    MyLog.d(TAG, message2);
                 }
 
                 // This also works sometimes, but message2 may have quotes...
@@ -927,7 +927,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                     boolean succeeded = jso.getBoolean("succeeded");
                     String message = jso.getString("message");
 
-                    Log.d(TAG, this.getClass().getName() + " ended, "
+                    MyLog.d(TAG, this.getClass().getName() + " ended, "
                             + (succeeded ? "authenticated" : "authentication failed"));
                     
                     if (succeeded) {
@@ -971,17 +971,17 @@ public class PreferencesActivity extends PreferenceActivity implements
         SharedPreferences.Editor editor = settings.edit();
         if (token == null) {
             editor.remove(ConnectionOAuth.REQUEST_TOKEN);
-            Log.d(TAG, "Clearing Request Token");
+            MyLog.d(TAG, "Clearing Request Token");
         } else {
             editor.putString(ConnectionOAuth.REQUEST_TOKEN, token);
-            Log.d(TAG, "Saving Request Token: " + token);
+            MyLog.d(TAG, "Saving Request Token: " + token);
         }
         if (secret == null) {
             editor.remove(ConnectionOAuth.REQUEST_SECRET);
-            Log.d(TAG, "Clearing Request Secret");
+            MyLog.d(TAG, "Clearing Request Secret");
         } else {
             editor.putString(ConnectionOAuth.REQUEST_SECRET, secret);
-            Log.d(TAG, "Saving Request Secret: " + secret);
+            MyLog.d(TAG, "Saving Request Secret: " + secret);
         }
         editor.commit();
 

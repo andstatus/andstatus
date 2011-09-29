@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.xorcode.andtweet;
+package com.xorcode.andtweet.data;
 
 import java.io.File;
 import java.util.Arrays;
@@ -38,15 +38,16 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.xorcode.andtweet.data.AndTweetDatabase;
 import com.xorcode.andtweet.data.AndTweetDatabase.DirectMessages;
 import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.data.AndTweetDatabase.Users;
-import com.xorcode.andtweet.data.MyPreferences;
 import com.xorcode.andtweet.util.MyLog;
 
 /**
  * Database provider for the AndTweetDatabase database.
+ * 
+ * The code of this application accesses this class through {@link android.content.ContentResolver}.
+ * ContentResolver in it's turn accesses this class.
  * 
  * @author torgny.bjers
  */
@@ -58,6 +59,11 @@ public class AndTweetProvider extends ContentProvider {
 
     private static final String DATABASE_NAME = "andtweet.sqlite";
 
+    /**
+     * Current database scheme version, defined by AndTweet developers.
+     * This is used to check (and upgrade if necessary) 
+     * existing database after application update.
+     */
     private static final int DATABASE_VERSION = 8;
 
     private static final String TWEETS_TABLE_NAME = "tweets";
@@ -65,8 +71,6 @@ public class AndTweetProvider extends ContentProvider {
     private static final String USERS_TABLE_NAME = "users";
 
     private static final String DIRECTMESSAGES_TABLE_NAME = "directmessages";
-
-    private static final UriMatcher sUriMatcher;
 
     private DatabaseHelper mOpenHelper;
 
@@ -76,23 +80,32 @@ public class AndTweetProvider extends ContentProvider {
 
     private static HashMap<String, String> sDirectMessagesProjectionMap;
 
+    /**
+     * "Authority", represented by this ContentProvider subclass 
+     *   and declared in the application's manifest.
+     *   
+     * As Android documentation states:
+     * "The authority therefore must be unique. 
+     *  Typically, as in this example, it's the fully qualified name of a ContentProvider subclass.
+     *  The path part of a URI may be used by a content provider to identify particular data subsets,
+     *  but those paths are not declared in the manifest."
+     * (see <a href="http://developer.android.com/guide/topics/manifest/provider-element.html">&lt;provider&gt;</a>)
+     */
+    public static final String AUTHORITY = AndTweetProvider.class.getName();
+
+    private static final UriMatcher sUriMatcher;
+    /**
+     * Matched codes, returned by {@link UriMatcher#match(Uri)}
+     */
     private static final int TWEETS = 1;
-
-    private static final int TWEETS_COUNT = 8;
-
-    private static final int TWEET_ID = 2;
-
-    private static final int USERS = 3;
-
-    private static final int USER_ID = 4;
-
-    private static final int DIRECTMESSAGES = 5;
-
-    private static final int DIRECTMESSAGE_ID = 6;
-
+    private static final int TWEETS_COUNT = 2;
+    private static final int TWEETS_SEARCH = 3;
+    private static final int TWEET_ID = 4;
+    private static final int USERS = 5;
+    private static final int USER_ID = 6;
+    private static final int DIRECTMESSAGES = 7;
+    private static final int DIRECTMESSAGE_ID = 8;
     private static final int DIRECTMESSAGES_COUNT = 9;
-
-    private static final int TWEET_SEARCH = 7;
 
     /**
      * Database helper for AndTweetProvider.
@@ -244,7 +257,7 @@ public class AndTweetProvider extends ContentProvider {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            Log.d(TAG, "Creating tables");
+            MyLog.d(TAG, "Creating tables");
             db.execSQL("CREATE TABLE " + TWEETS_TABLE_NAME + " (" + Tweets._ID
                     + " INTEGER PRIMARY KEY," + Tweets.AUTHOR_ID + " TEXT," + Tweets.MESSAGE
                     + " TEXT," + Tweets.SOURCE + " TEXT," + Tweets.TWEET_TYPE + " INTEGER,"
@@ -265,7 +278,7 @@ public class AndTweetProvider extends ContentProvider {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.d(TAG, "Upgrading database from version " + oldVersion + " to version "
+            MyLog.d(TAG, "Upgrading database from version " + oldVersion + " to version "
                     + newVersion);
             if (oldVersion < 7) {
                 db.beginTransaction();
@@ -408,7 +421,9 @@ public class AndTweetProvider extends ContentProvider {
     }
 
     /**
-     * Get type of the Uri to make sure we use the right table
+     * Get MIME type of the content, used for the supplied Uri
+     * For discussion how this may be used see:
+     * <a href="http://stackoverflow.com/questions/5351669/why-use-contentprovider-gettype-to-get-mime-type">Why use ContentProvider.getType() to get MIME type</a>
      * 
      * @see android.content.ContentProvider#getType(android.net.Uri)
      */
@@ -416,7 +431,7 @@ public class AndTweetProvider extends ContentProvider {
     public String getType(Uri uri) {
         switch (sUriMatcher.match(uri)) {
             case TWEETS:
-            case TWEET_SEARCH:
+            case TWEETS_SEARCH:
             case TWEETS_COUNT:
                 return Tweets.CONTENT_TYPE;
 
@@ -523,6 +538,9 @@ public class AndTweetProvider extends ContentProvider {
                 table = TWEETS_TABLE_NAME;
                 nullColumnHack = Tweets.MESSAGE;
                 contentUri = Tweets.CONTENT_URI;
+                /**
+                 * Add default values for missed required fields
+                 */
                 if (values.containsKey(Tweets.CREATED_DATE) == false)
                     values.put(Tweets.CREATED_DATE, now);
                 if (values.containsKey(Tweets.SENT_DATE) == false)
@@ -613,7 +631,7 @@ public class AndTweetProvider extends ContentProvider {
                 qb.appendWhere(Tweets._ID + "=" + uri.getPathSegments().get(1));
                 break;
 
-            case TWEET_SEARCH:
+            case TWEETS_SEARCH:
                 qb.setTables(TWEETS_TABLE_NAME);
                 qb.setProjectionMap(sTweetsProjectionMap);
                 String s1 = uri.getLastPathSegment();
@@ -817,19 +835,19 @@ public class AndTweetProvider extends ContentProvider {
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-        sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, TWEETS_TABLE_NAME, TWEETS);
-        sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, TWEETS_TABLE_NAME + "/#", TWEET_ID);
-        sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, TWEETS_TABLE_NAME + "/search/*",
-                TWEET_SEARCH);
-        sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, TWEETS_TABLE_NAME + "/count", TWEETS_COUNT);
+        sUriMatcher.addURI(AUTHORITY, TWEETS_TABLE_NAME, TWEETS);
+        sUriMatcher.addURI(AUTHORITY, TWEETS_TABLE_NAME + "/#", TWEET_ID);
+        sUriMatcher.addURI(AUTHORITY, TWEETS_TABLE_NAME + "/search/*",
+                TWEETS_SEARCH);
+        sUriMatcher.addURI(AUTHORITY, TWEETS_TABLE_NAME + "/count", TWEETS_COUNT);
 
-        sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, USERS_TABLE_NAME, USERS);
-        sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, USERS_TABLE_NAME + "/#", USER_ID);
+        sUriMatcher.addURI(AUTHORITY, USERS_TABLE_NAME, USERS);
+        sUriMatcher.addURI(AUTHORITY, USERS_TABLE_NAME + "/#", USER_ID);
 
-        sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, DIRECTMESSAGES_TABLE_NAME, DIRECTMESSAGES);
-        sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, DIRECTMESSAGES_TABLE_NAME + "/#",
+        sUriMatcher.addURI(AUTHORITY, DIRECTMESSAGES_TABLE_NAME, DIRECTMESSAGES);
+        sUriMatcher.addURI(AUTHORITY, DIRECTMESSAGES_TABLE_NAME + "/#",
                 DIRECTMESSAGE_ID);
-        sUriMatcher.addURI(AndTweetDatabase.AUTHORITY, DIRECTMESSAGES_TABLE_NAME + "/count",
+        sUriMatcher.addURI(AUTHORITY, DIRECTMESSAGES_TABLE_NAME + "/count",
                 DIRECTMESSAGES_COUNT);
 
         sTweetsProjectionMap = new HashMap<String, String>();
