@@ -166,9 +166,10 @@
 	<string name="summary_preference_use_avatars_off">Аватары пользователей не будут показаны</string>
 	<string name="summary_preference_use_avatars_on">Аватары пользователей будут показаны</string>
 	<string name="summary_preference_username">Ваше имя пользователя в Твиттере</string>
-	<string name="summary_preference_verify_credentials">Щёлкните здесь для аутентификации пользователя и включения данного аккаунта пользователя</string>
-	<string name="summary_preference_credentials_verified">Данный аккаунт пользователя успешно аутентифицирован (проверен) и включён. Щёлкните здесь для повторной проверки</string>
-	<string name="summary_preference_credentials_verified_2lines">Успешно аутентифицирован (проверен). Щёлкните здесь для повторной проверки</string>
+	<string name="summary_preference_verify_credentials">Данный аккаунт пользователя успешно аутентифицирован (проверен) и включён. Щёлкните здесь для повторной проверки</string>
+	<string name="summary_preference_verify_credentials_2lines">Успешно аутентифицирован (проверен). Щёлкните здесь для повторной проверки</string>
+	<string name="summary_preference_verify_credentials_add">Щёлкните здесь для открытия сайта twitter.com в браузере.</string>
+	<string name="summary_preference_verify_credentials_failed">Проверка завершилась неудачно. Щёлкните здесь для аутентификации пользователя и включения данного аккаунта</string>
 	<string name="summary_preference_vibration">Виброзвонок при входящем твите</string>
 	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>
 	<string name="summary_preference_vibration_on">Виброзвонок при входящем твите включён</string>
@@ -197,7 +198,9 @@
 	<string name="title_preference_theme">Тема</string>
 	<string name="title_preference_username">Имя пользователя</string>
 	<string name="title_preference_use_avatars">Показывать аватары</string>
-	<string name="title_preference_verify_credentials">Проверить аккаунт</string>
+	<string name="title_preference_verify_credentials">Перепроверить аккаунт</string>
+	<string name="title_preference_verify_credentials_add">Добавить аккаунт</string>
+	<string name="title_preference_verify_credentials_failed">Проверить аккаунт</string>
 	<string name="title_preference_vibration">Виброзвонок</string>
 	<string name="tweet_activity">Твиты</string>
 	<string name="tweet_source_from">%1$s из %2$s %3$s</string>

@@ -75,6 +75,11 @@ public class TwitterUser {
      * Is this user authenticated with OAuth?
      */
     private boolean mOAuth = true;
+    /**
+     * This is defined by tweet server
+     * Starting from 2010-09 twitter.com allows OAuth only
+     */
+    private boolean mCanChangeOAuth = false;
 
     private Connection mConnection = null;
 
@@ -114,6 +119,12 @@ public class TwitterUser {
     }
 
     public void setCredentialsVerified(CredentialsVerified cv) {
+        if (getCredentialsVerified() == CredentialsVerified.NEVER) {
+            if (cv != CredentialsVerified.SUCCEEDED) {
+                // If verification didn't succeed, the state doesn't change
+                return;
+            }
+        }
         mCredentialsVerified = cv;
         mCredentialsVerified.save(getSharedPreferences());
     }
@@ -190,6 +201,23 @@ public class TwitterUser {
         } else {
             return mTu.toArray(new TwitterUser[mTu.size()]);
         }
+    }
+    
+    /**
+     * How many authenticated users are the list of accounts?
+     * @return count
+     */
+    public static int countOfAuthenticatedUsers() {
+        int count = 0;
+        int ind = -1;
+
+        for (ind = 0; ind < mTu.size(); ind++) {
+            if (mTu.elementAt(ind).wasAuthenticated()) {
+                count += 1;
+                break;
+            }
+        }
+        return count;
     }
 
     /**
@@ -654,5 +682,13 @@ public class TwitterUser {
             // ed.putBoolean(PreferencesActivity.KEY_AUTOMATIC_UPDATES, false);
         }
         ed.commit();
+    }
+
+    /**
+     * This is defined by tweet server
+     * Starting from 2010-09 twitter.com allows OAuth only
+     */
+    public boolean canChangeOAuth() {
+        return mCanChangeOAuth;
     }
 }

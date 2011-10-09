@@ -174,9 +174,14 @@ public class PreferencesActivity extends PreferenceActivity implements
         }
         mEditTextUsername.setSummary(sb);
 
+        // Disable Username if we have no user accounts yet
+        mEditTextUsername.setEnabled(TwitterUser.countOfAuthenticatedUsers() > 0);
+
         if (tu.isOAuth() != mOAuth.isChecked()) {
             mOAuth.setChecked(tu.isOAuth());
         }
+        // In fact, we should hide it if not enabled, but I couldn't find an easy way for this...
+        mOAuth.setEnabled(tu.canChangeOAuth());
 
         if (mEditTextPassword.getText() == null
                 || tu.getPassword().compareTo(mEditTextPassword.getText()) != 0) {
@@ -189,29 +194,27 @@ public class PreferencesActivity extends PreferenceActivity implements
         mEditTextPassword.setSummary(sb);
         mEditTextPassword.setEnabled(tu.getConnection().isPasswordNeeded());
 
-        if (tu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-            sb = new StringBuilder(
-                    this
-                            .getText((com.xorcode.andtweet.util.Build.VERSION.SDK_INT >= 8) ? R.string.summary_preference_credentials_verified
-                                    : R.string.summary_preference_credentials_verified_2lines));
-        } else {
-            sb = new StringBuilder(this.getText(R.string.summary_preference_verify_credentials));
-            if (com.xorcode.andtweet.util.Build.VERSION.SDK_INT >= 8) {
-                // Froyo can show more than two lines
-                sb.append("\n(");
-            } else {
-                sb.append(" (");
-            }
-            switch (tu.getCredentialsVerified()) {
-                case NEVER:
-                    sb.append(this.getText(R.string.authentication_never));
-                    break;
-                case FAILED:
-                    sb.append(this.getText(R.string.dialog_title_authentication_failed));
-                    break;
-            }
-            sb.append(")");
+        int titleResId;
+        switch (tu.getCredentialsVerified()) {
+            case SUCCEEDED:
+                titleResId = R.string.title_preference_verify_credentials;
+                sb = new StringBuilder(
+                        this.getText((com.xorcode.andtweet.util.Build.VERSION.SDK_INT >= 8) ? R.string.summary_preference_verify_credentials
+                                : R.string.summary_preference_verify_credentials_2lines));
+                break;
+            case FAILED:
+                titleResId = R.string.title_preference_verify_credentials_failed;
+                sb = new StringBuilder(
+                        this.getText(R.string.summary_preference_verify_credentials_failed));
+                break;
+            case NEVER:
+            default:
+                titleResId = R.string.title_preference_verify_credentials_add;
+                sb = new StringBuilder(
+                        this.getText(R.string.summary_preference_verify_credentials_add));
+                break;
         }
+        mVerifyCredentials.setTitle(titleResId);
 
         mVerifyCredentials.setSummary(sb);
         mVerifyCredentials.setEnabled(tu.getCredentialsPresent()

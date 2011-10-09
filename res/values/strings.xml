@@ -166,9 +166,10 @@
 	<string name="summary_preference_use_avatars_off">User avatars will not be displayed</string>
 	<string name="summary_preference_use_avatars_on">User avatars will be displayed</string>
 	<string name="summary_preference_username">Your Twitter username</string>
-	<string name="summary_preference_verify_credentials">Tap here to verify credentials and enable this User Account</string>
-	<string name="summary_preference_credentials_verified">This User account has been successfully verified and hence enabled. Tap here to verify the user\'s credentials again.</string>
-	<string name="summary_preference_credentials_verified_2lines">Successfully verified. Tap here to verify the user\'s credentials again.</string>
+    <string name="summary_preference_verify_credentials">This User account is verified and enabled. Tap here to verify the user\'s credentials again.</string>
+    <string name="summary_preference_verify_credentials_2lines">Successfully verified. Tap here to verify the user\'s credentials again.</string>
+	<string name="summary_preference_verify_credentials_add">Tap here to open twitter.com site in the browser.</string>
+    <string name="summary_preference_verify_credentials_failed">Verification failed. Tap here to verify credentials and enable this User Account</string>
 	<string name="summary_preference_vibration">Vibrate on incoming message</string>
 	<string name="summary_preference_vibration_off">Vibration turned off</string>
 	<string name="summary_preference_vibration_on">Vibrating on incoming message</string>
@@ -197,7 +198,9 @@
 	<string name="title_preference_theme">Theme</string>
 	<string name="title_preference_username">Username</string>
 	<string name="title_preference_use_avatars">Display Avatars</string>
-	<string name="title_preference_verify_credentials">Verify credentials</string>
+    <string name="title_preference_verify_credentials">Reverify credentials</string>
+    <string name="title_preference_verify_credentials_add">Add account</string>
+	<string name="title_preference_verify_credentials_failed">Verify credentials</string>
 	<string name="title_preference_vibration">Vibration</string>
 	<string name="tweet_activity">Tweet</string>
 	<string name="tweet_source_from">%1$s from %2$s %3$s</string>

@@ -46,6 +46,10 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
                 <change>Fixed: Errors in the Service when it's stopped during command execution.</change>
         </changes>
         <history>
+            <package android:versionName="1.2.1" android:versionCode="45"
+                versionDate="2011-10-09">
+                <change>Improved interface of the "User credentials" group of Preferences to make it more clear for new users (Issue 61)</change>
+            </package>
             <package android:versionName="1.2.0" android:versionCode="44"
                 versionDate="2011-09-28">
                 <change>Implemented "Move Enter your tweet here field to it's own screen" request (Issue 60)</change>
