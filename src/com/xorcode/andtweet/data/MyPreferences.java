@@ -37,9 +37,10 @@ public class MyPreferences {
     
     public static final String KEY_OAUTH = "oauth";
     /**
-     * Was this user ever authenticated?
+     * Is this user NOT temporal?
+     * (TODO: refactor the key name and invert value)
      */
-    public static final String KEY_WAS_AUTHENTICATED = "was_authenticated";
+    public static final String KEY_IS_NOT_TEMPORAL = "was_authenticated";
     /**
      * Was current user ( user set in global preferences) authenticated last
      * time credentials were verified? CredentialsVerified.NEVER - after changes

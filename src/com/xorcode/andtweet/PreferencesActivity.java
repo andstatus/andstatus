@@ -202,16 +202,16 @@ public class PreferencesActivity extends PreferenceActivity implements
                         this.getText((com.xorcode.andtweet.util.Build.VERSION.SDK_INT >= 8) ? R.string.summary_preference_verify_credentials
                                 : R.string.summary_preference_verify_credentials_2lines));
                 break;
-            case FAILED:
-                titleResId = R.string.title_preference_verify_credentials_failed;
-                sb = new StringBuilder(
-                        this.getText(R.string.summary_preference_verify_credentials_failed));
-                break;
-            case NEVER:
             default:
-                titleResId = R.string.title_preference_verify_credentials_add;
-                sb = new StringBuilder(
-                        this.getText(R.string.summary_preference_verify_credentials_add));
+                if (tu.isTemporal()) {
+                    titleResId = R.string.title_preference_verify_credentials_add;
+                    sb = new StringBuilder(
+                            this.getText(R.string.summary_preference_verify_credentials_add));
+                } else {
+                    titleResId = R.string.title_preference_verify_credentials_failed;
+                    sb = new StringBuilder(
+                            this.getText(R.string.summary_preference_verify_credentials_failed));
+                }
                 break;
         }
         mVerifyCredentials.setTitle(titleResId);

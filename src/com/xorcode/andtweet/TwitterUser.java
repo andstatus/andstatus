@@ -59,13 +59,14 @@ public class TwitterUser {
     private String mUsername = "";
 
     /**
-     * Was this user _ever_ authenticated?
+     * Is this object temporal?
+     * true - in a case this user was not _ever_ authenticated
      */
-    private boolean mWasAuthenticated = false;
+    private boolean mIsTemporal = true;
 
     /**
-     * Was this user authenticated last time credentials were verified?
-     * CredentialsVerified.NEVER - after changes of password/OAuth...
+     * Was this user authenticated last time _current_ credentials were verified?
+     * CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
      */
     private CredentialsVerified mCredentialsVerified = CredentialsVerified.NEVER;
 
@@ -83,6 +84,10 @@ public class TwitterUser {
 
     private Connection mConnection = null;
 
+    /**
+     * NEVER - means that User was never successfully authenticated with current credentials,
+     *      this is why we reset to state to NEVER every time credentials were changed.
+     */
     public enum CredentialsVerified {
         NEVER, FAILED, SUCCEEDED;
 
@@ -119,12 +124,6 @@ public class TwitterUser {
     }
 
     public void setCredentialsVerified(CredentialsVerified cv) {
-        if (getCredentialsVerified() == CredentialsVerified.NEVER) {
-            if (cv != CredentialsVerified.SUCCEEDED) {
-                // If verification didn't succeed, the state doesn't change
-                return;
-            }
-        }
         mCredentialsVerified = cv;
         mCredentialsVerified.save(getSharedPreferences());
     }
@@ -212,7 +211,7 @@ public class TwitterUser {
         int ind = -1;
 
         for (ind = 0; ind < mTu.size(); ind++) {
-            if (mTu.elementAt(ind).wasAuthenticated()) {
+            if (!mTu.elementAt(ind).isTemporal()) {
                 count += 1;
                 break;
             }
@@ -291,7 +290,7 @@ public class TwitterUser {
                 found = true;
                 break;
             }
-            if (!mTu.elementAt(ind).wasAuthenticated()) {
+            if (mTu.elementAt(ind).isTemporal()) {
                 indTemp = ind;
             }
         }
@@ -373,7 +372,10 @@ public class TwitterUser {
         if (!isNewUser) {
             // Load stored data for the User
             SharedPreferences sp = getSharedPreferences();
-            mWasAuthenticated = sp.getBoolean(MyPreferences.KEY_WAS_AUTHENTICATED, false);
+            mIsTemporal = !sp.getBoolean(MyPreferences.KEY_IS_NOT_TEMPORAL, false);
+            if (mIsTemporal) {
+                
+            }
             mCredentialsVerified = CredentialsVerified.load(sp);
             mOAuth = sp.getBoolean(MyPreferences.KEY_OAUTH, true);
         }
@@ -404,7 +406,8 @@ public class TwitterUser {
     }
 
     /**
-     * set Username for the User who was first time authenticated
+     * Set Username for the User who was first time authenticated
+     * Remember that the User was ever authenticated 
      * 
      * @param username - new Username to set.
      */
@@ -413,7 +416,7 @@ public class TwitterUser {
         String newPrefsFileName = prefsFileNameForUser(username);
         boolean ok = false;
 
-        if (!mWasAuthenticated) {
+        if (isTemporal()) {
             // Do we really need to change it?
             ok = (mPrefsFileName.compareTo(newPrefsFileName) == 0);
             if (!ok) {
@@ -429,8 +432,8 @@ public class TwitterUser {
                 }
             }
             if (ok) {
-                mWasAuthenticated = true;
-                getSharedPreferences().edit().putBoolean(MyPreferences.KEY_WAS_AUTHENTICATED, true).commit();
+                mIsTemporal = false;
+                getSharedPreferences().edit().putBoolean(MyPreferences.KEY_IS_NOT_TEMPORAL, true).commit();
             }
         }
         return ok;
@@ -459,12 +462,13 @@ public class TwitterUser {
     }
 
     /**
-     * Is this object - temporal (for user who was never authenticated)
+     * Is this object - temporal 
+     *   (i.e. the Account that was never authenticated with any credentials)
      * 
      * @return
      */
-    private boolean wasAuthenticated() {
-        return mWasAuthenticated;
+    public boolean isTemporal() {
+        return mIsTemporal;
     }
 
     /**
@@ -496,13 +500,13 @@ public class TwitterUser {
     /**
      * Delete all User's data
      * 
-     * @param forNonAuthenticatedOnly
+     * @param for temporal only
      * @return
      */
     private boolean deleteData() {
         boolean isDeleted = false;
 
-        if (wasAuthenticated()) {
+        if (!isTemporal()) {
             // TODO: Delete databases for this User
 
         }
@@ -629,7 +633,7 @@ public class TwitterUser {
                 if (ok) {
                     setCredentialsVerified(CredentialsVerified.SUCCEEDED);
                 }
-                if (ok && !mWasAuthenticated) {
+                if (ok && isTemporal()) {
                     // Now we know the name of this User!
                     ok = setUsernameAuthenticated(newName);
                     if (!ok) {

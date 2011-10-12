@@ -61,7 +61,6 @@ import com.xorcode.andtweet.data.AndTweetDatabase.Tweets;
 import com.xorcode.andtweet.util.MyLog;
 import com.xorcode.andtweet.AndTweetService.CommandData;
 import com.xorcode.andtweet.AndTweetService.CommandEnum;
-import com.xorcode.andtweet.TwitterUser.CredentialsVerified;
 
 /**
  * @author torgny.bjers
@@ -244,8 +243,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             startActivity(new Intent(this, SplashActivity.class));
             finish();
         }
-        if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.NEVER) {
-            Log.i(TAG, "TwitterUser '" + TwitterUser.getTwitterUser().getUsername() + "' was not ever verified?");
+        if (TwitterUser.getTwitterUser().isTemporal()) {
+            Log.i(TAG, "Account '" + TwitterUser.getTwitterUser().getUsername() + "' is temporal?!");
             startActivity(new Intent(this, SplashActivity.class));
             finish();
         }
@@ -297,8 +296,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void onResume() {
         super.onResume();
         MyLog.v(TAG, "onResume");
-        if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.NEVER) {
-            MyLog.v(TAG, "Finishing this Activity because user was not ever authenticated");
+        if (TwitterUser.getTwitterUser().isTemporal()) {
+            MyLog.v(TAG, "Finishing this Activity because user is temporal");
             mIsFinishingOnResume = true;
             finish();
         } else if (MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0) > preferencesChangeTime) {

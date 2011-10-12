@@ -33,22 +33,25 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
  -->
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
-    <release android:versionName="1.2.0" android:versionCode="44"
-        versionDate="2011-09-28">
+    <release android:versionName="1.2.1" android:versionCode="45"
+        versionDate="2011-10-11">
         <changes>
                 <change>Implemented "Move Enter your tweet here field to it's own screen" request (Issue 60)</change>
+                <change>Improved interface of the "User credentials" group of Preferences to make it more clear for new users (Issue 61)</change>
+                <change>Internal application changes that require recreating AndTweet Widget after upgrade to this version.</change>
                 <change>Fixed: Sometimes twitter.com succeeds to create/delete favorite, 
                    but doesn't change 'favorited' flag in the returned tweet.
                    Sometimes it fails, but doesn't indicate error.
                    (This is twitter.com feature: asynchronous processes...)</change>
                 <change>Fixed: Issue 45: Manually setting a username and authenticating with another does not work.</change>
-                <change>Fixed: Issue 50: tells me credentials. are for other user</change>
+                <change>Fixed: Issue 50: tells me credentials are for other user</change>
                 <change>Fixed: Errors in the Service when it's stopped during command execution.</change>
         </changes>
         <history>
             <package android:versionName="1.2.1" android:versionCode="45"
-                versionDate="2011-10-09">
+                versionDate="2011-10-11">
                 <change>Improved interface of the "User credentials" group of Preferences to make it more clear for new users (Issue 61)</change>
+                <change>Internal application changes that require recreating AndTweet Widget after upgrade to this version.</change>
             </package>
             <package android:versionName="1.2.0" android:versionCode="44"
                 versionDate="2011-09-28">
@@ -58,7 +61,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
                    Sometimes it fails, but doesn't indicate error.
                    (This is twitter.com feature: asynchronous processes...)</change>
                 <change>Fixed: Issue 45: Manually setting a username and authenticating with another does not work.</change>
-                <change>Fixed: Issue 50: tells me credentials. are for other user</change>
+                <change>Fixed: Issue 50: tells me credentials are for other user</change>
                 <change>Fixed: Errors in the Service when it's stopped during command execution.</change>
             </package>
         </history>
