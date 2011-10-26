@@ -78,6 +78,8 @@ public class TweetListActivity extends TimelineActivity {
 
     public static final int CONTEXT_MENU_ITEM_DESTROY_STATUS = Menu.FIRST + 10;
 
+    public static final int CONTEXT_MENU_ITEM_SHARE = Menu.FIRST + 11;
+
     private boolean mInitializing = false;
 
     // Table columns to use for the tweets data
@@ -321,6 +323,7 @@ public class TweetListActivity extends TimelineActivity {
         // Add menu items
         menu.add(0, CONTEXT_MENU_ITEM_REPLY, m++, R.string.menu_item_reply);
         menu.add(0, CONTEXT_MENU_ITEM_RETWEET, m++, R.string.menu_item_retweet);
+        menu.add(0, CONTEXT_MENU_ITEM_SHARE, m++, R.string.menu_item_share);
         // menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, m++,
         // R.string.menu_item_direct_message);
         // menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, m++,
@@ -434,6 +437,50 @@ public class TweetListActivity extends TimelineActivity {
                 sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, mCurrentId));
                 return true;
 
+            case CONTEXT_MENU_ITEM_SHARE:
+                uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, info.id);
+                c = getContentResolver().query(uri, new String[] {
+                        Tweets._ID, Tweets.AUTHOR_ID, Tweets.MESSAGE
+                }, null, null, null);
+                try {
+                    c.moveToFirst();
+
+                    StringBuilder subject = new StringBuilder();
+                    StringBuilder text = new StringBuilder();
+                    String message = c.getString(c.getColumnIndex(Tweets.MESSAGE));
+
+                    subject.append(getText(R.string.button_create_tweet));
+                    subject.append(" - " + message);
+                    int maxlength = 80;
+                    if (subject.length() > maxlength) {
+                        subject.setLength(maxlength);
+                        // Truncate at the last space
+                        subject.setLength(subject.lastIndexOf(" "));
+                        subject.append("...");
+                    }
+
+                    text.append(message);
+                    text.append("\n-- \n" + c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)));
+                    text.append("\n URL: " + "http://twitter.com/"
+                            + c.getString(c.getColumnIndex(Tweets.AUTHOR_ID)) 
+                            + "/status/"
+                            + c.getString(c.getColumnIndex(Tweets._ID)));
+                    
+                    Intent share = new Intent(android.content.Intent.ACTION_SEND); 
+                    share.setType("text/plain"); 
+                    share.putExtra(Intent.EXTRA_SUBJECT, subject.toString()); 
+                    share.putExtra(Intent.EXTRA_TEXT, text.toString()); 
+                    startActivity(Intent.createChooser(share, getText(R.string.menu_item_share)));
+                    
+                } catch (Exception e) {
+                    Log.e(TAG, "onContextItemSelected: " + e.toString());
+                    return false;
+                } finally {
+                    if (c != null && !c.isClosed())
+                        c.close();
+                }
+                return true;
+                
             case CONTEXT_MENU_ITEM_UNFOLLOW:
             case CONTEXT_MENU_ITEM_BLOCK:
             case CONTEXT_MENU_ITEM_DIRECT_MESSAGE:
