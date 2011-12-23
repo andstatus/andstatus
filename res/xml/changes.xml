@@ -39,7 +39,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
                 <change>Implemented "Move Enter your tweet here field to it's own screen" request (Issue 60)</change>
                 <change>Added option to Share tweet.</change>
                 <change>Improved interface of the "User credentials" group of Preferences to make it more clear for new users (Issue 61)</change>
-                <change>Internal application changes that require recreating AndTweet Widget after upgrade to this version.</change>
+                <change>Internal application changes that require recreating AndStatus Widget after upgrade to this version.</change>
                 <change>Fixed: Sometimes twitter.com succeeds to create/delete favorite, 
                    but doesn't change 'favorited' flag in the returned tweet.
                    Sometimes it fails, but doesn't indicate error.
@@ -56,7 +56,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
             <package android:versionName="1.2.1" android:versionCode="45"
                 versionDate="2011-10-11">
                 <change>Improved interface of the "User credentials" group of Preferences to make it more clear for new users (Issue 61)</change>
-                <change>Internal application changes that require recreating AndTweet Widget after upgrade to this version.</change>
+                <change>Internal application changes that require recreating AndStatus Widget after upgrade to this version.</change>
             </package>
             <package android:versionName="1.2.0" android:versionCode="44"
                 versionDate="2011-09-28">
@@ -81,7 +81,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
             on a Server" after updating his status (i.e. sending a tweet)
             and may continue reading and
             writing tweets, making them Favorite etc.
-            while AndTweet stores all the
+            while AndStatus stores all the
             commands in the queue and retries delivery
             upon every automatic update and also
             during any manual command (Reload or Status update).
@@ -107,7 +107,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
             this (maybe it failed...)</change>
         <change>New Preference "Minimum logging level" added to allow changing 
             Logging level from within the application Preferences.</change>
-        <change>Another pass of timeline code cleaning. Now AndTweet's
+        <change>Another pass of timeline code cleaning. Now AndStatus's
             timelines open
             faster thanks to less requests and redrawing.</change>
         <change>Fixed issue 12 "Themes do not apply until app is restarted"</change>
@@ -152,7 +152,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
 				approach works
 				for the other commands also: Timeline reload,
 				Favorites creation and deletion.
-				AndTweet retries to send commands to the server on every
+				AndStatus retries to send commands to the server on every
 				automatic update and during any manual command or message
 				(Reload or Status update). User is being notified
 				about number of messages currently in the queue
@@ -168,12 +168,12 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
 				2. Fixed errors loading data from the Internet due to parallel
 				OAuth requests. (e.g. during initial loading of the User's
 				timeline).
-				3. Another pass of timeline code cleaning. Now AndTweet's
+				3. Another pass of timeline code cleaning. Now AndStatus's
 				timelines open faster thanks to less requests and redrawing.
 				4. Made first step in switching from parallel
 				and, in fact, synchronous requests (Twitter commands) processing to
 				the sequential and queued processing, see {@link
-				com.xorcode.andtweet.TimelineActivity#queueIntent}
+				org.andstatus.app.TimelineActivity#queueIntent}
 	</package>
 			<package android:versionName="1.1.1" android:versionCode="37"
 				versionDate="2011-04-01">

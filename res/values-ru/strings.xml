@@ -15,7 +15,7 @@
 	limitations under the License.
  -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-	<string name="app_name">AndTweet</string>
+	<string name="app_name">AndStatus</string>
 	<string name="activity_title_direct_messages">Личные сообщения</string>
 	<string name="activity_title_favorites">Избранное</string>
 	<string name="activity_title_format">%1$s: %2$s</string>
@@ -42,13 +42,13 @@
 	<string name="category_title_preference_notifications">Уведомления</string>
 	<string name="category_title_preference_settings">Настройки</string>
 	<string name="category_title_preference_updates">Обновления</string>
-    <string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndTweet обменяет токен OAuth запроса на токен доступа</string>
+    <string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>
 	<string name="dialog_summary_acquiring_a_request_token">Пожалуйста подождите завершения получения токена запроса для OAuth</string>
 	<string name="dialog_summary_authentication_failed">Пожалуйста проверьте Ваши имя пользователя и пароль.</string>
 	<string name="dialog_summary_checking_credentials">Пожалуйста подождите завершения проверки имени пользователя и пароля аккаунта.</string>
 	<string name="dialog_summary_connection_timeout">Время соединения закончилось. Пожалуйста, повторите попытку позднее.</string>
 	<string name="dialog_summary_executing_command">Пожалуйста, подождите завершения обработки команды на сервере.</string>
-	<string name="dialog_summary_external_storage">Обнаружена внешняя память (SD-карта). Вы хотите, чтобы AndTweet сохранял данные на ней? Старые данные перенести туда нельзя, но они останутся во внутренней памяти Вашего устройства.</string>
+	<string name="dialog_summary_external_storage">Обнаружена внешняя память (SD-карта). Вы хотите, чтобы AndStatus сохранял данные на ней? Старые данные перенести туда нельзя, но они останутся во внутренней памяти Вашего устройства.</string>
 	<string name="dialog_summary_external_storage_missing">Внешняя память отсутствует или удалена (не смонтирована). Вы хотите использовать внутреннюю память? Все данные, которые были сохранены во внешней памяти, будут по-прежнему доступны.</string>
 	<string name="dialog_summary_sending_message">Пожалуйста подождите завершения отправки сообщения.</string>
 	<string name="dialog_summary_service_unavailable">Сервис Твиттера сейчас перегружен. Пожалуйста, попробуйте обратиться позже.</string>
@@ -94,7 +94,7 @@
 	<string name="message_sent">Ваше сообщение отправлено.</string>
 	<string name="messages_activity">Личные сообщения</string>
 	<string name="not_set">не задан</string>
-	<string name="notification_title">AndTweet</string>
+	<string name="notification_title">AndStatus</string>
 	<string name="notification_new_tweet_format">У вас {0}.</string>
 	<string name="notification_new_message_format">У вас {0}.</string>
 	<string name="notification_title_messages">Новые личные сообщения</string>
@@ -103,7 +103,7 @@
     <string name="notification_queue_format">{0} отправки в Очереди.</string>
     <string name="notification_title_queue">Не все сообщения были отправлены</string>
 	<string name="oauth_activity_label">OAuth</string>
-	<string name="options_menu_about">О программе AndTweet</string>
+	<string name="options_menu_about">О программе AndStatus</string>
 	<string name="options_menu_about_cond">Информация</string>
 	<string name="options_menu_direct_messages">Личные сообщения</string>
 	<string name="options_menu_direct_messages_cond">Сообщения</string>
@@ -122,7 +122,7 @@
 	<string name="splash_button_learn_more">Узнать больше</string>
 	<string name="splash_button_get_started">Начать работу с программой</string>
 	<string name="splash_payoff_line">Лёгкий клиент Твиттера для Андроида™</string>
-	<string name="splash_text_learn_more_1"><h1><b>1. АЗЫ ПРОГРАММЫ ANDTWEET</b></h1>\n\nПервая страница AndTweet-а содержит ленту времени Ваших друзей (т.е. тех, за кем Вы следуете - follow).\n\nДля того, чтобы произвести какое-либо действие c отдельным твитом из этой ленты-списка, Вы можете <b>длительно нажать</b> на него для появления контекстного меню.\n\nВы можетее также <b>кратко нажать</b> на твит для того, чтобы получить более подробную информацию о нём.\n\nНажмите кнопку <b>Меню</b> Вашего устройства для переключения на другие страницы программы.</string>
+	<string name="splash_text_learn_more_1"><h1><b>1. АЗЫ ПРОГРАММЫ AndStatus</b></h1>\n\nПервая страница AndStatus-а содержит ленту времени Ваших друзей (т.е. тех, за кем Вы следуете - follow).\n\nДля того, чтобы произвести какое-либо действие c отдельным твитом из этой ленты-списка, Вы можете <b>длительно нажать</b> на него для появления контекстного меню.\n\nВы можетее также <b>кратко нажать</b> на твит для того, чтобы получить более подробную информацию о нём.\n\nНажмите кнопку <b>Меню</b> Вашего устройства для переключения на другие страницы программы.</string>
 	<string name="splash_text_learn_more_2"><h1><b>2. ОТПРАВКА И ОТВЕТЫ</b></h1>\n\nДля обновления Вашего статуса (для сообщения о том, что происходит...) просто напишите об этом в текстовом поле внизу окна и нажмите кнопку <b>Отправить</b>.\n\nДля того, чтобы ответить, <b>длительно нажмите</b> на твит, выберите <b>Ответить</b> в контекстном меню и введите свой ответ в текстовом поле внизу страницы.\n\nДля отмены ответа, удалите весь текст из текстового поля внизу страницы.</string>
 	<string name="splash_text_learn_more_3"><h1><b>3. ЛИЧНЫЕ СООБЩЕНИЯ</b></h1>\n\nНажмите <b>Меню</b>, а далее - <b>Сообщения</b>.\n\nДля <b>удаления</b> личного сообщения, <b>длительно нажмите</b> на него и выберите <b>Удалить</b>.\n\nНовые сообщения появляются, если Вы включили <b>Автоматические обновления</b>.</string>
 	<string name="splash_text_learn_more_4"><h1><b>4. СПИСОК УПОМИНАНИЙ</b></h1>\n\nНажмите <b>Меню</b>, а далее - <b>Упоминания</b>.\n\nВ списке упоминаний будут показаны все твиты, в которых упоминается Ваше <b>@имяпользователя</b>.</string>
@@ -132,7 +132,7 @@
 	<string name="search_direct_messages_label">Поиск личных сообщений</string>
 	<string name="search_direct_messages_hint">Введите имя или фразу</string>
 	<string name="status_destroyed">Твит удалён.</string>
-	<string name="summary_preference_appearance">Изменить внешний вид программы AndTweet</string>
+	<string name="summary_preference_appearance">Изменить внешний вид программы AndStatus</string>
 	<string name="summary_preference_automatic_updates">Изменить параметры автоматического обновления</string>
 	<string name="summary_preference_automatic_updates_off">Автоматические обновления отключены</string>
 	<string name="summary_preference_automatic_updates_on">Автоматические обновления включены</string>
@@ -162,7 +162,7 @@
 	<string name="summary_preference_storage">Где сохранять данные и изображения</string>
 	<string name="summary_preference_storage_external_off">Сохранять данные во внутренней памяти</string>
 	<string name="summary_preference_storage_external_on">Сохранять данные во внешней памяти</string>
-	<string name="summary_preference_theme">Выберите тему AndTweet-а</string>
+	<string name="summary_preference_theme">Выберите тему AndStatus-а</string>
 	<string name="summary_preference_use_avatars_off">Аватары пользователей не будут показаны</string>
 	<string name="summary_preference_use_avatars_on">Аватары пользователей будут показаны</string>
 	<string name="summary_preference_username">Ваше имя пользователя в Твиттере</string>
@@ -174,7 +174,7 @@
 	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>
 	<string name="summary_preference_vibration_on">Виброзвонок при входящем твите включён</string>
 	<string name="timeline_reloaded">Лента времени обновлена.</string>
-	<string name="title_preference_about_application">О программе AndTweet</string>
+	<string name="title_preference_about_application">О программе AndStatus</string>
 	<string name="title_preference_appearance">Внешний вид</string>
 	<string name="title_preference_automatic_updates">Автоматические обновления</string>
 	<string name="title_preference_change_log">Журнал изменений</string>

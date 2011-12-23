@@ -19,5 +19,5 @@
     android:hint="@string/search_timeline_hint" 
     android:searchMode="showSearchLabelAsBadge"
     android:searchSuggestIntentAction="android.intent.action.SEARCH"
-    android:searchSuggestAuthority="com.xorcode.andtweet.TimelineSuggestionProvider"
+    android:searchSuggestAuthority="org.andstatus.app.TimelineSuggestionProvider"
     android:searchSuggestSelection=" ? "/>

@@ -16,7 +16,7 @@
  -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent" android:background="@drawable/andtweet_splash"
+	android:layout_height="fill_parent" android:background="@drawable/andstatus_splash"
 	android:gravity="center">
 	<LinearLayout android:layout_width="fill_parent"
 		android:layout_height="fill_parent" android:layout_weight="1"
@@ -25,8 +25,8 @@
 		<ViewFlipper android:id="@+id/splash_more_flipper"
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent"
-			android:outAnimation="@com.xorcode.andtweet:anim/push_left_out"
-			android:inAnimation="@com.xorcode.andtweet:anim/push_left_in">
+			android:outAnimation="@org.andstatus.app:anim/push_left_out"
+			android:inAnimation="@org.andstatus.app:anim/push_left_in">
 			<TextView android:layout_height="fill_parent"
 				android:layout_width="fill_parent" android:padding="16dip"
 				android:id="@+id/splash_more_text_content_1" android:textSize="8pt"

@@ -15,7 +15,7 @@
 	limitations under the License.
  -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-	<string name="app_name">AndTweet</string>
+	<string name="app_name">AndStatus</string>
 	<string name="activity_title_direct_messages">Messages</string>
 	<string name="activity_title_favorites">Favorites</string>
 	<string name="activity_title_format">%1$s: %2$s</string>
@@ -23,7 +23,7 @@
 	<string name="activity_title_search">Search</string>
 	<string name="activity_title_timeline">Friends</string>
 
-    <string name="appwidget_configure_instructions">Customize AndTweet Widget message, shown in a case there is nothing new:</string>
+    <string name="appwidget_configure_instructions">Customize AndStatus Widget message, shown in a case there is nothing new:</string>
     <string name="appwidget_nothingnew_default">Nothing new since:</string>
 	<string name="appwidget_new_tweet_format">{0}</string>
 	<string name="appwidget_new_message_format">{0}</string>
@@ -42,13 +42,13 @@
 	<string name="category_title_preference_notifications">Notifications</string>
 	<string name="category_title_preference_settings">Settings</string>
 	<string name="category_title_preference_updates">Updates</string>
-	<string name="dialog_summary_acquiring_an_access_token">Please wait while AndTweet is exchanging an OAuth Request token for Access token</string>
-	<string name="dialog_summary_acquiring_a_request_token">Please wait while AndTweet is acquiring a request token for OAuth</string>
+	<string name="dialog_summary_acquiring_an_access_token">Please wait while AndStatus is exchanging an OAuth Request token for Access token</string>
+	<string name="dialog_summary_acquiring_a_request_token">Please wait while AndStatus is acquiring a request token for OAuth</string>
 	<string name="dialog_summary_authentication_failed">Please check your username and password.</string>
 	<string name="dialog_summary_checking_credentials">Please wait while your account is verified.</string>
 	<string name="dialog_summary_connection_timeout">Connection timed out. Please try again later.</string>
 	<string name="dialog_summary_executing_command">Please wait while the command is executed on the server.</string>
-	<string name="dialog_summary_external_storage">External storage has been detected. Do you wish AndTweet to store data there? Old data cannot be moved, but will remain in your internal memory.</string>
+	<string name="dialog_summary_external_storage">External storage has been detected. Do you wish AndStatus to store data there? Old data cannot be moved, but will remain in your internal memory.</string>
 	<string name="dialog_summary_external_storage_missing">External storage not present or unmounted. Do you want to use the internal memory? Any data stored on the external storage will still be available.</string>
 	<string name="dialog_summary_sending_message">Please wait while message is being sent.</string>
 	<string name="dialog_summary_service_unavailable">Twitter is currently over capacity. Please try again later.</string>
@@ -95,7 +95,7 @@
 	<string name="message_sent">Your message has been sent.</string>
 	<string name="messages_activity">Direct Messages</string>
 	<string name="not_set">not set</string>
-	<string name="notification_title">AndTweet</string>
+	<string name="notification_title">AndStatus</string>
 	<string name="notification_new_tweet_format">You have {0}.</string>
 	<string name="notification_new_message_format">You have {0}.</string>
 	<string name="notification_title_messages">New Direct Messages</string>
@@ -104,7 +104,7 @@
 	<string name="notification_queue_format">{0} waiting in the Queue to be sent.</string>
 	<string name="notification_title_queue">Not all messages were sent</string>
 	<string name="oauth_activity_label">OAuth</string>
-	<string name="options_menu_about">About AndTweet</string>
+	<string name="options_menu_about">About AndStatus</string>
 	<string name="options_menu_about_cond">About</string>
 	<string name="options_menu_direct_messages">Direct Messages</string>
 	<string name="options_menu_direct_messages_cond">Messages</string>
@@ -123,7 +123,7 @@
 	<string name="splash_button_learn_more">Learn More</string>
 	<string name="splash_button_get_started">Get Started</string>
 	<string name="splash_payoff_line">Light-Weight Twitter Client for Android™</string>
-	<string name="splash_text_learn_more_1"><h1><b>1. ANDTWEET BASICS</b></h1>\n\nThe first view of AndTweet contains your friend timeline.\n\nIn order to perform an action on a tweet in the list you can <b>hold down</b> on it to get a menu.\n\nYou can <b>click</b> on a tweet to get more details.\n\nPress the <b>Menu</b> button to switch to other views.</string>
+	<string name="splash_text_learn_more_1"><h1><b>1. AndStatus BASICS</b></h1>\n\nThe first view of AndStatus contains your friend timeline.\n\nIn order to perform an action on a tweet in the list you can <b>hold down</b> on it to get a menu.\n\nYou can <b>click</b> on a tweet to get more details.\n\nPress the <b>Menu</b> button to switch to other views.</string>
 	<string name="splash_text_learn_more_2"><h1><b>2. SENDING AND REPLYING</b></h1>\n\nIn order to update your status simply type it into the text area and click <b>Send</b>.\n\nIn order to reply, <b>hold down</b> and select <b>Reply</b> and type in your reply at the bottom.\n\nTo abort a reply, delete all text in the bottom text area.</string>
 	<string name="splash_text_learn_more_3"><h1><b>3. DIRECT MESSAGES</b></h1>\n\nClick <b>Menu</b> and then <b>Messages</b>.\n\nIn order to <b>delete</b> a direct message, <b>hold down</b> on it and select <b>Delete</b>.\n\nNew messages are fetched if you have turned on <b>Automatic Updates</b>.</string>
 	<string name="splash_text_learn_more_4"><h1><b>4. LISTING MENTIONS</b></h1>\n\nClick <b>Menu</b> and then <b>Mentions</b>.\n\nMentions will list every tweet that mentions your <b>@username</b>.</string>
@@ -133,7 +133,7 @@
 	<string name="search_direct_messages_label">Search direct messages</string>
 	<string name="search_direct_messages_hint">Enter a username or phrase</string>
 	<string name="status_destroyed">The tweet has been removed.</string>
-	<string name="summary_preference_appearance">Change the AndTweet look and feel</string>
+	<string name="summary_preference_appearance">Change the AndStatus look and feel</string>
 	<string name="summary_preference_automatic_updates">Change automatic update settings</string>
 	<string name="summary_preference_automatic_updates_off">Automatic updates are disabled</string>
 	<string name="summary_preference_automatic_updates_on">Automatic updates are enabled</string>
@@ -163,7 +163,7 @@
 	<string name="summary_preference_storage">Where to store data and images</string>
 	<string name="summary_preference_storage_external_off">Store data in Internal Memory</string>
 	<string name="summary_preference_storage_external_on">Store data on External Memory</string>
-	<string name="summary_preference_theme">Select AndTweet theme</string>
+	<string name="summary_preference_theme">Select AndStatus theme</string>
 	<string name="summary_preference_use_avatars_off">User avatars will not be displayed</string>
 	<string name="summary_preference_use_avatars_on">User avatars will be displayed</string>
 	<string name="summary_preference_username">Your Twitter username</string>
@@ -175,7 +175,7 @@
 	<string name="summary_preference_vibration_off">Vibration turned off</string>
 	<string name="summary_preference_vibration_on">Vibrating on incoming message</string>
 	<string name="timeline_reloaded">Timeline has been reloaded.</string>
-	<string name="title_preference_about_application">About AndTweet</string>
+	<string name="title_preference_about_application">About AndStatus</string>
 	<string name="title_preference_appearance">Appearance</string>
 	<string name="title_preference_automatic_updates">Automatic Updates</string>
 	<string name="title_preference_change_log">Change Log</string>

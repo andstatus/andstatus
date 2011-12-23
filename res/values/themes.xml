@@ -42,16 +42,16 @@
         <item name="android:windowTitleSize">45dp</item>
 	</style>
 	
-	<style name="Theme.AndTweet">
+	<style name="Theme.AndStatus">
 	</style>
 
-	<style name="Theme.AndTweet.Small">
+	<style name="Theme.AndStatus.Small">
 		<item name="tweetUsernameAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="tweetMessageAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
 
-	<style name="Theme.AndTweet.Large">
+	<style name="Theme.AndStatus.Large">
 		<item name="tweetUsernameAppearance">?android:attr/textAppearanceMedium</item>
 		<item name="tweetMessageAppearance">?android:attr/textAppearanceLarge</item>
 		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
@@ -81,16 +81,16 @@
         <item name="windowBackgroundColor">@android:color/background_light</item>
 	</style>
 
-	<style name="Theme.Light.AndTweet">
+	<style name="Theme.Light.AndStatus">
 	</style>
 
-	<style name="Theme.Light.AndTweet.Small">
+	<style name="Theme.Light.AndStatus.Small">
 		<item name="tweetUsernameAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="tweetMessageAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
 
-	<style name="Theme.Light.AndTweet.Large">
+	<style name="Theme.Light.AndStatus.Large">
 		<item name="tweetUsernameAppearance">?android:attr/textAppearanceMedium</item>
 		<item name="tweetMessageAppearance">?android:attr/textAppearanceLarge</item>
 		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>

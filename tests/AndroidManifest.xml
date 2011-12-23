@@ -16,7 +16,7 @@
 
 <!-- package name must be unique so suffix with "tests" so package loader doesn't ignore us -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.xorcode.andtweet.tests" android:versionName="1.0.1" android:versionCode="2">
+    package="org.andstatus.app.tests" android:versionName="1.0.1" android:versionCode="2">
 
 	<uses-sdk android:minSdkVersion="3"/>
 
@@ -29,10 +29,10 @@
     all other applications via the command: "adb shell itr".
     The "itr" command will find all tests declared by all applications. If you want to run just these
     tests on their own then use the command:
-    "adb shell am instrument -w com.xorcode.andtweet.tests/android.test.InstrumentationTestRunner"
+    "adb shell am instrument -w org.andstatus.app.tests/android.test.InstrumentationTestRunner"
     -->
     <instrumentation android:name="android.test.InstrumentationTestRunner"
-                     android:targetPackage="com.xorcode.andtweet"
-                     android:label="AndTweet tests"/>
+                     android:targetPackage="org.andstatus.app"
+                     android:label="AndStatus tests"/>
 
 </manifest>

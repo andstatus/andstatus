@@ -19,7 +19,7 @@
  	German translation by Benjamin Schirmer (codename.matrix@gmail.com) 
  -->
 <resources>
-	<string name="app_name">AndTweet</string>
+	<string name="app_name">AndStatus</string>
 	<string name="activity_title_direct_messages">Nachrichten</string>
 	<string name="activity_title_format">%1$s: %2$s</string>
 	<string name="activity_title_mentions">Erwähnungen</string>
@@ -27,7 +27,7 @@
 	<string name="activity_title_timeline">Freunde</string>
 	<string name="authentication_successful">Anmeldung erfolgreich!</string>
 
-    <string name="appwidget_configure_instructions">Passe die Mitteilung an, die im AndTweet
+    <string name="appwidget_configure_instructions">Passe die Mitteilung an, die im AndStatus
     widget gezeigt wird, falls sich nichts geändert hat:</string>
     <string name="appwidget_nothingnew_default">Nichts Neues seit:</string>
 
@@ -43,7 +43,7 @@
 	<string name="dialog_summary_checking_credentials">Bitte warten, während die Zugangsdaten überprüft werden.</string>
 	<string name="dialog_summary_connection_timeout">Zeitüberschreitung der Verbindung. Bitte versuche es später noch einmal.</string>
 	<string name="dialog_summary_executing_command">Bitte warten, während der Befehl auf dem Server ausgeführt wird.</string>
-	<string name="dialog_summary_external_storage">Externer Speicher entdeckt. Soll AndTweet seine Daten dort speichern? Alte Daten können nicht verschoben werden, aber bleiben im internen Speicher vorhanden.</string>
+	<string name="dialog_summary_external_storage">Externer Speicher entdeckt. Soll AndStatus seine Daten dort speichern? Alte Daten können nicht verschoben werden, aber bleiben im internen Speicher vorhanden.</string>
 	<string name="dialog_summary_external_storage_missing">Externer Speicher nicht verfügbar oder eingebunden. Willst du den internen Speicher verwenden? Alle Daten auf dem externen Speicher sind bleiben verfügbar.</string>
 	<string name="dialog_summary_sending_message">Bitte warten, während die Nachricht gesendet wird.</string>
 	<string name="dialog_summary_service_unavailable">Twitter ist derzeit überlastet. Bitte versuche es später noch einmal.</string>
@@ -81,13 +81,13 @@
 	<string name="menu_item_view_profile">Profil anschauen</string>
 	<string name="message_sent">Deine Nachricht wurde gesendet.</string>
 	<string name="messages_activity">Direktnachrichten</string>
-	<string name="notification_title">AndTweet</string>
+	<string name="notification_title">AndStatus</string>
 	<string name="notification_new_tweet_format">Du hast {0}.</string>
 	<string name="notification_new_message_format">Du hast {0}.</string>
 	<string name="notification_title_messages">Neue Direktnachrichten</string>
 	<string name="notification_new_mention_format">Du hast {0}.</string>
 	<string name="notification_title_mentions">Neue Erwähnungen</string>
-	<string name="options_menu_about">Über AndTweet</string>
+	<string name="options_menu_about">Über AndStatus</string>
 	<string name="options_menu_about_cond">Über</string>
 	<string name="options_menu_direct_messages">Direktnachrichten</string>
 	<string name="options_menu_direct_messages_cond">Nachrichten</string>
@@ -104,7 +104,7 @@
 	<string name="splash_button_learn_more">Mehr Informationen</string>
 	<string name="splash_button_get_started">Los gehts</string>
 	<string name="splash_payoff_line">schlanker Twitter Client für Android™</string>
-	<string name="splash_text_learn_more_1"><h1><b>1. ANDTWEET EINFÜHRUNG</b></h1>\n\nDie erste Ansicht von AndTweet zeigt die Chronik deiner Freunde.\n\nUm eine Aktion zu einem bestimmten Tweet in der Liste durchzuführen, kannst du ihn <b>lange halten</b> um zu einem Menü zu gelangen.\n\n<b>Klicke</b> auf einen Tweet für mehr Informationen zu erhalten.\n\nDrücke den <b>Menü</b> Knopf um zu anderen Ansichten zu wechseln.</string>
+	<string name="splash_text_learn_more_1"><h1><b>1. AndStatus EINFÜHRUNG</b></h1>\n\nDie erste Ansicht von AndStatus zeigt die Chronik deiner Freunde.\n\nUm eine Aktion zu einem bestimmten Tweet in der Liste durchzuführen, kannst du ihn <b>lange halten</b> um zu einem Menü zu gelangen.\n\n<b>Klicke</b> auf einen Tweet für mehr Informationen zu erhalten.\n\nDrücke den <b>Menü</b> Knopf um zu anderen Ansichten zu wechseln.</string>
 	<string name="splash_text_learn_more_2"><h1><b>2. EMPFANGEN UND ANTWORTEN</b></h1>\n\nUm deinen Status zu aktualisieren, gib ihn einfach in das Textfeld ein und drücke <b>Senden</b>.\n\nUm zu antworten, <b>halte</b> einen Tweet, wähle <b>Antworten</b> und gib deine Antwort unten ein.\n\nUm eine Antwort abzubrechen, lösche den gesamten Text aus dem Textfeld.</string>
 	<string name="splash_text_learn_more_3"><h1><b>3. DIREKTNACHRICHTEN</b></h1>\n\nDrücke <b>Menü</b> und dann <b>Nachrichten</b>.\n\nUm Direktnachrichten zu <b>löschen</b>, <b>halte</b> sie und wähle <b>Löschen</b>.\n\nNeue Nachrichten werden geladen, wenn du <b>automatische Aktualisierungen</b> aktiviert hast.</string>
 	<string name="splash_text_learn_more_4"><h1><b>4. ERWÄHNUNGEN AUFLISTEN</b></h1>\n\nDrücke <b>Menü</b> und dann <b>Erwähnungen</b>.\n\nErwähnungen listen jeden Tweet auf, der deinen <b>@Benutzername</b> enthält.</string>
@@ -114,7 +114,7 @@
 	<string name="search_direct_messages_label">Direktnachrichten durchsuchen</string>
 	<string name="search_direct_messages_hint">Name oder Wort suchen</string>
 	<string name="status_destroyed">Der Tweet wurde entfernt.</string>
-	<string name="summary_preference_appearance">Ändere das Aussehen von AndTweet</string>
+	<string name="summary_preference_appearance">Ändere das Aussehen von AndStatus</string>
 	<string name="summary_preference_automatic_updates">Einstellungen zur automatischen Aktualisierung ändern</string>
 	<string name="summary_preference_automatic_updates_off">automatische Aktualisierung ist deaktiviert</string>
 	<string name="summary_preference_automatic_updates_on">automatische Aktualisierung ist aktiviert</string>
@@ -139,7 +139,7 @@
 	<string name="summary_preference_storage">Speicherort für Daten und Bilder</string>
 	<string name="summary_preference_storage_external_off">Internen Speicher verwenden</string>
 	<string name="summary_preference_storage_external_on">Externen Speicher verwenden</string>
-	<string name="summary_preference_theme">AndTweet Design wählen</string>
+	<string name="summary_preference_theme">AndStatus Design wählen</string>
 	<string name="summary_preference_use_avatars_off">Benutzeravatare werden nicht angezeigt</string>
 	<string name="summary_preference_use_avatars_on">Benutzeravatare werden angezeigt</string>
 	<string name="summary_preference_username">Dein Twitter Benutzername</string>

@@ -16,7 +16,7 @@
 	limitations under the License.
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.xorcode.andtweet" android:versionName="1.2.2" android:versionCode="46">
+	package="org.andstatus.app" android:versionName="1.2.2" android:versionCode="46">
 
 	<uses-sdk android:minSdkVersion="3"/>
 
@@ -24,20 +24,20 @@
 
 		<meta-data android:name="android.app.default_searchable" android:value=".TweetListActivity"/>
 
-		<provider android:name=".data.AndTweetProvider"
-			android:authorities="com.xorcode.andtweet.data.AndTweetProvider"/>
+		<provider android:name=".data.MyProvider"
+			android:authorities="org.andstatus.app.data.MyProvider"/>
 
 		<provider android:name=".data.TimelineSearchSuggestionProvider" 
-			android:authorities="com.xorcode.andtweet.data.TimelineSuggestionProvider"/>
+			android:authorities="org.andstatus.app.data.TimelineSuggestionProvider"/>
 
-		<service android:process=":remote" android:name=".AndTweetService">
+		<service android:process=":remote" android:name=".MyService">
 			<intent-filter>
-				<action android:name="com.xorcode.andtweet.IAndTweetService"/>
-				<action android:name="com.xorcode.andtweet.SERVICE"/>
+				<action android:name="org.andstatus.app.IMyService"/>
+				<action android:name="org.andstatus.app.SERVICE"/>
 			</intent-filter>
 		</service>
 
-		<receiver android:name=".AndTweetServiceManager">
+		<receiver android:name=".MyServiceManager">
 			<intent-filter android:label="android.intent.action.BOOT_COMPLETED">
 				<action android:name="android.intent.action.BOOT_COMPLETED" />
 			</intent-filter>
@@ -45,8 +45,8 @@
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.xorcode.andtweet.action.ALARM" />
-                <action android:name="com.xorcode.andtweet.action.SERVICE_STOPPED" />
+                <action android:name="org.andstatus.app.action.ALARM" />
+                <action android:name="org.andstatus.app.action.SERVICE_STOPPED" />
             </intent-filter>
 		</receiver>
 
@@ -60,7 +60,7 @@
 				<action android:name="android.intent.action.VIEW"/>
 				<action android:name="android.intent.action.PICK"/>
 				<category android:name="android.intent.category.DEFAULT"/>
-				<data android:mimeType="vnd.android.cursor.dir/vnd.xorcode.andtweet.tweet"/>
+				<data android:mimeType="vnd.android.cursor.dir/vnd.andstatus.app.tweet"/>
 			</intent-filter>
 			<intent-filter>
 				<action android:name="android.intent.action.SEARCH"/>
@@ -74,7 +74,7 @@
 				<action android:name="android.intent.action.VIEW"/>
 				<action android:name="android.intent.action.PICK"/>
 				<category android:name="android.intent.category.DEFAULT"/>
-				<data android:mimeType="vnd.android.cursor.dir/vnd.xorcode.andtweet.directmessage"/>
+				<data android:mimeType="vnd.android.cursor.dir/vnd.xorcode.app.directmessage"/>
 			</intent-filter>
 			<intent-filter>
 				<action android:name="android.intent.action.SEARCH"/>
@@ -87,7 +87,7 @@
 			<intent-filter android:label="@string/resolve_view">
 				<action android:name="android.intent.action.VIEW"/>
 				<category android:name="android.intent.category.DEFAULT"/>
-				<data android:mimeType="vnd.android.cursor.item/vnd.xorcode.andtweet.tweet"/>
+				<data android:mimeType="vnd.android.cursor.item/vnd.xorcode.app.tweet"/>
 			</intent-filter>
 		</activity>
 
@@ -100,7 +100,7 @@
 				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT" />
 				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="andtweet-oauth" android:host="twitt" />
+				<data android:scheme="andstatus-oauth" android:host="twitt" />
 			</intent-filter>
 		</activity>
 
@@ -119,16 +119,16 @@
 			</intent-filter>
 		</activity>
 
-        <receiver android:name=".appwidget.AndTweetAppWidgetProvider">
+        <receiver android:name=".appwidget.MyAppWidgetProvider">
             <meta-data android:name="android.appwidget.provider"
                     android:resource="@xml/appwidget_info" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.xorcode.andtweet.action.APPWIDGET_UPDATE" />
+                <action android:name="org.andstatus.app.action.APPWIDGET_UPDATE" />
             </intent-filter>
         </receiver>
 
-        <activity android:name=".appwidget.AndTweetAppWidgetConfigure">
+        <activity android:name=".appwidget.MyAppWidgetConfigure">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>

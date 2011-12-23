@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This is resource, describing "receiver" called "AndTweetAppWidgetProvider"
+<!-- This is resource, describing "receiver" called "AndStatusAppWidgetProvider"
 	It has reference to the layout of the actual AppWidget
 	(shown on the Homepage...) and to the configuration activity
 -->
@@ -14,7 +14,7 @@
 
 <!--
 	2010-03-26 yvolk (Temporarily?) got rid of the Configuration activity:
-    android:configure="com.xorcode.andtweet.appwidget.AndTweetAppWidgetConfigure"
+    android:configure="org.andstatus.app.appwidget.MyAppWidgetConfigure"
 	 
 	updatePeriodMillis
 	  was =86400000 is the value of AlarmManager.INTERVAL_DAY - or once per day.

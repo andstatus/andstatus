@@ -102,9 +102,9 @@
 		<item>Large</item>
 	</string-array>
 	<string-array name="theme_keys">
-		<item>AndTweet.Small</item>
-		<item>AndTweet</item>
-		<item>AndTweet.Large</item>
+		<item>AndStatus.Small</item>
+		<item>AndStatus</item>
+		<item>AndStatus.Large</item>
 	</string-array>
 	<string-array name="history_size_values">
 		<item>500 tweets</item>
