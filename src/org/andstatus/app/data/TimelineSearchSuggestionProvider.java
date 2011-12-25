@@ -11,7 +11,7 @@ import android.content.SearchRecentSuggestionsProvider;
  */
 public class TimelineSearchSuggestionProvider extends SearchRecentSuggestionsProvider {
 
-	public final static String AUTHORITY = "org.andstatus.app.TimelineSuggestionProvider";
+	public final static String AUTHORITY = "org.andstatus.app.data.TimelineSuggestionProvider";
 	public final static int MODE = DATABASE_MODE_QUERIES;
 
 	/**

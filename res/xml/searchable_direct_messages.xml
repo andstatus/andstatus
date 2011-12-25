@@ -19,5 +19,5 @@
     android:hint="@string/search_direct_messages_hint" 
     android:searchMode="showSearchLabelAsBadge"
     android:searchSuggestIntentAction="android.intent.action.SEARCH"
-    android:searchSuggestAuthority="org.andstatus.app.TimelineSuggestionProvider"
+    android:searchSuggestAuthority="org.andstatus.app.data.TimelineSuggestionProvider"
     android:searchSuggestSelection=" ? "/>

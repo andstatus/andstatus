@@ -147,10 +147,10 @@
 	<!-- SETTINGS -->
 	<PreferenceCategory android:title="@string/category_title_preference_information">
 		<Preference android:key="contact_developer" android:title="@string/title_preference_contact_developer">
-			<intent android:action="android.intent.action.VIEW" android:data="http://andstatus.org/appcontact" />
+			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus" />
 		</Preference>
 		<Preference android:key="report_bug" android:title="@string/title_preference_report_bug">
-			<intent android:action="android.intent.action.VIEW" android:data="http://code.google.com/p/andstatus/issues/entry" />
+			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/issues" />
 		</Preference>
         <ListPreference android:entryValues="@array/log_level_keys"
             android:entries="@array/log_level_values" android:summary="@string/summary_preference_min_log_level"
@@ -158,10 +158,10 @@
             android:title="@string/title_preference_min_log_level" android:key="min_log_level"
             android:defaultValue="4" />
 		<Preference android:key="change_log" android:title="@string/title_preference_change_log">
-			<intent android:action="android.intent.action.VIEW" android:data="http://andstatus.org/appchangelog" />
+			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/wiki/changelog" />
 		</Preference>
 		<Preference android:key="about_application" android:title="@string/title_preference_about_application">
-			<intent android:action="android.intent.action.VIEW" android:data="http://andstatus.org/appabout" />
+			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/wiki" />
 		</Preference>
 	</PreferenceCategory>
 

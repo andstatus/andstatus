@@ -41,8 +41,8 @@ public final class MyDatabase {
 		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/tweets");
 		public static final Uri SEARCH_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/tweets/search");
         public static final Uri CONTENT_COUNT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/tweets/count");
-		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.andstatus.app.tweet";
-		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.andstatus.app.tweet";
+		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.andstatus.provider.status";
+		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.andstatus.provider.status";
 		public static final String DEFAULT_SORT_ORDER = "sent DESC";
 
 		// Table columns
@@ -76,8 +76,8 @@ public final class MyDatabase {
 		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/directmessages");
 		public static final Uri SEARCH_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/directmessages/search");
         public static final Uri CONTENT_COUNT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/directmessages/count");
-		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.andstatus.app.directmessage";
-		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.andstatus.app.directmessage";
+		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.andstatus.provider.directmessage";
+		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.andstatus.provider.directmessage";
 		public static final String DEFAULT_SORT_ORDER = "sent DESC";
 
 		// Table columns
@@ -94,8 +94,8 @@ public final class MyDatabase {
 	 */
 	public static final class Users implements BaseColumns {
 		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/users");
-		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.andstatus.app.users";
-		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.andstatus.app.users";
+		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.andstatus.provider.user";
+		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.andstatus.provider.user";
 		public static final String DEFAULT_SORT_ORDER = "author_id ASC";
 
 		// Table columns

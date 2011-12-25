@@ -84,7 +84,7 @@ public class PreferencesActivity extends PreferenceActivity implements
     /** 
      * The URI is consistent with "scheme" and "host" in AndroidManifest
      */
-    public static final Uri CALLBACK_URI = Uri.parse("andstatus-oauth://twitt");
+    public static final Uri CALLBACK_URI = Uri.parse("andstatus-oauth://andstatus.org");
 
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs

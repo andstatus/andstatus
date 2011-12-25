@@ -16,10 +16,16 @@
 	limitations under the License.
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="org.andstatus.app" android:versionName="1.2.2" android:versionCode="46">
+	package="org.andstatus.app" android:versionName="1.2.3" android:versionCode="47">
 
 	<uses-sdk android:minSdkVersion="3"/>
-
+    
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
 	<application android:label="@string/app_name" android:icon="@drawable/icon" android:debuggable="true">
 
 		<meta-data android:name="android.app.default_searchable" android:value=".TweetListActivity"/>
@@ -60,7 +66,7 @@
 				<action android:name="android.intent.action.VIEW"/>
 				<action android:name="android.intent.action.PICK"/>
 				<category android:name="android.intent.category.DEFAULT"/>
-				<data android:mimeType="vnd.android.cursor.dir/vnd.andstatus.app.tweet"/>
+				<data android:mimeType="vnd.android.cursor.dir/org.andstatus.provider.status"/>
 			</intent-filter>
 			<intent-filter>
 				<action android:name="android.intent.action.SEARCH"/>
@@ -74,7 +80,7 @@
 				<action android:name="android.intent.action.VIEW"/>
 				<action android:name="android.intent.action.PICK"/>
 				<category android:name="android.intent.category.DEFAULT"/>
-				<data android:mimeType="vnd.android.cursor.dir/vnd.xorcode.app.directmessage"/>
+				<data android:mimeType="vnd.android.cursor.dir/org.andstatus.provider.directmessage"/>
 			</intent-filter>
 			<intent-filter>
 				<action android:name="android.intent.action.SEARCH"/>
@@ -87,7 +93,7 @@
 			<intent-filter android:label="@string/resolve_view">
 				<action android:name="android.intent.action.VIEW"/>
 				<category android:name="android.intent.category.DEFAULT"/>
-				<data android:mimeType="vnd.android.cursor.item/vnd.xorcode.app.tweet"/>
+				<data android:mimeType="vnd.android.cursor.item/org.andstatus.provider.status"/>
 			</intent-filter>
 		</activity>
 
@@ -100,7 +106,7 @@
 				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT" />
 				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="andstatus-oauth" android:host="twitt" />
+				<data android:scheme="andstatus-oauth" android:host="andstatus.org" />
 			</intent-filter>
 		</activity>
 
@@ -135,10 +141,4 @@
         </activity>
 
 	</application>
-
-	<uses-permission android:name="android.permission.INTERNET"/>
-	<uses-permission android:name="android.permission.VIBRATE"/>
-	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-	<uses-permission android:name="android.permission.WAKE_LOCK"/>
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 </manifest>
