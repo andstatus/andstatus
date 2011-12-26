@@ -373,10 +373,12 @@ public class TwitterUser {
             // Load stored data for the User
             SharedPreferences sp = getSharedPreferences();
             mIsTemporal = !sp.getBoolean(MyPreferences.KEY_IS_NOT_TEMPORAL, false);
-            if (mIsTemporal) {
-                
-            }
             mCredentialsVerified = CredentialsVerified.load(sp);
+            if (mIsTemporal && (getCredentialsVerified() != CredentialsVerified.NEVER  )) {
+                // TODO: This is some application error or bug...
+                Log.e(TAG, "Account '" + getUsername() + "' is temporal but CredentialsVerified=" + getCredentialsVerified() );
+                mIsTemporal = false;
+            }
             mOAuth = sp.getBoolean(MyPreferences.KEY_OAUTH, true);
         }
     }

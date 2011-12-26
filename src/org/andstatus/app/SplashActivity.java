@@ -106,7 +106,7 @@ public class SplashActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-        if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+        if (!TwitterUser.getTwitterUser().isTemporal()) {
 			Intent intent = new Intent(this, TweetListActivity.class);
 			startActivity(intent);
 			finish();
