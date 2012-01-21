@@ -330,9 +330,9 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			views.setTextViewText(R.id.appwidget_time, widgetTime);
 
 			// When user clicks on widget, launch main AndStatus activity,
-			//   Open timeline, where there are new tweets, or "Friends" timeline
+			//   Open timeline, where there are new tweets, or "Home" timeline
 			Intent intent;
-			int timeLineType = MyDatabase.Tweets.TIMELINE_TYPE_FRIENDS;
+			int timeLineType = MyDatabase.Tweets.TIMELINE_TYPE_HOME;
 			if (data.numMessages > 0) {
 	            intent = new Intent(context, MessageListActivity.class);
 			    timeLineType = MyDatabase.Tweets.TIMELINE_TYPE_MESSAGES;

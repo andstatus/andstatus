@@ -21,7 +21,7 @@
 	<string name="activity_title_format">%1$s: %2$s</string>
 	<string name="activity_title_mentions">Mentions</string>
 	<string name="activity_title_search">Search</string>
-	<string name="activity_title_timeline">Friends</string>
+	<string name="activity_title_timeline">Home</string>
 
     <string name="appwidget_configure_instructions">Customize AndStatus Widget message, shown in a case there is nothing new:</string>
     <string name="appwidget_nothingnew_default">Nothing new since:</string>
@@ -56,9 +56,9 @@
 	<string name="dialog_title_acquiring_an_access_token">Acquiring an Access token</string>
 	<string name="dialog_title_acquiring_a_request_token">Acquiring a request token</string>
 	<string name="dialog_title_authentication_failed">Authentication Failed</string>
-	<string name="dialog_title_checking_credentials">Verifying...</string>
+	<string name="dialog_title_checking_credentials">Verifying…</string>
 	<string name="dialog_title_connection_timeout">Connection Timed Out</string>
-	<string name="dialog_title_executing_command">Executing command...</string>
+	<string name="dialog_title_executing_command">Executing command…</string>
 	<string name="dialog_title_external_storage">External Storage Available</string>
 	<string name="dialog_title_external_storage_missing">External Storage Missing</string>
 	<string name="dialog_title_preference_frequency">Update Frequency</string>
@@ -68,9 +68,9 @@
 	<string name="dialog_title_preference_password">Password</string>
 	<string name="dialog_title_preference_theme">Select a Theme</string>
 	<string name="dialog_title_preference_username">Username</string>
-	<string name="dialog_title_sending_message">Sending message...</string>
+	<string name="dialog_title_sending_message">Sending message…</string>
 	<string name="dialog_title_service_unavailable">Service Unavailable</string>
-	<string name="dialog_title_timeline_loading">Updating Timeline...</string>
+	<string name="dialog_title_timeline_loading">Updating Timeline…</string>
 	<string name="error_twitter_404">The page cannot be found. Please report this error!</string>
 	<string name="error_connection_error">A connection error has occurred. Please report this error!</string>
 	<string name="error_set_username">Couldn\'t set the Username to: </string>
@@ -78,7 +78,7 @@
 	<string name="favorite_created">Favorite created.</string>
 	<string name="favorite_destroyed">Tweet unfavorited.</string>
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
-	<string name="loading">Loading...</string>
+	<string name="loading">Loading…</string>
 	<string name="message_edit_hint">Enter your tweet here!</string>
 	<string name="message_characters_left">Characters left:</string>
 	<string name="menu_item_block">Block</string>
@@ -110,8 +110,8 @@
 	<string name="options_menu_direct_messages_cond">Messages</string>
 	<string name="options_menu_favorites_timeline">Favorites Timeline</string>
 	<string name="options_menu_favorites_timeline_cond">Favorites</string>
-	<string name="options_menu_friends_timeline">Friends Timeline</string>
-	<string name="options_menu_friends_timeline_cond">Friends</string>
+	<string name="options_menu_home_timeline">Home Timeline</string>
+	<string name="options_menu_home_timeline_cond">Home</string>
 	<string name="options_menu_help">Help</string>
 	<string name="options_menu_preferences">Preferences</string>
 	<string name="options_menu_reload">Reload</string>
@@ -123,7 +123,7 @@
 	<string name="splash_button_learn_more">Learn More</string>
 	<string name="splash_button_get_started">Get Started</string>
 	<string name="splash_payoff_line">Light-Weight Twitter Client for Android™</string>
-	<string name="splash_text_learn_more_1"><h1><b>1. AndStatus BASICS</b></h1>\n\nThe first view of AndStatus contains your friend timeline.\n\nIn order to perform an action on a tweet in the list you can <b>hold down</b> on it to get a menu.\n\nYou can <b>click</b> on a tweet to get more details.\n\nPress the <b>Menu</b> button to switch to other views.</string>
+	<string name="splash_text_learn_more_1"><h1><b>1. AndStatus BASICS</b></h1>\n\nThe first view of AndStatus contains Home timeline.\n\nIn order to perform an action on a tweet in the list you can <b>hold down</b> on it to get a menu.\n\nYou can <b>click</b> on a tweet to get more details.\n\nPress the <b>Menu</b> button to switch to other views.</string>
 	<string name="splash_text_learn_more_2"><h1><b>2. SENDING AND REPLYING</b></h1>\n\nIn order to update your status simply type it into the text area and click <b>Send</b>.\n\nIn order to reply, <b>hold down</b> and select <b>Reply</b> and type in your reply at the bottom.\n\nTo abort a reply, delete all text in the bottom text area.</string>
 	<string name="splash_text_learn_more_3"><h1><b>3. DIRECT MESSAGES</b></h1>\n\nClick <b>Menu</b> and then <b>Messages</b>.\n\nIn order to <b>delete</b> a direct message, <b>hold down</b> on it and select <b>Delete</b>.\n\nNew messages are fetched if you have turned on <b>Automatic Updates</b>.</string>
 	<string name="splash_text_learn_more_4"><h1><b>4. LISTING MENTIONS</b></h1>\n\nClick <b>Menu</b> and then <b>Mentions</b>.\n\nMentions will list every tweet that mentions your <b>@username</b>.</string>

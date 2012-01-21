@@ -685,8 +685,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 switchTimelineActivity(Tweets.TIMELINE_TYPE_FAVORITES);
                 break;
 
-            case R.id.friends_timeline_menu_id:
-                switchTimelineActivity(Tweets.TIMELINE_TYPE_FRIENDS);
+            case R.id.home_timeline_menu_id:
+                switchTimelineActivity(Tweets.TIMELINE_TYPE_HOME);
                 break;
 
             case R.id.direct_messages_menu_id:
@@ -766,7 +766,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             case Tweets.TIMELINE_TYPE_FAVORITES:
                 timelinename = getString(R.string.activity_title_favorites);
                 break;
-            case Tweets.TIMELINE_TYPE_FRIENDS:
+            case Tweets.TIMELINE_TYPE_HOME:
                 timelinename = getString(R.string.activity_title_timeline);
                 break;
             case Tweets.TIMELINE_TYPE_MENTIONS:
@@ -1035,7 +1035,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
 
         if (mTimelineType == Tweets.TIMELINE_TYPE_NONE) {
-            mTimelineType = Tweets.TIMELINE_TYPE_FRIENDS;
+            mTimelineType = Tweets.TIMELINE_TYPE_HOME;
             // For some reason Android remembers last Query and adds it even if
             // the Activity was started from the Widget...
             Intent intent = getIntent();
@@ -1088,10 +1088,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 intent.putExtra(SearchManager.APP_DATA, appDataBundle);
                 break;
             default:
-                timelineType = Tweets.TIMELINE_TYPE_FRIENDS;
+                timelineType = Tweets.TIMELINE_TYPE_HOME;
             case Tweets.TIMELINE_TYPE_MENTIONS:
             case Tweets.TIMELINE_TYPE_FAVORITES:
-            case Tweets.TIMELINE_TYPE_FRIENDS:
+            case Tweets.TIMELINE_TYPE_HOME:
                 intent = new Intent(this, TweetListActivity.class);
                 break;
 

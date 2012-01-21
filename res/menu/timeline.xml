@@ -18,8 +18,8 @@
 	<group android:id="@+id/MAIN_MENU">
 		<item android:title="@string/options_menu_reload" android:id="@+id/reload_menu_item"
 			android:alphabeticShortcut="r" android:icon="@drawable/ic_menu_reload"></item>
-		<item android:id="@+id/friends_timeline_menu_id" android:title="@string/options_menu_friends_timeline"
-			android:alphabeticShortcut="f" android:titleCondensed="@string/options_menu_friends_timeline_cond"
+		<item android:id="@+id/home_timeline_menu_id" android:title="@string/options_menu_home_timeline"
+			android:alphabeticShortcut="f" android:titleCondensed="@string/options_menu_home_timeline_cond"
 			android:icon="@drawable/ic_menu_timeline"></item>
 		<item android:id="@+id/favorites_timeline_menu_id" android:title="@string/options_menu_favorites_timeline"
 			android:alphabeticShortcut="a" android:titleCondensed="@string/options_menu_favorites_timeline_cond"

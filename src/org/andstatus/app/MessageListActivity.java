@@ -39,9 +39,7 @@ import android.widget.Toast;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.PagedCursorAdapter;
-import org.andstatus.app.data.SearchableCursorAdapter;
 import org.andstatus.app.data.TweetBinder;
-import org.andstatus.app.data.MyDatabase.Users;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -64,21 +62,12 @@ public class MessageListActivity extends TimelineActivity {
 	// TODO: get rid of this variable just like in TweetListActivity...
 	private int mCurrentPage = 1;	
 	
-	// Database cursors
-	private Cursor mFriendsCursor;
-
 	// Table columns to use for the direct messages data
 	private static final String[] PROJECTION = new String[] {
 		MyDatabase.DirectMessages._ID,
 		MyDatabase.DirectMessages.AUTHOR_ID,
 		MyDatabase.DirectMessages.MESSAGE,
 		MyDatabase.DirectMessages.SENT_DATE
-	};
-
-	// Table columns to use for the user data
-	private static final String[] FRIENDS_PROJECTION = new String[] {
-		Users._ID,
-		Users.AUTHOR_ID
 	};
 
 	/**
@@ -137,7 +126,6 @@ public class MessageListActivity extends TimelineActivity {
 	protected void onStart() {
 		super.onStart();
 		mCursor = getContentResolver().query(getIntent().getData(), PROJECTION, null, null, MyDatabase.DirectMessages.DEFAULT_SORT_ORDER + " LIMIT 0," + (mCurrentPage * PAGE_SIZE));
-		mFriendsCursor = getContentResolver().query(Users.CONTENT_URI, FRIENDS_PROJECTION, null, null, Users.DEFAULT_SORT_ORDER);
 		createAdapters();
 		setProgressBarIndeterminateVisibility(mIsLoading);
 		bindToService();
@@ -147,7 +135,6 @@ public class MessageListActivity extends TimelineActivity {
 	protected void onStop() {
 		super.onStop();
 		mCursor.close();
-		mFriendsCursor.close();
 		disconnectService();
 	}
 
@@ -238,18 +225,6 @@ public class MessageListActivity extends TimelineActivity {
 		directMessagesAdapter.setViewBinder(new TweetBinder());
 
 		setListAdapter(directMessagesAdapter);
-
-		SearchableCursorAdapter friendsAdapter = new SearchableCursorAdapter(
-			this,
-			android.R.layout.simple_dropdown_item_1line,
-			mFriendsCursor,
-			new String[] { Users.AUTHOR_ID },
-			new int[] { android.R.id.text1 },
-			Users.CONTENT_URI,
-			FRIENDS_PROJECTION,
-			Users.DEFAULT_SORT_ORDER
-		);
-		friendsAdapter.setStringConversionColumn(mFriendsCursor.getColumnIndexOrThrow(Users.AUTHOR_ID));
 	}
 
 	/**

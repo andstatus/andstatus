@@ -16,8 +16,6 @@
 
 package org.andstatus.app;
 
-import org.andstatus.app.TwitterUser.CredentialsVerified;
-
 import java.text.MessageFormat;
 
 import android.app.Activity;

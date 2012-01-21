@@ -39,8 +39,6 @@ public abstract class Connection {
     private static final String BASE_URL = "http://api.twitter.com/1";
 
     protected static final String EXTENSION = ".json";
-    protected static final String STATUSES_FRIENDS_TIMELINE_URL = BASE_URL
-        + "/statuses/friends_timeline" + EXTENSION;
     protected static final String STATUSES_HOME_TIMELINE_URL = BASE_URL
         + "/statuses/home_timeline" + EXTENSION;
     protected static final String STATUSES_MENTIONS_TIMELINE_URL = BASE_URL + "/statuses/mentions"
@@ -235,9 +233,7 @@ public abstract class Connection {
             throws ConnectionException;
 
     /**
-     * Get the user's own and friends timeline.
-     * 
-     * Returns the 100 most recent direct messages for the authenticating user.
+     * Get Direct messages
      * 
      * @throws ConnectionException 
      */
@@ -257,15 +253,14 @@ public abstract class Connection {
             throws ConnectionException;
 
     /**
-     * Get the user's own and friends timeline.
+     * Get the Home timeline (whatever it is...).
      * 
-     * Returns the 100 most recent statuses posted by the authenticating user and
-     * that user's friends. This is the equivalent of /home on the Web.
+     * This is the equivalent of /home on the Web.
      * 
      * @return JSONArray
      * @throws ConnectionException 
      */
-    public abstract JSONArray getFriendsTimeline(long sinceId, int limit)
+    public abstract JSONArray getHomeTimeline(long sinceId, int limit)
             throws ConnectionException;
 
     protected long getSinceId() {

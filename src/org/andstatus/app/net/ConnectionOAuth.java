@@ -172,6 +172,12 @@ public class ConnectionOAuth extends Connection {
         return postRequest(post);
     }
 
+    /**
+     * Returns the 20 most recent direct messages sent to the authenticating user
+     *
+     * TODO: GET direct_messages/sent: Returns the 20 most recent direct messages sent by the authenticating user. 
+     * See https://dev.twitter.com/docs/api/1/get/direct_messages/sent
+     */
     @Override
     public JSONArray getDirectMessages(long sinceId, int limit) throws ConnectionException {
         String url = DIRECT_MESSAGES_URL;
@@ -179,8 +185,8 @@ public class ConnectionOAuth extends Connection {
     }
 
     @Override
-    public JSONArray getFriendsTimeline(long sinceId, int limit) throws ConnectionException {
-        String url = STATUSES_FRIENDS_TIMELINE_URL;
+    public JSONArray getHomeTimeline(long sinceId, int limit) throws ConnectionException {
+        String url = STATUSES_HOME_TIMELINE_URL;
         return getTimeline(url, sinceId, 0, limit, 0);
     }
 

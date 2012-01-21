@@ -183,7 +183,7 @@ public class TweetListActivity extends TimelineActivity {
             sa.addSelection(
                     Tweets.TWEET_TYPE + " IN (?, ?)",
                     new String[] {
-                            String.valueOf(Tweets.TIMELINE_TYPE_FRIENDS),
+                            String.valueOf(Tweets.TIMELINE_TYPE_HOME),
                             String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS)
                     });
             if (mTimelineType == Tweets.TIMELINE_TYPE_FAVORITES) {
@@ -222,7 +222,7 @@ public class TweetListActivity extends TimelineActivity {
                 sa.addSelection(
                         "MyDatabase.Tweets.TWEET_TYPE" + " IN (?, ?)" + ")",
                         new String[] {
-                                String.valueOf(Tweets.TIMELINE_TYPE_FRIENDS),
+                                String.valueOf(Tweets.TIMELINE_TYPE_HOME),
                                 String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS)
                         });
             }
@@ -240,8 +240,8 @@ public class TweetListActivity extends TimelineActivity {
 
         // This is for testing pruneOldRecords
 //        try {
-//            FriendTimeline fl = new FriendTimeline(TweetListActivity.this,
-//                    MyDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
+//            TimelineDownloader fl = new TimelineDownloader(TweetListActivity.this,
+//                    MyDatabase.Tweets.TIMELINE_TYPE_HOME);
 //            fl.pruneOldRecords();
 //
 //        } catch (Exception e) {

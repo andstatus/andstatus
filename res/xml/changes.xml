@@ -43,7 +43,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
                 <change>Fixed: Sometimes twitter.com succeeds to create/delete favorite, 
                    but doesn't change 'favorited' flag in the returned tweet.
                    Sometimes it fails, but doesn't indicate error.
-                   (This is twitter.com feature: asynchronous processes...)</change>
+                   (This is twitter.com feature: asynchronous processes…)</change>
                 <change>Fixed: Issue 45: Manually setting a username and authenticating with another does not work.</change>
                 <change>Fixed: Issue 50: tells me credentials are for other user.</change>
                 <change>Fixed: Errors in the Service when it's stopped during command execution.</change>
@@ -64,7 +64,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
                 <change>Fixed: Sometimes twitter.com succeeds to create/delete favorite, 
                    but doesn't change 'favorited' flag in the returned tweet.
                    Sometimes it fails, but doesn't indicate error.
-                   (This is twitter.com feature: asynchronous processes...)</change>
+                   (This is twitter.com feature: asynchronous processes…)</change>
                 <change>Fixed: Issue 45: Manually setting a username and authenticating with another does not work.</change>
                 <change>Fixed: Issue 50: tells me credentials are for other user</change>
                 <change>Fixed: Errors in the Service when it's stopped during command execution.</change>
@@ -104,7 +104,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
             (typing Username is not required for OAuth)!</change>
         <change>Widget shows last time when data was successfully
             downloaded from the server, not when there was last attempt to do
-            this (maybe it failed...)</change>
+            this (maybe it failed…)</change>
         <change>New Preference "Minimum logging level" added to allow changing 
             Logging level from within the application Preferences.</change>
         <change>Another pass of timeline code cleaning. Now AndStatus's
@@ -140,7 +140,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
                 <change>"Destroy status" and Rate limit request made asynchronous also.</change>
 				<change>Widget shows last time when data was successfully 
                 downloaded from the server,
-                not when there was last attempt to do this (maybe it failed...)</change>
+                not when there was last attempt to do this (maybe it failed…)</change>
 		
 	       </package>
 			<package android:versionName="1.1.3" android:versionCode="39"

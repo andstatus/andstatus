@@ -1272,7 +1272,7 @@ public class MyService extends Service {
                                 }, null, null, null);
                                 try {
                                     c.moveToFirst();
-                                    FriendTimeline fl = new FriendTimeline(
+                                    TimelineDownloader fl = new TimelineDownloader(
                                             MyService.this.getApplicationContext(), c.getInt(c
                                                     .getColumnIndex(Tweets.TWEET_TYPE)));
                                     fl.insertFromJSONObject(result, true);
@@ -1326,9 +1326,9 @@ public class MyService extends Service {
                     if (mStateRestored) {
                         // And delete the status from the local storage
                         try {
-                            FriendTimeline fl = new FriendTimeline(
+                            TimelineDownloader fl = new TimelineDownloader(
                                     MyService.this.getApplicationContext(),
-                                    MyDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
+                                    MyDatabase.Tweets.TIMELINE_TYPE_HOME);
                             fl.destroyStatus(statusId);
                         } catch (Exception e) {
                             Log.e(TAG, "Error destroying status locally: " + e.toString());
@@ -1365,9 +1365,9 @@ public class MyService extends Service {
                     if (mStateRestored) {
                         try {
                             // The tweet was sent successfully
-                            FriendTimeline fl = new FriendTimeline(
+                            TimelineDownloader fl = new TimelineDownloader(
                                     MyService.this.getApplicationContext(),
-                                    MyDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
+                                    MyDatabase.Tweets.TIMELINE_TYPE_HOME);
 
                             fl.insertFromJSONObject(result, true);
                         } catch (JSONException e) {
@@ -1398,11 +1398,11 @@ public class MyService extends Service {
             if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
                 // Only if User was authenticated already
                 try {
-                    FriendTimeline fl = null;
+                    TimelineDownloader fl = null;
                     ok = true;
                     if (ok && loadTweets) {
                         descr = "loading Mentions";
-                        fl = new FriendTimeline(MyService.this.getApplicationContext(),
+                        fl = new TimelineDownloader(MyService.this.getApplicationContext(),
                                 MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
                         ok = fl.loadTimeline();
                         aReplyCount = fl.replyCount();
@@ -1416,9 +1416,9 @@ public class MyService extends Service {
                         }
                         
                         if (ok) {
-                            descr = "loading Friends";
-                            fl = new FriendTimeline(MyService.this.getApplicationContext(),
-                                    MyDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
+                            descr = "loading Home";
+                            fl = new TimelineDownloader(MyService.this.getApplicationContext(),
+                                    MyDatabase.Tweets.TIMELINE_TYPE_HOME);
                             ok = fl.loadTimeline();
                             aNewTweets = fl.newCount();
                             aReplyCount += fl.replyCount();
@@ -1437,7 +1437,7 @@ public class MyService extends Service {
 
                     if (ok && loadMessages) {
                         descr = "loading Messages";
-                        fl = new FriendTimeline(MyService.this.getApplicationContext(),
+                        fl = new TimelineDownloader(MyService.this.getApplicationContext(),
                                 MyDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
                         ok = fl.loadTimeline();
                         aNewMessages = fl.newCount();
@@ -1646,7 +1646,7 @@ public class MyService extends Service {
                     messageTitle = R.string.notification_title;
                     intent = new Intent(getApplicationContext(), TweetListActivity.class);
                     intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
-                            MyDatabase.Tweets.TIMELINE_TYPE_FRIENDS);
+                            MyDatabase.Tweets.TIMELINE_TYPE_HOME);
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
                     break;

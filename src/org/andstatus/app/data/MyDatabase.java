@@ -57,7 +57,7 @@ public final class MyDatabase {
 		public static final String SENT_DATE = "sent";
 
         public static final int TIMELINE_TYPE_NONE = 0;
-		public static final int TIMELINE_TYPE_FRIENDS = 1;
+		public static final int TIMELINE_TYPE_HOME = 1;
 		public static final int TIMELINE_TYPE_MENTIONS = 2;
 		/**
 		 * Messages are stored in separate database table, but we see them through the same base activity class,

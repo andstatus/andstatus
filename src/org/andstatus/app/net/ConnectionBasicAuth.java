@@ -61,11 +61,11 @@ public class ConnectionBasicAuth extends Connection {
     }
 
 	@Override
-    public JSONArray getFriendsTimeline(long sinceId, int limit) throws ConnectionException {
+    public JSONArray getHomeTimeline(long sinceId, int limit) throws ConnectionException {
 	    setSinceId(sinceId);
 	    setLimit(limit);
 	    
-		String url = STATUSES_FRIENDS_TIMELINE_URL;
+		String url = STATUSES_HOME_TIMELINE_URL;
 		url += "?count=" + mLimit;
 		if (mSinceId > 0) {
 			url += "&since_id=" + mSinceId;

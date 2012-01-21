@@ -43,7 +43,7 @@ import android.util.Log;
 /**
  * The class automates several different processes 
  * (and this is why maybe it needs to be refactored...):
- * 1. Downloads ("loads") Friends and Messages timelines 
+ * 1. Downloads ("loads") Home and Messages timelines 
  *  (i.e. Tweets and Messages) from the Internet 
  *  (e.g. from twitter.com server) into local JSON objects.
  * 2. Stores ("inserts" -  adds or updates) JSON-ed Tweets or Messages
@@ -55,9 +55,9 @@ import android.util.Log;
  * 
  * @author torgny.bjers
  */
-public class FriendTimeline {
+public class TimelineDownloader {
 
-    private static final String TAG = "FriendTimeline";
+    private static final String TAG = "TimelineDownloader";
 
     private ContentResolver mContentResolver;
 
@@ -77,14 +77,14 @@ public class FriendTimeline {
 
     private Uri mContentCountUri;
 
-    public FriendTimeline(Context context, int timelineType) {
+    public TimelineDownloader(Context context, int timelineType) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
         mTu = TwitterUser.getTwitterUser();
         mTimelineType = timelineType;
         mLastStatusId = mTu.getSharedPreferences().getLong("last_timeline_id" + timelineType, 0);
         switch (mTimelineType) {
-            case MyDatabase.Tweets.TIMELINE_TYPE_FRIENDS:
+            case MyDatabase.Tweets.TIMELINE_TYPE_HOME:
             case MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS:
                 mContentUri = MyDatabase.Tweets.CONTENT_URI;
                 mContentCountUri = MyDatabase.Tweets.CONTENT_COUNT_URI;
@@ -98,7 +98,7 @@ public class FriendTimeline {
     }
 
     /**
-     * Load Timeline (Friends / Messages) from the Internet
+     * Load Timeline (Home / DirectMessages) from the Internet
      * and store them in the local database.
      * 
      * @throws ConnectionException
@@ -112,8 +112,8 @@ public class FriendTimeline {
         if (mTu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
             JSONArray jArr = null;
             switch (mTimelineType) {
-                case MyDatabase.Tweets.TIMELINE_TYPE_FRIENDS:
-                    jArr = mTu.getConnection().getFriendsTimeline(lastId, limit);
+                case MyDatabase.Tweets.TIMELINE_TYPE_HOME:
+                    jArr = mTu.getConnection().getHomeTimeline(lastId, limit);
                     break;
                 case MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS:
                     jArr = mTu.getConnection().getMentionsTimeline(lastId, limit);
@@ -172,7 +172,7 @@ public class FriendTimeline {
         try {
             // TODO: Unify databases!
             switch (mTimelineType) {
-                case MyDatabase.Tweets.TIMELINE_TYPE_FRIENDS:
+                case MyDatabase.Tweets.TIMELINE_TYPE_HOME:
                 case MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS:
                     JSONObject user;
                     user = jo.getJSONObject("user");
@@ -208,7 +208,7 @@ public class FriendTimeline {
             mContentResolver.insert(mContentUri, values);
             mNewTweets++;
             switch (mTimelineType) {
-                case MyDatabase.Tweets.TIMELINE_TYPE_FRIENDS:
+                case MyDatabase.Tweets.TIMELINE_TYPE_HOME:
                 case MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS:
                     if (mTu.getUsername().equals(jo.getString("in_reply_to_screen_name"))
                             || message.contains("@" + mTu.getUsername())) {

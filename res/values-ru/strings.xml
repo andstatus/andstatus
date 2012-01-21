@@ -21,7 +21,7 @@
 	<string name="activity_title_format">%1$s: %2$s</string>
 	<string name="activity_title_mentions">Упоминания</string>
 	<string name="activity_title_search">Поиск</string>
-	<string name="activity_title_timeline">Друзья</string>
+	<string name="activity_title_timeline">Дом</string>
 
     <string name="appwidget_configure_instructions">Настройте сообщение Виджета, которое показывается в том случае, если нет ничего нового:</string>
     <string name="appwidget_nothingnew_default">Ничего нового после:</string>
@@ -31,7 +31,7 @@
     <string name="appwidget_nodata">Пока нет данных.</string>
 
 	<string name="authentication_never">Пока не аутентифицирован</string>
-	<string name="authentication_successful">Успешная аутентификация (проверка логина и пароля...)!</string>
+	<string name="authentication_successful">Успешная аутентификация (проверка логина и пароля…)!</string>
 	<string name="button_send">Отправить</string>
     <string name="button_create_tweet">Твит</string>
 	<string name="cannot_send_empty_message">Невозможно отправить пустое сообщение.</string>
@@ -56,9 +56,9 @@
     <string name="dialog_title_acquiring_an_access_token">Получаем токен доступа</string>
 	<string name="dialog_title_acquiring_a_request_token">Получаем токен запроса</string>
 	<string name="dialog_title_authentication_failed">Аутентификация (проверка имени пользователя и пароля) завершилась неудачей</string>
-	<string name="dialog_title_checking_credentials">Проверка...</string>
+	<string name="dialog_title_checking_credentials">Проверка…</string>
 	<string name="dialog_title_connection_timeout">Время соединения завершилось</string>
-	<string name="dialog_title_executing_command">Исполнение комманды...</string>
+	<string name="dialog_title_executing_command">Исполнение комманды…</string>
 	<string name="dialog_title_external_storage">Внешняя память доступна</string>
 	<string name="dialog_title_external_storage_missing">Внешняя память отсутствует</string>
 	<string name="dialog_title_preference_frequency">Частота обновления</string>
@@ -68,9 +68,9 @@
 	<string name="dialog_title_preference_password">Пароль</string>
 	<string name="dialog_title_preference_theme">Выберите тему</string>
 	<string name="dialog_title_preference_username">Имя пользователя</string>
-	<string name="dialog_title_sending_message">Отправка сообщения...</string>
+	<string name="dialog_title_sending_message">Отправка сообщения…</string>
 	<string name="dialog_title_service_unavailable">Сервис недоступен</string>
-	<string name="dialog_title_timeline_loading">Обновление ленты времени...</string>
+	<string name="dialog_title_timeline_loading">Обновление ленты времени…</string>
 	<string name="error_twitter_404">Страница не найдена! Пожалуйста, сообщите об этой ошибке!</string>
 	<string name="error_connection_error">Произошла ошибка соединения. Сообщите об этой ошибке!</string>
 	<string name="error_set_username">Не смог установить имя Пользователя: </string>
@@ -78,7 +78,7 @@
 	<string name="favorite_created">Твит добавлен в избранное.</string>
 	<string name="favorite_destroyed">Твит удалён из избранного.</string>
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
-	<string name="loading">Загрузка...</string>
+	<string name="loading">Загрузка…</string>
 	<string name="message_edit_hint">Что происходит?</string>
 	<string name="message_characters_left">Осталось символов:</string>
 	<string name="menu_item_block">Блокировать</string>
@@ -109,8 +109,8 @@
 	<string name="options_menu_direct_messages_cond">Сообщения</string>
 	<string name="options_menu_favorites_timeline">Линия времени Избранного</string>
 	<string name="options_menu_favorites_timeline_cond">Избранное</string>
-	<string name="options_menu_friends_timeline">Линии времени друзей</string>
-	<string name="options_menu_friends_timeline_cond">Друзья</string>
+	<string name="options_menu_home_timeline">Домашняя линия времени</string>
+	<string name="options_menu_home_timeline_cond">Дом</string>
 	<string name="options_menu_help">Помощь</string>
 	<string name="options_menu_preferences">Настройки</string>
 	<string name="options_menu_reload">Перезагрузка</string>
@@ -122,8 +122,8 @@
 	<string name="splash_button_learn_more">Узнать больше</string>
 	<string name="splash_button_get_started">Начать работу с программой</string>
 	<string name="splash_payoff_line">Лёгкий клиент Твиттера для Андроида™</string>
-	<string name="splash_text_learn_more_1"><h1><b>1. АЗЫ ПРОГРАММЫ AndStatus</b></h1>\n\nПервая страница AndStatus-а содержит ленту времени Ваших друзей (т.е. тех, за кем Вы следуете - follow).\n\nДля того, чтобы произвести какое-либо действие c отдельным твитом из этой ленты-списка, Вы можете <b>длительно нажать</b> на него для появления контекстного меню.\n\nВы можетее также <b>кратко нажать</b> на твит для того, чтобы получить более подробную информацию о нём.\n\nНажмите кнопку <b>Меню</b> Вашего устройства для переключения на другие страницы программы.</string>
-	<string name="splash_text_learn_more_2"><h1><b>2. ОТПРАВКА И ОТВЕТЫ</b></h1>\n\nДля обновления Вашего статуса (для сообщения о том, что происходит...) просто напишите об этом в текстовом поле внизу окна и нажмите кнопку <b>Отправить</b>.\n\nДля того, чтобы ответить, <b>длительно нажмите</b> на твит, выберите <b>Ответить</b> в контекстном меню и введите свой ответ в текстовом поле внизу страницы.\n\nДля отмены ответа, удалите весь текст из текстового поля внизу страницы.</string>
+	<string name="splash_text_learn_more_1"><h1><b>1. АЗЫ ПРОГРАММЫ AndStatus</b></h1>\n\nПервая страница AndStatus-а содержит Домашнюю ленту времени (т.е. статусы тех, за кем Вы следуете - follow).\n\nДля того, чтобы произвести какое-либо действие c отдельным твитом из этой ленты-списка, Вы можете <b>длительно нажать</b> на него для появления контекстного меню.\n\nВы можете также <b>кратко нажать</b> на твит для того, чтобы получить более подробную информацию о нём.\n\nНажмите кнопку <b>Меню</b> Вашего устройства для переключения на другие страницы программы.</string>
+	<string name="splash_text_learn_more_2"><h1><b>2. ОТПРАВКА И ОТВЕТЫ</b></h1>\n\nДля обновления Вашего статуса (для сообщения о том, что происходит…) просто напишите об этом в текстовом поле внизу окна и нажмите кнопку <b>Отправить</b>.\n\nДля того, чтобы ответить, <b>длительно нажмите</b> на твит, выберите <b>Ответить</b> в контекстном меню и введите свой ответ в текстовом поле внизу страницы.\n\nДля отмены ответа, удалите весь текст из текстового поля внизу страницы.</string>
 	<string name="splash_text_learn_more_3"><h1><b>3. ЛИЧНЫЕ СООБЩЕНИЯ</b></h1>\n\nНажмите <b>Меню</b>, а далее - <b>Сообщения</b>.\n\nДля <b>удаления</b> личного сообщения, <b>длительно нажмите</b> на него и выберите <b>Удалить</b>.\n\nНовые сообщения появляются, если Вы включили <b>Автоматические обновления</b>.</string>
 	<string name="splash_text_learn_more_4"><h1><b>4. СПИСОК УПОМИНАНИЙ</b></h1>\n\nНажмите <b>Меню</b>, а далее - <b>Упоминания</b>.\n\nВ списке упоминаний будут показаны все твиты, в которых упоминается Ваше <b>@имяпользователя</b>.</string>
 	<string name="splash_text_learn_more_5"><h1><b>5. ПОИСК</b></h1>\n\nНажмите <b>Меню</b>, а далее <b>Поиск</b>; или Вы можете нажать кнопку <b>Поиск</b> Вашего устройства.\n\nПоиск будет производится по всему тексту твитов. Если Вы хотите увидель только твиты определённого пользователя, ищите "<b>имяпользователя</b>."\n\nДля того, чтобы найти упоминания определённого пользователя, ищите "<b>@имяпользователя</b>"</string>
@@ -189,7 +189,7 @@
 	<string name="title_preference_notifications_enabled">Разрешить уведомления</string>
 	<string name="title_preference_notifications_messages">Новые личные сообщениях</string>
 	<string name="title_preference_notifications_mentions">Новые упоминания</string>
-	<string name="title_preference_notifications_timeline">Новые твиты друзей</string>
+	<string name="title_preference_notifications_timeline">Новые статусы</string>
 	<string name="title_preference_oauth">OAuth</string>
 	<string name="title_preference_password">Пароль</string>
 	<string name="title_preference_report_bug">Сообщить об ошибке</string>
