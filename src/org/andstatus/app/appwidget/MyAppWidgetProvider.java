@@ -33,6 +33,7 @@ import android.widget.RemoteViews;
 import org.andstatus.app.MyService;
 import org.andstatus.app.MessageListActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.TweetListActivity;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.util.I18n;
@@ -332,14 +333,14 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			// When user clicks on widget, launch main AndStatus activity,
 			//   Open timeline, where there are new tweets, or "Home" timeline
 			Intent intent;
-			int timeLineType = MyDatabase.Tweets.TIMELINE_TYPE_HOME;
+			int timeLineType = TimelineActivity.TIMELINE_TYPE_HOME;
 			if (data.numMessages > 0) {
 	            intent = new Intent(context, MessageListActivity.class);
-			    timeLineType = MyDatabase.Tweets.TIMELINE_TYPE_MESSAGES;
+			    timeLineType = TimelineActivity.TIMELINE_TYPE_MESSAGES;
 			} else {
 	            intent = new Intent(context, TweetListActivity.class);
 			    if (data.numMentions > 0) {
-	                timeLineType = MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS;
+	                timeLineType = TimelineActivity.TIMELINE_TYPE_MENTIONS;
 			    }
 			}
             intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,

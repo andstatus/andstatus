@@ -38,6 +38,7 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.data.MyDatabase.DirectMessages;
 import org.andstatus.app.data.MyDatabase.Tweets;
 import org.andstatus.app.data.MyDatabase.Users;
@@ -307,7 +308,7 @@ public class MyProvider extends ContentProvider {
                             + Tweets.CREATED_DATE + " INTEGER" + ");");
                     db.execSQL("INSERT INTO " + TWEETS_TABLE_NAME + " SELECT " + Tweets._ID + ", "
                             + Tweets.AUTHOR_ID + ", " + Tweets.MESSAGE + ", " + Tweets.SOURCE
-                            + ", " + Tweets.TIMELINE_TYPE_HOME + ", "
+                            + ", " + TimelineActivity.TIMELINE_TYPE_HOME + ", "
                             + Tweets.IN_REPLY_TO_AUTHOR_ID + ", " + Tweets.IN_REPLY_TO_STATUS_ID
                             + ", null, " + Tweets.SENT_DATE + ", " + Tweets.CREATED_DATE + " FROM "
                             + TWEETS_TABLE_NAME + "_backup;");
@@ -552,7 +553,7 @@ public class MyProvider extends ContentProvider {
                 if (values.containsKey(Tweets.SOURCE) == false)
                     values.put(Tweets.SOURCE, "");
                 if (values.containsKey(Tweets.TWEET_TYPE) == false)
-                    values.put(Tweets.TWEET_TYPE, Tweets.TIMELINE_TYPE_HOME);
+                    values.put(Tweets.TWEET_TYPE, TimelineActivity.TIMELINE_TYPE_HOME);
                 if (values.containsKey(Tweets.IN_REPLY_TO_AUTHOR_ID) == false)
                     values.put(Tweets.IN_REPLY_TO_AUTHOR_ID, "");
                 if (values.containsKey(Tweets.FAVORITED) == false)

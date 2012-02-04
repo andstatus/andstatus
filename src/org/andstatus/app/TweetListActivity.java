@@ -183,15 +183,15 @@ public class TweetListActivity extends TimelineActivity {
             sa.addSelection(
                     Tweets.TWEET_TYPE + " IN (?, ?)",
                     new String[] {
-                            String.valueOf(Tweets.TIMELINE_TYPE_HOME),
-                            String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS)
+                            String.valueOf(TIMELINE_TYPE_HOME),
+                            String.valueOf(TIMELINE_TYPE_MENTIONS)
                     });
-            if (mTimelineType == Tweets.TIMELINE_TYPE_FAVORITES) {
+            if (mTimelineType == TIMELINE_TYPE_FAVORITES) {
                 sa.addSelection(MyDatabase.Tweets.FAVORITED + " = ?", new String[] {
                     "1"
                 });
             }
-            if (mTimelineType == Tweets.TIMELINE_TYPE_MENTIONS) {
+            if (mTimelineType == TIMELINE_TYPE_MENTIONS) {
                 sa.addSelection(Tweets.MESSAGE + " LIKE ?", new String[] {
                         "%@" + TwitterUser.getTwitterUser().getUsername() + "%"
                     });
@@ -222,8 +222,8 @@ public class TweetListActivity extends TimelineActivity {
                 sa.addSelection(
                         "MyDatabase.Tweets.TWEET_TYPE" + " IN (?, ?)" + ")",
                         new String[] {
-                                String.valueOf(Tweets.TIMELINE_TYPE_HOME),
-                                String.valueOf(Tweets.TIMELINE_TYPE_MENTIONS)
+                                String.valueOf(TIMELINE_TYPE_HOME),
+                                String.valueOf(TIMELINE_TYPE_MENTIONS)
                         });
             }
             sa.addSelection(Tweets._ID + " >= ?", new String[] {
@@ -241,7 +241,7 @@ public class TweetListActivity extends TimelineActivity {
         // This is for testing pruneOldRecords
 //        try {
 //            TimelineDownloader fl = new TimelineDownloader(TweetListActivity.this,
-//                    MyDatabase.Tweets.TIMELINE_TYPE_HOME);
+//                    TimelineActivity.TIMELINE_TYPE_HOME);
 //            fl.pruneOldRecords();
 //
 //        } catch (Exception e) {

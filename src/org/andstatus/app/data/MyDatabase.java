@@ -1,5 +1,6 @@
 /* 
  * Copyright (C) 2008 Torgny Bjers
+ * Copyright (c) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +22,6 @@ import android.provider.BaseColumns;
 
 /**
  * Convenience definitions for MyProvider
- * 
- * @author torgny.bjers
  */
 public final class MyDatabase {
 
@@ -35,7 +34,6 @@ public final class MyDatabase {
 	/**
 	 * Tweets table
 	 * 
-	 * @author torgny.bjers
 	 */
 	public static final class Tweets implements BaseColumns {
 		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/tweets");
@@ -56,21 +54,10 @@ public final class MyDatabase {
 		public static final String CREATED_DATE = "created";
 		public static final String SENT_DATE = "sent";
 
-        public static final int TIMELINE_TYPE_NONE = 0;
-		public static final int TIMELINE_TYPE_HOME = 1;
-		public static final int TIMELINE_TYPE_MENTIONS = 2;
-		/**
-		 * Messages are stored in separate database table, but we see them through the same base activity class,
-		 * this is why the type is here...
-		 */
-        public static final int TIMELINE_TYPE_MESSAGES = 3;
-        public static final int TIMELINE_TYPE_FAVORITES = 4;
 	}
 
 	/**
 	 * Direct Messages table
-	 * 
-	 * @author torgny.bjers
 	 */
 	public static final class DirectMessages implements BaseColumns {
 		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/directmessages");
@@ -88,9 +75,7 @@ public final class MyDatabase {
 	}
 
 	/**
-	 * Authors table
-	 * 
-	 * @author torgny.bjers
+	 * Users table (they are both senders AND recipients)
 	 */
 	public static final class Users implements BaseColumns {
 		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/users");

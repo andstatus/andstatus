@@ -84,12 +84,12 @@ public class TimelineDownloader {
         mTimelineType = timelineType;
         mLastStatusId = mTu.getSharedPreferences().getLong("last_timeline_id" + timelineType, 0);
         switch (mTimelineType) {
-            case MyDatabase.Tweets.TIMELINE_TYPE_HOME:
-            case MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS:
+            case TimelineActivity.TIMELINE_TYPE_HOME:
+            case TimelineActivity.TIMELINE_TYPE_MENTIONS:
                 mContentUri = MyDatabase.Tweets.CONTENT_URI;
                 mContentCountUri = MyDatabase.Tweets.CONTENT_COUNT_URI;
                 break;
-            case MyDatabase.Tweets.TIMELINE_TYPE_MESSAGES:
+            case TimelineActivity.TIMELINE_TYPE_MESSAGES:
                 mContentUri = MyDatabase.DirectMessages.CONTENT_URI;
                 mContentCountUri = MyDatabase.DirectMessages.CONTENT_COUNT_URI;
                 break;
@@ -112,13 +112,13 @@ public class TimelineDownloader {
         if (mTu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
             JSONArray jArr = null;
             switch (mTimelineType) {
-                case MyDatabase.Tweets.TIMELINE_TYPE_HOME:
+                case TimelineActivity.TIMELINE_TYPE_HOME:
                     jArr = mTu.getConnection().getHomeTimeline(lastId, limit);
                     break;
-                case MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS:
+                case TimelineActivity.TIMELINE_TYPE_MENTIONS:
                     jArr = mTu.getConnection().getMentionsTimeline(lastId, limit);
                     break;
-                case MyDatabase.Tweets.TIMELINE_TYPE_MESSAGES:
+                case TimelineActivity.TIMELINE_TYPE_MESSAGES:
                     jArr = mTu.getConnection().getDirectMessages(lastId, limit);
                     break;
                 default:
@@ -172,8 +172,8 @@ public class TimelineDownloader {
         try {
             // TODO: Unify databases!
             switch (mTimelineType) {
-                case MyDatabase.Tweets.TIMELINE_TYPE_HOME:
-                case MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS:
+                case TimelineActivity.TIMELINE_TYPE_HOME:
+                case TimelineActivity.TIMELINE_TYPE_MENTIONS:
                     JSONObject user;
                     user = jo.getJSONObject("user");
 
@@ -189,7 +189,7 @@ public class TimelineDownloader {
                             .getString("in_reply_to_screen_name"));
                     values.put(MyDatabase.Tweets.FAVORITED, jo.getBoolean("favorited") ? 1 : 0);
                     break;
-                case MyDatabase.Tweets.TIMELINE_TYPE_MESSAGES:
+                case TimelineActivity.TIMELINE_TYPE_MESSAGES:
                     values.put(MyDatabase.DirectMessages._ID, lTweetId.toString());
                     values.put(MyDatabase.DirectMessages.AUTHOR_ID, jo
                             .getString("sender_screen_name"));
@@ -208,8 +208,8 @@ public class TimelineDownloader {
             mContentResolver.insert(mContentUri, values);
             mNewTweets++;
             switch (mTimelineType) {
-                case MyDatabase.Tweets.TIMELINE_TYPE_HOME:
-                case MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS:
+                case TimelineActivity.TIMELINE_TYPE_HOME:
+                case TimelineActivity.TIMELINE_TYPE_MENTIONS:
                     if (mTu.getUsername().equals(jo.getString("in_reply_to_screen_name"))
                             || message.contains("@" + mTu.getUsername())) {
                         mReplies++;
@@ -259,7 +259,7 @@ public class TimelineDownloader {
                 String.valueOf(sinceTimestamp)
             });
 
-            if (mTimelineType != MyDatabase.Tweets.TIMELINE_TYPE_MESSAGES) {
+            if (mTimelineType != TimelineActivity.TIMELINE_TYPE_MESSAGES) {
                 // Don't delete Favorites!
                 sa.addSelection(MyDatabase.Tweets.FAVORITED + " = ?", new String[] {
                     "0"
@@ -298,7 +298,7 @@ public class TimelineDownloader {
                         sa.addSelection(MyDatabase.Tweets.SENT_DATE + " <=  ?", new String[] {
                             String.valueOf(sinceTimestampSize)
                         });
-                        if (mTimelineType != MyDatabase.Tweets.TIMELINE_TYPE_MESSAGES) {
+                        if (mTimelineType != TimelineActivity.TIMELINE_TYPE_MESSAGES) {
                             sa.addSelection(MyDatabase.Tweets.FAVORITED + " = ?",
                                     new String[] {
                                         "0"

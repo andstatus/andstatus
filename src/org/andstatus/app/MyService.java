@@ -24,7 +24,6 @@ import java.util.concurrent.BlockingQueue;
 
 import org.andstatus.app.TwitterUser.CredentialsVerified;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
-import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Tweets;
 import org.andstatus.app.net.ConnectionException;
@@ -1328,7 +1327,7 @@ public class MyService extends Service {
                         try {
                             TimelineDownloader fl = new TimelineDownloader(
                                     MyService.this.getApplicationContext(),
-                                    MyDatabase.Tweets.TIMELINE_TYPE_HOME);
+                                    TimelineActivity.TIMELINE_TYPE_HOME);
                             fl.destroyStatus(statusId);
                         } catch (Exception e) {
                             Log.e(TAG, "Error destroying status locally: " + e.toString());
@@ -1367,7 +1366,7 @@ public class MyService extends Service {
                             // The tweet was sent successfully
                             TimelineDownloader fl = new TimelineDownloader(
                                     MyService.this.getApplicationContext(),
-                                    MyDatabase.Tweets.TIMELINE_TYPE_HOME);
+                                    TimelineActivity.TIMELINE_TYPE_HOME);
 
                             fl.insertFromJSONObject(result, true);
                         } catch (JSONException e) {
@@ -1403,7 +1402,7 @@ public class MyService extends Service {
                     if (ok && loadTweets) {
                         descr = "loading Mentions";
                         fl = new TimelineDownloader(MyService.this.getApplicationContext(),
-                                MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
+                                TimelineActivity.TIMELINE_TYPE_MENTIONS);
                         ok = fl.loadTimeline();
                         aReplyCount = fl.replyCount();
                         if (ok) {
@@ -1418,7 +1417,7 @@ public class MyService extends Service {
                         if (ok) {
                             descr = "loading Home";
                             fl = new TimelineDownloader(MyService.this.getApplicationContext(),
-                                    MyDatabase.Tweets.TIMELINE_TYPE_HOME);
+                                    TimelineActivity.TIMELINE_TYPE_HOME);
                             ok = fl.loadTimeline();
                             aNewTweets = fl.newCount();
                             aReplyCount += fl.replyCount();
@@ -1438,7 +1437,7 @@ public class MyService extends Service {
                     if (ok && loadMessages) {
                         descr = "loading Messages";
                         fl = new TimelineDownloader(MyService.this.getApplicationContext(),
-                                MyDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
+                                TimelineActivity.TIMELINE_TYPE_MESSAGES);
                         ok = fl.loadTimeline();
                         aNewMessages = fl.newCount();
                         if (ok) {
@@ -1618,7 +1617,7 @@ public class MyService extends Service {
                     messageTitle = R.string.notification_title_mentions;
                     intent = new Intent(getApplicationContext(), TweetListActivity.class);
                     intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
-                            MyDatabase.Tweets.TIMELINE_TYPE_MENTIONS);
+                            TimelineActivity.TIMELINE_TYPE_MENTIONS);
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
                     break;
@@ -1631,7 +1630,7 @@ public class MyService extends Service {
                     messageTitle = R.string.notification_title_messages;
                     intent = new Intent(getApplicationContext(), MessageListActivity.class);
                     intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
-                            MyDatabase.Tweets.TIMELINE_TYPE_MESSAGES);
+                            TimelineActivity.TIMELINE_TYPE_MESSAGES);
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
                     break;
@@ -1646,7 +1645,7 @@ public class MyService extends Service {
                     messageTitle = R.string.notification_title;
                     intent = new Intent(getApplicationContext(), TweetListActivity.class);
                     intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
-                            MyDatabase.Tweets.TIMELINE_TYPE_HOME);
+                            TimelineActivity.TIMELINE_TYPE_HOME);
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
                     break;

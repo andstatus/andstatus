@@ -59,7 +59,6 @@ import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
-import org.andstatus.app.data.MyDatabase.Tweets;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -187,12 +186,21 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * We are going to finish/restart onResume this Activity
      */
     protected boolean mIsFinishingOnResume = false;
-  
+
+    
     /**
-     * TODO: enum from
-     * org.andstatus.app.data.MyDatabase.Tweets.TIMELINE_TYPE_...
+     * TODO: enum TypelineType
      */
-    protected int mTimelineType = Tweets.TIMELINE_TYPE_NONE;
+    public static final int TIMELINE_TYPE_NONE = 0;
+    public static final int TIMELINE_TYPE_HOME = 1;
+    public static final int TIMELINE_TYPE_MENTIONS = 2;
+    public static final int TIMELINE_TYPE_MESSAGES = 3;
+    public static final int TIMELINE_TYPE_FAVORITES = 4;
+    
+    /**
+     * TODO: enum TypelineType
+     */
+    protected int mTimelineType = TIMELINE_TYPE_NONE;
 
     /**
      * True if this timeline is filtered using query string ("Mentions" are not
@@ -682,15 +690,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
 
             case R.id.favorites_timeline_menu_id:
-                switchTimelineActivity(Tweets.TIMELINE_TYPE_FAVORITES);
+                switchTimelineActivity(TIMELINE_TYPE_FAVORITES);
                 break;
 
             case R.id.home_timeline_menu_id:
-                switchTimelineActivity(Tweets.TIMELINE_TYPE_HOME);
+                switchTimelineActivity(TIMELINE_TYPE_HOME);
                 break;
 
             case R.id.direct_messages_menu_id:
-                switchTimelineActivity(Tweets.TIMELINE_TYPE_MESSAGES);
+                switchTimelineActivity(TIMELINE_TYPE_MESSAGES);
                 break;
 
             case R.id.search_menu_id:
@@ -698,7 +706,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
 
             case R.id.mentions_menu_id:
-                switchTimelineActivity(Tweets.TIMELINE_TYPE_MENTIONS);
+                switchTimelineActivity(TIMELINE_TYPE_MENTIONS);
                 break;
                 
             case R.id.reload_menu_item:
@@ -763,16 +771,16 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     public void updateTitle(String rightText) {
         String timelinename = "??";
         switch (mTimelineType) {
-            case Tweets.TIMELINE_TYPE_FAVORITES:
+            case TIMELINE_TYPE_FAVORITES:
                 timelinename = getString(R.string.activity_title_favorites);
                 break;
-            case Tweets.TIMELINE_TYPE_HOME:
+            case TIMELINE_TYPE_HOME:
                 timelinename = getString(R.string.activity_title_timeline);
                 break;
-            case Tweets.TIMELINE_TYPE_MENTIONS:
+            case TIMELINE_TYPE_MENTIONS:
                 timelinename = getString(R.string.activity_title_mentions);
                 break;
-            case Tweets.TIMELINE_TYPE_MESSAGES:
+            case TIMELINE_TYPE_MESSAGES:
                 timelinename = getString(R.string.activity_title_direct_messages);
                 break;
         }
@@ -786,7 +794,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         rightTitle.setText(rightText);
 
         Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
-        if (mTimelineType != Tweets.TIMELINE_TYPE_MESSAGES) {
+        if (mTimelineType != TIMELINE_TYPE_MESSAGES) {
             createMessageButton.setText(getString(R.string.button_create_tweet));
         } else {
             createMessageButton.setVisibility(View.GONE);
@@ -1019,8 +1027,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     private void setTimelineType(Intent intentNew) {
         int timelineType_new  = intentNew.getIntExtra(MyService.EXTRA_TIMELINE_TYPE,
-                Tweets.TIMELINE_TYPE_NONE);
-        if (timelineType_new != Tweets.TIMELINE_TYPE_NONE) {
+                TIMELINE_TYPE_NONE);
+        if (timelineType_new != TIMELINE_TYPE_NONE) {
             mTimelineType = timelineType_new;
         }
 
@@ -1034,8 +1042,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             mQueryString = "";
         }
 
-        if (mTimelineType == Tweets.TIMELINE_TYPE_NONE) {
-            mTimelineType = Tweets.TIMELINE_TYPE_HOME;
+        if (mTimelineType == TIMELINE_TYPE_NONE) {
+            mTimelineType = TIMELINE_TYPE_HOME;
             // For some reason Android remembers last Query and adds it even if
             // the Activity was started from the Widget...
             Intent intent = getIntent();
@@ -1060,7 +1068,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // Ask service to load data for this mTimelineType
         MyService.CommandEnum command = CommandEnum.FETCH_TIMELINE;
         switch (mTimelineType) {
-            case Tweets.TIMELINE_TYPE_MESSAGES:
+            case TIMELINE_TYPE_MESSAGES:
                 command = CommandEnum.FETCH_MESSAGES;
         }
         sendCommand( new CommandData(command));
@@ -1080,7 +1088,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void switchTimelineActivity(int timelineType) {
         Intent intent;
         switch (timelineType) {
-            case Tweets.TIMELINE_TYPE_MESSAGES:
+            case TIMELINE_TYPE_MESSAGES:
                 intent = new Intent(this, MessageListActivity.class);
                 Bundle appDataBundle = new Bundle();
                 appDataBundle.putParcelable("content_uri",
@@ -1088,10 +1096,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 intent.putExtra(SearchManager.APP_DATA, appDataBundle);
                 break;
             default:
-                timelineType = Tweets.TIMELINE_TYPE_HOME;
-            case Tweets.TIMELINE_TYPE_MENTIONS:
-            case Tweets.TIMELINE_TYPE_FAVORITES:
-            case Tweets.TIMELINE_TYPE_HOME:
+                timelineType = TIMELINE_TYPE_HOME;
+            case TIMELINE_TYPE_MENTIONS:
+            case TIMELINE_TYPE_FAVORITES:
+            case TIMELINE_TYPE_HOME:
                 intent = new Intent(this, TweetListActivity.class);
                 break;
 
