@@ -18,6 +18,8 @@
 
 package org.andstatus.app;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.text.MessageFormat;
 
@@ -33,6 +35,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
@@ -58,6 +61,7 @@ import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 
 import org.andstatus.app.TwitterUser.CredentialsVerified;
+import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.ConnectionAuthenticationException;
 import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
@@ -89,23 +93,27 @@ public class PreferencesActivity extends PreferenceActivity implements
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs
      */
-    public static final int MSG_NONE = 7;
+    public static final int MSG_NONE = 1;
 
-    public static final int MSG_ACCOUNT_VALID = 1;
+    public static final int MSG_ACCOUNT_VALID = 2;
 
-    public static final int MSG_ACCOUNT_INVALID = 2;
+    public static final int MSG_ACCOUNT_INVALID = 3;
 
-    public static final int MSG_SERVICE_UNAVAILABLE_ERROR = 3;
+    public static final int MSG_SERVICE_UNAVAILABLE_ERROR = 4;
 
-    public static final int MSG_CONNECTION_EXCEPTION = 4;
+    public static final int MSG_CONNECTION_EXCEPTION = 5;
 
-    public static final int MSG_SOCKET_TIMEOUT_EXCEPTION = 5;
+    public static final int MSG_SOCKET_TIMEOUT_EXCEPTION = 6;
 
-    public static final int MSG_CREDENTIALS_OF_OTHER_USER = 6;
+    public static final int MSG_CREDENTIALS_OF_OTHER_USER = 7;
 
+    public static final int DLG_MOVE_DATA_BETWEEN_STORAGES = 8;
+    
+    
     // End Of the list ----------------------------------------
 
-    // private CheckBoxPreference mUseExternalStorage;
+    private CheckBoxPreference mUseExternalStorage;
+    private boolean mUseExternalStorage_busy = false;
 
     private CheckBoxPreference mOAuth;
 
@@ -141,17 +149,10 @@ public class PreferencesActivity extends PreferenceActivity implements
         mEditTextUsername = (EditTextPreference) findPreference(MyPreferences.KEY_TWITTER_USERNAME_NEW);
         mEditTextPassword = (EditTextPreference) findPreference(MyPreferences.KEY_TWITTER_PASSWORD);
         mVerifyCredentials = (Preference) findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
+        mUseExternalStorage = (CheckBoxPreference) getPreferenceScreen().findPreference(
+                MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
 
         mNotificationRingtone.setOnPreferenceChangeListener(this);
-
-        /*
-         * mUseExternalStorage = (CheckBoxPreference)
-         * getPreferenceScreen().findPreference(KEY_EXTERNAL_STORAGE); if
-         * (!Environment
-         * .getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-         * mUseExternalStorage.setEnabled(false);
-         * mUseExternalStorage.setChecked(false); }
-         */
     }
 
     /**
@@ -293,6 +294,7 @@ public class PreferencesActivity extends PreferenceActivity implements
         showRingtone(MyPreferences.getDefaultSharedPreferences().getString(
                 MyPreferences.KEY_RINGTONE_PREFERENCE, null));
         showMinLogLevel();
+        showUseExternalStorage();
     }
     
     protected void showHistorySize() {
@@ -349,7 +351,18 @@ public class PreferencesActivity extends PreferenceActivity implements
             mNotificationRingtone.setSummary(rt.getTitle(this));
         }
     }
-
+    
+    protected void showUseExternalStorage() {
+        boolean use = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false);
+        if (use != mUseExternalStorage.isChecked()) {
+            MyPreferences.getDefaultSharedPreferences().edit().putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW, use).commit();
+            mUseExternalStorage.setChecked(use);
+        }
+        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) && !mUseExternalStorage.isChecked()) {
+            mUseExternalStorage.setEnabled(false);
+        }
+    }
+    
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (PreferencesActivity.this.mCredentialsAreBeingVerified) {
             return;
@@ -365,7 +378,11 @@ public class PreferencesActivity extends PreferenceActivity implements
                 try {
                     value = sharedPreferences.getString(key, "");
                 } catch (ClassCastException e) {
-                    value = "(not string)";
+                    try {
+                        value = Boolean.toString(sharedPreferences.getBoolean(key, false));
+                    } catch (ClassCastException e2) {
+                        value = "??";
+                    }
                 }
             }
             MyLog.d(TAG, "onSharedPreferenceChanged: " + key + "='" + value + "'");
@@ -421,6 +438,12 @@ public class PreferencesActivity extends PreferenceActivity implements
             if (key.equals(MyPreferences.KEY_MIN_LOG_LEVEL)) {
                 showMinLogLevel();
             }
+            if (key.equals(MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW)) {
+                if (!mUseExternalStorage_busy) {
+                    mUseExternalStorage_busy = true;
+                    showDialog(DLG_MOVE_DATA_BETWEEN_STORAGES);
+                }
+            }
         } finally {
             onSharedPreferenceChanged_busy = false;
         }
@@ -438,37 +461,80 @@ public class PreferencesActivity extends PreferenceActivity implements
     protected Dialog onCreateDialog(int id) {
         int titleId = 0;
         int summaryId = 0;
+        Dialog dlg = null;
 
         switch (id) {
-            case MSG_ACCOUNT_INVALID:
-                if (titleId == 0) {
-                    titleId = R.string.dialog_title_authentication_failed;
-                    summaryId = R.string.dialog_summary_authentication_failed;
-                }
-            case MSG_SERVICE_UNAVAILABLE_ERROR:
-                if (titleId == 0) {
-                    titleId = R.string.dialog_title_service_unavailable;
-                    summaryId = R.string.dialog_summary_service_unavailable;
-                }
-            case MSG_SOCKET_TIMEOUT_EXCEPTION:
-                if (titleId == 0) {
-                    titleId = R.string.dialog_title_connection_timeout;
-                    summaryId = R.string.dialog_summary_connection_timeout;
-                }
-            case MSG_CREDENTIALS_OF_OTHER_USER:
-                if (titleId == 0) {
-                    titleId = R.string.dialog_title_authentication_failed;
-                    summaryId = R.string.error_credentials_of_other_user;
-                }
-                return new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle(titleId).setMessage(summaryId).setPositiveButton(
-                                android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface Dialog, int whichButton) {
-                                    }
-                                }).create();
-
+            case DLG_MOVE_DATA_BETWEEN_STORAGES:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(getText(R.string.dialog_title_external_storage))
+                    .setMessage("")
+                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        public void onCancel(DialogInterface dialog) {
+                            PreferencesActivity.this.showUseExternalStorage();
+                            PreferencesActivity.this.mUseExternalStorage_busy = false;
+                        }
+                    })
+                    .setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            new MoveDataBetweenStoragesTask().execute();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                        }
+                    });
+                dlg = builder.create();
+                break;
             default:
-                return super.onCreateDialog(id);
+                switch (id) {
+                    case MSG_ACCOUNT_INVALID:
+                        if (titleId == 0) {
+                            titleId = R.string.dialog_title_authentication_failed;
+                            summaryId = R.string.dialog_summary_authentication_failed;
+                        }
+                    case MSG_SERVICE_UNAVAILABLE_ERROR:
+                        if (titleId == 0) {
+                            titleId = R.string.dialog_title_service_unavailable;
+                            summaryId = R.string.dialog_summary_service_unavailable;
+                        }
+                    case MSG_SOCKET_TIMEOUT_EXCEPTION:
+                        if (titleId == 0) {
+                            titleId = R.string.dialog_title_connection_timeout;
+                            summaryId = R.string.dialog_summary_connection_timeout;
+                        }
+                    case MSG_CREDENTIALS_OF_OTHER_USER:
+                        if (titleId == 0) {
+                            titleId = R.string.dialog_title_authentication_failed;
+                            summaryId = R.string.error_credentials_of_other_user;
+                        }
+                        dlg = new AlertDialog.Builder(this)
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .setTitle(titleId)
+                                .setMessage(summaryId)
+                                .setPositiveButton(android.R.string.ok,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface Dialog,
+                                                    int whichButton) {
+                                            }
+                                        }).create();
+
+                    default:
+                        dlg = super.onCreateDialog(id);
+                }
+        }
+        return dlg;
+    }
+
+    @Override
+    protected void onPrepareDialog(int id, Dialog dialog) {
+        super.onPrepareDialog(id, dialog);
+        switch (id) {
+            case DLG_MOVE_DATA_BETWEEN_STORAGES:
+                ((AlertDialog) dialog)
+                        .setMessage(getText(mUseExternalStorage.isChecked() ? R.string.summary_preference_storage_external_on
+                                : R.string.summary_preference_storage_external_off));
+                break;
         }
     }
 
@@ -968,6 +1034,239 @@ public class PreferencesActivity extends PreferenceActivity implements
         }
     }
 
+    
+    
+    /**
+     * Move Data to/from External Storage
+     *  
+     * @author yvolk
+     */
+    private class MoveDataBetweenStoragesTask extends AsyncTask<Uri, Void, JSONObject> {
+        private ProgressDialog dlg;
+
+        @Override
+        protected void onPreExecute() {
+            dlg = ProgressDialog.show(PreferencesActivity.this,
+                    getText(R.string.dialog_title_external_storage),
+                    getText(R.string.dialog_summary_external_storage), true, // indeterminate
+                    // duration
+                    false); // not cancel-able
+        }
+
+        @Override
+        protected JSONObject doInBackground(Uri... uris) {
+            JSONObject jso = null;
+            boolean done = false;
+            boolean succeeded = false;
+            String message = "";
+
+            File dbFileOld = null;
+            File dbFileNew = null;
+            boolean copied = false;
+
+            boolean UseExternalStorageOld = MyPreferences.getDefaultSharedPreferences().getBoolean(
+                    MyPreferences.KEY_USE_EXTERNAL_STORAGE, false);
+            boolean UseExternalStorageNew = PreferencesActivity.this.mUseExternalStorage
+                    .isChecked();
+
+            MyLog.d(TAG, "About to move data from " + UseExternalStorageOld + " to " + UseExternalStorageNew );
+            
+            if (UseExternalStorageNew == UseExternalStorageOld) {
+                message = message + "Nothing to do. ";
+                done = true;
+                succeeded = true;
+            }
+            if (!done) {
+                try {
+                    if (!done) {
+                        dbFileOld = MyPreferences.getContext()
+                                .getDatabasePath(MyDatabase.DATABASE_NAME);
+                        MyPreferences
+                                .getDefaultSharedPreferences()
+                                .edit()
+                                .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,
+                                        UseExternalStorageNew).commit();
+                        MyPreferences.forget();
+                        MyPreferences.initialize(PreferencesActivity.this,
+                                this);
+                        dbFileNew = MyPreferences.getContext()
+                                .getDatabasePath(MyDatabase.DATABASE_NAME);
+                        if (dbFileOld == null) {
+                            message = message + "No old database. ";
+                            done = true;
+                        }
+                    }
+                    if (!done) {
+                        if (dbFileNew == null) {
+                            message = message + "No new database. ";
+                            done = true;
+                        } else {
+                            if (!dbFileOld.exists()) {
+                                message = message + "No old database. ";
+                                done = true;
+                                succeeded = true;
+                            } else if (dbFileNew.exists()) {
+                                message = "Database already exists. " + message;
+                                if (!dbFileNew.delete()) {
+                                    message = "Couldn't delete already existed files. " + message;
+                                    done = true;
+                                }
+                            }
+                        }
+                    }
+                    if (!done) {
+                        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                            MyLog.v(TAG, "from: " + dbFileOld.getPath());
+                            MyLog.v(TAG, "to: " + dbFileNew.getPath());
+                        }
+                        try {
+                            dbFileNew.createNewFile();
+                            if (this.copyFile(dbFileOld, dbFileNew)) {
+                                copied = true;
+                                succeeded = true;
+                            }
+                        } catch (Exception e) {
+                            message = "Couldn't copy database: " + e.getMessage() + ". " + message;
+                        }
+                        done = true;
+                    }
+                } catch (Exception e) {
+                    message = "Error: " + e.getMessage() + ". " + message;
+                    succeeded = false;
+                } finally {
+                    if (!succeeded) {
+                        try {
+                            // Revert settings back
+                            MyPreferences
+                                    .getDefaultSharedPreferences()
+                                    .edit()
+                                    .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,
+                                            UseExternalStorageOld).commit();
+                            MyPreferences.forget();
+                            MyPreferences.initialize(
+                                    PreferencesActivity.this, this);
+                        } catch (Exception e) {
+                            message = "Couldn't revert settings. " + e.getMessage() + message;
+                        }
+                    }
+
+                    // Delete old files
+                    try {
+                        if (succeeded) {
+                            if (copied && dbFileOld != null) {
+                                if (dbFileOld.exists()) {
+                                    if (!dbFileOld.delete()) {
+                                        message = "Couldn't delete old files. " + message;
+                                    }
+                                }
+                            }
+                        } else {
+                            if (dbFileNew != null) {
+                                if (dbFileNew.exists()) {
+                                    if (!dbFileNew.delete()) {
+                                        message = "Couldn't delete new files. " + message;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        message = "Couldn't delete old files. " + e.getMessage() + ". " + message;
+                    }
+                }
+            }
+
+            MyLog.v(TAG, "Move: " + message );
+            
+            try {
+                jso = new JSONObject();
+                jso.put("succeeded", succeeded);
+                jso.put("message", message);
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return jso;
+        }
+
+        /**
+         * Based on <a href="http://www.screaming-penguin.com/node/7749">Backing
+         * up your Android SQLite database to the SD card</a>
+         * 
+         * @param src
+         * @param dst
+         * @return true if Ok
+         * @throws IOException
+         */
+        boolean copyFile(File src, File dst) throws IOException {
+            long sizeIn = -1;
+            long sizeCopied = 0;
+            boolean Ok = false;
+            if (src != null) {
+                if (src.exists()) {
+                    sizeIn = src.length();
+                    if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
+                        MyLog.d(TAG, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
+                    } else {
+                        java.nio.channels.FileChannel inChannel = new java.io.FileInputStream(src)
+                                .getChannel();
+                        java.nio.channels.FileChannel outChannel = new java.io.FileOutputStream(dst)
+                                .getChannel();
+                        try {
+                            sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
+                            Ok = (sizeIn == sizeCopied);
+                        } finally {
+                            if (inChannel != null)
+                                inChannel.close();
+                            if (outChannel != null)
+                                outChannel.close();
+                        }
+
+                    }
+                }
+            }
+            MyLog.d(TAG, "Copied " + sizeCopied + " bytes of " + sizeIn);
+            return (Ok);
+        }
+
+        // This is in the UI thread, so we can mess with the UI
+        protected void onPostExecute(JSONObject jso) {
+            try {
+                dlg.dismiss();
+            } catch (Exception e1) { 
+                // Ignore this error  
+            }
+            if (jso != null) {
+                try {
+                    boolean succeeded = jso.getBoolean("succeeded");
+                    String message = jso.getString("message");
+
+                    MyLog.d(TAG, message);
+                    MyLog.d(TAG, this.getClass().getSimpleName() + " ended, "
+                            + (succeeded ? "moved" : "move failed"));
+                    
+                    if (succeeded) {
+
+                    } else {
+
+                        String message2 = PreferencesActivity.this
+                        .getString(R.string.error);
+                        if (message != null && message.length() > 0) {
+                            message2 = message2 + ": " + message;
+                            Log.d(TAG, message);
+                        }
+                        Toast.makeText(PreferencesActivity.this, message2, Toast.LENGTH_LONG).show();
+                        
+                    }
+                    
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            mUseExternalStorage_busy = false;
+        }
+    }
+    
     public static void saveRequestInformation(SharedPreferences settings, String token,
             String secret) {
         // null means to clear the old values

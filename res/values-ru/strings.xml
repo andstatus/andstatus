@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-	Copyright (C) 2010-2011 Yuri Volkov, yvolk@yurivolkov.com
+	Copyright (C) 2010-2012 Yuri Volkov, yvolk@yurivolkov.com
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -71,7 +71,8 @@
 	<string name="dialog_title_sending_message">Отправка сообщения…</string>
 	<string name="dialog_title_service_unavailable">Сервис недоступен</string>
 	<string name="dialog_title_timeline_loading">Обновление ленты времени…</string>
-	<string name="error_twitter_404">Страница не найдена! Пожалуйста, сообщите об этой ошибке!</string>
+    <string name="error">Ошибка</string>
+    <string name="error_twitter_404">Страница не найдена! Пожалуйста, сообщите об этой ошибке!</string>
 	<string name="error_connection_error">Произошла ошибка соединения. Сообщите об этой ошибке!</string>
 	<string name="error_set_username">Не смог установить имя Пользователя: </string>
 	<string name="error_credentials_of_other_user">Идентифицирован ДРУГОЙ пользователь?!</string>
@@ -89,7 +90,8 @@
 	<string name="menu_item_follow">Следить</string>
 	<string name="menu_item_reply">Ответить</string>
 	<string name="menu_item_retweet">Пересказать</string>
-	<string name="menu_item_unfollow">Не следить</string>
+    <string name="menu_item_share">Поделиться</string>
+    <string name="menu_item_unfollow">Не следить</string>
 	<string name="menu_item_view_profile">Посмотреть профиль</string>
 	<string name="message_sent">Ваше сообщение отправлено.</string>
 	<string name="messages_activity">Личные сообщения</string>

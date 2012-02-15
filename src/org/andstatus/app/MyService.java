@@ -1025,10 +1025,7 @@ public class MyService extends Service {
             /**
              * Set the latest event information and send the notification
              * Actually don't start any intent
-             * 
-             * @see http
-             *      ://stackoverflow.com/questions/4232006/android-notification
-             *      -pendingintent-problem
+             * @see <a href="http://stackoverflow.com/questions/4232006/android-notification-pendingintent-problem">android-notification-pendingintent-problem</a>
              */
             // PendingIntent pi = PendingIntent.getActivity(this, 0, null, 0);
 

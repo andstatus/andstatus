@@ -71,7 +71,8 @@
 	<string name="dialog_title_sending_message">Sending message…</string>
 	<string name="dialog_title_service_unavailable">Service Unavailable</string>
 	<string name="dialog_title_timeline_loading">Updating Timeline…</string>
-	<string name="error_twitter_404">The page cannot be found. Please report this error!</string>
+    <string name="error">Error</string>
+    <string name="error_twitter_404">The page cannot be found. Please report this error!</string>
 	<string name="error_connection_error">A connection error has occurred. Please report this error!</string>
 	<string name="error_set_username">Couldn\'t set the Username to: </string>
 	<string name="error_credentials_of_other_user">These are credentials of other user</string>

@@ -33,6 +33,17 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
  -->
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
+    <release android:versionName="1.3.1" android:versionCode="51"
+        versionDate="2012-02-15">
+        <changes>
+            <change>Added "Use External Storage" option. When a User changes
+                this option, System moves database file to External storage
+                and back when this option is set to use Internal storage.</change>
+            <change>Deprecated "Statuses/friends_timeline" API changed to
+                "statuses/home_timeline". "Friends" menu item replaced with
+                "Home" to reflect this change.</change>
+        </changes>
+    </release>
     <release android:versionName="1.2.2" android:versionCode="46"
         versionDate="2011-10-26">
         <changes>

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010-2011 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2012 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,15 @@ import org.andstatus.app.util.MyLog;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.io.File;
+
 /**
- * This is central point of accessing SharedPreferences, used by AndStatus
- * @author yuvolkov
+ * This is central point of accessing SharedPreferences and other global objects, used by AndStatus
+ * @author yvolk
  */
 public class MyPreferences {
     private static final String TAG = MyPreferences.class.getSimpleName();
@@ -33,7 +36,11 @@ public class MyPreferences {
      * Single context object for which we will request SharedPreferences
      */
     private static Context context;
+    /**
+     * Name of the object that initialized the class
+     */
     private static String origin;
+    private static MyDatabase db;
     
     public static final String KEY_OAUTH = "oauth";
     /**
@@ -82,6 +89,15 @@ public class MyPreferences {
      * Minimum logging level for the whole application (i.e. for any tag)
      */
     public static final String KEY_MIN_LOG_LEVEL = "min_log_level";
+    /**
+     * Use this dir: http://developer.android.com/reference/android/content/Context.html#getExternalFilesDir(java.lang.String)
+     * (for API 8)
+     */
+    public static final String KEY_USE_EXTERNAL_STORAGE = "use_external_storage";
+    /**
+     * New value for #KEY_USE_EXTERNAL_STORAGE to e confirmed/processed
+     */
+    public static final String KEY_USE_EXTERNAL_STORAGE_NEW = "use_external_storage_new";
     
     /**
      * System time when shared preferences were examined and took into account
@@ -96,7 +112,7 @@ public class MyPreferences {
     /**
      * 
      * @param context_in
-     * @param origin - object that initialized the class 
+     * @param object - object that initialized the class 
      */
     public static void initialize(Context context_in, java.lang.Object object ) {
         String origin_in = object.getClass().getSimpleName();
@@ -105,7 +121,7 @@ public class MyPreferences {
             context = context_in.getApplicationContext();
             origin = origin_in;
             TwitterUser.initialize();
-            MyLog.v(TAG, "Initialized by " + origin);
+            MyLog.v(TAG, "Initialized by " + origin + " context: " + context.getClass().getName());
         } else {
             MyLog.v(TAG, "Already initialized by " + origin +  " (called by: " + origin_in + ")");
         }
@@ -114,12 +130,17 @@ public class MyPreferences {
     
     /**
      * Forget everything in order to reread from the sources if it will be needed
+     * e.g. after configuration changes
      */
     public static void forget() {
+        TwitterUser.forget();
+        if (db != null) {
+            db.close();
+            db = null;
+        }
+        MyLog.forget();
         context = null;
         origin = null;
-        TwitterUser.forget();
-        MyLog.forget();
     }
     
     public static boolean isInitialized() {
@@ -131,7 +152,7 @@ public class MyPreferences {
      */
     public static SharedPreferences getDefaultSharedPreferences() {
         if (context == null) {
-            Log.e(TAG, "Was not initialized yet");
+            Log.e(TAG, "getDefaultSharedPreferences - Was not initialized yet");
             return null;
         } else {
             return PreferenceManager.getDefaultSharedPreferences(context);
@@ -140,7 +161,7 @@ public class MyPreferences {
 
     public static void setDefaultValues(int resId, boolean readAgain) {
         if (context == null) {
-            Log.e(TAG, "Was not initialized yet");
+            Log.e(TAG, "setDefaultValues - Was not initialized yet");
         } else {
             PreferenceManager.setDefaultValues(context, resId, readAgain);
         }
@@ -148,7 +169,7 @@ public class MyPreferences {
     
     public static SharedPreferences getSharedPreferences(String name, int mode) {
         if (context == null) {
-            Log.e(TAG, "Was not initialized yet");
+            Log.e(TAG, "getSharedPreferences - Was not initialized yet");
             return null;
         } else {
             return context.getSharedPreferences(name, mode);
@@ -158,5 +179,85 @@ public class MyPreferences {
     public static Context getContext() {
         return context;
     }
+
+    public static MyDatabase getDatabase() {
+        if (db == null) {
+            if (context == null) {
+                Log.e(TAG, "getDatabase - Was not initialized yet");
+            } else {
+                db = new MyDatabase(context);
+            }
+        }
+        return db;
+    }
     
+    /**
+     * Standard directory in which to place databases
+     */
+    public static String DIRECTORY_DATABASES = "databases";
+    
+    /**
+     * This function works just like {@link android.content.Context#getExternalFilesDir
+     * Context.getExternalFilesDir}, but it takes {@link #KEY_USE_EXTERNAL_STORAGE} into account,
+     * so it returns directory either on internal or external storage.
+     * 
+     * @param type The type of files directory to return.  May be null for
+     * the root of the files directory or one of
+     * the following Environment constants for a subdirectory:
+     * {@link android.os.Environment#DIRECTORY_PICTURES Environment.DIRECTORY_...} (since API 8),
+     * {@link #DIRECTORY_DATABASES}
+     * 
+     * @return directory, already created for you OR null in case of error
+     * @see <a href="http://developer.android.com/guide/topics/data/data-storage.html#filesExternal">filesExternal</a>
+     */
+    public static File getDataFilesDir(String type) {
+        File baseDir = null;
+        String pathToAppend = "";
+        File dir = null;
+        String textToLog = null;
+        boolean useExternalStorage = false;
+        if (context == null) {
+            textToLog = "getDataFilesDir - Was not initialized yet";
+        } else {
+            useExternalStorage = getDefaultSharedPreferences().getBoolean(KEY_USE_EXTERNAL_STORAGE, false); 
+            if (useExternalStorage) {
+                String state = Environment.getExternalStorageState();
+                if (Environment.MEDIA_MOUNTED.equals(state)) {    
+                    // We can read and write the media
+                    baseDir = Environment.getExternalStorageDirectory();
+                    pathToAppend = "Android/data/" + context.getPackageName() + "/files";
+                } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+                    textToLog = "getDataFilesDir - We can only read External storage";
+                } else {    
+                    textToLog = "getDataFilesDir - error accessing External storage";
+                }                
+            } else {
+                baseDir = Environment.getDataDirectory();
+                pathToAppend = "data/" + context.getPackageName();
+            }
+            if (baseDir != null) {
+                if (type != null) {
+                    pathToAppend = pathToAppend + "/" + type;
+                }
+                dir = new File(baseDir, pathToAppend);
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                    if (!dir.exists()) {
+                        textToLog = "getDataFilesDir - Could not create '" + dir.getPath() + "'";
+                        dir = null;
+                    }
+                }
+            }
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                MyLog.v(TAG, (useExternalStorage ? "External" : "Internal") + " path: '" 
+                + ( (dir == null) ? "(null)" : dir.getPath()) + "'");
+            }
+        }
+        if (textToLog != null) {
+            Log.i(TAG, textToLog);
+        }
+        
+        return dir;
+    }
+
 }

@@ -54,14 +54,6 @@ public class SplashActivity extends Activity {
 
 		setContentView(R.layout.splash);
 
-		/*
-		if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-			if (!mSP.getBoolean("confirmed_external_storage_use", false)) {
-				showDialog(TimelineActivity.DIALOG_EXTERNAL_STORAGE);
-			}
-		}
-		*/
-
 		mContainer = (LinearLayout) findViewById(R.id.splash_container);
 
 		TextView payoff = (TextView) findViewById(R.id.splash_payoff_line);

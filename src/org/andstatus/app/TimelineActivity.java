@@ -27,7 +27,6 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -111,10 +110,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     public static final int DIALOG_AUTHENTICATION_FAILED = 1;
 
     public static final int DIALOG_SERVICE_UNAVAILABLE = 3;
-
-    public static final int DIALOG_EXTERNAL_STORAGE = 4;
-
-    public static final int DIALOG_EXTERNAL_STORAGE_MISSING = 6;
 
     public static final int DIALOG_CONNECTION_TIMEOUT = 7;
 
@@ -279,22 +274,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 mCurrentId = savedInstanceState.getLong(MyService.EXTRA_TWEETID);
             }
         }
-        
-        /*
-         * if (mSP.getBoolean("storage_use_external", false)) { if
-         * (!Environment.
-         * getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-         * showDialog(DIALOG_EXTERNAL_STORAGE_MISSING); } if
-         * (Environment.getExternalStorageState
-         * ().equals(Environment.MEDIA_MOUNTED_READ_ONLY)) {
-         * Toast.makeText(this,
-         * "External storage mounted read-only. Cannot write to database. Please re-mount your storage and try again."
-         * , Toast.LENGTH_LONG).show(); destroyService(); finish(); } } if
-         * (Environment
-         * .getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) { if
-         * (!mSP.getBoolean("confirmed_external_storage_use", false)) {
-         * showDialog(DIALOG_EXTERNAL_STORAGE); } }
-         */
 
         // Set up notification manager
         mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -590,58 +569,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                                 R.string.dialog_summary_service_unavailable).setPositiveButton(
                                 android.R.string.ok, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface Dialog, int whichButton) {
-                                    }
-                                }).create();
-
-            case DIALOG_EXTERNAL_STORAGE:
-                return new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_info)
-                        .setTitle(R.string.dialog_title_external_storage).setMessage(
-                                R.string.dialog_summary_external_storage).setPositiveButton(
-                                android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface Dialog, int whichButton) {
-                                        SharedPreferences.Editor editor = MyPreferences.getDefaultSharedPreferences().edit();
-                                        editor.putBoolean("confirmed_external_storage_use", true);
-                                        editor.putBoolean("storage_use_external", true);
-                                        editor.commit();
-                                        destroyService();
-                                        finish();
-                                        Intent intent = new Intent(TimelineActivity.this,
-                                                TweetListActivity.class);
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        startActivity(intent);
-                                    }
-                                }).setNegativeButton(android.R.string.cancel,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface Dialog, int whichButton) {
-                                        SharedPreferences.Editor editor = MyPreferences.getDefaultSharedPreferences().edit();
-                                        editor.putBoolean("confirmed_external_storage_use", true);
-                                        editor.commit();
-                                    }
-                                }).create();
-
-            case DIALOG_EXTERNAL_STORAGE_MISSING:
-                return new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle(R.string.dialog_title_external_storage_missing).setMessage(
-                                R.string.dialog_summary_external_storage_missing)
-                        .setPositiveButton(android.R.string.ok,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface Dialog, int whichButton) {
-                                        SharedPreferences.Editor editor = MyPreferences.getDefaultSharedPreferences().edit();
-                                        editor.putBoolean("confirmed_external_storage_use", true);
-                                        editor.putBoolean("storage_use_external", false);
-                                        editor.commit();
-                                        destroyService();
-                                        finish();
-                                        Intent intent = new Intent(TimelineActivity.this,
-                                                TweetListActivity.class);
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        startActivity(intent);
-                                    }
-                                }).setNegativeButton(android.R.string.cancel,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface Dialog, int whichButton) {
-                                        destroyService();
-                                        finish();
                                     }
                                 }).create();
 

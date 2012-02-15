@@ -41,6 +41,12 @@
 	<!-- SETTINGS -->
 	<PreferenceCategory android:title="@string/category_title_preference_settings">
 
+		<!-- STORAGE -->
+		<CheckBoxPreference android:key="use_external_storage_new"
+			android:title="@string/title_preference_storage_external"
+			android:summaryOff="@string/summary_preference_storage_external_off"
+			android:summaryOn="@string/summary_preference_storage_external_on" />
+
 		<!-- APPEARANCE -->
 		<PreferenceScreen android:key="preference_screen_apperance"
 			android:summary="@string/summary_preference_appearance"
