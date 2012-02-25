@@ -109,7 +109,7 @@ public class TimelineDownloader {
         mReplies = 0;
         long lastId = mLastStatusId;
         int limit = 200;
-        if (mTu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+        if ((mTu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) && MyPreferences.isDataAvailable()) {
             JSONArray jArr = null;
             switch (mTimelineType) {
                 case TimelineActivity.TIMELINE_TYPE_HOME:

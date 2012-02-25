@@ -259,5 +259,12 @@ public class MyPreferences {
         
         return dir;
     }
+    
+    /**
+     * Simple check that allows to prevent data access errors
+     */
+    public static boolean isDataAvailable() {
+        return (getDataFilesDir(null) != null);
+    }
 
 }

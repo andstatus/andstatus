@@ -398,39 +398,42 @@ public class MyProvider extends ContentProvider {
             orderBy = sortOrder;
         }
 
-        // Get the database and run the query
-        SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
         Cursor c = null;
-        boolean logQuery = MyLog.isLoggable(TAG, Log.VERBOSE);
-        try {
-            if (sql.length() > 0) {
-                c = db.rawQuery(sql, selectionArgs);
-            } else {
-                c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
+        if (MyPreferences.isDataAvailable()) {
+            // Get the database and run the query
+            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            boolean logQuery = MyLog.isLoggable(TAG, Log.VERBOSE);
+            try {
+                if (sql.length() > 0) {
+                    c = db.rawQuery(sql, selectionArgs);
+                } else {
+                    c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
+                }
+            } catch (Exception e) {
+                logQuery = true;
+                Log.e(TAG, "Database query failed");
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            logQuery = true;
-            Log.e(TAG, "Database query failed");
-            e.printStackTrace();
+
+            if (logQuery) {
+                if (sql.length() > 0) {
+                    Log.v(TAG, "query, SQL=\"" + sql + "\"");
+                    if (selectionArgs != null && selectionArgs.length > 0) {
+                        Log.v(TAG, "; selectionArgs=" + Arrays.toString(selectionArgs));
+                    }
+                } else {
+                    Log.v(TAG, "query, uri=" + uri + "; projection=" + Arrays.toString(projection));
+                    Log.v(TAG, "; selection=" + selection);
+                    Log.v(TAG, "; selectionArgs=" + Arrays.toString(selectionArgs) + "; sortOrder="
+                            + sortOrder);
+                    Log.v(TAG, "; qb.getTables=" + qb.getTables() + "; orderBy=" + orderBy);
+                }
+            }
         }
 
-        if (logQuery) {
-            if (sql.length() > 0) {
-                Log.v(TAG, "query, SQL=\"" + sql + "\"");
-                if (selectionArgs != null && selectionArgs.length > 0) {
-                    Log.v(TAG, "; selectionArgs=" + Arrays.toString(selectionArgs));
-                }
-            } else {
-                Log.v(TAG, "query, uri=" + uri + "; projection=" + Arrays.toString(projection));
-                Log.v(TAG, "; selection=" + selection);
-                Log.v(TAG, "; selectionArgs=" + Arrays.toString(selectionArgs) + "; sortOrder="
-                        + sortOrder);
-                Log.v(TAG, "; qb.getTables=" + qb.getTables() + "; orderBy=" + orderBy);
-            }
-        }
-        
         if (c != null) {
-            // Tell the cursor what Uri to watch, so it knows when its source data
+            // Tell the cursor what Uri to watch, so it knows when its source
+            // data
             // changes
             c.setNotificationUri(getContext().getContentResolver(), uri);
         }

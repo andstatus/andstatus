@@ -1257,6 +1257,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                         Toast.makeText(PreferencesActivity.this, message2, Toast.LENGTH_LONG).show();
                         
                     }
+                    PreferencesActivity.this.showUseExternalStorage();
                     
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block

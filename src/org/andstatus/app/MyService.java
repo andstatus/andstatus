@@ -763,6 +763,13 @@ public class MyService extends Service {
                 // Don't add to the queue
             } else if (mCommands.contains(commandData)) {
                 MyLog.d(TAG, "Duplicated " + commandData);
+                // Reset retries counter on receiving duplicated command
+                for (CommandData cd:mCommands) {
+                    if (cd.equals(commandData)) {
+                        cd.retriesLeft = 0;
+                        break;
+                    }
+                }
             } else {
                 MyLog.d(TAG, "Adding to the queue " + commandData);
                 if (!mCommands.offer(commandData)) {
@@ -943,7 +950,7 @@ public class MyService extends Service {
 
             if (!mCommands.isEmpty()) {
                 // Don't even launch executor if we're not online
-                if (isOnline()) {
+                if (isOnline() && MyPreferences.isDataAvailable()) {
                     // only one Executing thread for now...
                     if (mExecutors.isEmpty()) {
                         CommandExecutor executor;
