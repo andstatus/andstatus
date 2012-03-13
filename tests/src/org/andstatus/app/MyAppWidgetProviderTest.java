@@ -178,7 +178,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	CommandEnum msgType;
     	
     	numTweets = 1;
-    	msgType = CommandEnum.NOTIFY_REPLIES;
+    	msgType = CommandEnum.NOTIFY_MENTIONS;
     	updateWidgets(numTweets, msgType);
     	
     	numTweets = 1;

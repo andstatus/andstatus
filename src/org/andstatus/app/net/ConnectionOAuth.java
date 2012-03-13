@@ -45,6 +45,7 @@ import org.json.JSONObject;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
@@ -146,27 +147,27 @@ public class ConnectionOAuth extends Connection {
     }
 
     @Override
-    public JSONObject createFavorite(long statusId) throws ConnectionException {
+    public JSONObject createFavorite(String statusId) throws ConnectionException {
         StringBuilder url = new StringBuilder(FAVORITES_CREATE_BASE_URL);
-        url.append(String.valueOf(statusId));
+        url.append(statusId);
         url.append(EXTENSION);
         HttpPost post = new HttpPost(url.toString());
         return postRequest(post);
     }
 
     @Override
-    public JSONObject destroyFavorite(long statusId) throws ConnectionException {
+    public JSONObject destroyFavorite(String statusId) throws ConnectionException {
         StringBuilder url = new StringBuilder(FAVORITES_DESTROY_BASE_URL);
-        url.append(String.valueOf(statusId));
+        url.append(statusId);
         url.append(EXTENSION);
         HttpPost post = new HttpPost(url.toString());
         return postRequest(post);
     }
 
     @Override
-    public JSONObject destroyStatus(long statusId) throws ConnectionException {
+    public JSONObject destroyStatus(String statusId) throws ConnectionException {
         StringBuilder url = new StringBuilder(STATUSES_DESTROY_URL);
-        url.append(String.valueOf(statusId));
+        url.append(statusId);
         url.append(EXTENSION);
         HttpPost post = new HttpPost(url.toString());
         return postRequest(post);
@@ -306,13 +307,13 @@ public class ConnectionOAuth extends Connection {
     }
 
     @Override
-    public JSONObject updateStatus(String message, long inReplyToId)
+    public JSONObject updateStatus(String message, String inReplyToId)
             throws ConnectionException {
         HttpPost post = new HttpPost(STATUSES_UPDATE_URL);
         LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
         out.add(new BasicNameValuePair("status", message));
-        if (inReplyToId > 0) {
-            out.add(new BasicNameValuePair("in_reply_to_status_id", String.valueOf(inReplyToId)));
+        if ( !TextUtils.isEmpty(inReplyToId)) {
+            out.add(new BasicNameValuePair("in_reply_to_status_id", inReplyToId));
         }
         try {
             post.setEntity(new UrlEncodedFormEntity(out, HTTP.UTF_8));

@@ -31,9 +31,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import org.andstatus.app.MyService;
-import org.andstatus.app.MessageListActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.TweetListActivity;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.util.I18n;
@@ -221,7 +219,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 		        }
 				// Calculate new values
 				switch (msgType) {
-				case NOTIFY_REPLIES:
+				case NOTIFY_MENTIONS:
 					data.numMentions += numSomethingReceived;
 					data.checked();
 					break;
@@ -333,21 +331,20 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			// When user clicks on widget, launch main AndStatus activity,
 			//   Open timeline, where there are new tweets, or "Home" timeline
 			Intent intent;
-			int timeLineType = TimelineActivity.TIMELINE_TYPE_HOME;
+			int timeLineType = MyDatabase.TIMELINE_TYPE_HOME;
+            intent = new Intent(context, TweetListActivity.class);
 			if (data.numMessages > 0) {
-	            intent = new Intent(context, MessageListActivity.class);
-			    timeLineType = TimelineActivity.TIMELINE_TYPE_MESSAGES;
+			    timeLineType = MyDatabase.TIMELINE_TYPE_DIRECT;
 			} else {
-	            intent = new Intent(context, TweetListActivity.class);
 			    if (data.numMentions > 0) {
-	                timeLineType = TimelineActivity.TIMELINE_TYPE_MENTIONS;
+	                timeLineType = MyDatabase.TIMELINE_TYPE_MENTIONS;
 			    }
 			}
             intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
                     timeLineType);
             // This line is necessary to actually bring Extra to the target intent
             // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
-            intent.setData((android.net.Uri.parse(MyDatabase.Tweets.CONTENT_URI.toString() + "#" + android.os.SystemClock.elapsedRealtime())));
+            intent.setData((android.net.Uri.parse(MyDatabase.Msg.CONTENT_URI.toString() + "#" + android.os.SystemClock.elapsedRealtime())));
 			PendingIntent pendingIntent = PendingIntent.getActivity(context,
 					0 /* no requestCode */, intent, 0 /* no flags */);
 			views.setOnClickPendingIntent(R.id.widget, pendingIntent);

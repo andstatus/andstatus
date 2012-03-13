@@ -40,6 +40,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 import android.util.Log;
 
 
@@ -145,7 +146,7 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONObject updateStatus(String message, long inReplyToId) throws ConnectionException {
+    public JSONObject updateStatus(String message, String inReplyToId) throws ConnectionException {
 		String url = STATUSES_UPDATE_URL;
 		List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
@@ -153,8 +154,8 @@ public class ConnectionBasicAuth extends Connection {
 		// This parameter was removed from API:
 		// formParams.add(new BasicNameValuePair("source", SOURCE_PARAMETER));
 		
-		if (inReplyToId > 0) {
-			formParams.add(new BasicNameValuePair("in_reply_to_status_id", String.valueOf(inReplyToId)));
+		if ( !TextUtils.isEmpty(inReplyToId)) {
+			formParams.add(new BasicNameValuePair("in_reply_to_status_id", inReplyToId));
 		}
 		JSONObject jObj = null;
 		try {
@@ -172,9 +173,9 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONObject destroyStatus(long statusId) throws ConnectionException {
+    public JSONObject destroyStatus(String statusId) throws ConnectionException {
 		StringBuilder url = new StringBuilder(STATUSES_DESTROY_URL);
-		url.append(String.valueOf(statusId));
+		url.append(statusId);
 		url.append(EXTENSION);
 		JSONObject jObj = null;
 		try {
@@ -190,9 +191,9 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONObject createFavorite(long statusId) throws ConnectionException {
+    public JSONObject createFavorite(String statusId) throws ConnectionException {
 		StringBuilder url = new StringBuilder(FAVORITES_CREATE_BASE_URL);
-		url.append(String.valueOf(statusId));
+		url.append(statusId);
 		url.append(EXTENSION);
 		JSONObject jObj = null;
 		try {
@@ -208,9 +209,9 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONObject destroyFavorite(long statusId) throws ConnectionException {
+    public JSONObject destroyFavorite(String statusId) throws ConnectionException {
 		StringBuilder url = new StringBuilder(FAVORITES_DESTROY_BASE_URL);
-		url.append(String.valueOf(statusId));
+		url.append(statusId);
 		url.append(EXTENSION);
 		JSONObject jObj = null;
 		try {

@@ -42,6 +42,9 @@ public class MyPreferences {
     private static String origin;
     private static MyDatabase db;
     
+    /**
+     * Is OAuth on for this Account?
+     */
     public static final String KEY_OAUTH = "oauth";
     /**
      * Is this user NOT temporal?
@@ -66,6 +69,14 @@ public class MyPreferences {
      * Current User
      */
     public static final String KEY_TWITTER_USERNAME = "twitter_username";
+    /**
+     * {@link MyDatabase.User#_ID} in our System.
+     */
+    public static final String KEY_USER_ID = "user_id";
+    /**
+     * {@link MyDatabase.User#ORIGIN_ID} in our System.
+     */
+    public static final String KEY_ORIGIN_ID = "origin_id";
     /**
      * New Username typed / selected in UI
      * It doesn't immediately change "Current User"
@@ -267,4 +278,24 @@ public class MyPreferences {
         return (getDataFilesDir(null) != null);
     }
 
+    /**
+     * Returns true not only for boolean, but for "1" also
+     * @param o
+     * @return  1 = true, 0 - false or null
+     */
+    public static int isTrue(Object o) {
+        boolean is = false;
+        try {
+            if (o != null) {
+                String val = o.toString();
+                is = Boolean.parseBoolean(val);
+                if (!is) {
+                    if ( val.compareTo("1") == 0) {
+                        is = true;
+                    }
+                }
+            }
+        } catch (Exception e) {}
+        return (is ? 1 : 0);
+    }
 }

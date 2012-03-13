@@ -146,7 +146,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected Handler mHandler;
 
     /**
-     * Tweets are being loaded into the list starting from one page. More Tweets
+     * Msg are being loaded into the list starting from one page. More Msg
      * are being loaded in a case User scrolls down to the end of list.
      */
     protected final static int PAGE_SIZE = 20;
@@ -157,7 +157,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected boolean positionRestored = false;
 
     /**
-     * Number of items (Tweets) in the list. It is used to find out when we need
+     * Number of items (Msg) in the list. It is used to find out when we need
      * to load more items.
      */
     protected int mTotalItemCount = 0;
@@ -182,20 +182,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      */
     protected boolean mIsFinishingOnResume = false;
 
-    
     /**
      * TODO: enum TypelineType
      */
-    public static final int TIMELINE_TYPE_NONE = 0;
-    public static final int TIMELINE_TYPE_HOME = 1;
-    public static final int TIMELINE_TYPE_MENTIONS = 2;
-    public static final int TIMELINE_TYPE_MESSAGES = 3;
-    public static final int TIMELINE_TYPE_FAVORITES = 4;
-    
-    /**
-     * TODO: enum TypelineType
-     */
-    protected int mTimelineType = TIMELINE_TYPE_NONE;
+    protected int mTimelineType = MyDatabase.TIMELINE_TYPE_NONE;
 
     /**
      * True if this timeline is filtered using query string ("Mentions" are not
@@ -531,7 +521,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             // and if none than don't waist time for this:
 
             mNM.cancel(MyService.CommandEnum.NOTIFY_TIMELINE.ordinal());
-            mNM.cancel(MyService.CommandEnum.NOTIFY_REPLIES.ordinal());
+            mNM.cancel(MyService.CommandEnum.NOTIFY_MENTIONS.ordinal());
             mNM.cancel(MyService.CommandEnum.NOTIFY_DIRECT_MESSAGE.ordinal());
 
             // Reset notifications on AppWidget(s)
@@ -617,15 +607,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
 
             case R.id.favorites_timeline_menu_id:
-                switchTimelineActivity(TIMELINE_TYPE_FAVORITES);
+                switchTimelineActivity(MyDatabase.TIMELINE_TYPE_FAVORITES);
                 break;
 
             case R.id.home_timeline_menu_id:
-                switchTimelineActivity(TIMELINE_TYPE_HOME);
+                switchTimelineActivity(MyDatabase.TIMELINE_TYPE_HOME);
                 break;
 
             case R.id.direct_messages_menu_id:
-                switchTimelineActivity(TIMELINE_TYPE_MESSAGES);
+                switchTimelineActivity(MyDatabase.TIMELINE_TYPE_DIRECT);
                 break;
 
             case R.id.search_menu_id:
@@ -633,11 +623,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
 
             case R.id.mentions_menu_id:
-                switchTimelineActivity(TIMELINE_TYPE_MENTIONS);
+                switchTimelineActivity(MyDatabase.TIMELINE_TYPE_MENTIONS);
                 break;
                 
             case R.id.reload_menu_item:
-                manualReload();
+                manualReload(false);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -698,16 +688,16 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     public void updateTitle(String rightText) {
         String timelinename = "??";
         switch (mTimelineType) {
-            case TIMELINE_TYPE_FAVORITES:
+            case MyDatabase.TIMELINE_TYPE_FAVORITES:
                 timelinename = getString(R.string.activity_title_favorites);
                 break;
-            case TIMELINE_TYPE_HOME:
+            case MyDatabase.TIMELINE_TYPE_HOME:
                 timelinename = getString(R.string.activity_title_timeline);
                 break;
-            case TIMELINE_TYPE_MENTIONS:
+            case MyDatabase.TIMELINE_TYPE_MENTIONS:
                 timelinename = getString(R.string.activity_title_mentions);
                 break;
-            case TIMELINE_TYPE_MESSAGES:
+            case MyDatabase.TIMELINE_TYPE_DIRECT:
                 timelinename = getString(R.string.activity_title_direct_messages);
                 break;
         }
@@ -721,10 +711,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         rightTitle.setText(rightText);
 
         Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
-        if (mTimelineType != TIMELINE_TYPE_MESSAGES) {
+        if (mTimelineType != MyDatabase.TIMELINE_TYPE_DIRECT) {
             createMessageButton.setText(getString(R.string.button_create_tweet));
+            createMessageButton.setVisibility(View.VISIBLE);
         } else {
-            createMessageButton.setVisibility(View.GONE);
+            createMessageButton.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -845,6 +836,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             } catch (RemoteException e) {
                 // Service has already crashed, nothing much we can do
                 // except hope that it will restart.
+                mService = null;
             }
         }
 
@@ -893,7 +885,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      */
     protected IMyServiceCallback mServiceCallback = new IMyServiceCallback.Stub() {
         /**
-         * Tweets changed callback method
+         * Msg changed callback method
          * 
          * @param value
          * @throws RemoteException
@@ -954,8 +946,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     private void setTimelineType(Intent intentNew) {
         int timelineType_new  = intentNew.getIntExtra(MyService.EXTRA_TIMELINE_TYPE,
-                TIMELINE_TYPE_NONE);
-        if (timelineType_new != TIMELINE_TYPE_NONE) {
+                MyDatabase.TIMELINE_TYPE_NONE);
+        if (timelineType_new != MyDatabase.TIMELINE_TYPE_NONE) {
             mTimelineType = timelineType_new;
         }
 
@@ -969,25 +961,25 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             mQueryString = "";
         }
 
-        if (mTimelineType == TIMELINE_TYPE_NONE) {
-            mTimelineType = TIMELINE_TYPE_HOME;
+        if (mTimelineType == MyDatabase.TIMELINE_TYPE_NONE) {
+            mTimelineType = MyDatabase.TIMELINE_TYPE_HOME;
             // For some reason Android remembers last Query and adds it even if
             // the Activity was started from the Widget...
             Intent intent = getIntent();
             intent.removeExtra(SearchManager.QUERY);
             intent.removeExtra(SearchManager.APP_DATA);
             intent.putExtra(MyService.EXTRA_TIMELINE_TYPE, mTimelineType);
-            intent.setData(MyDatabase.Tweets.CONTENT_URI);
+            intent.setData(MyDatabase.Msg.CONTENT_URI);
        }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "setTimelineType; type=\"" + mTimelineType + "\"");
         }
     }
 
-    protected void manualReload() {
-        // Only newer tweets (newer that last loaded) are being loaded
-        // from the Internet,
-        // old tweets are not being reloaded.
+    /** Only newer tweets (newer that last loaded) are being loaded
+    * from the Internet, old ones are not being reloaded.
+    */
+    protected void manualReload(boolean allTimelineTypes) {
 
         // Show something to the user...
         mListFooter.setVisibility(View.VISIBLE);
@@ -995,10 +987,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // Ask service to load data for this mTimelineType
         MyService.CommandEnum command = CommandEnum.FETCH_TIMELINE;
         switch (mTimelineType) {
-            case TIMELINE_TYPE_MESSAGES:
+            case MyDatabase.TIMELINE_TYPE_DIRECT:
                 command = CommandEnum.FETCH_MESSAGES;
         }
         sendCommand( new CommandData(command));
+        if (allTimelineTypes) {
+            sendCommand( new CommandData(CommandEnum.FETCH_MESSAGES));
+            sendCommand( new CommandData(CommandEnum.FETCH_TIMELINE));
+        }
     }
     
     protected void startPreferencesActivity() {
@@ -1015,18 +1011,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void switchTimelineActivity(int timelineType) {
         Intent intent;
         switch (timelineType) {
-            case TIMELINE_TYPE_MESSAGES:
-                intent = new Intent(this, MessageListActivity.class);
-                Bundle appDataBundle = new Bundle();
-                appDataBundle.putParcelable("content_uri",
-                        MyDatabase.DirectMessages.CONTENT_URI);
-                intent.putExtra(SearchManager.APP_DATA, appDataBundle);
-                break;
             default:
-                timelineType = TIMELINE_TYPE_HOME;
-            case TIMELINE_TYPE_MENTIONS:
-            case TIMELINE_TYPE_FAVORITES:
-            case TIMELINE_TYPE_HOME:
+                timelineType = MyDatabase.TIMELINE_TYPE_HOME;
+                // Actually we use one Activity for all timelines...
+            case MyDatabase.TIMELINE_TYPE_MENTIONS:
+            case MyDatabase.TIMELINE_TYPE_FAVORITES:
+            case MyDatabase.TIMELINE_TYPE_HOME:
+            case MyDatabase.TIMELINE_TYPE_DIRECT:
                 intent = new Intent(this, TweetListActivity.class);
                 break;
 

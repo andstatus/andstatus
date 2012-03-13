@@ -187,7 +187,7 @@ public abstract class Connection {
      * @return JSONObject
      * @throws ConnectionException
      */
-    public abstract JSONObject destroyFavorite(long statusId) throws ConnectionException;
+    public abstract JSONObject destroyFavorite(String statusId) throws ConnectionException;
 
     /**
      * Favorites the status specified in the ID parameter as the authenticating user.
@@ -200,7 +200,7 @@ public abstract class Connection {
      * @return JSONObject
      * @throws ConnectionException
      */
-    public abstract JSONObject createFavorite(long statusId) throws ConnectionException;
+    public abstract JSONObject createFavorite(String statusId) throws ConnectionException;
 
     /**
      * Destroys the status specified by the required ID parameter.
@@ -213,7 +213,7 @@ public abstract class Connection {
      * @return JSONObject
      * @throws ConnectionException
      */
-    public abstract JSONObject destroyStatus(long statusId) throws ConnectionException;
+    public abstract JSONObject destroyStatus(String statusId) throws ConnectionException;
 
     /**
      * Update user status by posting to the Twitter REST API.
@@ -229,7 +229,7 @@ public abstract class Connection {
      *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses%C2%A0update">Twitter
      *      REST API Method: statuses/update</a>
      */
-    public abstract JSONObject updateStatus(String message, long inReplyToId)
+    public abstract JSONObject updateStatus(String message, String inReplyToId)
             throws ConnectionException;
 
     /**

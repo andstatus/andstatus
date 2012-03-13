@@ -25,7 +25,7 @@ import android.widget.TextView;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
 import org.andstatus.app.R;
-import org.andstatus.app.data.MyDatabase.Tweets;
+import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.RelativeTime;
 
 /**
@@ -40,7 +40,7 @@ public class TweetBinder implements ViewBinder {
 		switch (view.getId()) {
 		case R.id.tweet_sent:
 			String time = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
-			colIndex = cursor.getColumnIndex(Tweets.IN_REPLY_TO_AUTHOR_ID);
+			colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
 			if (colIndex > -1) {
 				String inReplyTo = cursor.getString(colIndex);
 				if (inReplyTo != null && "null".equals(inReplyTo) == false) {
@@ -52,7 +52,7 @@ public class TweetBinder implements ViewBinder {
 		case R.id.tweet_avatar_image:
 			return true;
 		case R.id.tweet_favorite:
-			colIndex = cursor.getColumnIndex(Tweets.FAVORITED);
+			colIndex = cursor.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED);
 			if (colIndex > -1) {
 				if (cursor.getInt(colIndex) == 1) {
 					((ImageView)view).setImageResource(android.R.drawable.star_on);

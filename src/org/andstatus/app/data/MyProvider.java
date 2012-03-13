@@ -1,6 +1,6 @@
 /* 
- * Copyright (C) 2008 Torgny Bjers
  * Copyright (C) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,15 +27,17 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.andstatus.app.TimelineActivity;
-import org.andstatus.app.data.MyDatabase.DirectMessages;
-import org.andstatus.app.data.MyDatabase.Tweets;
-import org.andstatus.app.data.MyDatabase.Users;
+import org.andstatus.app.TwitterUser;
+import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -49,12 +51,13 @@ public class MyProvider extends ContentProvider {
 
     private static final String TAG = MyProvider.class.getSimpleName();
 
+    /**
+     * Projection map used by SQLiteQueryBuilder
+     * @see android.database.sqlite.SQLiteQueryBuilder#setProjectionMap
+     */
     private static HashMap<String, String> sTweetsProjectionMap;
-
     private static HashMap<String, String> sUsersProjectionMap;
-
-    private static HashMap<String, String> sDirectMessagesProjectionMap;
-
+    
     /**
      * "Authority", represented by this ContentProvider subclass 
      *   and declared in the application's manifest.
@@ -78,9 +81,6 @@ public class MyProvider extends ContentProvider {
     private static final int TWEET_ID = 4;
     private static final int USERS = 5;
     private static final int USER_ID = 6;
-    private static final int DIRECTMESSAGES = 7;
-    private static final int DIRECTMESSAGE_ID = 8;
-    private static final int DIRECTMESSAGES_COUNT = 9;
 
     /**
      * @see android.content.ContentProvider#onCreate()
@@ -104,22 +104,16 @@ public class MyProvider extends ContentProvider {
             case TWEETS:
             case TWEETS_SEARCH:
             case TWEETS_COUNT:
-                return Tweets.CONTENT_TYPE;
+                return Msg.CONTENT_TYPE;
 
             case TWEET_ID:
-                return Tweets.CONTENT_ITEM_TYPE;
-
-            case DIRECTMESSAGES:
-                return DirectMessages.CONTENT_TYPE;
-
-            case DIRECTMESSAGE_ID:
-                return DirectMessages.CONTENT_ITEM_TYPE;
+                return Msg.CONTENT_ITEM_TYPE;
 
             case USERS:
-                return Users.CONTENT_TYPE;
+                return User.CONTENT_TYPE;
 
             case USER_ID:
-                return Users.CONTENT_ITEM_TYPE;
+                return User.CONTENT_ITEM_TYPE;
 
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
@@ -135,37 +129,57 @@ public class MyProvider extends ContentProvider {
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
-        int count;
+        String sqlDesc = "";
+        int count = 0;
         switch (sUriMatcher.match(uri)) {
             case TWEETS:
-                count = db.delete(MyDatabase.TWEETS_TABLE_NAME, selection, selectionArgs);
+                db.beginTransaction();
+                try {
+                    // Delete all related records from MyDatabase.MsgOfUser for these messages
+                    String selectionG = " EXISTS ("
+                            + "SELECT * FROM " + MyDatabase.MSG_TABLE_NAME + " WHERE ("
+                            + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
+                            + ") AND ("
+                            + selection
+                            + "))";
+                    sqlDesc = selectionG + (selectionArgs != null ? "; args=" + selectionArgs.toString() : "");
+                    count = db.delete(MyDatabase.MSGOFUSER_TABLE_NAME, selectionG, selectionArgs);
+                    // Now delete messages themselves
+                    sqlDesc = selection + (selectionArgs != null ? "; args=" + selectionArgs.toString() : "");
+                    count = db.delete(MyDatabase.MSG_TABLE_NAME, selection, selectionArgs);
+                    /*
+                    if (count > 0) {
+                        // Now delete all related records from MyDatabase.MsgOfUser which don't have their messages
+
+                        selectionG = "NOT EXISTS ("
+                                + "SELECT * FROM " + MyDatabase.MSG_TABLE_NAME + " WHERE "
+                                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.MSG_ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
+                                + ")";
+                        db.delete(MyDatabase.MSG_TABLE_NAME, selectionG, null);
+                    }
+                    */
+                    db.setTransactionSuccessful();
+                } catch(Exception e) {
+                    MyLog.d(TAG, e.toString() + "; SQL='" + sqlDesc + "'");
+                } finally {
+                    db.endTransaction();
+                }
                 break;
 
             case TWEET_ID:
                 String tweetId = uri.getPathSegments().get(1);
-                count = db.delete(MyDatabase.TWEETS_TABLE_NAME, Tweets._ID + "=" + tweetId
-                        + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
-                        selectionArgs);
-                break;
-
-            case DIRECTMESSAGES:
-                count = db.delete(MyDatabase.DIRECTMESSAGES_TABLE_NAME, selection, selectionArgs);
-                break;
-
-            case DIRECTMESSAGE_ID:
-                String messageId = uri.getPathSegments().get(1);
-                count = db.delete(MyDatabase.DIRECTMESSAGES_TABLE_NAME, DirectMessages._ID + "=" + messageId
+                count = db.delete(MyDatabase.MSG_TABLE_NAME, Msg._ID + "=" + tweetId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
                 break;
 
             case USERS:
-                count = db.delete(MyDatabase.USERS_TABLE_NAME, selection, selectionArgs);
+                count = db.delete(MyDatabase.USER_TABLE_NAME, selection, selectionArgs);
                 break;
 
             case USER_ID:
                 String userId = uri.getPathSegments().get(1);
-                count = db.delete(MyDatabase.USERS_TABLE_NAME, Users._ID + "=" + userId
+                count = db.delete(MyDatabase.USER_TABLE_NAME, User._ID + "=" + userId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
                 break;
@@ -188,6 +202,8 @@ public class MyProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues initialValues) {
 
         ContentValues values;
+        ContentValues msgOfUserValues = null;
+        
         long rowId;
         // 2010-07-21 yvolk: "now" is calculated exactly like it is in other
         // parts of the code
@@ -206,54 +222,28 @@ public class MyProvider extends ContentProvider {
 
         switch (sUriMatcher.match(uri)) {
             case TWEETS:
-                table = MyDatabase.TWEETS_TABLE_NAME;
-                nullColumnHack = Tweets.MESSAGE;
-                contentUri = Tweets.CONTENT_URI;
+                table = MyDatabase.MSG_TABLE_NAME;
+                nullColumnHack = Msg.BODY;
+                contentUri = Msg.CONTENT_URI;
                 /**
                  * Add default values for missed required fields
                  */
-                if (values.containsKey(Tweets.CREATED_DATE) == false)
-                    values.put(Tweets.CREATED_DATE, now);
-                if (values.containsKey(Tweets.SENT_DATE) == false)
-                    values.put(Tweets.SENT_DATE, now);
-                if (values.containsKey(Tweets.AUTHOR_ID) == false)
-                    values.put(Tweets.AUTHOR_ID, "");
-                if (values.containsKey(Tweets.MESSAGE) == false)
-                    values.put(Tweets.MESSAGE, "");
-                if (values.containsKey(Tweets.SOURCE) == false)
-                    values.put(Tweets.SOURCE, "");
-                if (values.containsKey(Tweets.TWEET_TYPE) == false)
-                    values.put(Tweets.TWEET_TYPE, TimelineActivity.TIMELINE_TYPE_HOME);
-                if (values.containsKey(Tweets.IN_REPLY_TO_AUTHOR_ID) == false)
-                    values.put(Tweets.IN_REPLY_TO_AUTHOR_ID, "");
-                if (values.containsKey(Tweets.FAVORITED) == false)
-                    values.put(Tweets.FAVORITED, 0);
-                break;
-
-            case DIRECTMESSAGES:
-                table = MyDatabase.DIRECTMESSAGES_TABLE_NAME;
-                nullColumnHack = DirectMessages.MESSAGE;
-                contentUri = DirectMessages.CONTENT_URI;
-                if (values.containsKey(DirectMessages.CREATED_DATE) == false)
-                    values.put(DirectMessages.CREATED_DATE, now);
-                if (values.containsKey(DirectMessages.SENT_DATE) == false)
-                    values.put(DirectMessages.SENT_DATE, now);
-                if (values.containsKey(DirectMessages.AUTHOR_ID) == false)
-                    values.put(DirectMessages.AUTHOR_ID, "");
-                if (values.containsKey(DirectMessages.MESSAGE) == false)
-                    values.put(DirectMessages.MESSAGE, "");
+                if (values.containsKey(Msg.AUTHOR_ID) == false)
+                    values.put(Msg.AUTHOR_ID, values.get(Msg.SENDER_ID).toString());
+                if (values.containsKey(Msg.BODY) == false)
+                    values.put(Msg.BODY, "");
+                if (values.containsKey(Msg.VIA) == false)
+                    values.put(Msg.VIA, "");
+                values.put(Msg.INS_DATE, now);
+                
+                msgOfUserValues = prepareMsgOfUserValues(values);
                 break;
 
             case USERS:
-                table = MyDatabase.USERS_TABLE_NAME;
-                nullColumnHack = Users.AUTHOR_ID;
-                contentUri = Users.CONTENT_URI;
-                if (values.containsKey(Users.MODIFIED_DATE) == false)
-                    values.put(Users.MODIFIED_DATE, now);
-                if (values.containsKey(Users.CREATED_DATE) == false)
-                    values.put(Users.CREATED_DATE, now);
-                if (values.containsKey(Users.AUTHOR_ID) == false)
-                    values.put(Users.AUTHOR_ID, "");
+                table = MyDatabase.USER_TABLE_NAME;
+                nullColumnHack = User.USERNAME;
+                contentUri = User.CONTENT_URI;
+                values.put(User.INS_DATE, now);
                 break;
 
             default:
@@ -261,12 +251,78 @@ public class MyProvider extends ContentProvider {
         }
 
         rowId = db.insert(table, nullColumnHack, values);
-        if (rowId > 0) {
-            Uri newUri = ContentUris.withAppendedId(contentUri, rowId);
-            return newUri;
+        if (rowId == -1) {
+            throw new SQLException("Failed to insert row into " + uri);
+        }
+        
+        if (msgOfUserValues != null) {
+            // We need to insert the row:
+            msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
+            long msgOfUserRowId = db.insert(MyDatabase.MSGOFUSER_TABLE_NAME, MsgOfUser.MSG_ID, msgOfUserValues);
+            if (msgOfUserRowId == -1) {
+                throw new SQLException("Failed to insert row into " + MyDatabase.MSGOFUSER_TABLE_NAME);
+            }
         }
 
-        throw new SQLException("Failed to insert row into " + uri);
+        Uri newUri = ContentUris.withAppendedId(contentUri, rowId);
+        return newUri;
+    }
+
+    /**
+     * Move all keys that belong to MsgOfUser table from values to the newly created ContentValues. 
+     * Returns null if we don't need MsgOfUser for this Msg
+     * @param values
+     * @return
+     */
+    private ContentValues prepareMsgOfUserValues(ContentValues values) {
+        ContentValues msgOfUserValues = null;
+        int timelineType = MyDatabase.TIMELINE_TYPE_NONE;
+        if (values.containsKey(MsgOfUser.TIMELINE_TYPE) ) {
+            timelineType = Integer.parseInt(values.get(MsgOfUser.TIMELINE_TYPE).toString());
+            values.remove(MsgOfUser.TIMELINE_TYPE);
+        }
+
+        switch (timelineType) {
+            case MyDatabase.TIMELINE_TYPE_HOME:
+            case MyDatabase.TIMELINE_TYPE_MENTIONS:
+            case MyDatabase.TIMELINE_TYPE_FAVORITES:
+            case MyDatabase.TIMELINE_TYPE_DIRECT:
+                
+                // Add MsgOfUser link to Current User Account
+                msgOfUserValues = new ContentValues();
+                if (values.containsKey(Msg._ID) ) {
+                    msgOfUserValues.put(MsgOfUser.MSG_ID, values.getAsString(Msg._ID));
+                }
+                // TODO: User of current Account
+                msgOfUserValues.put(MsgOfUser.USER_ID, TwitterUser.getTwitterUser().getUserId() );
+                moveKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
+                moveKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
+                moveKey(MsgOfUser.MENTIONED, values, msgOfUserValues);
+                moveKey(MsgOfUser.REPLIED, values, msgOfUserValues);
+                moveKey(MsgOfUser.DIRECTED, values, msgOfUserValues);
+        }
+        return msgOfUserValues;
+    }
+    
+    /**
+     * Move integer value of the key from valuesIn to valuesOut and remove it from valuesIn
+     * @param key
+     * @param valuesIn
+     * @param valuesOut  may be null
+     * @return 1 for true, 0 for false and 2 for "not present" 
+     */
+    private int moveKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
+        int ret = 2;
+        if (valuesIn != null) {
+            if (valuesIn.containsKey(key) ) {
+                ret = MyPreferences.isTrue(valuesIn.get(key));
+                valuesIn.remove(key);
+                if (valuesOut != null) {
+                    valuesOut.put(key, ret);
+                }
+            }
+        }
+        return ret;
     }
 
     /**
@@ -280,43 +336,44 @@ public class MyProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
             String sortOrder) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        boolean built = false;
         String sql = "";
 
         int matchedCode = sUriMatcher.match(uri);
         switch (matchedCode) {
             case TWEETS:
-                qb.setTables(MyDatabase.TWEETS_TABLE_NAME);
+                qb.setTables(tablesForTimeline(projection));
                 qb.setProjectionMap(sTweetsProjectionMap);
                 break;
 
             case TWEETS_COUNT:
-                sql = "SELECT count(*) FROM " + MyDatabase.TWEETS_TABLE_NAME;
+                sql = "SELECT count(*) FROM " + MyDatabase.MSG_TABLE_NAME;
                 if (selection != null && selection.length() > 0) {
                     sql += " WHERE " + selection;
                 }
                 break;
 
             case TWEET_ID:
-                qb.setTables(MyDatabase.TWEETS_TABLE_NAME);
+                qb.setTables(tablesForTimeline(projection));
                 qb.setProjectionMap(sTweetsProjectionMap);
-                qb.appendWhere(Tweets._ID + "=" + uri.getPathSegments().get(1));
+                qb.appendWhere(MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + uri.getPathSegments().get(1));
                 break;
 
             case TWEETS_SEARCH:
-                qb.setTables(MyDatabase.TWEETS_TABLE_NAME);
+                qb.setTables(tablesForTimeline(projection));
                 qb.setProjectionMap(sTweetsProjectionMap);
                 String s1 = uri.getLastPathSegment();
                 if (s1 != null) {
                     // These two lines don't work:
-                    // qb.appendWhere(Tweets.AUTHOR_ID + " LIKE '%" + s1 +
-                    // "%' OR " + Tweets.MESSAGE + " LIKE '%" + s1 + "%'");
-                    // qb.appendWhere(Tweets.AUTHOR_ID + " LIKE \"%" + s1 +
-                    // "%\" OR " + Tweets.MESSAGE + " LIKE \"%" + s1 + "%\"");
+                    // qb.appendWhere(Msg.SENDER_ID + " LIKE '%" + s1 +
+                    // "%' OR " + Msg.BODY + " LIKE '%" + s1 + "%'");
+                    // qb.appendWhere(Msg.SENDER_ID + " LIKE \"%" + s1 +
+                    // "%\" OR " + Msg.BODY + " LIKE \"%" + s1 + "%\"");
                     // ...so we have to use selectionArgs
 
                     // 1. This works:
-                    // qb.appendWhere(Tweets.AUTHOR_ID + " LIKE ?  OR " +
-                    // Tweets.MESSAGE + " LIKE ?");
+                    // qb.appendWhere(Msg.SENDER_ID + " LIKE ?  OR " +
+                    // Msg.BODY + " LIKE ?");
 
                     // 2. This works also, but yvolk likes it more :-)
                     if (selection != null && selection.length() > 0) {
@@ -324,7 +381,8 @@ public class MyProvider extends ContentProvider {
                     } else {
                         selection = "";
                     }
-                    selection = "(" + Tweets.AUTHOR_ID + " LIKE ?  OR " + Tweets.MESSAGE
+                    /// TODO: Search in MyDatabase.User.USERNAME also
+                    selection = "(" + User.AUTHOR_NAME + " LIKE ?  OR " + Msg.BODY
                             + " LIKE ?)" + selection;
 
                     selectionArgs = addBeforeArray(selectionArgs, "%" + s1 + "%");
@@ -332,33 +390,15 @@ public class MyProvider extends ContentProvider {
                 }
                 break;
 
-            case DIRECTMESSAGES:
-                qb.setTables(MyDatabase.DIRECTMESSAGES_TABLE_NAME);
-                qb.setProjectionMap(sDirectMessagesProjectionMap);
-                break;
-
-            case DIRECTMESSAGE_ID:
-                qb.setTables(MyDatabase.DIRECTMESSAGES_TABLE_NAME);
-                qb.setProjectionMap(sDirectMessagesProjectionMap);
-                qb.appendWhere(DirectMessages._ID + "=" + uri.getPathSegments().get(1));
-                break;
-
-            case DIRECTMESSAGES_COUNT:
-                sql = "SELECT count(*) FROM " + MyDatabase.DIRECTMESSAGES_TABLE_NAME;
-                if (selection != null && selection.length() > 0) {
-                    sql += " WHERE " + selection;
-                }
-                break;
-
             case USERS:
-                qb.setTables(MyDatabase.USERS_TABLE_NAME);
+                qb.setTables(MyDatabase.USER_TABLE_NAME);
                 qb.setProjectionMap(sUsersProjectionMap);
                 break;
 
             case USER_ID:
-                qb.setTables(MyDatabase.USERS_TABLE_NAME);
+                qb.setTables(MyDatabase.USER_TABLE_NAME);
                 qb.setProjectionMap(sUsersProjectionMap);
-                qb.appendWhere(Users._ID + "=" + uri.getPathSegments().get(1));
+                qb.appendWhere(User._ID + "=" + uri.getPathSegments().get(1));
                 break;
 
             default:
@@ -372,22 +412,16 @@ public class MyProvider extends ContentProvider {
             switch (matchedCode) {
                 case TWEETS:
                 case TWEET_ID:
-                    orderBy = Tweets.DEFAULT_SORT_ORDER;
+                    orderBy = Msg.DEFAULT_SORT_ORDER;
                     break;
 
                 case TWEETS_COUNT:
-                case DIRECTMESSAGES_COUNT:
                     orderBy = "";
-                    break;
-
-                case DIRECTMESSAGES:
-                case DIRECTMESSAGE_ID:
-                    orderBy = DirectMessages.DEFAULT_SORT_ORDER;
                     break;
 
                 case USERS:
                 case USER_ID:
-                    orderBy = Users.DEFAULT_SORT_ORDER;
+                    orderBy = User.DEFAULT_SORT_ORDER;
                     break;
 
                 default:
@@ -404,11 +438,17 @@ public class MyProvider extends ContentProvider {
             SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
             boolean logQuery = MyLog.isLoggable(TAG, Log.VERBOSE);
             try {
-                if (sql.length() > 0) {
-                    c = db.rawQuery(sql, selectionArgs);
-                } else {
-                    c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
+                if (sql.length() == 0) {
+                    // c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
+                    /* selectionArgs does work here, although it doesn't substitute selectionArgs at all!
+                     * see <a href="http://stackoverflow.com/questions/2481322/sqlitequerybuilder-buildquery-not-using-selectargs">SQLiteQueryBuilder.buildQuery not using selectArgs?</a> 
+                     * and here: <a href="http://code.google.com/p/android/issues/detail?id=4467">SQLiteQueryBuilder.buildQuery ignores selectionArgs</a>
+                     */
+                    sql = qb.buildQuery(projection, selection, selectionArgs, null, null, orderBy, null);
+                    built = true;
                 }
+                // Here we substitute selectionArgs
+                c = db.rawQuery(sql, selectionArgs);
             } catch (Exception e) {
                 logQuery = true;
                 Log.e(TAG, "Database query failed");
@@ -416,17 +456,16 @@ public class MyProvider extends ContentProvider {
             }
 
             if (logQuery) {
-                if (sql.length() > 0) {
-                    Log.v(TAG, "query, SQL=\"" + sql + "\"");
-                    if (selectionArgs != null && selectionArgs.length > 0) {
-                        Log.v(TAG, "; selectionArgs=" + Arrays.toString(selectionArgs));
-                    }
-                } else {
-                    Log.v(TAG, "query, uri=" + uri + "; projection=" + Arrays.toString(projection));
-                    Log.v(TAG, "; selection=" + selection);
-                    Log.v(TAG, "; selectionArgs=" + Arrays.toString(selectionArgs) + "; sortOrder="
-                            + sortOrder);
-                    Log.v(TAG, "; qb.getTables=" + qb.getTables() + "; orderBy=" + orderBy);
+                String msg = "query, SQL=\"" + sql + "\"";
+                if (selectionArgs != null && selectionArgs.length > 0) {
+                    msg += "; selectionArgs=" + Arrays.toString(selectionArgs);
+                }
+                Log.v(TAG, msg);
+                if (built) {
+                    msg = "uri=" + uri + "; projection=" + Arrays.toString(projection)
+                    + "; selection=" + selection + "; sortOrder=" + sortOrder
+                    + "; qb.getTables=" + qb.getTables() + "; orderBy=" + orderBy;
+                    Log.v(TAG, msg);
                 }
             }
         }
@@ -440,6 +479,27 @@ public class MyProvider extends ContentProvider {
         return c;
     }
 
+    /**
+     * TODO: Different joins based on projection requested...
+     * 
+     * @param projection
+     * @return String for {@link SQLiteQueryBuilder#setTables(String)}
+     */
+    private static String tablesForTimeline(String[] projection) {
+       String tables = "((" + MyDatabase.MSG_TABLE_NAME + " LEFT OUTER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
+                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
+                + " AND " + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID + "=" + TwitterUser.getTwitterUser().getUserId() + ")"
+                + " LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME 
+                + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS author ON "
+                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID + "=author." + MyDatabase.User._ID
+                + ")"
+                + " LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.IN_REPLY_TO_NAME 
+                + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS prevauthor ON "
+                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID + "=prevauthor." + MyDatabase.User._ID
+                ;
+        return tables;
+    }
+    
     private static String[] addBeforeArray(String[] array, String s) {
         int length = 0;
         if (array != null) {
@@ -465,35 +525,42 @@ public class MyProvider extends ContentProvider {
         int count;
         switch (sUriMatcher.match(uri)) {
             case TWEETS:
-                count = db.update(MyDatabase.TWEETS_TABLE_NAME, values, selection, selectionArgs);
+                count = db.update(MyDatabase.MSG_TABLE_NAME, values, selection, selectionArgs);
                 break;
 
             case TWEET_ID:
-                String noteId = uri.getPathSegments().get(1);
-                count = db.update(MyDatabase.TWEETS_TABLE_NAME, values, Tweets._ID + "=" + noteId
+                String rowId = uri.getPathSegments().get(1);
+                ContentValues msgOfUserValues = prepareMsgOfUserValues(values);
+                count = db.update(MyDatabase.MSG_TABLE_NAME, values, Msg._ID + "=" + rowId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
-                break;
 
-            case DIRECTMESSAGES:
-                count = db.update(MyDatabase.DIRECTMESSAGES_TABLE_NAME, values, selection, selectionArgs);
-                break;
-
-            case DIRECTMESSAGE_ID:
-                String messageId = uri.getPathSegments().get(1);
-                count = db.update(MyDatabase.DIRECTMESSAGES_TABLE_NAME, values, DirectMessages._ID + "="
-                        + messageId
-                        + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
-                        selectionArgs);
+                if (msgOfUserValues != null) {
+                    String where = "(" + MsgOfUser.MSG_ID + "=" + rowId + " AND "
+                            + MsgOfUser.USER_ID + "="
+                            + new Long(TwitterUser.getTwitterUser().getUserId()).toString() + ")";
+                    String sql = "SELECT * FROM " + MyDatabase.MSGOFUSER_TABLE_NAME + " WHERE "
+                            + where;
+                    Cursor c = db.rawQuery(sql, null);
+                    if (c == null || c.getCount() == 0) {
+                        // There was no such row
+                        db.insert(MyDatabase.MSGOFUSER_TABLE_NAME, MsgOfUser.MSG_ID,
+                                msgOfUserValues);
+                    } else {
+                        c.close();
+                        db.update(MyDatabase.MSGOFUSER_TABLE_NAME, msgOfUserValues, where,
+                                null);
+                    }
+                }
                 break;
 
             case USERS:
-                count = db.update(MyDatabase.USERS_TABLE_NAME, values, selection, selectionArgs);
+                count = db.update(MyDatabase.USER_TABLE_NAME, values, selection, selectionArgs);
                 break;
 
             case USER_ID:
                 String userId = uri.getPathSegments().get(1);
-                count = db.update(MyDatabase.USERS_TABLE_NAME, values, Users._ID + "=" + userId
+                count = db.update(MyDatabase.USER_TABLE_NAME, values, User._ID + "=" + userId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
                 break;
@@ -509,45 +576,225 @@ public class MyProvider extends ContentProvider {
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.TWEETS_TABLE_NAME, TWEETS);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.TWEETS_TABLE_NAME + "/#", TWEET_ID);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.TWEETS_TABLE_NAME + "/search/*",
+        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME, TWEETS);
+        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/#", TWEET_ID);
+        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/search/*",
                 TWEETS_SEARCH);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.TWEETS_TABLE_NAME + "/count", TWEETS_COUNT);
+        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/count", TWEETS_COUNT);
 
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.USERS_TABLE_NAME, USERS);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.USERS_TABLE_NAME + "/#", USER_ID);
-
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.DIRECTMESSAGES_TABLE_NAME, DIRECTMESSAGES);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.DIRECTMESSAGES_TABLE_NAME + "/#",
-                DIRECTMESSAGE_ID);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.DIRECTMESSAGES_TABLE_NAME + "/count",
-                DIRECTMESSAGES_COUNT);
+        sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME, USERS);
+        sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#", USER_ID);
 
         sTweetsProjectionMap = new HashMap<String, String>();
-        sTweetsProjectionMap.put(Tweets._ID, Tweets._ID);
-        sTweetsProjectionMap.put(Tweets.AUTHOR_ID, Tweets.AUTHOR_ID);
-        sTweetsProjectionMap.put(Tweets.MESSAGE, Tweets.MESSAGE);
-        sTweetsProjectionMap.put(Tweets.SOURCE, Tweets.SOURCE);
-        sTweetsProjectionMap.put(Tweets.TWEET_TYPE, Tweets.TWEET_TYPE);
-        sTweetsProjectionMap.put(Tweets.IN_REPLY_TO_STATUS_ID, Tweets.IN_REPLY_TO_STATUS_ID);
-        sTweetsProjectionMap.put(Tweets.IN_REPLY_TO_AUTHOR_ID, Tweets.IN_REPLY_TO_AUTHOR_ID);
-        sTweetsProjectionMap.put(Tweets.FAVORITED, Tweets.FAVORITED);
-        sTweetsProjectionMap.put(Tweets.SENT_DATE, Tweets.SENT_DATE);
-        sTweetsProjectionMap.put(Tweets.CREATED_DATE, Tweets.CREATED_DATE);
-
-        sDirectMessagesProjectionMap = new HashMap<String, String>();
-        sDirectMessagesProjectionMap.put(DirectMessages._ID, DirectMessages._ID);
-        sDirectMessagesProjectionMap.put(DirectMessages.AUTHOR_ID, DirectMessages.AUTHOR_ID);
-        sDirectMessagesProjectionMap.put(DirectMessages.MESSAGE, DirectMessages.MESSAGE);
-        sDirectMessagesProjectionMap.put(DirectMessages.SENT_DATE, DirectMessages.SENT_DATE);
-        sDirectMessagesProjectionMap.put(DirectMessages.CREATED_DATE, DirectMessages.CREATED_DATE);
+        sTweetsProjectionMap.put(Msg._ID, MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + " AS " + Msg._ID);
+        sTweetsProjectionMap.put(Msg.MSG_ID, MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + " AS " + Msg.MSG_ID);
+        sTweetsProjectionMap.put(Msg.ORIGIN_ID, Msg.ORIGIN_ID);
+        sTweetsProjectionMap.put(Msg.MSG_OID, Msg.MSG_OID);
+        sTweetsProjectionMap.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
+        sTweetsProjectionMap.put(User.AUTHOR_NAME, User.AUTHOR_NAME);
+        sTweetsProjectionMap.put(Msg.SENDER_ID, Msg.SENDER_ID);
+        sTweetsProjectionMap.put(User.SENDER_NAME, User.SENDER_NAME);
+        sTweetsProjectionMap.put(Msg.BODY, Msg.BODY);
+        sTweetsProjectionMap.put(Msg.VIA, Msg.VIA);
+        sTweetsProjectionMap.put(MsgOfUser.TIMELINE_TYPE, MsgOfUser.TIMELINE_TYPE);
+        sTweetsProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
+        sTweetsProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
+        sTweetsProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
+        sTweetsProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
+        sTweetsProjectionMap.put(Msg.INS_DATE, Msg.INS_DATE);
 
         sUsersProjectionMap = new HashMap<String, String>();
-        sUsersProjectionMap.put(Users._ID, Users._ID);
-        sUsersProjectionMap.put(Users.AUTHOR_ID, Users.AUTHOR_ID);
-        sUsersProjectionMap.put(Users.AVATAR_IMAGE, Users.AVATAR_IMAGE);
-        sUsersProjectionMap.put(Users.CREATED_DATE, Users.CREATED_DATE);
-        sUsersProjectionMap.put(Users.MODIFIED_DATE, Users.MODIFIED_DATE);
+        sUsersProjectionMap.put(User._ID, MyDatabase.USER_TABLE_NAME + "." + User._ID + " AS " + User._ID);
+        sUsersProjectionMap.put(User.USER_ID, MyDatabase.USER_TABLE_NAME + "." + User._ID + " AS " + User.USER_ID);
+        sUsersProjectionMap.put(User.USER_OID, User.USER_OID);
+        sUsersProjectionMap.put(User.ORIGIN_ID, User.ORIGIN_ID);
+        sUsersProjectionMap.put(User.USERNAME, User.USERNAME);
+        sUsersProjectionMap.put(User.AVATAR_BLOB, User.AVATAR_BLOB);
+        sUsersProjectionMap.put(User.CREATED_DATE, User.CREATED_DATE);
+        sUsersProjectionMap.put(User.INS_DATE, User.INS_DATE);
+    }
+    
+    /**
+     * Lookup the System's (AndStatus) id from the Originated system's id
+     * 
+     * @param uri - URI of the database table
+     * @param originId - see {@link MyDatabase.Msg#ORIGIN_ID}
+     * @param oid - see {@link MyDatabase.Msg#MSG_OID}
+     * @return - id in our System (i.e. in the table, e.g.
+     *         {@link MyDatabase.Msg#_ID} )
+     */
+    public static long oidToId(Uri uri, long originId, String oid) {
+        long id = 0;
+        SQLiteStatement prog = null;
+        String sql = "";
+
+        try {
+            int matchedCode = sUriMatcher.match(uri);
+            switch (matchedCode) {
+                case TWEETS:
+                    sql = "SELECT " + MyDatabase.Msg._ID + " FROM " + MyDatabase.MSG_TABLE_NAME
+                            + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
+                            + "=" + oid;
+                    break;
+
+                case USERS:
+                    sql = "SELECT " + MyDatabase.User._ID + " FROM " + MyDatabase.USER_TABLE_NAME
+                            + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USER_OID
+                            + "=" + oid;
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("oidToId; Unknown URI \"" + uri
+                            + "\"; matchedCode=" + matchedCode);
+            }
+            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            prog = db.compileStatement(sql);
+            id = prog.simpleQueryForLong();
+        } catch (SQLiteDoneException ed) {
+            id = 0;
+        } catch (Exception e) {
+            Log.e(TAG, "oidToId: " + e.toString());
+            return 0;
+        }
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            MyLog.v(TAG, "oidToId:" + originId + "+" + oid + " -> " + id + " uri=" + uri );
+        }
+        return id;
+    }
+    
+    /**
+     * Lookup Originated system's id from the System's (AndStatus) id 
+     * 
+     * @param uri - URI of the database table
+     * @param systemId - see {@link MyDatabase.Msg#_ID}
+     * @return - oid in Originated system (i.e. in the table, e.g. {@link MyDatabase.Msg#MSG_OID}
+     *          empty string in case of an error
+     */
+    public static String idToOid(Uri uri, long systemId) {
+        String oid = "";
+        SQLiteStatement prog = null;
+        String sql = "";
+
+        try {
+            int matchedCode = sUriMatcher.match(uri);
+            switch (matchedCode) {
+                case TWEETS:
+                    sql = "SELECT " + MyDatabase.Msg.MSG_OID + " FROM " + MyDatabase.MSG_TABLE_NAME
+                            + " WHERE " + Msg._ID + "=" + systemId;
+                    break;
+
+                case USERS:
+                    sql = "SELECT " + MyDatabase.User.USER_ID + " FROM " + MyDatabase.USER_TABLE_NAME
+                            + " WHERE " + User._ID + "=" + systemId;
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("idToOid; Unknown URI \"" + uri
+                            + "\"; matchedCode=" + matchedCode);
+            }
+            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            prog = db.compileStatement(sql);
+            oid = prog.simpleQueryForString();
+        } catch (SQLiteDoneException ed) {
+            oid = "";
+        } catch (Exception e) {
+            Log.e(TAG, "idToOid: " + e.toString());
+            return "";
+        }
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            MyLog.v(TAG, "idToOid: " + systemId + " -> " + oid );
+        }
+        return oid;
+    }
+
+    public static String msgIdToUsername(String msgUserId, long systemId) {
+        String userName = "";
+        SQLiteStatement prog = null;
+        String sql = "";
+        try {
+            if (msgUserId.contentEquals(MyDatabase.Msg.SENDER_ID) ||
+                    msgUserId.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
+                    msgUserId.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID)) {
+                sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + MyDatabase.USER_TABLE_NAME
+                        + " INNER JOIN " + MyDatabase.MSG_TABLE_NAME + " ON "
+                        + MyDatabase.MSG_TABLE_NAME + "." + msgUserId + "=" + MyDatabase.USER_TABLE_NAME + "." + MyDatabase.User._ID
+                        + " WHERE " + MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + systemId;
+            } else {
+                throw new IllegalArgumentException("msgIdToUsername; Unknown name \"" + msgUserId);
+            }
+            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            prog = db.compileStatement(sql);
+            userName = prog.simpleQueryForString();
+        } catch (SQLiteDoneException ed) {
+            userName = "";
+        } catch (Exception e) {
+            Log.e(TAG, "msgIdToUsername: " + e.toString());
+            return "";
+        }
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            MyLog.v(TAG, "msgIdTo" + msgUserId + ": " + systemId + " -> " + userName );
+        }
+        return userName;
+    }
+    
+    /**
+     * Find {@link MyDatabase.Msg#CREATED_DATE}
+     * @param msgId
+     * @return
+     */
+    public static long msgCreatedDate(long msgId) {
+        long ret = 0;
+        SQLiteStatement prog = null;
+        String sql = "";
+
+        try {
+            sql = "SELECT " + Msg.CREATED_DATE + " FROM " + MyDatabase.MSG_TABLE_NAME
+                    + " WHERE " + Msg._ID + "=" + msgId;
+            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            prog = db.compileStatement(sql);
+            ret = prog.simpleQueryForLong();
+        } catch (SQLiteDoneException ed) {
+            ret = 0;
+        } catch (Exception e) {
+            Log.e(TAG, "userNameToId: " + e.toString());
+            return 0;
+        }
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            MyLog.v(TAG, "msgCreatedDate:" + msgId + " -> " + ret);
+        }
+        return ret;
+    }
+    
+    /**
+     * Lookup the User's id based on the Username in the Originating system
+     * 
+     * @param originId - see {@link MyDatabase.Msg#ORIGIN_ID}
+     * @param userName - see {@link MyDatabase.User#USERNAME}
+     * @return - id in our System (i.e. in the table, e.g.
+     *         {@link MyDatabase.User#_ID} ), 0 if not found
+     */
+    public static long userNameToId(long originId,
+            String userName) {
+        long id = 0;
+        SQLiteStatement prog = null;
+        String sql = "";
+
+        try {
+            sql = "SELECT " + MyDatabase.User._ID + " FROM " + MyDatabase.USER_TABLE_NAME
+                    + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USERNAME + "='"
+                    + userName + "'";
+            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            prog = db.compileStatement(sql);
+            id = prog.simpleQueryForLong();
+        } catch (SQLiteDoneException ed) {
+            id = 0;
+        } catch (Exception e) {
+            Log.e(TAG, "userNameToId: " + e.toString());
+            return 0;
+        }
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            MyLog.v(TAG, "userNameToId:" + originId + "+" + userName + " -> " + id);
+        }
+        return id;
     }
 }

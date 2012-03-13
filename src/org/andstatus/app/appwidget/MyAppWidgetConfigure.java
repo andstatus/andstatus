@@ -17,7 +17,9 @@
 package org.andstatus.app.appwidget;
 
 import android.app.Activity;
+import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -106,4 +108,30 @@ public class MyAppWidgetConfigure extends Activity {
 			finish();
 		}
 	};
+	
+	/**
+	 * Delete all Widgets
+	 * Idea from <a href="http://stackoverflow.com/a/7774503">Removing AppWidgets programmatically</a>
+	 * @param context
+	 * @param packageName
+	 * @param className
+	 * @return
+	 */
+    static public int deleteWidgets(Context context, String packageName, String className) {
+        int deletedCount = 0;
+        try {
+            AppWidgetManager awm = AppWidgetManager.getInstance(context);
+            int[] appWidgetIds = awm.getAppWidgetIds(new android.content.ComponentName(packageName, 
+                    className)); 
+            Log.i(TAG, "About to delete " + appWidgetIds.length +" Widgets of " + packageName + " package; class=" + className);
+            AppWidgetHost host = new AppWidgetHost(context, 0);
+            for (int ind = 0; ind < appWidgetIds.length; ind++) {
+                host.deleteAppWidgetId(appWidgetIds[ind]);         
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error deleting widgets: " + e.getMessage());
+        }
+        return deletedCount;
+    }
+	
 }

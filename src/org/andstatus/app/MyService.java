@@ -24,8 +24,9 @@ import java.util.concurrent.BlockingQueue;
 
 import org.andstatus.app.TwitterUser.CredentialsVerified;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyPreferences;
-import org.andstatus.app.data.MyDatabase.Tweets;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.ForegroundCheckTask;
 import org.andstatus.app.util.I18n;
@@ -41,12 +42,10 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -124,7 +123,7 @@ public class MyService extends Service {
     public static final String ACTION_GO = ACTIONPREFIX + "GO";
 
     /**
-     * These names of extras are used in the Intent-notification of new Tweets
+     * These names of extras are used in the Intent-notification of new Msg
      * (e.g. to notify Widget).
      */
 
@@ -136,7 +135,7 @@ public class MyService extends Service {
     public static final String EXTRA_MSGTYPE = packageName + ".MSGTYPE";
 
     /**
-     * Command parameter: long - ID of the Tweet (or Message)
+     * Command parameter: long - ID of the Tweet (or Msg)
      */
     public static final String EXTRA_TWEETID = packageName + ".TWEETID";
 
@@ -233,8 +232,9 @@ public class MyService extends Service {
          * Commands to the Widget New tweets|messages were successfully loaded
          * from the server
          */
-        NOTIFY_DIRECT_MESSAGE("notify-direct-message"), NOTIFY_TIMELINE("notify-timeline"), NOTIFY_REPLIES(
-                "notify-replies"),
+        NOTIFY_DIRECT_MESSAGE("notify-direct-message"), NOTIFY_TIMELINE("notify-timeline"), NOTIFY_MENTIONS(
+                "notify-mentions"), 
+                // TODO: Add NOTIFY_REPLIES("notify-replies"),
         /**
          * Clear previous notifications (because e.g. user open tweet list...)
          */
@@ -1091,8 +1091,11 @@ public class MyService extends Service {
 
                 switch (commandData.command) {
                     case AUTOMATIC_UPDATE:
-                        MyLog.d(TAG, "Getting tweets, replies and messages");
-                        ok = loadTimeline(true, true);
+                        MyLog.d(TAG, "Getting all timelines");
+                        ok = loadTimeline(false, true);
+                        if (ok) {
+                            ok = loadTimeline(true, false);
+                        }
                         break;
                     case FETCH_TIMELINE:
                         MyLog.d(TAG, "Getting tweets and replies");
@@ -1211,23 +1214,29 @@ public class MyService extends Service {
 
         /**
          * @param create true - create, false - destroy
-         * @param statusId
+         * @param msgId
          * @return boolean ok
          */
-        private boolean createOrDestroyFavorite(boolean create, long statusId) {
+        private boolean createOrDestroyFavorite(boolean create, long msgId) {
             boolean ok = false;
+            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, msgId);
             JSONObject result = new JSONObject();
-            try {
-                if (create) {
-                    result = TwitterUser.getTwitterUser().getConnection().createFavorite(statusId);
-                } else {
-                    result = TwitterUser.getTwitterUser().getConnection().destroyFavorite(statusId);
+            if (oid.length()>0) {
+                try {
+                    if (create) {
+                        result = TwitterUser.getTwitterUser().getConnection().createFavorite(oid);
+                    } else {
+                        result = TwitterUser.getTwitterUser().getConnection().destroyFavorite(oid);
+                    }
+                    ok = (result != null);
+                } catch (ConnectionException e) {
+                    Log.e(TAG,
+                            (create ? "create" : "destroy") + "Favorite Connection Exception: "
+                                    + e.toString());
                 }
-                ok = (result != null);
-            } catch (ConnectionException e) {
+            } else {
                 Log.e(TAG,
-                        (create ? "create" : "destroy") + "Favorite Connection Exception: "
-                                + e.toString());
+                        (create ? "create" : "destroy") + "Favorite; msgId not found: " + msgId);
             }
             if (ok) {
                 synchronized(MyService.this) {
@@ -1269,22 +1278,9 @@ public class MyService extends Service {
                         
                         if (ok) {
                             try {
-                                Uri uri = ContentUris.withAppendedId(Tweets.CONTENT_URI, result.getLong("id"));
-                                Cursor c = getContentResolver().query(uri, new String[] {
-                                        Tweets._ID, Tweets.AUTHOR_ID, Tweets.TWEET_TYPE
-                                }, null, null, null);
-                                try {
-                                    c.moveToFirst();
-                                    TimelineDownloader fl = new TimelineDownloader(
-                                            MyService.this.getApplicationContext(), c.getInt(c
-                                                    .getColumnIndex(Tweets.TWEET_TYPE)));
-                                    fl.insertFromJSONObject(result, true);
-                                } catch (Exception e) {
-                                    Log.e(TAG, "e: " + e.toString());
-                                } finally {
-                                    if (c != null && !c.isClosed())
-                                        c.close();
-                                }
+                                TimelineDownloader fl = new TimelineDownloader(
+                                MyService.this.getApplicationContext(), MyDatabase.TIMELINE_TYPE_HOME );
+                                fl.insertFromJSONObject(result, true);
                             } catch (JSONException e) {
                                 Log.e(TAG,
                                         "Error marking as " + (create ? "" : "not ") + "favorite: "
@@ -1301,7 +1297,7 @@ public class MyService extends Service {
             // TODO: Maybe we need to notify the caller about the result?!
 
             MyLog.d(TAG, (create ? "Creating" : "Destroying") + " favorite "
-                    + (ok ? "succeded" : "failed") + ", id=" + statusId);
+                    + (ok ? "succeded" : "failed") + ", id=" + msgId);
             return ok;
         }
 
@@ -1309,11 +1305,12 @@ public class MyService extends Service {
          * @param statusId
          * @return boolean ok
          */
-        private boolean destroyStatus(long statusId) {
+        private boolean destroyStatus(long msgId) {
             boolean ok = false;
+            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, msgId);
             JSONObject result = new JSONObject();
             try {
-                result = TwitterUser.getTwitterUser().getConnection().destroyStatus(statusId);
+                result = TwitterUser.getTwitterUser().getConnection().destroyStatus(oid);
                 ok = (result != null);
             } catch (ConnectionException e) {
                 if (e.getStatusCode() == 404) {
@@ -1331,8 +1328,8 @@ public class MyService extends Service {
                         try {
                             TimelineDownloader fl = new TimelineDownloader(
                                     MyService.this.getApplicationContext(),
-                                    TimelineActivity.TIMELINE_TYPE_HOME);
-                            fl.destroyStatus(statusId);
+                                    MyDatabase.TIMELINE_TYPE_HOME);
+                            fl.destroyStatus(msgId);
                         } catch (Exception e) {
                             Log.e(TAG, "Error destroying status locally: " + e.toString());
                         }
@@ -1344,7 +1341,7 @@ public class MyService extends Service {
 
             // TODO: Maybe we need to notify the caller about the result?!
 
-            MyLog.d(TAG, "Destroying status " + (ok ? "succeded" : "failed") + ", id=" + statusId);
+            MyLog.d(TAG, "Destroying status " + (ok ? "succeded" : "failed") + ", id=" + msgId);
             return ok;
         }
 
@@ -1354,11 +1351,12 @@ public class MyService extends Service {
          * @return ok
          */
         private boolean updateStatus(String status, long inReplyToId) {
+            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, inReplyToId);
             boolean ok = false;
             JSONObject result = new JSONObject();
             try {
                 result = TwitterUser.getTwitterUser().getConnection()
-                        .updateStatus(status.trim(), inReplyToId);
+                        .updateStatus(status.trim(), oid);
                 ok = (result != null);
             } catch (ConnectionException e) {
                 Log.e(TAG, "updateStatus Exception: " + e.toString());
@@ -1370,7 +1368,7 @@ public class MyService extends Service {
                             // The tweet was sent successfully
                             TimelineDownloader fl = new TimelineDownloader(
                                     MyService.this.getApplicationContext(),
-                                    TimelineActivity.TIMELINE_TYPE_HOME);
+                                    MyDatabase.TIMELINE_TYPE_HOME);
 
                             fl.insertFromJSONObject(result, true);
                         } catch (JSONException e) {
@@ -1394,7 +1392,7 @@ public class MyService extends Service {
             // TODO: Cycle for all users...
             boolean ok = false;
             int aNewTweets = 0;
-            int aReplyCount = 0;
+            int mentionsCount = 0;
             int aNewMessages = 0;
             String descr = "(starting)";
 
@@ -1406,9 +1404,9 @@ public class MyService extends Service {
                     if (ok && loadTweets) {
                         descr = "loading Mentions";
                         fl = new TimelineDownloader(MyService.this.getApplicationContext(),
-                                TimelineActivity.TIMELINE_TYPE_MENTIONS);
+                                MyDatabase.TIMELINE_TYPE_MENTIONS);
                         ok = fl.loadTimeline();
-                        aReplyCount = fl.replyCount();
+                        mentionsCount = fl.mentionsCount();
                         if (ok) {
                             synchronized(MyService.this) {
                                 if (!mStateRestored) {
@@ -1421,10 +1419,10 @@ public class MyService extends Service {
                         if (ok) {
                             descr = "loading Home";
                             fl = new TimelineDownloader(MyService.this.getApplicationContext(),
-                                    TimelineActivity.TIMELINE_TYPE_HOME);
+                                    MyDatabase.TIMELINE_TYPE_HOME);
                             ok = fl.loadTimeline();
-                            aNewTweets = fl.newCount();
-                            aReplyCount += fl.replyCount();
+                            aNewTweets = fl.messagesCount();
+                            mentionsCount += fl.mentionsCount();
                         }
                         if (ok) {
                             synchronized(MyService.this) {
@@ -1441,9 +1439,9 @@ public class MyService extends Service {
                     if (ok && loadMessages) {
                         descr = "loading Messages";
                         fl = new TimelineDownloader(MyService.this.getApplicationContext(),
-                                TimelineActivity.TIMELINE_TYPE_MESSAGES);
+                                MyDatabase.TIMELINE_TYPE_DIRECT);
                         ok = fl.loadTimeline();
-                        aNewMessages = fl.newCount();
+                        aNewMessages = fl.messagesCount();
                         if (ok) {
                             synchronized(MyService.this) {
                                 if (mStateRestored) {
@@ -1457,8 +1455,10 @@ public class MyService extends Service {
                     }
                 } catch (ConnectionException e) {
                     Log.e(TAG, descr + ", Connection Exception: " + e.toString());
+                    ok = false;
                 } catch (SQLiteConstraintException e) {
                     Log.e(TAG, descr + ", SQLite Exception: " + e.toString());
+                    ok = false;
                 }
             }
 
@@ -1466,7 +1466,7 @@ public class MyService extends Service {
                 descr = "notifying";
                 synchronized(MyService.this) {
                     if (mStateRestored) {
-                        notifyOfUpdatedTimeline(aNewTweets, aReplyCount, aNewMessages);
+                        notifyOfUpdatedTimeline(aNewTweets, mentionsCount, aNewMessages);
                     } else {
                         Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
                         ok = false;
@@ -1476,7 +1476,7 @@ public class MyService extends Service {
 
             String message = (ok ? "Succeeded" : "Failed") + " getting ";
             if (loadTweets) {
-                message += aNewTweets + " tweets, " + aReplyCount + " replies";
+                message += aNewTweets + " tweets, " + mentionsCount + " mentions";
             }
             if (loadMessages) {
                 if (loadTweets) {
@@ -1489,8 +1489,8 @@ public class MyService extends Service {
             return ok;
         }
 
-        private void notifyOfUpdatedTimeline(int tweetsChanged, int repliesChanged,
-                int messagesChanged) {
+        private void notifyOfUpdatedTimeline(int msgAdded, int mentionsAdded,
+                int directedAdded) {
 
             // TODO: It's not so simple... I think :-)
             int N = mBroadcastListenerCount;
@@ -1500,14 +1500,14 @@ public class MyService extends Service {
                     MyLog.d(TAG, "finishUpdateTimeline, Notifying callback no. " + i);
                     IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
                     if (cb != null) {
-                        if (tweetsChanged > 0) {
-                            cb.tweetsChanged(tweetsChanged);
+                        if (msgAdded > 0) {
+                            cb.tweetsChanged(msgAdded);
                         }
-                        if (repliesChanged > 0) {
-                            cb.repliesChanged(repliesChanged);
+                        if (mentionsAdded > 0) {
+                            cb.repliesChanged(mentionsAdded);
                         }
-                        if (messagesChanged > 0) {
-                            cb.messagesChanged(messagesChanged);
+                        if (directedAdded > 0) {
+                            cb.messagesChanged(directedAdded);
                         }
                         cb.dataLoading(0);
                     }
@@ -1516,16 +1516,16 @@ public class MyService extends Service {
                 }
             }
             boolean notified = false;
-            if (repliesChanged > 0) {
-                notifyOfNewTweets(repliesChanged, CommandEnum.NOTIFY_REPLIES);
+            if (mentionsAdded > 0) {
+                notifyOfNewTweets(mentionsAdded, CommandEnum.NOTIFY_MENTIONS);
                 notified = true;
             }
-            if (messagesChanged > 0) {
-                notifyOfNewTweets(messagesChanged, CommandEnum.NOTIFY_DIRECT_MESSAGE);
+            if (directedAdded > 0) {
+                notifyOfNewTweets(directedAdded, CommandEnum.NOTIFY_DIRECT_MESSAGE);
                 notified = true;
             }
-            if (tweetsChanged > 0 || !notified) {
-                notifyOfNewTweets(tweetsChanged, CommandEnum.NOTIFY_TIMELINE);
+            if (msgAdded > 0 || !notified) {
+                notifyOfNewTweets(msgAdded, CommandEnum.NOTIFY_TIMELINE);
                 notified = true;
             }
         }
@@ -1566,7 +1566,7 @@ public class MyService extends Service {
             // message
             // type
             switch (msgType) {
-                case NOTIFY_REPLIES:
+                case NOTIFY_MENTIONS:
                     if (!notificationsReplies)
                         return;
                     break;
@@ -1613,7 +1613,7 @@ public class MyService extends Service {
             // Prepare "intent" to launch timeline activities exactly like in
             // org.andstatus.app.TimelineActivity.onOptionsItemSelected
             switch (msgType) {
-                case NOTIFY_REPLIES:
+                case NOTIFY_MENTIONS:
                     aMessage = I18n.formatQuantityMessage(getApplicationContext(),
                             R.string.notification_new_mention_format, numTweets,
                             R.array.notification_mention_patterns,
@@ -1621,7 +1621,7 @@ public class MyService extends Service {
                     messageTitle = R.string.notification_title_mentions;
                     intent = new Intent(getApplicationContext(), TweetListActivity.class);
                     intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
-                            TimelineActivity.TIMELINE_TYPE_MENTIONS);
+                            MyDatabase.TIMELINE_TYPE_MENTIONS);
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
                     break;
@@ -1632,9 +1632,9 @@ public class MyService extends Service {
                             R.array.notification_message_patterns,
                             R.array.notification_message_formats);
                     messageTitle = R.string.notification_title_messages;
-                    intent = new Intent(getApplicationContext(), MessageListActivity.class);
+                    intent = new Intent(getApplicationContext(), TweetListActivity.class);
                     intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
-                            TimelineActivity.TIMELINE_TYPE_MESSAGES);
+                            MyDatabase.TIMELINE_TYPE_DIRECT);
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
                     break;
@@ -1649,7 +1649,7 @@ public class MyService extends Service {
                     messageTitle = R.string.notification_title;
                     intent = new Intent(getApplicationContext(), TweetListActivity.class);
                     intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
-                            TimelineActivity.TIMELINE_TYPE_HOME);
+                            MyDatabase.TIMELINE_TYPE_HOME);
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
                     break;

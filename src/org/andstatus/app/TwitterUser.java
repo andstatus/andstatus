@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010-2011 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2012 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,9 @@ import java.util.regex.Pattern;
 import java.util.Vector;
 
 
+import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionAuthenticationException;
 import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
@@ -57,6 +59,16 @@ public class TwitterUser {
      * This is same name that is used in Twitter login
      */
     private String mUsername = "";
+    
+    /**
+     * id of the system in which the User is defined, see {@link MyDatabase.User#ORIGIN_ID}
+     */
+    private long mOriginId = 0; 
+    
+    /**
+     * Id in the database, see {@link MyDatabase.User#_ID}
+     */
+    private long mUserId = 0;
 
     /**
      * Is this object temporal?
@@ -369,7 +381,9 @@ public class TwitterUser {
         mPrefsFileName = prefsFileNameForUser(username);
         boolean isNewUser = !SharedPreferencesUtil.exists(MyPreferences.getContext(), mPrefsFileName);
         setUsername(username, isNewUser);
-        if (!isNewUser) {
+        if (isNewUser) {
+            mOriginId = MyDatabase.ORIGIN_ID_DEFAULT;
+        } else {
             // Load stored data for the User
             SharedPreferences sp = getSharedPreferences();
             mIsTemporal = !sp.getBoolean(MyPreferences.KEY_IS_NOT_TEMPORAL, false);
@@ -380,6 +394,13 @@ public class TwitterUser {
                 mIsTemporal = false;
             }
             mOAuth = sp.getBoolean(MyPreferences.KEY_OAUTH, true);
+            mOriginId = sp.getLong(MyPreferences.KEY_ORIGIN_ID, MyDatabase.ORIGIN_ID_DEFAULT);
+            mUserId = sp.getLong(MyPreferences.KEY_USER_ID, 0L);
+            
+            if (!isTemporal() && mUserId==0) {
+                setUsernameAuthenticated(mUsername);
+                Log.e(TAG, "Account '" + getUsername() + "' was not connected to the User table. UserId=" + mUserId);
+            }
         }
     }
 
@@ -390,6 +411,20 @@ public class TwitterUser {
         return mUsername;
     }
 
+    /**
+     * @return the {@link #mUserId}
+     */
+    public long getUserId() {
+        return mUserId;
+    }
+
+    /**
+     * @return id of the system in which the User is defined, see {@link MyDatabase.User#ORIGIN_ID}
+     */
+    public long getOriginId() {
+        return mOriginId;
+    }
+    
     /**
      * @return SharedPreferences of this User
      */
@@ -408,8 +443,9 @@ public class TwitterUser {
     }
 
     /**
-     * Set Username for the User who was first time authenticated
-     * Remember that the User was ever authenticated 
+     * 1. Set Username for the User who was first time authenticated
+     * Remember that the User was ever authenticated
+     * 2. Connect this account to the {@link MyDatabase.User} 
      * 
      * @param username - new Username to set.
      */
@@ -437,6 +473,24 @@ public class TwitterUser {
                 mIsTemporal = false;
                 getSharedPreferences().edit().putBoolean(MyPreferences.KEY_IS_NOT_TEMPORAL, true).commit();
             }
+        }
+        if (mUserId == 0) {
+            mUserId = MyProvider.userNameToId(getOriginId(), username);
+            if (mUserId == 0) {
+                TimelineDownloader td = new TimelineDownloader(this, MyPreferences.getContext(), MyDatabase.TIMELINE_TYPE_HOME);
+                try {
+                    // Construct "User" from available account info
+                    // We need this User in order to be able to link Messages to him
+                    JSONObject dbUser = new JSONObject();
+                    dbUser.put("screen_name", getUsername());
+                    dbUser.put(MyDatabase.User.ORIGIN_ID, getOriginId());
+                    mUserId = Long.parseLong(td.insertUserFromJSONObject(dbUser).getPathSegments().get(1));
+                } catch (Exception e) {
+                    Log.e(TAG, "Construct user: " + e.toString());
+                }
+            }
+            getSharedPreferences().edit().putLong(MyPreferences.KEY_USER_ID, mUserId).commit();
+            getSharedPreferences().edit().putLong(MyPreferences.KEY_ORIGIN_ID, mOriginId).commit();
         }
         return ok;
     }

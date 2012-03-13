@@ -72,10 +72,12 @@ public class RelativeTime {
 	 * @return String
 	 */
 	public static String getDifference(Context context, long from) {
-		String value = new String();
+		String value;
 		long to = System.currentTimeMillis();
 		long delta = java.lang.Math.round( (double)(to - from) / 1000);
-		if (delta < 1) {
+		if (from <= 0) {
+		    value = "";
+		} else if (delta < 1) {
 			value = context.getString(R.string.reltime_just_now);
 		} else if (delta < 1 * MINUTE) {
             int numSeconds = (int) delta;

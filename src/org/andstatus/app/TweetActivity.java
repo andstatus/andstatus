@@ -29,8 +29,9 @@ import android.util.Log;
 import android.widget.TextView;
 
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
-import org.andstatus.app.data.MyDatabase.Tweets;
+import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -43,13 +44,13 @@ public class TweetActivity extends Activity {
 	private static final String TAG = TweetActivity.class.getSimpleName();
 
 	private static final String[] PROJECTION = new String[] {
-		Tweets._ID,
-		Tweets.AUTHOR_ID,
-		Tweets.MESSAGE,
-		Tweets.SOURCE,
-		Tweets.IN_REPLY_TO_AUTHOR_ID,
-		Tweets.IN_REPLY_TO_STATUS_ID,
-		Tweets.SENT_DATE
+		Msg._ID,
+		User.AUTHOR_NAME,
+		Msg.BODY,
+		Msg.VIA,
+		User.IN_REPLY_TO_NAME,
+		Msg.IN_REPLY_TO_MSG_ID,
+		Msg.CREATED_DATE
 	};
 
 	private Uri mUri;
@@ -82,9 +83,9 @@ public class TweetActivity extends Activity {
 
 		if (mCursor != null) {
 			mCursor.moveToFirst();
-			String aAuthor = mCursor.getString(mCursor.getColumnIndex(Tweets.AUTHOR_ID));
-			String aMessage = mCursor.getString(mCursor.getColumnIndex(Tweets.MESSAGE));
-			long aSentDate = mCursor.getLong(mCursor.getColumnIndex(Tweets.SENT_DATE));
+			String aAuthor = mCursor.getString(mCursor.getColumnIndex(User.AUTHOR_NAME));
+			String aMessage = mCursor.getString(mCursor.getColumnIndex(Msg.BODY));
+			long aSentDate = mCursor.getLong(mCursor.getColumnIndex(Msg.CREATED_DATE));
 			mAuthor.setText(aAuthor);
 			mMessage.setLinksClickable(true);
 			mMessage.setFocusable(true);
@@ -92,7 +93,7 @@ public class TweetActivity extends Activity {
 			mMessage.setText(aMessage);
 			Linkify.addLinks(mMessage, Linkify.ALL);
 			String inReplyTo = "";
-			int colIndex = mCursor.getColumnIndex(Tweets.IN_REPLY_TO_AUTHOR_ID);
+			int colIndex = mCursor.getColumnIndex(User.IN_REPLY_TO_NAME);
 			if (colIndex > -1) {
 				inReplyTo = mCursor.getString(colIndex);
 				if (inReplyTo != null && "null".equals(inReplyTo) == false) {
@@ -104,7 +105,7 @@ public class TweetActivity extends Activity {
 				Locale.getDefault(), 
 				getText(R.string.tweet_source_from).toString(), 
 				RelativeTime.getDifference(this, aSentDate), 
-				Html.fromHtml(mCursor.getString(mCursor.getColumnIndex(Tweets.SOURCE))),
+				Html.fromHtml(mCursor.getString(mCursor.getColumnIndex(Msg.VIA))),
 				inReplyTo
 			);
 			mSentDate.setText(sentDate);
@@ -137,7 +138,7 @@ public class TweetActivity extends Activity {
 	@Override
 	public boolean onSearchRequested() {
 		Bundle appDataBundle = new Bundle();
-		appDataBundle.putParcelable("content_uri", MyDatabase.Tweets.SEARCH_URI);
+		appDataBundle.putParcelable("content_uri", MyDatabase.Msg.SEARCH_URI);
 		startSearch(null, false, appDataBundle, false);
 		return true;
 	}

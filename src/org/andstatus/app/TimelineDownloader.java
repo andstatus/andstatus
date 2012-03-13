@@ -20,7 +20,9 @@ import java.util.Date;
 
 import org.andstatus.app.TwitterUser.CredentialsVerified;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -65,8 +67,18 @@ public class TimelineDownloader {
 
     private long mLastStatusId = 0;
 
-    private int mNewTweets;
+    /**
+     * These may be "general" or Direct messages...
+     */
+    private int mMessages;
 
+    /**
+     * Number of Mentions received (through {@link TimelineDownloader#insertFromJSONObject(JSONObject)} 
+     */
+    private int mMentions;
+    /**
+     * Number of Replies received (through {@link TimelineDownloader#insertFromJSONObject(JSONObject)} 
+     */
     private int mReplies;
 
     private TwitterUser mTu;
@@ -78,25 +90,26 @@ public class TimelineDownloader {
     private Uri mContentCountUri;
 
     public TimelineDownloader(Context context, int timelineType) {
+        this(TwitterUser.getTwitterUser(), context, timelineType);
+    }
+
+    public TimelineDownloader(TwitterUser tuIn, Context context, int timelineType) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
-        mTu = TwitterUser.getTwitterUser();
+        mTu = tuIn;
         mTimelineType = timelineType;
         mLastStatusId = mTu.getSharedPreferences().getLong("last_timeline_id" + timelineType, 0);
         switch (mTimelineType) {
-            case TimelineActivity.TIMELINE_TYPE_HOME:
-            case TimelineActivity.TIMELINE_TYPE_MENTIONS:
-                mContentUri = MyDatabase.Tweets.CONTENT_URI;
-                mContentCountUri = MyDatabase.Tweets.CONTENT_COUNT_URI;
-                break;
-            case TimelineActivity.TIMELINE_TYPE_MESSAGES:
-                mContentUri = MyDatabase.DirectMessages.CONTENT_URI;
-                mContentCountUri = MyDatabase.DirectMessages.CONTENT_COUNT_URI;
+            case MyDatabase.TIMELINE_TYPE_HOME:
+            case MyDatabase.TIMELINE_TYPE_MENTIONS:
+            case MyDatabase.TIMELINE_TYPE_DIRECT:
+                mContentUri = MyDatabase.Msg.CONTENT_URI;
+                mContentCountUri = MyDatabase.Msg.CONTENT_COUNT_URI;
                 break;
         }
 
     }
-
+    
     /**
      * Load Timeline (Home / DirectMessages) from the Internet
      * and store them in the local database.
@@ -105,20 +118,21 @@ public class TimelineDownloader {
      */
     public boolean loadTimeline() throws ConnectionException {
         boolean ok = false;
-        mNewTweets = 0;
+        mMessages = 0;
+        mMentions = 0;
         mReplies = 0;
         long lastId = mLastStatusId;
         int limit = 200;
         if ((mTu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) && MyPreferences.isDataAvailable()) {
             JSONArray jArr = null;
             switch (mTimelineType) {
-                case TimelineActivity.TIMELINE_TYPE_HOME:
+                case MyDatabase.TIMELINE_TYPE_HOME:
                     jArr = mTu.getConnection().getHomeTimeline(lastId, limit);
                     break;
-                case TimelineActivity.TIMELINE_TYPE_MENTIONS:
+                case MyDatabase.TIMELINE_TYPE_MENTIONS:
                     jArr = mTu.getConnection().getMentionsTimeline(lastId, limit);
                     break;
-                case TimelineActivity.TIMELINE_TYPE_MESSAGES:
+                case MyDatabase.TIMELINE_TYPE_DIRECT:
                     jArr = mTu.getConnection().getDirectMessages(lastId, limit);
                     break;
                 default:
@@ -140,7 +154,7 @@ public class TimelineDownloader {
                     e.printStackTrace();
                 }
             }
-            if (mNewTweets > 0) {
+            if (mMessages > 0) {
                 mContentResolver.notifyChange(mContentUri, null);
             }
             if (lastId > mLastStatusId) {
@@ -153,72 +167,262 @@ public class TimelineDownloader {
     }
 
     /**
-     * Insert a row from a JSONObject.
+     * Insert a Timeline row from a JSONObject.
      * 
-     * @param jo
-     * @return
+     * @param msg - The row to insert
+     * @return URI to this row in the database
      * @throws JSONException
      * @throws SQLiteConstraintException
      */
-    public Uri insertFromJSONObject(JSONObject jo) throws JSONException, SQLiteConstraintException {
-        ContentValues values = new ContentValues();
-
-        // Construct the Uri to existing record
-        Long lTweetId = Long.parseLong(jo.getString("id"));
-        Uri aTweetUri = ContentUris.withAppendedId(mContentUri, lTweetId);
-
-        String message = Html.fromHtml(jo.getString("text")).toString();
+    public Uri insertFromJSONObject(JSONObject msg) throws JSONException, SQLiteConstraintException {
+        String rowOid = msg.getString("id_str");
+        // Lookup the System's (AndStatus) id from the Originated system's id
+        Long rowId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, mTu.getOriginId(), rowOid);
+        // Construct the Uri to the Msg
+        Uri tweetUri = ContentUris.withAppendedId(mContentUri, rowId);
 
         try {
-            // TODO: Unify databases!
-            switch (mTimelineType) {
-                case TimelineActivity.TIMELINE_TYPE_HOME:
-                case TimelineActivity.TIMELINE_TYPE_MENTIONS:
-                    JSONObject user;
-                    user = jo.getJSONObject("user");
+            ContentValues values = new ContentValues();
 
-                    values.put(MyDatabase.Tweets._ID, lTweetId.toString());
-                    values.put(MyDatabase.Tweets.AUTHOR_ID, user.getString("screen_name"));
+            String body = "";
+            if (msg.has("text")) {
+                body = Html.fromHtml(msg.getString("text")).toString();
+            }
+            values.put(MyDatabase.Msg.MSG_OID, rowOid);
+            values.put(MyDatabase.Msg.ORIGIN_ID, mTu.getOriginId());
+            values.put(MsgOfUser.TIMELINE_TYPE, mTimelineType);
+            values.put(MyDatabase.Msg.BODY, body);
 
-                    values.put(MyDatabase.Tweets.MESSAGE, message);
-                    values.put(MyDatabase.Tweets.SOURCE, jo.getString("source"));
-                    values.put(MyDatabase.Tweets.TWEET_TYPE, mTimelineType);
-                    values.put(MyDatabase.Tweets.IN_REPLY_TO_STATUS_ID, jo
-                            .getString("in_reply_to_status_id"));
-                    values.put(MyDatabase.Tweets.IN_REPLY_TO_AUTHOR_ID, jo
-                            .getString("in_reply_to_screen_name"));
-                    values.put(MyDatabase.Tweets.FAVORITED, jo.getBoolean("favorited") ? 1 : 0);
-                    break;
-                case TimelineActivity.TIMELINE_TYPE_MESSAGES:
-                    values.put(MyDatabase.DirectMessages._ID, lTweetId.toString());
-                    values.put(MyDatabase.DirectMessages.AUTHOR_ID, jo
-                            .getString("sender_screen_name"));
-                    values.put(MyDatabase.DirectMessages.MESSAGE, message);
-                    break;
+            if (msg.has("created_at")) {
+                Long created = 0L;
+                String createdAt = msg.getString("created_at");
+                if (createdAt.length() > 0) {
+                    created = Date.parse(createdAt);
+                }
+                if (created > 0) {
+                    values.put(MyDatabase.Msg.CREATED_DATE, created);
+                }
             }
 
-            Long created = Date.parse(jo.getString("created_at"));
-            values.put(MyDatabase.Tweets.SENT_DATE, created);
+            // Sender
+            Long senderId = 0L;
+            JSONObject sender;
+            String senderObjectName;
+            switch (mTimelineType) {
+                case MyDatabase.TIMELINE_TYPE_DIRECT:
+                    senderObjectName = "sender";
+                    break;
+                default:
+                    senderObjectName = "user";
+            }
+            sender = msg.getJSONObject(senderObjectName);
+            senderId = Long.parseLong(insertUserFromJSONObject(sender).getPathSegments().get(1));
+            values.put(MyDatabase.Msg.SENDER_ID, senderId);
+
+            // If the Msg is a Reply to other message
+            String inReplyToUserOid = "";
+            String inReplyToUserName = "";
+            Long inReplyToUserId = 0L;
+            String inReplyToMessageOid = "";
+            Long inReplyToMessageId = 0L;
+
+            boolean mentioned = (mTimelineType == MyDatabase.TIMELINE_TYPE_MENTIONS);
+            
+            switch (mTimelineType) {
+                case MyDatabase.TIMELINE_TYPE_HOME:
+                case MyDatabase.TIMELINE_TYPE_FAVORITES:
+                    values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
+                case MyDatabase.TIMELINE_TYPE_MENTIONS:
+                    if (msg.has("source")) {
+                        values.put(MyDatabase.Msg.VIA, msg.getString("source"));
+                    }
+                    if (msg.has("favorited")) {
+                        values.put(MyDatabase.MsgOfUser.FAVORITED, MyPreferences.isTrue(msg.getString("favorited")));
+                    }
+
+                    if (msg.has("in_reply_to_user_id_str")) {
+                        inReplyToUserOid = msg.getString("in_reply_to_user_id_str");
+                        if (inReplyToUserOid.compareTo("null") == 0) {
+                            inReplyToUserOid = "";
+                        }
+                    }
+                    if (inReplyToUserOid.length()>0) {
+                        if (msg.has("in_reply_to_screen_name")) {
+                            inReplyToUserName = msg.getString("in_reply_to_screen_name");
+                        }
+                        if (mTu.getUsername().equals(inReplyToUserName)) {
+                            values.put(MyDatabase.MsgOfUser.REPLIED, 1);
+                            mReplies++;
+                            // We consider a Reply to be a Mention also?! 
+                            // ...Yes, at least as long as we don't have "Replies" timeline type 
+                            mentioned = true;
+                        }
+                        
+                        // Construct "User" from available info
+                        JSONObject inReplyToUser = new JSONObject();
+                        inReplyToUser.put("id_str", inReplyToUserOid);
+                        inReplyToUser.put("screen_name", inReplyToUserName);
+                        inReplyToUserId = Long.parseLong(insertUserFromJSONObject(inReplyToUser).getPathSegments().get(1));
+                        
+                        values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
+
+                        if (msg.has("in_reply_to_status_id_str")) {
+                            inReplyToMessageOid = msg.getString("in_reply_to_status_id_str");
+                            if (inReplyToMessageOid.compareTo("null") == 0) {
+                                inReplyToMessageOid = "";
+                            }
+                            if (inReplyToMessageOid.length() > 0) {
+                                // Construct Related "Msg" from available info
+                                // and add it recursively
+                                JSONObject inReplyToMessage = new JSONObject();
+                                inReplyToMessage.put("id_str", inReplyToMessageOid);
+                                inReplyToMessage.put(senderObjectName, inReplyToUser);
+                                inReplyToMessageId = Long.parseLong(insertFromJSONObject(inReplyToMessage).getPathSegments().get(1));
+                                
+                                values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
+                            }
+                        }
+                    }
+                    break;
+                case MyDatabase.TIMELINE_TYPE_DIRECT:
+                    values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
+
+                    // Recipient
+                    Long recipientId = 0L;
+                    JSONObject recipient = msg.getJSONObject("recipient");
+                    recipientId = Long.parseLong(insertUserFromJSONObject(recipient).getPathSegments().get(1));
+                    values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
+                    break;
+            }
+            
+            if (body.length() > 0) {
+                // The same Messages may be downloaded for different users, 
+                // so let's count even if Msg already existed.
+                // Don't count Messages without body - this may be related messages which were not retrieved yet.
+                mMessages++;
+
+                if (!mentioned) {
+                    // Check if current user was mentioned in the text of the message
+                    if (body.length() > 0) {
+                        if (body.contains("@" + mTu.getUsername())) {
+                            mentioned = true;
+                        }
+                    }
+                }
+            }
+            if (mentioned) {
+              mMentions++;
+              values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
+            }
+            
+            if (rowId == 0) {
+                // There was no such row so add new one
+                tweetUri = mContentResolver.insert(mContentUri, values);
+            } else {
+              mContentResolver.update(tweetUri, values, null, null);
+            }
         } catch (Exception e) {
             Log.e(TAG, "insertFromJSONObject: " + e.toString());
         }
 
-        if ((mContentResolver.update(aTweetUri, values, null, null)) == 0) {
-            // There was no such row so add new one
-            mContentResolver.insert(mContentUri, values);
-            mNewTweets++;
-            switch (mTimelineType) {
-                case TimelineActivity.TIMELINE_TYPE_HOME:
-                case TimelineActivity.TIMELINE_TYPE_MENTIONS:
-                    if (mTu.getUsername().equals(jo.getString("in_reply_to_screen_name"))
-                            || message.contains("@" + mTu.getUsername())) {
-                        mReplies++;
-                    }
-            }
-        }
-        return aTweetUri;
+        return tweetUri;
     }
 
+    /**
+     * Insert a User row from a JSONObject.
+     * 
+     * @param jo - The row to insert
+     * @return Uri of the inserted record of null in a case of an error
+     * @throws JSONException
+     * @throws SQLiteConstraintException
+     */
+    public Uri insertUserFromJSONObject(JSONObject user) throws JSONException, SQLiteConstraintException {
+        String userName = "";
+        if (user.has("screen_name")) {
+            userName = user.getString("screen_name");
+            if (userName.compareTo("null") == 0) {
+                userName = "";
+            }
+        }
+        String rowOid = "";
+        if (user.has("id_str")) {
+            rowOid = user.getString("id_str");
+        }
+        Long originId = 0L;
+        Long rowId = 0L;
+        try {
+            originId = Long.parseLong(user.getString(MyDatabase.User.ORIGIN_ID));
+        } 
+        catch (Exception e) {}
+        finally {
+            if (originId == 0) {
+                originId = mTu.getOriginId();
+            }
+        }
+        if (rowOid.length() > 0) {
+            // Lookup the System's (AndStatus) id from the Originated system's id
+            rowId = MyProvider.oidToId(MyDatabase.User.CONTENT_URI, originId, rowOid);
+        }
+        if (rowId == 0) {
+            // Try to Lookup by Username
+            if (userName.length() < 1) {
+                Log.e(TAG, "insertUserFromJSONObject - no username");
+                return null;
+            }
+            rowId = MyProvider.userNameToId(originId, userName);
+        }
+        
+        // Construct the Uri to the Msg
+        Uri userUri = ContentUris.withAppendedId(MyDatabase.User.CONTENT_URI, rowId);
+
+        try {
+            ContentValues values = new ContentValues();
+
+            if (rowOid.length()>0) {
+                values.put(MyDatabase.User.USER_OID, rowOid);
+            }
+            values.put(MyDatabase.User.ORIGIN_ID, originId);
+            if (userName.length()>0) {
+                values.put(MyDatabase.User.USERNAME, userName);
+            }
+            if (user.has("name")) {
+                values.put(MyDatabase.User.REAL_NAME, user.getString("name"));
+            }
+            if (user.has("profile_image_url")) {
+                values.put(MyDatabase.User.AVATAR_URL, user.getString("profile_image_url"));
+            }
+            if (user.has("description")) {
+                values.put(MyDatabase.User.DESCRIPTION, user.getString("description"));
+            }
+            if (user.has("url")) {
+                values.put(MyDatabase.User.HOMEPAGE, user.getString("url"));
+            }
+            
+            if (user.has("created_at")) {
+                Long created = 0L;
+                String createdAt = user.getString("created_at");
+                if (createdAt.length() > 0) {
+                    created = Date.parse(createdAt);
+                }
+                if (created > 0) {
+                    values.put(MyDatabase.User.CREATED_DATE, created);
+                }
+            }
+
+            if (rowId == 0) {
+                // There was no such row so add new one
+                userUri = mContentResolver.insert(MyDatabase.User.CONTENT_URI, values);
+            } else {
+              mContentResolver.update(userUri, values, null, null);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "insertUserFromJSONObject: " + e.toString());
+        }
+
+        return userUri;
+    }
+    
+    
     /**
      * Insert a row from a JSONObject. Takes an optional parameter to notify
      * listeners of the change.
@@ -249,33 +453,34 @@ public class TimelineDownloader {
         // We're using global preferences here
         SharedPreferences sp = MyPreferences
                 .getDefaultSharedPreferences();
+
+        // Don't delete messages which are favorited by any user
+        String sqlNotFavorited = "NOT EXISTS ("
+                + "SELECT * FROM " + MyDatabase.MSGOFUSER_TABLE_NAME + " AS gnf WHERE "
+                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=gnf." + MyDatabase.MsgOfUser.MSG_ID
+                + " AND gnf." + MyDatabase.MsgOfUser.FAVORITED + "=1" 
+                + ")";
+        
         int maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
         long sinceTimestamp = 0;
-        if (maxDays > 0) {
-            sinceTimestamp = System.currentTimeMillis() - maxDays * (1000L * 60 * 60 * 24);
-
-            SelectionAndArgs sa = new SelectionAndArgs();
-            sa.addSelection(MyDatabase.Tweets.SENT_DATE + " <  ?", new String[] {
-                String.valueOf(sinceTimestamp)
-            });
-
-            if (mTimelineType != TimelineActivity.TIMELINE_TYPE_MESSAGES) {
-                // Don't delete Favorites!
-                sa.addSelection(MyDatabase.Tweets.FAVORITED + " = ?", new String[] {
-                    "0"
-                });
-            }
-            nDeletedTime = mContentResolver.delete(mContentUri, sa.selection, sa.selectionArgs);
-        }
 
         int nTweets = 0;
         int nToDeleteSize = 0;
         int nDeletedSize = 0;
         int maxSize = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_SIZE, "2000"));
         long sinceTimestampSize = 0;
-        if (maxSize > 0) {
-            try {
+        try {
+            if (maxDays > 0) {
+                sinceTimestamp = System.currentTimeMillis() - maxDays * (1000L * 60 * 60 * 24);
+                SelectionAndArgs sa = new SelectionAndArgs();
+                sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <  ?", new String[] {
+                    String.valueOf(sinceTimestamp)
+                });
+                sa.selection += " AND " + sqlNotFavorited;
+                nDeletedTime = mContentResolver.delete(mContentUri, sa.selection, sa.selectionArgs);
+            }
 
+            if (maxSize > 0) {
                 nDeletedSize = 0;
                 Cursor cursor = mContentResolver.query(mContentCountUri, null, null, null, null);
                 if (cursor.moveToFirst()) {
@@ -285,9 +490,9 @@ public class TimelineDownloader {
                 }
                 cursor.close();
                 if (nToDeleteSize > 0) {
-                    // Find SENT_DATE of the most recent tweet to delete
+                    // Find INS_DATE of the most recent tweet to delete
                     cursor = mContentResolver.query(mContentUri, new String[] {
-                            MyDatabase.Tweets.SENT_DATE
+                            MyDatabase.Msg.INS_DATE
                     }, null, null, "sent ASC LIMIT 0," + nToDeleteSize);
                     if (cursor.moveToLast()) {
                         sinceTimestampSize = cursor.getLong(0);
@@ -295,23 +500,18 @@ public class TimelineDownloader {
                     cursor.close();
                     if (sinceTimestampSize > 0) {
                         SelectionAndArgs sa = new SelectionAndArgs();
-                        sa.addSelection(MyDatabase.Tweets.SENT_DATE + " <=  ?", new String[] {
+                        sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <=  ?", new String[] {
                             String.valueOf(sinceTimestampSize)
                         });
-                        if (mTimelineType != TimelineActivity.TIMELINE_TYPE_MESSAGES) {
-                            sa.addSelection(MyDatabase.Tweets.FAVORITED + " = ?",
-                                    new String[] {
-                                        "0"
-                                    });
-                        }
+                        sa.selection += " AND " + sqlNotFavorited;
                         nDeletedSize = mContentResolver.delete(mContentUri, sa.selection,
                                 sa.selectionArgs);
                     }
                 }
-            } catch (Exception e) {
-                Log.e(TAG, "pruneOldRecords failed");
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            Log.e(TAG, "pruneOldRecords failed");
+            e.printStackTrace();
         }
         nDeleted = nDeletedTime + nDeletedSize;
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
@@ -326,23 +526,30 @@ public class TimelineDownloader {
     }
 
     /**
-     * Return the number of new statuses.
+     * Return the number of new messages, see {@link MyDatabase.Msg} .
      * 
      * @return integer
      */
-    public int newCount() {
-        return mNewTweets;
+    public int messagesCount() {
+        return mMessages;
     }
 
     /**
-     * Return the number of new replies.
-     * 
+     * Return the number of new Replies.
      * @return integer
      */
-    public int replyCount() {
+    public int repliesCount() {
         return mReplies;
     }
 
+    /**
+     * Return the number of new Mentions.
+     * @return integer
+     */
+    public int mentionsCount() {
+        return mMentions;
+    }
+    
     /**
      * Destroy the status specified by ID.
      * 
@@ -350,7 +557,7 @@ public class TimelineDownloader {
      * @return Number of deleted records
      */
     public int destroyStatus(long statusId) {
-        return mContentResolver.delete(mContentUri, MyDatabase.Tweets._ID + " = " + statusId,
+        return mContentResolver.delete(mContentUri, MyDatabase.Msg._ID + " = " + statusId,
                 null);
     }
 }
