@@ -34,6 +34,7 @@ import org.andstatus.app.MyService;
 import org.andstatus.app.R;
 import org.andstatus.app.TweetListActivity;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -331,17 +332,17 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			// When user clicks on widget, launch main AndStatus activity,
 			//   Open timeline, where there are new tweets, or "Home" timeline
 			Intent intent;
-			int timeLineType = MyDatabase.TIMELINE_TYPE_HOME;
+			MyDatabase.TimelineTypeEnum timeLineType = TimelineTypeEnum.UNKNOWN;
             intent = new Intent(context, TweetListActivity.class);
 			if (data.numMessages > 0) {
-			    timeLineType = MyDatabase.TIMELINE_TYPE_DIRECT;
+			    timeLineType = MyDatabase.TimelineTypeEnum.DIRECT;
 			} else {
 			    if (data.numMentions > 0) {
-	                timeLineType = MyDatabase.TIMELINE_TYPE_MENTIONS;
+	                timeLineType = MyDatabase.TimelineTypeEnum.MENTIONS;
 			    }
 			}
             intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
-                    timeLineType);
+                    timeLineType.save());
             // This line is necessary to actually bring Extra to the target intent
             // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
             intent.setData((android.net.Uri.parse(MyDatabase.Msg.CONTENT_URI.toString() + "#" + android.os.SystemClock.elapsedRealtime())));

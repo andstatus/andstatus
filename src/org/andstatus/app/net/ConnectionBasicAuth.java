@@ -62,13 +62,13 @@ public class ConnectionBasicAuth extends Connection {
     }
 
 	@Override
-    public JSONArray getHomeTimeline(long sinceId, int limit) throws ConnectionException {
+    public JSONArray getHomeTimeline(String sinceId, int limit) throws ConnectionException {
 	    setSinceId(sinceId);
 	    setLimit(limit);
 	    
 		String url = STATUSES_HOME_TIMELINE_URL;
 		url += "?count=" + mLimit;
-		if (mSinceId > 0) {
+		if (mSinceId.length() > 1) {
 			url += "&since_id=" + mSinceId;
 		}
 		JSONArray jArr = null;
@@ -90,13 +90,13 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONArray getMentionsTimeline(long sinceId, int limit) throws ConnectionException {
+    public JSONArray getMentionsTimeline(String sinceId, int limit) throws ConnectionException {
         setSinceId(sinceId);
         setLimit(limit);
 
         String url = STATUSES_MENTIONS_TIMELINE_URL;
 		url += "?count=" + mLimit;
-		if (mSinceId > 0) {
+		if (mSinceId.length() > 1) {
 			url += "&since_id=" + mSinceId;
 		}
 		JSONArray jArr = null;
@@ -118,13 +118,13 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public JSONArray getDirectMessages(long sinceId, int limit) throws ConnectionException {
+    public JSONArray getDirectMessages(String sinceId, int limit) throws ConnectionException {
         setSinceId(sinceId);
         setLimit(limit);
 
 		String url = DIRECT_MESSAGES_URL;
 		url += "?count=" + mLimit;
-		if (mSinceId > 0) {
+		if (mSinceId.length() > 1) {
 			url += "&since_id=" + mSinceId;
 		}
 		JSONArray jArr = null;
@@ -173,13 +173,25 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
+    public JSONObject postRetweet(String retweetedId) throws ConnectionException {
+        JSONObject jObj = null;
+        try {
+            jObj = new JSONObject(postRequest(POST_RETWEET_URL + retweetedId + EXTENSION));
+            String error = jObj.optString("error");
+            if ("Could not authenticate you.".equals(error)) {
+                throw new ConnectionException(error);
+            }
+        } catch (JSONException e) {
+            throw new ConnectionException(e);
+        }
+        return jObj;
+    }
+
+    @Override
     public JSONObject destroyStatus(String statusId) throws ConnectionException {
-		StringBuilder url = new StringBuilder(STATUSES_DESTROY_URL);
-		url.append(statusId);
-		url.append(EXTENSION);
 		JSONObject jObj = null;
 		try {
-			jObj = new JSONObject(postRequest(url.toString()));
+			jObj = new JSONObject(postRequest(STATUSES_DESTROY_URL + statusId + EXTENSION));
 			String error = jObj.optString("error");
 			if ("Could not authenticate you.".equals(error)) {
 				throw new ConnectionException(error);

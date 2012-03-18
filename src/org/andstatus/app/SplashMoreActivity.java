@@ -16,7 +16,7 @@
 
 package org.andstatus.app;
 
-import org.andstatus.app.TwitterUser.CredentialsVerified;
+import org.andstatus.app.Account.CredentialsVerified;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -73,7 +73,7 @@ public class SplashMoreActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-        if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+        if (Account.getAccount().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
 			Intent intent = new Intent(this, TweetListActivity.class);
 			startActivity(intent);
 			finish();

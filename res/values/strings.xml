@@ -207,6 +207,7 @@
 	<string name="tweet_activity">Tweet</string>
 	<string name="tweet_source_from">%1$s from %2$s %3$s</string>
 	<string name="tweet_source_in_reply_to">in reply to %1$s</string>
-	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
+    <string name="retweeted_by">retweeted by %1$s</string>
+    <string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Not implemented.</string>
 </resources>

@@ -157,19 +157,13 @@ public class ConnectionOAuth extends Connection {
 
     @Override
     public JSONObject destroyFavorite(String statusId) throws ConnectionException {
-        StringBuilder url = new StringBuilder(FAVORITES_DESTROY_BASE_URL);
-        url.append(statusId);
-        url.append(EXTENSION);
-        HttpPost post = new HttpPost(url.toString());
+        HttpPost post = new HttpPost(FAVORITES_DESTROY_BASE_URL + statusId + EXTENSION);
         return postRequest(post);
     }
 
     @Override
     public JSONObject destroyStatus(String statusId) throws ConnectionException {
-        StringBuilder url = new StringBuilder(STATUSES_DESTROY_URL);
-        url.append(statusId);
-        url.append(EXTENSION);
-        HttpPost post = new HttpPost(url.toString());
+        HttpPost post = new HttpPost(STATUSES_DESTROY_URL + statusId + EXTENSION);
         return postRequest(post);
     }
 
@@ -180,15 +174,15 @@ public class ConnectionOAuth extends Connection {
      * See https://dev.twitter.com/docs/api/1/get/direct_messages/sent
      */
     @Override
-    public JSONArray getDirectMessages(long sinceId, int limit) throws ConnectionException {
+    public JSONArray getDirectMessages(String sinceId, int limit) throws ConnectionException {
         String url = DIRECT_MESSAGES_URL;
-        return getTimeline(url, sinceId, 0, limit, 0);
+        return getTimeline(url, sinceId, "", limit, 0);
     }
 
     @Override
-    public JSONArray getHomeTimeline(long sinceId, int limit) throws ConnectionException {
+    public JSONArray getHomeTimeline(String sinceId, int limit) throws ConnectionException {
         String url = STATUSES_HOME_TIMELINE_URL;
-        return getTimeline(url, sinceId, 0, limit, 0);
+        return getTimeline(url, sinceId, "", limit, 0);
     }
 
     private JSONObject getRequest(HttpGet get) throws ConnectionException {
@@ -226,19 +220,21 @@ public class ConnectionOAuth extends Connection {
      * @return
      * @throws ConnectionException
      */
-    private JSONArray getTimeline(String url, long sinceId, long maxId, int limit, int page)
+    private JSONArray getTimeline(String url, String sinceId, String maxId, int limit, int page)
             throws ConnectionException {
         setSinceId(sinceId);
         setLimit(limit);
 
         boolean ok = false;
         JSONArray jArr = null;
+        HttpGet get = null;
         try {
             Uri sUri = Uri.parse(url);
             Uri.Builder builder = sUri.buildUpon();
-            if (getSinceId() != 0) {
-                builder.appendQueryParameter("since_id", String.valueOf(getSinceId()));
-            } else if (maxId != 0) { // these are mutually exclusive
+            if (getSinceId().length() > 1) {
+                // For some reason "0" results in "bad request"
+                builder.appendQueryParameter("since_id", getSinceId());
+            } else if (maxId.length() > 1) { // these are mutually exclusive
                 builder.appendQueryParameter("max_id", String.valueOf(maxId));
             }
             if (getLimit() != 0) {
@@ -247,7 +243,7 @@ public class ConnectionOAuth extends Connection {
             if (page != 0) {
                 builder.appendQueryParameter("page", String.valueOf(page));
             }
-            HttpGet get = new HttpGet(builder.build().toString());
+            get = new HttpGet(builder.build().toString());
             mConsumer.sign(get);
             String response = mClient.execute(get, new BasicResponseHandler());
             jArr = new JSONArray(response);
@@ -257,6 +253,9 @@ public class ConnectionOAuth extends Connection {
             Log.e(TAG, "NullPointerException was caught, URL='" + url + "'");
             e.printStackTrace();
         } catch (Exception e) {
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                MyLog.v(TAG, get != null ? get.getRequestLine().toString() : " get is null");
+            }
             e.printStackTrace();
             throw new ConnectionException(e.getLocalizedMessage());
         }
@@ -268,9 +267,9 @@ public class ConnectionOAuth extends Connection {
     }
 
     @Override
-    public JSONArray getMentionsTimeline(long sinceId, int limit) throws ConnectionException {
+    public JSONArray getMentionsTimeline(String sinceId, int limit) throws ConnectionException {
         String url = STATUSES_MENTIONS_TIMELINE_URL;
-        return getTimeline(url, sinceId, 0, limit, 0);
+        return getTimeline(url, sinceId, "", limit, 0);
     }
 
     @Override
@@ -320,6 +319,12 @@ public class ConnectionOAuth extends Connection {
         } catch (UnsupportedEncodingException e) {
             Log.e(TAG, e.toString());
         }
+        return postRequest(post);
+    }
+
+    @Override
+    public JSONObject postRetweet(String retweetedId) throws ConnectionException {
+        HttpPost post = new HttpPost(POST_RETWEET_URL + retweetedId + EXTENSION);
         return postRequest(post);
     }
 

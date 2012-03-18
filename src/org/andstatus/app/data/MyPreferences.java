@@ -15,7 +15,7 @@
  */
 package org.andstatus.app.data;
 
-import org.andstatus.app.TwitterUser;
+import org.andstatus.app.Account;
 import org.andstatus.app.util.MyLog;
 
 import android.content.Context;
@@ -43,46 +43,10 @@ public class MyPreferences {
     private static MyDatabase db;
     
     /**
-     * Is OAuth on for this Account?
-     */
-    public static final String KEY_OAUTH = "oauth";
-    /**
-     * Is this user NOT temporal?
-     * (TODO: refactor the key name and invert value)
-     */
-    public static final String KEY_IS_NOT_TEMPORAL = "was_authenticated";
-    /**
-     * Was current user ( user set in global preferences) authenticated last
-     * time credentials were verified? CredentialsVerified.NEVER - after changes
-     * of password/OAuth...
-     */
-    public static final String KEY_CREDENTIALS_VERIFIED = "credentials_verified";
-    /**
      * This is sort of button to start verification of credentials
      */
     public static final String KEY_VERIFY_CREDENTIALS = "verify_credentials";
-    /**
-     * Process of authentication was started (by {@link #PreferencesActivity})
-     */
-    public static final String KEY_AUTHENTICATING = "authenticating";
-    /**
-     * Current User
-     */
-    public static final String KEY_TWITTER_USERNAME = "twitter_username";
-    /**
-     * {@link MyDatabase.User#_ID} in our System.
-     */
-    public static final String KEY_USER_ID = "user_id";
-    /**
-     * {@link MyDatabase.User#ORIGIN_ID} in our System.
-     */
-    public static final String KEY_ORIGIN_ID = "origin_id";
-    /**
-     * New Username typed / selected in UI
-     * It doesn't immediately change "Current User"
-     */
-    public static final String KEY_TWITTER_USERNAME_NEW = "twitter_username_new";
-    public static final String KEY_TWITTER_PASSWORD = "twitter_password";
+
     public static final String KEY_HISTORY_SIZE = "history_size";
     public static final String KEY_HISTORY_TIME = "history_time";
     public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
@@ -131,7 +95,7 @@ public class MyPreferences {
             // Maybe we should use context_in.getApplicationContext() ??
             context = context_in.getApplicationContext();
             origin = origin_in;
-            TwitterUser.initialize();
+            Account.initialize();
             MyLog.v(TAG, "Initialized by " + origin + " context: " + context.getClass().getName());
         } else {
             MyLog.v(TAG, "Already initialized by " + origin +  " (called by: " + origin_in + ")");
@@ -144,7 +108,7 @@ public class MyPreferences {
      * e.g. after configuration changes
      */
     public static void forget() {
-        TwitterUser.forget();
+        Account.forget();
         if (db != null) {
             db.close();
             db = null;

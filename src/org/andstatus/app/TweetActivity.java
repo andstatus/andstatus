@@ -24,6 +24,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.TextUtils;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.widget.TextView;
@@ -46,6 +47,7 @@ public class TweetActivity extends Activity {
 	private static final String[] PROJECTION = new String[] {
 		Msg._ID,
 		User.AUTHOR_NAME,
+        User.SENDER_NAME,
 		Msg.BODY,
 		Msg.VIA,
 		User.IN_REPLY_TO_NAME,
@@ -84,8 +86,9 @@ public class TweetActivity extends Activity {
 		if (mCursor != null) {
 			mCursor.moveToFirst();
 			String aAuthor = mCursor.getString(mCursor.getColumnIndex(User.AUTHOR_NAME));
+            String aSender = mCursor.getString(mCursor.getColumnIndex(User.SENDER_NAME));
 			String aMessage = mCursor.getString(mCursor.getColumnIndex(Msg.BODY));
-			long aSentDate = mCursor.getLong(mCursor.getColumnIndex(Msg.CREATED_DATE));
+			long createdDate = mCursor.getLong(mCursor.getColumnIndex(Msg.CREATED_DATE));
 			mAuthor.setText(aAuthor);
 			mMessage.setLinksClickable(true);
 			mMessage.setFocusable(true);
@@ -100,11 +103,22 @@ public class TweetActivity extends Activity {
 					inReplyTo = String.format(Locale.getDefault(), getText(R.string.tweet_source_in_reply_to).toString(), inReplyTo);
 				}
 			}
-			if (inReplyTo == null || "null".equals(inReplyTo)) inReplyTo = "";
+			if (TextUtils.isEmpty(inReplyTo)) {
+			    inReplyTo = "";
+			}
+            if (!TextUtils.isEmpty(aSender)) {
+                if (!aAuthor.equals(aSender)) {
+                    if (!TextUtils.isEmpty(inReplyTo)) {
+                        inReplyTo +="; ";
+                    }
+                    inReplyTo += String.format(Locale.getDefault(), getText(R.string.retweeted_by).toString(), aSender);
+                }
+            }
+			
 			String sentDate = String.format(
 				Locale.getDefault(), 
 				getText(R.string.tweet_source_from).toString(), 
-				RelativeTime.getDifference(this, aSentDate), 
+				RelativeTime.getDifference(this, createdDate), 
 				Html.fromHtml(mCursor.getString(mCursor.getColumnIndex(Msg.VIA))),
 				inReplyTo
 			);

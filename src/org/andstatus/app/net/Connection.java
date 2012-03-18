@@ -17,7 +17,7 @@
 
 package org.andstatus.app.net;
 
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.Account;
 import org.andstatus.app.net.Connection;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,6 +44,7 @@ public abstract class Connection {
     protected static final String STATUSES_MENTIONS_TIMELINE_URL = BASE_URL + "/statuses/mentions"
             + EXTENSION;
     protected static final String STATUSES_UPDATE_URL = BASE_URL + "/statuses/update" + EXTENSION;
+    protected static final String POST_RETWEET_URL = BASE_URL + "/statuses/retweet/";
     protected static final String STATUSES_DESTROY_URL = BASE_URL + "/statuses/destroy/";
     protected static final String DIRECT_MESSAGES_URL = BASE_URL + "/direct_messages" + EXTENSION;
 
@@ -66,7 +67,7 @@ public abstract class Connection {
      * EXTENSION;
      */
 
-    protected long mSinceId;
+    protected String mSinceId = "";
     protected int mLimit = 200;
 
     protected String mUsername;
@@ -92,8 +93,8 @@ public abstract class Connection {
     }
     
     protected Connection(SharedPreferences sp) {
-        mUsername = sp.getString(MyPreferences.KEY_TWITTER_USERNAME, "");
-        mPassword = sp.getString(MyPreferences.KEY_TWITTER_PASSWORD, "");
+        mUsername = sp.getString(Account.KEY_USERNAME, "");
+        mPassword = sp.getString(Account.KEY_PASSWORD, "");
     }
 
     public String getUsername() {
@@ -155,7 +156,7 @@ public abstract class Connection {
         }
         if (password.compareTo(mPassword) != 0) {
             mPassword = password;
-            sp.edit().putString(MyPreferences.KEY_TWITTER_PASSWORD, mPassword).commit();
+            sp.edit().putString(Account.KEY_PASSWORD, mPassword).commit();
         }
     }
     public String getPassword() {
@@ -233,11 +234,23 @@ public abstract class Connection {
             throws ConnectionException;
 
     /**
+     * Post retweet
+     * @see <a
+     *      href="https://dev.twitter.com/docs/api/1/post/statuses/retweet/%3Aid">POST statuses/retweet/:id</a>
+     * 
+     * @param retweetedId id of the Retweeted status
+     * @return
+     * @throws ConnectionException
+     */
+    public abstract JSONObject postRetweet(String retweetedId)
+            throws ConnectionException;
+    
+    /**
      * Get Direct messages
      * 
      * @throws ConnectionException 
      */
-    public abstract JSONArray getDirectMessages(long sinceId, int limit)
+    public abstract JSONArray getDirectMessages(String sinceId, int limit)
             throws ConnectionException;
 
     /**
@@ -249,7 +262,7 @@ public abstract class Connection {
      * @return JSONArray
      * @throws ConnectionException 
      */
-    public abstract JSONArray getMentionsTimeline(long sinceId, int limit)
+    public abstract JSONArray getMentionsTimeline(String sinceId, int limit)
             throws ConnectionException;
 
     /**
@@ -260,15 +273,15 @@ public abstract class Connection {
      * @return JSONArray
      * @throws ConnectionException 
      */
-    public abstract JSONArray getHomeTimeline(long sinceId, int limit)
+    public abstract JSONArray getHomeTimeline(String sinceId, int limit)
             throws ConnectionException;
 
-    protected long getSinceId() {
+    protected String getSinceId() {
         return mSinceId;
     }
 
-    protected long setSinceId(long sinceId) {
-        if (sinceId > 0) {
+    protected String setSinceId(String sinceId) {
+        if (sinceId.length() > 0) {
             mSinceId = sinceId;
         }
         return mSinceId;

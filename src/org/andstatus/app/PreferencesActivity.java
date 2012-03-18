@@ -60,7 +60,7 @@ import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 
-import org.andstatus.app.TwitterUser.CredentialsVerified;
+import org.andstatus.app.Account.CredentialsVerified;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.ConnectionAuthenticationException;
@@ -145,9 +145,9 @@ public class PreferencesActivity extends PreferenceActivity implements
         }
         
         mNotificationRingtone = (RingtonePreference) findPreference(MyPreferences.KEY_RINGTONE_PREFERENCE);
-        mOAuth = (CheckBoxPreference) findPreference(MyPreferences.KEY_OAUTH);
-        mEditTextUsername = (EditTextPreference) findPreference(MyPreferences.KEY_TWITTER_USERNAME_NEW);
-        mEditTextPassword = (EditTextPreference) findPreference(MyPreferences.KEY_TWITTER_PASSWORD);
+        mOAuth = (CheckBoxPreference) findPreference(Account.KEY_OAUTH);
+        mEditTextUsername = (EditTextPreference) findPreference(Account.KEY_USERNAME_NEW);
+        mEditTextPassword = (EditTextPreference) findPreference(Account.KEY_PASSWORD);
         mVerifyCredentials = (Preference) findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
         mUseExternalStorage = (CheckBoxPreference) getPreferenceScreen().findPreference(
                 MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
@@ -156,12 +156,12 @@ public class PreferencesActivity extends PreferenceActivity implements
     }
 
     /**
-     * Some "preferences" may be changed in TwitterUser object
+     * Some "preferences" may be changed in Account object
      */
-    private void showUserPreferences(TwitterUser tuIn) {
-        TwitterUser tu = tuIn;
+    private void showUserPreferences(Account tuIn) {
+        Account tu = tuIn;
         if(tu == null) {
-            tu = TwitterUser.getTwitterUser();
+            tu = Account.getAccount();
         }
         if (mEditTextUsername.getText() == null
                 || tu.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
@@ -176,7 +176,7 @@ public class PreferencesActivity extends PreferenceActivity implements
         mEditTextUsername.setSummary(sb);
 
         // Disable Username if we have no user accounts yet
-        mEditTextUsername.setEnabled(TwitterUser.countOfAuthenticatedUsers() > 0);
+        mEditTextUsername.setEnabled(Account.countOfAuthenticatedUsers() > 0);
 
         if (tu.isOAuth() != mOAuth.isChecked()) {
             mOAuth.setChecked(tu.isOAuth());
@@ -256,7 +256,7 @@ public class PreferencesActivity extends PreferenceActivity implements
      * @param true - Verify only if we didn't do this yet
      */
     private void verifyCredentials(boolean reVerify) {
-        TwitterUser tu = TwitterUser.getTwitterUser();
+        Account tu = Account.getAccount();
         if (reVerify || tu.getCredentialsVerified() == CredentialsVerified.NEVER) {
             if (tu.getCredentialsPresent()) {
                 // Credentials are present, so we may verify them
@@ -393,31 +393,31 @@ public class PreferencesActivity extends PreferenceActivity implements
                     .putLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME,
                             java.lang.System.currentTimeMillis()).commit();
             
-            TwitterUser tu = TwitterUser.getTwitterUser();
-            String usernameNew = sharedPreferences.getString(MyPreferences.KEY_TWITTER_USERNAME_NEW, "");
+            Account tu = Account.getAccount();
+            String usernameNew = sharedPreferences.getString(Account.KEY_USERNAME_NEW, "");
             
-            if (key.equals(MyPreferences.KEY_OAUTH)) {
+            if (key.equals(Account.KEY_OAUTH)) {
                 // Here and below:
                 // Check if there are changes to avoid "ripples"
                 if (tu.isOAuth() != mOAuth.isChecked()) {
-                    tu = TwitterUser.getAddEditTwitterUser(usernameNew);
+                    tu = Account.getAddEditAccount(usernameNew);
                     tu.setCurrentUser();
                     showUserPreferences(tu);
                 }
             }
-            if (key.equals(MyPreferences.KEY_TWITTER_USERNAME_NEW)) {
-                String usernameOld = sharedPreferences.getString(MyPreferences.KEY_TWITTER_USERNAME, "");
+            if (key.equals(Account.KEY_USERNAME_NEW)) {
+                String usernameOld = sharedPreferences.getString(Account.KEY_USERNAME, "");
                 if (usernameNew.compareTo(usernameOld) != 0) {
-                    // Try to find existing TwitterUser by the new Username 
+                    // Try to find existing Account by the new Username 
                     // without clearing Auth information
-                    tu = TwitterUser.getTwitterUser(usernameNew);
+                    tu = Account.getAccount(usernameNew);
                     tu.setCurrentUser();
                     showUserPreferences(tu);
                 }
             }
-            if (key.equals(MyPreferences.KEY_TWITTER_PASSWORD)) {
+            if (key.equals(Account.KEY_PASSWORD)) {
                 if (tu.getPassword().compareTo(mEditTextPassword.getText()) != 0) {
-                    tu = TwitterUser.getAddEditTwitterUser(usernameNew);
+                    tu = Account.getAddEditAccount(usernameNew);
                     tu.setCurrentUser();
                     showUserPreferences(tu);
                 }
@@ -539,7 +539,7 @@ public class PreferencesActivity extends PreferenceActivity implements
     }
 
     /**
-     * This semaphore helps to avoid ripple effect: changes in TwitterUser cause
+     * This semaphore helps to avoid ripple effect: changes in Account cause
      * changes in this activity ...
      */
     private boolean mCredentialsAreBeingVerified = false;
@@ -594,8 +594,8 @@ public class PreferencesActivity extends PreferenceActivity implements
                 String usernameUI = "";
                 try {
                     usernameUI = MyPreferences
-                    .getDefaultSharedPreferences().getString(MyPreferences.KEY_TWITTER_USERNAME_NEW, "");
-                    TwitterUser tu  = TwitterUser.getTwitterUser();
+                    .getDefaultSharedPreferences().getString(Account.KEY_USERNAME_NEW, "");
+                    Account tu  = Account.getAccount();
                     if (tu.verifyCredentials(true)) {
                         what = MSG_ACCOUNT_VALID;
                         tu.setCurrentUser();
@@ -604,7 +604,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                             MyLog.v(TAG, "Changing Username for UI from '" + usernameUI 
                                     + "' to '" + tu.getUsername() + "'");
                             MyPreferences
-                            .getDefaultSharedPreferences().edit().putString(MyPreferences.KEY_TWITTER_USERNAME_NEW, tu.getUsername()).commit();
+                            .getDefaultSharedPreferences().edit().putString(Account.KEY_USERNAME_NEW, tu.getUsername()).commit();
                         }
                     }
                 } catch (ConnectionException e) {
@@ -616,7 +616,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                     what = MSG_CREDENTIALS_OF_OTHER_USER;
                     // Switch to this user
                     // New User Name was stored in the Message of the Exception
-                    TwitterUser tu  = TwitterUser.getTwitterUser(e.getMessage());
+                    Account tu  = Account.getAccount(e.getMessage());
                     if (tu.getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
                         tu.setCredentialsVerified(CredentialsVerified.SUCCEEDED);
                     }
@@ -626,7 +626,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                     MyLog.v(TAG, "Changing Username for UI from '" + usernameUI 
                             + "' to '" + tu.getUsername() + "'");
                     MyPreferences
-                    .getDefaultSharedPreferences().edit().putString(MyPreferences.KEY_TWITTER_USERNAME_NEW, tu.getUsername()).commit();
+                    .getDefaultSharedPreferences().edit().putString(Account.KEY_USERNAME_NEW, tu.getUsername()).commit();
                     
                 } catch (ConnectionUnavailableException e) {
                     what = MSG_SERVICE_UNAVAILABLE_ERROR;
@@ -700,9 +700,9 @@ public class PreferencesActivity extends PreferenceActivity implements
             }
             if (!skip) {
                 if (succeeded) {
-                    TwitterUser.getTwitterUser().setCredentialsVerified(CredentialsVerified.SUCCEEDED);
+                    Account.getAccount().setCredentialsVerified(CredentialsVerified.SUCCEEDED);
                 } else {
-                    TwitterUser.getTwitterUser().setCredentialsVerified(CredentialsVerified.FAILED);
+                    Account.getAccount().setCredentialsVerified(CredentialsVerified.FAILED);
                 }
                 PreferencesActivity.this.mCredentialsAreBeingVerified = false;
             }
@@ -769,7 +769,7 @@ public class PreferencesActivity extends PreferenceActivity implements
             String message = "";
             String message2 = "";
             try {
-                TwitterUser tu = TwitterUser.getTwitterUser();
+                Account tu = Account.getAccount();
 
                 // This is really important. If you were able to register your
                 // real callback Uri with Twitter, and not some fake Uri
@@ -778,7 +778,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                 // Twitter will correctly process your callback redirection
                 String authUrl = mProvider.retrieveRequestToken(mConsumer,
                         CALLBACK_URI.toString());
-                saveRequestInformation(tu.getSharedPreferences(), mConsumer.getToken(), mConsumer.getTokenSecret());
+                saveRequestInformation(tu.getAccountPreferences(), mConsumer.getToken(), mConsumer.getTokenSecret());
 
                 // Start Internet Browser
                 PreferencesActivity.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
@@ -846,7 +846,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                     } else {
                         Toast.makeText(PreferencesActivity.this, message, Toast.LENGTH_LONG).show();
 
-                        TwitterUser tu = TwitterUser.getTwitterUser();
+                        Account tu = Account.getAccount();
                         tu.clearAuthInformation();
                         tu.setCredentialsVerified(CredentialsVerified.FAILED);
                         tu.setCurrentUser();
@@ -909,12 +909,12 @@ public class PreferencesActivity extends PreferenceActivity implements
             String message = "";
             
             boolean authenticated = false;
-            TwitterUser tu = TwitterUser.getTwitterUser();
+            Account tu = Account.getAccount();
 
             Uri uri = uris[0];
             if (uri != null && CALLBACK_URI.getScheme().equals(uri.getScheme())) {
-                String token = tu.getSharedPreferences().getString(ConnectionOAuth.REQUEST_TOKEN, null);
-                String secret = tu.getSharedPreferences().getString(ConnectionOAuth.REQUEST_SECRET, null);
+                String token = tu.getAccountPreferences().getString(ConnectionOAuth.REQUEST_TOKEN, null);
+                String secret = tu.getAccountPreferences().getString(ConnectionOAuth.REQUEST_SECRET, null);
 
                 tu.clearAuthInformation();
                 if (!tu.isOAuth()) {
@@ -922,7 +922,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                 } else {
                     try {
                         // Clear the request stuff, we've used it already
-                        saveRequestInformation(tu.getSharedPreferences(), null, null);
+                        saveRequestInformation(tu.getAccountPreferences(), null, null);
 
                         if (!(token == null || secret == null)) {
                             mConsumer.setTokenWithSecret(token, secret);
@@ -1013,7 +1013,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                         }
                         Toast.makeText(PreferencesActivity.this, message2, Toast.LENGTH_LONG).show();
 
-                        TwitterUser tu = TwitterUser.getTwitterUser();
+                        Account tu = Account.getAccount();
                         tu.clearAuthInformation();
                         tu.setCredentialsVerified(CredentialsVerified.FAILED);
                         tu.setCurrentUser();

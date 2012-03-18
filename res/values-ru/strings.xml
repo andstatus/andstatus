@@ -207,6 +207,7 @@
 	<string name="tweet_activity">Твиты</string>
 	<string name="tweet_source_from">%1$s из %2$s %3$s</string>
 	<string name="tweet_source_in_reply_to">в ответ на %1$s</string>
-	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
+    <string name="retweeted_by">пересказано %1$s</string>
+    <string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Не реализовано.</string>
 </resources>

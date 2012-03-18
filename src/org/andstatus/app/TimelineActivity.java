@@ -57,6 +57,7 @@ import java.util.concurrent.BlockingQueue;
 import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
@@ -126,7 +127,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     /**
      * Key prefix for the stored list position
      */
-    protected static final String LAST_POS_KEY = "last_position";
+    protected static final String LAST_POS_KEY = "last_position_";
 
     public static final int MILLISECONDS = 1000;
 
@@ -185,7 +186,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     /**
      * TODO: enum TypelineType
      */
-    protected int mTimelineType = MyDatabase.TIMELINE_TYPE_NONE;
+    protected TimelineTypeEnum mTimelineType = TimelineTypeEnum.UNKNOWN;
 
     /**
      * True if this timeline is filtered using query string ("Mentions" are not
@@ -236,8 +237,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             startActivity(new Intent(this, SplashActivity.class));
             finish();
         }
-        if (TwitterUser.getTwitterUser().isTemporal()) {
-            Log.i(TAG, "Account '" + TwitterUser.getTwitterUser().getUsername() + "' is temporal?!");
+        if (Account.getAccount().isTemporal()) {
+            Log.i(TAG, "Account '" + Account.getAccount().getUsername() + "' is temporal?!");
             startActivity(new Intent(this, SplashActivity.class));
             finish();
         }
@@ -273,7 +274,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void onResume() {
         super.onResume();
         MyLog.v(TAG, "onResume");
-        if (TwitterUser.getTwitterUser().isTemporal()) {
+        if (Account.getAccount().isTemporal()) {
             MyLog.v(TAG, "Finishing this Activity because user is temporal");
             mIsFinishingOnResume = true;
             finish();
@@ -326,7 +327,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
         }
         if (firstItemId > 0) {
-            TwitterUser tu = TwitterUser.getTwitterUser();
+            Account tu = Account.getAccount();
             
             // Variant 2 is overkill... but let's try...
             // I have a feeling that saving preferences while finishing activity sometimes doesn't work...
@@ -335,11 +336,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             boolean saveAsync = false;
             if (saveSync) {
                 // 1. Synchronous saving
-                tu.getSharedPreferences().edit().putLong(positionKey(false), firstItemId)
+                tu.getAccountPreferences().edit().putLong(positionKey(false), firstItemId)
                 .putLong(positionKey(true), lastItemId).commit();
                 if (mSearchMode) {
                     // Remember query string for which the position was saved
-                    tu.getSharedPreferences().edit().putString(positionQueryStringKey(), mQueryString)
+                    tu.getAccountPreferences().edit().putString(positionQueryStringKey(), mQueryString)
                             .commit();
                 }
             }
@@ -365,7 +366,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * Restore (First visible item) position saved for this user and for this type of timeline
      */
     private void restorePosition() {
-        TwitterUser tu = TwitterUser.getTwitterUser();
+        Account tu = Account.getAccount();
         boolean loaded = false;
         long firstItemId = -3;
         try {
@@ -394,7 +395,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 }
             }
         } catch (Exception e) {
-            Editor ed = tu.getSharedPreferences().edit();
+            Editor ed = tu.getAccountPreferences().edit();
             ed.remove(positionKey(false));
             ed.commit();
             firstItemId = -2;
@@ -411,14 +412,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * @return Saved Tweet id or < 0 if none was found.
      */
     protected long getSavedPosition(boolean lastRow) {
-        TwitterUser tu = TwitterUser.getTwitterUser();
+        Account tu = Account.getAccount();
         long savedItemId = -3;
         if (!mSearchMode
-                || (mQueryString.compareTo(tu.getSharedPreferences().getString(
+                || (mQueryString.compareTo(tu.getAccountPreferences().getString(
                         positionQueryStringKey(), "")) == 0)) {
             // Load saved position in Search mode only if that position was
             // saved for the same query string
-            savedItemId = tu.getSharedPreferences().getLong(positionKey(lastRow), -1);
+            savedItemId = tu.getAccountPreferences().getLong(positionKey(lastRow), -1);
         }
         return savedItemId;
     }
@@ -429,14 +430,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * @return Key to store position (tweet id of the first visible row)
      */
     private String positionKey(boolean lastRow) {
-        return LAST_POS_KEY + mTimelineType + (mSearchMode ? "_search" : "") + (lastRow ? "_last" : "");
+        return LAST_POS_KEY + mTimelineType.save() + (mSearchMode ? "_search" : "") + (lastRow ? "_last" : "");
     }
 
     /**
      * @return Key to store query string for this position
      */
     private String positionQueryStringKey() {
-        return LAST_POS_KEY + mTimelineType + "_querystring";
+        return LAST_POS_KEY + mTimelineType.save() + "_querystring";
     }
 
     private void setSelectionAtBottom(int scrollPos) {
@@ -607,15 +608,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
 
             case R.id.favorites_timeline_menu_id:
-                switchTimelineActivity(MyDatabase.TIMELINE_TYPE_FAVORITES);
+                switchTimelineActivity(MyDatabase.TimelineTypeEnum.FAVORITES);
                 break;
 
             case R.id.home_timeline_menu_id:
-                switchTimelineActivity(MyDatabase.TIMELINE_TYPE_HOME);
+                switchTimelineActivity(MyDatabase.TimelineTypeEnum.HOME);
                 break;
 
             case R.id.direct_messages_menu_id:
-                switchTimelineActivity(MyDatabase.TIMELINE_TYPE_DIRECT);
+                switchTimelineActivity(MyDatabase.TimelineTypeEnum.DIRECT);
                 break;
 
             case R.id.search_menu_id:
@@ -623,7 +624,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
 
             case R.id.mentions_menu_id:
-                switchTimelineActivity(MyDatabase.TIMELINE_TYPE_MENTIONS);
+                switchTimelineActivity(MyDatabase.TimelineTypeEnum.MENTIONS);
                 break;
                 
             case R.id.reload_menu_item:
@@ -688,20 +689,20 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     public void updateTitle(String rightText) {
         String timelinename = "??";
         switch (mTimelineType) {
-            case MyDatabase.TIMELINE_TYPE_FAVORITES:
+            case FAVORITES:
                 timelinename = getString(R.string.activity_title_favorites);
                 break;
-            case MyDatabase.TIMELINE_TYPE_HOME:
+            case HOME:
                 timelinename = getString(R.string.activity_title_timeline);
                 break;
-            case MyDatabase.TIMELINE_TYPE_MENTIONS:
+            case MENTIONS:
                 timelinename = getString(R.string.activity_title_mentions);
                 break;
-            case MyDatabase.TIMELINE_TYPE_DIRECT:
+            case DIRECT:
                 timelinename = getString(R.string.activity_title_direct_messages);
                 break;
         }
-        String username = MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_TWITTER_USERNAME, null);
+        String username = MyPreferences.getDefaultSharedPreferences().getString(Account.KEY_USERNAME, null);
         String leftText = getString(R.string.activity_title_format, new Object[] {
                 timelinename, username + (mSearchMode ? " *" : "")
         }); 
@@ -711,7 +712,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         rightTitle.setText(rightText);
 
         Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
-        if (mTimelineType != MyDatabase.TIMELINE_TYPE_DIRECT) {
+        if (mTimelineType != TimelineTypeEnum.DIRECT) {
             createMessageButton.setText(getString(R.string.button_create_tweet));
             createMessageButton.setVisibility(View.VISIBLE);
         } else {
@@ -945,9 +946,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     }
 
     private void setTimelineType(Intent intentNew) {
-        int timelineType_new  = intentNew.getIntExtra(MyService.EXTRA_TIMELINE_TYPE,
-                MyDatabase.TIMELINE_TYPE_NONE);
-        if (timelineType_new != MyDatabase.TIMELINE_TYPE_NONE) {
+        TimelineTypeEnum timelineType_new  = TimelineTypeEnum.load(intentNew.getStringExtra(MyService.EXTRA_TIMELINE_TYPE));
+        if (timelineType_new != TimelineTypeEnum.UNKNOWN) {
             mTimelineType = timelineType_new;
         }
 
@@ -961,39 +961,48 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             mQueryString = "";
         }
 
-        if (mTimelineType == MyDatabase.TIMELINE_TYPE_NONE) {
-            mTimelineType = MyDatabase.TIMELINE_TYPE_HOME;
+        if (mTimelineType == TimelineTypeEnum.UNKNOWN) {
+            mTimelineType = TimelineTypeEnum.HOME;
             // For some reason Android remembers last Query and adds it even if
             // the Activity was started from the Widget...
             Intent intent = getIntent();
             intent.removeExtra(SearchManager.QUERY);
             intent.removeExtra(SearchManager.APP_DATA);
-            intent.putExtra(MyService.EXTRA_TIMELINE_TYPE, mTimelineType);
+            intent.putExtra(MyService.EXTRA_TIMELINE_TYPE, mTimelineType.save());
             intent.setData(MyDatabase.Msg.CONTENT_URI);
        }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "setTimelineType; type=\"" + mTimelineType + "\"");
+            Log.v(TAG, "setTimelineType; type=\"" + mTimelineType.save() + "\"");
         }
     }
 
-    /** Only newer tweets (newer that last loaded) are being loaded
-    * from the Internet, old ones are not being reloaded.
-    */
+    /**
+     * Only newer tweets (newer that last loaded) are being loaded from the
+     * Internet, old ones are not being reloaded.
+     */
     protected void manualReload(boolean allTimelineTypes) {
 
         // Show something to the user...
         mListFooter.setVisibility(View.VISIBLE);
-        
+
         // Ask service to load data for this mTimelineType
-        MyService.CommandEnum command = CommandEnum.FETCH_TIMELINE;
+        MyService.CommandEnum command;
         switch (mTimelineType) {
-            case MyDatabase.TIMELINE_TYPE_DIRECT:
-                command = CommandEnum.FETCH_MESSAGES;
+            case DIRECT:
+                command = CommandEnum.FETCH_DIRECT_MESSAGES;
+                break;
+            case MENTIONS:
+                command = CommandEnum.FETCH_MENTIONS;
+                break;
+            default:
+                command = CommandEnum.FETCH_HOME;
         }
-        sendCommand( new CommandData(command));
+        sendCommand(new CommandData(command));
+
         if (allTimelineTypes) {
-            sendCommand( new CommandData(CommandEnum.FETCH_MESSAGES));
-            sendCommand( new CommandData(CommandEnum.FETCH_TIMELINE));
+            sendCommand(new CommandData(CommandEnum.FETCH_HOME));
+            sendCommand(new CommandData(CommandEnum.FETCH_MENTIONS));
+            sendCommand(new CommandData(CommandEnum.FETCH_DIRECT_MESSAGES));
         }
     }
     
@@ -1008,23 +1017,23 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     /**
      * Switch type of presented timeline
      */
-    protected void switchTimelineActivity(int timelineType) {
+    protected void switchTimelineActivity(TimelineTypeEnum timelineType) {
         Intent intent;
         switch (timelineType) {
             default:
-                timelineType = MyDatabase.TIMELINE_TYPE_HOME;
+                timelineType = MyDatabase.TimelineTypeEnum.HOME;
                 // Actually we use one Activity for all timelines...
-            case MyDatabase.TIMELINE_TYPE_MENTIONS:
-            case MyDatabase.TIMELINE_TYPE_FAVORITES:
-            case MyDatabase.TIMELINE_TYPE_HOME:
-            case MyDatabase.TIMELINE_TYPE_DIRECT:
+            case MENTIONS:
+            case FAVORITES:
+            case HOME:
+            case DIRECT:
                 intent = new Intent(this, TweetListActivity.class);
                 break;
 
         }
 
         intent.removeExtra(SearchManager.QUERY);
-        intent.putExtra(MyService.EXTRA_TIMELINE_TYPE, timelineType);
+        intent.putExtra(MyService.EXTRA_TIMELINE_TYPE, timelineType.save());
         // We don't use the Action anywhere, so there is no need it setting it.
         // - we're analyzing query instead!
         // intent.setAction(Intent.ACTION_SEARCH);

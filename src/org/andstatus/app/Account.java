@@ -30,6 +30,7 @@ import java.util.Vector;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionAuthenticationException;
 import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
@@ -41,14 +42,16 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONObject;
 
 /**
- * The object holds Twitter User's specific information including connection
- * TODO: Implement different data (tweets and their counters...) for different
- * Users.
+ * The object holds Account specific information including 
+ * an Instant messaging System (twitter.com, identi.ca etc.), 
+ * Username in that system and connection to it.
+ * 
+ * Current version works with twitter.com only!
  * 
  * @author Yuri Volkov
  */
-public class TwitterUser {
-    private static final String TAG = TwitterUser.class.getSimpleName();
+public class Account {
+    private static final String TAG = Account.class.getSimpleName();
 
     /**
      * Prefix of the user's Preferences file
@@ -56,7 +59,7 @@ public class TwitterUser {
     public static final String FILE_PREFIX = "user_";
 
     /**
-     * This is same name that is used in Twitter login
+     * This is same name that is used e.g. in Twitter login
      */
     private String mUsername = "";
     
@@ -96,6 +99,46 @@ public class TwitterUser {
 
     private Connection mConnection = null;
 
+    //------------------------------------------------------------
+    // Account preferences are below:
+    /**
+     * This Key is both global for the application and the same - for on Account
+     * Global: Username of currently selected Account (Current Account)
+     * This Account: Username of the {@link MyDatabase.User} corresponding to this {@link Account}
+     */
+    public static final String KEY_USERNAME = "twitter_username";
+    /**
+     * New Username typed / selected in UI
+     * It doesn't immediately change "Current Account"
+     */
+    public static final String KEY_USERNAME_NEW = "twitter_username_new";
+    public static final String KEY_PASSWORD = "twitter_password";
+    /**
+     * {@link MyDatabase.User#ORIGIN_ID} in our System.
+     */
+    public static final String KEY_ORIGIN_ID = "origin_id";
+    /**
+     * {@link MyDatabase.User#_ID} in our System.
+     */
+    public static final String KEY_USER_ID = "user_id";
+
+    /**
+     * Is OAuth on for this Account?
+     */
+    public static final String KEY_OAUTH = "oauth";
+
+    /**
+     * Is this user NOT temporal?
+     * (TODO: refactor the key name and invert value)
+     */
+    public static final String KEY_IS_NOT_TEMPORAL = "was_authenticated";
+    
+    /**
+     * Id of the last message downloaded from this timeline type and for this Account
+     * for actual key name append timelinetypeid to this key 
+     */
+    public static final String KEY_LAST_TIMELINE_ID = "last_timeline_id_";
+
     /**
      * NEVER - means that User was never successfully authenticated with current credentials,
      *      this is why we reset to state to NEVER every time credentials were changed.
@@ -128,7 +171,7 @@ public class TwitterUser {
     }
 
     public boolean getCredentialsPresent() {
-        return getConnection().getCredentialsPresent(getSharedPreferences());
+        return getConnection().getCredentialsPresent(getAccountPreferences());
     }    
     
     public CredentialsVerified getCredentialsVerified() {
@@ -137,13 +180,13 @@ public class TwitterUser {
 
     public void setCredentialsVerified(CredentialsVerified cv) {
         mCredentialsVerified = cv;
-        mCredentialsVerified.save(getSharedPreferences());
+        mCredentialsVerified.save(getAccountPreferences());
     }
 
     public void saveAuthInformation(String token, String secret) {
         if(isOAuth()) {
             ConnectionOAuth conn = ((ConnectionOAuth) getConnection());
-            conn.saveAuthInformation(getSharedPreferences(), token, secret);
+            conn.saveAuthInformation(getAccountPreferences(), token, secret);
         } else {
             Log.e(TAG, "saveAuthInformation is for OAuth only!");
         }
@@ -157,13 +200,13 @@ public class TwitterUser {
     }
     
     /**
-     * Get current user instance
+     * Get instance of the current Account (Account selected by the user)
      * 
      * @param Context
-     * @return TwitterUser
+     * @return Account
      */
-    public static TwitterUser getTwitterUser() {
-        return getTwitterUser(null, false);
+    public static Account getAccount() {
+        return getAccount(null, false);
     }
 
     /**
@@ -174,10 +217,10 @@ public class TwitterUser {
      * didn't exist.
      * 
      * @param Context
-     * @return TwitterUser
+     * @return Account
      */
-    public static TwitterUser getAddEditTwitterUser(String username) {
-        return getTwitterUser(username, true);
+    public static Account getAddEditAccount(String username) {
+        return getAccount(username, true);
     }
 
     /**
@@ -186,16 +229,16 @@ public class TwitterUser {
      * 
      * @param Context
      * @param username in Twitter
-     * @return TwitterUser
+     * @return Account
      */
-    public static TwitterUser getTwitterUser(String username) {
-        return getTwitterUser(username, false);
+    public static Account getAccount(String username) {
+        return getAccount(username, false);
     }
 
     /** 
-     * Array of TwitterUser objects
+     * Array of Account objects
      */
-    private static Vector<TwitterUser> mTu = null;
+    private static Vector<Account> mTu = null;
     
     /**
      * Get list of all Users, including temporary (never authenticated) user
@@ -205,12 +248,12 @@ public class TwitterUser {
      * @param context
      * @return Array of users
      */
-    public static TwitterUser[] list() {
+    public static Account[] list() {
         if (mTu == null) {
             Log.e(TAG, "Was not initialized");
             return null;
         } else {
-            return mTu.toArray(new TwitterUser[mTu.size()]);
+            return mTu.toArray(new Account[mTu.size()]);
         }
     }
     
@@ -239,7 +282,7 @@ public class TwitterUser {
      */
     public static void initialize() {
         if (mTu == null) {
-            mTu = new Vector<TwitterUser>();
+            mTu = new Vector<Account>();
 
             // Currently we don't hold user's list anywhere
             // So let's search user's files
@@ -253,7 +296,7 @@ public class TwitterUser {
                         if (indExtension >= 0) {
                             username = username.substring(0, indExtension);
                         }
-                        TwitterUser tu = new TwitterUser(username);
+                        Account tu = new Account(username);
                         mTu.add(tu);
                     }
                 }
@@ -276,26 +319,26 @@ public class TwitterUser {
     }
 
     /**
-     * Factory of TwitterUser-s
+     * Factory of Account-s
      * 
      * @param Context
      * @param username in Twitter
      * @param copyGlobal globally stored User preferences are used, including:
      *            Username, OAuth, password. New User will be created if didn't
      *            exist yet.
-     * @return TwitterUser - existed or newly created
+     * @return Account - existed or newly created
      */
-    private static TwitterUser getTwitterUser(String username, boolean copyGlobal) {
-        // Find TwitterUser object for this user
+    private static Account getAccount(String username, boolean copyGlobal) {
+        // Find Account object for this user
         boolean found = false;
         int ind = -1;
         int indTemp = -1;
-        TwitterUser tu = null;
+        Account tu = null;
 
         username = fixUsername(username);
         if (copyGlobal || (username.length() == 0)) {
             SharedPreferences dsp = MyPreferences.getDefaultSharedPreferences();
-            username = fixUsername(dsp.getString(MyPreferences.KEY_TWITTER_USERNAME, ""));
+            username = fixUsername(dsp.getString(Account.KEY_USERNAME, ""));
         }
         for (ind = 0; ind < mTu.size(); ind++) {
             if (mTu.elementAt(ind).getUsername().compareTo(username) == 0) {
@@ -316,7 +359,7 @@ public class TwitterUser {
             tu = mTu.elementAt(ind);
             // MyService.v(TAG, "User '" + tu.getUsername() + "' was found");
         } else {
-            tu = new TwitterUser(username);
+            tu = new Account(username);
             MyLog.v(TAG, "New user '" + tu.getUsername() + "' was created");
             mTu.add(tu);
         }
@@ -348,7 +391,7 @@ public class TwitterUser {
                 }
             }
             if (found) {
-                TwitterUser tu = mTu.get(ind);
+                Account tu = mTu.get(ind);
                 tu.deleteData();
 
                 // And delete the object from the list
@@ -375,7 +418,7 @@ public class TwitterUser {
      * @param context
      * @param username
      */
-    private TwitterUser(String username) {
+    private Account(String username) {
         username = fixUsername(username);
         // Try to find saved User data
         mPrefsFileName = prefsFileNameForUser(username);
@@ -385,17 +428,17 @@ public class TwitterUser {
             mOriginId = MyDatabase.ORIGIN_ID_DEFAULT;
         } else {
             // Load stored data for the User
-            SharedPreferences sp = getSharedPreferences();
-            mIsTemporal = !sp.getBoolean(MyPreferences.KEY_IS_NOT_TEMPORAL, false);
+            SharedPreferences sp = getAccountPreferences();
+            mIsTemporal = !sp.getBoolean(Account.KEY_IS_NOT_TEMPORAL, false);
             mCredentialsVerified = CredentialsVerified.load(sp);
             if (mIsTemporal && (getCredentialsVerified() != CredentialsVerified.NEVER  )) {
                 // TODO: This is some application error or bug...
                 Log.e(TAG, "Account '" + getUsername() + "' is temporal but CredentialsVerified=" + getCredentialsVerified() );
                 mIsTemporal = false;
             }
-            mOAuth = sp.getBoolean(MyPreferences.KEY_OAUTH, true);
-            mOriginId = sp.getLong(MyPreferences.KEY_ORIGIN_ID, MyDatabase.ORIGIN_ID_DEFAULT);
-            mUserId = sp.getLong(MyPreferences.KEY_USER_ID, 0L);
+            mOAuth = sp.getBoolean(Account.KEY_OAUTH, true);
+            mOriginId = sp.getLong(Account.KEY_ORIGIN_ID, MyDatabase.ORIGIN_ID_DEFAULT);
+            mUserId = sp.getLong(Account.KEY_USER_ID, 0L);
             
             if (!isTemporal() && mUserId==0) {
                 setUsernameAuthenticated(mUsername);
@@ -426,9 +469,9 @@ public class TwitterUser {
     }
     
     /**
-     * @return SharedPreferences of this User
+     * @return SharedPreferences of this Account
      */
-    public SharedPreferences getSharedPreferences() {
+    public SharedPreferences getAccountPreferences() {
         SharedPreferences sp = null;
         if (mPrefsFileName.length() > 0) {
             try {
@@ -471,26 +514,26 @@ public class TwitterUser {
             }
             if (ok) {
                 mIsTemporal = false;
-                getSharedPreferences().edit().putBoolean(MyPreferences.KEY_IS_NOT_TEMPORAL, true).commit();
+                getAccountPreferences().edit().putBoolean(Account.KEY_IS_NOT_TEMPORAL, true).commit();
             }
         }
         if (mUserId == 0) {
             mUserId = MyProvider.userNameToId(getOriginId(), username);
             if (mUserId == 0) {
-                TimelineDownloader td = new TimelineDownloader(this, MyPreferences.getContext(), MyDatabase.TIMELINE_TYPE_HOME);
+                TimelineDownloader td = new TimelineDownloader(this, MyPreferences.getContext(), TimelineTypeEnum.HOME);
                 try {
                     // Construct "User" from available account info
                     // We need this User in order to be able to link Messages to him
                     JSONObject dbUser = new JSONObject();
                     dbUser.put("screen_name", getUsername());
                     dbUser.put(MyDatabase.User.ORIGIN_ID, getOriginId());
-                    mUserId = Long.parseLong(td.insertUserFromJSONObject(dbUser).getPathSegments().get(1));
+                    mUserId = td.insertUserFromJSONObject(dbUser);
                 } catch (Exception e) {
                     Log.e(TAG, "Construct user: " + e.toString());
                 }
             }
-            getSharedPreferences().edit().putLong(MyPreferences.KEY_USER_ID, mUserId).commit();
-            getSharedPreferences().edit().putLong(MyPreferences.KEY_ORIGIN_ID, mOriginId).commit();
+            getAccountPreferences().edit().putLong(Account.KEY_USER_ID, mUserId).commit();
+            getAccountPreferences().edit().putLong(Account.KEY_ORIGIN_ID, mOriginId).commit();
         }
         return ok;
     }
@@ -506,9 +549,9 @@ public class TwitterUser {
             mConnection = null;
             mUsername = username;
             if (isNewUser) {
-                getSharedPreferences().edit().putString(MyPreferences.KEY_TWITTER_USERNAME, mUsername).commit();
+                getAccountPreferences().edit().putString(Account.KEY_USERNAME, mUsername).commit();
                 // TODO: global method:
-                getSharedPreferences()
+                getAccountPreferences()
                 .edit()
                 .putLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME,
                         java.lang.System.currentTimeMillis()).commit();
@@ -534,8 +577,8 @@ public class TwitterUser {
         SharedPreferences dsp = MyPreferences.getDefaultSharedPreferences();
 
         // Retrieve new values before changes so they won't be overridden
-        boolean oauth = dsp.getBoolean(MyPreferences.KEY_OAUTH, true);
-        String password = dsp.getString(MyPreferences.KEY_TWITTER_PASSWORD, "");
+        boolean oauth = dsp.getBoolean(Account.KEY_OAUTH, true);
+        String password = dsp.getString(Account.KEY_PASSWORD, "");
 
         // Make changes
         setOAuth(oauth);
@@ -580,7 +623,7 @@ public class TwitterUser {
      */
     public Connection getConnection() {
         if (mConnection == null) {
-            mConnection = Connection.getConnection(getSharedPreferences(), mOAuth);
+            mConnection = Connection.getConnection(getAccountPreferences(), mOAuth);
         }
         return mConnection;
     }
@@ -592,7 +635,7 @@ public class TwitterUser {
      */
     public void clearAuthInformation() {
         setCredentialsVerified(CredentialsVerified.NEVER);
-        this.getConnection().clearAuthInformation(getSharedPreferences());
+        this.getConnection().clearAuthInformation(getAccountPreferences());
     }
 
     /**
@@ -611,10 +654,10 @@ public class TwitterUser {
             // So the Connection object may be reinitialized
             mConnection = null;
             mOAuth = oauth;
-            getSharedPreferences().edit().putBoolean(MyPreferences.KEY_OAUTH, oauth).commit();
+            getAccountPreferences().edit().putBoolean(Account.KEY_OAUTH, oauth).commit();
             // Propagate the changes to the global properties
             MyPreferences.getDefaultSharedPreferences().edit().putBoolean(
-                    MyPreferences.KEY_OAUTH, mOAuth).commit();
+                    Account.KEY_OAUTH, mOAuth).commit();
         }
     }
 
@@ -626,10 +669,10 @@ public class TwitterUser {
     private void setPassword(String password) {
         if (password.compareTo(getConnection().getPassword()) != 0) {
             setCredentialsVerified(CredentialsVerified.NEVER);
-            getConnection().setPassword(getSharedPreferences(), password);
+            getConnection().setPassword(getAccountPreferences(), password);
             // Propagate the changes to the global properties
             MyPreferences.getDefaultSharedPreferences().edit().putString(
-                    MyPreferences.KEY_TWITTER_PASSWORD, getConnection().getPassword())
+                    Account.KEY_PASSWORD, getConnection().getPassword())
                     .commit();
         }
     }
@@ -723,7 +766,7 @@ public class TwitterUser {
     public synchronized void setCurrentUser() {
         // Update global SharedPreferences
         SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
-        String usernameOld = sp.getString(MyPreferences.KEY_TWITTER_USERNAME, "");
+        String usernameOld = sp.getString(Account.KEY_USERNAME, "");
         String usernameNew = getUsername();
         SharedPreferences.Editor ed = sp.edit();
         if (usernameNew.compareTo(usernameOld) != 0) {
@@ -732,10 +775,10 @@ public class TwitterUser {
             // This preference is being set by PreferenceActivity etc.
             //ed.putString(PreferencesActivity.KEY_TWITTER_USERNAME_NEW, getUsername());
             // This preference is being set by this code only
-            ed.putString(MyPreferences.KEY_TWITTER_USERNAME, getUsername());
+            ed.putString(Account.KEY_USERNAME, getUsername());
         }
-        ed.putString(MyPreferences.KEY_TWITTER_PASSWORD, getConnection().getPassword());
-        ed.putBoolean(MyPreferences.KEY_OAUTH, isOAuth());
+        ed.putString(Account.KEY_PASSWORD, getConnection().getPassword());
+        ed.putBoolean(Account.KEY_OAUTH, isOAuth());
         getCredentialsVerified().put(ed);
         if (getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
             // Don't turn off Automatic updates

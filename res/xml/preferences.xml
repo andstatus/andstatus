@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
+    Copyright (c) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -150,24 +151,24 @@
 		</PreferenceScreen>
 	</PreferenceCategory>
 
-	<!-- SETTINGS -->
+	<!-- INFORMATION -->
 	<PreferenceCategory android:title="@string/category_title_preference_information">
-		<Preference android:key="contact_developer" android:title="@string/title_preference_contact_developer">
-			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus" />
-		</Preference>
-		<Preference android:key="report_bug" android:title="@string/title_preference_report_bug">
-			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/issues" />
+        <Preference android:key="about_application" android:title="@string/title_preference_about_application">
+            <intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/wiki" />
+        </Preference>
+		<Preference android:key="change_log" android:title="@string/title_preference_change_log">
+			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/wiki/changelog" />
 		</Preference>
         <ListPreference android:entryValues="@array/log_level_keys"
             android:entries="@array/log_level_values" android:summary="@string/summary_preference_min_log_level"
             android:dialogTitle="@string/dialog_title_preference_min_log_level"
             android:title="@string/title_preference_min_log_level" android:key="min_log_level"
             android:defaultValue="4" />
-		<Preference android:key="change_log" android:title="@string/title_preference_change_log">
-			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/wiki/changelog" />
+		<Preference android:key="contact_developer" android:title="@string/title_preference_contact_developer">
+			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus" />
 		</Preference>
-		<Preference android:key="about_application" android:title="@string/title_preference_about_application">
-			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/wiki" />
+		<Preference android:key="report_bug" android:title="@string/title_preference_report_bug">
+			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/issues" />
 		</Preference>
 	</PreferenceCategory>
 

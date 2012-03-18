@@ -16,7 +16,7 @@
 
 package org.andstatus.app.data;
 
-import org.andstatus.app.TwitterUser;
+import org.andstatus.app.Account;
 import org.andstatus.app.appwidget.MyAppWidgetConfigure;
 import org.andstatus.app.util.MyLog;
 
@@ -133,6 +133,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * NULL means the row was not retrieved from the Internet yet
          */
 		public static final String CREATED_DATE = "msg_created_date";
+        /**
+         * Date and time when the message was sent,
+         * it's not equal to {@link MyDatabase.Msg#CREATED_DATE} for retweeted messages
+         */
+        public static final String SENT_DATE = "msg_sent_date";
 		/**
 		 * Date and time the row was inserted into this database
 		 */
@@ -146,7 +151,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String MSG_ID =  "msg_id";
         
-        public static final String DEFAULT_SORT_ORDER = CREATED_DATE + " DESC";
+        public static final String DEFAULT_SORT_ORDER = SENT_DATE + " DESC";
 	}
 	
     /**
@@ -174,6 +179,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String FAVORITED = "favorited";
         /**
+         * The Msg is retweeted by this User
+         * In some sense RETWEETED is like FAVORITED. 
+         * Main difference: visibility. RETWEETED are shown for all followers in their Home timelines. 
+         */
+        public static final String RETWEETED = "retweeted";
+        /**
          * User is mentioned in this message
          */
         public static final String MENTIONED = "mentioned";
@@ -198,7 +209,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 
 	/**
 	 * Users table (they are both senders AND recipients in the Msg table)
-	 * Some of these Users are Accounts (connected to accounts in AndStatus), see {@link TwitterUser#getUserId()}
+	 * Some of these Users are Accounts (connected to accounts in AndStatus), see {@link Account#getUserId()}
 	 */
 	public static final class User implements BaseColumns {
 		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + USER_TABLE_NAME);
@@ -279,16 +290,57 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 
     /**
      * These values help set timeline filters closer to the database (in ContentProvider...)
-     * TODO: enum TypelineType
      */
-    public static final int TIMELINE_TYPE_NONE = 0;
-    public static final int TIMELINE_TYPE_HOME = 1;
-    public static final int TIMELINE_TYPE_MENTIONS = 2;
-    /**
-     * Direct messages (direct dents...)
-     */
-    public static final int TIMELINE_TYPE_DIRECT = 3;
-    public static final int TIMELINE_TYPE_FAVORITES = 4;
+    public enum TimelineTypeEnum {
+        /**
+         * The enum is unknown
+         */
+        UNKNOWN("unknown"),
+        HOME("home"),
+        MENTIONS("mentions"),
+        /**
+         * Direct messages (direct dents...)
+         */
+        DIRECT("direct"),
+        FAVORITES("favorites"),
+        /**
+         * All timelines (e.g. for download...)
+         */
+        ALL("all");
+        
+        /**
+         * code of the enum that is used in messages
+         */
+        private String code;
+
+        private TimelineTypeEnum(String codeIn) {
+            code = codeIn;
+        }
+
+        /**
+         * String code for the Command to be used in messages
+         */
+        public String save() {
+            return code;
+        }
+        /**
+         * Returns the enum for a String action code or UNKNOWN
+         */
+        public static TimelineTypeEnum load(String strCode) {
+            for (TimelineTypeEnum tt : TimelineTypeEnum.values()) {
+                if (tt.code.equals(strCode)) {
+                    return tt;
+                }
+            }
+            return UNKNOWN;
+        }
+    }
+    
+//    public static final int TIMELINE_TYPE_NONE = 0;
+//    public static final int TIMELINE_TYPE_HOME = 1;
+//    public static final int TIMELINE_TYPE_MENTIONS = 2;
+//    public static final int TIMELINE_TYPE_DIRECT = 3;
+//    public static final int TIMELINE_TYPE_FAVORITES = 4;
 
     MyDatabase(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -314,6 +366,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Msg.IN_REPLY_TO_MSG_ID + " INTEGER," 
                 + Msg.IN_REPLY_TO_USER_ID + " INTEGER," 
                 + Msg.CREATED_DATE + " INTEGER,"
+                + Msg.SENT_DATE + " INTEGER,"
                 + Msg.INS_DATE + " INTEGER NOT NULL"
                 + ");");
 
@@ -323,10 +376,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + ");");
         
         db.execSQL("CREATE TABLE " + MSGOFUSER_TABLE_NAME + " (" 
-                + MsgOfUser.USER_ID + " INTEGER," 
-                + MsgOfUser.MSG_ID + " INTEGER," 
+                + MsgOfUser.USER_ID + " INTEGER NOT NULL," 
+                + MsgOfUser.MSG_ID + " INTEGER NOT NULL," 
                 + MsgOfUser.SUBSCRIBED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.FAVORITED + " BOOLEAN DEFAULT 0 NOT NULL," 
+                + MsgOfUser.RETWEETED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.MENTIONED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.REPLIED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.DIRECTED + " BOOLEAN DEFAULT 0 NOT NULL," 
@@ -355,13 +409,14 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     }
 
     /**
-     * We don't need here neither try-catch nor transactions because they are being used in calling method
+     * We don't need here neither try-catch nor transactions because they are
+     * being used in calling method
+     * 
      * @see android.database.sqlite.SQLiteOpenHelper#getWritableDatabase
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.i(TAG, "Upgrading database from version " + oldVersion + " to version "
-                + newVersion);
+        Log.d(TAG, "Upgrading database from version " + oldVersion + " to version " + newVersion);
         if (oldVersion < 8) {
             db.execSQL("DROP TABLE " + "tweets" + ";");
             db.execSQL("DROP TABLE " + "directmessages" + ";");
@@ -370,73 +425,76 @@ public final class MyDatabase extends SQLiteOpenHelper  {
             onCreate(db);
         } else {
             if (oldVersion == 8) {
-                MyLog.d(TAG, "Upgrading database from version 8 to version 9");
-                db.execSQL("DROP TABLE " + "users" + ";");
-                onCreate(db);
+                try {
+                    MyLog.d(TAG, "Upgrading database from version 8 to version 9");
+                    db.execSQL("DROP TABLE " + "users" + ";");
+                    onCreate(db);
 
-                // Associate all currently loaded messages with one current User Account (to be created...)
-                String username = MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_TWITTER_USERNAME, "");
-                if (username.length() > 0) {
-                    db.execSQL("INSERT INTO user(_id, origin_id, username, user_ins_date) VALUES(1, 1, '" + username + "'," 
-                            + System.currentTimeMillis() + ")");
-                    db.execSQL("INSERT INTO msg (msg_oid, origin_id, body, via, msg_created_date, msg_ins_date)"
-                            + " SELECT tweets._id, 1, tweets.message, tweets.source, tweets.sent," 
-                            + System.currentTimeMillis() 
-                            + " FROM tweets"
-                            );
-                    db.execSQL("INSERT INTO user (username, origin_id, user_ins_date) SELECT DISTINCT author_id, 1, " 
-                            + System.currentTimeMillis() + " FROM tweets"
-                            + " WHERE (tweets.author_id <> 'null')"
-                            + " AND NOT EXISTS (SELECT * FROM user WHERE username = tweets.author_id)"
-                            );
-                    db.execSQL("INSERT INTO msgofuser (msg_id, user_id, favorited, subscribed, mentioned)" 
-                            + " SELECT DISTINCT msg._id, 1, tweets.favorited, 1, CASE tweets.tweet_type WHEN 2 THEN 1 ELSE 0 END"
-                            + " FROM ((tweets INNER JOIN msg ON tweets._id = msg.msg_oid)"
-                            + " INNER JOIN user on tweets.author_id = user.username)"
-                            );
-                    db.execSQL("UPDATE msg SET author_id = (SELECT user._id FROM (tweets INNER JOIN user on tweets.author_id = user.username) WHERE tweets._id = msg.msg_oid)");
-                    db.execSQL("UPDATE msg SET sender_id = author_id");
-                    
-                    // Now add Users to whom replies were
-                    db.execSQL("INSERT INTO user (username, origin_id, user_ins_date) SELECT DISTINCT in_reply_to_author_id, 1," 
-                            + System.currentTimeMillis() 
-                            + " FROM tweets WHERE tweets.in_reply_to_author_id NOT NULL"
-                            + " AND (tweets.in_reply_to_author_id <> 'null')"
-                            + " AND NOT EXISTS (SELECT * FROM user WHERE username = tweets.in_reply_to_author_id)"
-                            );
-                    // Add messages (templates for messages) to which replies were
-                    db.execSQL("INSERT INTO msg (msg_oid, origin_id, author_id, sender_id, msg_ins_date)"
-                            + " SELECT DISTINCT tweets.in_reply_to_status_id, 1, user._id, user._id," 
-                            + System.currentTimeMillis()
-                            + " FROM (tweets INNER JOIN user ON tweets.in_reply_to_author_id = user.username)"
-                            + " WHERE (tweets.in_reply_to_status_id IS NOT NULL)"
-                            + " AND (tweets.in_reply_to_status_id <> 'null')"
-                            + " AND NOT EXISTS (SELECT * FROM msg AS m2 WHERE m2.msg_oid = tweets.in_reply_to_status_id)"
-                            );
+                    // Associate all currently loaded messages with one current
+                    // User Account (to be created...)
+                    String username = MyPreferences.getDefaultSharedPreferences().getString(
+                            Account.KEY_USERNAME, "");
+                    if (username.length() > 0) {
+                        db.execSQL("INSERT INTO user(_id, origin_id, username, user_ins_date) VALUES(1, 1, '"
+                                + username + "'," + System.currentTimeMillis() + ")");
+                        db.execSQL("INSERT INTO msg (msg_oid, origin_id, body, via, msg_created_date, msg_sent_date, msg_ins_date)"
+                                + " SELECT tweets._id, 1, tweets.message, tweets.source, tweets.sent, tweets.sent,"
+                                + System.currentTimeMillis() + " FROM tweets");
+                        db.execSQL("INSERT INTO user (username, origin_id, user_ins_date) SELECT DISTINCT author_id, 1, "
+                                + System.currentTimeMillis()
+                                + " FROM tweets"
+                                + " WHERE (tweets.author_id <> 'null')"
+                                + " AND NOT EXISTS (SELECT * FROM user WHERE username = tweets.author_id)");
+                        db.execSQL("INSERT INTO msgofuser (msg_id, user_id, favorited, subscribed, mentioned)"
+                                + " SELECT DISTINCT msg._id, 1, tweets.favorited, 1, CASE tweets.tweet_type WHEN 2 THEN 1 ELSE 0 END"
+                                + " FROM ((tweets INNER JOIN msg ON tweets._id = msg.msg_oid)"
+                                + " INNER JOIN user on tweets.author_id = user.username)");
+                        db.execSQL("UPDATE msg SET author_id = (SELECT user._id FROM (tweets INNER JOIN user on tweets.author_id = user.username) WHERE tweets._id = msg.msg_oid)");
+                        db.execSQL("UPDATE msg SET sender_id = author_id");
 
-                    // Add Direct Messages
-                    db.execSQL("INSERT INTO msg (body, msg_oid, origin_id, author_id, sender_id, recipient_id, msg_created_date, msg_ins_date)"
-                            + " SELECT DISTINCT message, directmessages._id, 1, user._id, user._id, 1, directmessages.sent, " 
-                            + System.currentTimeMillis()
-                            + " FROM (directmessages INNER JOIN user ON directmessages.author_id = user.username)"
-                            );
+                        // Now add Users to whom replies were
+                        db.execSQL("INSERT INTO user (username, origin_id, user_ins_date) SELECT DISTINCT in_reply_to_author_id, 1,"
+                                + System.currentTimeMillis()
+                                + " FROM tweets WHERE tweets.in_reply_to_author_id NOT NULL"
+                                + " AND (tweets.in_reply_to_author_id <> 'null')"
+                                + " AND NOT EXISTS (SELECT * FROM user WHERE username = tweets.in_reply_to_author_id)");
+                        // Add messages (templates for messages) to which
+                        // replies were
+                        db.execSQL("INSERT INTO msg (msg_oid, origin_id, author_id, sender_id, msg_ins_date)"
+                                + " SELECT DISTINCT tweets.in_reply_to_status_id, 1, user._id, user._id,"
+                                + System.currentTimeMillis()
+                                + " FROM (tweets INNER JOIN user ON tweets.in_reply_to_author_id = user.username)"
+                                + " WHERE (tweets.in_reply_to_status_id IS NOT NULL)"
+                                + " AND (tweets.in_reply_to_status_id <> 'null')"
+                                + " AND NOT EXISTS (SELECT * FROM msg AS m2 WHERE m2.msg_oid = tweets.in_reply_to_status_id)");
 
-                    db.execSQL("INSERT INTO msgofuser (msg_id, user_id, directed)" 
-                            + " SELECT DISTINCT msg._id, 1, 1"
-                            + " FROM ((directmessages INNER JOIN msg ON directmessages._id = msg.msg_oid)"
-                            + " INNER JOIN user on directmessages.author_id = user.username)"
-                            );
-                    
+                        // Add Direct Messages
+                        db.execSQL("INSERT INTO msg (body, msg_oid, origin_id, author_id, sender_id, recipient_id, msg_created_date, msg_sent_date, msg_ins_date)"
+                                + " SELECT DISTINCT message, directmessages._id, 1, user._id, user._id, 1, directmessages.sent, directmessages.sent, "
+                                + System.currentTimeMillis()
+                                + " FROM (directmessages INNER JOIN user ON directmessages.author_id = user.username)");
+
+                        db.execSQL("INSERT INTO msgofuser (msg_id, user_id, directed)"
+                                + " SELECT DISTINCT msg._id, 1, 1"
+                                + " FROM ((directmessages INNER JOIN msg ON directmessages._id = msg.msg_oid)"
+                                + " INNER JOIN user on directmessages.author_id = user.username)");
+
+                    }
+                    db.execSQL("DROP TABLE " + "tweets" + ";");
+                    db.execSQL("DROP TABLE " + "directmessages" + ";");
+                    MyLog.d(TAG, "Successfully upgraded database from version 8 to version 9");
+
+                    MyAppWidgetConfigure.deleteWidgets(MyPreferences.getContext(),
+                            "org.andstatus.app", "org.andstatus.app.appwidget.MyAppWidgetProvider");
+                } catch (Exception e) {
+                    Log.e(TAG, e.getMessage());
+                    // This throws an error
+                    db.execSQL("Database upgrade failed");
                 }
-                db.execSQL("DROP TABLE " + "tweets" + ";");
-                db.execSQL("DROP TABLE " + "directmessages" + ";");
-                MyLog.d(TAG, "Successfully upgraded database from version 8 to version 9");
-                
-                MyAppWidgetConfigure.deleteWidgets(MyPreferences.getContext(), "org.andstatus.app", "org.andstatus.app.appwidget.MyAppWidgetProvider");
-                
+
             }
-            Log.i(TAG, "Successfully upgraded database from version " + oldVersion
-                    + " to version " + newVersion + ".");
+            Log.i(TAG, "Successfully upgraded database from version " + oldVersion + " to version "
+                    + newVersion + ".");
         }
     }
 }

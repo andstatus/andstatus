@@ -18,7 +18,7 @@ package org.andstatus.app;
 
 import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
-import org.andstatus.app.TwitterUser.CredentialsVerified;
+import org.andstatus.app.Account.CredentialsVerified;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
@@ -72,13 +72,15 @@ public class TweetListActivity extends TimelineActivity {
 
     public static final int CONTEXT_MENU_ITEM_RETWEET = Menu.FIRST + 7;
 
-    public static final int CONTEXT_MENU_ITEM_PROFILE = Menu.FIRST + 8;
+    public static final int CONTEXT_MENU_ITEM_DESTROY_RETWEET = Menu.FIRST + 8;
 
-    public static final int CONTEXT_MENU_ITEM_DESTROY_FAVORITE = Menu.FIRST + 9;
+    public static final int CONTEXT_MENU_ITEM_PROFILE = Menu.FIRST + 9;
 
-    public static final int CONTEXT_MENU_ITEM_DESTROY_STATUS = Menu.FIRST + 10;
+    public static final int CONTEXT_MENU_ITEM_DESTROY_FAVORITE = Menu.FIRST + 10;
 
-    public static final int CONTEXT_MENU_ITEM_SHARE = Menu.FIRST + 11;
+    public static final int CONTEXT_MENU_ITEM_DESTROY_STATUS = Menu.FIRST + 11;
+
+    public static final int CONTEXT_MENU_ITEM_SHARE = Menu.FIRST + 12;
 
     // Table columns to use for the tweets data
     private static final String[] PROJECTION = new String[] {
@@ -144,8 +146,8 @@ public class TweetListActivity extends TimelineActivity {
         Intent intent = getIntent();
 
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "doSearchQuery; queryString=\"" + queryString + "\"; TimelineType="
-                    + mTimelineType);
+            Log.v(TAG, "queryListData; queryString=\"" + queryString + "\"; TimelineType="
+                    + mTimelineType.save());
         }
 
         Uri contentUri = MyDatabase.Msg.CONTENT_URI;
@@ -182,27 +184,27 @@ public class TweetListActivity extends TimelineActivity {
             sa.clear();
             
             switch (mTimelineType) {
-                case MyDatabase.TIMELINE_TYPE_HOME:
+                case HOME:
                     sa.addSelection(MyDatabase.MsgOfUser.SUBSCRIBED + " = ?", new String[] {
                             "1"
                         });
                     break;
-                case MyDatabase.TIMELINE_TYPE_MENTIONS:
+                case MENTIONS:
                     sa.addSelection(MyDatabase.MsgOfUser.MENTIONED + " = ?", new String[] {
                             "1"
                         });
                     /* We already figured it out!
                     sa.addSelection(MyDatabase.Msg.BODY + " LIKE ?", new String[] {
-                            "%@" + TwitterUser.getTwitterUser().getUsername() + "%"
+                            "%@" + Account.getTwitterUser().getUsername() + "%"
                         });
                     */
                     break;
-                case MyDatabase.TIMELINE_TYPE_FAVORITES:
+                case FAVORITES:
                     sa.addSelection(MyDatabase.MsgOfUser.FAVORITED + " = ?", new String[] {
                             "1"
                         });
                     break;
-                case MyDatabase.TIMELINE_TYPE_DIRECT:
+                case DIRECT:
                     sa.addSelection(MyDatabase.MsgOfUser.DIRECTED + " = ?", new String[] {
                             "1"
                         });
@@ -230,8 +232,8 @@ public class TweetListActivity extends TimelineActivity {
         }
 
         if (lastItemId > 0) {
-            sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.CREATED_DATE + " >= ?", new String[] {
-                String.valueOf(MyProvider.msgCreatedDate(lastItemId))
+            sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENT_DATE + " >= ?", new String[] {
+                String.valueOf(MyProvider.msgSentDate(lastItemId))
             });
         } else {
             if (loadOneMorePage) {
@@ -284,12 +286,16 @@ public class TweetListActivity extends TimelineActivity {
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onResume");
         }
-        
-        if (TwitterUser.getTwitterUser().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-            if (!TwitterUser.getTwitterUser().getSharedPreferences().getBoolean("loadedOnce", false)) {
-                TwitterUser.getTwitterUser().getSharedPreferences().edit().putBoolean("loadedOnce", true).commit();
-                // One-time "manually" load tweets from the Internet for the new TwitterUser
-                manualReload(true);
+
+        if (!mIsFinishingOnResume) {
+            if (Account.getAccount().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+                if (!Account.getAccount().getAccountPreferences().getBoolean("loadedOnce", false)) {
+                    Account.getAccount().getAccountPreferences().edit()
+                            .putBoolean("loadedOnce", true).commit();
+                    // One-time "manually" load tweets from the Internet for the
+                    // new Account
+                    manualReload(true);
+                }
             }
         }
     }
@@ -326,7 +332,6 @@ public class TweetListActivity extends TimelineActivity {
 
         // Add menu items
         menu.add(0, CONTEXT_MENU_ITEM_REPLY, m++, R.string.menu_item_reply);
-        menu.add(0, CONTEXT_MENU_ITEM_RETWEET, m++, R.string.menu_item_retweet);
         menu.add(0, CONTEXT_MENU_ITEM_SHARE, m++, R.string.menu_item_share);
         // menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, m++,
         // R.string.menu_item_direct_message);
@@ -339,7 +344,9 @@ public class TweetListActivity extends TimelineActivity {
         // Get the record for the currently selected item
         Uri uri = ContentUris.withAppendedId(MyDatabase.Msg.CONTENT_URI, info.id);
         Cursor c = getContentResolver().query(uri, new String[] {
-                MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID, MyDatabase.MsgOfUser.FAVORITED
+                MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID, 
+                MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED, 
+                MyDatabase.MsgOfUser.RETWEETED
         }, null, null, null);
         try {
             if (c != null && c.getCount() > 0) {
@@ -351,7 +358,16 @@ public class TweetListActivity extends TimelineActivity {
                 } else {
                     menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, m++, R.string.menu_item_favorite);
                 }
-                if (TwitterUser.getTwitterUser().getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))) {
+                if (c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.RETWEETED)) == 1) {
+                    // TODO:
+                    //menu.add(0, CONTEXT_MENU_ITEM_DESTROY_RETWEET, m++,
+                    //        R.string.menu_item_destroy_retweet);
+                } else {
+                    menu.add(0, CONTEXT_MENU_ITEM_RETWEET, m++, R.string.menu_item_retweet);
+                }
+                if (Account.getAccount().getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))
+                        && Account.getAccount().getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.AUTHOR_ID))
+                        ) {
                     menu.add(0, CONTEXT_MENU_ITEM_DESTROY_STATUS, m++,
                             R.string.menu_item_destroy_status);
                 }
@@ -388,36 +404,7 @@ public class TweetListActivity extends TimelineActivity {
                 return true;
 
             case CONTEXT_MENU_ITEM_RETWEET:
-                userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentId);
-                uri = ContentUris.withAppendedId(MyDatabase.Msg.CONTENT_URI, info.id);
-                c = getContentResolver().query(uri, new String[] {
-                        MyDatabase.Msg._ID, MyDatabase.Msg.BODY
-                }, null, null, null);
-                try {
-                    if (c != null && c.getCount() > 0) {
-                        c.moveToFirst();
-    
-                        StringBuilder message = new StringBuilder();
-                        String reply = "RT @" + userName + " ";
-                        message.append(reply);
-                        CharSequence text = c.getString(c.getColumnIndex(MyDatabase.Msg.BODY));
-                        int len = 140 - reply.length() - 3;
-                        if (text.length() < len) {
-                            len = text.length();
-                        }
-                        message.append(text, 0, len);
-                        if (message.length() == 137) {
-                            message.append("...");
-                        }
-                        mTweetEditor.startEditing(message.toString(), 0);
-                    }
-                } catch (Exception e) {
-                    Log.e(TAG, "onContextItemSelected: " + e.toString());
-                    return false;
-                } finally {
-                    if (c != null && !c.isClosed())
-                        c.close();
-                }
+                sendCommand( new CommandData(CommandEnum.RETWEET, mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_DESTROY_STATUS:
@@ -573,14 +560,9 @@ public class TweetListActivity extends TimelineActivity {
 
     {
     /**
-     * Msg handler for messages from threads.
+     * Message handler for messages from threads.
      */
     mHandler = new Handler() {
-        /**
-         * Message handler
-         * 
-         * @param msg
-         */
         @Override
         public void handleMessage(android.os.Message msg) {
             JSONObject result = null;

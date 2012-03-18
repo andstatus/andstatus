@@ -34,9 +34,10 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.andstatus.app.TwitterUser;
+import org.andstatus.app.Account;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 
@@ -276,17 +277,17 @@ public class MyProvider extends ContentProvider {
      */
     private ContentValues prepareMsgOfUserValues(ContentValues values) {
         ContentValues msgOfUserValues = null;
-        int timelineType = MyDatabase.TIMELINE_TYPE_NONE;
+        MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
         if (values.containsKey(MsgOfUser.TIMELINE_TYPE) ) {
-            timelineType = Integer.parseInt(values.get(MsgOfUser.TIMELINE_TYPE).toString());
+            timelineType = TimelineTypeEnum.load(values.get(MsgOfUser.TIMELINE_TYPE).toString());
             values.remove(MsgOfUser.TIMELINE_TYPE);
         }
 
         switch (timelineType) {
-            case MyDatabase.TIMELINE_TYPE_HOME:
-            case MyDatabase.TIMELINE_TYPE_MENTIONS:
-            case MyDatabase.TIMELINE_TYPE_FAVORITES:
-            case MyDatabase.TIMELINE_TYPE_DIRECT:
+            case HOME:
+            case MENTIONS:
+            case FAVORITES:
+            case DIRECT:
                 
                 // Add MsgOfUser link to Current User Account
                 msgOfUserValues = new ContentValues();
@@ -294,9 +295,10 @@ public class MyProvider extends ContentProvider {
                     msgOfUserValues.put(MsgOfUser.MSG_ID, values.getAsString(Msg._ID));
                 }
                 // TODO: User of current Account
-                msgOfUserValues.put(MsgOfUser.USER_ID, TwitterUser.getTwitterUser().getUserId() );
+                msgOfUserValues.put(MsgOfUser.USER_ID, Account.getAccount().getUserId() );
                 moveKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
                 moveKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
+                moveKey(MsgOfUser.RETWEETED, values, msgOfUserValues);
                 moveKey(MsgOfUser.MENTIONED, values, msgOfUserValues);
                 moveKey(MsgOfUser.REPLIED, values, msgOfUserValues);
                 moveKey(MsgOfUser.DIRECTED, values, msgOfUserValues);
@@ -486,14 +488,19 @@ public class MyProvider extends ContentProvider {
      * @return String for {@link SQLiteQueryBuilder#setTables(String)}
      */
     private static String tablesForTimeline(String[] projection) {
-       String tables = "((" + MyDatabase.MSG_TABLE_NAME + " LEFT OUTER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
+       String tables = MyDatabase.MSG_TABLE_NAME + " LEFT OUTER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
                 + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
-                + " AND " + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID + "=" + TwitterUser.getTwitterUser().getUserId() + ")"
-                + " LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME 
-                + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS author ON "
-                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID + "=author." + MyDatabase.User._ID
-                + ")"
-                + " LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.IN_REPLY_TO_NAME 
+                + " AND " + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID + "=" + Account.getAccount().getUserId()
+                ;
+       tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME 
+               + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS author ON "
+               + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID + "=author." + MyDatabase.User._ID
+               ;
+       tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.SENDER_NAME 
+               + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS sender ON "
+               + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID + "=sender." + MyDatabase.User._ID
+               ;
+       tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.IN_REPLY_TO_NAME 
                 + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS prevauthor ON "
                 + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID + "=prevauthor." + MyDatabase.User._ID
                 ;
@@ -538,12 +545,13 @@ public class MyProvider extends ContentProvider {
                 if (msgOfUserValues != null) {
                     String where = "(" + MsgOfUser.MSG_ID + "=" + rowId + " AND "
                             + MsgOfUser.USER_ID + "="
-                            + new Long(TwitterUser.getTwitterUser().getUserId()).toString() + ")";
+                            + new Long(Account.getAccount().getUserId()).toString() + ")";
                     String sql = "SELECT * FROM " + MyDatabase.MSGOFUSER_TABLE_NAME + " WHERE "
                             + where;
                     Cursor c = db.rawQuery(sql, null);
                     if (c == null || c.getCount() == 0) {
                         // There was no such row
+                        msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
                         db.insert(MyDatabase.MSGOFUSER_TABLE_NAME, MsgOfUser.MSG_ID,
                                 msgOfUserValues);
                     } else {
@@ -600,7 +608,9 @@ public class MyProvider extends ContentProvider {
         sTweetsProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
         sTweetsProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
         sTweetsProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
+        sTweetsProjectionMap.put(MsgOfUser.RETWEETED, MsgOfUser.RETWEETED);
         sTweetsProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
+        sTweetsProjectionMap.put(Msg.SENT_DATE, Msg.SENT_DATE);
         sTweetsProjectionMap.put(Msg.INS_DATE, Msg.INS_DATE);
 
         sUsersProjectionMap = new HashMap<String, String>();
@@ -621,7 +631,7 @@ public class MyProvider extends ContentProvider {
      * @param originId - see {@link MyDatabase.Msg#ORIGIN_ID}
      * @param oid - see {@link MyDatabase.Msg#MSG_OID}
      * @return - id in our System (i.e. in the table, e.g.
-     *         {@link MyDatabase.Msg#_ID} )
+     *         {@link MyDatabase.Msg#_ID} ). Or 0 if nothing was found.
      */
     public static long oidToId(Uri uri, long originId, String oid) {
         long id = 0;
@@ -629,27 +639,29 @@ public class MyProvider extends ContentProvider {
         String sql = "";
 
         try {
-            int matchedCode = sUriMatcher.match(uri);
-            switch (matchedCode) {
-                case TWEETS:
-                    sql = "SELECT " + MyDatabase.Msg._ID + " FROM " + MyDatabase.MSG_TABLE_NAME
-                            + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
-                            + "=" + oid;
-                    break;
+            if (!TextUtils.isEmpty(oid)) {
+                int matchedCode = sUriMatcher.match(uri);
+                switch (matchedCode) {
+                    case TWEETS:
+                        sql = "SELECT " + MyDatabase.Msg._ID + " FROM " + MyDatabase.MSG_TABLE_NAME
+                                + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
+                                + "=" + oid;
+                        break;
 
-                case USERS:
-                    sql = "SELECT " + MyDatabase.User._ID + " FROM " + MyDatabase.USER_TABLE_NAME
-                            + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USER_OID
-                            + "=" + oid;
-                    break;
+                    case USERS:
+                        sql = "SELECT " + MyDatabase.User._ID + " FROM " + MyDatabase.USER_TABLE_NAME
+                                + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USER_OID
+                                + "=" + oid;
+                        break;
 
-                default:
-                    throw new IllegalArgumentException("oidToId; Unknown URI \"" + uri
-                            + "\"; matchedCode=" + matchedCode);
+                    default:
+                        throw new IllegalArgumentException("oidToId; Unknown URI \"" + uri
+                                + "\"; matchedCode=" + matchedCode);
+                }
+                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+                prog = db.compileStatement(sql);
+                id = prog.simpleQueryForLong();
             }
-            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
-            prog = db.compileStatement(sql);
-            id = prog.simpleQueryForLong();
         } catch (SQLiteDoneException ed) {
             id = 0;
         } catch (Exception e) {
@@ -663,46 +675,49 @@ public class MyProvider extends ContentProvider {
     }
     
     /**
-     * Lookup Originated system's id from the System's (AndStatus) id 
+     * Lookup Originated system's id from the System's (AndStatus) id
      * 
      * @param uri - URI of the database table
      * @param systemId - see {@link MyDatabase.Msg#_ID}
-     * @return - oid in Originated system (i.e. in the table, e.g. {@link MyDatabase.Msg#MSG_OID}
-     *          empty string in case of an error
+     * @return - oid in Originated system (i.e. in the table, e.g.
+     *         {@link MyDatabase.Msg#MSG_OID} empty string in case of an error
      */
     public static String idToOid(Uri uri, long systemId) {
         String oid = "";
         SQLiteStatement prog = null;
         String sql = "";
 
-        try {
-            int matchedCode = sUriMatcher.match(uri);
-            switch (matchedCode) {
-                case TWEETS:
-                    sql = "SELECT " + MyDatabase.Msg.MSG_OID + " FROM " + MyDatabase.MSG_TABLE_NAME
-                            + " WHERE " + Msg._ID + "=" + systemId;
-                    break;
+        if (systemId > 0) {
+            try {
+                int matchedCode = sUriMatcher.match(uri);
+                switch (matchedCode) {
+                    case TWEETS:
+                        sql = "SELECT " + MyDatabase.Msg.MSG_OID + " FROM "
+                                + MyDatabase.MSG_TABLE_NAME + " WHERE " + Msg._ID + "=" + systemId;
+                        break;
 
-                case USERS:
-                    sql = "SELECT " + MyDatabase.User.USER_ID + " FROM " + MyDatabase.USER_TABLE_NAME
-                            + " WHERE " + User._ID + "=" + systemId;
-                    break;
+                    case USERS:
+                        sql = "SELECT " + MyDatabase.User.USER_ID + " FROM "
+                                + MyDatabase.USER_TABLE_NAME + " WHERE " + User._ID + "="
+                                + systemId;
+                        break;
 
-                default:
-                    throw new IllegalArgumentException("idToOid; Unknown URI \"" + uri
-                            + "\"; matchedCode=" + matchedCode);
+                    default:
+                        throw new IllegalArgumentException("idToOid; Unknown URI \"" + uri
+                                + "\"; matchedCode=" + matchedCode);
+                }
+                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+                prog = db.compileStatement(sql);
+                oid = prog.simpleQueryForString();
+            } catch (SQLiteDoneException ed) {
+                oid = "";
+            } catch (Exception e) {
+                Log.e(TAG, "idToOid: " + e.toString());
+                return "";
             }
-            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
-            prog = db.compileStatement(sql);
-            oid = prog.simpleQueryForString();
-        } catch (SQLiteDoneException ed) {
-            oid = "";
-        } catch (Exception e) {
-            Log.e(TAG, "idToOid: " + e.toString());
-            return "";
-        }
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "idToOid: " + systemId + " -> " + oid );
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                MyLog.v(TAG, "idToOid: " + systemId + " -> " + oid);
+            }
         }
         return oid;
     }
@@ -738,21 +753,23 @@ public class MyProvider extends ContentProvider {
     }
     
     /**
-     * Find {@link MyDatabase.Msg#CREATED_DATE}
+     * Find {@link MyDatabase.Msg#SENT_DATE}
      * @param msgId
      * @return
      */
-    public static long msgCreatedDate(long msgId) {
+    public static long msgSentDate(long msgId) {
         long ret = 0;
         SQLiteStatement prog = null;
         String sql = "";
 
         try {
-            sql = "SELECT " + Msg.CREATED_DATE + " FROM " + MyDatabase.MSG_TABLE_NAME
-                    + " WHERE " + Msg._ID + "=" + msgId;
-            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
-            prog = db.compileStatement(sql);
-            ret = prog.simpleQueryForLong();
+            if (msgId > 0) {
+                sql = "SELECT " + Msg.SENT_DATE + " FROM " + MyDatabase.MSG_TABLE_NAME
+                        + " WHERE " + Msg._ID + "=" + msgId;
+                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+                prog = db.compileStatement(sql);
+                ret = prog.simpleQueryForLong();
+            }
         } catch (SQLiteDoneException ed) {
             ret = 0;
         } catch (Exception e) {

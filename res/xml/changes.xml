@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-	Copyright (C) 2011 yvolk (Yuri Volkov), http://yurivolkov.com
+	Copyright (C) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -33,6 +33,20 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
  -->
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
+    <release android:versionName="1.4.0" android:versionCode="53"
+        versionDate="2012-03-17">
+        <changes>
+            <change>"Native" Retweet implemented. Tweets retweeted in AndStatus
+             are shown as "Retweeted" in twitter.com also.</change>
+            <change>Home timeline shows authors of Retweets, not users who retweeted them.</change>
+            <change>Underlying Data model has been totally redesigned in order to be able to 
+            accommodate upcoming enhancements:
+            1. Multiple user Accounts.
+            2. Multiple Instant messaging systems (twitter.com, identi.ca etc.).
+            3. References between messages (tweets, dents, statuses…), Users and Accounts.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="1.3.1" android:versionCode="51"
         versionDate="2012-02-15">
         <changes>
