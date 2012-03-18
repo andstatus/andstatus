@@ -191,9 +191,15 @@ public class MyService extends Service {
         EMPTY("empty"),
         /**
          * The action is being sent by recurring alarm to fetch the tweets,
-         * replies and other information in the background
+         * replies and other information in the background.
+         * TODO: Plus for all Accounts 
          */
         AUTOMATIC_UPDATE("automatic-update"),
+        /**
+         * Fetch all timelines for current Account 
+         * (this is generally done after addition of the new Account)
+         */
+        FETCH_ALL_TIMELINES("fetch-all-timelines"),
         /**
          * Fetch the Home timeline and other information (replies...).
          */
@@ -1098,6 +1104,7 @@ public class MyService extends Service {
 
                 switch (commandData.command) {
                     case AUTOMATIC_UPDATE:
+                    case FETCH_ALL_TIMELINES:
                         ok = loadTimeline(MyDatabase.TimelineTypeEnum.ALL);
                         break;
                     case FETCH_HOME:
@@ -1447,7 +1454,36 @@ public class MyService extends Service {
                                 TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS, TimelineTypeEnum.DIRECT
                         };
                     }
-                    for (int ind = 0; ind < atl.length; ind++) {
+                    
+                    int pass = 1;
+                    boolean okSomething = false;
+                    boolean oKs[] = new boolean[atl.length];
+                    for (int ind = 0; ind <= atl.length; ind++) {
+                        
+                        if (ind == atl.length) {
+                            // This is some trick for the cases we load more than one timeline at once
+                            // and there was an error on some timeline only
+                            if (pass > 1 || !okSomething) {
+                                break;
+                            }
+                            pass++;
+                            ind = 0; // Start from beginning
+                            MyLog.d(TAG, "Second pass of loading timeline");
+                        }
+                        if (pass > 1) {
+                            // Find next error index
+                            for (int ind2 = ind; ind2 < atl.length; ind2++) {
+                                if (!oKs[ind2]) {
+                                    ind = ind2;
+                                    break;
+                                }
+                            }
+                            if (oKs[ind]) {
+                                // No more errors on the second pass
+                                break;
+                            }
+                        }
+                                                
                         TimelineTypeEnum timelineType = atl[ind];
                         MyLog.d(TAG, "Getting " + timelineType.save() + " for " + Account.getAccount().getUsername());
 
@@ -1483,6 +1519,8 @@ public class MyService extends Service {
                                 }
                             }
                         }
+                        if (ok) { okSomething = true;}
+                        oKs[ind] = ok;
                     }
                 } catch (ConnectionException e) {
                     Log.e(TAG, descr + ", Connection Exception: " + e.toString());

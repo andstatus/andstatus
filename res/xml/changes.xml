@@ -33,7 +33,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
  -->
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
-    <release android:versionName="1.4.0" android:versionCode="53"
+    <release android:versionName="1.4.1" android:versionCode="54"
         versionDate="2012-03-17">
         <changes>
             <change>"Native" Retweet implemented. Tweets retweeted in AndStatus
@@ -44,6 +44,9 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
             1. Multiple user Accounts.
             2. Multiple Instant messaging systems (twitter.com, identi.ca etc.).
             3. References between messages (tweets, dents, statuses…), Users and Accounts.
+            Unfortunately advanced SQL queries used in the code are not supported by the 
+            SQLite engine built-in Android prior v.2.2 (API 8).
+            This means that this updated application works only on Android v.2.2 and above.
             </change>
         </changes>
     </release>

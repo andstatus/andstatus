@@ -367,7 +367,7 @@ public class PreferencesActivity extends PreferenceActivity implements
         if (PreferencesActivity.this.mCredentialsAreBeingVerified) {
             return;
         }
-        if (onSharedPreferenceChanged_busy) {
+        if (onSharedPreferenceChanged_busy || !MyPreferences.isInitialized()) {
             return;
         }
         onSharedPreferenceChanged_busy = true;

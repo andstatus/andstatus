@@ -1000,9 +1000,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         sendCommand(new CommandData(command));
 
         if (allTimelineTypes) {
-            sendCommand(new CommandData(CommandEnum.FETCH_HOME));
-            sendCommand(new CommandData(CommandEnum.FETCH_MENTIONS));
-            sendCommand(new CommandData(CommandEnum.FETCH_DIRECT_MESSAGES));
+            sendCommand(new CommandData(CommandEnum.FETCH_ALL_TIMELINES));
         }
     }
     
