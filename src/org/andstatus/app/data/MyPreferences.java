@@ -32,6 +32,7 @@ import java.io.File;
  */
 public class MyPreferences {
     private static final String TAG = MyPreferences.class.getSimpleName();
+    private static boolean misInitialized = false;
     /**
      * Single context object for which we will request SharedPreferences
      */
@@ -91,12 +92,13 @@ public class MyPreferences {
      */
     public static void initialize(Context context_in, java.lang.Object object ) {
         String origin_in = object.getClass().getSimpleName();
-        if (context == null) {
+        if (!misInitialized) {
             // Maybe we should use context_in.getApplicationContext() ??
             context = context_in.getApplicationContext();
             origin = origin_in;
             Account.initialize();
             MyLog.v(TAG, "Initialized by " + origin + " context: " + context.getClass().getName());
+            misInitialized = true;
         } else {
             MyLog.v(TAG, "Already initialized by " + origin +  " (called by: " + origin_in + ")");
         }
@@ -108,10 +110,16 @@ public class MyPreferences {
      * e.g. after configuration changes
      */
     public static void forget() {
+        misInitialized = false;
         Account.forget();
         if (db != null) {
-            db.close();
-            db = null;
+            try {
+                db.close();
+            } catch (Exception e) {
+                Log.e(TAG, "Error closing database " + e.getMessage());
+            } finally {
+                db = null;
+            }
         }
         MyLog.forget();
         context = null;
@@ -119,7 +127,7 @@ public class MyPreferences {
     }
     
     public static boolean isInitialized() {
-        return (context != null);
+        return (misInitialized);
     }
     
     /**

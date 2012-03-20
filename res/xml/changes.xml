@@ -33,8 +33,8 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
  -->
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
-    <release android:versionName="1.4.1" android:versionCode="54"
-        versionDate="2012-03-17">
+    <release android:versionName="1.4.2" android:versionCode="55"
+        versionDate="2012-03-20">
         <changes>
             <change>"Native" Retweet implemented. Tweets retweeted in AndStatus
              are shown as "Retweeted" in twitter.com also.</change>
@@ -48,10 +48,13 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
             SQLite engine built-in Android prior v.2.2 (API 8).
             This means that this updated application works only on Android v.2.2 and above.
             </change>
+            <change>WRITE_EXTERNAL_STORAGE permission was added to the Manifest. 
+            Otherwhise "Use External Storage" doesn't work (after compilation for API 8. 
+            It worked for API 3 though..).</change>
         </changes>
     </release>
-    <release android:versionName="1.3.1" android:versionCode="51"
-        versionDate="2012-02-15">
+    <release android:versionName="1.3.2" android:versionCode="52"
+        versionDate="2012-02-25">
         <changes>
             <change>Added "Use External Storage" option. When a User changes
                 this option, System moves database file to External storage

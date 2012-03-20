@@ -773,11 +773,11 @@ public class MyProvider extends ContentProvider {
         } catch (SQLiteDoneException ed) {
             ret = 0;
         } catch (Exception e) {
-            Log.e(TAG, "userNameToId: " + e.toString());
+            Log.e(TAG, "msgSentDate: " + e.toString());
             return 0;
         }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "msgCreatedDate:" + msgId + " -> " + ret);
+            MyLog.v(TAG, "msgSentDate:" + msgId + " -> " + ret);
         }
         return ret;
     }

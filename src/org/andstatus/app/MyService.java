@@ -1459,6 +1459,10 @@ public class MyService extends Service {
                     boolean okSomething = false;
                     boolean oKs[] = new boolean[atl.length];
                     for (int ind = 0; ind <= atl.length; ind++) {
+                        if (!MyPreferences.isInitialized()) {
+                            ok = false;
+                            break;
+                        }
                         
                         if (ind == atl.length) {
                             // This is some trick for the cases we load more than one timeline at once
@@ -1508,7 +1512,9 @@ public class MyService extends Service {
                                 Log.e(TAG, descr + " - not implemented");
                         }
 
-                        if (ok) {
+                        if (ok && timelineType == TimelineTypeEnum.HOME) {
+                            // Currently this procedure is the same for all timelines,
+                            // so let's do it only for one timeline type!
                             synchronized (MyService.this) {
                                 descr = "prune old records";
                                 if (mStateRestored) {

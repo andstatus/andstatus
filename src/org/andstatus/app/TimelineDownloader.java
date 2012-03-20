@@ -125,6 +125,10 @@ public class TimelineDownloader {
 
         long lastMsgId = mTu.getAccountPreferences().getLong(Account.KEY_LAST_TIMELINE_ID + mTimelineType.save(), 0);
         long lastDate = MyProvider.msgSentDate(lastMsgId);
+        if (lastDate == 0) {
+            MyLog.d(TAG, "There is no message with " + MyDatabase.Msg._ID + "=" + lastMsgId + " already"); 
+            lastMsgId = 0;
+        }
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
             String strLog = "Loading timeline " + mTimelineType.save() + " for " + mTu.getUsername();
@@ -156,6 +160,11 @@ public class TimelineDownloader {
                 ok = true;
                 try {
                     for (int index = 0; index < jArr.length(); index++) {
+                        if (!MyPreferences.isInitialized()) {
+                            ok = false;
+                            break;
+                        }
+                        
                         JSONObject msg = jArr.getJSONObject(index);
                         long created = 0L;
                         // This value will be SENT_DATE in the database
@@ -167,7 +176,7 @@ public class TimelineDownloader {
                         }
                         long idInserted = insertFromJSONObject(msg);
                         // Check if this message is newer than any we got earlier
-                        if (created > lastDate) {
+                        if (created > lastDate && idInserted > lastMsgId) {
                             lastDate = created;
                             lastMsgId = idInserted;
                         }
@@ -186,7 +195,8 @@ public class TimelineDownloader {
     }
 
     /**
-     * Insert a Timeline row from a JSONObject.
+     * Insert a Timeline row from a JSONObject
+     * or update existing one.
      * 
      * @param msg - The row to insert
      * @return id of this row in the database
@@ -380,6 +390,7 @@ public class TimelineDownloader {
             if (rowId == 0) {
                 // There was no such row so add new one
                 tweetUri = mContentResolver.insert(mContentUri, values);
+                rowId = Long.parseLong(tweetUri.getPathSegments().get(1));
             } else {
               mContentResolver.update(tweetUri, values, null, null);
             }
