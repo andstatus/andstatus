@@ -1432,42 +1432,48 @@ public class MyService extends Service {
         /**
          * @param loadHomeAndMentions - Should we load Home and Mentions
          * @param loadDirectMessages - Should we load direct messages
-         * @return ok
+         * @return ok - True if everything Succeeded
          */
         public boolean loadTimeline(MyDatabase.TimelineTypeEnum timelineType_in) {
+            boolean okAll = true;
 
             // TODO: Cycle for all users...
-            boolean ok = false;
-            int msgAdded = 0;
-            int mentionsAdded = 0;
-            int directedAdded = 0;
-            String descr = "(starting)";
-
-            if (Account.getAccount().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+            Account acc = Account.getAccount();
+            if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
                 // Only if User was authenticated already
-                try {
-                    TimelineTypeEnum[] atl = new TimelineTypeEnum[] {
-                        timelineType_in
+
+                boolean ok = false;
+                int msgAdded = 0;
+                int mentionsAdded = 0;
+                int directedAdded = 0;
+                String descr = "(starting)";
+
+                TimelineTypeEnum[] atl = new TimelineTypeEnum[] {
+                    timelineType_in
+                };
+                if (timelineType_in == TimelineTypeEnum.ALL) {
+                    atl = new TimelineTypeEnum[] {
+                            TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
+                            TimelineTypeEnum.DIRECT
                     };
-                    if (timelineType_in == TimelineTypeEnum.ALL) {
-                        atl = new TimelineTypeEnum[] {
-                                TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS, TimelineTypeEnum.DIRECT
-                        };
-                    }
-                    
-                    int pass = 1;
-                    boolean okSomething = false;
-                    boolean oKs[] = new boolean[atl.length];
+                }
+
+                int pass = 1;
+                boolean okSomething = false;
+                boolean notOkSomething = false;
+                boolean oKs[] = new boolean[atl.length];
+                try {
                     for (int ind = 0; ind <= atl.length; ind++) {
                         if (!MyPreferences.isInitialized()) {
-                            ok = false;
+                            okAll = false;
                             break;
                         }
-                        
+
                         if (ind == atl.length) {
-                            // This is some trick for the cases we load more than one timeline at once
+                            // This is some trick for the cases
+                            // when we load more than one timeline at once
                             // and there was an error on some timeline only
-                            if (pass > 1 || !okSomething) {
+                            if (pass > 1 || !okSomething || !notOkSomething) {
                                 break;
                             }
                             pass++;
@@ -1487,9 +1493,11 @@ public class MyService extends Service {
                                 break;
                             }
                         }
-                                                
+                        ok = false;
+
                         TimelineTypeEnum timelineType = atl[ind];
-                        MyLog.d(TAG, "Getting " + timelineType.save() + " for " + Account.getAccount().getUsername());
+                        MyLog.d(TAG, "Getting " + timelineType.save() + " for "
+                                + Account.getAccount().getUsername());
 
                         TimelineDownloader fl = null;
                         descr = "loading " + timelineType.save();
@@ -1513,7 +1521,8 @@ public class MyService extends Service {
                         }
 
                         if (ok && timelineType == TimelineTypeEnum.HOME) {
-                            // Currently this procedure is the same for all timelines,
+                            // Currently this procedure is the same for all
+                            // timelines,
                             // so let's do it only for one timeline type!
                             synchronized (MyService.this) {
                                 descr = "prune old records";
@@ -1525,7 +1534,11 @@ public class MyService extends Service {
                                 }
                             }
                         }
-                        if (ok) { okSomething = true;}
+                        if (ok) {
+                            okSomething = true;
+                        } else {
+                            notOkSomething = true;
+                        }
                         oKs[ind] = ok;
                     }
                 } catch (ConnectionException e) {
@@ -1535,33 +1548,58 @@ public class MyService extends Service {
                     Log.e(TAG, descr + ", SQLite Exception: " + e.toString());
                     ok = false;
                 }
-            }
 
-            if (ok) {
-                descr = "notifying";
-                synchronized (MyService.this) {
-                    if (mStateRestored) {
-                        notifyOfUpdatedTimeline(msgAdded, mentionsAdded, directedAdded);
-                    } else {
-                        Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
-                        ok = false;
+                if (ok) {
+                    descr = "notifying";
+                    synchronized (MyService.this) {
+                        if (mStateRestored) {
+                            notifyOfUpdatedTimeline(msgAdded, mentionsAdded, directedAdded);
+                        } else {
+                            Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
+                            ok = false;
+                        }
                     }
                 }
-            }
 
-            String message = (ok ? "Succeeded" : "Failed") + " getting " + timelineType_in.save();
-            if (msgAdded > 0) {
-                message += ", " + msgAdded + " tweets";
-            }
-            if (mentionsAdded > 0) {
-                message += ", " + mentionsAdded + " mentions";
-            }
-            if (directedAdded > 0) {
-                message += ", " + directedAdded + " directs";
-            }
-            MyLog.d(TAG, message);
-
-            return ok;
+                String message = "";
+                if (oKs.length <= 1) {
+                  message += (ok ? "Succeeded" : "Failed");
+                  okAll = ok;
+                } else {
+                  int nOks = 0;
+                  for(int ind=0; ind<oKs.length; ind++) {
+                      if (oKs[ind]) {
+                          nOks += 1;
+                      }
+                  }
+                  if (nOks > 0) {
+                      message += "Succeded " + nOks;
+                      if (nOks < oKs.length) {
+                          message += " of " + oKs.length;  
+                          okAll = false;
+                      } 
+                  } else {
+                      message += "Failed " + oKs.length;  
+                      okAll = false;
+                  }
+                  message += " times";  
+                }
+                
+                message += " getting " + timelineType_in.save()
+                        + " for " + acc.getUsername();
+                if (msgAdded > 0) {
+                    message += ", " + msgAdded + " tweets";
+                }
+                if (mentionsAdded > 0) {
+                    message += ", " + mentionsAdded + " mentions";
+                }
+                if (directedAdded > 0) {
+                    message += ", " + directedAdded + " directs";
+                }
+                MyLog.d(TAG, message);
+            } // for one Account
+            
+            return okAll;
         }
 
         private void notifyOfUpdatedTimeline(int msgAdded, int mentionsAdded,
