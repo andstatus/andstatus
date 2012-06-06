@@ -19,7 +19,8 @@ package org.andstatus.app;
 
 import java.util.Date;
 
-import org.andstatus.app.Account.CredentialsVerified;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -81,19 +82,11 @@ public class TimelineDownloader {
      */
     private int mReplies;
 
-    private Account mTu;
+    private MyAccount mTu;
 
     private TimelineTypeEnum mTimelineType;
 
-    private Uri mContentUri;
-
-    private Uri mContentCountUri;
-
-    public TimelineDownloader(Context context, TimelineTypeEnum timelineType) {
-        this(Account.getAccount(), context, timelineType);
-    }
-
-    public TimelineDownloader(Account tuIn, Context context, TimelineTypeEnum timelineType) {
+    public TimelineDownloader(MyAccount tuIn, Context context, TimelineTypeEnum timelineType) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
         mTu = tuIn;
@@ -103,8 +96,6 @@ public class TimelineDownloader {
             case HOME:
             case MENTIONS:
             case DIRECT:
-                mContentUri = MyDatabase.Msg.CONTENT_URI;
-                mContentCountUri = MyDatabase.Msg.CONTENT_COUNT_URI;
                 break;
             default:
                 Log.e(TAG, "Unknown Timeline type: " + mTimelineType);
@@ -123,7 +114,7 @@ public class TimelineDownloader {
         mMentions = 0;
         mReplies = 0;
 
-        long lastMsgId = mTu.getAccountPreferences().getLong(Account.KEY_LAST_TIMELINE_ID + mTimelineType.save(), 0);
+        long lastMsgId = mTu.getMyAccountPreferences().getLong(MyAccount.KEY_LAST_TIMELINE_ID + mTimelineType.save(), 0);
         long lastDate = MyProvider.msgSentDate(lastMsgId);
         if (lastDate == 0) {
             MyLog.d(TAG, "There is no message with " + MyDatabase.Msg._ID + "=" + lastMsgId + " already"); 
@@ -186,9 +177,9 @@ public class TimelineDownloader {
                 }
             }
             if (mMessages > 0) {
-                mContentResolver.notifyChange(mContentUri, null);
+                mContentResolver.notifyChange(MyProvider.getTimelineUri(mTu.getUserId()), null);
             }
-            mTu.getAccountPreferences().edit().putLong(Account.KEY_LAST_TIMELINE_ID + mTimelineType.save(),
+            mTu.getMyAccountPreferences().edit().putLong(MyAccount.KEY_LAST_TIMELINE_ID + mTimelineType.save(),
                     lastMsgId).commit();
         }
         return ok;
@@ -275,7 +266,7 @@ public class TimelineDownloader {
             // Lookup the System's (AndStatus) id from the Originated system's id
             rowId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, mTu.getOriginId(), rowOid);
             // Construct the Uri to the Msg
-            Uri tweetUri = ContentUris.withAppendedId(mContentUri, rowId);
+            Uri tweetUri = MyProvider.getTimelineMsgUri(mTu.getUserId(), rowId);
             
             String body = "";
             if (msg.has("text")) {
@@ -389,8 +380,8 @@ public class TimelineDownloader {
             
             if (rowId == 0) {
                 // There was no such row so add new one
-                tweetUri = mContentResolver.insert(mContentUri, values);
-                rowId = Long.parseLong(tweetUri.getPathSegments().get(1));
+                tweetUri = mContentResolver.insert(MyProvider.getTimelineUri(mTu.getUserId()), values);
+                rowId = Long.parseLong(tweetUri.getPathSegments().get(3));
             } else {
               mContentResolver.update(tweetUri, values, null, null);
             }
@@ -510,7 +501,7 @@ public class TimelineDownloader {
         long rowId = insertFromJSONObject(jo);
         if (notify) {
             // Construct the Uri to the Msg
-            Uri tweetUri = ContentUris.withAppendedId(mContentUri, rowId);
+            Uri tweetUri = MyProvider.getTimelineMsgUri(mTu.getUserId(), rowId);
             mContentResolver.notifyChange(tweetUri, null);
         }
         return rowId;
@@ -552,12 +543,12 @@ public class TimelineDownloader {
                     String.valueOf(sinceTimestamp)
                 });
                 sa.selection += " AND " + sqlNotFavorited;
-                nDeletedTime = mContentResolver.delete(mContentUri, sa.selection, sa.selectionArgs);
+                nDeletedTime = mContentResolver.delete(MyDatabase.Msg.CONTENT_URI, sa.selection, sa.selectionArgs);
             }
 
             if (maxSize > 0) {
                 nDeletedSize = 0;
-                Cursor cursor = mContentResolver.query(mContentCountUri, null, null, null, null);
+                Cursor cursor = mContentResolver.query(MyDatabase.Msg.CONTENT_COUNT_URI, null, null, null, null);
                 if (cursor.moveToFirst()) {
                     // Count is in the first column
                     nTweets = cursor.getInt(0);
@@ -566,7 +557,7 @@ public class TimelineDownloader {
                 cursor.close();
                 if (nToDeleteSize > 0) {
                     // Find INS_DATE of the most recent tweet to delete
-                    cursor = mContentResolver.query(mContentUri, new String[] {
+                    cursor = mContentResolver.query(MyDatabase.Msg.CONTENT_URI, new String[] {
                             MyDatabase.Msg.INS_DATE
                     }, null, null, "sent ASC LIMIT 0," + nToDeleteSize);
                     if (cursor.moveToLast()) {
@@ -579,7 +570,7 @@ public class TimelineDownloader {
                             String.valueOf(sinceTimestampSize)
                         });
                         sa.selection += " AND " + sqlNotFavorited;
-                        nDeletedSize = mContentResolver.delete(mContentUri, sa.selection,
+                        nDeletedSize = mContentResolver.delete(MyDatabase.Msg.CONTENT_URI, sa.selection,
                                 sa.selectionArgs);
                     }
                 }
@@ -632,7 +623,8 @@ public class TimelineDownloader {
      * @return Number of deleted records
      */
     public int destroyStatus(long statusId) {
-        return mContentResolver.delete(mContentUri, MyDatabase.Msg._ID + " = " + statusId,
+        // TODO: Maybe we should use Timeline Uri...
+        return mContentResolver.delete(MyDatabase.Msg.CONTENT_URI, MyDatabase.Msg._ID + " = " + statusId,
                 null);
     }
 }

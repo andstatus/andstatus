@@ -22,7 +22,8 @@ import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.andstatus.app.Account.CredentialsVerified;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -58,6 +59,7 @@ import android.os.PowerManager;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.Log;
 
 
@@ -146,9 +148,9 @@ public class MyService extends Service {
     public static final String EXTRA_STATUS = packageName + ".STATUS";
 
     /**
-     * User name
+     * Account name, see {@link MyAccount#getAccountGuid()}
      */
-    public static final String EXTRA_USERNAME = packageName + ".USERNAME";
+    public static final String EXTRA_ACCOUNT_NAME = packageName + ".ACCOUNT_NAME";
 
     /**
      * Name of the preference to set
@@ -196,8 +198,8 @@ public class MyService extends Service {
          */
         AUTOMATIC_UPDATE("automatic-update"),
         /**
-         * Fetch all timelines for current Account 
-         * (this is generally done after addition of the new Account)
+         * Fetch all timelines for current MyAccount 
+         * (this is generally done after addition of the new MyAccount)
          */
         FETCH_ALL_TIMELINES("fetch-all-timelines"),
         /**
@@ -305,6 +307,15 @@ public class MyService extends Service {
     public static class CommandData {
         public CommandEnum command;
 
+        /**
+         * Unique name of {@link MyAccount} for this command. Empty string if command is not Account specific 
+         * (e.g. {@link CommandEnum#AUTOMATIC_UPDATE} which works for all accounts) 
+         */
+        public String accountName = "";
+        
+        /**
+         * This is generally {@link android.provider.BaseColumns#_ID} of the {@link MyDatabase.Msg}
+         */
         public long itemId = 0;
 
         /**
@@ -319,63 +330,57 @@ public class MyService extends Service {
          */
         public int retriesLeft = 0;
 
-        public CommandData(CommandEnum commandIn) {
+        public CommandData(CommandEnum commandIn, String accountNameIn) {
             command = commandIn;
+            if (!TextUtils.isEmpty(accountNameIn)) {
+                accountName = accountNameIn;
+            }
         }
 
-        public CommandData(CommandEnum commandIn, long itemIdIn) {
-            command = commandIn;
+        public CommandData(CommandEnum commandIn, String accountNameIn, long itemIdIn) {
+            this(commandIn, accountNameIn);
             itemId = itemIdIn;
         }
 
         /**
-         * Initialize command to put SharedPreference
+         * Initialize command to put boolean SharedPreference
          * 
          * @param preferenceKey
          * @param value
-         * @param username - preferences for this user, or null if Global
+         * @param accountNameIn - preferences for this user, or null if Global
          *            preferences
          */
-        public CommandData(String preferenceKey, boolean value, String username) {
-            command = CommandEnum.PUT_BOOLEAN_PREFERENCE;
+        public CommandData(String accountNameIn, String preferenceKey, boolean value) {
+            this(CommandEnum.PUT_BOOLEAN_PREFERENCE, accountNameIn);
             bundle.putString(EXTRA_PREFERENCE_KEY, preferenceKey);
             bundle.putBoolean(EXTRA_PREFERENCE_VALUE, value);
-            if (username != null) {
-                bundle.putString(EXTRA_USERNAME, username);
-            }
         }
 
         /**
-         * Initialize command to put SharedPreference
+         * Initialize command to put long SharedPreference
          * 
+         * @param accountNameIn - preferences for this user, or null if Global
+         *            preferences
          * @param preferenceKey
          * @param value
-         * @param username - preferences for this user, or null if Global
-         *            preferences
          */
-        public CommandData(String preferenceKey, long value, String username) {
-            command = CommandEnum.PUT_LONG_PREFERENCE;
+        public CommandData(String accountNameIn, String preferenceKey, long value) {
+            this(CommandEnum.PUT_LONG_PREFERENCE, accountNameIn);
             bundle.putString(EXTRA_PREFERENCE_KEY, preferenceKey);
             bundle.putLong(EXTRA_PREFERENCE_VALUE, value);
-            if (username != null) {
-                bundle.putString(EXTRA_USERNAME, username);
-            }
         }
 
         /**
-         * Initialize command to put SharedPreference
+         * Initialize command to put string SharedPreference
          * 
+         * @param accountNameIn - preferences for this user
          * @param preferenceKey
          * @param value
-         * @param username - preferences for this user
          */
-        public CommandData(String preferenceKey, String value, String username) {
-            command = CommandEnum.PUT_STRING_PREFERENCE;
+        public CommandData(String accountNameIn, String preferenceKey, String value) {
+            this(CommandEnum.PUT_STRING_PREFERENCE, accountNameIn);
             bundle.putString(EXTRA_PREFERENCE_KEY, preferenceKey);
             bundle.putString(EXTRA_PREFERENCE_VALUE, value);
-            if (username != null) {
-                bundle.putString(EXTRA_USERNAME, username);
-            }
         }
 
         /**
@@ -389,13 +394,14 @@ public class MyService extends Service {
             String strCommand = "(no command)";
             if (bundle != null) {
                 strCommand = bundle.getString(EXTRA_MSGTYPE);
+                accountName = bundle.getString(EXTRA_ACCOUNT_NAME);
                 itemId = bundle.getLong(EXTRA_TWEETID);
             }
             command = CommandEnum.load(strCommand);
         }
 
         /**
-         * Restore the object from the SharedPreferences 
+         * Restore this from the SharedPreferences 
          * @param sp
          * @param index Index of the preference's name to be used
          */
@@ -404,6 +410,7 @@ public class MyService extends Service {
             String si = Integer.toString(index);
             // Decode command
             String strCommand = sp.getString(EXTRA_MSGTYPE + si, CommandEnum.UNKNOWN.save());
+            accountName = sp.getString(EXTRA_ACCOUNT_NAME + si, "");
             itemId = sp.getLong(EXTRA_TWEETID + si, 0);
             command = CommandEnum.load(strCommand);
 
@@ -425,6 +432,9 @@ public class MyService extends Service {
         public int hashCode() {
             if (hashcode == 0) {
                 String text = Long.toString(command.ordinal());
+                if (!TextUtils.isEmpty(accountName)) {
+                    text += accountName;
+                }
                 if (itemId != 0) {
                     text += Long.toString(itemId);
                 }
@@ -434,17 +444,14 @@ public class MyService extends Service {
                         break;
                     case PUT_BOOLEAN_PREFERENCE:
                         text += bundle.getString(EXTRA_PREFERENCE_KEY)
-                                + bundle.getString(EXTRA_USERNAME)
                                 + bundle.getBoolean(EXTRA_PREFERENCE_VALUE);
                         break;
                     case PUT_LONG_PREFERENCE:
                         text += bundle.getString(EXTRA_PREFERENCE_KEY)
-                                + bundle.getString(EXTRA_USERNAME)
                                 + bundle.getLong(EXTRA_PREFERENCE_VALUE);
                         break;
                     case PUT_STRING_PREFERENCE:
                         text += bundle.getString(EXTRA_PREFERENCE_KEY)
-                                + bundle.getString(EXTRA_USERNAME)
                                 + bundle.getString(EXTRA_PREFERENCE_VALUE);
                         break;
                 }
@@ -459,6 +466,7 @@ public class MyService extends Service {
         @Override
         public String toString() {
             return "CommandData [" + "command=" + command.save()
+                    + (TextUtils.isEmpty(accountName) ? "" : "; account=" + accountName)
                     + (itemId == 0 ? "" : "; id=" + itemId) + ", hashCode=" + hashCode() + "]";
         }
 
@@ -481,6 +489,9 @@ public class MyService extends Service {
                 bundle = new Bundle();
             }
             bundle.putString(MyService.EXTRA_MSGTYPE, command.save());
+            if (!TextUtils.isEmpty(accountName)) {
+                bundle.putString(MyService.EXTRA_ACCOUNT_NAME, accountName);
+            }
             if (itemId != 0) {
                 bundle.putLong(MyService.EXTRA_TWEETID, itemId);
             }
@@ -514,6 +525,9 @@ public class MyService extends Service {
 
             android.content.SharedPreferences.Editor ed = sp.edit();
             ed.putString(EXTRA_MSGTYPE + si, command.save());
+            if (!TextUtils.isEmpty(accountName)) {
+                ed.putString(EXTRA_ACCOUNT_NAME + si, accountName);
+            }
             if (itemId != 0) {
                 ed.putLong(EXTRA_TWEETID + si, itemId);
             }
@@ -598,7 +612,7 @@ public class MyService extends Service {
      * the service process only (to avoid problems of concurrent access.
      * @return Single instance of SharedPreferences, specific to the class
      */
-    private SharedPreferences getServiceSp() {
+    private SharedPreferences getMyServicePreferences() {
         return MyPreferences.getSharedPreferences(TAG, MODE_PRIVATE);
     }
     
@@ -606,7 +620,7 @@ public class MyService extends Service {
     public void onCreate() {
         MyPreferences.initialize(this, this);
         preferencesChangeTime = MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0);
-        preferencesExamineTime = getServiceSp().getLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, 0);
+        preferencesExamineTime = getMyServicePreferences().getLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, 0);
         MyLog.d(TAG, "Service created, preferencesChangeTime=" + preferencesChangeTime + ", examined=" + preferencesExamineTime);
 
         registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
@@ -843,12 +857,11 @@ public class MyService extends Service {
                     }
                     String key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     boolean boolValue = commandData.bundle.getBoolean(EXTRA_PREFERENCE_VALUE);
-                    String username = commandData.bundle.getString(EXTRA_USERNAME);
                     MyLog.v(TAG, "Put boolean Preference '" + key + "'=" + boolValue
-                            + ((username != null) ? " user='" + username + "'" : " global"));
+                            + ((!TextUtils.isEmpty(commandData.accountName)) ? " account='" + commandData.accountName + "'" : " global"));
                     SharedPreferences sp = null;
-                    if (username != null) {
-                        sp = Account.getAccount(username).getAccountPreferences();
+                    if (!TextUtils.isEmpty(commandData.accountName)) {
+                        sp = MyAccount.getMyAccount(commandData.accountName).getMyAccountPreferences();
                     } else {
                         sp = getSp();
                     }
@@ -863,11 +876,10 @@ public class MyService extends Service {
                     }
                     key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     long longValue = commandData.bundle.getLong(EXTRA_PREFERENCE_VALUE);
-                    username = commandData.bundle.getString(EXTRA_USERNAME);
                     MyLog.v(TAG, "Put long Preference '" + key + "'=" + longValue
-                            + ((username != null) ? " user='" + username + "'" : " global"));
-                    if (username != null) {
-                        sp = Account.getAccount(username).getAccountPreferences();
+                            + ((!TextUtils.isEmpty(commandData.accountName)) ? " account='" + commandData.accountName + "'" : " global"));
+                    if (!TextUtils.isEmpty(commandData.accountName)) {
+                        sp = MyAccount.getMyAccount(commandData.accountName).getMyAccountPreferences();
                     } else {
                         sp = getSp();
                     }
@@ -882,11 +894,10 @@ public class MyService extends Service {
                     }
                     key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     String stringValue = commandData.bundle.getString(EXTRA_PREFERENCE_VALUE);
-                    username = commandData.bundle.getString(EXTRA_USERNAME);
                     MyLog.v(TAG, "Put String Preference '" + key + "'=" + stringValue
-                            + ((username != null) ? " user='" + username + "'" : " global"));
-                    if (username != null) {
-                        sp = Account.getAccount(username).getAccountPreferences();
+                            + ((!TextUtils.isEmpty(commandData.accountName)) ? " account='" + commandData.accountName + "'" : " global"));
+                    if (!TextUtils.isEmpty(commandData.accountName)) {
+                        sp = MyAccount.getMyAccount(commandData.accountName).getMyAccountPreferences();
                     } else {
                         sp = getSp();
                     }
@@ -928,7 +939,7 @@ public class MyService extends Service {
         }
         preferencesChangeTime = preferencesChangeTimeNew;
         preferencesExamineTime = preferencesExamineTimeNew;
-        getServiceSp().edit().putLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, preferencesExamineTime).commit();
+        getMyServicePreferences().edit().putLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, preferencesExamineTime).commit();
 
         // Forget and reload preferences...
         MyPreferences.forget();
@@ -1053,7 +1064,7 @@ public class MyService extends Service {
              * Kick the commands queue by sending empty command
              */
             PendingIntent pi = PendingIntent.getBroadcast(this, 0, new CommandData(
-                    CommandEnum.EMPTY).toIntent(), 0);
+                    CommandEnum.EMPTY, "").toIntent(), 0);
 
             notification.setLatestEventInfo(this, getText(messageTitle), aMessage, pi);
             nM.notify(CommandEnum.NOTIFY_QUEUE.ordinal(), notification);
@@ -1105,20 +1116,20 @@ public class MyService extends Service {
                 switch (commandData.command) {
                     case AUTOMATIC_UPDATE:
                     case FETCH_ALL_TIMELINES:
-                        ok = loadTimeline(MyDatabase.TimelineTypeEnum.ALL);
+                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.ALL);
                         break;
                     case FETCH_HOME:
-                        ok = loadTimeline(MyDatabase.TimelineTypeEnum.HOME);
+                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.HOME);
                         break;
                     case FETCH_MENTIONS:
-                        ok = loadTimeline(MyDatabase.TimelineTypeEnum.MENTIONS);
+                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.MENTIONS);
                         break;
                     case FETCH_DIRECT_MESSAGES:
-                        ok = loadTimeline(MyDatabase.TimelineTypeEnum.DIRECT);
+                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.DIRECT);
                         break;
                     case CREATE_FAVORITE:
                     case DESTROY_FAVORITE:
-                        ok = createOrDestroyFavorite(
+                        ok = createOrDestroyFavorite(commandData.accountName, 
                                 commandData.command == CommandEnum.CREATE_FAVORITE,
                                 commandData.itemId);
                         // Retry in a case of an error
@@ -1127,20 +1138,20 @@ public class MyService extends Service {
                     case UPDATE_STATUS:
                         String status = commandData.bundle.getString(EXTRA_STATUS).trim();
                         long inReplyToId = commandData.bundle.getLong(EXTRA_INREPLYTOID);
-                        ok = updateStatus(status, inReplyToId);
+                        ok = updateStatus(commandData.accountName, status, inReplyToId);
                         retry = !ok;
                         break;
                     case DESTROY_STATUS:
-                        ok = destroyStatus(commandData.itemId);
+                        ok = destroyStatus(commandData.accountName, commandData.itemId);
                         // Retry in a case of an error
                         retry = !ok;
                         break;
                     case RETWEET:
-                        ok = retweet(commandData.itemId);
+                        ok = retweet(commandData.accountName, commandData.itemId);
                         retry = !ok;
                         break;
                     case RATE_LIMIT_STATUS:
-                        ok = rateLimitStatus();
+                        ok = rateLimitStatus(commandData.accountName);
                         break;
                     default:
                         Log.e(TAG, "Unexpected command here " + commandData);
@@ -1232,16 +1243,17 @@ public class MyService extends Service {
          * @param msgId
          * @return boolean ok
          */
-        private boolean createOrDestroyFavorite(boolean create, long msgId) {
+        private boolean createOrDestroyFavorite(String accountNameIn, boolean create, long msgId) {
             boolean ok = false;
+            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
             String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, msgId);
             JSONObject result = new JSONObject();
-            if (oid.length()>0) {
+            if (oid.length() > 0) {
                 try {
                     if (create) {
-                        result = Account.getAccount().getConnection().createFavorite(oid);
+                        result = ma.getConnection().createFavorite(oid);
                     } else {
-                        result = Account.getAccount().getConnection().destroyFavorite(oid);
+                        result = ma.getConnection().destroyFavorite(oid);
                     }
                     ok = (result != null);
                 } catch (ConnectionException e) {
@@ -1254,47 +1266,57 @@ public class MyService extends Service {
                         (create ? "create" : "destroy") + "Favorite; msgId not found: " + msgId);
             }
             if (ok) {
-                synchronized(MyService.this) {
+                synchronized (MyService.this) {
                     if (mStateRestored) {
                         try {
                             boolean favorited = result.getBoolean("favorited");
                             if (favorited != create) {
-                                /** 
-                                 * yvolk: 2011-09-27 Twitter docs state that this may happen
-                                 *  due to asynchronous nature of the process,
-                                 *  see https://dev.twitter.com/docs/api/1/post/favorites/create/%3Aid
+                                /**
+                                 * yvolk: 2011-09-27 Twitter docs state that
+                                 * this may happen due to asynchronous nature of
+                                 * the process, see
+                                 * https://dev.twitter.com/docs/
+                                 * api/1/post/favorites/create/%3Aid
                                  */
                                 if (create) {
-                                    // For the case we created favorite, let's change
+                                    // For the case we created favorite, let's
+                                    // change
                                     // the flag manually.
                                     result.put("favorited", create);
 
                                     MyLog.d(TAG,
-                                            (create ? "create" : "destroy") + ". Favorited flag didn't change yet.");
-                                    
-                                    // Let's try to assume that everything was Ok:
+                                            (create ? "create" : "destroy")
+                                                    + ". Favorited flag didn't change yet.");
+
+                                    // Let's try to assume that everything was
+                                    // Ok:
                                     ok = true;
                                 } else {
-                                    // yvolk: 2011-09-27 Sometimes this twitter.com 'async' process doesn't work
+                                    // yvolk: 2011-09-27 Sometimes this
+                                    // twitter.com 'async' process doesn't work
                                     // so let's try another time...
-                                    // This is safe, because "delete favorite" works
+                                    // This is safe, because "delete favorite"
+                                    // works
                                     // even for "Unfavorited" tweet :-)
                                     ok = false;
 
                                     Log.e(TAG,
-                                            (create ? "create" : "destroy") + ". Favorited flag didn't change yet.");
+                                            (create ? "create" : "destroy")
+                                                    + ". Favorited flag didn't change yet.");
                                 }
                             }
                         } catch (JSONException e) {
                             Log.e(TAG,
-                                    (create ? "create" : "destroy") + ". Checking resulted favorited flag: "
+                                    (create ? "create" : "destroy")
+                                            + ". Checking resulted favorited flag: "
                                             + e.toString());
                         }
-                        
+
                         if (ok) {
                             try {
-                                TimelineDownloader fl = new TimelineDownloader(
-                                MyService.this.getApplicationContext(), TimelineTypeEnum.HOME );
+                                TimelineDownloader fl = new TimelineDownloader(ma,
+                                        MyService.this.getApplicationContext(),
+                                        TimelineTypeEnum.HOME);
                                 fl.insertFromJSONObject(result, true);
                             } catch (JSONException e) {
                                 Log.e(TAG,
@@ -1303,10 +1325,11 @@ public class MyService extends Service {
                             }
                         }
                     } else {
-                        Log.e(TAG, (create ? "create" : "destroy") + "Favorite - " + SERVICE_NOT_RESTORED_TEXT);
+                        Log.e(TAG, (create ? "create" : "destroy") + "Favorite - "
+                                + SERVICE_NOT_RESTORED_TEXT);
                     }
-                }        
-                
+                }
+
             }
 
             // TODO: Maybe we need to notify the caller about the result?!
@@ -1320,16 +1343,18 @@ public class MyService extends Service {
          * @param statusId
          * @return boolean ok
          */
-        private boolean destroyStatus(long msgId) {
+        private boolean destroyStatus(String accountNameIn, long msgId) {
             boolean ok = false;
+            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
             String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, msgId);
             JSONObject result = new JSONObject();
             try {
-                result = Account.getAccount().getConnection().destroyStatus(oid);
+                result = ma.getConnection().destroyStatus(oid);
                 ok = (result != null);
             } catch (ConnectionException e) {
                 if (e.getStatusCode() == 404) {
-                    // This means that there is no such "Status", so we may assume that it's Ok!
+                    // This means that there is no such "Status", so we may
+                    // assume that it's Ok!
                     ok = true;
                 } else {
                     Log.e(TAG, "destroyStatus Connection Exception: " + e.toString());
@@ -1337,11 +1362,11 @@ public class MyService extends Service {
             }
 
             if (ok) {
-                synchronized(MyService.this) {
+                synchronized (MyService.this) {
                     if (mStateRestored) {
                         // And delete the status from the local storage
                         try {
-                            TimelineDownloader fl = new TimelineDownloader(
+                            TimelineDownloader fl = new TimelineDownloader(ma,
                                     MyService.this.getApplicationContext(),
                                     TimelineTypeEnum.HOME);
                             fl.destroyStatus(msgId);
@@ -1351,7 +1376,7 @@ public class MyService extends Service {
                     } else {
                         Log.e(TAG, "destroyStatus - " + SERVICE_NOT_RESTORED_TEXT);
                     }
-                }        
+                }
             }
 
             // TODO: Maybe we need to notify the caller about the result?!
@@ -1365,12 +1390,13 @@ public class MyService extends Service {
          * @param inReplyToId
          * @return ok
          */
-        private boolean updateStatus(String status, long inReplyToId) {
-            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, inReplyToId);
+        private boolean updateStatus(String accountNameIn, String status, long inReplyToId) {
             boolean ok = false;
+            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
+            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, inReplyToId);
             JSONObject result = new JSONObject();
             try {
-                result = Account.getAccount().getConnection()
+                result = ma.getConnection()
                         .updateStatus(status.trim(), oid);
                 ok = (result != null);
             } catch (ConnectionException e) {
@@ -1381,7 +1407,7 @@ public class MyService extends Service {
                     if (mStateRestored) {
                         try {
                             // The tweet was sent successfully
-                            TimelineDownloader fl = new TimelineDownloader(
+                            TimelineDownloader fl = new TimelineDownloader(ma, 
                                     MyService.this.getApplicationContext(),
                                     TimelineTypeEnum.HOME);
 
@@ -1397,12 +1423,13 @@ public class MyService extends Service {
             return ok;
         }
 
-        private boolean retweet(long retweetedId) {
+        private boolean retweet(String accountNameIn, long retweetedId) {
+            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
             String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, retweetedId);
             boolean ok = false;
             JSONObject result = new JSONObject();
             try {
-                result = Account.getAccount().getConnection()
+                result = ma.getConnection()
                         .postRetweet(oid);
                 ok = (result != null);
             } catch (ConnectionException e) {
@@ -1413,7 +1440,7 @@ public class MyService extends Service {
                     if (mStateRestored) {
                         try {
                             // The tweet was sent successfully
-                            TimelineDownloader fl = new TimelineDownloader(
+                            TimelineDownloader fl = new TimelineDownloader(ma, 
                                     MyService.this.getApplicationContext(),
                                     TimelineTypeEnum.HOME);
 
@@ -1430,178 +1457,220 @@ public class MyService extends Service {
         }
         
         /**
+         * @param accountNameIn If empty load the Timeline for all MyAccounts
          * @param loadHomeAndMentions - Should we load Home and Mentions
          * @param loadDirectMessages - Should we load direct messages
-         * @return ok - True if everything Succeeded
+         * @return True if everything Succeeded
          */
-        public boolean loadTimeline(MyDatabase.TimelineTypeEnum timelineType_in) {
-            boolean okAll = true;
-
-            // TODO: Cycle for all users...
-            Account acc = Account.getAccount();
-            if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-                // Only if User was authenticated already
-
-                boolean ok = false;
-                int msgAdded = 0;
-                int mentionsAdded = 0;
-                int directedAdded = 0;
-                String descr = "(starting)";
-
-                TimelineTypeEnum[] atl = new TimelineTypeEnum[] {
-                    timelineType_in
-                };
-                if (timelineType_in == TimelineTypeEnum.ALL) {
-                    atl = new TimelineTypeEnum[] {
-                            TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
-                            TimelineTypeEnum.DIRECT
-                    };
-                }
-
-                int pass = 1;
-                boolean okSomething = false;
-                boolean notOkSomething = false;
-                boolean oKs[] = new boolean[atl.length];
-                try {
-                    for (int ind = 0; ind <= atl.length; ind++) {
-                        if (!MyPreferences.isInitialized()) {
-                            okAll = false;
-                            break;
+        private boolean loadTimeline(String accountNameIn,
+                MyDatabase.TimelineTypeEnum timelineType_in) {
+            boolean okAllAccounts = true;
+            
+            if (TextUtils.isEmpty(accountNameIn)) {
+                // Cycle for all accounts
+                for (int ind=0; ind < MyAccount.list().length; ind++) {
+                    MyAccount acc = MyAccount.list()[ind];
+                    if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+                        // Only if User was authenticated already
+                        boolean ok = loadTimelineAccount(acc, timelineType_in);
+                        if (!ok) {
+                            okAllAccounts = false;
                         }
+                    }
+                }
+            } else {
+                MyAccount acc = MyAccount.getMyAccount(accountNameIn);
+                if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+                    // Only if User was authenticated already
+                    boolean ok = loadTimelineAccount(acc, timelineType_in);
+                    if (!ok) {
+                        okAllAccounts = false;
+                    }
+                }
+            } // for one MyAccount
 
-                        if (ind == atl.length) {
-                            // This is some trick for the cases
-                            // when we load more than one timeline at once
-                            // and there was an error on some timeline only
-                            if (pass > 1 || !okSomething || !notOkSomething) {
+            return okAllAccounts;
+        }
+
+        /**
+         * Load Timeline(s) for one MyAccount
+         * @param acc MyAccount, should be not null
+         * @param loadHomeAndMentions - Should we load Home and Mentions
+         * @param loadDirectMessages - Should we load direct messages
+         * @return True if everything Succeeded
+         */
+        private boolean loadTimelineAccount(MyAccount acc,
+                MyDatabase.TimelineTypeEnum timelineType_in) {
+                boolean okAllTimelines = true;
+                if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+                    // Only if User was authenticated already
+
+                    boolean ok = false;
+                    int msgAdded = 0;
+                    int mentionsAdded = 0;
+                    int directedAdded = 0;
+                    String descr = "(starting)";
+
+                    TimelineTypeEnum[] atl = new TimelineTypeEnum[] {
+                            timelineType_in
+                    };
+                    if (timelineType_in == TimelineTypeEnum.ALL) {
+                        atl = new TimelineTypeEnum[] {
+                                TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
+                                TimelineTypeEnum.DIRECT
+                        };
+                    }
+
+                    int pass = 1;
+                    boolean okSomething = false;
+                    boolean notOkSomething = false;
+                    boolean oKs[] = new boolean[atl.length];
+                    try {
+                        for (int ind = 0; ind <= atl.length; ind++) {
+                            if (!MyPreferences.isInitialized()) {
+                                okAllTimelines = false;
                                 break;
                             }
-                            pass++;
-                            ind = 0; // Start from beginning
-                            MyLog.d(TAG, "Second pass of loading timeline");
-                        }
-                        if (pass > 1) {
-                            // Find next error index
-                            for (int ind2 = ind; ind2 < atl.length; ind2++) {
-                                if (!oKs[ind2]) {
-                                    ind = ind2;
+
+                            if (ind == atl.length) {
+                                // This is some trick for the cases
+                                // when we load more than one timeline at once
+                                // and there was an error on some timeline only
+                                if (pass > 1 || !okSomething || !notOkSomething) {
+                                    break;
+                                }
+                                pass++;
+                                ind = 0; // Start from beginning
+                                MyLog.d(TAG, "Second pass of loading timeline");
+                            }
+                            if (pass > 1) {
+                                // Find next error index
+                                for (int ind2 = ind; ind2 < atl.length; ind2++) {
+                                    if (!oKs[ind2]) {
+                                        ind = ind2;
+                                        break;
+                                    }
+                                }
+                                if (oKs[ind]) {
+                                    // No more errors on the second pass
                                     break;
                                 }
                             }
-                            if (oKs[ind]) {
-                                // No more errors on the second pass
-                                break;
-                            }
-                        }
-                        ok = false;
+                            ok = false;
 
-                        TimelineTypeEnum timelineType = atl[ind];
-                        MyLog.d(TAG, "Getting " + timelineType.save() + " for "
-                                + Account.getAccount().getUsername());
+                            TimelineTypeEnum timelineType = atl[ind];
+                            MyLog.d(TAG, "Getting " + timelineType.save() + " for "
+                                    + acc.getAccountGuid());
 
-                        TimelineDownloader fl = null;
-                        descr = "loading " + timelineType.save();
-                        fl = new TimelineDownloader(MyService.this.getApplicationContext(),
-                                timelineType);
-                        ok = fl.loadTimeline();
-                        switch (timelineType) {
-                            case MENTIONS:
-                                mentionsAdded = fl.mentionsCount();
-                                break;
-                            case HOME:
-                                msgAdded = fl.messagesCount();
-                                mentionsAdded += fl.mentionsCount();
-                                break;
-                            case DIRECT:
-                                directedAdded = fl.messagesCount();
-                                break;
-                            default:
-                                ok = false;
-                                Log.e(TAG, descr + " - not implemented");
-                        }
-
-                        if (ok && timelineType == TimelineTypeEnum.HOME) {
-                            // Currently this procedure is the same for all
-                            // timelines,
-                            // so let's do it only for one timeline type!
-                            synchronized (MyService.this) {
-                                descr = "prune old records";
-                                if (mStateRestored) {
-                                    fl.pruneOldRecords();
-                                } else {
-                                    Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
+                            TimelineDownloader fl = null;
+                            descr = "loading " + timelineType.save();
+                            fl = new TimelineDownloader(acc,
+                                    MyService.this.getApplicationContext(),
+                                    timelineType);
+                            ok = fl.loadTimeline();
+                            switch (timelineType) {
+                                case MENTIONS:
+                                    mentionsAdded = fl.mentionsCount();
+                                    break;
+                                case HOME:
+                                    msgAdded = fl.messagesCount();
+                                    mentionsAdded += fl.mentionsCount();
+                                    break;
+                                case DIRECT:
+                                    directedAdded = fl.messagesCount();
+                                    break;
+                                default:
                                     ok = false;
+                                    Log.e(TAG, descr + " - not implemented");
+                            }
+
+                            if (ok && timelineType == TimelineTypeEnum.HOME) {
+                                // Currently this procedure is the same for all
+                                // timelines,
+                                // so let's do it only for one timeline type!
+                                synchronized (MyService.this) {
+                                    descr = "prune old records";
+                                    if (mStateRestored) {
+                                        fl.pruneOldRecords();
+                                    } else {
+                                        Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
+                                        ok = false;
+                                    }
                                 }
                             }
+                            if (ok) {
+                                okSomething = true;
+                            } else {
+                                notOkSomething = true;
+                            }
+                            oKs[ind] = ok;
                         }
-                        if (ok) {
-                            okSomething = true;
-                        } else {
-                            notOkSomething = true;
-                        }
-                        oKs[ind] = ok;
+                    } catch (ConnectionException e) {
+                        Log.e(TAG, descr + ", Connection Exception: " + e.toString());
+                        ok = false;
+                    } catch (SQLiteConstraintException e) {
+                        Log.e(TAG, descr + ", SQLite Exception: " + e.toString());
+                        ok = false;
                     }
-                } catch (ConnectionException e) {
-                    Log.e(TAG, descr + ", Connection Exception: " + e.toString());
-                    ok = false;
-                } catch (SQLiteConstraintException e) {
-                    Log.e(TAG, descr + ", SQLite Exception: " + e.toString());
-                    ok = false;
-                }
 
-                if (ok) {
-                    descr = "notifying";
-                    synchronized (MyService.this) {
-                        if (mStateRestored) {
-                            notifyOfUpdatedTimeline(msgAdded, mentionsAdded, directedAdded);
-                        } else {
-                            Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
-                            ok = false;
+                    if (ok) {
+                        descr = "notifying";
+                        synchronized (MyService.this) {
+                            if (mStateRestored) {
+                                notifyOfUpdatedTimeline(msgAdded, mentionsAdded, directedAdded);
+                            } else {
+                                Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
+                                ok = false;
+                            }
                         }
                     }
-                }
 
-                String message = "";
-                if (oKs.length <= 1) {
-                  message += (ok ? "Succeeded" : "Failed");
-                  okAll = ok;
-                } else {
-                  int nOks = 0;
-                  for(int ind=0; ind<oKs.length; ind++) {
-                      if (oKs[ind]) {
-                          nOks += 1;
-                      }
-                  }
-                  if (nOks > 0) {
-                      message += "Succeded " + nOks;
-                      if (nOks < oKs.length) {
-                          message += " of " + oKs.length;  
-                          okAll = false;
-                      } 
-                  } else {
-                      message += "Failed " + oKs.length;  
-                      okAll = false;
-                  }
-                  message += " times";  
+                    String message = "";
+                    if (oKs.length <= 1) {
+                        message += (ok ? "Succeeded" : "Failed");
+                        okAllTimelines = ok;
+                    } else {
+                        int nOks = 0;
+                        for (int ind = 0; ind < oKs.length; ind++) {
+                            if (oKs[ind]) {
+                                nOks += 1;
+                            }
+                        }
+                        if (nOks > 0) {
+                            message += "Succeded " + nOks;
+                            if (nOks < oKs.length) {
+                                message += " of " + oKs.length;
+                                okAllTimelines = false;
+                            }
+                        } else {
+                            message += "Failed " + oKs.length;
+                            okAllTimelines = false;
+                        }
+                        message += " times";
+                    }
+
+                    message += " getting " + timelineType_in.save()
+                            + " for " + acc.getAccountGuid();
+                    if (msgAdded > 0) {
+                        message += ", " + msgAdded + " tweets";
+                    }
+                    if (mentionsAdded > 0) {
+                        message += ", " + mentionsAdded + " mentions";
+                    }
+                    if (directedAdded > 0) {
+                        message += ", " + directedAdded + " directs";
+                    }
+                    MyLog.d(TAG, message);
                 }
-                
-                message += " getting " + timelineType_in.save()
-                        + " for " + acc.getUsername();
-                if (msgAdded > 0) {
-                    message += ", " + msgAdded + " tweets";
-                }
-                if (mentionsAdded > 0) {
-                    message += ", " + mentionsAdded + " mentions";
-                }
-                if (directedAdded > 0) {
-                    message += ", " + directedAdded + " directs";
-                }
-                MyLog.d(TAG, message);
-            } // for one Account
-            
-            return okAll;
+            return okAllTimelines;
         }
-
+        
+        /**
+         * TODO: Different notifications for different Accounts
+         * @param msgAdded Number of "Tweets" added
+         * @param mentionsAdded
+         * @param directedAdded
+         */
         private void notifyOfUpdatedTimeline(int msgAdded, int mentionsAdded,
                 int directedAdded) {
 
@@ -1797,11 +1866,11 @@ public class MyService extends Service {
          * 
          * @return ok
          */
-        private boolean rateLimitStatus() {
+        private boolean rateLimitStatus(String accountNameIn) {
             boolean ok = false;
             JSONObject result = new JSONObject();
             try {
-                result = Account.getAccount().getConnection().rateLimitStatus();
+                result = MyAccount.getMyAccount(accountNameIn).getConnection().rateLimitStatus();
                 ok = (result != null);
             } catch (ConnectionException e) {
                 Log.e(TAG, "rateLimitStatus Exception: " + e.toString());

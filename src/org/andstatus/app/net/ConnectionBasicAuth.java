@@ -22,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.util.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -39,7 +40,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -57,8 +57,8 @@ public class ConnectionBasicAuth extends Connection {
     /**
      * Creates a new ConnectionBasicAuth instance.
      */
-    protected ConnectionBasicAuth(SharedPreferences sp) {
-        super(sp);
+    public ConnectionBasicAuth(MyAccount ma) {
+        super(ma);
     }
 
 	@Override
@@ -239,7 +239,7 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public boolean getCredentialsPresent(SharedPreferences sp) {
+    public boolean getCredentialsPresent(MyAccount ma) {
         boolean yes = false;
         if (mUsername != null && mPassword != null && mUsername.length() > 0 && mPassword.length() > 0) {
             yes = true;
@@ -281,8 +281,8 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
     @Override
-    public void clearAuthInformation(SharedPreferences sp) {
-        setPassword(sp, "");
+    public void clearAuthInformation() {
+        setPassword("");
     }
 	
 	/**
@@ -444,5 +444,10 @@ public class ConnectionBasicAuth extends Connection {
     @Override
     public boolean isPasswordNeeded() {
         return true;
+    }
+
+    @Override
+    public boolean isOAuth() {
+        return false;
     }
 }

@@ -29,11 +29,10 @@ import android.text.util.Linkify;
 import android.util.Log;
 import android.widget.TextView;
 
-import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.util.MyLog;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.util.RelativeTime;
 
 /**
@@ -65,7 +64,7 @@ public class TweetActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		loadTheme();
+        MyPreferences.loadTheme(TAG, this);
 
 		setContentView(R.layout.tweetview);
 
@@ -128,31 +127,11 @@ public class TweetActivity extends Activity {
 		}
 	}
 
-	/**
-	 * Load the theme for preferences.
-	 */
-	protected void loadTheme() {
-		boolean light = MyPreferences.getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
-		StringBuilder theme = new StringBuilder();
-		String name = MyPreferences.getDefaultSharedPreferences().getString("theme", "AndStatus");
-		if (name.indexOf("Theme.") > -1) {
-			name = name.substring(name.indexOf("Theme."));
-		}
-		theme.append("Theme.");
-		if (light) {
-			theme.append("Light.");
-		}
-		theme.append(name);
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "loadTheme; theme=\"" + theme.toString() + "\"");
-        }
-		setTheme((int) getResources().getIdentifier(theme.toString(), "style", "org.andstatus.app"));
-	}
-
 	@Override
 	public boolean onSearchRequested() {
 		Bundle appDataBundle = new Bundle();
-		appDataBundle.putParcelable("content_uri", MyDatabase.Msg.SEARCH_URI);
+		// TODO: Do we really use this?
+		appDataBundle.putParcelable("content_uri", MyProvider.getCurrentTimelineSearchUri(null));
 		startSearch(null, false, appDataBundle, false);
 		return true;
 	}

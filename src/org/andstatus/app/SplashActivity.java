@@ -16,6 +16,9 @@
 
 package org.andstatus.app;
 
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.MyPreferences;
+
 import java.text.MessageFormat;
 
 import android.app.Activity;
@@ -24,6 +27,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -96,11 +100,14 @@ public class SplashActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-        if (!Account.getAccount().isTemporal()) {
-			Intent intent = new Intent(this, TweetListActivity.class);
-			startActivity(intent);
-			finish();
-		}
+        if (MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES,
+                MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
+            if (MyAccount.getCurrentMyAccount().isPersistent()) {
+                Intent intent = new Intent(this, TweetListActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        }
 	}
 
 	@Override

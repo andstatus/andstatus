@@ -48,7 +48,7 @@ public class MyServiceManager extends BroadcastReceiver {
             MyLog.d(TAG, "Starting service on boot.");
             // Assume preferences were changed
             startAndStatusService(context, new MyService.CommandData(
-                    CommandEnum.PREFERENCES_CHANGED));
+                    CommandEnum.PREFERENCES_CHANGED, ""));
         } else if (intent.getAction().equals("android.intent.action.ACTION_SHUTDOWN")) {
             // This system broadcast is Since: API Level 4
             // We need this to persist unsaved data
@@ -60,7 +60,7 @@ public class MyServiceManager extends BroadcastReceiver {
             } else {
                 MyLog.d(TAG, "Repeating Alarm: Automatic update");
                 startAndStatusService(context, new MyService.CommandData(
-                        CommandEnum.AUTOMATIC_UPDATE));
+                        CommandEnum.AUTOMATIC_UPDATE, ""));
             }
         } else if (intent.getAction().equals(MyService.ACTION_SERVICE_STOPPED)) {
             MyLog.d(TAG, "Notification received: Service stopped");

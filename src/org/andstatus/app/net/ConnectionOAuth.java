@@ -20,6 +20,7 @@ package org.andstatus.app.net;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
@@ -43,7 +44,6 @@ import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
@@ -83,8 +83,8 @@ public class ConnectionOAuth extends Connection {
 
     private HttpClient mClient;
 
-    public ConnectionOAuth(SharedPreferences sp) {
-        super(sp);
+    public ConnectionOAuth(MyAccount ma) {
+        super(ma);
 
         HttpParams parameters = new BasicHttpParams();
         HttpProtocolParams.setVersion(parameters, HttpVersion.HTTP_1_1);
@@ -100,50 +100,63 @@ public class ConnectionOAuth extends Connection {
 
         mConsumer = new CommonsHttpOAuthConsumer(OAuthKeys.TWITTER_CONSUMER_KEY,
                 OAuthKeys.TWITTER_CONSUMER_SECRET);
-        loadSavedKeys(sp);
+
+        // We look for saved user keys
+        if (ma.dataContains(ConnectionOAuth.USER_TOKEN) && ma.dataContains(ConnectionOAuth.USER_SECRET)) {
+            setAuthInformation(
+                    ma.getDataString(ConnectionOAuth.USER_TOKEN, null),
+                    ma.getDataString(ConnectionOAuth.USER_SECRET, null)
+                    );
+        }
     }
     
-    private void loadSavedKeys(SharedPreferences sp) {
-        // We look for saved user keys
-        if (sp.contains(ConnectionOAuth.USER_TOKEN) && sp.contains(ConnectionOAuth.USER_SECRET)) {
-            mToken = sp.getString(ConnectionOAuth.USER_TOKEN, null);
-            mSecret = sp.getString(ConnectionOAuth.USER_SECRET, null);
+    /**
+     * @param token null means to clear the old values
+     * @param secret
+     */
+    public void setAuthInformation(String token, String secret) {
+        synchronized (this) {
+            mToken = token;
+            mSecret = secret;
             if (!(mToken == null || mSecret == null)) {
                 mConsumer.setTokenWithSecret(mToken, mSecret);
             }
         }
     }
 
-    /**
-     * @param token null means to clear the old values
-     * @param secret
+    /* (non-Javadoc)
+     * @see org.andstatus.app.net.Connection#save(android.content.SharedPreferences, android.content.SharedPreferences.Editor)
      */
-    public void saveAuthInformation(SharedPreferences sp, String token, String secret) {
-        synchronized (sp) {
-            SharedPreferences.Editor editor = sp.edit();
-            if (token == null) {
-                editor.remove(ConnectionOAuth.USER_TOKEN);
+    @Override
+    public boolean save(MyAccount ma) {
+        boolean changed = super.save(ma);
+
+        if ( !TextUtils.equals(mToken, ma.getDataString(ConnectionOAuth.USER_TOKEN, null)) ||
+                !TextUtils.equals(mSecret, ma.getDataString(ConnectionOAuth.USER_SECRET, null)) 
+                ) {
+            changed = true;
+
+            if (TextUtils.isEmpty(mToken)) {
+                ma.setDataString(ConnectionOAuth.USER_TOKEN, null);
                 MyLog.d(TAG, "Clearing OAuth Token");
             } else {
-                editor.putString(ConnectionOAuth.USER_TOKEN, token);
-                MyLog.d(TAG, "Saving OAuth Token: " + token);
+                ma.setDataString(ConnectionOAuth.USER_TOKEN, mToken);
+                MyLog.d(TAG, "Saving OAuth Token: " + mToken);
             }
-            if (secret == null) {
-                editor.remove(ConnectionOAuth.USER_SECRET);
+            if (TextUtils.isEmpty(mSecret)) {
+                ma.setDataString(ConnectionOAuth.USER_SECRET, null);
                 MyLog.d(TAG, "Clearing OAuth Secret");
             } else {
-                editor.putString(ConnectionOAuth.USER_SECRET, secret);
-                MyLog.d(TAG, "Saving OAuth Secret: " + secret);
+                ma.setDataString(ConnectionOAuth.USER_SECRET, mSecret);
+                MyLog.d(TAG, "Saving OAuth Secret: " + mSecret);
             }
-            editor.commit();
-            // Keys changed so we have to reload them
-            loadSavedKeys(sp);
         }
+        return changed;
     }
 
     @Override
-    public void clearAuthInformation(SharedPreferences sp) {
-        saveAuthInformation(sp, null, null);
+    public void clearAuthInformation() {
+        setAuthInformation(null, null);
     }
 
     @Override
@@ -332,11 +345,11 @@ public class ConnectionOAuth extends Connection {
      * @see org.andstatus.app.net.Connection#getCredentialsPresent()
      */
     @Override
-    public boolean getCredentialsPresent(SharedPreferences sp) {
+    public boolean getCredentialsPresent(MyAccount ma) {
         boolean yes = false;
-        if (sp.contains(ConnectionOAuth.USER_TOKEN) && sp.contains(ConnectionOAuth.USER_SECRET)) {
-            mToken = sp.getString(ConnectionOAuth.USER_TOKEN, null);
-            mSecret = sp.getString(ConnectionOAuth.USER_SECRET, null);
+        if (ma.dataContains(ConnectionOAuth.USER_TOKEN) && ma.dataContains(ConnectionOAuth.USER_SECRET)) {
+            mToken = ma.getDataString(ConnectionOAuth.USER_TOKEN, null);
+            mSecret = ma.getDataString(ConnectionOAuth.USER_SECRET, null);
             if (!(mToken == null || mSecret == null)) {
                 yes = true;
             }
@@ -347,5 +360,10 @@ public class ConnectionOAuth extends Connection {
     @Override
     public JSONObject verifyCredentials() throws ConnectionException {
         return getUrl(ACCOUNT_VERIFY_CREDENTIALS_URL);
+    }
+
+    @Override
+    public boolean isOAuth() {
+        return true;
     }
 }

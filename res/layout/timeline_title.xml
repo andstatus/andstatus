@@ -4,22 +4,23 @@
 	android:id="@+id/custom_title_left_right" 
     android:orientation="vertical" 
     android:layout_height="45dp">
-	<TextView android:id="@+id/custom_title_left_text"
+	<Button android:id="@+id/custom_title_left_text"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-		android:textColor="@android:color/primary_text_dark"
-		android:textSize="14dip" android:textStyle="bold"
 		android:text="(left)"/>
-	<Button android:text="Tweet" 
-        android:id="@+id/createMessageButton" 
-        android:layout_width="wrap_content" 
-        android:layout_alignParentRight="true" 
-        android:visibility="visible" 
-        android:layout_height="fill_parent" 
-        android:layout_centerVertical="true" 
-        android:focusable="false"/>
+
+	<Button
+	    android:id="@+id/createMessageButton"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentRight="true"
+	    android:layout_centerVertical="true"
+	    android:focusable="false"
+	    android:text="Tweet"
+	    android:visibility="visible" />
+
     <TextView android:id="@+id/custom_title_right_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

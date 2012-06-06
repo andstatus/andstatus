@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2011-2012 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,15 +17,11 @@
 
 package org.andstatus.app.net;
 
-import org.andstatus.app.Account;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.net.Connection;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.content.SharedPreferences;
-import android.util.Log;
-
 
 /**
  * Handles connection to the Twitter API
@@ -34,8 +30,6 @@ import android.util.Log;
  * @author torgny.bjers
  */
 public abstract class Connection {
-    private static final String TAG = Connection.class.getSimpleName();
-
     private static final String BASE_URL = "http://api.twitter.com/1";
 
     protected static final String EXTENSION = ".json";
@@ -74,29 +68,16 @@ public abstract class Connection {
 
     protected String mPassword;
 
+    protected Connection(MyAccount ma) {
+        mUsername = ma.getDataString(MyAccount.KEY_USERNAME, "");
+        mPassword = ma.getDataString(MyAccount.KEY_PASSWORD, "");
+    }
+
     /**
-     * SharedPreferences - These preferences are per User
+     * @return Does this connection use OAuth?
      */
-     public static Connection getConnection(SharedPreferences sp, boolean oauth) {
-        Connection conn;
-        if (sp == null) {
-            Log.e(TAG, "SharedPreferences are null ??" );
-        }
-
-        if (oauth) {
-            conn = new ConnectionOAuth(sp);
-        } else {
-            conn = new ConnectionBasicAuth(sp);
-        }
-
-        return conn;
-    }
+    public abstract boolean isOAuth();
     
-    protected Connection(SharedPreferences sp) {
-        mUsername = sp.getString(Account.KEY_USERNAME, "");
-        mPassword = sp.getString(Account.KEY_PASSWORD, "");
-    }
-
     public String getUsername() {
         return mUsername;
     }
@@ -120,7 +101,7 @@ public abstract class Connection {
         }
     }
 
-    public abstract void clearAuthInformation(SharedPreferences sp);
+    public abstract void clearAuthInformation();
     
     /**
      * Check API requests status.
@@ -150,13 +131,12 @@ public abstract class Connection {
     /**
      * Set User's password if the Connection object needs it
      */
-    public void setPassword(SharedPreferences sp, String password) {
+    public void setPassword(String password) {
         if (password == null) {
             password = "";
         }
         if (password.compareTo(mPassword) != 0) {
             mPassword = password;
-            sp.edit().putString(Account.KEY_PASSWORD, mPassword).commit();
         }
     }
     public String getPassword() {
@@ -164,10 +144,26 @@ public abstract class Connection {
     }
     
     /**
+     * Persist the connection data
+     * @param editor
+     * @return true if something changed
+     */
+    public boolean save(MyAccount ma) {
+        boolean changed = false;
+        
+        if (mPassword.compareTo(ma.getDataString(MyAccount.KEY_PASSWORD, "")) != 0) {
+            ma.setDataString(MyAccount.KEY_PASSWORD, mPassword);
+            changed = true;
+        }
+        
+        return changed;
+    }
+    
+    /**
      * Do we have enough credentials to verify them?
      * @return true == yes
      */
-    public abstract boolean getCredentialsPresent(SharedPreferences sp);  
+    public abstract boolean getCredentialsPresent(MyAccount ma);  
     
     /**
      * Verify the user's credentials.

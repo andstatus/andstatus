@@ -16,30 +16,21 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-	<!-- USER CREDENTIALS -->
-	<PreferenceCategory android:title="@string/category_title_preference_credentials">
-		<Preference android:key="verify_credentials"
-			android:title="@string/title_preference_verify_credentials"
-			android:summary="@string/summary_preference_verify_credentials"
-			android:persistent="false" />
-		<EditTextPreference android:key="twitter_username_new"
-			android:title="@string/title_preference_username"
-			android:dialogTitle="@string/dialog_title_preference_username"
-			android:summary="@string/summary_preference_username"
-			android:singleLine="true" />
-		<CheckBoxPreference android:key="oauth"
-			android:title="@string/title_preference_oauth"
-			android:summaryOff="@string/summary_preference_oauth_off"
-			android:summaryOn="@string/summary_preference_oauth_on"
-			android:defaultValue="true" />
-		<EditTextPreference android:key="twitter_password"
-			android:title="@string/title_preference_password"
-			android:dialogTitle="@string/dialog_title_preference_password"
-			android:summary="@string/summary_preference_password"
-			android:password="true" android:singleLine="true" />
-	</PreferenceCategory>
-
-	<!-- SETTINGS -->
+    <!-- Manage Accounts -->
+    <PreferenceCategory android:title="@string/header_manage_accounts" >
+        <Preference
+            android:key="manage_accounts"
+            android:persistent="false"
+            android:title="@string/header_manage_accounts" >
+            <intent android:action="android.settings.SYNC_SETTINGS" >
+                <extra
+                    android:name="authorities"
+                    android:value="org.andstatus.app.data.MyProvider" />
+            </intent>
+        </Preference>
+    </PreferenceCategory>
+    
+    <!-- SETTINGS -->
 	<PreferenceCategory android:title="@string/category_title_preference_settings">
 
 		<!-- STORAGE -->
@@ -132,7 +123,6 @@
 		<PreferenceScreen android:key="preference_screen_automatic_updates"
 			android:summary="@string/summary_preference_automatic_updates"
 			android:title="@string/title_preference_automatic_updates"
-			android:dependency="twitter_username_new"
 			android:shouldDisableView="true">
 			<PreferenceCategory
 				android:title="@string/category_title_preference_automatic_updates">

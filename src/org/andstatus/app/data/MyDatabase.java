@@ -16,7 +16,8 @@
 
 package org.andstatus.app.data;
 
-import org.andstatus.app.Account;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.Origin;
 import org.andstatus.app.appwidget.MyAppWidgetConfigure;
 import org.andstatus.app.util.MyLog;
 
@@ -52,12 +53,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 	public static final String USER_TABLE_NAME = User.class.getSimpleName().toLowerCase();
 	
 	/**
-	 * Default value for the Originating system id.
-	 * TODO: Create a table of these "Origins"
-	 */
-	public static long ORIGIN_ID_DEFAULT = 1l;
-	
-	/**
 	 * Table for both public and direct messages 
 	 * i.e. for tweets, dents, notices 
 	 * and also for "direct messages", "direct dents" etc.
@@ -66,10 +61,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 	    /**
 	     * These are in fact definitions for Timelines based on the table, 
 	     * not for the Msg table itself.
-	     * Because we always filter the table by current Account (USER_ID joined through {@link MsgOfUser} ) etc.
+	     * Because we always filter the table by current MyAccount (USER_ID joined through {@link MsgOfUser} ) etc.
 	     */
 		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + MSG_TABLE_NAME);
-		public static final Uri SEARCH_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/"  + MSG_TABLE_NAME + "/search");
         public static final Uri CONTENT_COUNT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + MSG_TABLE_NAME + "/count");
         /* like in AndroidManifest.xml */
 		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.andstatus.provider." + MSG_TABLE_NAME;
@@ -201,7 +195,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         /*
          * Derived columns (they are not stored in this table but are result of joins and aliasing)
          */
-        /** Inclusion of this column means that we should join MsgOfUser for current Account (USER_ID)
+        /** Inclusion of this column means that we should join MsgOfUser for current MyAccount (USER_ID)
          * and analyze flags in this row  
          * @see MyDatabase#TIMELINE_TYPE_NONE  */
         public static final String TIMELINE_TYPE = "timeline_type";
@@ -209,7 +203,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 
 	/**
 	 * Users table (they are both senders AND recipients in the Msg table)
-	 * Some of these Users are Accounts (connected to accounts in AndStatus), see {@link Account#getUserId()}
+	 * Some of these Users are Accounts (connected to accounts in AndStatus), see {@link MyAccount#getUserId()}
 	 */
 	public static final class User implements BaseColumns {
 		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + USER_TABLE_NAME);
@@ -273,6 +267,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * Alias for the primary key
          */
         public static final String USER_ID = "user_id";
+        /**
+         * Alias for the {@link User}'s primary key used to refer to MyAccount 
+         * (e.g. in a case we need to query a Timeline for particular MyAccount (e.g. for current MyAccount) 
+         */
+        public static final String ACCOUNT_ID =  "account_id";
 		/**
 		 * Derived from {@link Msg#SENDER_ID}
 		 * TODO: Whether this (and other similar...) is {@link #USERNAME} or {@link #REAL_NAME}, depends on settings 
@@ -356,7 +355,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         Log.i(TAG, "Creating tables");
         db.execSQL("CREATE TABLE " + MSG_TABLE_NAME + " (" 
                 + Msg._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                + Msg.ORIGIN_ID + " INTEGER DEFAULT " + MyDatabase.ORIGIN_ID_DEFAULT + " NOT NULL," 
+                + Msg.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ID_DEFAULT + " NOT NULL," 
                 + Msg.MSG_OID + " STRING," 
                 + Msg.AUTHOR_ID + " INTEGER," 
                 + Msg.SENDER_ID + " INTEGER," 
@@ -389,7 +388,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         
         db.execSQL("CREATE TABLE " + USER_TABLE_NAME + " (" 
                 + User._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                + User.ORIGIN_ID + " INTEGER DEFAULT " + MyDatabase.ORIGIN_ID_DEFAULT + " NOT NULL," 
+                + User.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ID_DEFAULT + " NOT NULL," 
                 + User.USER_OID + " STRING," 
                 + User.USERNAME + " TEXT NOT NULL," 
                 + User.REAL_NAME + " TEXT," 
@@ -431,9 +430,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                     onCreate(db);
 
                     // Associate all currently loaded messages with one current
-                    // User Account (to be created...)
+                    // User MyAccount (to be created...)
                     String username = MyPreferences.getDefaultSharedPreferences().getString(
-                            Account.KEY_USERNAME, "");
+                            MyAccount.KEY_USERNAME, "");
                     if (username.length() > 0) {
                         db.execSQL("INSERT INTO user(_id, origin_id, username, user_ins_date) VALUES(1, 1, '"
                                 + username + "'," + System.currentTimeMillis() + ")");

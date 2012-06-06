@@ -15,7 +15,7 @@
  */
 package org.andstatus.app.data;
 
-import org.andstatus.app.Account;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.util.MyLog;
 
 import android.content.Context;
@@ -57,6 +57,7 @@ public class MyPreferences {
     public static final String KEY_REPORT_BUG = "report_bug";
     public static final String KEY_CHANGE_LOG = "change_log";
     public static final String KEY_ABOUT_APPLICATION = "about_application";
+
     /**
      * System time when shared preferences were changed
      */
@@ -96,22 +97,30 @@ public class MyPreferences {
             // Maybe we should use context_in.getApplicationContext() ??
             context = context_in.getApplicationContext();
             origin = origin_in;
-            Account.initialize();
+            
+            /* This may be useful to know from where the class was initialized
+            StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
+            for(int i=0; i<elements.length; i++) { 
+                Log.v(TAG, elements[i].toString()); 
+            }
+            */
+            
             MyLog.v(TAG, "Initialized by " + origin + " context: " + context.getClass().getName());
             misInitialized = true;
+            
+            MyAccount.initialize();
         } else {
             MyLog.v(TAG, "Already initialized by " + origin +  " (called by: " + origin_in + ")");
         }
     }
 
-    
     /**
      * Forget everything in order to reread from the sources if it will be needed
      * e.g. after configuration changes
      */
     public static void forget() {
         misInitialized = false;
-        Account.forget();
+        MyAccount.forget();
         if (db != null) {
             try {
                 db.close();
@@ -159,6 +168,18 @@ public class MyPreferences {
         }
     }
 
+    /**
+     *  Remember when last changes to the preferences were made
+     */
+    public static void setPreferencesChangedNow() {
+        if (isInitialized()) {
+            getDefaultSharedPreferences()
+            .edit()
+            .putLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME,
+                    java.lang.System.currentTimeMillis()).commit();
+        }
+    }
+    
     public static Context getContext() {
         return context;
     }
@@ -270,4 +291,29 @@ public class MyPreferences {
         } catch (Exception e) {}
         return (is ? 1 : 0);
     }
+    
+
+    /**
+     * Load the theme according to the preferences.
+     */
+    public static void loadTheme(String TAG, android.content.Context context) {
+        boolean light = MyPreferences.getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
+        StringBuilder themeName = new StringBuilder();
+        String name = MyPreferences.getDefaultSharedPreferences().getString("theme", "AndStatus");
+        if (name.indexOf("Theme.") > -1) {
+            name = name.substring(name.indexOf("Theme."));
+        }
+        themeName.append("Theme.");
+        if (light) {
+            themeName.append("Light.");
+        }
+        themeName.append(name);
+        int themeId = (int) context.getResources().getIdentifier(themeName.toString(), "style",
+                "org.andstatus.app");
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            Log.v(TAG, "loadTheme; theme=\"" + themeName.toString() + "\"; id=" + Integer.toHexString(themeId));
+        }
+        context.setTheme(themeId);
+    }
+    
 }

@@ -18,7 +18,8 @@ package org.andstatus.app;
 
 import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
-import org.andstatus.app.Account.CredentialsVerified;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
@@ -31,7 +32,6 @@ import org.andstatus.app.util.SelectionAndArgs;
 import org.json.JSONObject;
 
 import android.app.SearchManager;
-import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -120,7 +120,8 @@ public class TweetListActivity extends TimelineActivity {
     @Override
     public boolean onSearchRequested() {
         Bundle appDataBundle = new Bundle();
-        appDataBundle.putParcelable("content_uri", MyDatabase.Msg.SEARCH_URI);
+        // TODO: Do we really use this?
+        appDataBundle.putParcelable("content_uri", MyProvider.getCurrentTimelineSearchUri(null));
         startSearch(null, false, appDataBundle, false);
         return true;
     }
@@ -150,7 +151,7 @@ public class TweetListActivity extends TimelineActivity {
                     + mTimelineType.save());
         }
 
-        Uri contentUri = MyDatabase.Msg.CONTENT_URI;
+        Uri contentUri = MyProvider.getCurrentTimelineUri();
 
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
@@ -165,8 +166,7 @@ public class TweetListActivity extends TimelineActivity {
                     TimelineSearchSuggestionProvider.MODE);
             suggestions.saveRecentQuery(queryString, null);
 
-            contentUri = MyDatabase.Msg.SEARCH_URI;
-            contentUri = Uri.withAppendedPath(contentUri, Uri.encode(queryString));
+            contentUri = MyProvider.getCurrentTimelineSearchUri(queryString);
         }
         intent.putExtra(SearchManager.QUERY, queryString);
 
@@ -195,7 +195,7 @@ public class TweetListActivity extends TimelineActivity {
                         });
                     /* We already figured it out!
                     sa.addSelection(MyDatabase.Msg.BODY + " LIKE ?", new String[] {
-                            "%@" + Account.getTwitterUser().getUsername() + "%"
+                            "%@" + MyAccount.getTwitterUser().getUsername() + "%"
                         });
                     */
                     break;
@@ -287,13 +287,13 @@ public class TweetListActivity extends TimelineActivity {
             Log.v(TAG, "onResume");
         }
 
-        if (!mIsFinishingOnResume) {
-            if (Account.getAccount().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-                if (!Account.getAccount().getAccountPreferences().getBoolean("loadedOnce", false)) {
-                    Account.getAccount().getAccountPreferences().edit()
+        if (!mIsFinishing) {
+            if (MyAccount.getCurrentMyAccount().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+                if (!MyAccount.getCurrentMyAccount().getMyAccountPreferences().getBoolean("loadedOnce", false)) {
+                    MyAccount.getCurrentMyAccount().getMyAccountPreferences().edit()
                             .putBoolean("loadedOnce", true).commit();
                     // One-time "manually" load tweets from the Internet for the
-                    // new Account
+                    // new MyAccount
                     manualReload(true);
                 }
             }
@@ -342,7 +342,7 @@ public class TweetListActivity extends TimelineActivity {
         // R.string.menu_item_view_profile);
 
         // Get the record for the currently selected item
-        Uri uri = ContentUris.withAppendedId(MyDatabase.Msg.CONTENT_URI, info.id);
+        Uri uri = MyProvider.getCurrentTimelineMsgUri(info.id);
         Cursor c = getContentResolver().query(uri, new String[] {
                 MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID, 
                 MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED, 
@@ -365,8 +365,8 @@ public class TweetListActivity extends TimelineActivity {
                 } else {
                     menu.add(0, CONTEXT_MENU_ITEM_RETWEET, m++, R.string.menu_item_retweet);
                 }
-                if (Account.getAccount().getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))
-                        && Account.getAccount().getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.AUTHOR_ID))
+                if (MyAccount.getCurrentMyAccount().getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))
+                        && MyAccount.getCurrentMyAccount().getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.AUTHOR_ID))
                         ) {
                     menu.add(0, CONTEXT_MENU_ITEM_DESTROY_STATUS, m++,
                             R.string.menu_item_destroy_status);
@@ -404,24 +404,24 @@ public class TweetListActivity extends TimelineActivity {
                 return true;
 
             case CONTEXT_MENU_ITEM_RETWEET:
-                sendCommand( new CommandData(CommandEnum.RETWEET, mCurrentId));
+                sendCommand( new CommandData(CommandEnum.RETWEET, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_DESTROY_STATUS:
-                sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, mCurrentId));
+                sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_FAVORITE:
-                sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, mCurrentId));
+                sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_DESTROY_FAVORITE:
-                sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, mCurrentId));
+                sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_SHARE:
                 userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentId);
-                uri = ContentUris.withAppendedId(MyDatabase.Msg.CONTENT_URI, info.id);
+                uri = MyProvider.getCurrentTimelineMsgUri(info.id);
                 c = getContentResolver().query(uri, new String[] {
                         MyDatabase.Msg.MSG_OID, MyDatabase.Msg.BODY
                 }, null, null, null);
@@ -511,7 +511,7 @@ public class TweetListActivity extends TimelineActivity {
         if (id <= 0) {
             return;
         }
-        Uri uri = ContentUris.withAppendedId(MyDatabase.Msg.CONTENT_URI, id);
+        Uri uri = MyProvider.getCurrentTimelineMsgUri(id);
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
             if (MyLog.isLoggable(TAG, Log.DEBUG)) {
@@ -555,7 +555,8 @@ public class TweetListActivity extends TimelineActivity {
         // First set less detailed title
         super.updateTitle();
         // Then start asynchronous task that will set detailed info
-        sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS));
+        sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, MyAccount
+                .getCurrentMyAccount().getAccountGuid()));
     }
 
     {

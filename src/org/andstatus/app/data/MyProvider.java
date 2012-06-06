@@ -34,7 +34,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.andstatus.app.Account;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -71,15 +71,32 @@ public class MyProvider extends ContentProvider {
      * (see <a href="http://developer.android.com/guide/topics/manifest/provider-element.html">&lt;provider&gt;</a>)
      */
     public static final String AUTHORITY = MyProvider.class.getName();
+    /**
+     * Used for URIs referring to timelines 
+     */
+    public static final String TIMELINE_PATH = "timeline";
+    public static final Uri TIMELINE_URI = Uri.parse("content://" + AUTHORITY + "/" + TIMELINE_PATH);
+    /**
+     * We add this path segment after the {@link #TIMELINE_URI} to form search URI 
+     */
+    public static final String SEARCH_SEGMENT = "search";
 
     private static final UriMatcher sUriMatcher;
     /**
      * Matched codes, returned by {@link UriMatcher#match(Uri)}
+     * This first member is for a Timeline of selected Account (or all timelines...) and it corresponds to the {@link #TIMELINE_URI}
      */
-    private static final int TWEETS = 1;
-    private static final int TWEETS_COUNT = 2;
-    private static final int TWEETS_SEARCH = 3;
-    private static final int TWEET_ID = 4;
+    private static final int TIMELINE = 1;
+    /**
+     * Operations on {@link MyDatabase.Msg} table itself
+     */
+    private static final int MSG = 7;
+    private static final int MSG_COUNT = 2;
+    private static final int TIMELINE_SEARCH = 3;
+    /**
+     * Message id in the Timeline
+     */
+    private static final int TIMELINE_MSG_ID = 4;
     private static final int USERS = 5;
     private static final int USER_ID = 6;
 
@@ -102,12 +119,13 @@ public class MyProvider extends ContentProvider {
     @Override
     public String getType(Uri uri) {
         switch (sUriMatcher.match(uri)) {
-            case TWEETS:
-            case TWEETS_SEARCH:
-            case TWEETS_COUNT:
+            case MSG:
+            case TIMELINE:
+            case TIMELINE_SEARCH:
+            case MSG_COUNT:
                 return Msg.CONTENT_TYPE;
 
-            case TWEET_ID:
+            case TIMELINE_MSG_ID:
                 return Msg.CONTENT_ITEM_TYPE;
 
             case USERS:
@@ -133,7 +151,7 @@ public class MyProvider extends ContentProvider {
         String sqlDesc = "";
         int count = 0;
         switch (sUriMatcher.match(uri)) {
-            case TWEETS:
+            case MSG:
                 db.beginTransaction();
                 try {
                     // Delete all related records from MyDatabase.MsgOfUser for these messages
@@ -167,18 +185,12 @@ public class MyProvider extends ContentProvider {
                 }
                 break;
 
-            case TWEET_ID:
-                String tweetId = uri.getPathSegments().get(1);
-                count = db.delete(MyDatabase.MSG_TABLE_NAME, Msg._ID + "=" + tweetId
-                        + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
-                        selectionArgs);
-                break;
-
             case USERS:
                 count = db.delete(MyDatabase.USER_TABLE_NAME, selection, selectionArgs);
                 break;
 
             case USER_ID:
+                // TODO: Delete related records also... 
                 String userId = uri.getPathSegments().get(1);
                 count = db.delete(MyDatabase.USER_TABLE_NAME, User._ID + "=" + userId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
@@ -204,6 +216,7 @@ public class MyProvider extends ContentProvider {
 
         ContentValues values;
         ContentValues msgOfUserValues = null;
+        long accountId = 0;
         
         long rowId;
         // 2010-07-21 yvolk: "now" is calculated exactly like it is in other
@@ -222,22 +235,23 @@ public class MyProvider extends ContentProvider {
         }
 
         switch (sUriMatcher.match(uri)) {
-            case TWEETS:
+            case TIMELINE:
+                accountId = Long.parseLong(uri.getPathSegments().get(1));
                 table = MyDatabase.MSG_TABLE_NAME;
                 nullColumnHack = Msg.BODY;
-                contentUri = Msg.CONTENT_URI;
+                contentUri = TIMELINE_URI;
                 /**
                  * Add default values for missed required fields
                  */
-                if (values.containsKey(Msg.AUTHOR_ID) == false)
+                if (!values.containsKey(Msg.AUTHOR_ID))
                     values.put(Msg.AUTHOR_ID, values.get(Msg.SENDER_ID).toString());
-                if (values.containsKey(Msg.BODY) == false)
+                if (!values.containsKey(Msg.BODY))
                     values.put(Msg.BODY, "");
-                if (values.containsKey(Msg.VIA) == false)
+                if (!values.containsKey(Msg.VIA))
                     values.put(Msg.VIA, "");
                 values.put(Msg.INS_DATE, now);
                 
-                msgOfUserValues = prepareMsgOfUserValues(values);
+                msgOfUserValues = prepareMsgOfUserValues(values, accountId);
                 break;
 
             case USERS:
@@ -265,7 +279,13 @@ public class MyProvider extends ContentProvider {
             }
         }
 
-        Uri newUri = ContentUris.withAppendedId(contentUri, rowId);
+        Uri newUri = null;
+        if (contentUri.compareTo(TIMELINE_URI) == 0) {
+            // The resulted Uri has two parameters...
+            newUri = MyProvider.getTimelineMsgUri(accountId, rowId);
+        } else {
+            newUri = ContentUris.withAppendedId(contentUri, rowId);
+        }
         return newUri;
     }
 
@@ -275,33 +295,33 @@ public class MyProvider extends ContentProvider {
      * @param values
      * @return
      */
-    private ContentValues prepareMsgOfUserValues(ContentValues values) {
+    private ContentValues prepareMsgOfUserValues(ContentValues values, long accountId) {
         ContentValues msgOfUserValues = null;
         MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
         if (values.containsKey(MsgOfUser.TIMELINE_TYPE) ) {
             timelineType = TimelineTypeEnum.load(values.get(MsgOfUser.TIMELINE_TYPE).toString());
             values.remove(MsgOfUser.TIMELINE_TYPE);
         }
-
-        switch (timelineType) {
-            case HOME:
-            case MENTIONS:
-            case FAVORITES:
-            case DIRECT:
-                
-                // Add MsgOfUser link to Current User Account
-                msgOfUserValues = new ContentValues();
-                if (values.containsKey(Msg._ID) ) {
-                    msgOfUserValues.put(MsgOfUser.MSG_ID, values.getAsString(Msg._ID));
-                }
-                // TODO: User of current Account
-                msgOfUserValues.put(MsgOfUser.USER_ID, Account.getAccount().getUserId() );
-                moveKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
-                moveKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
-                moveKey(MsgOfUser.RETWEETED, values, msgOfUserValues);
-                moveKey(MsgOfUser.MENTIONED, values, msgOfUserValues);
-                moveKey(MsgOfUser.REPLIED, values, msgOfUserValues);
-                moveKey(MsgOfUser.DIRECTED, values, msgOfUserValues);
+        if (accountId != 0) {
+            switch (timelineType) {
+                case HOME:
+                case MENTIONS:
+                case FAVORITES:
+                case DIRECT:
+                    
+                    // Add MsgOfUser link to Current User MyAccount
+                    msgOfUserValues = new ContentValues();
+                    if (values.containsKey(Msg._ID) ) {
+                        msgOfUserValues.put(MsgOfUser.MSG_ID, values.getAsString(Msg._ID));
+                    }
+                    msgOfUserValues.put(MsgOfUser.USER_ID, accountId);
+                    moveKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
+                    moveKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
+                    moveKey(MsgOfUser.RETWEETED, values, msgOfUserValues);
+                    moveKey(MsgOfUser.MENTIONED, values, msgOfUserValues);
+                    moveKey(MsgOfUser.REPLIED, values, msgOfUserValues);
+                    moveKey(MsgOfUser.DIRECTED, values, msgOfUserValues);
+            }
         }
         return msgOfUserValues;
     }
@@ -340,29 +360,33 @@ public class MyProvider extends ContentProvider {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean built = false;
         String sql = "";
+        long accountId = 0;
 
         int matchedCode = sUriMatcher.match(uri);
         switch (matchedCode) {
-            case TWEETS:
-                qb.setTables(tablesForTimeline(projection));
+            case TIMELINE:
+                accountId = Long.parseLong(uri.getPathSegments().get(1));
+                qb.setTables(tablesForTimeline(projection, accountId));
                 qb.setProjectionMap(sTweetsProjectionMap);
                 break;
 
-            case TWEETS_COUNT:
+            case MSG_COUNT:
                 sql = "SELECT count(*) FROM " + MyDatabase.MSG_TABLE_NAME;
                 if (selection != null && selection.length() > 0) {
                     sql += " WHERE " + selection;
                 }
                 break;
 
-            case TWEET_ID:
-                qb.setTables(tablesForTimeline(projection));
+            case TIMELINE_MSG_ID:
+                accountId = Long.parseLong(uri.getPathSegments().get(1));
+                qb.setTables(tablesForTimeline(projection, accountId));
                 qb.setProjectionMap(sTweetsProjectionMap);
-                qb.appendWhere(MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + uri.getPathSegments().get(1));
+                qb.appendWhere(MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + uri.getPathSegments().get(3));
                 break;
 
-            case TWEETS_SEARCH:
-                qb.setTables(tablesForTimeline(projection));
+            case TIMELINE_SEARCH:
+                accountId = Long.parseLong(uri.getPathSegments().get(1));
+                qb.setTables(tablesForTimeline(projection, accountId));
                 qb.setProjectionMap(sTweetsProjectionMap);
                 String s1 = uri.getLastPathSegment();
                 if (s1 != null) {
@@ -412,12 +436,12 @@ public class MyProvider extends ContentProvider {
         String orderBy;
         if (TextUtils.isEmpty(sortOrder)) {
             switch (matchedCode) {
-                case TWEETS:
-                case TWEET_ID:
+                case TIMELINE:
+                case TIMELINE_MSG_ID:
                     orderBy = Msg.DEFAULT_SORT_ORDER;
                     break;
 
-                case TWEETS_COUNT:
+                case MSG_COUNT:
                     orderBy = "";
                     break;
 
@@ -485,13 +509,18 @@ public class MyProvider extends ContentProvider {
      * TODO: Different joins based on projection requested...
      * 
      * @param projection
+     * @param accountId Account for which the Timeline is or 0 for "all timelines" 
      * @return String for {@link SQLiteQueryBuilder#setTables(String)}
      */
-    private static String tablesForTimeline(String[] projection) {
-       String tables = MyDatabase.MSG_TABLE_NAME + " LEFT OUTER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
-                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
-                + " AND " + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID + "=" + Account.getAccount().getUserId()
-                ;
+    private static String tablesForTimeline(String[] projection, long accountId) {
+       String tables = MyDatabase.MSG_TABLE_NAME;
+       
+       if (accountId != 0) {
+           tables += " LEFT OUTER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
+                   + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
+                   + " AND " + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID + "=" + accountId
+                   ;
+       }
        tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME 
                + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS author ON "
                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID + "=author." + MyDatabase.User._ID
@@ -530,14 +559,17 @@ public class MyProvider extends ContentProvider {
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
         int count;
-        switch (sUriMatcher.match(uri)) {
-            case TWEETS:
+        long accountId = 0;
+        int matchedCode = sUriMatcher.match(uri);
+        switch (matchedCode) {
+            case MSG:
                 count = db.update(MyDatabase.MSG_TABLE_NAME, values, selection, selectionArgs);
                 break;
 
-            case TWEET_ID:
-                String rowId = uri.getPathSegments().get(1);
-                ContentValues msgOfUserValues = prepareMsgOfUserValues(values);
+            case TIMELINE_MSG_ID:
+                accountId = Long.parseLong(uri.getPathSegments().get(1));
+                String rowId = uri.getPathSegments().get(3);
+                ContentValues msgOfUserValues = prepareMsgOfUserValues(values, accountId);
                 count = db.update(MyDatabase.MSG_TABLE_NAME, values, Msg._ID + "=" + rowId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
@@ -545,7 +577,7 @@ public class MyProvider extends ContentProvider {
                 if (msgOfUserValues != null) {
                     String where = "(" + MsgOfUser.MSG_ID + "=" + rowId + " AND "
                             + MsgOfUser.USER_ID + "="
-                            + new Long(Account.getAccount().getUserId()).toString() + ")";
+                            + accountId + ")";
                     String sql = "SELECT * FROM " + MyDatabase.MSGOFUSER_TABLE_NAME + " WHERE "
                             + where;
                     Cursor c = db.rawQuery(sql, null);
@@ -574,7 +606,8 @@ public class MyProvider extends ContentProvider {
                 break;
 
             default:
-                throw new IllegalArgumentException("Unknown URI \"" + uri + "\"");
+                throw new IllegalArgumentException("Unknown URI \"" + uri + "\"; matchedCode="
+                        + matchedCode);
         }
 
         return count;
@@ -584,11 +617,15 @@ public class MyProvider extends ContentProvider {
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME, TWEETS);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/#", TWEET_ID);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/search/*",
-                TWEETS_SEARCH);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/count", TWEETS_COUNT);
+        /** 
+         * The first parameter is ACCOUNT_ID, after MyDatabase.MSG_TABLE_NAME - MSG_ID
+         */
+        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#", TIMELINE);
+        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME, MSG);
+        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/" + MyDatabase.MSG_TABLE_NAME + "/#", TIMELINE_MSG_ID);
+        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/search/*",
+                TIMELINE_SEARCH);
+        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/count", MSG_COUNT);
 
         sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME, USERS);
         sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#", USER_ID);
@@ -642,7 +679,8 @@ public class MyProvider extends ContentProvider {
             if (!TextUtils.isEmpty(oid)) {
                 int matchedCode = sUriMatcher.match(uri);
                 switch (matchedCode) {
-                    case TWEETS:
+                    case MSG:
+                    case TIMELINE:
                         sql = "SELECT " + MyDatabase.Msg._ID + " FROM " + MyDatabase.MSG_TABLE_NAME
                                 + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
                                 + "=" + oid;
@@ -691,7 +729,8 @@ public class MyProvider extends ContentProvider {
             try {
                 int matchedCode = sUriMatcher.match(uri);
                 switch (matchedCode) {
-                    case TWEETS:
+                    case MSG:
+                    case TIMELINE:
                         sql = "SELECT " + MyDatabase.Msg.MSG_OID + " FROM "
                                 + MyDatabase.MSG_TABLE_NAME + " WHERE " + Msg._ID + "=" + systemId;
                         break;
@@ -813,5 +852,39 @@ public class MyProvider extends ContentProvider {
             MyLog.v(TAG, "userNameToId:" + originId + "+" + userName + " -> " + id);
         }
         return id;
+    }
+
+    
+    public static Uri getTimelineUri(long accountId) {
+        return ContentUris.withAppendedId(TIMELINE_URI, accountId);
+    }
+    
+    public static Uri getCurrentTimelineUri() {
+        return getTimelineUri(MyAccount.getCurrentMyAccount().getUserId());
+    }
+
+    /**
+     * @param accountId
+     * @param msgId
+     * @return Uri for the message in the account's timeline
+     */
+    public static Uri getTimelineMsgUri(long accountId, long msgId) {
+        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(accountId), MyDatabase.MSG_TABLE_NAME), msgId);
+    }
+
+    /**
+     * @param msgId
+     * @return Uri for the message in the current account's timeline
+     */
+    public static Uri getCurrentTimelineMsgUri(long msgId) {
+        return getTimelineMsgUri(MyAccount.getCurrentMyAccount().getUserId(), msgId);
+    }
+    
+    public static Uri getCurrentTimelineSearchUri(String queryString) {
+        Uri uri = Uri.withAppendedPath(getCurrentTimelineUri(), SEARCH_SEGMENT);
+        if (!TextUtils.isEmpty(queryString)) {
+            Uri.withAppendedPath(uri, Uri.encode(queryString));
+        }
+        return uri;
     }
 }

@@ -14,11 +14,13 @@
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	See the License for the specific language governing permissions and
 	limitations under the License.
+    
+    TODO: Add narrow enough intent filters to activities in order not to see these activities everywhere ("Open with...")
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="org.andstatus.app" android:versionName="1.4.2" android:versionCode="55">
+	package="org.andstatus.app" android:versionName="1.5.0" android:versionCode="56">
 
-	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="10" />
+	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="15" />
     
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -26,8 +28,14 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     
-	<application android:name=".MyApplication" android:label="@string/app_name" android:icon="@drawable/icon" android:debuggable="true">
+	<application android:name=".MyApplication" android:label="@string/app_name" android:icon="@drawable/icon">
 
 		<meta-data android:name="android.app.default_searchable" android:value=".TweetListActivity"/>
 
@@ -84,18 +92,12 @@
 			</intent-filter>
 		</activity>
 
-		<activity android:name=".PreferencesActivity"
-			android:launchMode="singleTask">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN"/>
-			</intent-filter>
-			<intent-filter>
-				<action android:name="android.intent.action.VIEW" />
-				<category android:name="android.intent.category.DEFAULT" />
-				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="andstatus-oauth" android:host="andstatus.org" />
-			</intent-filter>
-		</activity>
+        <activity android:name=".PreferencesActivity"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </activity>
 
 		<activity android:name=".SplashActivity" android:launchMode="singleTop">
 			<intent-filter>
@@ -112,6 +114,11 @@
 			</intent-filter>
 		</activity>
 
+		<activity android:name=".account.AccountSelector"
+            android:theme="@android:style/Theme.Dialog"
+            android:label="@string/label_activity_accountselector">
+		</activity>
+		
         <receiver android:name=".appwidget.MyAppWidgetProvider">
             <meta-data android:name="android.appwidget.provider"
                     android:resource="@xml/appwidget_info" />
@@ -127,5 +134,52 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name=".account.AuthenticatorService"
+            android:exported="true"
+            android:enabled="true"
+            >
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator"
+                />
+        </service>
+        
+        <activity
+            android:name=".account.AccountSettings"
+            android:label="@string/settings_activity_title"
+            android:alwaysRetainTaskState="True"
+            android:launchMode="singleTop"
+            >
+            <intent-filter>
+                <action
+                    android:name="org.andstatus.account.setup.ACCOUNT_MANAGER_ENTRY" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				<data android:scheme="andstatus-oauth" android:host="andstatus.org" />
+			</intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.EDIT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:scheme="content"
+                    android:host="ui.app.andstatus.org"
+                    android:path="/settings"
+                    />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        
 	</application>
 </manifest>

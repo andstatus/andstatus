@@ -56,7 +56,10 @@ import java.util.concurrent.BlockingQueue;
 
 import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
+import org.andstatus.app.account.AccountSelector;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
@@ -124,6 +127,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     public static final String BUNDLE_KEY_IS_LOADING = "isLoading";
 
+    // Request codes for called activities
+    protected static final int REQUEST_SELECT_ACCOUNT = RESULT_FIRST_USER;
+    
     /**
      * Key prefix for the stored list position
      */
@@ -179,9 +185,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected boolean mIsLoading;
 
     /**
-     * We are going to finish/restart onResume this Activity
+     * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
      */
-    protected boolean mIsFinishingOnResume = false;
+    protected boolean mIsFinishing = false;
 
     /**
      * TODO: enum TypelineType
@@ -232,23 +238,30 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             MyLog.d(TAG, "onCreate, preferencesChangeTime=" + preferencesChangeTime);
         }
 
-        if (!MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
-            Log.i(TAG, "We are running the Application for the very first time?");
-            startActivity(new Intent(this, SplashActivity.class));
-            finish();
+        if (!mIsFinishing) {
+            if (!MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
+                Log.i(TAG, "We are running the Application for the very first time?");
+                startActivity(new Intent(this, SplashActivity.class));
+                mIsFinishing = true;
+                finish();
+            }
         }
-        if (Account.getAccount().isTemporal()) {
-            Log.i(TAG, "Account '" + Account.getAccount().getUsername() + "' is temporal?!");
-            startActivity(new Intent(this, SplashActivity.class));
-            finish();
+        if (!mIsFinishing) {
+            if (!MyAccount.getCurrentMyAccount().isPersistent()) {
+                Log.i(TAG, "MyAccount '" + MyAccount.getCurrentMyAccount().getAccountGuid() + "' is temporal?!");
+                startActivity(new Intent(this, SplashActivity.class));
+                mIsFinishing = true;
+                finish();
+            }
         }
+        
+        MyPreferences.loadTheme(TAG, this);
 
         setTimelineType(getIntent());
 
         // Request window features before loading the content view
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 
-        loadTheme();
         setContentView(R.layout.tweetlist);
         getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.timeline_title);
 
@@ -274,18 +287,21 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void onResume() {
         super.onResume();
         MyLog.v(TAG, "onResume");
-        if (Account.getAccount().isTemporal()) {
-            MyLog.v(TAG, "Finishing this Activity because user is temporal");
-            mIsFinishingOnResume = true;
-            finish();
-        } else if (MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0) > preferencesChangeTime) {
-            mIsFinishingOnResume = true;
-
-            MyLog.v(TAG, "Restarting the activity to apply any new changes");
-            finish();
-            switchTimelineActivity(mTimelineType);
+        if (!mIsFinishing) {
+            if (MyAccount.getCurrentMyAccount().isPersistent()) {
+                if (MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0) > preferencesChangeTime) {
+                    mIsFinishing = true;
+                    MyLog.v(TAG, "Restarting this Activity to apply any new changes");
+                    finish();
+                    switchTimelineActivity(mTimelineType);
+                }
+            } else { 
+                mIsFinishing = true;
+                MyLog.v(TAG, "Finishing this Activity because the Account is temporal");
+                finish();
+            }
         }
-        if (!mIsFinishingOnResume) {
+        if (!mIsFinishing) {
             bindToService();
             updateTitle();
             restorePosition();
@@ -327,7 +343,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
         }
         if (firstItemId > 0) {
-            Account tu = Account.getAccount();
+            MyAccount ma = MyAccount.getCurrentMyAccount();
             
             // Variant 2 is overkill... but let's try...
             // I have a feeling that saving preferences while finishing activity sometimes doesn't work...
@@ -336,26 +352,26 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             boolean saveAsync = false;
             if (saveSync) {
                 // 1. Synchronous saving
-                tu.getAccountPreferences().edit().putLong(positionKey(false), firstItemId)
+                ma.getMyAccountPreferences().edit().putLong(positionKey(false), firstItemId)
                 .putLong(positionKey(true), lastItemId).commit();
                 if (mSearchMode) {
                     // Remember query string for which the position was saved
-                    tu.getAccountPreferences().edit().putString(positionQueryStringKey(), mQueryString)
+                    ma.getMyAccountPreferences().edit().putString(positionQueryStringKey(), mQueryString)
                             .commit();
                 }
             }
             if (saveAsync) {
                 // 2. Asynchronous saving of user's preferences
-                sendCommand(new CommandData(positionKey(false), firstItemId, tu.getUsername()));
-                sendCommand(new CommandData(positionKey(true), lastItemId, tu.getUsername()));
+                sendCommand(new CommandData(ma.getAccountGuid(), positionKey(false), firstItemId));
+                sendCommand(new CommandData(ma.getAccountGuid(), positionKey(true), lastItemId));
                 if (mSearchMode) {
                     // Remember query string for which the position was saved
-                    sendCommand(new CommandData(positionQueryStringKey(), mQueryString, tu.getUsername()));
+                    sendCommand(new CommandData(positionQueryStringKey(), mQueryString, ma.getUsername()));
                 }
             } 
             
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "Saved position " + tu.getUsername() + "; " + positionKey(false) + "="
+                Log.v(TAG, "Saved position " + ma.getAccountGuid() + "; " + positionKey(false) + "="
                         + firstItemId + "; index=" + firstScrollPos + "; lastId="
                         + lastItemId + "; index=" + lastScrollPos);
             }
@@ -366,7 +382,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * Restore (First visible item) position saved for this user and for this type of timeline
      */
     private void restorePosition() {
-        Account tu = Account.getAccount();
+        MyAccount tu = MyAccount.getCurrentMyAccount();
         boolean loaded = false;
         long firstItemId = -3;
         try {
@@ -395,7 +411,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 }
             }
         } catch (Exception e) {
-            Editor ed = tu.getAccountPreferences().edit();
+            Editor ed = tu.getMyAccountPreferences().edit();
             ed.remove(positionKey(false));
             ed.commit();
             firstItemId = -2;
@@ -412,14 +428,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * @return Saved Tweet id or < 0 if none was found.
      */
     protected long getSavedPosition(boolean lastRow) {
-        Account tu = Account.getAccount();
+        MyAccount tu = MyAccount.getCurrentMyAccount();
         long savedItemId = -3;
         if (!mSearchMode
-                || (mQueryString.compareTo(tu.getAccountPreferences().getString(
+                || (mQueryString.compareTo(tu.getMyAccountPreferences().getString(
                         positionQueryStringKey(), "")) == 0)) {
             // Load saved position in Search mode only if that position was
             // saved for the same query string
-            savedItemId = tu.getAccountPreferences().getLong(positionKey(lastRow), -1);
+            savedItemId = tu.getMyAccountPreferences().getLong(positionKey(lastRow), -1);
         }
         return savedItemId;
     }
@@ -501,7 +517,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // so we have to start notifying the User about new events after his
         // moment.
 
-        if (!mIsFinishingOnResume) {
+        if (!mIsFinishing) {
             // Get rid of the "fast scroll thumb"
             ((ListView) findViewById(android.R.id.list)).setFastScrollEnabled(false);
             clearNotifications();
@@ -659,28 +675,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     }
 
     /**
-     * Load the theme for preferences.
-     */
-    public void loadTheme() {
-        boolean light = MyPreferences.getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
-        StringBuilder themeName = new StringBuilder();
-        String name = MyPreferences.getDefaultSharedPreferences().getString("theme", "AndStatus");
-        if (name.indexOf("Theme.") > -1) {
-            name = name.substring(name.indexOf("Theme."));
-        }
-        themeName.append("Theme.");
-        if (light) {
-            themeName.append("Light.");
-        }
-        themeName.append(name);
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "loadTheme; theme=\"" + themeName.toString() + "\"");
-        }
-        setTheme((int) getResources().getIdentifier(themeName.toString(), "style",
-                "org.andstatus.app"));
-    }
-
-    /**
      * Updates the activity title.
      * Sets the title with a left and right title.
      * 
@@ -702,12 +696,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 timelinename = getString(R.string.activity_title_direct_messages);
                 break;
         }
-        String username = MyPreferences.getDefaultSharedPreferences().getString(Account.KEY_USERNAME, null);
+        
+        // Show current account info on the left button
+        String username = MyAccount.getCurrentMyAccount().getUsername();
         String leftText = getString(R.string.activity_title_format, new Object[] {
                 timelinename, username + (mSearchMode ? " *" : "")
         }); 
-        TextView leftTitle = (TextView) findViewById(R.id.custom_title_left_text);
+        Button leftTitle = (Button) findViewById(R.id.custom_title_left_text);
         leftTitle.setText(leftText);
+        
         TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
         rightTitle.setText(rightText);
 
@@ -750,6 +747,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         getListView().setOnCreateContextMenuListener(this);
         getListView().setOnItemClickListener(this);
 
+        Button accountButton = (Button) findViewById(R.id.custom_title_left_text);
+        accountButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent i = new Intent(TimelineActivity.this, AccountSelector.class);
+                startActivityForResult(i, REQUEST_SELECT_ACCOUNT);
+            }
+        });
+       
         Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
         createMessageButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -783,7 +788,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             Intent serviceIntent = new Intent(IMyService.class.getName());
             if (!MyServiceManager.isStarted()) {
                 // Ensure that MyService is running
-                MyServiceManager.startAndStatusService(this, new CommandData(CommandEnum.EMPTY));
+                MyServiceManager.startAndStatusService(this, new CommandData(CommandEnum.EMPTY, ""));
             }
             // startService(serviceIntent);
             bindService(serviceIntent, mServiceConnection, 0);
@@ -969,7 +974,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             intent.removeExtra(SearchManager.QUERY);
             intent.removeExtra(SearchManager.APP_DATA);
             intent.putExtra(MyService.EXTRA_TIMELINE_TYPE, mTimelineType.save());
-            intent.setData(MyDatabase.Msg.CONTENT_URI);
+            intent.setData(MyProvider.getCurrentTimelineUri());
        }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "setTimelineType; type=\"" + mTimelineType.save() + "\"");
@@ -997,10 +1002,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             default:
                 command = CommandEnum.FETCH_HOME;
         }
-        sendCommand(new CommandData(command));
+        sendCommand(new CommandData(command, MyAccount.getCurrentMyAccount().getAccountGuid()));
 
         if (allTimelineTypes) {
-            sendCommand(new CommandData(CommandEnum.FETCH_ALL_TIMELINES));
+            sendCommand(new CommandData(CommandEnum.FETCH_ALL_TIMELINES, MyAccount.getCurrentMyAccount().getAccountGuid()));
         }
     }
     
@@ -1044,5 +1049,23 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         outState.putLong(MyService.EXTRA_TWEETID, mCurrentId);
 
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_SELECT_ACCOUNT:
+                if (resultCode == RESULT_OK) {
+                    mIsFinishing = true;
+                    MyLog.v(TAG, "Restarting the activity for the selected account");
+                    finish();
+                    switchTimelineActivity(mTimelineType);
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
+        
     }
 }

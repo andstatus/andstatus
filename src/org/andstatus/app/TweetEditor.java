@@ -18,6 +18,7 @@ package org.andstatus.app;
 
 import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
+import org.andstatus.app.account.MyAccount;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -167,8 +168,8 @@ class TweetEditor {
 
     /**
      * Handles threaded sending of the message, typed in the mEditText text box.
-     * Queued message sending is supported (if initial sending
-     * failed for some reason). 
+     * Queued message sending is supported (if initial sending failed for some
+     * reason).
      */
     private void updateStatus() {
         String status = mEditText.getText().toString();
@@ -176,7 +177,8 @@ class TweetEditor {
             Toast.makeText(mActivity, R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
         } else {
-            CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS);
+            CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS, MyAccount
+                    .getCurrentMyAccount().getAccountGuid());
             commandData.bundle.putString(MyService.EXTRA_STATUS, status);
             commandData.bundle.putLong(MyService.EXTRA_INREPLYTOID, mReplyId);
             mActivity.sendCommand(commandData);
