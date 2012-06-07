@@ -1,6 +1,6 @@
 /* 
+ * Copyright (c) 2011-2012 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
- * Copyright (c) 2011 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -260,6 +260,11 @@ public class MyService extends Service {
          */
         PREFERENCES_CHANGED("preferences-changed"),
 
+        /**
+         * Stop the service after finishing all asynchronous treads (i.e. not immediately!)
+         */
+        STOP_SERVICE("stop-service"),
+        
         /**
          * Save SharePreverence. We try to use it because sometimes Android
          * doesn't actually store these values to the disk... and the
@@ -557,6 +562,11 @@ public class MyService extends Service {
     private boolean mNotificationsEnabled;
 
     private boolean mNotificationsVibrate;
+
+    /**
+     * We are going to finish this service
+     */
+    protected boolean mIsFinishing = false;
     /**
      * Flag to control the Service state persistence
      */
@@ -635,6 +645,23 @@ public class MyService extends Service {
         }
 
     };
+    
+    /**
+     * Stop after finishing background processes
+     */
+    private void stopDelayed() {
+        mIsFinishing = true;
+        boolean doStop = (mExecutors.size() == 0);
+
+        if (doStop) {
+            MyLog.d(TAG, "Service is being stopped");
+            if (mWakeLock != null) {
+                mWakeLock.release();
+                mWakeLock = null;
+            }
+            stopSelf();
+        }
+    }
 
     @Override
     public void onDestroy() {
@@ -758,6 +785,22 @@ public class MyService extends Service {
      */
     private synchronized void receiveCommand(Intent intent) {
         
+        CommandData commandData = null;
+        if (intent != null) {
+            commandData = new CommandData(intent);
+            if (commandData.command == CommandEnum.STOP_SERVICE) {
+                mIsFinishing = true;
+                // Try to stop immediately
+                stopDelayed();
+            } else {
+                // Cancel finishing if we received next command
+                mIsFinishing = false;
+            }
+        }
+        if (mIsFinishing) {
+            return;
+        }
+        
         long preferencesChangeTimeNew = MyPreferences.getDefaultSharedPreferences().getLong(
                 MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0);
         if (preferencesChangeTime != preferencesChangeTimeNew
@@ -770,17 +813,16 @@ public class MyService extends Service {
         if (mCommands.isEmpty()) {
             // This is a good place to send commands from retry Queue
             while (!mRetryQueue.isEmpty()) {
-                CommandData commandData = mRetryQueue.poll();
-                if (!mCommands.contains(commandData)) {
-                    if (!mCommands.offer(commandData)) {
+                CommandData cd = mRetryQueue.poll();
+                if (!mCommands.contains(cd)) {
+                    if (!mCommands.offer(cd)) {
                         Log.e(TAG, "mCommands is full?");
                     }
                 }
             }
         }
 
-        if (intent != null) {
-            CommandData commandData = new CommandData(intent);
+        if (commandData != null) {
             if (commandData.command == CommandEnum.UNKNOWN) {
                 // Ignore unknown commands
 
@@ -988,7 +1030,9 @@ public class MyService extends Service {
                         }
                         mExecutors.add(executor);
                         if (mExecutors.size() == 1) {
-                            mWakeLock = getWakeLock();
+                            if (mWakeLock == null) {
+                                mWakeLock = getWakeLock();
+                            }
                             mBroadcastListenerCount = mCallbacks.beginBroadcast();
                             MyLog.d(TAG, "No other threads running so starting new broadcast for "
                                     + mBroadcastListenerCount + " listeners");
@@ -1006,13 +1050,14 @@ public class MyService extends Service {
             }
             mExecutors.remove(executorIn);
             if (mExecutors.size() == 0) {
-                MyLog.d(TAG, "Ending last thread so also ending broadcast.");
-                mWakeLock.release();
+                MyLog.d(TAG, "Ending last thread so ending broadcast");
                 mCallbacks.finishBroadcast();
-                if (notifyOfQueue(false) == 0) {
+                if (mIsFinishing) {
+                    stopDelayed();
+                } else if ( notifyOfQueue(false) == 0) {
                     if (! ForegroundCheckTask.isAppOnForeground(MyPreferences.getContext())) {
                         MyLog.d(TAG, "App is on Background so stop this Service");
-                        stopSelf();
+                        stopDelayed();
                     }
                 }
             }
@@ -1527,7 +1572,7 @@ public class MyService extends Service {
                     boolean oKs[] = new boolean[atl.length];
                     try {
                         for (int ind = 0; ind <= atl.length; ind++) {
-                            if (!MyPreferences.isInitialized()) {
+                            if (mIsFinishing || !MyPreferences.isInitialized()) {
                                 okAllTimelines = false;
                                 break;
                             }

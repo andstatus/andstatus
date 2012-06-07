@@ -16,6 +16,7 @@
 
 package org.andstatus.app;
 
+import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.util.MyLog;
 
@@ -90,12 +91,17 @@ public class MyServiceManager extends BroadcastReceiver {
     /**
      * Stop  {@link MyService}
      * @param context
-     * @param ignoreAlarms - if true repeating alarms will be ignored also
+     * @param ignoreAlarms - if true repeating alarms will be ignored also after this call
      */
     public static void stopAndStatusService(Context context, boolean ignoreAlarms_in) {
         isStarted = false;
         ignoreAlarms = ignoreAlarms_in;
-        context.stopService(new Intent(IMyService.class.getName()));
+        // Don't do this, because we may looase some information and (or) get Force Close
+        // context.stopService(new Intent(IMyService.class.getName()));
+        
+        //This is "mild" stopping
+        CommandData element = new CommandData(CommandEnum.STOP_SERVICE, "");
+        context.sendBroadcast(element.toIntent());
     }
 
     /**

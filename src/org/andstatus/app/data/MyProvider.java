@@ -883,7 +883,7 @@ public class MyProvider extends ContentProvider {
     public static Uri getCurrentTimelineSearchUri(String queryString) {
         Uri uri = Uri.withAppendedPath(getCurrentTimelineUri(), SEARCH_SEGMENT);
         if (!TextUtils.isEmpty(queryString)) {
-            Uri.withAppendedPath(uri, Uri.encode(queryString));
+            uri = Uri.withAppendedPath(uri, Uri.encode(queryString));
         }
         return uri;
     }

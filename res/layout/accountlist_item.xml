@@ -4,14 +4,19 @@
         android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:orientation="horizontal"
+        android:layout_marginTop="3mm"
+        android:layout_marginBottom="3mm"
 		android:layout_weight="1">
-	<TextView android:id="@+id/name"
-        android:padding="2dip"
-		android:layout_weight="1"
-		android:textStyle="?attr/tweetUsernameStyle"
-		android:textAppearance="?attr/tweetUsernameAppearance"
-		android:layout_height="wrap_content"
-		android:layout_width="0dip" />
+
+	<TextView
+	    android:id="@+id/name"
+	    android:layout_width="0dip"
+	    android:layout_height="wrap_content"
+	    android:layout_gravity="center_vertical"
+        android:textStyle="?attr/tweetUsernameStyle"
+        android:textAppearance="?attr/tweetUsernameAppearance"
+	    android:layout_weight="1" />
+
     <TextView android:id="@+id/type"
         android:layout_height="wrap_content"
         android:layout_width="0dip"

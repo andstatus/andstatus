@@ -126,13 +126,4 @@ public class TweetActivity extends Activity {
 			Log.e(TAG, "No cursor found");
 		}
 	}
-
-	@Override
-	public boolean onSearchRequested() {
-		Bundle appDataBundle = new Bundle();
-		// TODO: Do we really use this?
-		appDataBundle.putParcelable("content_uri", MyProvider.getCurrentTimelineSearchUri(null));
-		startSearch(null, false, appDataBundle, false);
-		return true;
-	}
 }
