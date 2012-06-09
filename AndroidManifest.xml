@@ -35,6 +35,13 @@
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     
+    <supports-screens
+        android:resizeable="true"
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:anyDensity="true" />
+    
 	<application android:name=".MyApplication" android:label="@string/app_name" android:icon="@drawable/icon">
 
 		<meta-data android:name="android.app.default_searchable" android:value=".TweetListActivity"/>

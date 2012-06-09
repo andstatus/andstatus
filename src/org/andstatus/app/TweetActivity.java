@@ -32,7 +32,6 @@ import android.widget.TextView;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.util.RelativeTime;
 
 /**

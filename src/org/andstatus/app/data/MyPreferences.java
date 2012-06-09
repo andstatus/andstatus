@@ -91,8 +91,11 @@ public class MyPreferences {
      * @param context_in
      * @param object - object that initialized the class 
      */
-    public static void initialize(Context context_in, java.lang.Object object ) {
+    public static Context initialize(Context context_in, java.lang.Object object ) {
         String origin_in = object.getClass().getSimpleName();
+        if (origin_in.contentEquals("String")) {
+            origin_in = origin_in.toString();
+        }
         if (!misInitialized) {
             // Maybe we should use context_in.getApplicationContext() ??
             context = context_in.getApplicationContext();
@@ -112,6 +115,7 @@ public class MyPreferences {
         } else {
             MyLog.v(TAG, "Already initialized by " + origin +  " (called by: " + origin_in + ")");
         }
+        return getContext();
     }
 
     /**

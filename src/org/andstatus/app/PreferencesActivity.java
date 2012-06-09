@@ -123,8 +123,11 @@ public class PreferencesActivity extends PreferenceActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(
-                this);
+        SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
+        if (sp != null) {
+            sp.unregisterOnSharedPreferenceChangeListener(
+                    this);
+        }
     }
 
     /**

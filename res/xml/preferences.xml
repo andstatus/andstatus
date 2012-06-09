@@ -34,11 +34,27 @@
 	<PreferenceCategory android:title="@string/category_title_preference_settings">
 
 		<!-- STORAGE -->
-		<CheckBoxPreference android:key="use_external_storage_new"
-			android:title="@string/title_preference_storage_external"
-			android:summaryOff="@string/summary_preference_storage_external_off"
-			android:summaryOn="@string/summary_preference_storage_external_on" />
-
+		<PreferenceScreen android:key="preference_screen_storage"
+			android:summary="@string/summary_preference_storage"
+			android:title="@string/title_preference_storage">
+			<PreferenceCategory android:title="@string/summary_preference_storage">
+                <CheckBoxPreference android:key="use_external_storage_new"
+                    android:title="@string/title_preference_storage_external"
+                    android:summaryOff="@string/summary_preference_storage_external_off"
+                    android:summaryOn="@string/summary_preference_storage_external_on" />
+				<ListPreference android:entryValues="@array/history_size_keys"
+					android:entries="@array/history_size_values" android:summary="@string/summary_preference_history_size"
+					android:dialogTitle="@string/dialog_title_preference_history_size"
+					android:defaultValue="100000"
+					android:title="@string/title_preference_history_size" android:key="history_size" />
+				<ListPreference android:entryValues="@array/history_time_keys"
+					android:entries="@array/history_time_values" android:summary="@string/summary_preference_history_time"
+					android:dialogTitle="@string/dialog_title_preference_history_time"
+					android:defaultValue="365"
+					android:title="@string/title_preference_history_time" android:key="history_time" />
+			</PreferenceCategory>
+		</PreferenceScreen>
+        
 		<!-- APPEARANCE -->
 		<PreferenceScreen android:key="preference_screen_apperance"
 			android:summary="@string/summary_preference_appearance"
@@ -60,16 +76,6 @@
 					android:summaryOff="@string/summary_preference_use_avatars_off"
 					android:summaryOn="@string/summary_preference_use_avatars_on" />
  -->
-				<ListPreference android:entryValues="@array/history_size_keys"
-					android:entries="@array/history_size_values" android:summary="@string/summary_preference_history_size"
-					android:dialogTitle="@string/dialog_title_preference_history_size"
-					android:defaultValue="2000"
-					android:title="@string/title_preference_history_size" android:key="history_size" />
-				<ListPreference android:entryValues="@array/history_time_keys"
-					android:entries="@array/history_time_values" android:summary="@string/summary_preference_history_time"
-					android:dialogTitle="@string/dialog_title_preference_history_time"
-					android:defaultValue="3"
-					android:title="@string/title_preference_history_time" android:key="history_time" />
 			</PreferenceCategory>
 		</PreferenceScreen>
 

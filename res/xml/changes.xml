@@ -34,12 +34,16 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
     <release android:versionName="1.5.0" android:versionCode="56"
-        versionDate="2012-06-XX">
+        versionDate="2012-06-09">
         <changes>
-            <change>Multiple User Accounts support added. 
-                Accounts are managed using Android Account Manager (in "Accounts and sync" device settings).
+            <change>Multiple User Accounts support added.
                 User can easily switch timeline between accounts.</change>
-            <change>(not done yet) Fix for "Use External Storage" option for Android v.4.0.</change>
+            <change>Accounts are managed using Android Account Manager (in "Accounts and sync" device settings).
+                This is why new permissions were added.</change>
+            <change>Fix for "Use External Storage" option for Android v.4.0.
+                This fix forced us to compile package against Android v.4.0 (API 15). 
+                However AndStatus still works for Android v.2.2 and higher.</change>
+            <change>Fixed Search and "Loading..." layouts for Android v.4.0.</change>
         </changes>
     </release>
     <release android:versionName="1.4.2" android:versionCode="55"

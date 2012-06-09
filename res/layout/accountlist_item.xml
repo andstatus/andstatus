@@ -4,17 +4,18 @@
         android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:orientation="horizontal"
-        android:layout_marginTop="3mm"
-        android:layout_marginBottom="3mm"
 		android:layout_weight="1">
 
 	<TextView
 	    android:id="@+id/name"
 	    android:layout_width="0dip"
 	    android:layout_height="wrap_content"
-	    android:layout_gravity="center_vertical"
-        android:textStyle="?attr/tweetUsernameStyle"
-        android:textAppearance="?attr/tweetUsernameAppearance"
+        android:layout_marginLeft="1mm"
+        android:layout_marginTop="2mm"
+        android:layout_marginBottom="2mm"
+        android:textStyle="?attr/tweetMessageStyle"
+        android:textColor="?attr/tweetMessageColor"
+        android:textAppearance="?attr/tweetMessageAppearance"
 	    android:layout_weight="1" />
 
     <TextView android:id="@+id/type"

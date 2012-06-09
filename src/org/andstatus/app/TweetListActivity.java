@@ -103,10 +103,11 @@ public class TweetListActivity extends TimelineActivity {
         }
 
         // Create list footer for loading messages
-        mListFooter = new LinearLayout(getApplicationContext());
+        // We use "this" as a context, otherwise custom styles are not recognized...
+        mListFooter = new LinearLayout(this);
         mListFooter.setClickable(false);
         getListView().addFooterView(mListFooter);
-        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+        LayoutInflater inflater = LayoutInflater.from(this);
         View tv = inflater.inflate(R.layout.item_loading, null);
         mListFooter.addView(tv, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));

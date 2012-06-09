@@ -19,8 +19,7 @@
 
     <!-- Menu item / Window title -->
     <string name="account_settings_action">AndStatus account settings</string>
-    <!-- On Settings screen, summary line when called via AccountManager for Exchange accounts
-        [CHAR LIMIT=50] -->
+    <!-- On Settings screen, summary line when called via AccountManager [CHAR LIMIT=50] -->
     <string name="account_settings_summary">Sync frequency, notifications, etc.</string>
 
     <!-- Menu item for settings [CHAR LIMIT=40]-->
@@ -177,7 +176,7 @@
 	<string name="summary_preference_oauth_off">Basic authentication</string>
 	<string name="summary_preference_oauth_on">OAuth (secure authentication) is on</string>
 	<string name="summary_preference_password">Your Twitter password</string>
-	<string name="summary_preference_storage">Where to store data and images</string>
+    <string name="summary_preference_storage">Where and what information to store</string>
 	<string name="summary_preference_storage_external_off">Store data in Internal Memory</string>
 	<string name="summary_preference_storage_external_on">Store data on External Memory</string>
 	<string name="summary_preference_theme">Select AndStatus theme</string>

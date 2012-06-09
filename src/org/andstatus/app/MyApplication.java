@@ -7,6 +7,7 @@ import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 import android.app.Application;
+import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.util.Log;
@@ -19,7 +20,7 @@ import java.io.File;
 public class MyApplication extends Application {
     private static final String TAG = "MyApplication";
 
-    /*
+    /**
      * @see android.app.Application#onCreate()
      */
     @Override
@@ -31,7 +32,7 @@ public class MyApplication extends Application {
         super.onCreate();
     }
 
-    /*
+    /**
      * @see android.content.ContextWrapper#getDatabasePath(java.lang.String)
      */
     @Override
@@ -44,8 +45,7 @@ public class MyApplication extends Application {
         return dbAbsolutePath;
     }
 
-    /*
-     * @see android.content.ContextWrapper#openOrCreateDatabase(java.lang.String, int, android.database.sqlite.SQLiteDatabase.CursorFactory)
+    /**
      */
     @Override
     public SQLiteDatabase openOrCreateDatabase(String name, int mode, CursorFactory factory) {
@@ -58,6 +58,23 @@ public class MyApplication extends Application {
             MyLog.v(TAG, "openOrCreateDatabase, name=" + name + ( db!=null ? " opened '" + db.getPath() + "'" : " NOT opened" ));
         }
         return db;
+    }
+
+    
+    /**
+     * Since: API Level 11
+     * Simplified implementation
+     */
+    @Override
+    public SQLiteDatabase openOrCreateDatabase(String name, int mode, CursorFactory factory,
+            DatabaseErrorHandler errorHandler) {
+        
+        return openOrCreateDatabase(name, mode, factory);
+    }
+
+    @Override
+    public String toString() {
+        return "AndStatus. " + super.toString();
     }
 
 }

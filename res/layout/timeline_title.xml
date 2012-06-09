@@ -9,7 +9,7 @@
 		android:layout_height="wrap_content"
 		android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-		android:text="(left)"/>
+		android:text="@string/title_preference_username"/>
 
 	<Button
 	    android:id="@+id/createMessageButton"
@@ -18,7 +18,7 @@
 	    android:layout_alignParentRight="true"
 	    android:layout_centerVertical="true"
 	    android:focusable="false"
-	    android:text="Tweet"
+	    android:text="@string/button_create_tweet"
 	    android:visibility="visible" />
 
     <TextView android:id="@+id/custom_title_right_text"
@@ -27,6 +27,6 @@
         android:layout_centerVertical="true"
         android:textColor="@android:color/secondary_text_dark"
         android:textSize="14dip" android:textStyle="normal"
-        android:text="(right)" 
+        android:text="@string/dialog_title_timeline_loading" 
         android:layout_toLeftOf="@+id/createMessageButton"/>
 </RelativeLayout>

@@ -115,7 +115,8 @@
 		<item>20000 tweets</item>
 		<item>50000 tweets</item>
 		<item>100000 tweets</item>
-	</string-array>
+        <item>1 mln tweets</item>
+    </string-array>
 	<string-array name="history_size_keys">
 		<item>500</item>
 		<item>1000</item>
@@ -125,7 +126,8 @@
 		<item>20000</item>
 		<item>50000</item>
 		<item>100000</item>
-	</string-array>
+        <item>1000000</item>
+    </string-array>
 	<string-array name="history_size_display">
 		<item>500 tweets</item>
 		<item>1000 tweets</item>
@@ -135,7 +137,8 @@
 		<item>20000 tweets</item>
 		<item>50000 tweets</item>
 		<item>100000 tweets</item>
-	</string-array>
+        <item>1 mln tweets</item>
+    </string-array>
 	<string-array name="history_time_values">
 		<item>1 day</item>
 		<item>2 days</item>
@@ -146,7 +149,8 @@
 		<item>1 week</item>
 		<item>1 month</item>
 		<item>1 year</item>
-	</string-array>
+        <item>10 years</item>
+    </string-array>
 	<string-array name="history_time_keys">
 		<item>1</item>
 		<item>2</item>
@@ -157,6 +161,7 @@
 		<item>7</item>
 		<item>31</item>
 		<item>365</item>
+        <item>3653</item>
 	</string-array>
 	<string-array name="history_time_display">
 		<item>1 day</item>
@@ -168,7 +173,8 @@
 		<item>1 week</item>
 		<item>1 month</item>
 		<item>1 year</item>
-	</string-array>
+        <item>10 years</item>
+    </string-array>
 	<string-array name="notification_tweet_formats">
 		<item>"{0} new tweet"</item>
 		<item>"{0} new tweets"</item>

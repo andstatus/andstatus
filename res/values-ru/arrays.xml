@@ -105,6 +105,7 @@
 		<item>"20000 твитов"</item>
 		<item>"50000 твитов"</item>
 		<item>"100000 твитов"</item>
+		<item>"1 млн. твитов"</item>
 	</string-array>
 	<string-array name="history_size_keys">
 		<item>500</item>
@@ -115,16 +116,18 @@
 		<item>20000</item>
 		<item>50000</item>
 		<item>100000</item>
-	</string-array>
+        <item>1000000</item>
+    </string-array>
 	<string-array name="history_size_display">
-		<item>"500"</item>
-		<item>"1000"</item>
-		<item>"2000"</item>
-		<item>"5000"</item>
-		<item>"10000"</item>
-		<item>"20000"</item>
-		<item>"50000"</item>
-		<item>"100000"</item>
+		<item>"500 твитов"</item>
+		<item>"1000 твитов"</item>
+		<item>"2000 твитов"</item>
+		<item>"5000 твитов"</item>
+		<item>"10000 твитов"</item>
+		<item>"20000 твитов"</item>
+		<item>"50000 твитов"</item>
+		<item>"100000 твитов"</item>
+		<item>"1 млн. твитов"</item>
 	</string-array>
 	<string-array name="history_time_values">
 		<item>"1 день"</item>
@@ -136,6 +139,7 @@
 		<item>"1 неделя"</item>
 		<item>"1 месяц"</item>
 		<item>"1 год"</item>
+		<item>"10 лет"</item>
 	</string-array>
 	<string-array name="history_time_keys">
 		<item>1</item>
@@ -147,6 +151,7 @@
 		<item>7</item>
 		<item>31</item>
 		<item>365</item>
+        <item>3653</item>
 	</string-array>
 	<string-array name="history_time_display">
 		<item>"1 день"</item>
@@ -158,6 +163,7 @@
 		<item>"1 неделя"</item>
 		<item>"1 месяц"</item>
 		<item>"1 год"</item>
+		<item>"10 лет"</item>
 	</string-array>
 	<string-array name="notification_tweet_formats">
 		<item>"{0} новый твит"</item>

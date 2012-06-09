@@ -16,6 +16,17 @@
  -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<string name="app_name">AndStatus</string>
+
+    <!-- Menu item / Window title -->
+    <string name="account_settings_action">Настройки аккаунтов AndStatus</string>
+    <!-- On Settings screen, summary line when called via AccountManager [CHAR LIMIT=50] -->
+    <string name="account_settings_summary">Частота синхронизации, уведомления и др.</string>
+
+    <!-- Menu item for settings [CHAR LIMIT=40]-->
+    <string name="settings_action">Настройки</string>
+    <!-- Settings activity title [CHAR LIMIT=40]-->
+    <string name="settings_activity_title">Настройки</string>
+    
 	<string name="activity_title_direct_messages">Личные сообщения</string>
 	<string name="activity_title_favorites">Избранное</string>
 	<string name="activity_title_format">%1$s: %2$s</string>
@@ -78,7 +89,11 @@
 	<string name="error_credentials_of_other_user">Идентифицирован ДРУГОЙ пользователь?!</string>
 	<string name="favorite_created">Твит добавлен в избранное.</string>
 	<string name="favorite_destroyed">Твит удалён из избранного.</string>
+    <!-- Accounts & Synchronization settings --><skip/>
+    <!-- Header title for list of accounts on Accounts & Synchronization settings -->
+    <string name="header_manage_accounts">Управление аккаунтами</string>    
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
+    <string name="label_activity_accountselector">Выберите аккаунт</string>
 	<string name="loading">Загрузка…</string>
 	<string name="message_edit_hint">Что происходит?</string>
 	<string name="message_characters_left">Осталось символов:</string>
@@ -161,7 +176,7 @@
 	<string name="summary_preference_oauth_off">Базовая аутентификация</string>
 	<string name="summary_preference_oauth_on">OAuth (защищённая аутентификация)</string>
 	<string name="summary_preference_password">Ваш пароль в Твиттере</string>
-	<string name="summary_preference_storage">Где сохранять данные и изображения</string>
+	<string name="summary_preference_storage">Где и какую информацию хранить</string>
 	<string name="summary_preference_storage_external_off">Сохранять данные во внутренней памяти</string>
 	<string name="summary_preference_storage_external_on">Сохранять данные во внешней памяти</string>
 	<string name="summary_preference_theme">Выберите тему AndStatus-а</string>

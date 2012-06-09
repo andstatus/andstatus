@@ -342,8 +342,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 //    public static final int TIMELINE_TYPE_FAVORITES = 4;
 
     MyDatabase(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        MyPreferences.initialize(context, this);
+        // We use TAG instead of 'this' which cannot be used in this context
+        super(MyPreferences.initialize(context, TAG), DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     /**
