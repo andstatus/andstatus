@@ -1,0 +1,11 @@
+AndStatus is a light-weight open Twitter alternative for Android.
+It supports multiple User accounts and allows you to read tweets, send Status updates, 
+create Favorites etc. even when you are offline.
+
+AndStatus is a fork of AndTweet project. 
+The new project was created specifically as a community initiative, not associated with any person, 
+commercial entity and not tied to Twitter only. 
+Since that time the project made substantial progress already, 
+see the [https://github.com/andstatus/andstatus/wiki/changelog Change Log].
+
+For more information please read the [https://github.com/andstatus/andstatus/wiki AndStatus Wiki]. 

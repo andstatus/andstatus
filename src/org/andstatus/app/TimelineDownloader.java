@@ -196,6 +196,10 @@ public class TimelineDownloader {
      */
     public long insertFromJSONObject(JSONObject msg) throws JSONException, SQLiteConstraintException {
         Long rowId = 0L;
+        /**
+         * Count this message. 
+         */
+        boolean countIt = false; 
         try {
             ContentValues values = new ContentValues();
 
@@ -277,6 +281,10 @@ public class TimelineDownloader {
             values.put(MsgOfUser.TIMELINE_TYPE, mTimelineType.save());
             values.put(MyDatabase.Msg.BODY, body);
 
+            // As of 2012-07-07 we count only messages that were not in a database yet.
+            // Don't count Messages without body - this may be related messages which were not retrieved yet.
+            countIt = (rowId == 0) && (body.length() > 0);
+            
             // If the Msg is a Reply to other message
             String inReplyToUserOid = "";
             String inReplyToUserName = "";
@@ -321,7 +329,9 @@ public class TimelineDownloader {
                         
                         if (mTu.getUserId() == inReplyToUserId) {
                             values.put(MyDatabase.MsgOfUser.REPLIED, 1);
-                            mReplies++;
+                            if (countIt) { 
+                                mReplies++; 
+                                }
                             // We consider a Reply to be a Mention also?! 
                             // ...Yes, at least as long as we don't have "Replies" timeline type 
                             mentioned = true;
@@ -358,12 +368,10 @@ public class TimelineDownloader {
                     break;
             }
             
-            if (body.length() > 0) {
-                // The same Messages may be downloaded for different users, 
-                // so let's count even if Msg already existed.
-                // Don't count Messages without body - this may be related messages which were not retrieved yet.
+            if (countIt) { 
                 mMessages++;
-
+                }
+            if (body.length() > 0) {
                 if (!mentioned) {
                     // Check if current user was mentioned in the text of the message
                     if (body.length() > 0) {
@@ -374,7 +382,9 @@ public class TimelineDownloader {
                 }
             }
             if (mentioned) {
-              mMentions++;
+                if (countIt) { 
+                    mMentions++;
+                    }
               values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
             }
             

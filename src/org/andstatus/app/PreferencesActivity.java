@@ -603,7 +603,7 @@ public class PreferencesActivity extends PreferenceActivity implements
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0
                 && overrideBackButton) {
             finish();
-            this.sendBroadcast(new Intent(this, TweetListActivity.class));
+            this.sendBroadcast(new Intent(this, TimelineActivity.class));
             return true;    
         }        
         // TODO Auto-generated method stub

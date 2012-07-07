@@ -533,6 +533,10 @@ public class MyProvider extends ContentProvider {
                 + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS prevauthor ON "
                 + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID + "=prevauthor." + MyDatabase.User._ID
                 ;
+       tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.RECIPIENT_NAME
+               + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS recipient ON "
+               + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient." + MyDatabase.User._ID
+               ;
         return tables;
     }
     
@@ -644,6 +648,7 @@ public class MyProvider extends ContentProvider {
         sTweetsProjectionMap.put(MsgOfUser.TIMELINE_TYPE, MsgOfUser.TIMELINE_TYPE);
         sTweetsProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
         sTweetsProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
+        sTweetsProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
         sTweetsProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
         sTweetsProjectionMap.put(MsgOfUser.RETWEETED, MsgOfUser.RETWEETED);
         sTweetsProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
@@ -736,7 +741,7 @@ public class MyProvider extends ContentProvider {
                         break;
 
                     case USERS:
-                        sql = "SELECT " + MyDatabase.User.USER_ID + " FROM "
+                        sql = "SELECT " + MyDatabase.User.USER_OID + " FROM "
                                 + MyDatabase.USER_TABLE_NAME + " WHERE " + User._ID + "="
                                 + systemId;
                         break;
@@ -761,34 +766,92 @@ public class MyProvider extends ContentProvider {
         return oid;
     }
 
-    public static String msgIdToUsername(String msgUserId, long systemId) {
+    public static String msgIdToUsername(String msgUserColumnName, long messageId) {
         String userName = "";
+        if (messageId != 0) {
+            SQLiteStatement prog = null;
+            String sql = "";
+            try {
+                if (msgUserColumnName.contentEquals(MyDatabase.Msg.SENDER_ID) ||
+                        msgUserColumnName.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
+                        msgUserColumnName.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID) ||
+                        msgUserColumnName.contentEquals(MyDatabase.Msg.RECIPIENT_ID)) {
+                    sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + MyDatabase.USER_TABLE_NAME
+                            + " INNER JOIN " + MyDatabase.MSG_TABLE_NAME + " ON "
+                            + MyDatabase.MSG_TABLE_NAME + "." + msgUserColumnName + "=" + MyDatabase.USER_TABLE_NAME + "." + MyDatabase.User._ID
+                            + " WHERE " + MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + messageId;
+                } else {
+                    throw new IllegalArgumentException("msgIdToUsername; Unknown name \"" + msgUserColumnName);
+                }
+                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+                prog = db.compileStatement(sql);
+                userName = prog.simpleQueryForString();
+            } catch (SQLiteDoneException ed) {
+                userName = "";
+            } catch (Exception e) {
+                Log.e(TAG, "msgIdToUsername: " + e.toString());
+                return "";
+            }
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                MyLog.v(TAG, "msgIdTo" + msgUserColumnName + ": " + messageId + " -> " + userName );
+            }
+        }
+        return userName;
+    }
+
+
+    public static String userIdToName(long userId) {
+        String userName = "";
+        if (userId != 0) {
+            SQLiteStatement prog = null;
+            String sql = "";
+            try {
+                sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + MyDatabase.USER_TABLE_NAME
+                        + " WHERE " + MyDatabase.USER_TABLE_NAME + "." + MyDatabase.User._ID + "=" + userId;
+                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+                prog = db.compileStatement(sql);
+                userName = prog.simpleQueryForString();
+            } catch (SQLiteDoneException ed) {
+                userName = "";
+            } catch (Exception e) {
+                Log.e(TAG, "userIdToName: " + e.toString());
+                return "";
+            }
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                MyLog.v(TAG, "userIdToName: " + userId + " -> " + userName );
+            }
+        }
+        return userName;
+    }
+    
+    public static long msgIdToUserId(String msgUserColumnName, long systemId) {
+        long userId = 0;
         SQLiteStatement prog = null;
         String sql = "";
         try {
-            if (msgUserId.contentEquals(MyDatabase.Msg.SENDER_ID) ||
-                    msgUserId.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
-                    msgUserId.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID)) {
-                sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + MyDatabase.USER_TABLE_NAME
-                        + " INNER JOIN " + MyDatabase.MSG_TABLE_NAME + " ON "
-                        + MyDatabase.MSG_TABLE_NAME + "." + msgUserId + "=" + MyDatabase.USER_TABLE_NAME + "." + MyDatabase.User._ID
+            if (msgUserColumnName.contentEquals(MyDatabase.Msg.SENDER_ID) ||
+                    msgUserColumnName.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
+                    msgUserColumnName.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID) ||
+                    msgUserColumnName.contentEquals(MyDatabase.Msg.RECIPIENT_ID)) {
+                sql = "SELECT " + MyDatabase.MSG_TABLE_NAME + "." + msgUserColumnName
+                        + " FROM " + MyDatabase.MSG_TABLE_NAME
                         + " WHERE " + MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + systemId;
             } else {
-                throw new IllegalArgumentException("msgIdToUsername; Unknown name \"" + msgUserId);
+                throw new IllegalArgumentException("msgIdToUserId; Unknown name \"" + msgUserColumnName);
             }
             SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
             prog = db.compileStatement(sql);
-            userName = prog.simpleQueryForString();
+            userId = prog.simpleQueryForLong();
         } catch (SQLiteDoneException ed) {
-            userName = "";
+            userId = 0;
         } catch (Exception e) {
-            Log.e(TAG, "msgIdToUsername: " + e.toString());
-            return "";
+            Log.e(TAG, "msgIdToUserId: " + e.toString());
+            return 0;
         }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "msgIdTo" + msgUserId + ": " + systemId + " -> " + userName );
+            MyLog.v(TAG, "msgIdTo" + msgUserColumnName + ": " + systemId + " -> " + userId );
         }
-        return userName;
+        return userId;
     }
     
     /**

@@ -32,7 +32,7 @@ import android.widget.RemoteViews;
 
 import org.andstatus.app.MyService;
 import org.andstatus.app.R;
-import org.andstatus.app.TweetListActivity;
+import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
@@ -334,7 +334,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			//   Open timeline, where there are new tweets, or "Home" timeline
 			Intent intent;
 			MyDatabase.TimelineTypeEnum timeLineType = TimelineTypeEnum.UNKNOWN;
-            intent = new Intent(context, TweetListActivity.class);
+            intent = new Intent(context, TimelineActivity.class);
 			if (data.numMessages > 0) {
 			    timeLineType = MyDatabase.TimelineTypeEnum.DIRECT;
 			} else {

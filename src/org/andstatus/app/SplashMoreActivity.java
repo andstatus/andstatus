@@ -75,7 +75,7 @@ public class SplashMoreActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
         if (MyAccount.getCurrentMyAccount().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-			Intent intent = new Intent(this, TweetListActivity.class);
+			Intent intent = new Intent(this, TimelineActivity.class);
 			startActivity(intent);
 			finish();
 		}

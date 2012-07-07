@@ -336,6 +336,25 @@ public class ConnectionOAuth extends Connection {
     }
 
     @Override
+    public JSONObject postDirectMessage(String userId, String screenName, String message) throws ConnectionException {
+        HttpPost post = new HttpPost(POST_DIRECT_MESSAGE_URL);
+        LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
+        out.add(new BasicNameValuePair("text", message));
+        if ( !TextUtils.isEmpty(userId)) {
+            out.add(new BasicNameValuePair("user_id", userId));
+        }
+        if ( !TextUtils.isEmpty(screenName)) {
+            out.add(new BasicNameValuePair("screen_name", screenName));
+        }
+        try {
+            post.setEntity(new UrlEncodedFormEntity(out, HTTP.UTF_8));
+        } catch (UnsupportedEncodingException e) {
+            Log.e(TAG, e.toString());
+        }
+        return postRequest(post);
+    }
+    
+    @Override
     public JSONObject postRetweet(String retweetedId) throws ConnectionException {
         HttpPost post = new HttpPost(POST_RETWEET_URL + retweetedId + EXTENSION);
         return postRequest(post);

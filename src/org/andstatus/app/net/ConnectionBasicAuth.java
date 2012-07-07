@@ -172,7 +172,14 @@ public class ConnectionBasicAuth extends Connection {
 		return jObj;
 	}
 
-	@Override
+    @Override
+    public JSONObject postDirectMessage(String userId, String screenName, String message) throws ConnectionException {
+        // TODO Auto-generated method stub
+        throw new ConnectionException(TAG + ".postDirectMessage not implemented");
+        //return null;
+    }
+
+    @Override
     public JSONObject postRetweet(String retweetedId) throws ConnectionException {
         JSONObject jObj = null;
         try {

@@ -33,6 +33,15 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
  -->
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
+    <release android:versionName="1.6.0" android:versionCode="57"
+        versionDate="2012-07-07">
+        <changes>
+            <change>Send Direct Message added.</change>
+            <change>Message is counted as new only if it didn't exist in the database yet.</change>
+            <change>While editing tweet, system calculates characters left taking shortened URL's length into account!</change>
+            <change>Too long wake lock fixed.</change>
+            </changes>
+    </release>
     <release android:versionName="1.5.0" android:versionCode="56"
         versionDate="2012-06-09">
         <changes>

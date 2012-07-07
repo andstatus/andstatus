@@ -1,4 +1,5 @@
 /* 
+ * Copyright (c) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,6 +36,7 @@ import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.util.RelativeTime;
 
 /**
+ * One message
  * @author torgny.bjers
  *
  */
@@ -50,6 +52,7 @@ public class TweetActivity extends Activity {
 		Msg.VIA,
 		User.IN_REPLY_TO_NAME,
 		Msg.IN_REPLY_TO_MSG_ID,
+        User.RECIPIENT_NAME,
 		Msg.CREATED_DATE
 	};
 
@@ -57,7 +60,7 @@ public class TweetActivity extends Activity {
 	private Cursor mCursor;
 	private TextView mAuthor;
 	private TextView mMessage;
-	private TextView mSentDate;
+	private TextView mDetails;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +75,7 @@ public class TweetActivity extends Activity {
 
 		mAuthor = (TextView) findViewById(R.id.tweet_screen_name);
 		mMessage = (TextView) findViewById(R.id.tweet_message);
-		mSentDate = (TextView) findViewById(R.id.tweet_sent);
+		mDetails = (TextView) findViewById(R.id.tweet_sent);
 
 		mCursor = managedQuery(mUri, PROJECTION, null, null, null);
 	}
@@ -93,34 +96,46 @@ public class TweetActivity extends Activity {
 			mMessage.setFocusableInTouchMode(true);
 			mMessage.setText(aMessage);
 			Linkify.addLinks(mMessage, Linkify.ALL);
-			String inReplyTo = "";
-			int colIndex = mCursor.getColumnIndex(User.IN_REPLY_TO_NAME);
-			if (colIndex > -1) {
-				inReplyTo = mCursor.getString(colIndex);
-				if (inReplyTo != null && "null".equals(inReplyTo) == false) {
-					inReplyTo = String.format(Locale.getDefault(), getText(R.string.tweet_source_in_reply_to).toString(), inReplyTo);
-				}
-			}
-			if (TextUtils.isEmpty(inReplyTo)) {
-			    inReplyTo = "";
-			}
+
+            String messageDetails = RelativeTime.getDifference(this, createdDate); 
+
+            String via = Html.fromHtml(mCursor.getString(mCursor.getColumnIndex(Msg.VIA))).toString();
+            if (!TextUtils.isEmpty(via)) {
+                messageDetails += " " + String.format(
+                        Locale.getDefault(),
+                        getText(R.string.tweet_source_from).toString(),
+                        via);
+            }
+
+            String replyToName = "";
+            int colIndex = mCursor.getColumnIndex(User.IN_REPLY_TO_NAME);
+            if (colIndex > -1) {
+                replyToName = mCursor.getString(colIndex);
+                if (replyToName != null && "null".equals(replyToName) == false) {
+                    replyToName = String.format(Locale.getDefault(), getText(R.string.tweet_source_in_reply_to).toString(), replyToName);
+                }
+            }
             if (!TextUtils.isEmpty(aSender)) {
                 if (!aAuthor.equals(aSender)) {
-                    if (!TextUtils.isEmpty(inReplyTo)) {
-                        inReplyTo +="; ";
+                    if (!TextUtils.isEmpty(replyToName)) {
+                        replyToName +="; ";
                     }
-                    inReplyTo += String.format(Locale.getDefault(), getText(R.string.retweeted_by).toString(), aSender);
+                    replyToName += String.format(Locale.getDefault(), getText(R.string.retweeted_by).toString(), aSender);
+                }
+            }
+            if (!TextUtils.isEmpty(replyToName)) {
+                messageDetails += " " + replyToName;
+            }
+
+            colIndex = mCursor.getColumnIndex(User.RECIPIENT_NAME);
+            if (colIndex > -1) {
+                String recipientName = mCursor.getString(colIndex);
+                if (!TextUtils.isEmpty(recipientName)) {
+                    messageDetails += " " + String.format(Locale.getDefault(), getText(R.string.tweet_source_to).toString(), recipientName);
                 }
             }
 			
-			String sentDate = String.format(
-				Locale.getDefault(), 
-				getText(R.string.tweet_source_from).toString(), 
-				RelativeTime.getDifference(this, createdDate), 
-				Html.fromHtml(mCursor.getString(mCursor.getColumnIndex(Msg.VIA))),
-				inReplyTo
-			);
-			mSentDate.setText(sentDate);
+			mDetails.setText(messageDetails);
 		} else {
 			Log.e(TAG, "No cursor found");
 		}

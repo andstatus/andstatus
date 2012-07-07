@@ -165,7 +165,7 @@
 	<string name="title_preference_use_avatars">Avatare anzeigen</string>
 	<string name="title_preference_vibration">Vibration</string>
 	<string name="tweet_activity">Tweet</string>
-	<string name="tweet_source_from">%1$s von %2$s %3$s</string>
+	<string name="tweet_source_from">von %1$s</string>
 	<string name="tweet_source_in_reply_to">als Antwort auf %1$s</string>
 	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Nicht Implementiert.</string>

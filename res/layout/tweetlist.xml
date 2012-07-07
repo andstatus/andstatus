@@ -27,7 +27,13 @@
         android:visibility="visible"
         android:orientation="vertical">
         <LinearLayout android:layout_width="fill_parent"
-            android:layout_height="wrap_content" android:id="@+id/tweetlist_info">
+            android:layout_height="wrap_content">
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/messageEditDetails"
+                android:paddingLeft="5dip" />
+        </LinearLayout>
+	    <LinearLayout android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
             <TextView android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:text="@string/message_characters_left"
                 android:paddingLeft="5dip" />
@@ -45,8 +51,8 @@
                     android:layout_height="wrap_content"
                     android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine|textImeMultiLine"
                     android:imeOptions="actionSend|flagNoEnterAction"
-                    android:maxLines="4"
-                    android:maxLength="160"
+                    android:maxLines="8"
+                    android:maxLength="4000"
                     android:hint="@string/message_edit_hint" />
             </LinearLayout>
     

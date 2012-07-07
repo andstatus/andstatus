@@ -15,6 +15,10 @@
  */
 package org.andstatus.app.account;
 
+import android.text.SpannableString;
+import android.text.TextUtils;
+import android.text.style.URLSpan;
+import android.text.util.Linkify;
 import android.util.Log;
 
 import org.andstatus.app.net.Connection;
@@ -40,6 +44,17 @@ public class Origin {
      */
     public static String ORIGIN_NAME_DEFAULT = "Twitter";
 
+    /**
+     * Maximum number of characters in the message
+     */
+    private static int CHARS_MAX = 140;
+    /**
+     * Length of the link after changing to the shortened link
+     * -1 means that length doesn't change
+     * For Twitter.com see https://dev.twitter.com/docs/api/1/get/help/configuration
+     */
+    private static int LINK_LENGTH = 21;
+    
     private String mName = "";
     private long mId = 0;
 
@@ -59,7 +74,7 @@ public class Origin {
     private boolean mCanSetUsername = false;
     
     private Connection mConnection = null;
-    
+
     public static Origin getOrigin(String name) {
         return new Origin(name);
     }
@@ -147,5 +162,29 @@ public class Origin {
     private Origin(long id) {
        this (id == ORIGIN_ID_DEFAULT ? ORIGIN_NAME_DEFAULT : "");
     }
-    
+
+    /**
+     * Calculates number of Characters left for this message
+     * taking shortened URL's length into account.
+     * @author yvolk
+     */
+    public int messageCharactersLeft(String message) {
+        int messageLength = 0;
+        if (!TextUtils.isEmpty(message)) {
+            messageLength = message.length();
+            
+            // Now try to adjust the length taking links into account
+            SpannableString ss = SpannableString.valueOf(message);
+            Linkify.addLinks(ss, Linkify.WEB_URLS);
+            URLSpan[] spans = ss.getSpans(0, messageLength, URLSpan.class);
+            long nLinks = spans.length;
+            for (int ind1=0; ind1 < nLinks; ind1++) {
+                int start = ss.getSpanStart(spans[ind1]);
+                int end = ss.getSpanEnd(spans[ind1]);
+                messageLength += LINK_LENGTH - (end - start);
+            }
+            
+        }
+        return (CHARS_MAX - messageLength);
+    }
 }

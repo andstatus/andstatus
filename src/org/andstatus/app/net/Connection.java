@@ -18,6 +18,7 @@
 package org.andstatus.app.net;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.Connection;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,6 +39,7 @@ public abstract class Connection {
     protected static final String STATUSES_MENTIONS_TIMELINE_URL = BASE_URL + "/statuses/mentions"
             + EXTENSION;
     protected static final String STATUSES_UPDATE_URL = BASE_URL + "/statuses/update" + EXTENSION;
+    protected static final String POST_DIRECT_MESSAGE_URL = BASE_URL + "/direct_messages/new" + EXTENSION;
     protected static final String POST_RETWEET_URL = BASE_URL + "/statuses/retweet/";
     protected static final String STATUSES_DESTROY_URL = BASE_URL + "/statuses/destroy/";
     protected static final String DIRECT_MESSAGES_URL = BASE_URL + "/direct_messages" + EXTENSION;
@@ -230,6 +232,20 @@ public abstract class Connection {
             throws ConnectionException;
 
     /**
+     * Post Direct Message
+     * @see <a
+     *      href="https://dev.twitter.com/docs/api/1/post/direct_messages/new">POST direct_messages/new</a>
+     * 
+     * @param message
+     * @param userId {@link User#USER_OID} - The ID of the user who should receive the direct message
+     * @param screenName {@link User#USERNAME} - The screen name of the user who should receive the direct message
+     * @return The sent message in the requested format if successful.
+     * @throws ConnectionException
+     */
+    public abstract JSONObject postDirectMessage(String userId, String screenName, String message)
+            throws ConnectionException;
+
+    /**
      * Post retweet
      * @see <a
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/retweet/%3Aid">POST statuses/retweet/:id</a>
@@ -248,7 +264,7 @@ public abstract class Connection {
      */
     public abstract JSONArray getDirectMessages(String sinceId, int limit)
             throws ConnectionException;
-
+    
     /**
      * Get the user's replies.
      * 

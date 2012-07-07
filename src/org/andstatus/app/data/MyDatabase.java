@@ -281,6 +281,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String AUTHOR_NAME = "author_name";
         /** Derived from {@link Msg#IN_REPLY_TO_USER_ID} */
         public static final String IN_REPLY_TO_NAME = "in_reply_to_name";
+        /** Derived from {@link Msg#RECIPIENT_ID} */
+        public static final String RECIPIENT_NAME = "recipient_name";
 
         public static final String DEFAULT_SORT_ORDER = USERNAME + " ASC";
 	}

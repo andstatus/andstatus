@@ -97,7 +97,8 @@
     <string name="loading">Loading…</string>
 	<string name="message_edit_hint">Enter your tweet here!</string>
 	<string name="message_characters_left">Characters left:</string>
-	<string name="menu_item_block">Block</string>
+    <string name="message_is_too_long">Message is too long.</string>
+    <string name="menu_item_block">Block</string>
 	<string name="menu_item_destroy_favorite">Unfavorite</string>
 	<string name="menu_item_destroy_status">Remove Tweet</string>
 	<string name="menu_item_direct_message">Direct Message</string>
@@ -220,9 +221,10 @@
 	<string name="title_preference_verify_credentials_failed">Verify credentials</string>
 	<string name="title_preference_vibration">Vibration</string>
 	<string name="tweet_activity">Tweet</string>
-	<string name="tweet_source_from">%1$s from %2$s %3$s</string>
+	<string name="tweet_source_from">from %1$s</string>
 	<string name="tweet_source_in_reply_to">in reply to %1$s</string>
-    <string name="retweeted_by">retweeted by %1$s</string>
+	<string name="tweet_source_to">to %1$s</string>
+	<string name="retweeted_by">retweeted by %1$s</string>
     <string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Not implemented.</string>
 </resources>

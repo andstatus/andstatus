@@ -1,4 +1,5 @@
 /* 
+ * Copyright (c) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +20,7 @@ package org.andstatus.app.data;
 import java.util.Locale;
 
 import android.database.Cursor;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -29,6 +31,7 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.RelativeTime;
 
 /**
+ * Construct/format values of the views for a Message item in a Timeline list
  * @author torgny.bjers
  */
 public class TweetBinder implements ViewBinder {
@@ -39,15 +42,22 @@ public class TweetBinder implements ViewBinder {
 		int colIndex = -1;
 		switch (view.getId()) {
 		case R.id.tweet_sent:
-			String time = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
+			String messageDetails = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
 			colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
 			if (colIndex > -1) {
-				String inReplyTo = cursor.getString(colIndex);
-				if (inReplyTo != null && "null".equals(inReplyTo) == false) {
-					time += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.tweet_source_in_reply_to).toString(), inReplyTo);
+				String replyToName = cursor.getString(colIndex);
+				if (!TextUtils.isEmpty(replyToName)) {
+					messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.tweet_source_in_reply_to).toString(), replyToName);
 				}
 			}
-			((TextView)view).setText(time);
+            colIndex = cursor.getColumnIndex(User.RECIPIENT_NAME);
+            if (colIndex > -1) {
+                String recipientName = cursor.getString(colIndex);
+                if (!TextUtils.isEmpty(recipientName)) {
+                    messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.tweet_source_to).toString(), recipientName);
+                }
+            }
+			((TextView)view).setText(messageDetails);
 			return true;
 		case R.id.tweet_avatar_image:
 			return true;

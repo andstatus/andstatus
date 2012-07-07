@@ -165,6 +165,11 @@ public class MyService extends Service {
     public static final String EXTRA_INREPLYTOID = packageName + ".INREPLYTOID";
 
     /**
+     * Recipient of a Direct message
+     */
+    public static final String EXTRA_RECIPIENTID = packageName + ".RECIPIENTID";
+
+    /**
      * Number of new tweets. Value is integer
      */
     public static final String EXTRA_NUMTWEETS = packageName + ".NUMTWEETS";
@@ -232,7 +237,11 @@ public class MyService extends Service {
 
         CREATE_FAVORITE("create-favorite"), DESTROY_FAVORITE("destroy-favorite"),
 
-        UPDATE_STATUS("update-status"), DESTROY_STATUS("destroy-status"),
+        /**
+         * This command is for sending both public and direct messages
+         */
+        UPDATE_STATUS("update-status"), 
+        DESTROY_STATUS("destroy-status"),
         
         RETWEET("retweet"),
 
@@ -423,6 +432,7 @@ public class MyService extends Service {
                 case UPDATE_STATUS:
                     bundle.putString(EXTRA_STATUS, sp.getString(EXTRA_STATUS + si, ""));
                     bundle.putLong(EXTRA_INREPLYTOID, sp.getLong(EXTRA_INREPLYTOID + si, 0));
+                    bundle.putLong(EXTRA_RECIPIENTID, sp.getLong(EXTRA_RECIPIENTID + si, 0));
                     break;
             }
 
@@ -540,6 +550,7 @@ public class MyService extends Service {
                 case UPDATE_STATUS:
                     ed.putString(EXTRA_STATUS + si, bundle.getString(EXTRA_STATUS));
                     ed.putLong(EXTRA_INREPLYTOID + si, bundle.getLong(EXTRA_INREPLYTOID));
+                    ed.putLong(EXTRA_RECIPIENTID + si, bundle.getLong(EXTRA_RECIPIENTID));
                     break;
             }
             ed.commit();
@@ -596,7 +607,7 @@ public class MyService extends Service {
 
     /**
      * The reference to the wake lock used to keep the CPU from stopping during
-     * downloads.
+     * background operations.
      */
     private volatile PowerManager.WakeLock mWakeLock = null;
 
@@ -655,10 +666,7 @@ public class MyService extends Service {
 
         if (doStop) {
             MyLog.d(TAG, "Service is being stopped");
-            if (mWakeLock != null) {
-                mWakeLock.release();
-                mWakeLock = null;
-            }
+            relealeWakeLock();
             stopSelf();
         }
     }
@@ -1017,6 +1025,7 @@ public class MyService extends Service {
             if (!mCommands.isEmpty()) {
                 // Don't even launch executor if we're not online
                 if (isOnline() && MyPreferences.isDataAvailable()) {
+                    acquireWakeLock();
                     // only one Executing thread for now...
                     if (mExecutors.isEmpty()) {
                         CommandExecutor executor;
@@ -1030,9 +1039,6 @@ public class MyService extends Service {
                         }
                         mExecutors.add(executor);
                         if (mExecutors.size() == 1) {
-                            if (mWakeLock == null) {
-                                mWakeLock = getWakeLock();
-                            }
                             mBroadcastListenerCount = mCallbacks.beginBroadcast();
                             MyLog.d(TAG, "No other threads running so starting new broadcast for "
                                     + mBroadcastListenerCount + " listeners");
@@ -1052,6 +1058,7 @@ public class MyService extends Service {
             if (mExecutors.size() == 0) {
                 MyLog.d(TAG, "Ending last thread so ending broadcast");
                 mCallbacks.finishBroadcast();
+                relealeWakeLock();
                 if (mIsFinishing) {
                     stopDelayed();
                 } else if ( notifyOfQueue(false) == 0) {
@@ -1182,8 +1189,9 @@ public class MyService extends Service {
                         break;
                     case UPDATE_STATUS:
                         String status = commandData.bundle.getString(EXTRA_STATUS).trim();
-                        long inReplyToId = commandData.bundle.getLong(EXTRA_INREPLYTOID);
-                        ok = updateStatus(commandData.accountName, status, inReplyToId);
+                        long replyToId = commandData.bundle.getLong(EXTRA_INREPLYTOID);
+                        long recipientId = commandData.bundle.getLong(EXTRA_RECIPIENTID);
+                        ok = updateStatus(commandData.accountName, status, replyToId, recipientId);
                         retry = !ok;
                         break;
                     case DESTROY_STATUS:
@@ -1432,17 +1440,25 @@ public class MyService extends Service {
 
         /**
          * @param status
-         * @param inReplyToId
+         * @param replyToId
+         * @param recipientId !=0 for Direct messages
          * @return ok
          */
-        private boolean updateStatus(String accountNameIn, String status, long inReplyToId) {
+        private boolean updateStatus(String accountNameIn, String status, long replyToId, long recipientId) {
             boolean ok = false;
             MyAccount ma = MyAccount.getMyAccount(accountNameIn);
-            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, inReplyToId);
             JSONObject result = new JSONObject();
             try {
-                result = ma.getConnection()
-                        .updateStatus(status.trim(), oid);
+                if (recipientId == 0) {
+                    String replyToOid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, replyToId);
+                    result = ma.getConnection()
+                            .updateStatus(status.trim(), replyToOid);
+                } else {
+                    String recipientOid = MyProvider.idToOid(MyDatabase.User.CONTENT_URI, recipientId);
+                    // Currently we don't use Screen Name, I guess id is enough.
+                    result = ma.getConnection()
+                            .postDirectMessage(recipientOid, "", status);
+                }
                 ok = (result != null);
             } catch (ConnectionException e) {
                 Log.e(TAG, "updateStatus Exception: " + e.toString());
@@ -1454,7 +1470,7 @@ public class MyService extends Service {
                             // The tweet was sent successfully
                             TimelineDownloader fl = new TimelineDownloader(ma, 
                                     MyService.this.getApplicationContext(),
-                                    TimelineTypeEnum.HOME);
+                                    (recipientId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT);
 
                             fl.insertFromJSONObject(result, true);
                         } catch (JSONException e) {
@@ -1846,7 +1862,7 @@ public class MyService extends Service {
                             R.array.notification_mention_patterns,
                             R.array.notification_mention_formats);
                     messageTitle = R.string.notification_title_mentions;
-                    intent = new Intent(getApplicationContext(), TweetListActivity.class);
+                    intent = new Intent(getApplicationContext(), TimelineActivity.class);
                     intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
                             MyDatabase.TimelineTypeEnum.MENTIONS.save());
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
@@ -1859,7 +1875,7 @@ public class MyService extends Service {
                             R.array.notification_message_patterns,
                             R.array.notification_message_formats);
                     messageTitle = R.string.notification_title_messages;
-                    intent = new Intent(getApplicationContext(), TweetListActivity.class);
+                    intent = new Intent(getApplicationContext(), TimelineActivity.class);
                     intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
                             MyDatabase.TimelineTypeEnum.DIRECT.save());
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
@@ -1874,7 +1890,7 @@ public class MyService extends Service {
                                     R.array.notification_tweet_patterns,
                                     R.array.notification_tweet_formats);
                     messageTitle = R.string.notification_title;
-                    intent = new Intent(getApplicationContext(), TweetListActivity.class);
+                    intent = new Intent(getApplicationContext(), TimelineActivity.class);
                     intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
                             MyDatabase.TimelineTypeEnum.HOME.save());
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
@@ -1946,11 +1962,19 @@ public class MyService extends Service {
         }
     }
 
-    private PowerManager.WakeLock getWakeLock() {
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-        wakeLock.acquire();
-        return wakeLock;
+    private void acquireWakeLock() {
+        if (mWakeLock == null) {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+            mWakeLock.acquire();
+        }
+    }
+    
+    private void relealeWakeLock() {
+        if (mWakeLock != null) {
+            mWakeLock.release();
+            mWakeLock = null;
+        }
     }
 
     /**

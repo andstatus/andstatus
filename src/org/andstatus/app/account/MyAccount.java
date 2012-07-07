@@ -965,6 +965,15 @@ public class MyAccount implements Parcelable {
     }
 
     /**
+     * Calculates number of Characters left for this message
+     * @param message
+     * @return
+     */
+    public int messageCharactersLeft(String message) {
+        return mOrigin.messageCharactersLeft(message);
+    }
+    
+    /**
      * Clear Authentication information
      * 
      * @param context
