@@ -18,7 +18,9 @@ package org.andstatus.app.net;
 
 
 import oauth.signpost.OAuthConsumer;
+import oauth.signpost.OAuthProvider;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.util.MyLog;
@@ -58,7 +60,7 @@ import java.util.LinkedList;
  * @see <a
  *      href="http://github.com/brione/Brion-Learns-OAuth">Brion-Learns-OAuth</a>
  */
-public class ConnectionOAuth extends Connection {
+public class ConnectionOAuth extends Connection implements MyOAuth {
     private static final String TAG = ConnectionOAuth.class.getSimpleName();
 
     public static final String USER_TOKEN = "user_token";
@@ -66,10 +68,13 @@ public class ConnectionOAuth extends Connection {
     public static final String REQUEST_TOKEN = "request_token";
     public static final String REQUEST_SECRET = "request_secret";
     public static final String REQUEST_SUCCEEDED = "request_succeeded";
-    public static final String TWITTER_REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token";
-    public static final String TWITTER_ACCESS_TOKEN_URL = "https://api.twitter.com/oauth/access_token";
-    public static final String TWITTER_AUTHORIZE_URL = "https://api.twitter.com/oauth/authorize";
+    
+    private static final String TWITTER_REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token";
+    private static final String TWITTER_ACCESS_TOKEN_URL = "https://api.twitter.com/oauth/access_token";
+    private static final String TWITTER_AUTHORIZE_URL = "https://api.twitter.com/oauth/authorize";
+    
     private OAuthConsumer mConsumer = null;
+    private OAuthProvider mProvider = null;
 
     /**
      * Saved User token
@@ -98,9 +103,18 @@ public class ConnectionOAuth extends Connection {
         ClientConnectionManager tsccm = new ThreadSafeClientConnManager(parameters, schReg);
         mClient = new DefaultHttpClient(tsccm, parameters);
 
-        mConsumer = new CommonsHttpOAuthConsumer(OAuthKeys.TWITTER_CONSUMER_KEY,
-                OAuthKeys.TWITTER_CONSUMER_SECRET);
+        OAuthKeys oak = new OAuthKeys(ma.getOriginId());
+        mConsumer = new CommonsHttpOAuthConsumer(oak.getConsumerKey(),
+                oak.getConsumerSecret());
 
+        mProvider = new CommonsHttpOAuthProvider(TWITTER_REQUEST_TOKEN_URL,
+                TWITTER_ACCESS_TOKEN_URL, TWITTER_AUTHORIZE_URL);
+
+        // It turns out this was the missing thing to making standard
+        // Activity launch mode work
+        mProvider.setOAuth10a(true);
+        
+        
         // We look for saved user keys
         if (ma.dataContains(ConnectionOAuth.USER_TOKEN) && ma.dataContains(ConnectionOAuth.USER_SECRET)) {
             setAuthInformation(
@@ -119,7 +133,7 @@ public class ConnectionOAuth extends Connection {
             mToken = token;
             mSecret = secret;
             if (!(mToken == null || mSecret == null)) {
-                mConsumer.setTokenWithSecret(mToken, mSecret);
+                getConsumer().setTokenWithSecret(mToken, mSecret);
             }
         }
     }
@@ -202,7 +216,7 @@ public class ConnectionOAuth extends Connection {
         JSONObject jso = null;
         boolean ok = false;
         try {
-            mConsumer.sign(get);
+            getConsumer().sign(get);
             String response = mClient.execute(get, new BasicResponseHandler());
             jso = new JSONObject(response);
             // Log.d(TAG, "authenticatedQuery: " + jso.toString(2));
@@ -257,7 +271,7 @@ public class ConnectionOAuth extends Connection {
                 builder.appendQueryParameter("page", String.valueOf(page));
             }
             get = new HttpGet(builder.build().toString());
-            mConsumer.sign(get);
+            getConsumer().sign(get);
             String response = mClient.execute(get, new BasicResponseHandler());
             jArr = new JSONArray(response);
             ok = (jArr != null);
@@ -298,7 +312,7 @@ public class ConnectionOAuth extends Connection {
             // post.setParams(...);
 
             // sign the request to authenticate
-            mConsumer.sign(post);
+            getConsumer().sign(post);
             String response = mClient.execute(post, new BasicResponseHandler());
             jso = new JSONObject(response);
             ok = true;
@@ -384,5 +398,15 @@ public class ConnectionOAuth extends Connection {
     @Override
     public boolean isOAuth() {
         return true;
+    }
+
+    @Override
+    public OAuthConsumer getConsumer() {
+        return mConsumer;
+    }
+
+    @Override
+    public OAuthProvider getProvider() {
+        return mProvider;
     }
 }

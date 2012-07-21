@@ -25,7 +25,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
-import android.text.TextUtils;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.widget.TextView;
@@ -100,7 +99,7 @@ public class TweetActivity extends Activity {
             String messageDetails = RelativeTime.getDifference(this, createdDate); 
 
             String via = Html.fromHtml(mCursor.getString(mCursor.getColumnIndex(Msg.VIA))).toString();
-            if (!TextUtils.isEmpty(via)) {
+            if (!MyPreferences.isEmpty(via)) {
                 messageDetails += " " + String.format(
                         Locale.getDefault(),
                         getText(R.string.tweet_source_from).toString(),
@@ -111,26 +110,28 @@ public class TweetActivity extends Activity {
             int colIndex = mCursor.getColumnIndex(User.IN_REPLY_TO_NAME);
             if (colIndex > -1) {
                 replyToName = mCursor.getString(colIndex);
-                if (replyToName != null && "null".equals(replyToName) == false) {
-                    replyToName = String.format(Locale.getDefault(), getText(R.string.tweet_source_in_reply_to).toString(), replyToName);
+                if (!MyPreferences.isEmpty(replyToName)) {
+                    messageDetails += " "
+                            + String.format(Locale.getDefault(),
+                                    getText(R.string.tweet_source_in_reply_to).toString(),
+                                    replyToName);
                 }
             }
-            if (!TextUtils.isEmpty(aSender)) {
-                if (!aAuthor.equals(aSender)) {
-                    if (!TextUtils.isEmpty(replyToName)) {
-                        replyToName +="; ";
+            if (!MyPreferences.isEmpty(aSender)) {
+                if (!aSender.equals(aAuthor)) {
+                    if (!MyPreferences.isEmpty(replyToName)) {
+                        messageDetails +=";";
                     }
-                    replyToName += String.format(Locale.getDefault(), getText(R.string.retweeted_by).toString(), aSender);
+                    messageDetails += " "
+                            + String.format(Locale.getDefault(), getText(R.string.retweeted_by)
+                                    .toString(), aSender);
                 }
-            }
-            if (!TextUtils.isEmpty(replyToName)) {
-                messageDetails += " " + replyToName;
             }
 
             colIndex = mCursor.getColumnIndex(User.RECIPIENT_NAME);
             if (colIndex > -1) {
                 String recipientName = mCursor.getString(colIndex);
-                if (!TextUtils.isEmpty(recipientName)) {
+                if (!MyPreferences.isEmpty(recipientName)) {
                     messageDetails += " " + String.format(Locale.getDefault(), getText(R.string.tweet_source_to).toString(), recipientName);
                 }
             }

@@ -22,11 +22,6 @@
             android:key="manage_accounts"
             android:persistent="false"
             android:title="@string/header_manage_accounts" >
-            <intent android:action="android.settings.SYNC_SETTINGS" >
-                <extra
-                    android:name="authorities"
-                    android:value="org.andstatus.app.data.MyProvider" />
-            </intent>
         </Preference>
     </PreferenceCategory>
     

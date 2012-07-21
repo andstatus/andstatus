@@ -44,6 +44,7 @@ import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionOAuth;
 import org.andstatus.app.net.ConnectionUnavailableException;
+import org.andstatus.app.net.MyOAuth;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONObject;
@@ -957,12 +958,23 @@ public class MyAccount implements Parcelable {
     }
 
     /**
-     * @param context
      * @return instance of Connection subtype for the User
      */
     public Connection getConnection() {
         return mOrigin.getConnection(this, mOAuth);
     }
+    
+    /**
+     * @return Implementation of the {@link MyOAuth} interface
+     */
+    public MyOAuth getOAuth() {
+        MyOAuth oa = null;
+        if (isOAuth()) {
+            oa = (MyOAuth) getConnection();
+        }
+        return oa;
+    }
+    
 
     /**
      * Calculates number of Characters left for this message

@@ -43,10 +43,6 @@ import android.view.KeyEvent;
 import android.widget.Toast;
 
 import oauth.signpost.OAuth;
-import oauth.signpost.OAuthConsumer;
-import oauth.signpost.OAuthProvider;
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
 import oauth.signpost.exception.OAuthCommunicationException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
@@ -61,7 +57,7 @@ import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionOAuth;
 import org.andstatus.app.net.ConnectionUnavailableException;
-import org.andstatus.app.net.OAuthKeys;
+import org.andstatus.app.net.MyOAuth;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -86,12 +82,19 @@ public class AccountSettings extends PreferenceActivity implements
      * NOTE: This constant should eventually be defined in android.accounts.Constants
      */
     private static final String EXTRA_ACCOUNT_MANAGER_ACCOUNT = "account";
+    /**
+     * Explicitly defined {@link MyAccount#getAccountGuid()}
+     */
+    public static final String EXTRA_MYACCOUNT_GUID = "myaccount_guid";
     
     /** 
      * The URI is consistent with "scheme" and "host" in AndroidManifest
      */
     public static final Uri CALLBACK_URI = Uri.parse("andstatus-oauth://andstatus.org");
 
+    // Request codes for called activities
+    protected static final int REQUEST_SELECT_ACCOUNT = RESULT_FIRST_USER;
+    
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs
      */
@@ -141,17 +144,20 @@ public class AccountSettings extends PreferenceActivity implements
         boolean restored = false;
         
         /**
-         * And restore state if it was stored earlier
+         * Restore state if it was stored earlier
          */
         StateClass() {
             restored = restore();
         }
 
+        /**
+         * Don't restore previously stored state 
+         */
         StateClass(String action) {
           setAccountAction(action);   
         }
 
-        void save(Bundle bundle) {
+        private void save(Bundle bundle) {
             if (bundle != null) {
                 bundle.putString(ACCOUNT_ACTION_KEY, getAccountAction());
                 bundle.putBoolean(ACTION_COMPLETED_KEY, actionCompleted);
@@ -163,7 +169,7 @@ public class AccountSettings extends PreferenceActivity implements
             }
         }
 
-        boolean restore(Bundle bundle) {
+        private boolean restore(Bundle bundle) {
             boolean restored = false;
             if (bundle != null) {
                 if (bundle.containsKey(ACTION_COMPLETED_KEY)) {
@@ -180,21 +186,28 @@ public class AccountSettings extends PreferenceActivity implements
         }
         
         /**
-         * Store the state in the global static object
+         * Store the state of the not completed actions in the global static object
+         * or forget old state of completed action
          */
         void save() {
-            AccountSettings.stateStored = new Bundle();
-            save(AccountSettings.stateStored);
+            if (actionCompleted) {
+                forget();
+            } else {
+                AccountSettings.stateStored = new Bundle();
+                save(AccountSettings.stateStored);
+            }
         }
         
         boolean restore() {
             return restore(AccountSettings.stateStored);
         }
-        
+
+        /**
+         * Forget stored state
+         */
         void forget() {
-            AccountSettings.stateStored = null;
-            actionCompleted = true;
             response = null;
+            AccountSettings.stateStored = null;
         }
 
         String getAccountAction() {
@@ -320,63 +333,90 @@ public class AccountSettings extends PreferenceActivity implements
     }
 
     /**
-     * Restore previous state and set the Activity mode depending on input (Intent)
+     * Restore previous state and set the Activity mode depending on input (Intent).
+     * We should decide if we use stored state or create new based on information in intent
      * @param intent
      * @param calledFrom
      * @param savedInstanceState
      */
     private void setState(Intent intent, String calledFrom) {
+        // We are creating new state?
+        boolean isNew = false;
         String message = "";
         
         if (state == null)  {
             state =  new StateClass();
-            message += (state.restored ? "State restored from custom storage; " : "No previous state; ");
+            message += (state.restored ? "Old state restored; " : "No previous state; ");
         } else {
-            message += (state.restored ? "State existed and restored; " : "State existed and was not restored; ");
+            message += "State existed and " + (state.restored ? "restored earlier; " : "was not restored earlier; ");
         }
+        isNew = state.actionCompleted;
         
         StateClass stateNew = new StateClass(intent.getAction());
 
         Bundle extras = intent.getExtras();
         if (extras != null) {
+            // For a usage example see also com.android.email.activity.setup.AccountSettings.onCreate(Bundle)
+
             // Unparcel Extras!
             stateNew.response = extras.getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE);
             if (stateNew.response != null) {
                 // In order to force initializing state
-                state.actionCompleted = true;
+                isNew = true;
+            }
+            android.accounts.Account ac = null;
+            if (android.os.Build.VERSION.SDK_INT < 16 ) {  // before Jelly Bean
+                // Starting with Jelly Bean (16) there is only one link for the the setting of all AndStatus accounts
+                // So we must select account in our code
+                ac = (android.accounts.Account) intent
+                        .getParcelableExtra(EXTRA_ACCOUNT_MANAGER_ACCOUNT);
+            }
+            if (ac != null) {
+                // We have persistent account in the intent
+                stateNew.myAccount = MyAccount.getMyAccount(ac, true);
+                isNew = true;
+            } else {
+                // Maybe we received MyAccount name as as parameter?!
+                String accountGuid = extras.getString(EXTRA_MYACCOUNT_GUID);
+                if (!TextUtils.isEmpty(accountGuid)) {
+                    stateNew.myAccount = MyAccount.getMyAccount(accountGuid);
+                    isNew = stateNew.myAccount.isPersistent();
+                }
             }
         }
 
-        if (state.actionCompleted == true) {
-            if (state.restored) {
-                message += "State initialized; ";
-            }
+        if (isNew) {
+            message += "State initialized; ";
             state = stateNew;
-            if (state.getAccountAction().equals(ACTION_ACCOUNT_MANAGER_ENTRY)) {
-                // For a usage example see also com.android.email.activity.setup.AccountSettings.onCreate(Bundle)
-                // This case occurs if we're changing account settings from Settings -> Accounts
-                state.myAccount = MyAccount.getMyAccount(
-                        (android.accounts.Account) intent.getParcelableExtra(EXTRA_ACCOUNT_MANAGER_ACCOUNT),
-                        true);
-
-                //String usernameNew = MyPreferences.getDefaultSharedPreferences().getString(MyAccount.KEY_USERNAME_NEW, "");
-
+            if (state.myAccount == null && !state.getAccountAction().equals(Intent.ACTION_INSERT)) {
+                if (state.getAccountAction().equals(ACTION_ACCOUNT_MANAGER_ENTRY) && android.os.Build.VERSION.SDK_INT < 16) {
+                    // This case occurs if we're changing account settings from Settings -> Accounts
+                    state.setAccountAction(Intent.ACTION_INSERT);
+                } else {
+                    message += "Select Account; ";
+                    Intent i = new Intent(this, AccountSelector.class);
+                    startActivityForResult(i, REQUEST_SELECT_ACCOUNT);
+                }
+            }
+            
+            if (state.myAccount == null) {
+                if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
+                    state.myAccount = MyAccount.getMyAccount("");
+                    // Check if there are changes to avoid "ripples"
+                    // ...
+                    // TODO check this: state.actionCompleted = false;
+                } else {
+                    state.myAccount = MyAccount.getCurrentMyAccount();
+                    state.setAccountAction(Intent.ACTION_VIEW);
+                }
+            } else {
                 if (state.myAccount.isPersistent()) {
                     state.setAccountAction(Intent.ACTION_EDIT);
-                    
-                    // TODO: This is temporary: we don't have other means to select current account yet
-                    state.myAccount.setCurrentMyAccount();
-                    
                 } else {
                     state.setAccountAction(Intent.ACTION_INSERT);
                 }
             }
-            if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-                state.myAccount = MyAccount.getMyAccount("");
-                // Check if there are changes to avoid "ripples"
-                // ...
-                state.actionCompleted = false;
-            }
+
             message += "action=" + state.getAccountAction() + "; ";
 
             showUserPreferences();
@@ -388,6 +428,33 @@ public class AccountSettings extends PreferenceActivity implements
         MyLog.v(TAG, "setState from " + calledFrom +"; " + message + "intent=" + intent.toUri(0));
     }
     
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_SELECT_ACCOUNT:
+                if (resultCode == RESULT_OK) {
+                    state.myAccount = MyAccount.getCurrentMyAccount();
+                    if (!state.myAccount.isPersistent()) {
+                        mIsFinishing = true;
+                    }
+                } else {
+                    mIsFinishing = true;
+                }
+                if (!mIsFinishing) {
+                    MyLog.v(TAG, "Switching to the selected account");
+                    state.setAccountAction(Intent.ACTION_EDIT);
+                    showUserPreferences();
+                } else {
+                    MyLog.v(TAG, "No account supplied, finishing");
+                    finish();
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
+    }
+
     /**
      * Show values of all preferences in the "summaries".
      * @see <a href="http://stackoverflow.com/questions/531427/how-do-i-display-the-current-value-of-an-android-preference-in-the-preference-sum"> 
@@ -433,7 +500,7 @@ public class AccountSettings extends PreferenceActivity implements
             case SUCCEEDED:
                 titleResId = R.string.title_preference_verify_credentials;
                 sb = new StringBuilder(
-                        this.getText((org.andstatus.app.util.Build.VERSION.SDK_INT >= 8) ? R.string.summary_preference_verify_credentials
+                        this.getText((android.os.Build.VERSION.SDK_INT >= 8) ? R.string.summary_preference_verify_credentials
                                 : R.string.summary_preference_verify_credentials_2lines));
                 break;
             default:
@@ -764,11 +831,11 @@ public class AccountSettings extends PreferenceActivity implements
                 state.myAccount.save();
                
                 state.actionSucceeded = succeeded;
-                if (state.getAccountAction().compareTo(Intent.ACTION_INSERT) == 0) {
-                    if (succeeded) {
-                        if (!state.actionCompleted) {
-                            state.actionCompleted = true;
-                        }
+                if (succeeded) {
+                    if (!state.actionCompleted) {
+                        state.actionCompleted = true;
+                    }
+                    if (state.getAccountAction().compareTo(Intent.ACTION_INSERT) == 0) {
                         finishIfCompleted();
                     }
                 }
@@ -802,10 +869,6 @@ public class AccountSettings extends PreferenceActivity implements
      *         ProgressDialog and to get rid of any "Black blank screens"
      */
     private class OAuthAcquireRequestTokenTask extends AsyncTask<Void, Void, JSONObject> {
-        private OAuthConsumer mConsumer = null;
-
-        private OAuthProvider mProvider = null;
-
         private ProgressDialog dlg;
 
         @Override
@@ -821,35 +884,25 @@ public class AccountSettings extends PreferenceActivity implements
         protected JSONObject doInBackground(Void... arg0) {
             JSONObject jso = null;
 
-            // We don't need to worry about any saved states: we can reconstruct
-            // the
-            // state
-            mConsumer = new CommonsHttpOAuthConsumer(OAuthKeys.TWITTER_CONSUMER_KEY,
-                    OAuthKeys.TWITTER_CONSUMER_SECRET);
-
-            mProvider = new CommonsHttpOAuthProvider(ConnectionOAuth.TWITTER_REQUEST_TOKEN_URL,
-                    ConnectionOAuth.TWITTER_ACCESS_TOKEN_URL, ConnectionOAuth.TWITTER_AUTHORIZE_URL);
-
-            // It turns out this was the missing thing to making standard
-            // Activity
-            // launch mode work
-            mProvider.setOAuth10a(true);
-
             boolean requestSucceeded = false;
             String message = "";
             String message2 = "";
             try {
                 MyAccount ma = state.myAccount;
+                MyOAuth oa = ma.getOAuth();
 
                 // This is really important. If you were able to register your
                 // real callback Uri with Twitter, and not some fake Uri
                 // like I registered when I wrote this example, you need to send
                 // null as the callback Uri in this function call. Then
                 // Twitter will correctly process your callback redirection
-                String authUrl = mProvider.retrieveRequestToken(mConsumer,
+                String authUrl = oa.getProvider().retrieveRequestToken(oa.getConsumer(),
                         CALLBACK_URI.toString());
-                saveRequestInformation(ma, mConsumer.getToken(), mConsumer.getTokenSecret());
+                saveRequestInformation(ma, oa.getConsumer().getToken(), oa.getConsumer().getTokenSecret());
 
+                // This is needed in order to complete the process after redirect
+                // from the Browser to the same activity.
+                state.actionCompleted = false;
                 // Start Internet Browser
                 AccountSettings.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
                         .parse(authUrl)));
@@ -943,10 +996,6 @@ public class AccountSettings extends PreferenceActivity implements
      *         ProgressDialog and to get rid of any "Black blank screens"
      */
     private class OAuthAcquireAccessTokenTask extends AsyncTask<Uri, Void, JSONObject> {
-        private OAuthConsumer mConsumer = null;
-
-        private OAuthProvider mProvider = null;
-
         private ProgressDialog dlg;
 
         @Override
@@ -962,38 +1011,31 @@ public class AccountSettings extends PreferenceActivity implements
         protected JSONObject doInBackground(Uri... uris) {
             JSONObject jso = null;
 
-            // We don't need to worry about any saved states: we can reconstruct
-            // the state
-            mConsumer = new CommonsHttpOAuthConsumer(OAuthKeys.TWITTER_CONSUMER_KEY,
-                    OAuthKeys.TWITTER_CONSUMER_SECRET);
-
-            mProvider = new CommonsHttpOAuthProvider(ConnectionOAuth.TWITTER_REQUEST_TOKEN_URL,
-                    ConnectionOAuth.TWITTER_ACCESS_TOKEN_URL, ConnectionOAuth.TWITTER_AUTHORIZE_URL);
-
-            // It turns out this was the missing thing to making standard
-            // Activity launch mode work
-            mProvider.setOAuth10a(true);
-
             String message = "";
             
             boolean authenticated = false;
             MyAccount ma = state.myAccount;
+            // We don't need to worry about any saved states: we can reconstruct
+            // the state
+            MyOAuth oa = ma.getOAuth();
 
-            Uri uri = uris[0];
-            if (uri != null && CALLBACK_URI.getScheme().equals(uri.getScheme())) {
-                String token = ma.getDataString(ConnectionOAuth.REQUEST_TOKEN, null);
-                String secret = ma.getDataString(ConnectionOAuth.REQUEST_SECRET, null);
+            if (oa == null) {
+                message = "Connection is not OAuth";
+                Log.e(TAG, message);
+            }
+            else {
+                Uri uri = uris[0];
+                if (uri != null && CALLBACK_URI.getScheme().equals(uri.getScheme())) {
+                    String token = ma.getDataString(ConnectionOAuth.REQUEST_TOKEN, null);
+                    String secret = ma.getDataString(ConnectionOAuth.REQUEST_SECRET, null);
 
-                ma.clearAuthInformation();
-                if (!ma.isOAuth()) {
-                    Log.e(TAG, "Connection is not of OAuth type ???");
-                } else {
+                    ma.clearAuthInformation();
                     try {
                         // Clear the request stuff, we've used it already
                         saveRequestInformation(ma, null, null);
 
                         if (!(token == null || secret == null)) {
-                            mConsumer.setTokenWithSecret(token, secret);
+                            oa.getConsumer().setTokenWithSecret(token, secret);
                         }
                         String otoken = uri.getQueryParameter(OAuth.OAUTH_TOKEN);
                         String verifier = uri.getQueryParameter(OAuth.OAUTH_VERIFIER);
@@ -1004,7 +1046,7 @@ public class AccountSettings extends PreferenceActivity implements
                          * if User denied access during OAuth...) hence this is not
                          * Assert :-)
                          */
-                        if (otoken != null || mConsumer.getToken() != null) {
+                        if (otoken != null || oa.getConsumer().getToken() != null) {
                             // We send out and save the request token, but the
                             // secret is not the same as the verifier
                             // Apparently, the verifier is decoded to get the
@@ -1015,10 +1057,10 @@ public class AccountSettings extends PreferenceActivity implements
                             // mConsumer.getToken());
 
                             // This is the moment of truth - we could throw here
-                            mProvider.retrieveAccessToken(mConsumer, verifier);
+                            oa.getProvider().retrieveAccessToken(oa.getConsumer(), verifier);
                             // Now we can retrieve the goodies
-                            token = mConsumer.getToken();
-                            secret = mConsumer.getTokenSecret();
+                            token = oa.getConsumer().getToken();
+                            secret = oa.getConsumer().getTokenSecret();
                             authenticated = true;
                         }
                     } catch (OAuthMessageSignerException e) {
@@ -1148,18 +1190,12 @@ public class AccountSettings extends PreferenceActivity implements
                     state.response.onError(AccountManager.ERROR_CODE_CANCELED, "canceled");
                 }
             }
-            if (overrideBackButton) {
-                doFinish = true;
-                /**
-                 * See <a href="http://stackoverflow.com/questions/3010103/android-how-to-create-intent-to-open-the-activity-that-displays-the-accounts">
-                 *  Android - How to Create Intent to open the activity that displays the “Accounts & Sync settings” screen</a>
-                 */
-                Intent intent = new Intent(android.provider.Settings.ACTION_SYNC_SETTINGS);
-                intent.putExtra(android.provider.Settings.EXTRA_AUTHORITIES, new String[] {MyProvider.AUTHORITY});
-                this.startActivity(intent);
-            }
             // Forget old state
             state.forget();
+            if (overrideBackButton) {
+                doFinish = true;
+                startManageAccountsActivity(this);
+            }
         }
         if (doFinish) {
             MyLog.v(TAG, "finish: action=" + state.getAccountAction() + "; " + message);
@@ -1174,4 +1210,21 @@ public class AccountSettings extends PreferenceActivity implements
         return false;
     }
     
+    /**
+     * Start system activity which allow to manage list of accounts
+     * See <a href="https://groups.google.com/forum/?fromgroups#!topic/android-developers/RfrIb5V_Bpo">per account settings in Jelly Beans</a>. 
+     * For versions prior to Jelly Bean see <a href="http://stackoverflow.com/questions/3010103/android-how-to-create-intent-to-open-the-activity-that-displays-the-accounts">
+     *  Android - How to Create Intent to open the activity that displays the “Accounts & Sync settings” screen</a>
+     */
+    public static void startManageAccountsActivity(android.content.Context context) {
+        Intent intent;
+        if (android.os.Build.VERSION.SDK_INT < 16 ) {  // before Jelly Bean
+            intent = new Intent(android.provider.Settings.ACTION_SYNC_SETTINGS);
+            intent.putExtra(android.provider.Settings.EXTRA_AUTHORITIES, new String[] {MyProvider.AUTHORITY});
+        } else {
+            intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
+            // TODO: Find out some more specific intent...
+        }
+        context.startActivity(intent);
+    }
 }

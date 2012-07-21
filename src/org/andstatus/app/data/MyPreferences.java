@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
@@ -94,7 +95,7 @@ public class MyPreferences {
     public static Context initialize(Context context_in, java.lang.Object object ) {
         String origin_in = object.getClass().getSimpleName();
         if (origin_in.contentEquals("String")) {
-            origin_in = origin_in.toString();
+            origin_in = object.toString();
         }
         if (!misInitialized) {
             // Maybe we should use context_in.getApplicationContext() ??
@@ -296,7 +297,21 @@ public class MyPreferences {
         return (is ? 1 : 0);
     }
     
-
+    /**
+     * Returns true if the string is null or 0-length or "null"
+     * 
+     * @param str the string to be examined
+     * @return true if str is null or zero length or "null"
+     */
+    public static boolean isEmpty(CharSequence str) {
+        if (TextUtils.isEmpty(str))
+            return true;
+        else if (str.equals("null"))
+            return true;
+        else
+            return false;
+    }
+    
     /**
      * Load the theme according to the preferences.
      */

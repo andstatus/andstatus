@@ -37,14 +37,18 @@ import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import org.andstatus.app.account.AccountSettings;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
@@ -106,6 +110,14 @@ public class PreferencesActivity extends PreferenceActivity implements
                 MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
 
         mNotificationRingtone.setOnPreferenceChangeListener(this);
+        
+        Preference myPref = (Preference) findPreference("manage_accounts");
+        myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                AccountSettings.startManageAccountsActivity(PreferencesActivity.this);
+                return false;
+            }
+        });
     }
 
     @Override
@@ -609,5 +621,4 @@ public class PreferencesActivity extends PreferenceActivity implements
         // TODO Auto-generated method stub
         return super.onKeyDown(keyCode, event);
     }
-    
 }
