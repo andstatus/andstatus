@@ -66,7 +66,7 @@ public class ConnectionBasicAuth extends Connection {
 	    setSinceId(sinceId);
 	    setLimit(limit);
 	    
-		String url = STATUSES_HOME_TIMELINE_URL;
+		String url = getApiUrl(apiEnum.STATUSES_HOME_TIMELINE);
 		url += "?count=" + mLimit;
 		if (mSinceId.length() > 1) {
 			url += "&since_id=" + mSinceId;
@@ -94,7 +94,7 @@ public class ConnectionBasicAuth extends Connection {
         setSinceId(sinceId);
         setLimit(limit);
 
-        String url = STATUSES_MENTIONS_TIMELINE_URL;
+        String url = getApiUrl(apiEnum.STATUSES_MENTIONS_TIMELINE);
 		url += "?count=" + mLimit;
 		if (mSinceId.length() > 1) {
 			url += "&since_id=" + mSinceId;
@@ -122,7 +122,7 @@ public class ConnectionBasicAuth extends Connection {
         setSinceId(sinceId);
         setLimit(limit);
 
-		String url = DIRECT_MESSAGES_URL;
+		String url = getApiUrl(apiEnum.DIRECT_MESSAGES);
 		url += "?count=" + mLimit;
 		if (mSinceId.length() > 1) {
 			url += "&since_id=" + mSinceId;
@@ -147,7 +147,7 @@ public class ConnectionBasicAuth extends Connection {
 
 	@Override
     public JSONObject updateStatus(String message, String inReplyToId) throws ConnectionException {
-		String url = STATUSES_UPDATE_URL;
+		String url = getApiUrl(apiEnum.STATUSES_UPDATE);
 		List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
 		
@@ -174,16 +174,36 @@ public class ConnectionBasicAuth extends Connection {
 
     @Override
     public JSONObject postDirectMessage(String userId, String screenName, String message) throws ConnectionException {
-        // TODO Auto-generated method stub
-        throw new ConnectionException(TAG + ".postDirectMessage not implemented");
-        //return null;
+        String url = getApiUrl(apiEnum.POST_DIRECT_MESSAGE);
+        List<NameValuePair> formParams = new ArrayList<NameValuePair>();
+        formParams.add(new BasicNameValuePair("text", message));
+        
+        if ( !TextUtils.isEmpty(userId)) {
+            formParams.add(new BasicNameValuePair("user_id", userId));
+        }
+        if ( !TextUtils.isEmpty(screenName)) {
+            formParams.add(new BasicNameValuePair("screen_name", screenName));
+        }
+        JSONObject jObj = null;
+        try {
+            jObj = new JSONObject(postRequest(url, new UrlEncodedFormEntity(formParams, HTTP.UTF_8)));
+            String error = jObj.optString("error");
+            if ("Could not authenticate you.".equals(error)) {
+                throw new ConnectionException(error);
+            }
+        } catch (UnsupportedEncodingException e) {
+            Log.e(TAG, e.toString());
+        } catch (JSONException e) {
+            throw new ConnectionException(e);
+        }
+        return jObj;
     }
 
     @Override
     public JSONObject postRetweet(String retweetedId) throws ConnectionException {
         JSONObject jObj = null;
         try {
-            jObj = new JSONObject(postRequest(POST_RETWEET_URL + retweetedId + EXTENSION));
+            jObj = new JSONObject(postRequest(getApiUrl(apiEnum.POST_RETWEET) + retweetedId + EXTENSION));
             String error = jObj.optString("error");
             if ("Could not authenticate you.".equals(error)) {
                 throw new ConnectionException(error);
@@ -198,7 +218,7 @@ public class ConnectionBasicAuth extends Connection {
     public JSONObject destroyStatus(String statusId) throws ConnectionException {
 		JSONObject jObj = null;
 		try {
-			jObj = new JSONObject(postRequest(STATUSES_DESTROY_URL + statusId + EXTENSION));
+			jObj = new JSONObject(postRequest(getApiUrl(apiEnum.STATUSES_DESTROY) + statusId + EXTENSION));
 			String error = jObj.optString("error");
 			if ("Could not authenticate you.".equals(error)) {
 				throw new ConnectionException(error);
@@ -211,7 +231,7 @@ public class ConnectionBasicAuth extends Connection {
 
 	@Override
     public JSONObject createFavorite(String statusId) throws ConnectionException {
-		StringBuilder url = new StringBuilder(FAVORITES_CREATE_BASE_URL);
+		StringBuilder url = new StringBuilder(getApiUrl(apiEnum.FAVORITES_CREATE_BASE));
 		url.append(statusId);
 		url.append(EXTENSION);
 		JSONObject jObj = null;
@@ -229,7 +249,7 @@ public class ConnectionBasicAuth extends Connection {
 
 	@Override
     public JSONObject destroyFavorite(String statusId) throws ConnectionException {
-		StringBuilder url = new StringBuilder(FAVORITES_DESTROY_BASE_URL);
+		StringBuilder url = new StringBuilder(getApiUrl(apiEnum.FAVORITES_DESTROY_BASE));
 		url.append(statusId);
 		url.append(EXTENSION);
 		JSONObject jObj = null;
@@ -248,7 +268,9 @@ public class ConnectionBasicAuth extends Connection {
 	@Override
     public boolean getCredentialsPresent(MyAccount ma) {
         boolean yes = false;
-        if (mUsername != null && mPassword != null && mUsername.length() > 0 && mPassword.length() > 0) {
+        // This is not set for the new account
+        mUsername = ma.getUsername();
+        if (!TextUtils.isEmpty(mUsername) && !TextUtils.isEmpty(mPassword)) {
             yes = true;
         }
         return yes;
@@ -267,7 +289,7 @@ public class ConnectionBasicAuth extends Connection {
          */
         JSONObject jo = null;
         try {
-            jo = new JSONObject(getRequest(ACCOUNT_VERIFY_CREDENTIALS_URL,
+            jo = new JSONObject(getRequest(getApiUrl(apiEnum.ACCOUNT_VERIFY_CREDENTIALS),
                     new DefaultHttpClient(new BasicHttpParams())));
         } catch (JSONException e) {
             Log.e(TAG, "verifyCredentials: " + e.toString());
@@ -280,7 +302,7 @@ public class ConnectionBasicAuth extends Connection {
     public JSONObject rateLimitStatus() throws ConnectionException {
         JSONObject jo = null;
 		try {
-            jo = new JSONObject(getRequest(ACCOUNT_RATE_LIMIT_STATUS_URL, new DefaultHttpClient(new BasicHttpParams())));
+            jo = new JSONObject(getRequest(getApiUrl(apiEnum.ACCOUNT_RATE_LIMIT_STATUS), new DefaultHttpClient(new BasicHttpParams())));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -396,6 +418,10 @@ public class ConnectionBasicAuth extends Connection {
 	 */
 	private String retrieveInputStream(HttpEntity httpEntity) {
 		int length = (int) httpEntity.getContentLength();
+		if ( length <= 0 ) {
+		    // Length is unknown or large
+		    length = 1024;
+		}
 		StringBuffer stringBuffer = new StringBuffer(length);
 		try {
 			InputStreamReader inputStreamReader = new InputStreamReader(httpEntity.getContent(), HTTP.UTF_8);

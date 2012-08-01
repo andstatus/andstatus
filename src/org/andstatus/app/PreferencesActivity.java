@@ -159,43 +159,19 @@ public class PreferencesActivity extends PreferenceActivity implements
     }
     
     protected void showHistorySize() {
-        showListPreference(MyPreferences.KEY_HISTORY_SIZE, R.array.history_size_keys, R.array.history_size_display, R.string.summary_preference_history_size);
+        MyPreferences.showListPreference(this, MyPreferences.KEY_HISTORY_SIZE, R.array.history_size_keys, R.array.history_size_display, R.string.summary_preference_history_size);
     }
 
     protected void showHistoryTime() {
-        showListPreference(MyPreferences.KEY_HISTORY_TIME, R.array.history_time_keys, R.array.history_time_display, R.string.summary_preference_history_time);
+        MyPreferences.showListPreference(this, MyPreferences.KEY_HISTORY_TIME, R.array.history_time_keys, R.array.history_time_display, R.string.summary_preference_history_time);
     }
 
     protected void showFrequency() {
-        showListPreference(MyPreferences.KEY_FETCH_FREQUENCY, R.array.fetch_frequency_keys, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
+        MyPreferences.showListPreference(this, MyPreferences.KEY_FETCH_FREQUENCY, R.array.fetch_frequency_keys, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
     }
 
     protected void showMinLogLevel() {
-        showListPreference(MyPreferences.KEY_MIN_LOG_LEVEL, R.array.log_level_keys, R.array.log_level_display, R.string.summary_preference_min_log_level);
-    }
-
-    protected void showListPreference(String keyPreference, int keysR, int displayR, int summaryR) {
-        String displayParm = "";
-        ListPreference lP = (ListPreference) findPreference(keyPreference);
-        if (lP != null) {
-            String[] k = getResources().getStringArray(keysR);
-            String[] d = getResources().getStringArray(displayR);
-            displayParm = d[0];
-            String listValue = lP.getValue();
-            for (int i = 0; i < k.length; i++) {
-                if (listValue.equals(k[i])) {
-                    displayParm = d[i];
-                    break;
-                }
-            }
-        } else {
-            displayParm = keyPreference + " was not found";
-        }
-        MessageFormat sf = new MessageFormat(getText(summaryR)
-                .toString());
-        lP.setSummary(sf.format(new Object[] {
-            displayParm
-        }));
+        MyPreferences.showListPreference(this, MyPreferences.KEY_MIN_LOG_LEVEL, R.array.log_level_keys, R.array.log_level_display, R.string.summary_preference_min_log_level);
     }
     
     protected void showRingtone(Object newValue) {

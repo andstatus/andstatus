@@ -31,29 +31,44 @@ import org.json.JSONObject;
  * @author torgny.bjers
  */
 public abstract class Connection {
-    private static final String BASE_URL = "http://api.twitter.com/1";
 
+    /**
+     * Base URL for connection to the System
+     */
+    private String mBaseUrl = "";
+    
+    /**
+     * Constants independent of the system
+     */
     protected static final String EXTENSION = ".json";
-    protected static final String STATUSES_HOME_TIMELINE_URL = BASE_URL
-        + "/statuses/home_timeline" + EXTENSION;
-    protected static final String STATUSES_MENTIONS_TIMELINE_URL = BASE_URL + "/statuses/mentions"
-            + EXTENSION;
-    protected static final String STATUSES_UPDATE_URL = BASE_URL + "/statuses/update" + EXTENSION;
-    protected static final String POST_DIRECT_MESSAGE_URL = BASE_URL + "/direct_messages/new" + EXTENSION;
-    protected static final String POST_RETWEET_URL = BASE_URL + "/statuses/retweet/";
-    protected static final String STATUSES_DESTROY_URL = BASE_URL + "/statuses/destroy/";
-    protected static final String DIRECT_MESSAGES_URL = BASE_URL + "/direct_messages" + EXTENSION;
-
-    protected static final String ACCOUNT_VERIFY_CREDENTIALS_URL = BASE_URL
-            + "/account/verify_credentials" + EXTENSION;
-
-    protected static final String ACCOUNT_RATE_LIMIT_STATUS_URL = BASE_URL
-            + "/account/rate_limit_status" + EXTENSION;
-    protected static final String FAVORITES_CREATE_BASE_URL = BASE_URL + "/favorites/create/";
-    protected static final String FAVORITES_DESTROY_BASE_URL = BASE_URL + "/favorites/destroy/";
+    
     protected static final Integer DEFAULT_GET_REQUEST_TIMEOUT = 15000;
     protected static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 20000;
 
+    /**
+     * API enumerated
+     */
+    protected enum apiEnum {
+        ACCOUNT_RATE_LIMIT_STATUS,
+        ACCOUNT_VERIFY_CREDENTIALS,
+        DIRECT_MESSAGES,
+        FAVORITES_CREATE_BASE,
+        FAVORITES_DESTROY_BASE,        
+        POST_DIRECT_MESSAGE,
+        POST_RETWEET,
+        STATUSES_DESTROY,
+        STATUSES_HOME_TIMELINE,
+        STATUSES_MENTIONS_TIMELINE,
+        STATUSES_UPDATE,
+        
+        /**
+         * OAuth APIs
+         */
+        OAUTH_ACCESS_TOKEN,
+        OAUTH_AUTHORIZE,
+        OAUTH_REQUEST_TOKEN
+    }
+    
     /*
      * TODO: Not implemented (yet?) protected static final String
      * STATUSES_PUBLIC_TIMELINE_URL = BASE_URL_OLD + "/statuses/public_timeline" +
@@ -73,8 +88,49 @@ public abstract class Connection {
     protected Connection(MyAccount ma) {
         mUsername = ma.getDataString(MyAccount.KEY_USERNAME, "");
         mPassword = ma.getDataString(MyAccount.KEY_PASSWORD, "");
+        mBaseUrl = ma.getBaseUrl();
     }
 
+    protected String getApiUrl(apiEnum api) {
+        String url = "";
+        switch(api) {
+            case ACCOUNT_RATE_LIMIT_STATUS:
+                url = mBaseUrl + "/account/rate_limit_status" + EXTENSION;
+                break;
+            case ACCOUNT_VERIFY_CREDENTIALS:
+                url = mBaseUrl + "/account/verify_credentials" + EXTENSION;
+                break;
+            case DIRECT_MESSAGES:
+                url = mBaseUrl + "/direct_messages" + EXTENSION;
+                break;
+            case FAVORITES_CREATE_BASE:
+                url = mBaseUrl + "/favorites/create/";
+                break;
+            case FAVORITES_DESTROY_BASE:
+                url = mBaseUrl + "/favorites/destroy/";
+                break;
+            case POST_DIRECT_MESSAGE:
+                url = mBaseUrl + "/direct_messages/new" + EXTENSION;
+                break;
+            case POST_RETWEET:
+                url = mBaseUrl + "/statuses/retweet/";
+                break;
+            case STATUSES_DESTROY:
+                url = mBaseUrl + "/statuses/destroy/";
+                break;
+            case STATUSES_HOME_TIMELINE:
+                url = mBaseUrl + "/statuses/home_timeline" + EXTENSION;
+                break;
+            case STATUSES_MENTIONS_TIMELINE:
+                url = mBaseUrl  + "/statuses/mentions" + EXTENSION;
+                break;
+            case STATUSES_UPDATE:
+                url = mBaseUrl + "/statuses/update" + EXTENSION;
+                break;
+        }
+        return url;
+    }
+    
     /**
      * @return Does this connection use OAuth?
      */
@@ -217,16 +273,16 @@ public abstract class Connection {
     /**
      * Update user status by posting to the Twitter REST API.
      * 
-     * Updates the authenticating user's status. Requires the status parameter
-     * specified. Request must be a POST. A status update with text identical to
-     * the authenticating user's current status will be ignored.
+     * Updates the authenticating user's status, also known as tweeting.
+     * To upload an image to accompany the tweet, use POST statuses/update_with_media.
      * 
-     * @param message
+     * @param message       Text of the "status"
+     * @param inReplyToId   The ID of an existing status that the update is in reply to.
      * @throws ConnectionException 
      *
      * @see <a
-     *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses%C2%A0update">Twitter
-     *      REST API Method: statuses/update</a>
+     *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
+     *      POST statuses/update</a>
      */
     public abstract JSONObject updateStatus(String message, String inReplyToId)
             throws ConnectionException;

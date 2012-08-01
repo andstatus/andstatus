@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +38,8 @@ oneway interface IMyServiceCallback {
     void repliesChanged(int value);
 
 	/**
-	 * Called when the service is loading data.
+	 * Called when the service has completed loading data
+	 * @param value doesn't have any meaning yet
 	 */
 	void dataLoading(int value);
 

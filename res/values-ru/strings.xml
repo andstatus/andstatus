@@ -150,7 +150,9 @@
 	<string name="search_direct_messages_label">Поиск личных сообщений</string>
 	<string name="search_direct_messages_hint">Введите имя или фразу</string>
 	<string name="status_destroyed">Твит удалён.</string>
-	<string name="summary_preference_appearance">Изменить внешний вид программы AndStatus</string>
+    <string name="summary_preference_add_account_oauth">Щёлкните здесь для открытия сайта Системы в браузере.</string>
+    <string name="summary_preference_add_account_basic">Щёлкните здесь для аутентификации пользователя и добавления аккаунта.</string>
+    <string name="summary_preference_appearance">Изменить внешний вид программы AndStatus</string>
 	<string name="summary_preference_automatic_updates">Изменить параметры автоматического обновления</string>
 	<string name="summary_preference_automatic_updates_off">Автоматические обновления отключены</string>
 	<string name="summary_preference_automatic_updates_on">Автоматические обновления включены</string>
@@ -185,15 +187,14 @@
 	<string name="summary_preference_use_avatars_on">Аватары пользователей будут показаны</string>
 	<string name="summary_preference_username">Ваше имя пользователя в Твиттере</string>
 	<string name="summary_preference_verify_credentials">Данный аккаунт пользователя успешно аутентифицирован (проверен) и включён. Щёлкните здесь для повторной проверки</string>
-	<string name="summary_preference_verify_credentials_2lines">Успешно аутентифицирован (проверен). Щёлкните здесь для повторной проверки</string>
-	<string name="summary_preference_verify_credentials_add">Щёлкните здесь для открытия сайта twitter.com в браузере.</string>
-	<string name="summary_preference_verify_credentials_failed">Проверка завершилась неудачно. Щёлкните здесь для аутентификации пользователя и включения данного аккаунта</string>
+    <string name="summary_preference_verify_credentials_failed">Проверка завершилась неудачно. Щёлкните здесь для аутентификации пользователя и включения данного аккаунта</string>
 	<string name="summary_preference_vibration">Виброзвонок при входящем твите</string>
 	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>
 	<string name="summary_preference_vibration_on">Виброзвонок при входящем твите включён</string>
 	<string name="timeline_reloaded">Лента времени обновлена.</string>
 	<string name="title_preference_about_application">О программе AndStatus</string>
-	<string name="title_preference_appearance">Внешний вид</string>
+    <string name="title_preference_add_account">Добавить аккаунт</string>
+    <string name="title_preference_appearance">Внешний вид</string>
 	<string name="title_preference_automatic_updates">Автоматические обновления</string>
 	<string name="title_preference_change_log">Журнал изменений</string>
 	<string name="title_preference_contact_developer">Свяжитесь с разработчиками</string>
@@ -217,7 +218,6 @@
 	<string name="title_preference_username">Имя пользователя</string>
 	<string name="title_preference_use_avatars">Показывать аватары</string>
 	<string name="title_preference_verify_credentials">Перепроверить аккаунт</string>
-	<string name="title_preference_verify_credentials_add">Добавить аккаунт</string>
 	<string name="title_preference_verify_credentials_failed">Проверить аккаунт</string>
 	<string name="title_preference_vibration">Виброзвонок</string>
 	<string name="tweet_activity">Твиты</string>

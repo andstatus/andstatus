@@ -21,11 +21,14 @@ import org.andstatus.app.util.MyLog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
+import android.preference.ListPreference;
+import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
+import java.text.MessageFormat;
 
 /**
  * This is central point of accessing SharedPreferences and other global objects, used by AndStatus
@@ -43,6 +46,11 @@ public class MyPreferences {
      */
     private static String origin;
     private static MyDatabase db;
+
+    /**
+     * For testing purposes
+     */
+    private static long prevInstanceId = 0;
     
     /**
      * This is sort of button to start verification of credentials
@@ -120,6 +128,14 @@ public class MyPreferences {
     }
 
     /**
+     * @return Unique for this process Integer, numbers are given in the order starting from 1
+     */
+    public static long nextInstanceId() {
+        prevInstanceId += 1;
+        return prevInstanceId;
+    }
+    
+    /**
      * Forget everything in order to reread from the sources if it will be needed
      * e.g. after configuration changes
      */
@@ -183,6 +199,37 @@ public class MyPreferences {
             .putLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME,
                     java.lang.System.currentTimeMillis()).commit();
         }
+    }
+
+    /**
+     * @param pa Preference Activity
+     * @param keyPreference android:key - Name of the preference key
+     * @param entryValuesR android:entryValues
+     * @param displayR Almost like android:entries but to show in the summary (may be the same as android:entries) 
+     * @param summaryR
+     */
+    public static void showListPreference(PreferenceActivity pa, String keyPreference, int entryValuesR, int displayR, int summaryR) {
+        String displayParm = "";
+        ListPreference lP = (ListPreference) pa.findPreference(keyPreference);
+        if (lP != null) {
+            String[] k = pa.getResources().getStringArray(entryValuesR);
+            String[] d = pa.getResources().getStringArray(displayR);
+            displayParm = d[0];
+            String listValue = lP.getValue();
+            for (int i = 0; i < k.length; i++) {
+                if (listValue.equals(k[i])) {
+                    displayParm = d[i];
+                    break;
+                }
+            }
+        } else {
+            displayParm = keyPreference + " was not found";
+        }
+        MessageFormat sf = new MessageFormat(pa.getText(summaryR)
+                .toString());
+        lP.setSummary(sf.format(new Object[] {
+            displayParm
+        }));
     }
     
     public static Context getContext() {

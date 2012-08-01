@@ -34,6 +34,7 @@ import java.util.Vector;
 
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineDownloader;
+import org.andstatus.app.account.Origin.OriginApiEnum;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
@@ -780,6 +781,34 @@ public class MyAccount implements Parcelable {
     public long getOriginId() {
         return mOrigin.getId();
     }
+
+    /**
+     * @return API of the Originating system
+     */
+    public OriginApiEnum getApi() {
+        return mOrigin.getApi();
+    }
+    
+    /**
+     * @return Name of the system in which the User is defined
+     */
+    public String getOriginName() {
+        return mOrigin.getName();
+    }
+    
+    /**
+     * @return Base URL for connection to the System
+     */
+    public String getBaseUrl() {
+        return mOrigin.getBaseUrl();
+    }
+    
+    /**
+     * @return Base URL for OAuth related requests to the System
+     */
+    public String getOauthBaseUrl() {
+        return mOrigin.getOauthBaseUrl();
+    }
     
     /**
      * @return SharedPreferences of this MyAccount. Used to store preferences which are application specific
@@ -885,7 +914,7 @@ public class MyAccount implements Parcelable {
                 mCredentialsVerified.put(this);
                 changed = true;
             }
-            if (mOAuth != getDataBoolean(MyAccount.KEY_OAUTH, false)) {
+            if (mOAuth != getDataBoolean(MyAccount.KEY_OAUTH, mOrigin.isOAuth())) {
                 setDataBoolean(MyAccount.KEY_OAUTH, mOAuth);
                 changed = true;
             }
@@ -1073,7 +1102,9 @@ public class MyAccount implements Parcelable {
                 }
 
                 if (ok) {
-                    if (getUsername().length() > 0 && getUsername().compareTo(newName) != 0) {
+                    // We are comparing user names ignoring case, but we fix correct case
+                    // as the Originating system tells us. 
+                    if (!TextUtils.isEmpty(getUsername()) && getUsername().compareToIgnoreCase(newName) != 0) {
                         // Credentials belong to other User ??
                         ok = false;
                         credentialsOfOtherUser = true;
@@ -1083,7 +1114,7 @@ public class MyAccount implements Parcelable {
                     setCredentialsVerified(CredentialsVerified.SUCCEEDED);
                 }
                 if (ok && !isPersistent()) {
-                    // Now we know the name of this User!
+                    // Now we know the name (or proper case of the name) of this User!
                     ok = setUsernameAuthenticated(newName);
                     if (!ok) {
                         errorSettingUsername = true;
@@ -1093,6 +1124,8 @@ public class MyAccount implements Parcelable {
                     clearAuthInformation();
                     setCredentialsVerified(CredentialsVerified.FAILED);
                 }
+                // Save the account here
+                save();
 
                 if (credentialsOfOtherUser) {
                     Log.e(TAG, MyPreferences.getContext().getText(R.string.error_credentials_of_other_user) + ": "
@@ -1140,7 +1173,7 @@ public class MyAccount implements Parcelable {
      * Current implementation of twitter.com authentication doesn't use this attribute, so it's disabled
      */
     public boolean canSetUsername() {
-        return mOrigin.canSetUsername();
+        return mOrigin.canSetUsername(isOAuth());
     }
 
     /**

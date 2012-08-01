@@ -56,7 +56,7 @@
 	<string name="dialog_summary_acquiring_an_access_token">Please wait while AndStatus is exchanging an OAuth Request token for Access token</string>
 	<string name="dialog_summary_acquiring_a_request_token">Please wait while AndStatus is acquiring a request token for OAuth</string>
 	<string name="dialog_summary_authentication_failed">Please check your username and password.</string>
-	<string name="dialog_summary_checking_credentials">Please wait while your account is verified.</string>
+	<string name="dialog_summary_checking_credentials">Please wait while your account is being verified.</string>
 	<string name="dialog_summary_connection_timeout">Connection timed out. Please try again later.</string>
 	<string name="dialog_summary_executing_command">Please wait while the command is executed on the server.</string>
 	<string name="dialog_summary_external_storage">External storage has been detected. Do you wish AndStatus to store data there? Old data cannot be moved, but will remain in your internal memory.</string>
@@ -76,7 +76,8 @@
 	<string name="dialog_title_preference_history_size">History Size</string>
 	<string name="dialog_title_preference_history_time">History Time</string>
     <string name="dialog_title_preference_min_log_level">Minimum logging level</string>
-	<string name="dialog_title_preference_password">Password</string>
+    <string name="dialog_title_preference_origin_system">Microblogging system</string>
+    <string name="dialog_title_preference_password">Password</string>
 	<string name="dialog_title_preference_theme">Select a Theme</string>
 	<string name="dialog_title_preference_username">Username</string>
 	<string name="dialog_title_sending_message">Sending message…</string>
@@ -150,7 +151,9 @@
 	<string name="search_direct_messages_label">Search direct messages</string>
 	<string name="search_direct_messages_hint">Enter a username or phrase</string>
 	<string name="status_destroyed">The tweet has been removed.</string>
-	<string name="summary_preference_appearance">Change the AndStatus look and feel</string>
+    <string name="summary_preference_add_account_oauth">Tap here to open the Microblogging system site in the browser.</string>
+    <string name="summary_preference_add_account_basic">Tap here to verify credentials and add the account.</string>
+    <string name="summary_preference_appearance">Change the AndStatus look and feel</string>
 	<string name="summary_preference_automatic_updates">Change automatic update settings</string>
 	<string name="summary_preference_automatic_updates_off">Automatic updates are disabled</string>
 	<string name="summary_preference_automatic_updates_on">Automatic updates are enabled</string>
@@ -176,7 +179,8 @@
 	<string name="summary_preference_notifications_timeline_on">You will be notified of new tweets</string>
 	<string name="summary_preference_oauth_off">Basic authentication</string>
 	<string name="summary_preference_oauth_on">OAuth (secure authentication) is on</string>
-	<string name="summary_preference_password">Your Twitter password</string>
+    <string name="summary_preference_origin_system">{0}</string>
+    <string name="summary_preference_password">Your Twitter password</string>
     <string name="summary_preference_storage">Where and what information to store</string>
 	<string name="summary_preference_storage_external_off">Store data in Internal Memory</string>
 	<string name="summary_preference_storage_external_on">Store data on External Memory</string>
@@ -185,15 +189,14 @@
 	<string name="summary_preference_use_avatars_on">User avatars will be displayed</string>
 	<string name="summary_preference_username">Your Twitter username</string>
     <string name="summary_preference_verify_credentials">This User account is verified and enabled. Tap here to verify the user\'s credentials again.</string>
-    <string name="summary_preference_verify_credentials_2lines">Successfully verified. Tap here to verify the user\'s credentials again.</string>
-	<string name="summary_preference_verify_credentials_add">Tap here to open twitter.com site in the browser.</string>
     <string name="summary_preference_verify_credentials_failed">Verification failed. Tap here to verify credentials and enable this User Account</string>
 	<string name="summary_preference_vibration">Vibrate on incoming message</string>
 	<string name="summary_preference_vibration_off">Vibration turned off</string>
 	<string name="summary_preference_vibration_on">Vibrating on incoming message</string>
 	<string name="timeline_reloaded">Timeline has been reloaded.</string>
 	<string name="title_preference_about_application">About AndStatus</string>
-	<string name="title_preference_appearance">Appearance</string>
+    <string name="title_preference_add_account">Add account</string>
+    <string name="title_preference_appearance">Appearance</string>
 	<string name="title_preference_automatic_updates">Automatic Updates</string>
 	<string name="title_preference_change_log">Change Log</string>
 	<string name="title_preference_contact_developer">Contact Developer</string>
@@ -209,7 +212,8 @@
 	<string name="title_preference_notifications_mentions">Notify on new Mentions</string>
 	<string name="title_preference_notifications_timeline">Notify on new Tweets</string>
 	<string name="title_preference_oauth">OAuth</string>
-	<string name="title_preference_password">Password</string>
+    <string name="title_preference_origin_system">Microblogging system</string>
+    <string name="title_preference_password">Password</string>
 	<string name="title_preference_report_bug">Report Bug</string>
 	<string name="title_preference_storage">Storage</string>
 	<string name="title_preference_storage_external">Use External Storage</string>
@@ -217,7 +221,6 @@
 	<string name="title_preference_username">Username</string>
 	<string name="title_preference_use_avatars">Display Avatars</string>
     <string name="title_preference_verify_credentials">Reverify credentials</string>
-    <string name="title_preference_verify_credentials_add">Add account</string>
 	<string name="title_preference_verify_credentials_failed">Verify credentials</string>
 	<string name="title_preference_vibration">Vibration</string>
 	<string name="tweet_activity">Tweet</string>

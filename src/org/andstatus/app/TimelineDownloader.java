@@ -21,6 +21,7 @@ import java.util.Date;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
+import org.andstatus.app.account.Origin.OriginApiEnum;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -82,14 +83,16 @@ public class TimelineDownloader {
      */
     private int mReplies;
 
-    private MyAccount mTu;
+    private MyAccount ma;
 
     private TimelineTypeEnum mTimelineType;
+    private OriginApiEnum mApi;
 
-    public TimelineDownloader(MyAccount tuIn, Context context, TimelineTypeEnum timelineType) {
+    public TimelineDownloader(MyAccount ma_in, Context context, TimelineTypeEnum timelineType) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
-        mTu = tuIn;
+        ma = ma_in;
+        mApi = ma.getApi();
         mTimelineType = timelineType;
         
         switch (mTimelineType) {
@@ -114,15 +117,15 @@ public class TimelineDownloader {
         mMentions = 0;
         mReplies = 0;
 
-        long lastMsgId = mTu.getMyAccountPreferences().getLong(MyAccount.KEY_LAST_TIMELINE_ID + mTimelineType.save(), 0);
+        long lastMsgId = ma.getMyAccountPreferences().getLong(MyAccount.KEY_LAST_TIMELINE_ID + mTimelineType.save(), 0);
         long lastDate = MyProvider.msgSentDate(lastMsgId);
         if (lastDate == 0) {
-            MyLog.d(TAG, "There is no message with " + MyDatabase.Msg._ID + "=" + lastMsgId + " already"); 
+            MyLog.d(TAG, "There is no message with " + MyDatabase.Msg._ID + "=" + lastMsgId + " yet"); 
             lastMsgId = 0;
         }
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-            String strLog = "Loading timeline " + mTimelineType.save() + " for " + mTu.getUsername();
+            String strLog = "Loading timeline " + mTimelineType.save() + " for " + ma.getUsername();
             if (lastDate > 0) {
                 strLog += " since " + new Date(lastDate).toGMTString();
             }
@@ -130,18 +133,18 @@ public class TimelineDownloader {
         }
         
         int limit = 200;
-        if ((mTu.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) && MyPreferences.isDataAvailable()) {
+        if ((ma.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) && MyPreferences.isDataAvailable()) {
             String lastOid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, lastMsgId);
             JSONArray jArr = null;
             switch (mTimelineType) {
                 case HOME:
-                    jArr = mTu.getConnection().getHomeTimeline(lastOid, limit);
+                    jArr = ma.getConnection().getHomeTimeline(lastOid, limit);
                     break;
                 case MENTIONS:
-                    jArr = mTu.getConnection().getMentionsTimeline(lastOid, limit);
+                    jArr = ma.getConnection().getMentionsTimeline(lastOid, limit);
                     break;
                 case DIRECT:
-                    jArr = mTu.getConnection().getDirectMessages(lastOid, limit);
+                    jArr = ma.getConnection().getDirectMessages(lastOid, limit);
                     break;
                 default:
                     Log.e(TAG, "Got unhandled Timeline type: " + mTimelineType.save());
@@ -177,9 +180,9 @@ public class TimelineDownloader {
                 }
             }
             if (mMessages > 0) {
-                mContentResolver.notifyChange(MyProvider.getTimelineUri(mTu.getUserId()), null);
+                mContentResolver.notifyChange(MyProvider.getTimelineUri(ma.getUserId()), null);
             }
-            mTu.getMyAccountPreferences().edit().putLong(MyAccount.KEY_LAST_TIMELINE_ID + mTimelineType.save(),
+            ma.getMyAccountPreferences().edit().putLong(MyAccount.KEY_LAST_TIMELINE_ID + mTimelineType.save(),
                     lastMsgId).commit();
         }
         return ok;
@@ -243,7 +246,7 @@ public class TimelineDownloader {
                 author = retweetedMessage.getJSONObject("user");
                 authorId = insertUserFromJSONObject(author);
 
-                if (mTu.getUserId() == senderId) {
+                if (ma.getUserId() == senderId) {
                     // Msg was retweeted by current User (he is Sender)
                     values.put(MyDatabase.MsgOfUser.RETWEETED, 1);
                 }
@@ -266,18 +269,24 @@ public class TimelineDownloader {
             }
             values.put(MyDatabase.Msg.AUTHOR_ID, authorId);
 
-            String rowOid = msg.getString("id_str");
+            String rowOid = "";
+            if (msg.has("id_str")) {
+                rowOid = msg.getString("id_str");
+            } else if (msg.has("id")) {
+                rowOid = msg.getString("id");
+            } 
+            
             // Lookup the System's (AndStatus) id from the Originated system's id
-            rowId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, mTu.getOriginId(), rowOid);
+            rowId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), rowOid);
             // Construct the Uri to the Msg
-            Uri tweetUri = MyProvider.getTimelineMsgUri(mTu.getUserId(), rowId);
+            Uri tweetUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
             
             String body = "";
             if (msg.has("text")) {
                 body = Html.fromHtml(msg.getString("text")).toString();
             }
             values.put(MyDatabase.Msg.MSG_OID, rowOid);
-            values.put(MyDatabase.Msg.ORIGIN_ID, mTu.getOriginId());
+            values.put(MyDatabase.Msg.ORIGIN_ID, ma.getOriginId());
             values.put(MsgOfUser.TIMELINE_TYPE, mTimelineType.save());
             values.put(MyDatabase.Msg.BODY, body);
 
@@ -316,7 +325,7 @@ public class TimelineDownloader {
                         if (msg.has("in_reply_to_screen_name")) {
                             inReplyToUserName = msg.getString("in_reply_to_screen_name");
                         }
-                        inReplyToUserId = MyProvider.oidToId(MyDatabase.User.CONTENT_URI, mTu.getOriginId(), inReplyToUserOid);
+                        inReplyToUserId = MyProvider.oidToId(MyDatabase.User.CONTENT_URI, ma.getOriginId(), inReplyToUserOid);
                         
                         // Construct "User" from available info
                         JSONObject inReplyToUser = new JSONObject();
@@ -327,7 +336,7 @@ public class TimelineDownloader {
                         }
                         values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
                         
-                        if (mTu.getUserId() == inReplyToUserId) {
+                        if (ma.getUserId() == inReplyToUserId) {
                             values.put(MyDatabase.MsgOfUser.REPLIED, 1);
                             if (countIt) { 
                                 mReplies++; 
@@ -343,7 +352,7 @@ public class TimelineDownloader {
                                 inReplyToMessageOid = "";
                             }
                             if (inReplyToMessageOid.length() > 0) {
-                                inReplyToMessageId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, mTu.getOriginId(), inReplyToMessageOid);
+                                inReplyToMessageId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), inReplyToMessageOid);
                                 if (inReplyToMessageId == 0) {
                                     // Construct Related "Msg" from available info
                                     // and add it recursively
@@ -375,7 +384,7 @@ public class TimelineDownloader {
                 if (!mentioned) {
                     // Check if current user was mentioned in the text of the message
                     if (body.length() > 0) {
-                        if (body.contains("@" + mTu.getUsername())) {
+                        if (body.contains("@" + ma.getUsername())) {
                             mentioned = true;
                         }
                     }
@@ -390,7 +399,7 @@ public class TimelineDownloader {
             
             if (rowId == 0) {
                 // There was no such row so add new one
-                tweetUri = mContentResolver.insert(MyProvider.getTimelineUri(mTu.getUserId()), values);
+                tweetUri = mContentResolver.insert(MyProvider.getTimelineUri(ma.getUserId()), values);
                 rowId = Long.parseLong(tweetUri.getPathSegments().get(3));
             } else {
               mContentResolver.update(tweetUri, values, null, null);
@@ -421,7 +430,9 @@ public class TimelineDownloader {
         String rowOid = "";
         if (user.has("id_str")) {
             rowOid = user.getString("id_str");
-        }
+        } else if (user.has("id")) {
+            rowOid = user.getString("id");
+        } 
         Long originId = 0L;
         Long rowId = 0L;
         try {
@@ -430,7 +441,7 @@ public class TimelineDownloader {
         catch (Exception e) {}
         finally {
             if (originId == 0) {
-                originId = mTu.getOriginId();
+                originId = ma.getOriginId();
             }
         }
         if (rowOid.length() > 0) {
@@ -511,7 +522,7 @@ public class TimelineDownloader {
         long rowId = insertFromJSONObject(jo);
         if (notify) {
             // Construct the Uri to the Msg
-            Uri tweetUri = MyProvider.getTimelineMsgUri(mTu.getUserId(), rowId);
+            Uri tweetUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
             mContentResolver.notifyChange(tweetUri, null);
         }
         return rowId;

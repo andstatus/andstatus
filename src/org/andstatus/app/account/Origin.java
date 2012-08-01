@@ -26,7 +26,7 @@ import org.andstatus.app.net.ConnectionBasicAuth;
 import org.andstatus.app.net.ConnectionOAuth;
 
 /**
- *  Originating (source) system (twitter.com, identi.ca, ... ) where messages are being created. 
+ *  Originating (source) Microblogging system (twitter.com, identi.ca, ... ) where messages are being created. 
  *  TODO: Currently the class is almost a stub and serves for ONE origin only :-)
  * @author yvolk
  *
@@ -35,14 +35,28 @@ public class Origin {
     private static final String TAG = Origin.class.getSimpleName();
 
     /**
+     * API used by the Originating system
+     */
+    public enum OriginApiEnum {
+        TWITTER,
+        IDENTICA
+    }
+    
+    /**
      * Default value for the Originating system mId.
      * TODO: Create a table of these "Origins" ?!
      */
     public static long ORIGIN_ID_DEFAULT = 1;
     /**
+     * Predefined ID for default Status.net system 
+     * <a href="http://status.net/wiki/Twitter-compatible_API">identi.ca API</a>
+     */
+    public static long ORIGIN_ID_IDENTICA = 2;
+    /**
      * Name of the default Originating system (it is unique and permanent as an ID).
      */
     public static String ORIGIN_NAME_DEFAULT = "Twitter";
+    public static String ORIGIN_NAME_IDENTICA = "identi.ca";
 
     /**
      * Maximum number of characters in the message
@@ -57,6 +71,7 @@ public class Origin {
     
     private String mName = "";
     private long mId = 0;
+    private OriginApiEnum mApi;
 
     /**
      * Default OAuth setting
@@ -69,9 +84,18 @@ public class Origin {
     private boolean mCanChangeOAuth = false;
     /**
      * Can user set username for the new user manually?
-     * Current implementation of twitter.com authentication doesn't use this attribute, so it's disabled
+     * This is only for no OAuth
      */
     private boolean mCanSetUsername = false;
+    
+    /**
+     * Base URL for connection to the System
+     */
+    private String mBaseUrl = "";
+    /**
+     * Base URL for OAuth related requests to the System
+     */
+    private String mOauthBaseUrl = "";
     
     private Connection mConnection = null;
 
@@ -95,6 +119,24 @@ public class Origin {
      */
     public long getId() {
         return mId;
+    }
+
+    public OriginApiEnum getApi() {
+        return mApi;
+    }
+
+    /**
+     * @return Base URL for connection to the System
+     */
+    public String getBaseUrl() {
+        return mBaseUrl;
+    }
+
+    /**
+     * @return Base URL for OAuth related requests to the System
+     */
+    public String getOauthBaseUrl() {
+        return mOauthBaseUrl;
     }
 
     /**
@@ -121,8 +163,14 @@ public class Origin {
     /**
      * @return Can app user set username for the new "Origin user" manually?
      */
-    public boolean canSetUsername() {
-        return mCanSetUsername;
+    public boolean canSetUsername(boolean isOauthUser) {
+        boolean can = false;
+        if (mCanSetUsername) {
+            if (!isOauthUser) {
+                can = true;
+            }
+        }
+        return can;
     }
 
     /**
@@ -152,15 +200,28 @@ public class Origin {
         mName = name;
         // TODO: Persistence for Origins
         if (this.mName.compareToIgnoreCase(ORIGIN_NAME_DEFAULT) == 0) {
-          mId = ORIGIN_ID_DEFAULT;
-          mOAuth = true;
-          mCanChangeOAuth = false;
-          mCanSetUsername = false;
+            mApi = OriginApiEnum.TWITTER;
+            mId = ORIGIN_ID_DEFAULT;
+            mOAuth = true;
+            mCanChangeOAuth = false;
+            mCanSetUsername = false;
+            mOauthBaseUrl = "http://api.twitter.com";
+            mBaseUrl = mOauthBaseUrl + "/1";
+        } else if (this.mName.compareToIgnoreCase(ORIGIN_NAME_IDENTICA) == 0) {
+            mApi = OriginApiEnum.IDENTICA;
+            mId = ORIGIN_ID_IDENTICA;
+            mOAuth = false;   // TODO: Set this to true once OAuth in identi.ca will work
+            mCanChangeOAuth = true;
+            mCanSetUsername = true;
+            mOauthBaseUrl = "https://identi.ca/api";
+            mBaseUrl = mOauthBaseUrl;
         }
     }
     
     private Origin(long id) {
-       this (id == ORIGIN_ID_DEFAULT ? ORIGIN_NAME_DEFAULT : "");
+        this(id == ORIGIN_ID_DEFAULT ? ORIGIN_NAME_DEFAULT :
+                id == ORIGIN_ID_IDENTICA ? ORIGIN_NAME_IDENTICA :
+                        "");
     }
 
     /**

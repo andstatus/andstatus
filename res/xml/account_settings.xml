@@ -23,32 +23,40 @@
 
     <!-- USER CREDENTIALS -->
     <PreferenceCategory android:title="@string/category_title_preference_credentials" >
+        <!-- We really don't need android:persistent="true" but we need onSharedPreferenceChanged... -->        
+        <ListPreference 
+            android:key="origin_name"
+            android:persistent="true"
+            android:summary="@string/summary_preference_origin_system"
+            android:title="@string/title_preference_origin_system" 
+            android:entries="@array/origin_system_entries"
+            android:entryValues="@array/origin_system_entries"
+            android:dialogTitle="@string/dialog_title_preference_origin_system"
+            android:defaultValue="Twitter" />
         <Preference
             android:key="verify_credentials"
             android:persistent="false"
             android:summary="@string/summary_preference_verify_credentials"
             android:title="@string/title_preference_verify_credentials" />
 
-        <EditTextPreference
-            android:dialogTitle="@string/dialog_title_preference_username"
-            android:key="username_new"
-            android:persistent="false"
-            android:singleLine="true"
-            android:summary="@string/summary_preference_username"
-            android:title="@string/title_preference_username" />
-
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="oauth"
-            android:persistent="false"
+            android:persistent="true"
             android:summaryOff="@string/summary_preference_oauth_off"
             android:summaryOn="@string/summary_preference_oauth_on"
             android:title="@string/title_preference_oauth" />
-
+        <EditTextPreference
+            android:dialogTitle="@string/dialog_title_preference_username"
+            android:key="username_new"
+            android:persistent="true"
+            android:singleLine="true"
+            android:summary="@string/summary_preference_username"
+            android:title="@string/title_preference_username" />
         <EditTextPreference
             android:dialogTitle="@string/dialog_title_preference_password"
             android:key="password"
-            android:persistent="false"
+            android:persistent="true"
             android:password="true"
             android:singleLine="true"
             android:summary="@string/summary_preference_password"

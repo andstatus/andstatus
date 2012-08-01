@@ -64,8 +64,8 @@ import android.util.Log;
 
 
 /**
- * This is an application service that serves as a connection between Android
- * and Twitter. Other applications can interact with it via IPC.
+ * This is an application service that serves as a connection between this Android Device
+ * and Microblogging system. Other applications can interact with it via IPC.
  */
 public class MyService extends Service {
     private static final String TAG = MyService.class.getSimpleName();
@@ -601,11 +601,6 @@ public class MyService extends Service {
     private Set<CommandExecutor> mExecutors = new HashSet<CommandExecutor>();
 
     /**
-     * The number of listeners returned by the last broadcast start call.
-     */
-    private volatile int mBroadcastListenerCount = 0;
-
-    /**
      * The reference to the wake lock used to keep the CPU from stopping during
      * background operations.
      */
@@ -1038,11 +1033,6 @@ public class MyService extends Service {
                             MyLog.d(TAG, logMsg);
                         }
                         mExecutors.add(executor);
-                        if (mExecutors.size() == 1) {
-                            mBroadcastListenerCount = mCallbacks.beginBroadcast();
-                            MyLog.d(TAG, "No other threads running so starting new broadcast for "
-                                    + mBroadcastListenerCount + " listeners");
-                        }
                         executor.execute();
                     }
                 } else {
@@ -1056,8 +1046,6 @@ public class MyService extends Service {
             }
             mExecutors.remove(executorIn);
             if (mExecutors.size() == 0) {
-                MyLog.d(TAG, "Ending last thread so ending broadcast");
-                mCallbacks.finishBroadcast();
                 relealeWakeLock();
                 if (mIsFinishing) {
                     stopDelayed();
@@ -1548,6 +1536,9 @@ public class MyService extends Service {
                         okAllAccounts = false;
                     }
                 }
+                // Notify only when data was loaded for one account
+                // (presumably "Manual reload" from the Timeline)
+                notifyOfDataLoadingCompletion();
             } // for one MyAccount
 
             return okAllAccounts;
@@ -1734,30 +1725,35 @@ public class MyService extends Service {
          */
         private void notifyOfUpdatedTimeline(int msgAdded, int mentionsAdded,
                 int directedAdded) {
-
-            // TODO: It's not so simple... I think :-)
-            int N = mBroadcastListenerCount;
-
-            for (int i = 0; i < N; i++) {
-                try {
-                    MyLog.d(TAG, "finishUpdateTimeline, Notifying callback no. " + i);
-                    IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
-                    if (cb != null) {
-                        if (msgAdded > 0) {
-                            cb.tweetsChanged(msgAdded);
-                        }
-                        if (mentionsAdded > 0) {
-                            cb.repliesChanged(mentionsAdded);
-                        }
-                        if (directedAdded > 0) {
-                            cb.messagesChanged(directedAdded);
-                        }
-                        cb.dataLoading(0);
-                    }
-                } catch (RemoteException e) {
-                    Log.e(TAG, e.toString());
+            synchronized (MyService.this) {
+                if (!mStateRestored) {
+                    return;
                 }
+                int N = mCallbacks.beginBroadcast();
+
+                for (int i = 0; i < N; i++) {
+                    try {
+                        MyLog.d(TAG, "finishUpdateTimeline, Notifying callback no. " + i);
+                        IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
+                        if (cb != null) {
+                            if (msgAdded > 0) {
+                                cb.tweetsChanged(msgAdded);
+                            }
+                            if (mentionsAdded > 0) {
+                                cb.repliesChanged(mentionsAdded);
+                            }
+                            if (directedAdded > 0) {
+                                cb.messagesChanged(directedAdded);
+                            }
+                        }
+                    } catch (RemoteException e) {
+                        Log.e(TAG, e.toString());
+                    }
+                }
+
+                mCallbacks.finishBroadcast();
             }
+
             boolean notified = false;
             if (mentionsAdded > 0) {
                 notifyOfNewTweets(mentionsAdded, CommandEnum.NOTIFY_MENTIONS);
@@ -1773,6 +1769,33 @@ public class MyService extends Service {
             }
         }
 
+        /**
+         * Currently the notification is not targeted 
+         * to any particular receiver waiting for the data...
+         */
+        private void notifyOfDataLoadingCompletion() {
+            synchronized (MyService.this) {
+                if (!mStateRestored) {
+                    return;
+                }
+                int N = mCallbacks.beginBroadcast();
+
+                for (int i = 0; i < N; i++) {
+                    try {
+                        MyLog.v(TAG,
+                                "Notifying of data loading completion, Notifying callback no. " + i);
+                        IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
+                        if (cb != null) {
+                            cb.dataLoading(0);
+                        }
+                    } catch (RemoteException e) {
+                        Log.e(TAG, e.toString());
+                    }
+                }
+                mCallbacks.finishBroadcast();
+            }
+        }
+        
         /**
          * Notify the user of new tweets.
          * 
@@ -1940,7 +1963,8 @@ public class MyService extends Service {
             if (ok) {
                 synchronized(MyService.this) {
                     if (mStateRestored) {
-                        for (int i = 0; i < mBroadcastListenerCount; i++) {
+                        int N = mCallbacks.beginBroadcast();
+                        for (int i = 0; i < N; i++) {
                             try {
                                 IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
                                 if (cb != null) {
@@ -1953,6 +1977,7 @@ public class MyService extends Service {
                                 Log.e(TAG, e.toString());
                             }
                         }
+                        mCallbacks.finishBroadcast();
                     } else {
                         Log.e(TAG, "rateLimitStatus - " + SERVICE_NOT_RESTORED_TEXT);
                     }
@@ -1964,6 +1989,7 @@ public class MyService extends Service {
 
     private void acquireWakeLock() {
         if (mWakeLock == null) {
+            MyLog.d(TAG, "Acquiring wakelock");
             PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
             mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
             mWakeLock.acquire();
@@ -1972,6 +1998,7 @@ public class MyService extends Service {
     
     private void relealeWakeLock() {
         if (mWakeLock != null) {
+            MyLog.d(TAG, "Releasing wakelock");
             mWakeLock.release();
             mWakeLock = null;
         }

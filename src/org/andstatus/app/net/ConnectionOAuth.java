@@ -23,6 +23,7 @@ import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.Origin.OriginApiEnum;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
@@ -68,10 +69,8 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
     public static final String REQUEST_TOKEN = "request_token";
     public static final String REQUEST_SECRET = "request_secret";
     public static final String REQUEST_SUCCEEDED = "request_succeeded";
-    
-    private static final String TWITTER_REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token";
-    private static final String TWITTER_ACCESS_TOKEN_URL = "https://api.twitter.com/oauth/access_token";
-    private static final String TWITTER_AUTHORIZE_URL = "https://api.twitter.com/oauth/authorize";
+
+    private String mOauthBaseUrl = "";
     
     private OAuthConsumer mConsumer = null;
     private OAuthProvider mProvider = null;
@@ -90,6 +89,7 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
 
     public ConnectionOAuth(MyAccount ma) {
         super(ma);
+        mOauthBaseUrl = ma.getOauthBaseUrl();
 
         HttpParams parameters = new BasicHttpParams();
         HttpProtocolParams.setVersion(parameters, HttpVersion.HTTP_1_1);
@@ -107,13 +107,13 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
         mConsumer = new CommonsHttpOAuthConsumer(oak.getConsumerKey(),
                 oak.getConsumerSecret());
 
-        mProvider = new CommonsHttpOAuthProvider(TWITTER_REQUEST_TOKEN_URL,
-                TWITTER_ACCESS_TOKEN_URL, TWITTER_AUTHORIZE_URL);
+        mProvider = new CommonsHttpOAuthProvider(getApiUrl(apiEnum.OAUTH_REQUEST_TOKEN),
+                getApiUrl(apiEnum.OAUTH_ACCESS_TOKEN), getApiUrl(apiEnum.OAUTH_AUTHORIZE));
 
+        
         // It turns out this was the missing thing to making standard
         // Activity launch mode work
         mProvider.setOAuth10a(true);
-        
         
         // We look for saved user keys
         if (ma.dataContains(ConnectionOAuth.USER_TOKEN) && ma.dataContains(ConnectionOAuth.USER_SECRET)) {
@@ -124,6 +124,30 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
         }
     }
     
+    /**
+     * @see org.andstatus.app.net.Connection#getApiUrl(org.andstatus.app.net.Connection.apiEnum)
+     */
+    @Override
+    protected String getApiUrl(apiEnum api) {
+        String url = "";
+        switch(api) {
+            case OAUTH_ACCESS_TOKEN:
+                url = mOauthBaseUrl + "/oauth/access_token";
+                break;
+            case OAUTH_AUTHORIZE:
+                url = mOauthBaseUrl + "/oauth/authorize";
+                break;
+            case OAUTH_REQUEST_TOKEN:
+                url = mOauthBaseUrl + "/oauth/request_token";
+                break;
+            default:
+                url = super.getApiUrl(api);
+                break;
+        }
+        MyLog.v(TAG, "URL=" + url);
+        return url;
+    }
+
     /**
      * @param token null means to clear the old values
      * @param secret
@@ -175,7 +199,7 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
 
     @Override
     public JSONObject createFavorite(String statusId) throws ConnectionException {
-        StringBuilder url = new StringBuilder(FAVORITES_CREATE_BASE_URL);
+        StringBuilder url = new StringBuilder(getApiUrl(apiEnum.FAVORITES_CREATE_BASE));
         url.append(statusId);
         url.append(EXTENSION);
         HttpPost post = new HttpPost(url.toString());
@@ -184,13 +208,13 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
 
     @Override
     public JSONObject destroyFavorite(String statusId) throws ConnectionException {
-        HttpPost post = new HttpPost(FAVORITES_DESTROY_BASE_URL + statusId + EXTENSION);
+        HttpPost post = new HttpPost(getApiUrl(apiEnum.FAVORITES_DESTROY_BASE) + statusId + EXTENSION);
         return postRequest(post);
     }
 
     @Override
     public JSONObject destroyStatus(String statusId) throws ConnectionException {
-        HttpPost post = new HttpPost(STATUSES_DESTROY_URL + statusId + EXTENSION);
+        HttpPost post = new HttpPost(getApiUrl(apiEnum.STATUSES_DESTROY) + statusId + EXTENSION);
         return postRequest(post);
     }
 
@@ -202,13 +226,13 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
      */
     @Override
     public JSONArray getDirectMessages(String sinceId, int limit) throws ConnectionException {
-        String url = DIRECT_MESSAGES_URL;
+        String url = getApiUrl(apiEnum.DIRECT_MESSAGES);
         return getTimeline(url, sinceId, "", limit, 0);
     }
 
     @Override
     public JSONArray getHomeTimeline(String sinceId, int limit) throws ConnectionException {
-        String url = STATUSES_HOME_TIMELINE_URL;
+        String url = getApiUrl(apiEnum.STATUSES_HOME_TIMELINE);
         return getTimeline(url, sinceId, "", limit, 0);
     }
 
@@ -295,13 +319,13 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
 
     @Override
     public JSONArray getMentionsTimeline(String sinceId, int limit) throws ConnectionException {
-        String url = STATUSES_MENTIONS_TIMELINE_URL;
+        String url = getApiUrl(apiEnum.STATUSES_MENTIONS_TIMELINE);
         return getTimeline(url, sinceId, "", limit, 0);
     }
 
     @Override
     public JSONObject rateLimitStatus() throws ConnectionException {
-        return getUrl(ACCOUNT_RATE_LIMIT_STATUS_URL);
+        return getUrl(getApiUrl(apiEnum.ACCOUNT_RATE_LIMIT_STATUS));
     }
 
     private JSONObject postRequest(HttpPost post) throws ConnectionException {
@@ -335,7 +359,7 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
     @Override
     public JSONObject updateStatus(String message, String inReplyToId)
             throws ConnectionException {
-        HttpPost post = new HttpPost(STATUSES_UPDATE_URL);
+        HttpPost post = new HttpPost(getApiUrl(apiEnum.STATUSES_UPDATE));
         LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
         out.add(new BasicNameValuePair("status", message));
         if ( !TextUtils.isEmpty(inReplyToId)) {
@@ -351,7 +375,7 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
 
     @Override
     public JSONObject postDirectMessage(String userId, String screenName, String message) throws ConnectionException {
-        HttpPost post = new HttpPost(POST_DIRECT_MESSAGE_URL);
+        HttpPost post = new HttpPost(getApiUrl(apiEnum.POST_DIRECT_MESSAGE));
         LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
         out.add(new BasicNameValuePair("text", message));
         if ( !TextUtils.isEmpty(userId)) {
@@ -370,7 +394,7 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
     
     @Override
     public JSONObject postRetweet(String retweetedId) throws ConnectionException {
-        HttpPost post = new HttpPost(POST_RETWEET_URL + retweetedId + EXTENSION);
+        HttpPost post = new HttpPost(getApiUrl(apiEnum.POST_RETWEET) + retweetedId + EXTENSION);
         return postRequest(post);
     }
 
@@ -392,7 +416,7 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
 
     @Override
     public JSONObject verifyCredentials() throws ConnectionException {
-        return getUrl(ACCOUNT_VERIFY_CREDENTIALS_URL);
+        return getUrl(getApiUrl(apiEnum.ACCOUNT_VERIFY_CREDENTIALS));
     }
 
     @Override

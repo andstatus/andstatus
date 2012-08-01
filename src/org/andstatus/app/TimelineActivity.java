@@ -175,9 +175,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     public static final int MILLISECONDS = 1000;
 
     /**
-     * List footer for loading messages, appears at the bottom of the list of
-     * tweets In fact, it is not visible but it is used to find out when User
-     * wants to see items that were not loaded into the list...
+     * List footer, appears at the bottom of the list of messages 
+     * when new items are being loaded into the list 
      */
     protected LinearLayout mListFooter;
 
@@ -187,7 +186,174 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     protected ProgressDialog mProgressDialog;
 
-    protected Handler mHandler;
+    /**
+     * Message handler for messages from threads and from the remote {@link MyService}.
+     */
+    private class MyHandler extends Handler {
+        @Override
+        public void handleMessage(android.os.Message msg) {
+            MyLog.v(TAG, "handleMessage, what=" + msg.what + ", instance " + instanceId);
+            JSONObject result = null;
+            switch (msg.what) {
+                case MSG_TWEETS_CHANGED:
+                    int numTweets = msg.arg1;
+                    if (numTweets > 0) {
+                        mNM.cancelAll();
+                    }
+                    break;
+
+                case MSG_DATA_LOADING:
+                    boolean isLoadingNew = (msg.arg2 == 1) ? true : false;
+                    if (!isLoadingNew) {
+                        MyLog.v(TAG, "Timeline has been loaded " + (TimelineActivity.this.isLoading() ? " (loading) " : " (not loading) ") + ", visibility=" + mListFooter.getVisibility());
+                        mListFooter.setVisibility(View.INVISIBLE);
+                        if (isLoading()) {
+                            Toast.makeText(TimelineActivity.this, R.string.timeline_reloaded,
+                                    Toast.LENGTH_SHORT).show();
+                            setIsLoading(false);
+                        }
+                    }
+                    break;
+
+                case MSG_UPDATE_STATUS:
+                    result = (JSONObject) msg.obj;
+                    if (result == null) {
+                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
+                                Toast.LENGTH_LONG).show();
+                    } else if (result.optString("error").length() > 0) {
+                        Toast.makeText(TimelineActivity.this,
+                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
+                    } else {
+                        // The tweet was sent successfully
+                        Toast.makeText(TimelineActivity.this, R.string.message_sent,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+
+                case MSG_AUTHENTICATION_ERROR:
+                    mListFooter.setVisibility(View.INVISIBLE);
+                    showDialog(DIALOG_AUTHENTICATION_FAILED);
+                    break;
+
+                case MSG_SERVICE_UNAVAILABLE_ERROR:
+                    mListFooter.setVisibility(View.INVISIBLE);
+                    showDialog(DIALOG_SERVICE_UNAVAILABLE);
+                    break;
+
+                case MSG_LOAD_ITEMS:
+                    mListFooter.setVisibility(View.INVISIBLE);
+                    switch (msg.arg1) {
+                        case STATUS_LOAD_ITEMS_SUCCESS:
+                            updateTitle();
+                            mListFooter.setVisibility(View.INVISIBLE);
+                            if (positionRestored) {
+                                // This will prevent continuous loading...
+                                if (mCursor.getCount() > getListAdapter().getCount()) {
+                                    ((SimpleCursorAdapter) getListAdapter()).changeCursor(mCursor);
+                                }
+                            }
+                            setIsLoading(false);
+                            // setProgressBarIndeterminateVisibility(false);
+                            break;
+                        case STATUS_LOAD_ITEMS_FAILURE:
+                            break;
+                    }
+                    break;
+
+                case MSG_UPDATED_TITLE:
+                    if (msg.arg1 > 0) {
+                        updateTitle(msg.arg1 + "/" + msg.arg2);
+                    }
+                    break;
+
+                case MSG_CONNECTION_TIMEOUT_EXCEPTION:
+                    mListFooter.setVisibility(View.INVISIBLE);
+                    showDialog(DIALOG_CONNECTION_TIMEOUT);
+                    break;
+
+                case MSG_STATUS_DESTROY:
+                    result = (JSONObject) msg.obj;
+                    if (result == null) {
+                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
+                                Toast.LENGTH_LONG).show();
+                    } else if (result.optString("error").length() > 0) {
+                        Toast.makeText(TimelineActivity.this,
+                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(TimelineActivity.this, R.string.status_destroyed,
+                                Toast.LENGTH_SHORT).show();
+                        mCurrentId = 0;
+                    }
+                    break;
+
+                case MSG_FAVORITE_CREATE:
+                    result = (JSONObject) msg.obj;
+                    if (result == null) {
+                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
+                                Toast.LENGTH_LONG).show();
+                    } else if (result.optString("error").length() > 0) {
+                        Toast.makeText(TimelineActivity.this,
+                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(TimelineActivity.this, R.string.favorite_created,
+                                Toast.LENGTH_SHORT).show();
+                        mCurrentId = 0;
+                    }
+                    break;
+
+                case MSG_FAVORITE_DESTROY:
+                    result = (JSONObject) msg.obj;
+                    if (result == null) {
+                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
+                                Toast.LENGTH_LONG).show();
+                    } else if (result.optString("error").length() > 0) {
+                        Toast.makeText(TimelineActivity.this,
+                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(TimelineActivity.this, R.string.favorite_destroyed,
+                                Toast.LENGTH_SHORT).show();
+                        mCurrentId = 0;
+                    }
+                    break;
+
+                case MSG_CONNECTION_EXCEPTION:
+                    switch (msg.arg1) {
+                        case MSG_FAVORITE_CREATE:
+                        case MSG_FAVORITE_DESTROY:
+                        case MSG_STATUS_DESTROY:
+                            try {
+                                dismissDialog(DIALOG_EXECUTING_COMMAND);
+                            } catch (IllegalArgumentException e) {
+                                MyLog.d(TAG, "", e);
+                            }
+                            break;
+                    }
+                    Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
+                            Toast.LENGTH_SHORT).show();
+                    break;
+
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
+    /**
+     * @return the mIsLoading
+     */
+    boolean isLoading() {
+        MyLog.v(TAG, "isLoading checked " + mIsLoading + ", instance " + instanceId);
+        return mIsLoading;
+    }
+
+    /**
+     * @param isLoading Is loading now?
+     */
+    void setIsLoading(boolean isLoading) {
+        MyLog.v(TAG, "isLoading set from " + mIsLoading + " to " + isLoading + ", instance " + instanceId );
+        mIsLoading = isLoading;
+    }
+
+    protected MyHandler mHandler = new MyHandler();
 
     /**
      * Msg are being loaded into the list starting from one page. More Msg
@@ -219,7 +385,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     /**
      * Items are being loaded into the list (asynchronously...)
      */
-    protected boolean mIsLoading;
+    protected boolean mIsLoading = false;
+    
+    /**
+     * For testing purposes
+     */
+    protected long instanceId = 0;
 
     /**
      * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
@@ -276,19 +447,23 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (instanceId == 0) {
+            instanceId = MyPreferences.nextInstanceId();
+        } else {
+            MyLog.d(TAG, "onCreate reuse the same instance " + instanceId);
+        }
 
         MyPreferences.initialize(this, this);
         preferencesChangeTime = MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0);
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-            MyLog.d(TAG, "onCreate, preferencesChangeTime=" + preferencesChangeTime);
+            MyLog.d(TAG, "onCreate instance " + instanceId + " , preferencesChangeTime=" + preferencesChangeTime);
         }
 
         if (!mIsFinishing) {
             if (!MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
                 Log.i(TAG, "We are running the Application for the very first time?");
                 startActivity(new Intent(this, SplashActivity.class));
-                mIsFinishing = true;
                 finish();
             }
         }
@@ -296,7 +471,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             if (!MyAccount.getCurrentMyAccount().isPersistent()) {
                 Log.i(TAG, "MyAccount '" + MyAccount.getCurrentMyAccount().getAccountGuid() + "' is temporal?!");
                 startActivity(new Intent(this, SplashActivity.class));
-                mIsFinishing = true;
                 finish();
             }
         }
@@ -318,7 +492,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         if (savedInstanceState != null) {
             mTweetEditor.loadState(savedInstanceState);
             if (savedInstanceState.containsKey(BUNDLE_KEY_IS_LOADING)) {
-                mIsLoading = savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING);
+                setIsLoading(savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING));
             }
             if (savedInstanceState.containsKey(MyService.EXTRA_TWEETID)) {
                 mCurrentId = savedInstanceState.getLong(MyService.EXTRA_TWEETID);
@@ -328,16 +502,19 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // Set up notification manager
         mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         
-        // Create list footer for loading messages
+        // Create list footer to show the progress of message loading
         // We use "this" as a context, otherwise custom styles are not recognized...
-        mListFooter = new LinearLayout(this);
-        mListFooter.setClickable(false);
-        getListView().addFooterView(mListFooter);
+        
         LayoutInflater inflater = LayoutInflater.from(this);
-        View tv = inflater.inflate(R.layout.item_loading, null);
-        mListFooter.addView(tv, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        mListFooter = (LinearLayout) inflater.inflate(R.layout.item_loading, null);;
+        getListView().addFooterView(mListFooter);
         mListFooter.setVisibility(View.INVISIBLE);
+
+        /* This also works (after we've added R.layout.item_loading to the view)
+           but is not needed here:
+        mListFooter = (LinearLayout) findViewById(R.id.item_loading);
+        */
         
         getListView().setOnScrollListener(this);
 
@@ -364,7 +541,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void onStart() {
         super.onStart();
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onStart");
+            Log.v(TAG, "onStart, instance " + instanceId);
         }
         Intent intent = getIntent();
         queryListData(intent, false, false);
@@ -378,17 +555,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     @Override
     protected void onResume() {
         super.onResume();
-        MyLog.v(TAG, "onResume");
+        MyLog.v(TAG, "onResume, instance " + instanceId);
         if (!mIsFinishing) {
             if (MyAccount.getCurrentMyAccount().isPersistent()) {
                 if (MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0) > preferencesChangeTime) {
-                    mIsFinishing = true;
                     MyLog.v(TAG, "Restarting this Activity to apply any new changes");
                     finish();
                     switchTimelineActivity(mTimelineType);
                 }
             } else { 
-                mIsFinishing = true;
                 MyLog.v(TAG, "Finishing this Activity because the Account is temporal");
                 finish();
             }
@@ -622,7 +797,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void onPause() {
         super.onPause();
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onPause");
+            Log.v(TAG, "onPause, instance " + instanceId);
         }
         // The activity just lost its focus,
         // so we have to start notifying the User about new events after his
@@ -663,10 +838,25 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     @Override
     public void onDestroy() {
+        MyLog.v(TAG,"onDestroy, instance " + instanceId);
         super.onDestroy();
         disconnectService();
     }
-    
+
+    @Override
+    public void finish() {
+        MyLog.v(TAG,"Finish requested" + (mIsFinishing ? ", already finishing" : "") + ", instance " + instanceId);
+        if (!mIsFinishing) {
+            mIsFinishing = true;
+            if (mHandler == null) {
+                Log.e(TAG,"Finishing. mHandler is already null, instance " + instanceId);
+            }
+            mHandler = null;
+        }
+        // TODO Auto-generated method stub
+        super.finish();
+    }
+
     @Override
     protected Dialog onCreateDialog(int id) {
         switch (id) {
@@ -799,13 +989,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             int totalItemCount) {
         mTotalItemCount = totalItemCount;
 
-        if (positionRestored && !mIsLoading) {
+        if (positionRestored && !isLoading()) {
             // Idea from
             // http://stackoverflow.com/questions/1080811/android-endless-list
             boolean loadMore = (visibleItemCount > 0) && (firstVisibleItem > 0)
                     && (firstVisibleItem + visibleItemCount >= totalItemCount);
             if (loadMore) {
-                mIsLoading = true;
+                setIsLoading(true);
                 MyLog.d(TAG, "Start Loading more items, total=" + totalItemCount);
                 // setProgressBarIndeterminateVisibility(true);
                 mListFooter.setVisibility(View.VISIBLE);
@@ -1069,14 +1259,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
 
         /**
-         * dataLoading callback method
+         * dataLoading callback method.
          * 
          * @param value
          * @throws RemoteException
          */
         public void dataLoading(int value) throws RemoteException {
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "dataLoading value=" + value);
+                Log.v(TAG, "dataLoading value=" + value + ", instance " + instanceId);
             }
             mHandler.sendMessage(mHandler.obtainMessage(MSG_DATA_LOADING, value, 0));
         }
@@ -1110,7 +1300,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onNewIntent");
+            Log.v(TAG, "onNewIntent, instance " + instanceId);
         }
         setTimelineType(intent);
 
@@ -1286,7 +1476,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void manualReload(boolean allTimelineTypes) {
 
         // Show something to the user...
+        setIsLoading(true);
         mListFooter.setVisibility(View.VISIBLE);
+        //TimelineActivity.this.findViewById(R.id.item_loading).setVisibility(View.VISIBLE);
 
         // Ask service to load data for this mTimelineType
         MyService.CommandEnum command;
@@ -1343,7 +1535,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putBoolean(BUNDLE_KEY_IS_LOADING, mIsLoading);
+        outState.putBoolean(BUNDLE_KEY_IS_LOADING, isLoading());
 
         mTweetEditor.saveState(outState);
         outState.putLong(MyService.EXTRA_TWEETID, mCurrentId);
@@ -1356,7 +1548,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         switch (requestCode) {
             case REQUEST_SELECT_ACCOUNT:
                 if (resultCode == RESULT_OK) {
-                    mIsFinishing = true;
                     MyLog.v(TAG, "Restarting the activity for the selected account");
                     finish();
                     switchTimelineActivity(mTimelineType);
@@ -1553,157 +1744,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         tweetsAdapter.setViewBinder(new TweetBinder());
 
         setListAdapter(tweetsAdapter);
-    }
-
-
-
-    {
-    /**
-     * Message handler for messages from threads.
-     */
-    mHandler = new Handler() {
-        @Override
-        public void handleMessage(android.os.Message msg) {
-            JSONObject result = null;
-            switch (msg.what) {
-                case MSG_TWEETS_CHANGED:
-                    int numTweets = msg.arg1;
-                    if (numTweets > 0) {
-                        mNM.cancelAll();
-                    }
-                    break;
-
-                case MSG_DATA_LOADING:
-                    mIsLoading = (msg.arg2 == 1) ? true : false;
-                    if (!mIsLoading) {
-                        Toast.makeText(TimelineActivity.this, R.string.timeline_reloaded,
-                                Toast.LENGTH_SHORT).show();
-                        mListFooter.setVisibility(View.INVISIBLE);
-                    }
-                    break;
-
-                case MSG_UPDATE_STATUS:
-                    result = (JSONObject) msg.obj;
-                    if (result == null) {
-                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
-                                Toast.LENGTH_LONG).show();
-                    } else if (result.optString("error").length() > 0) {
-                        Toast.makeText(TimelineActivity.this,
-                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
-                    } else {
-                        // The tweet was sent successfully
-                        Toast.makeText(TimelineActivity.this, R.string.message_sent,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                    break;
-
-                case MSG_AUTHENTICATION_ERROR:
-                    mListFooter.setVisibility(View.INVISIBLE);
-                    showDialog(DIALOG_AUTHENTICATION_FAILED);
-                    break;
-
-                case MSG_SERVICE_UNAVAILABLE_ERROR:
-                    mListFooter.setVisibility(View.INVISIBLE);
-                    showDialog(DIALOG_SERVICE_UNAVAILABLE);
-                    break;
-
-                case MSG_LOAD_ITEMS:
-                    mListFooter.setVisibility(View.INVISIBLE);
-                    switch (msg.arg1) {
-                        case STATUS_LOAD_ITEMS_SUCCESS:
-                            updateTitle();
-                            mListFooter.setVisibility(View.INVISIBLE);
-                            if (positionRestored) {
-                                // This will prevent continuous loading...
-                                if (mCursor.getCount() > getListAdapter().getCount()) {
-                                    ((SimpleCursorAdapter) getListAdapter()).changeCursor(mCursor);
-                                }
-                            }
-                            mIsLoading = false;
-                            // setProgressBarIndeterminateVisibility(false);
-                            break;
-                        case STATUS_LOAD_ITEMS_FAILURE:
-                            break;
-                    }
-                    break;
-
-                case MSG_UPDATED_TITLE:
-                    if (msg.arg1 > 0) {
-                        updateTitle(msg.arg1 + "/" + msg.arg2);
-                    }
-                    break;
-
-                case MSG_CONNECTION_TIMEOUT_EXCEPTION:
-                    mListFooter.setVisibility(View.INVISIBLE);
-                    showDialog(DIALOG_CONNECTION_TIMEOUT);
-                    break;
-
-                case MSG_STATUS_DESTROY:
-                    result = (JSONObject) msg.obj;
-                    if (result == null) {
-                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
-                                Toast.LENGTH_LONG).show();
-                    } else if (result.optString("error").length() > 0) {
-                        Toast.makeText(TimelineActivity.this,
-                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(TimelineActivity.this, R.string.status_destroyed,
-                                Toast.LENGTH_SHORT).show();
-                        mCurrentId = 0;
-                    }
-                    break;
-
-                case MSG_FAVORITE_CREATE:
-                    result = (JSONObject) msg.obj;
-                    if (result == null) {
-                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
-                                Toast.LENGTH_LONG).show();
-                    } else if (result.optString("error").length() > 0) {
-                        Toast.makeText(TimelineActivity.this,
-                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(TimelineActivity.this, R.string.favorite_created,
-                                Toast.LENGTH_SHORT).show();
-                        mCurrentId = 0;
-                    }
-                    break;
-
-                case MSG_FAVORITE_DESTROY:
-                    result = (JSONObject) msg.obj;
-                    if (result == null) {
-                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
-                                Toast.LENGTH_LONG).show();
-                    } else if (result.optString("error").length() > 0) {
-                        Toast.makeText(TimelineActivity.this,
-                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(TimelineActivity.this, R.string.favorite_destroyed,
-                                Toast.LENGTH_SHORT).show();
-                        mCurrentId = 0;
-                    }
-                    break;
-
-                case MSG_CONNECTION_EXCEPTION:
-                    switch (msg.arg1) {
-                        case MSG_FAVORITE_CREATE:
-                        case MSG_FAVORITE_DESTROY:
-                        case MSG_STATUS_DESTROY:
-                            try {
-                                dismissDialog(DIALOG_EXECUTING_COMMAND);
-                            } catch (IllegalArgumentException e) {
-                                MyLog.d(TAG, "", e);
-                            }
-                            break;
-                    }
-                    Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
-                            Toast.LENGTH_SHORT).show();
-                    break;
-
-                default:
-                    super.handleMessage(msg);
-            }
-        }
-    };
     }
 
     /**

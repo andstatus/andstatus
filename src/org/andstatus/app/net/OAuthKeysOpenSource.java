@@ -15,6 +15,8 @@
  */
 package org.andstatus.app.net;
 
+import org.andstatus.app.account.Origin;
+
 /**
  * Keys of the "AndStatus-OpenSource" application.
  * @author yvolk
@@ -22,16 +24,20 @@ package org.andstatus.app.net;
 public class OAuthKeysOpenSource implements OAuthKeysStrategy {
     @Override
     public String getConsumerKey(long originId) {
-        if(originId == 1) {  // Twitter
+        if(originId == Origin.ORIGIN_ID_DEFAULT) {  // Twitter
             return "XPHj81OgjphGlN6Jb55Kmg";
+        } else if(originId == Origin.ORIGIN_ID_IDENTICA) {  
+            return "620cfde429180307d066340582fd6919";
         } else {
             return "";
         }
     }
     @Override
     public String getConsumerSecret(long originId) {
-        if(originId == 1) {  // Twitter
+        if(originId == Origin.ORIGIN_ID_DEFAULT) {  // Twitter
             return "o2E5AYoDQhZf9qT7ctHLGihpq2ibc5bC4iFAOHURxw";
+        } else if(originId == Origin.ORIGIN_ID_IDENTICA) {  
+            return "0798525c8340f5954627974d7969c611";
         } else {
             return "";
         }
