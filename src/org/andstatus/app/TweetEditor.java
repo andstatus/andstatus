@@ -230,7 +230,7 @@ class TweetEditor {
             if (mRecipientId != 0) {
                 commandData.bundle.putLong(MyService.EXTRA_RECIPIENTID, mRecipientId);
             }
-            mActivity.sendCommand(commandData);
+            mActivity.serviceConnector.sendCommand(commandData);
             closeSoftKeyboard();
 
             // Let's assume that everything will be Ok

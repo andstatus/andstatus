@@ -15,15 +15,15 @@
 	limitations under the License.
  -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent" android:paddingLeft="6dip" 
+	android:orientation="vertical" android:layout_width="match_parent"
+	android:layout_height="match_parent" android:paddingLeft="6dip" 
 	android:paddingRight="6dip" android:paddingBottom="2dip" android:paddingTop="2dip">
 
-	<LinearLayout android:layout_width="fill_parent"
+	<LinearLayout android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="horizontal"
 			android:layout_weight="1">
-		<TextView android:id="@+id/tweet_screen_name"
+		<TextView android:id="@+id/message_author"
 			android:layout_weight="1"
 			android:textStyle="?attr/tweetUsernameStyle"
 			android:textAppearance="?attr/tweetUsernameAppearance"
@@ -36,13 +36,13 @@
 			android:layout_height="wrap_content" />
 	</LinearLayout>
 
-	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_message"
-		android:layout_width="fill_parent"
+	<TextView android:layout_height="wrap_content" android:id="@+id/message_body"
+		android:layout_width="match_parent"
 		android:textStyle="?attr/tweetMessageStyle"
 		android:textColor="?attr/tweetMessageColor"
 		android:textAppearance="?attr/tweetMessageAppearance" />
-	<TextView android:layout_height="wrap_content" android:id="@+id/tweet_sent"
-		android:layout_width="fill_parent"
+	<TextView android:layout_height="wrap_content" android:id="@+id/message_details"
+		android:layout_width="match_parent"
 		android:textStyle="?attr/tweetSentDateStyle"
 		android:textColor="?attr/tweetSentDateColor"
 		android:textAppearance="?attr/tweetSentDateAppearance" />

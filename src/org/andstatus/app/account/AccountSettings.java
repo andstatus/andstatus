@@ -52,7 +52,6 @@ import oauth.signpost.exception.OAuthNotAuthorizedException;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.data.MyPreferences;
-import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.ConnectionAuthenticationException;
 import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
 import org.andstatus.app.net.ConnectionException;

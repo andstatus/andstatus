@@ -93,8 +93,11 @@
     <!-- Header title for list of accounts on Accounts & Synchronization settings -->
     <string name="header_manage_accounts">Управление аккаунтами</string>    
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
-    <string name="label_activity_accountselector">Выберите аккаунт</string>
-	<string name="loading">Загрузка…</string>
+    <string name="id_of_this_message_was_not_specified">Идентификатор этого сообщения не был указан</string>
+	<string name="label_accountselector">Выберите аккаунт</string>
+    <string name="label_conversation">Обсуждение</string>
+	<string name="label_conversationactivity">Твит</string>
+    <string name="loading">Загрузка…</string>
 	<string name="message_edit_hint">Что происходит?</string>
 	<string name="message_characters_left">Осталось символов:</string>
     <string name="message_is_too_long">Сообщение - слишком длинное.</string>
@@ -220,7 +223,6 @@
 	<string name="title_preference_verify_credentials">Перепроверить аккаунт</string>
 	<string name="title_preference_verify_credentials_failed">Проверить аккаунт</string>
 	<string name="title_preference_vibration">Виброзвонок</string>
-	<string name="tweet_activity">Твиты</string>
 	<string name="tweet_source_from">из %1$s</string>
 	<string name="tweet_source_in_reply_to">в ответ на %1$s</string>
 	<string name="tweet_source_to">для %1$s</string>

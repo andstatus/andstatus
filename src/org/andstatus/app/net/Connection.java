@@ -59,6 +59,7 @@ public abstract class Connection {
         STATUSES_DESTROY,
         STATUSES_HOME_TIMELINE,
         STATUSES_MENTIONS_TIMELINE,
+        STATUSES_SHOW,
         STATUSES_UPDATE,
         
         /**
@@ -123,6 +124,9 @@ public abstract class Connection {
                 break;
             case STATUSES_MENTIONS_TIMELINE:
                 url = mBaseUrl  + "/statuses/mentions" + EXTENSION;
+                break;
+            case STATUSES_SHOW:
+                url = mBaseUrl + "/statuses/show" + EXTENSION;
                 break;
             case STATUSES_UPDATE:
                 url = mBaseUrl + "/statuses/update" + EXTENSION;
@@ -270,6 +274,17 @@ public abstract class Connection {
      */
     public abstract JSONObject destroyStatus(String statusId) throws ConnectionException;
 
+    /**
+     * Returns a single status, specified by the id parameter below.
+     * The status's author will be returned inline.
+     * @see <a
+     *      href="https://dev.twitter.com/docs/api/1/get/statuses/show/%3Aid">Twitter
+     *      REST API Method: statuses/destroy</a>
+     * 
+     * @throws ConnectionException
+     */
+    public abstract JSONObject getStatus(String statusId) throws ConnectionException;
+    
     /**
      * Update user status by posting to the Twitter REST API.
      * 

@@ -66,7 +66,8 @@
 	<string name="favorite_created">Favorit erstellt.</string>
 	<string name="favorite_destroyed">Favorit entfernt.</string>
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
-	<string name="loading">Lade…</string>
+    <string name="label_conversationactivity">Tweet</string>
+    <string name="loading">Lade…</string>
 	<string name="message_edit_hint">Gib deinen tweet hier ein!</string>
 	<string name="message_characters_left">Verbleibende Zeichen:</string>
 	<string name="menu_item_block">blockieren</string>
@@ -164,7 +165,6 @@
 	<string name="title_preference_username">Benutzername</string>
 	<string name="title_preference_use_avatars">Avatare anzeigen</string>
 	<string name="title_preference_vibration">Vibration</string>
-	<string name="tweet_activity">Tweet</string>
 	<string name="tweet_source_from">von %1$s</string>
 	<string name="tweet_source_in_reply_to">als Antwort auf %1$s</string>
 	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>

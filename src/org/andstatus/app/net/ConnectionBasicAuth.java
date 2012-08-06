@@ -40,6 +40,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -216,19 +217,35 @@ public class ConnectionBasicAuth extends Connection {
 
     @Override
     public JSONObject destroyStatus(String statusId) throws ConnectionException {
-		JSONObject jObj = null;
+		JSONObject jso = null;
 		try {
-			jObj = new JSONObject(postRequest(getApiUrl(apiEnum.STATUSES_DESTROY) + statusId + EXTENSION));
-			String error = jObj.optString("error");
+			jso = new JSONObject(postRequest(getApiUrl(apiEnum.STATUSES_DESTROY) + statusId + EXTENSION));
+			String error = jso.optString("error");
 			if ("Could not authenticate you.".equals(error)) {
 				throw new ConnectionException(error);
 			}
 		} catch (JSONException e) {
 			throw new ConnectionException(e);
 		}
-		return jObj;
+		return jso;
 	}
 
+    @Override
+    public JSONObject getStatus(String statusId) throws ConnectionException {
+        JSONObject jso = null;
+        try {
+            Uri sUri = Uri.parse(getApiUrl(apiEnum.STATUSES_SHOW));
+            Uri.Builder builder = sUri.buildUpon();
+            builder.appendQueryParameter("id", statusId);
+            String response = getRequest(builder.build().toString());
+            jso = new JSONObject(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ConnectionException(e.getLocalizedMessage());
+        }
+        return jso;
+    }
+    
 	@Override
     public JSONObject createFavorite(String statusId) throws ConnectionException {
 		StringBuilder url = new StringBuilder(getApiUrl(apiEnum.FAVORITES_CREATE_BASE));

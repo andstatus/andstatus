@@ -31,7 +31,7 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.RelativeTime;
 
 /**
- * Construct/format values of the views for a Message item in a Timeline list
+ * Construct/format values of the rows for a Message item in a Timeline list
  * @author torgny.bjers
  */
 public class TweetBinder implements ViewBinder {
@@ -41,7 +41,7 @@ public class TweetBinder implements ViewBinder {
 	public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
 		int colIndex = -1;
 		switch (view.getId()) {
-		case R.id.tweet_sent:
+		case R.id.message_details:
 			String messageDetails = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
 			colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
 			if (colIndex > -1) {

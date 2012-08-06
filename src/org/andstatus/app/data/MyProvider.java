@@ -308,6 +308,7 @@ public class MyProvider extends ContentProvider {
                 case MENTIONS:
                 case FAVORITES:
                 case DIRECT:
+                case ALL:
                     
                     // Add MsgOfUser link to Current User MyAccount
                     msgOfUserValues = new ContentValues();
@@ -360,12 +361,11 @@ public class MyProvider extends ContentProvider {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean built = false;
         String sql = "";
-        long accountId = 0;
+        long accountId = uriToAccountId(uri);
 
         int matchedCode = sUriMatcher.match(uri);
         switch (matchedCode) {
             case TIMELINE:
-                accountId = Long.parseLong(uri.getPathSegments().get(1));
                 qb.setTables(tablesForTimeline(projection, accountId));
                 qb.setProjectionMap(sTweetsProjectionMap);
                 break;
@@ -378,14 +378,12 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case TIMELINE_MSG_ID:
-                accountId = Long.parseLong(uri.getPathSegments().get(1));
                 qb.setTables(tablesForTimeline(projection, accountId));
                 qb.setProjectionMap(sTweetsProjectionMap);
-                qb.appendWhere(MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + uri.getPathSegments().get(3));
+                qb.appendWhere(MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + uriToMessageId(uri));
                 break;
 
             case TIMELINE_SEARCH:
-                accountId = Long.parseLong(uri.getPathSegments().get(1));
                 qb.setTables(tablesForTimeline(projection, accountId));
                 qb.setProjectionMap(sTweetsProjectionMap);
                 String s1 = uri.getLastPathSegment();
@@ -950,4 +948,25 @@ public class MyProvider extends ContentProvider {
         }
         return uri;
     }
+    
+    public static long uriToAccountId(Uri uri) {
+        long accountId = 0;
+        try {
+            accountId = Long.parseLong(uri.getPathSegments().get(1));
+        } catch (Exception e) {}
+        return accountId;        
+    }
+
+    public static long uriToMessageId(Uri uri) {
+        long messageId = 0;
+        try {
+            int matchedCode = sUriMatcher.match(uri);
+            switch (matchedCode) {
+                case TIMELINE_MSG_ID:
+                    messageId = Long.parseLong(uri.getPathSegments().get(3));
+            }
+        } catch (Exception e) {}
+        return messageId;        
+    }
+    
 }

@@ -21,7 +21,6 @@ import java.util.Date;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
-import org.andstatus.app.account.Origin.OriginApiEnum;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -86,19 +85,20 @@ public class TimelineDownloader {
     private MyAccount ma;
 
     private TimelineTypeEnum mTimelineType;
-    private OriginApiEnum mApi;
+    // private OriginApiEnum mApi;
 
     public TimelineDownloader(MyAccount ma_in, Context context, TimelineTypeEnum timelineType) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
         ma = ma_in;
-        mApi = ma.getApi();
+        // mApi = ma.getApi();
         mTimelineType = timelineType;
         
         switch (mTimelineType) {
             case HOME:
             case MENTIONS:
             case DIRECT:
+            case ALL:
                 break;
             default:
                 Log.e(TAG, "Unknown Timeline type: " + mTimelineType);
@@ -116,6 +116,11 @@ public class TimelineDownloader {
         mMessages = 0;
         mMentions = 0;
         mReplies = 0;
+        
+        if (mTimelineType == TimelineTypeEnum.ALL) {
+            Log.e(TAG, "Invalid TimelineType for loadTimeline: " + mTimelineType);
+            return ok;
+        }
 
         long lastMsgId = ma.getMyAccountPreferences().getLong(MyAccount.KEY_LAST_TIMELINE_ID + mTimelineType.save(), 0);
         long lastDate = MyProvider.msgSentDate(lastMsgId);
@@ -279,7 +284,7 @@ public class TimelineDownloader {
             // Lookup the System's (AndStatus) id from the Originated system's id
             rowId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), rowOid);
             // Construct the Uri to the Msg
-            Uri tweetUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
+            Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
             
             String body = "";
             if (msg.has("text")) {
@@ -307,6 +312,7 @@ public class TimelineDownloader {
                 case HOME:
                 case FAVORITES:
                     values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
+                case ALL:
                 case MENTIONS:
                     if (msg.has("source")) {
                         values.put(MyDatabase.Msg.VIA, msg.getString("source"));
@@ -359,7 +365,9 @@ public class TimelineDownloader {
                                     JSONObject inReplyToMessage = new JSONObject();
                                     inReplyToMessage.put("id_str", inReplyToMessageOid);
                                     inReplyToMessage.put(senderObjectName, inReplyToUser);
-                                    inReplyToMessageId = insertFromJSONObject(inReplyToMessage);
+                                    // Type of the timeline is ALL meaning that message does not belong to this timeline
+                                    TimelineDownloader td = new TimelineDownloader(ma, mContext, MyDatabase.TimelineTypeEnum.ALL);
+                                    inReplyToMessageId = td.insertFromJSONObject(inReplyToMessage);
                                 }
                                 values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
                             }
@@ -399,10 +407,10 @@ public class TimelineDownloader {
             
             if (rowId == 0) {
                 // There was no such row so add new one
-                tweetUri = mContentResolver.insert(MyProvider.getTimelineUri(ma.getUserId()), values);
-                rowId = Long.parseLong(tweetUri.getPathSegments().get(3));
+                msgUri = mContentResolver.insert(MyProvider.getTimelineUri(ma.getUserId()), values);
+                rowId = Long.parseLong(msgUri.getPathSegments().get(3));
             } else {
-              mContentResolver.update(tweetUri, values, null, null);
+              mContentResolver.update(msgUri, values, null, null);
             }
         } catch (Exception e) {
             Log.e(TAG, "insertFromJSONObject: " + e.toString());
@@ -522,8 +530,8 @@ public class TimelineDownloader {
         long rowId = insertFromJSONObject(jo);
         if (notify) {
             // Construct the Uri to the Msg
-            Uri tweetUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
-            mContentResolver.notifyChange(tweetUri, null);
+            Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
+            mContentResolver.notifyChange(msgUri, null);
         }
         return rowId;
     }

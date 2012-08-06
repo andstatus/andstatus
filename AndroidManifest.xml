@@ -18,7 +18,7 @@
     TODO: Add narrow enough intent filters to activities in order not to see these activities everywhere ("Open with...")
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="org.andstatus.app" android:versionName="1.8.0" android:versionCode="59">
+	package="org.andstatus.app" android:versionName="1.9.0" android:versionCode="60">
 
 	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="10" />
     
@@ -90,8 +90,8 @@
 			<meta-data android:name="android.app.searchable" android:resource="@xml/searchable_timeline"/>
 		</activity>
 
-		<activity android:name=".TweetActivity"
-			android:label="@string/tweet_activity">
+		<activity android:name=".ConversationActivity"
+			android:label="@string/label_conversationactivity">
 			<intent-filter android:label="@string/resolve_view">
 				<action android:name="android.intent.action.VIEW"/>
 				<category android:name="android.intent.category.DEFAULT"/>
@@ -123,7 +123,7 @@
 
 		<activity android:name=".account.AccountSelector"
             android:theme="@android:style/Theme.Dialog"
-            android:label="@string/label_activity_accountselector">
+            android:label="@string/label_accountselector">
 		</activity>
 		
         <receiver android:name=".appwidget.MyAppWidgetProvider">

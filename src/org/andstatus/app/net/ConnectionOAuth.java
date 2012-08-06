@@ -23,7 +23,6 @@ import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.Origin.OriginApiEnum;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
@@ -218,6 +217,21 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
         return postRequest(post);
     }
 
+    @Override
+    public JSONObject getStatus(String statusId) throws ConnectionException {
+        JSONObject jso = null;
+        try {
+            Uri sUri = Uri.parse(getApiUrl(apiEnum.STATUSES_SHOW));
+            Uri.Builder builder = sUri.buildUpon();
+            builder.appendQueryParameter("id", statusId);
+            jso = getUrl(builder.build().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ConnectionException(e.getLocalizedMessage());
+        }
+        return jso;
+    }
+    
     /**
      * Returns the 20 most recent direct messages sent to the authenticating user
      *

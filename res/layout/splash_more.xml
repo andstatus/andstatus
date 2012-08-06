@@ -15,46 +15,46 @@
 	limitations under the License.
  -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent" android:background="@drawable/andstatus_splash"
+	android:orientation="vertical" android:layout_width="match_parent"
+	android:layout_height="match_parent" android:background="@drawable/andstatus_splash"
 	android:gravity="center">
-	<LinearLayout android:layout_width="fill_parent"
-		android:layout_height="fill_parent" android:layout_weight="1"
+	<LinearLayout android:layout_width="match_parent"
+		android:layout_height="match_parent" android:layout_weight="1"
 		android:gravity="center" android:orientation="vertical"
 		android:id="@+id/splash_container">
 		<ViewFlipper android:id="@+id/splash_more_flipper"
-			android:layout_width="fill_parent"
-			android:layout_height="fill_parent"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
 			android:outAnimation="@org.andstatus.app:anim/push_left_out"
 			android:inAnimation="@org.andstatus.app:anim/push_left_in">
-			<TextView android:layout_height="fill_parent"
-				android:layout_width="fill_parent" android:padding="16dip"
+			<TextView android:layout_height="match_parent"
+				android:layout_width="match_parent" android:padding="16dip"
 				android:id="@+id/splash_more_text_content_1" android:textSize="8pt"
 				android:textColor="#ffffffff"
 				android:text="@string/splash_text_learn_more_1"/>
-			<TextView android:layout_height="fill_parent"
-				android:layout_width="fill_parent" android:padding="16dip"
+			<TextView android:layout_height="match_parent"
+				android:layout_width="match_parent" android:padding="16dip"
 				android:id="@+id/splash_more_text_content_2" android:textSize="8pt"
 				android:textColor="#ffffffff" 
 				android:text="@string/splash_text_learn_more_2" />
-			<TextView android:layout_height="fill_parent"
-				android:layout_width="fill_parent" android:padding="16dip"
+			<TextView android:layout_height="match_parent"
+				android:layout_width="match_parent" android:padding="16dip"
 				android:id="@+id/splash_more_text_content_3" android:textSize="8pt"
 				android:textColor="#ffffffff" 
 				android:text="@string/splash_text_learn_more_3" />
-			<TextView android:layout_height="fill_parent"
-				android:layout_width="fill_parent" android:padding="16dip"
+			<TextView android:layout_height="match_parent"
+				android:layout_width="match_parent" android:padding="16dip"
 				android:id="@+id/splash_more_text_content_4" android:textSize="8pt"
 				android:textColor="#ffffffff" 
 				android:text="@string/splash_text_learn_more_4" />
-			<TextView android:layout_height="fill_parent"
-				android:layout_width="fill_parent" android:padding="16dip"
+			<TextView android:layout_height="match_parent"
+				android:layout_width="match_parent" android:padding="16dip"
 				android:id="@+id/splash_more_text_content_5" android:textSize="8pt"
 				android:textColor="#ffffffff" 
 				android:text="@string/splash_text_learn_more_5" />
 		</ViewFlipper>
 	</LinearLayout>
-	<LinearLayout android:layout_width="fill_parent"
+	<LinearLayout android:layout_width="match_parent"
 		android:gravity="center" android:paddingBottom="8dip"
 		android:paddingTop="12dip" android:layout_height="wrap_content"
 		android:background="#44000000">

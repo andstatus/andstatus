@@ -242,6 +242,7 @@ public class MyService extends Service {
          */
         UPDATE_STATUS("update-status"), 
         DESTROY_STATUS("destroy-status"),
+        GET_STATUS("get-status"),
         
         RETWEET("retweet"),
 
@@ -1187,6 +1188,11 @@ public class MyService extends Service {
                         // Retry in a case of an error
                         retry = !ok;
                         break;
+                    case GET_STATUS:
+                        ok = getStatus(commandData.accountName, commandData.itemId);
+                        // Retry in a case of an error
+                        retry = !ok;
+                        break;
                     case RETWEET:
                         ok = retweet(commandData.accountName, commandData.itemId);
                         retry = !ok;
@@ -1426,6 +1432,51 @@ public class MyService extends Service {
             return ok;
         }
 
+
+        /**
+         * @param statusId
+         * @return boolean ok
+         */
+        private boolean getStatus(String accountNameIn, long msgId) {
+            boolean ok = false;
+            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
+            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, msgId);
+            JSONObject result = new JSONObject();
+            try {
+                result = ma.getConnection().getStatus(oid);
+                ok = (result != null);
+            } catch (ConnectionException e) {
+                if (e.getStatusCode() == 404) {
+                    // This means that there is no such "Status"
+                    // TODO: so we don't need to retry this command
+                }
+                Log.e(TAG, "getStatus Connection Exception: " + e.toString());
+            }
+
+            if (ok) {
+                synchronized (MyService.this) {
+                    if (mStateRestored) {
+                        // And add the message to the local storage
+                        try {
+                            TimelineDownloader fl = new TimelineDownloader(ma,
+                                    MyService.this.getApplicationContext(),
+                                    TimelineTypeEnum.ALL);
+                            fl.insertFromJSONObject(result);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error inserting status: " + e.toString());
+                        }
+                    } else {
+                        Log.e(TAG, "getStatus - " + SERVICE_NOT_RESTORED_TEXT);
+                    }
+                }
+            }
+            MyLog.d(TAG, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + msgId);
+            if (ok) {
+                notifyOfDataLoadingCompletion();
+            }
+            return ok;
+        }
+        
         /**
          * @param status
          * @param replyToId

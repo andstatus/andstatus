@@ -19,7 +19,6 @@ package org.andstatus.app;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -35,7 +34,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.CheckBoxPreference;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
@@ -44,8 +42,6 @@ import android.preference.RingtonePreference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import org.andstatus.app.account.AccountSettings;

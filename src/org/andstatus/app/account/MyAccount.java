@@ -463,6 +463,25 @@ public class MyAccount implements Parcelable {
     }
 
     /**
+     * Get MyAccount by its Id
+     * @param accountId
+     * @return null if not found
+     */
+    public static MyAccount getMyAccount(long accountId) {
+        boolean found = false;
+        MyAccount ma = null;
+        for (int ind = 0; ind < mMyAccounts.size(); ind++) {
+            if (mMyAccounts.elementAt(ind).getUserId() == accountId) {
+                found = true;
+                ma = mMyAccounts.elementAt(ind);
+                break;
+            }
+        }
+        if (!found) { ma = null;}
+        return ma;
+    }
+    
+    /**
      * Factory of MyAccount-s
      * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
      * 

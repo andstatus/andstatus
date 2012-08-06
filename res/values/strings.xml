@@ -94,7 +94,10 @@
     <!-- Header title for list of accounts on Accounts & Synchronization settings -->
     <string name="header_manage_accounts">Manage accounts</string>    
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
-    <string name="label_activity_accountselector">Select Account</string>
+    <string name="id_of_this_message_was_not_specified">Id of this message was not specified</string>
+	<string name="label_accountselector">Select Account</string>
+    <string name="label_conversation">Conversation</string>
+    <string name="label_conversationactivity">Tweet</string>
     <string name="loading">Loading…</string>
 	<string name="message_edit_hint">Enter your tweet here!</string>
 	<string name="message_characters_left">Characters left:</string>
@@ -112,7 +115,7 @@
 	<string name="menu_item_view_profile">View Profile</string>
 	<string name="message_sent">Your message has been sent.</string>
 	<string name="messages_activity">Direct Messages</string>
-	<string name="not_set">not set</string>
+    <string name="not_set">not set</string>
 	<string name="notification_title">AndStatus</string>
 	<string name="notification_new_tweet_format">You have {0}.</string>
 	<string name="notification_new_message_format">You have {0}.</string>
@@ -223,7 +226,6 @@
     <string name="title_preference_verify_credentials">Reverify credentials</string>
 	<string name="title_preference_verify_credentials_failed">Verify credentials</string>
 	<string name="title_preference_vibration">Vibration</string>
-	<string name="tweet_activity">Tweet</string>
 	<string name="tweet_source_from">from %1$s</string>
 	<string name="tweet_source_in_reply_to">in reply to %1$s</string>
 	<string name="tweet_source_to">to %1$s</string>

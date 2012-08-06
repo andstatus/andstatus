@@ -153,7 +153,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 		// display:
 		// - Create a RemoteViews object for it
 		// - Set the text in the RemoteViews object
-		// - Tell the AppWidgetManager to show that views object for the widget.
+		// - Tell the AppWidgetManager to show that rows object for the widget.
 		final int N = appWidgetIds.length;
 		for (int i = 0; i < N; i++) {
 			int appWidgetId = appWidgetIds[i];

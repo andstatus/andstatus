@@ -26,15 +26,12 @@ import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
-import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.provider.SearchRecentSuggestions;
 import android.util.Log;
@@ -57,9 +54,6 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AbsListView.OnScrollListener;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
@@ -86,38 +80,26 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     private static final String TAG = TimelineActivity.class.getSimpleName();
 
     // Handler message codes
-    public static final int MSG_TWEETS_CHANGED = 1;
-
-    public static final int MSG_DATA_LOADING = 2;
-
     /**
      * My tweet ("What's happening?"...) is being sending
      */
-    public static final int MSG_UPDATE_STATUS = 3;
+    private static final int MSG_UPDATE_STATUS = 3;
 
-    public static final int MSG_MANUAL_RELOAD = 4;
+    private static final int MSG_AUTHENTICATION_ERROR = 5;
 
-    public static final int MSG_AUTHENTICATION_ERROR = 5;
+    private static final int MSG_LOAD_ITEMS = 6;
 
-    public static final int MSG_LOAD_ITEMS = 6;
+    private static final int MSG_SERVICE_UNAVAILABLE_ERROR = 8;
 
-    public static final int MSG_DIRECT_MESSAGES_CHANGED = 7;
+    private static final int MSG_CONNECTION_TIMEOUT_EXCEPTION = 11;
 
-    public static final int MSG_SERVICE_UNAVAILABLE_ERROR = 8;
+    private static final int MSG_STATUS_DESTROY = 12;
 
-    public static final int MSG_REPLIES_CHANGED = 9;
+    private static final int MSG_FAVORITE_CREATE = 13;
 
-    public static final int MSG_UPDATED_TITLE = 10;
+    private static final int MSG_FAVORITE_DESTROY = 14;
 
-    public static final int MSG_CONNECTION_TIMEOUT_EXCEPTION = 11;
-
-    public static final int MSG_STATUS_DESTROY = 12;
-
-    public static final int MSG_FAVORITE_CREATE = 13;
-
-    public static final int MSG_FAVORITE_DESTROY = 14;
-
-    public static final int MSG_CONNECTION_EXCEPTION = 15;
+    private static final int MSG_CONNECTION_EXCEPTION = 15;
 
     // Handler message status codes
     public static final int STATUS_LOAD_ITEMS_FAILURE = 0;
@@ -185,9 +167,86 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected NotificationManager mNM;
 
     protected ProgressDialog mProgressDialog;
+    
+    /**
+     * Msg are being loaded into the list starting from one page. More Msg
+     * are being loaded in a case User scrolls down to the end of list.
+     */
+    protected final static int PAGE_SIZE = 20;
+
+    /**
+     * Is saved position restored (or some default positions set)?
+     */
+    protected boolean positionRestored = false;
+
+    /**
+     * Number of items (Msg) in the list. It is used to find out when we need
+     * to load more items.
+     */
+    protected int mTotalItemCount = 0;
+
+    /**
+     * Items are being loaded into the list (asynchronously...)
+     */
+    private boolean mIsLoading = false;
+    
+    /**
+     * For testing purposes
+     */
+    protected long instanceId = 0;
+    protected MyHandler mHandler = new MyHandler();
+    MyServiceConnector serviceConnector;
+
+    /**
+     * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
+     */
+    protected boolean mIsFinishing = false;
+
+    /**
+     * TODO: enum TypelineType
+     */
+    protected TimelineTypeEnum mTimelineType = TimelineTypeEnum.UNKNOWN;
+
+    /**
+     * True if this timeline is filtered using query string ("Mentions" are not
+     * counted here because they have separate TimelineType)
+     */
+    protected boolean mSearchMode = false;
+
+    /**
+     * The string is not empty if this timeline is filtered using query string
+     * ("Mentions" are not counted here because they have separate TimelineType)
+     */
+    protected String mQueryString = "";
+
+    /**
+     * Time when shared preferences where changed
+     */
+    protected long preferencesChangeTime = 0;
+
+    /**
+     * Id of the Message that was selected (clicked, or whose context menu item
+     * was selected) TODO: clicked, restore position...
+     */
+    protected long mCurrentId = 0;
+
+    /** 
+     * Controls of the TweetEditor
+     */
+    protected TweetEditor mTweetEditor;
+ 
+    /** 
+     * Table columns to use for the messages content
+     */
+    private static final String[] PROJECTION = new String[] {
+            MyDatabase.Msg._ID, MyDatabase.User.AUTHOR_NAME, MyDatabase.Msg.BODY, User.IN_REPLY_TO_NAME,
+            User.RECIPIENT_NAME,
+            MyDatabase.MsgOfUser.FAVORITED, MyDatabase.Msg.CREATED_DATE
+    };
 
     /**
      * Message handler for messages from threads and from the remote {@link MyService}.
+     * TODO: Remove codes (of msg.what ) which are not used
      */
     private class MyHandler extends Handler {
         @Override
@@ -195,14 +254,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             MyLog.v(TAG, "handleMessage, what=" + msg.what + ", instance " + instanceId);
             JSONObject result = null;
             switch (msg.what) {
-                case MSG_TWEETS_CHANGED:
+                case MyServiceConnector.MSG_TWEETS_CHANGED:
                     int numTweets = msg.arg1;
                     if (numTweets > 0) {
                         mNM.cancelAll();
                     }
                     break;
 
-                case MSG_DATA_LOADING:
+                case MyServiceConnector.MSG_DATA_LOADING:
                     boolean isLoadingNew = (msg.arg2 == 1) ? true : false;
                     if (!isLoadingNew) {
                         MyLog.v(TAG, "Timeline has been loaded " + (TimelineActivity.this.isLoading() ? " (loading) " : " (not loading) ") + ", visibility=" + mListFooter.getVisibility());
@@ -260,7 +319,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     }
                     break;
 
-                case MSG_UPDATED_TITLE:
+                case MyServiceConnector.MSG_UPDATED_TITLE:
                     if (msg.arg1 > 0) {
                         updateTitle(msg.arg1 + "/" + msg.arg2);
                     }
@@ -337,6 +396,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
         }
     }
+
     /**
      * @return the mIsLoading
      */
@@ -352,92 +412,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         MyLog.v(TAG, "isLoading set from " + mIsLoading + " to " + isLoading + ", instance " + instanceId );
         mIsLoading = isLoading;
     }
-
-    protected MyHandler mHandler = new MyHandler();
-
-    /**
-     * Msg are being loaded into the list starting from one page. More Msg
-     * are being loaded in a case User scrolls down to the end of list.
-     */
-    protected final static int PAGE_SIZE = 20;
-
-    /**
-     * Is saved position restored (or some default positions set)?
-     */
-    protected boolean positionRestored = false;
-
-    /**
-     * Number of items (Msg) in the list. It is used to find out when we need
-     * to load more items.
-     */
-    protected int mTotalItemCount = 0;
-
-    /**
-     * Is connected to the application service?
-     */
-    protected boolean mIsBound;
-
-    /**
-     * See {@link #mServiceCallback} also
-     */
-    protected IMyService mService;
-
-    /**
-     * Items are being loaded into the list (asynchronously...)
-     */
-    protected boolean mIsLoading = false;
-    
-    /**
-     * For testing purposes
-     */
-    protected long instanceId = 0;
-
-    /**
-     * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
-     */
-    protected boolean mIsFinishing = false;
-
-    /**
-     * TODO: enum TypelineType
-     */
-    protected TimelineTypeEnum mTimelineType = TimelineTypeEnum.UNKNOWN;
-
-    /**
-     * True if this timeline is filtered using query string ("Mentions" are not
-     * counted here because they have separate TimelineType)
-     */
-    protected boolean mSearchMode = false;
-
-    /**
-     * The string is not empty if this timeline is filtered using query string
-     * ("Mentions" are not counted here because they have separate TimelineType)
-     */
-    protected String mQueryString = "";
-
-    /**
-     * Time when shared preferences where changed
-     */
-    protected long preferencesChangeTime = 0;
-
-    /**
-     * Id of the Tweet that was selected (clicked, or whose context menu item
-     * was selected) TODO: clicked, restore position...
-     */
-    protected long mCurrentId = 0;
-
-    /** 
-     * Controls of the TweetEditor
-     */
-    protected TweetEditor mTweetEditor;
- 
-    /** 
-     * Table columns to use for the messages content
-     */
-    private static final String[] PROJECTION = new String[] {
-            MyDatabase.Msg._ID, MyDatabase.User.AUTHOR_NAME, MyDatabase.Msg.BODY, User.IN_REPLY_TO_NAME,
-            User.RECIPIENT_NAME,
-            MyDatabase.MsgOfUser.FAVORITED, MyDatabase.Msg.CREATED_DATE
-    };
     
     /**
      * This method is the first of the whole application to be called 
@@ -474,6 +448,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 finish();
             }
         }
+        if (mIsFinishing) {
+            return;
+        }
+
+        serviceConnector = new MyServiceConnector(instanceId);
         
         MyPreferences.loadTheme(TAG, this);
 
@@ -569,7 +548,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
         }
         if (!mIsFinishing) {
-            bindToService();
+            serviceConnector.bindToService(this, mHandler);
             updateTitle();
             restorePosition();
 
@@ -648,11 +627,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
             if (saveAsync) {
                 // 2. Asynchronous saving of user's preferences
-                sendCommand(new CommandData(ma.getAccountGuid(), positionKey(false), firstItemId));
-                sendCommand(new CommandData(ma.getAccountGuid(), positionKey(true), lastItemId));
+                serviceConnector.sendCommand(new CommandData(ma.getAccountGuid(), positionKey(false), firstItemId));
+                serviceConnector.sendCommand(new CommandData(ma.getAccountGuid(), positionKey(true), lastItemId));
                 if (mSearchMode) {
                     // Remember query string for which the position was saved
-                    sendCommand(new CommandData(positionQueryStringKey(), mQueryString, ma.getUsername()));
+                    serviceConnector.sendCommand(new CommandData(positionQueryStringKey(), mQueryString, ma.getUsername()));
                 }
             } 
             
@@ -810,7 +789,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             savePosition();
         }        
         positionRestored = false;
-        disconnectService();
+        serviceConnector.disconnectService();
     }
    
     /**
@@ -840,7 +819,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     public void onDestroy() {
         MyLog.v(TAG,"onDestroy, instance " + instanceId);
         super.onDestroy();
-        disconnectService();
+        if (serviceConnector != null) {
+            serviceConnector.disconnectService();
+        }
     }
 
     @Override
@@ -1068,7 +1049,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // First set less detailed title
         updateTitle("");
         // Then start asynchronous task that will set detailed info
-        sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, MyAccount
+        serviceConnector.sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, MyAccount
                 .getCurrentMyAccount().getAccountGuid()));
     }
 
@@ -1133,168 +1114,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 return false;
         }
     }
-
-    /**
-     * Initialize service and bind to it.
-     */
-    protected void bindToService() {
-        if (!mIsBound) {
-            mIsBound = true;
-            Intent serviceIntent = new Intent(IMyService.class.getName());
-            if (!MyServiceManager.isStarted()) {
-                // Ensure that MyService is running
-                MyServiceManager.startAndStatusService(this, new CommandData(CommandEnum.EMPTY, ""));
-            }
-            // startService(serviceIntent);
-            bindService(serviceIntent, mServiceConnection, 0);
-        }
-    }
-
-    /**
-     * Disconnect and unregister the service.
-     */
-    protected void disconnectService() {
-        if (mIsBound) {
-            if (mService != null) {
-                try {
-                    mService.unregisterCallback(mServiceCallback);
-                } catch (RemoteException e) {
-                    // Service crashed, not much we can do.
-                }
-                mService = null;
-            }
-            unbindService(mServiceConnection);
-            //MyServiceManager.stopAndStatusService(this);
-            mIsBound = false;
-        }
-    }
-
-    /**
-     * Disconnects from the service and stops it.
-     */
-    protected void destroyService() {
-        disconnectService();
-        stopService(new Intent(IMyService.class.getName()));
-        mService = null;
-        mIsBound = false;
-    }
-
-    /**
-     * Service connection handler.
-     */
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "onServiceConnected");
-            }
-            mService = IMyService.Stub.asInterface(service);
-            // We want to monitor the service for as long as we are
-            // connected to it.
-            try {
-                mService.registerCallback(mServiceCallback);
-                // Push the queue
-                sendCommand(null);
-            } catch (RemoteException e) {
-                // Service has already crashed, nothing much we can do
-                // except hope that it will restart.
-                mService = null;
-            }
-        }
-
-        public void onServiceDisconnected(ComponentName name) {
-            mService = null;
-        }
-    };
-
-    /**
-     * Intents queue to be send to the MyService
-     */
-    private BlockingQueue<CommandData> mCommands = new ArrayBlockingQueue<CommandData>(100, true);
-    
-    /**
-     * Send broadcast with the command (in the form of Intent) to the AndStatus Service after it will be
-     * connected to this activity. We should wait for the connection because
-     * otherwise we won't receive callback from the service
-     * 
-     * Plus this method restarts this Activity if command is PUT_BOOLEAN_PREFERENCE with KEY_PREFERENCES_CHANGE_TIME 
-     * 
-     * @param commandData Intent to send, null if we only want to push the queue
-     */
-    protected synchronized void sendCommand(CommandData commandData) {
-        if (commandData != null) {
-            if (!mCommands.contains(commandData)) {
-                if (!mCommands.offer(commandData)) {
-                    Log.e(TAG, "mCommands is full?");
-                }
-            }
-        }
-        if (mService != null) {
-            // Service is connected, so we can send queued Intents
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "Sendings " + mCommands.size() + " broadcasts");
-            }
-            while (true) {
-                MyService.CommandData element = mCommands.poll();
-                if (element == null) { break; }
-                sendBroadcast(element.toIntent());
-            }
-        }
-    }
-    
-    /**
-     * Service callback handler.
-     */
-    protected IMyServiceCallback mServiceCallback = new IMyServiceCallback.Stub() {
-        /**
-         * Msg changed callback method
-         * 
-         * @param value
-         * @throws RemoteException
-         */
-        public void tweetsChanged(int value) throws RemoteException {
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "tweetsChanged value=" + value);
-            }
-            mHandler.sendMessage(mHandler.obtainMessage(MSG_TWEETS_CHANGED, value, 0));
-        }
-
-        /**
-         * dataLoading callback method.
-         * 
-         * @param value
-         * @throws RemoteException
-         */
-        public void dataLoading(int value) throws RemoteException {
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "dataLoading value=" + value + ", instance " + instanceId);
-            }
-            mHandler.sendMessage(mHandler.obtainMessage(MSG_DATA_LOADING, value, 0));
-        }
-
-        /**
-         * Messages changed callback method
-         * 
-         * @param value
-         * @throws RemoteException
-         */
-        public void messagesChanged(int value) throws RemoteException {
-            mHandler.sendMessage(mHandler.obtainMessage(MSG_DIRECT_MESSAGES_CHANGED, value, 0));
-        }
-
-        /**
-         * Replies changed callback method
-         * 
-         * @param value
-         * @throws RemoteException
-         */
-        public void repliesChanged(int value) throws RemoteException {
-            mHandler.sendMessage(mHandler.obtainMessage(MSG_REPLIES_CHANGED, value, 0));
-        }
-
-        public void rateLimitStatus(int remaining_hits, int hourly_limit) throws RemoteException {
-            mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATED_TITLE, remaining_hits, hourly_limit));
-        }
-    };
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -1492,10 +1311,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             default:
                 command = CommandEnum.FETCH_HOME;
         }
-        sendCommand(new CommandData(command, MyAccount.getCurrentMyAccount().getAccountGuid()));
+        serviceConnector.sendCommand(new CommandData(command, MyAccount.getCurrentMyAccount().getAccountGuid()));
 
         if (allTimelineTypes) {
-            sendCommand(new CommandData(CommandEnum.FETCH_ALL_TIMELINES, MyAccount.getCurrentMyAccount().getAccountGuid()));
+            serviceConnector.sendCommand(new CommandData(CommandEnum.FETCH_ALL_TIMELINES, MyAccount.getCurrentMyAccount().getAccountGuid()));
         }
     }
     
@@ -1656,19 +1475,19 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
 
             case CONTEXT_MENU_ITEM_RETWEET:
-                sendCommand( new CommandData(CommandEnum.RETWEET, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
+                serviceConnector.sendCommand( new CommandData(CommandEnum.RETWEET, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_DESTROY_STATUS:
-                sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
+                serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_FAVORITE:
-                sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
+                serviceConnector.sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_DESTROY_FAVORITE:
-                sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
+                serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, MyAccount.getCurrentMyAccount().getAccountGuid(), mCurrentId));
                 return true;
 
             case CONTEXT_MENU_ITEM_SHARE:
@@ -1738,7 +1557,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 listItemId, mCursor, new String[] {
                 MyDatabase.User.AUTHOR_NAME, MyDatabase.Msg.BODY, MyDatabase.Msg.CREATED_DATE, MyDatabase.MsgOfUser.FAVORITED
                 }, new int[] {
-                        R.id.tweet_screen_name, R.id.tweet_message, R.id.tweet_sent,
+                        R.id.message_author, R.id.message_body, R.id.message_details,
                         R.id.tweet_favorite
                 }, getIntent().getData(), PROJECTION, MyDatabase.Msg.DEFAULT_SORT_ORDER);
         tweetsAdapter.setViewBinder(new TweetBinder());
