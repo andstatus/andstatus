@@ -278,6 +278,7 @@ public class TimelineDownloader {
             if (msg.has("id_str")) {
                 rowOid = msg.getString("id_str");
             } else if (msg.has("id")) {
+                // This is for identi.ca
                 rowOid = msg.getString("id");
             } 
             
@@ -323,9 +324,12 @@ public class TimelineDownloader {
 
                     if (msg.has("in_reply_to_user_id_str")) {
                         inReplyToUserOid = msg.getString("in_reply_to_user_id_str");
-                        if (inReplyToUserOid.compareTo("null") == 0) {
-                            inReplyToUserOid = "";
-                        }
+                    } else if (msg.has("in_reply_to_user_id")) {
+                        // This is for identi.ca
+                        inReplyToUserOid = msg.getString("in_reply_to_user_id");
+                    }
+                    if (MyPreferences.isEmpty(inReplyToUserOid)) {
+                        inReplyToUserOid = "";
                     }
                     if (inReplyToUserOid.length()>0) {
                         if (msg.has("in_reply_to_screen_name")) {
@@ -354,23 +358,26 @@ public class TimelineDownloader {
 
                         if (msg.has("in_reply_to_status_id_str")) {
                             inReplyToMessageOid = msg.getString("in_reply_to_status_id_str");
-                            if (inReplyToMessageOid.compareTo("null") == 0) {
-                                inReplyToMessageOid = "";
+                        } else if (msg.has("in_reply_to_status_id")) {
+                            // This is for identi.ca
+                            inReplyToMessageOid = msg.getString("in_reply_to_status_id");
+                        }
+                        if (MyPreferences.isEmpty(inReplyToMessageOid)) {
+                            inReplyToUserOid = "";
+                        }
+                        if (inReplyToMessageOid.length() > 0) {
+                            inReplyToMessageId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), inReplyToMessageOid);
+                            if (inReplyToMessageId == 0) {
+                                // Construct Related "Msg" from available info
+                                // and add it recursively
+                                JSONObject inReplyToMessage = new JSONObject();
+                                inReplyToMessage.put("id_str", inReplyToMessageOid);
+                                inReplyToMessage.put(senderObjectName, inReplyToUser);
+                                // Type of the timeline is ALL meaning that message does not belong to this timeline
+                                TimelineDownloader td = new TimelineDownloader(ma, mContext, MyDatabase.TimelineTypeEnum.ALL);
+                                inReplyToMessageId = td.insertFromJSONObject(inReplyToMessage);
                             }
-                            if (inReplyToMessageOid.length() > 0) {
-                                inReplyToMessageId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), inReplyToMessageOid);
-                                if (inReplyToMessageId == 0) {
-                                    // Construct Related "Msg" from available info
-                                    // and add it recursively
-                                    JSONObject inReplyToMessage = new JSONObject();
-                                    inReplyToMessage.put("id_str", inReplyToMessageOid);
-                                    inReplyToMessage.put(senderObjectName, inReplyToUser);
-                                    // Type of the timeline is ALL meaning that message does not belong to this timeline
-                                    TimelineDownloader td = new TimelineDownloader(ma, mContext, MyDatabase.TimelineTypeEnum.ALL);
-                                    inReplyToMessageId = td.insertFromJSONObject(inReplyToMessage);
-                                }
-                                values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
-                            }
+                            values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
                         }
                     }
                     break;
