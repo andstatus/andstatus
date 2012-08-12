@@ -33,12 +33,21 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
  -->
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
-    <release android:versionName="1.9.0" android:versionCode="60"
+    <release android:versionName="1.10.0" android:versionCode="62"
+        versionDate="2012-08-12">
+        <changes><change>"Share via AndStatus" added for text data (including Web page sharing). 
+            E.g. in a Web browser select "Share" menu item and you will see "AndStatus" in the list of destinations.
+            Choose AndStatus, and the page title and its URL will be inserted into the new tweet.
+            </change>
+        </changes>
+</release>
+    <release android:versionName="1.9.1" android:versionCode="61"
         versionDate="2012-08-06">
         <changes>
             <change>Single message (Tweet) view expanded to show full conversation
                  in case the Tweet is a reply to other Tweet.
                  Previous Tweets are being retrieved asynchronously.</change>
+            <change>Fixed replies for identi.ca</change>
             </changes>
     </release>
     <release android:versionName="1.8.0" android:versionCode="59"

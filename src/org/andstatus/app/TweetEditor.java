@@ -170,19 +170,21 @@ class TweetEditor {
      * If both replyId and recipientId parameters are the same, we continue editing 
      * (i.e. previous not sent message is preserved). This behavior is close to how 
      * the application worked before.
-     * @param textInitial
+     * @param textInitial not null String
      * @param replyToId =0 if not replying
      * @param recipientId =0 if this is Public message
      */
-    public void startEditingMessage(long replyToId, long recipientId) {
+    public void startEditingMessage(String textInitial, long replyToId, long recipientId) {
         if (mReplyToId != replyToId || mRecipientId != recipientId) {
             mReplyToId = replyToId;
             mRecipientId = recipientId;
-            String textInitial = "";
             String messageDetails = "";
             if (recipientId == 0) {
                 if (replyToId != 0) {
                     String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, replyToId);
+                    if (!TextUtils.isEmpty(textInitial)) {
+                        textInitial += " ";
+                    }
                     textInitial = "@" + replyToName + " ";
                     messageDetails += " " + String.format(Locale.getDefault(), MyPreferences.getContext().getText(R.string.tweet_source_in_reply_to).toString(), replyToName);
                 }

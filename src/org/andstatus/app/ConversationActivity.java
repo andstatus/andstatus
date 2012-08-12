@@ -176,6 +176,7 @@ public class ConversationActivity extends Activity {
         }
 
         private void findMessage(long msgId) {
+            MyLog.v(TAG, "findMessage " + msgId);
             Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), msgId);
             boolean skip = true;
             Cursor msg = null;

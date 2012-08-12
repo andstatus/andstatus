@@ -34,6 +34,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.SearchRecentSuggestions;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -456,8 +457,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         
         MyPreferences.loadTheme(TAG, this);
 
-        setTimelineType(getIntent());
-
         // Request window features before loading the content view
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 
@@ -495,9 +494,31 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         mListFooter = (LinearLayout) findViewById(R.id.item_loading);
         */
         
+        // Attach listeners to the message list
         getListView().setOnScrollListener(this);
+        getListView().setOnCreateContextMenuListener(this);
+        getListView().setOnItemClickListener(this);
 
-        initUI();
+        Button accountButton = (Button) findViewById(R.id.custom_title_left_text);
+        accountButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent i = new Intent(TimelineActivity.this, AccountSelector.class);
+                startActivityForResult(i, REQUEST_SELECT_ACCOUNT);
+            }
+        });
+       
+        Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
+        createMessageButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (mTweetEditor.isVisible()) {
+                    mTweetEditor.hide();
+                } else {
+                    mTweetEditor.startEditingMessage("", 0, 0);
+                }
+            }
+        });
+
+        processNewIntent(getIntent());
     }
 
     /**
@@ -512,25 +533,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         return true;
     }
 
-
-    /**
-     * TODO: Maybe this code should be moved to "onResume" ???
-     */
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onStart, instance " + instanceId);
-        }
-        Intent intent = getIntent();
-        queryListData(intent, false, false);
-
-        if (mTweetEditor.isVisible()) {
-            // This is done to request focus (if we need this...)
-            mTweetEditor.show();
-        }
-    }
-    
     @Override
     protected void onResume() {
         super.onResume();
@@ -562,15 +564,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 }
             }
         }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mCursor != null && !mCursor.isClosed()) {
-            mCursor.close();
-        }
-        //disconnectService();
     }
     
     /**
@@ -819,6 +812,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     public void onDestroy() {
         MyLog.v(TAG,"onDestroy, instance " + instanceId);
         super.onDestroy();
+        if (mCursor != null && !mCursor.isClosed()) {
+            mCursor.close();
+        }
         if (serviceConnector != null) {
             serviceConnector.disconnectService();
         }
@@ -1072,34 +1068,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     }
 
     /**
-     * Initialize the user interface.
-     */
-    protected void initUI() {
-        // Attach listeners to the message list
-        getListView().setOnCreateContextMenuListener(this);
-        getListView().setOnItemClickListener(this);
-
-        Button accountButton = (Button) findViewById(R.id.custom_title_left_text);
-        accountButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Intent i = new Intent(TimelineActivity.this, AccountSelector.class);
-                startActivityForResult(i, REQUEST_SELECT_ACCOUNT);
-            }
-        });
-       
-        Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
-        createMessageButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (mTweetEditor.isVisible()) {
-                    mTweetEditor.hide();
-                } else {
-                    mTweetEditor.startEditingMessage(0, 0);
-                }
-            }
-        });
-    }
-
-    /**
      * Check to see if the system has a hardware keyboard.
      * 
      * @return
@@ -1121,15 +1089,18 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onNewIntent, instance " + instanceId);
         }
-        setTimelineType(intent);
-
-        // All actions are actually search actions...
-        // So get and process search query here
-        queryListData(intent, false, false);
+        processNewIntent(intent);
     }
 
-    private void setTimelineType(Intent intentNew) {
-        TimelineTypeEnum timelineType_new  = TimelineTypeEnum.load(intentNew.getStringExtra(MyService.EXTRA_TIMELINE_TYPE));
+    /**
+     * Change the Activity according to the new intent. This procedure is done
+     * both {@link #onCreate(Bundle)} and {@link #onNewIntent(Intent)}
+     * 
+     * @param intentNew
+     */
+    private void processNewIntent(Intent intentNew) {
+        TimelineTypeEnum timelineType_new = TimelineTypeEnum.load(intentNew
+                .getStringExtra(MyService.EXTRA_TIMELINE_TYPE));
         if (timelineType_new != TimelineTypeEnum.UNKNOWN) {
             mTimelineType = timelineType_new;
         }
@@ -1153,27 +1124,49 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             intent.removeExtra(SearchManager.APP_DATA);
             intent.putExtra(MyService.EXTRA_TIMELINE_TYPE, mTimelineType.save());
             intent.setData(MyProvider.getCurrentTimelineUri());
-       }
+        }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "setTimelineType; type=\"" + mTimelineType.save() + "\"");
+            Log.v(TAG, "processNewIntent; type=\"" + mTimelineType.save() + "\"");
+        }
+        
+        queryListData(false, false);
+
+        // Are we supposed to send a tweet?
+        if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
+            String textInitial = "";
+            // This is Title of the page is Sharing Web page
+            String subject = intentNew.getStringExtra(Intent.EXTRA_SUBJECT);
+            // This is URL of the page if sharing web page
+            String text = intentNew.getStringExtra(Intent.EXTRA_TEXT);
+            if (!TextUtils.isEmpty(subject)) {
+                textInitial += subject;
+            }
+            if (!TextUtils.isEmpty(text)) {
+                if (!TextUtils.isEmpty(textInitial)) {
+                    textInitial += " ";
+                }
+                textInitial += text;
+            }
+            MyLog.v(TAG, "Intent.ACTION_SEND '" + textInitial +"'");
+            mTweetEditor.startEditingMessage(textInitial, 0, 0);
+        }
+        
+        if (mTweetEditor.isVisible()) {
+            // This is done to request focus (if we need this...)
+            mTweetEditor.show();
         }
     }
 
-
     /**
      * Prepare query to the ContentProvider (to the database) and load List of Tweets with data
-     * @param queryIntent
      * @param otherThread This method is being accessed from other thread
      * @param loadOneMorePage load one more page of tweets
      */
-    protected void queryListData(Intent queryIntent, boolean otherThread, boolean loadOneMorePage) {
-        // The search query is provided as an "extra" string in the query intent
-        // TODO maybe use mQueryString here...
-        String queryString = queryIntent.getStringExtra(SearchManager.QUERY);
+    protected void queryListData(boolean otherThread, boolean loadOneMorePage) {
         Intent intent = getIntent();
 
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "queryListData; queryString=\"" + queryString + "\"; TimelineType="
+            Log.v(TAG, "queryListData; queryString=\"" + mQueryString + "\"; TimelineType="
                     + mTimelineType.save());
         }
 
@@ -1184,17 +1177,17 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // Id of the last (oldest) tweet to retrieve 
         long lastItemId = -1;
         
-        if (queryString != null && queryString.length() > 0) {
+        if (mQueryString != null && mQueryString.length() > 0) {
             // Record the query string in the recent queries suggestions
             // provider
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     TimelineSearchSuggestionProvider.AUTHORITY,
                     TimelineSearchSuggestionProvider.MODE);
-            suggestions.saveRecentQuery(queryString, null);
+            suggestions.saveRecentQuery(mQueryString, null);
 
-            contentUri = MyProvider.getCurrentTimelineSearchUri(queryString);
+            contentUri = MyProvider.getCurrentTimelineSearchUri(mQueryString);
         }
-        intent.putExtra(SearchManager.QUERY, queryString);
+        intent.putExtra(SearchManager.QUERY, mQueryString);
 
         if (!contentUri.equals(intent.getData())) {
             intent.setData(contentUri);
@@ -1463,13 +1456,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         switch (item.getItemId()) {
             case CONTEXT_MENU_ITEM_REPLY:
-                mTweetEditor.startEditingMessage(mCurrentId, 0);
+                mTweetEditor.startEditingMessage("", mCurrentId, 0);
                 return true;
 
             case CONTEXT_MENU_ITEM_DIRECT_MESSAGE:
                 long authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentId);
                 if (authorId != 0) {
-                    mTweetEditor.startEditingMessage(mCurrentId, authorId);
+                    mTweetEditor.startEditingMessage("", mCurrentId, authorId);
                     return true;
                 }
                 break;
@@ -1574,7 +1567,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "mLoadListItems run");
             }
-            queryListData(TimelineActivity.this.getIntent(), true, true);
+            queryListData(true, true);
             mHandler.sendMessageDelayed(
                     mHandler.obtainMessage(MSG_LOAD_ITEMS, STATUS_LOAD_ITEMS_SUCCESS, 0), 400);
         }
