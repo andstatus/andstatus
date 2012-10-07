@@ -38,7 +38,7 @@
         <!-- On custom title see 
           http://staticallytyped.wordpress.com/2011/03/18/android-dynamic-and-custom-title-bars/ 
         -->
-        <item name="android:windowTitleStyle">@style/title_bar</item>
+        <item name="android:windowTitleStyle">@style/customTitleStyle</item>
         <item name="android:windowTitleSize">45dp</item>
 	</style>
 	
@@ -72,8 +72,6 @@
         <item name="android:textColorSecondaryNoDisable">@android:color/secondary_text_light_nodisable</item>
         <item name="android:textColorPrimaryInverseNoDisable">@android:color/primary_text_dark_nodisable</item>
         <item name="android:textColorSecondaryInverseNoDisable">@android:color/secondary_text_dark_nodisable</item>
-
-        <item name="android:popupWindowStyle">@android:style/Widget.PopupWindow</item>
 
         <item name="android:listViewStyle">@android:style/Widget.ListView.White</item>
         <item name="android:listDivider">@android:drawable/divider_horizontal_bright</item>

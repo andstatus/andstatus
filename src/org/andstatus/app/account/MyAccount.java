@@ -352,10 +352,10 @@ public class MyAccount implements Parcelable {
     }
     
     /**
-     * Get instance of the current MyAccount (MyAccount selected by the user)
+     * Get instance of current MyAccount (MyAccount selected by the user). The account isPersistent
      * 
      * @param Context
-     * @return MyAccount
+     * @return MyAccount or null if no persistent accounts exist
      */
     public static MyAccount getCurrentMyAccount() {
         MyAccount ma = null;
