@@ -186,7 +186,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	updateWidgets(numTweets, msgType);
     	
     	numTweets = 1;
-    	msgType = CommandEnum.NOTIFY_TIMELINE;
+    	msgType = CommandEnum.NOTIFY_HOME_TIMELINE;
     	updateWidgets(numTweets, msgType);
     	
     	// 15 seconds to complete updates
@@ -202,8 +202,8 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 	private void updateWidgets(int numTweets, CommandEnum msgType){
 		try {
 		updateWidgetsNow(numTweets, msgType);
-		//updateWidgetsThreads(numTweets, msgType);
-		//updateWidgetsPending(numTweets, msgType);
+		//updateWidgetsThreads(numHomeTimeline, msgType);
+		//updateWidgetsPending(numHomeTimeline, msgType);
 		} catch (Exception e) {
 			
 		}
@@ -219,7 +219,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	Context context = getInstrumentation().getTargetContext();
     	//Context context = getInstrumentation().getContext();
 
-    	Log.i(TAG,"Sending update; numTweets=" + numTweets + "; msgType=" + msgType);
+    	Log.i(TAG,"Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
 
     	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
 		intent.putExtra(EXTRA_NUMTWEETS, numTweets);
@@ -242,7 +242,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	//Context context = getInstrumentation().getContext();
     	long triggerTime;
 
-    	Log.i(TAG,"Sending update; numTweets=" + numTweets + "; msgType=" + msgType);
+    	Log.i(TAG,"Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
 
     	triggerTime = System.currentTimeMillis() + 3000;
     	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
@@ -285,7 +285,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 		public void run() {
 	    	Context context = getInstrumentation().getContext();
 
-	    	Log.i(TAG,"Sending update; numTweets=" + numTweets + "; msgType=" + msgType);
+	    	Log.i(TAG,"Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
 	    	
 	    	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
 			intent.putExtra(EXTRA_NUMTWEETS, numTweets);

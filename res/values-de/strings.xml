@@ -24,7 +24,7 @@
 	<string name="activity_title_format">%1$s: %2$s</string>
 	<string name="activity_title_mentions">Erwähnungen</string>
 	<string name="activity_title_search">Suche</string>
-	<string name="activity_title_timeline">Freunde</string>
+	<string name="activity_title_home">Freunde</string>
 	<string name="authentication_successful">Anmeldung erfolgreich!</string>
 
     <string name="appwidget_configure_instructions">Passe die Mitteilung an, die im AndStatus

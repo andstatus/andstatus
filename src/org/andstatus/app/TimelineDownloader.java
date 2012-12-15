@@ -185,7 +185,9 @@ public class TimelineDownloader {
                 }
             }
             if (mMessages > 0) {
-                mContentResolver.notifyChange(MyProvider.getTimelineUri(ma.getUserId()), null);
+                // Notify all timelines, 
+                // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
+                mContentResolver.notifyChange(MyProvider.TIMELINE_URI, null);
             }
             ma.getMyAccountPreferences().edit().putLong(MyAccount.KEY_LAST_TIMELINE_ID + mTimelineType.save(),
                     lastMsgId).commit();
@@ -415,7 +417,7 @@ public class TimelineDownloader {
             if (rowId == 0) {
                 // There was no such row so add new one
                 msgUri = mContentResolver.insert(MyProvider.getTimelineUri(ma.getUserId()), values);
-                rowId = Long.parseLong(msgUri.getPathSegments().get(3));
+                rowId = MyProvider.uriToMessageId(msgUri);
             } else {
               mContentResolver.update(msgUri, values, null, null);
             }
@@ -536,9 +538,7 @@ public class TimelineDownloader {
             SQLiteConstraintException {
         long rowId = insertFromJSONObject(jo);
         if (notify) {
-            // Construct the Uri to the Msg
-            Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
-            mContentResolver.notifyChange(msgUri, null);
+            mContentResolver.notifyChange(MyProvider.TIMELINE_URI, null);
         }
         return rowId;
     }

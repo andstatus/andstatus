@@ -372,24 +372,31 @@ public class MyAccount implements Parcelable {
                 ind = 0;
             }
         }
-        if (ind < 0) {
-            // Add new MyAccount with empty name
-            ma = getMyAccount("");
-        } else {
+        if (ind >= 0) {
             ma = mMyAccounts.elementAt(ind);
-        }
-        
-        // Correct Current and Default Accounts if needed
-        if (TextUtils.isEmpty(currentAccountName)) {
-            ma.setCurrentMyAccount();
-        }
-        if (TextUtils.isEmpty(defaultAccountName)) {
-            ma.setDefaultMyAccount();
+            // Correct Current and Default Accounts if needed
+            if (TextUtils.isEmpty(currentAccountName)) {
+                ma.setCurrentMyAccount();
+            }
+            if (TextUtils.isEmpty(defaultAccountName)) {
+                ma.setDefaultMyAccount();
+            }
         }
 
         return ma;
     }
 
+    /**
+     * @return 0 if no current account
+     */
+    public static long getCurrentMyAccountUserId() {
+        long userId = 0;
+        if (getCurrentMyAccount() != null) {
+            userId = getCurrentMyAccount().getUserId();
+        }
+        return userId;
+    }
+    
     /** 
      * Array of MyAccount objects
      */
@@ -478,6 +485,55 @@ public class MyAccount implements Parcelable {
             }
         }
         if (!found) { ma = null;}
+        return ma;
+    }
+
+
+    /**
+     * Return first found MyAccount with provided originId
+     * @param originId
+     * @return null if not found
+     */
+    private static MyAccount findFirstMyAccountByOriginId(long originId) {
+        boolean found = false;
+        MyAccount ma = null;
+        for (int ind = 0; ind < mMyAccounts.size(); ind++) {
+            if (mMyAccounts.elementAt(ind).getOriginId() == originId) {
+                found = true;
+                ma = mMyAccounts.elementAt(ind);
+                break;
+            }
+        }
+        if (!found) { ma = null;}
+        return ma;
+    }
+    
+    /**
+     * For any action with the message we should choose an Account 
+     * from the same originating (source) System
+     * @param systemId  Message ID, 0 for the message creation
+     * @param userId User ID in the timeline, 0 if the message doesn't belong to any timeline
+     * @return null if not found
+     */
+    public static MyAccount getMyAccountForTheMessage(long systemId, long userId)
+    {
+        MyAccount ma = null;
+        if (systemId == 0) {
+            ma = getCurrentMyAccount();
+        } else {
+            ma = getMyAccount(userId);
+            if (ma == null) {
+                ma = getCurrentMyAccount();
+            }
+            long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, systemId);
+            if ( originId != ma.getOriginId()) {
+               ma = findFirstMyAccountByOriginId(originId); 
+            }
+        }
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            Log.v(TAG, "getMyAccountForTheMessage systemId=" + systemId +"; userId=" + userId 
+                    + "; account=" + (ma==null ? "null" : ma.getAccountGuid()));
+        }
         return ma;
     }
     

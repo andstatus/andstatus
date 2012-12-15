@@ -102,7 +102,7 @@ public class SplashActivity extends Activity {
 		super.onResume();
         if (MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES,
                 MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
-            if (MyAccount.getCurrentMyAccount().isPersistent()) {
+            if (MyAccount.getCurrentMyAccount() != null ) {
                 Intent intent = new Intent(this, TimelineActivity.class);
                 startActivity(intent);
                 finish();

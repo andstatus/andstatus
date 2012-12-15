@@ -20,7 +20,7 @@
 	<string name="activity_title_format">%1$s: %2$s</string>
 	<string name="activity_title_mentions">Omnämningar</string>
 	<string name="activity_title_search">Sök</string>
-	<string name="activity_title_timeline">Vänner</string>
+	<string name="activity_title_home">Vänner</string>
 
     <string name="appwidget_configure_instructions">Anpassa
     AndStatus Widget meddelande, visas när inget nytt finns:</string>

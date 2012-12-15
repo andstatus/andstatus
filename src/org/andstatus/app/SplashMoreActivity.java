@@ -17,7 +17,6 @@
 package org.andstatus.app;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerified;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -74,7 +73,7 @@ public class SplashMoreActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-        if (MyAccount.getCurrentMyAccount().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+        if (MyAccount.getCurrentMyAccount() != null ) {
 			Intent intent = new Intent(this, TimelineActivity.class);
 			startActivity(intent);
 			finish();

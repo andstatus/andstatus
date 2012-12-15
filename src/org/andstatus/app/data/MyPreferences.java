@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.data;
 
+import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.util.MyLog;
 
@@ -84,6 +85,11 @@ public class MyPreferences {
      * New value for #KEY_USE_EXTERNAL_STORAGE to e confirmed/processed
      */
     public static final String KEY_USE_EXTERNAL_STORAGE_NEW = "use_external_storage_new";
+    /**
+     * Is the timeline combined in {@link TimelineActivity} 
+     */
+    public static final String KEY_TIMELINE_IS_COMBINED = "timeline_is_combined";
+    
     
     /**
      * System time when shared preferences were examined and took into account

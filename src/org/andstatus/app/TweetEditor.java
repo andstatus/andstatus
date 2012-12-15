@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2011-2012 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,6 +65,12 @@ class TweetEditor {
      * Recipient Id. If =0 we are editing Public message
      */
     private long mRecipientId = 0;
+
+    /**
+     * {@link MyAccount} to use with this message (send/reply As ...)
+     */
+    private String mAccountGuid = "";
+    private boolean mShowAccount = false;
     
     public TweetEditor(TimelineActivity activity) {
         mActivity = activity;
@@ -174,11 +180,15 @@ class TweetEditor {
      * @param replyToId =0 if not replying
      * @param recipientId =0 if this is Public message
      */
-    public void startEditingMessage(String textInitial, long replyToId, long recipientId) {
-        if (mReplyToId != replyToId || mRecipientId != recipientId) {
+    public void startEditingMessage(String textInitial, long replyToId, long recipientId, String accountGuid, boolean showAccount) {
+        if (mReplyToId != replyToId || mRecipientId != recipientId 
+                || mAccountGuid.compareTo(accountGuid) != 0
+                || mShowAccount != showAccount) {
             mReplyToId = replyToId;
             mRecipientId = recipientId;
-            String messageDetails = "";
+            mAccountGuid = accountGuid;
+            mShowAccount = showAccount;
+            String messageDetails = (showAccount ? mAccountGuid : "");
             if (recipientId == 0) {
                 if (replyToId != 0) {
                     String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, replyToId);
@@ -203,6 +213,9 @@ class TweetEditor {
                 mDetails.setVisibility(View.VISIBLE);
             }
         }
+        
+        // Start asynchronous task that will show Rate limit status
+        mActivity.serviceConnector.sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccountGuid));
         
         show();
     }

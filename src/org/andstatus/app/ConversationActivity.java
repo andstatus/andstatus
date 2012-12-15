@@ -113,16 +113,11 @@ public class ConversationActivity extends Activity {
         final Intent intent = getIntent();
         Uri uri = intent.getData();
 
-        long accountId = MyProvider.uriToAccountId(uri);
-        if (accountId != 0) {
-            ma = MyAccount.getMyAccount(accountId);
-        }
-        if (ma == null) {
-            ma = MyAccount.getCurrentMyAccount();
-        }
-
         mCurrentId = MyProvider.uriToMessageId(uri);
-        showConversation();
+        ma = MyAccount.getMyAccountForTheMessage(mCurrentId, MyProvider.uriToAccountId(uri));
+        if (ma != null) {
+            showConversation();
+        }
     }
 
     protected void showConversation() {
