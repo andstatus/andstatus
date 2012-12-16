@@ -844,7 +844,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // so we have to start notifying the User about new events after his
         // moment.
 
-        if (!mIsFinishing) {
+        if (positionRestored) {
             // Get rid of the "fast scroll thumb"
             ((ListView) findViewById(android.R.id.list)).setFastScrollEnabled(false);
             clearNotifications();
