@@ -1717,9 +1717,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "mLoadListItems run");
             }
-            queryListData(true, true);
-            mHandler.sendMessageDelayed(
-                    mHandler.obtainMessage(MSG_LOAD_ITEMS, STATUS_LOAD_ITEMS_SUCCESS, 0), 400);
+            if (!mIsFinishing) {
+                queryListData(true, true);
+            }
+            if (!mIsFinishing) {
+                mHandler.sendMessageDelayed(
+                        mHandler.obtainMessage(MSG_LOAD_ITEMS, STATUS_LOAD_ITEMS_SUCCESS, 0), 400);
+            }
         }
     };
     
