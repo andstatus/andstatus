@@ -277,13 +277,13 @@ public class ConversationActivity extends Activity {
             if (!MyPreferences.isEmpty(row.via)) {
                 messageDetails += " " + String.format(
                         Locale.getDefault(),
-                        getText(R.string.tweet_source_from).toString(),
+                        getText(R.string.message_source_from).toString(),
                         row.via);
             }
             if (!MyPreferences.isEmpty(row.replyToName)) {
                 messageDetails += " "
                         + String.format(Locale.getDefault(),
-                                getText(R.string.tweet_source_in_reply_to).toString(),
+                                getText(R.string.message_source_in_reply_to).toString(),
                                 row.replyToName);
             }
             if (!MyPreferences.isEmpty(row.sender)) {
@@ -292,13 +292,13 @@ public class ConversationActivity extends Activity {
                         messageDetails += ";";
                     }
                     messageDetails += " "
-                            + String.format(Locale.getDefault(), getText(R.string.reblogged_by)
+                            + String.format(Locale.getDefault(), getText(ma.alternativeTermResourceId(R.string.reblogged_by))
                                     .toString(), row.sender);
                 }
             }
             if (!MyPreferences.isEmpty(row.recipientName)) {
                 messageDetails += " "
-                        + String.format(Locale.getDefault(), getText(R.string.tweet_source_to)
+                        + String.format(Locale.getDefault(), getText(R.string.message_source_to)
                                 .toString(), row.recipientName);
             }
             details.setText(messageDetails);

@@ -89,7 +89,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String MSG_OID = "msg_oid";
         /**
          * Author of the message = User._ID
-         * If message was "Reblogged" ("Retweeted", "Redented", ...) this is Original author (whose message was reblogged)
+         * If message was "Reblogged" ("Retweeted", "Repeated", ...) this is Original author (whose message was reblogged)
          */
         public static final String AUTHOR_ID = "author_id";
 		/**

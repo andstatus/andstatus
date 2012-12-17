@@ -679,7 +679,7 @@ public class MyAccount implements Parcelable {
     private static String fixAccountName(String accountName) {
         accountName = fixUsername(accountName);
         if (accountName.indexOf("/") < 0) {
-            accountName = Origin.ORIGIN_NAME_DEFAULT + "/" + accountName;   
+            accountName = Origin.ORIGIN_NAME_TWITTER + "/" + accountName;   
            }
         return accountName;
     }
@@ -712,7 +712,7 @@ public class MyAccount implements Parcelable {
     private static String accountNameToOriginName(String accountName) {
         accountName = fixAccountName(accountName);
         int indSlash = accountName.indexOf("/");
-        String originName = Origin.ORIGIN_NAME_DEFAULT;
+        String originName = Origin.ORIGIN_NAME_TWITTER;
         if (indSlash >= 0) {
             originName = accountName.substring(0, indSlash);
         }
@@ -772,13 +772,13 @@ public class MyAccount implements Parcelable {
         }
         mAccount = account;
 
-        String originName = Origin.ORIGIN_NAME_DEFAULT;
+        String originName = Origin.ORIGIN_NAME_TWITTER;
         String userName = "";
         if (isPersistent()) {
             originName = accountNameToOriginName(getAccount().name);
             userName = accountNameToUsername(getAccount().name);
         } else {
-            originName = getDataString(MyAccount.KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_DEFAULT);
+            originName = getDataString(MyAccount.KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER);
             userName = getDataString(MyAccount.KEY_USERNAME, "");
         }
         mOrigin = Origin.getOrigin(originName);
@@ -981,7 +981,7 @@ public class MyAccount implements Parcelable {
                 setDataString(MyAccount.KEY_USERNAME, mUsername);
                 changed = true;
             }
-            if (mOrigin.getName().compareTo(getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_DEFAULT)) != 0) {
+            if (mOrigin.getName().compareTo(getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER)) != 0) {
                 setDataString(KEY_ORIGIN_NAME, mOrigin.getName());
                 changed = true;
             }
@@ -1087,6 +1087,20 @@ public class MyAccount implements Parcelable {
      */
     public int messageCharactersLeft(String message) {
         return mOrigin.messageCharactersLeft(message);
+    }
+
+    /**
+     * {@link Origin#alternativeTermResourceId(int)}
+     */
+    public int alternativeTermResourceId(int resId) {
+        return mOrigin.alternativeTermResourceId(resId);
+    }
+    
+    /**
+     * {@link Origin#messagePermalink(String, String)}
+     */
+    public String messagePermalink(String userName, String messageOid) {
+        return mOrigin.messagePermalink(userName, messageOid);
     }
     
     /**

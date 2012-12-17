@@ -47,14 +47,14 @@ public class TweetBinder implements ViewBinder {
 			if (colIndex > -1) {
 				String replyToName = cursor.getString(colIndex);
 				if (!TextUtils.isEmpty(replyToName)) {
-					messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.tweet_source_in_reply_to).toString(), replyToName);
+					messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.message_source_in_reply_to).toString(), replyToName);
 				}
 			}
             colIndex = cursor.getColumnIndex(User.RECIPIENT_NAME);
             if (colIndex > -1) {
                 String recipientName = cursor.getString(colIndex);
                 if (!TextUtils.isEmpty(recipientName)) {
-                    messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.tweet_source_to).toString(), recipientName);
+                    messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.message_source_to).toString(), recipientName);
                 }
             }
 			((TextView)view).setText(messageDetails);

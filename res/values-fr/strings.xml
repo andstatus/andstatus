@@ -44,8 +44,9 @@
 	<string name="authentication_never">Pas de dernière authentification</string>
 	<string name="authentication_successful">Authentication réussie !</string>
 	<string name="button_send">Envoyer</string>
-    <string name="button_create_tweet">Tweet</string>
-	<string name="cannot_send_empty_message">Envoi d\'un message vide impossible.</string>
+    <string name="button_create_message">Blog</string>
+    <string name="button_create_message_twitter">Tweet</string>
+    <string name="cannot_send_empty_message">Envoi d\'un message vide impossible.</string>
 	<string name="category_title_preference_appearance">Apparence</string>
 	<string name="category_title_preference_automatic_updates">Rafraîchissement</string>
 	<string name="category_title_preference_credentials">Identifiants</string>
@@ -99,7 +100,9 @@
     <string name="label_conversation">Conversation</string>
     <string name="label_conversationactivity">Tweet</string>
     <string name="loading">Chargement…</string>
-	<string name="message_edit_hint">Saisissez votre tweet ici !</string>
+    <string name="message">Message</string>
+    <string name="message_twitter">Tweet</string>
+    <string name="message_edit_hint">Saisissez votre tweet ici !</string>
 	<string name="message_characters_left">Caractères restant :</string>
     <string name="message_is_too_long">Les message est trop long.</string>
     <string name="menu_item_block">Bloquer</string>
@@ -110,7 +113,8 @@
 	<string name="menu_item_follow">S\'abonner</string>
 	<string name="menu_item_reply">Répondre</string>
 	<string name="menu_item_reblog">Retweeter</string>
-    <string name="menu_item_share">Partager</string>
+	<string name="menu_item_reblog_twitter">Retweeter</string>
+	<string name="menu_item_share">Partager</string>
 	<string name="menu_item_unfollow">Se désabonner</string>
 	<string name="menu_item_view_profile">Voir le profile</string>
 	<string name="message_sent">Message envoyé.</string>
@@ -226,10 +230,11 @@
     <string name="title_preference_verify_credentials">Revérifier les identifiants</string>
 	<string name="title_preference_verify_credentials_failed">Vérifier les identifiants</string>
 	<string name="title_preference_vibration">Vibration</string>
-	<string name="tweet_source_from">de %1$s</string>
-	<string name="tweet_source_in_reply_to">en réponse à %1$s</string>
-	<string name="tweet_source_to">à %1$s</string>
+	<string name="message_source_from">de %1$s</string>
+	<string name="message_source_in_reply_to">en réponse à %1$s</string>
+	<string name="message_source_to">à %1$s</string>
 	<string name="reblogged_by">retweeté par %1$s</string>
-    <string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
+	<string name="reblogged_by_twitter">retweeté par %1$s</string>
+	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Non implémenté.</string>
 </resources>

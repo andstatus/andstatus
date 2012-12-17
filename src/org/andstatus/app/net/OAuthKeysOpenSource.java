@@ -24,7 +24,7 @@ import org.andstatus.app.account.Origin;
 public class OAuthKeysOpenSource implements OAuthKeysStrategy {
     @Override
     public String getConsumerKey(long originId) {
-        if(originId == Origin.ORIGIN_ID_DEFAULT) {  // Twitter
+        if(originId == Origin.ORIGIN_ID_TWITTER) {
             return "XPHj81OgjphGlN6Jb55Kmg";
         } else if(originId == Origin.ORIGIN_ID_IDENTICA) {  
             return "620cfde429180307d066340582fd6919";
@@ -34,7 +34,7 @@ public class OAuthKeysOpenSource implements OAuthKeysStrategy {
     }
     @Override
     public String getConsumerSecret(long originId) {
-        if(originId == Origin.ORIGIN_ID_DEFAULT) {  // Twitter
+        if(originId == Origin.ORIGIN_ID_TWITTER) {  
             return "o2E5AYoDQhZf9qT7ctHLGihpq2ibc5bC4iFAOHURxw";
         } else if(originId == Origin.ORIGIN_ID_IDENTICA) {  
             return "0798525c8340f5954627974d7969c611";

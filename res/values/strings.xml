@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
+    Copyright (C) 2012 Yuri Volkov, yvolk@yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +46,8 @@
 	<string name="authentication_successful">Authentication successful!</string>
 	<string name="button_send">Send</string>
     <string name="button_create_message">Blog</string>
-	<string name="cannot_send_empty_message">Cannot send empty message.</string>
+    <string name="button_create_message_twitter">Tweet</string>
+    <string name="cannot_send_empty_message">Cannot send empty message.</string>
 	<string name="category_title_preference_appearance">Appearance</string>
 	<string name="category_title_preference_automatic_updates">Updates</string>
 	<string name="category_title_preference_credentials">User Credentials</string>
@@ -102,7 +104,9 @@
     <string name="label_conversation">Conversation</string>
     <string name="label_conversationactivity">Message</string>
     <string name="loading">Loading…</string>
-	<string name="message_edit_hint">Enter your message here!</string>
+    <string name="message">Message</string>
+    <string name="message_twitter">Tweet</string>
+    <string name="message_edit_hint">Enter your message here!</string>
 	<string name="message_characters_left">Characters left:</string>
     <string name="message_is_too_long">Message is too long.</string>
     <string name="menu_item_block">Block</string>
@@ -113,7 +117,8 @@
 	<string name="menu_item_follow">Follow</string>
 	<string name="menu_item_reply">Reply</string>
 	<string name="menu_item_reblog">Reblog</string>
-    <string name="menu_item_share">Share</string>
+	<string name="menu_item_reblog_twitter">Retweet</string>
+	<string name="menu_item_share">Share</string>
 	<string name="menu_item_unfollow">Unfollow</string>
 	<string name="menu_item_view_profile">View Profile</string>
 	<string name="message_sent">Your message has been sent.</string>
@@ -229,10 +234,11 @@
     <string name="title_preference_verify_credentials">Reverify credentials</string>
 	<string name="title_preference_verify_credentials_failed">Verify credentials</string>
 	<string name="title_preference_vibration">Vibration</string>
-	<string name="tweet_source_from">from %1$s</string>
-	<string name="tweet_source_in_reply_to">in reply to %1$s</string>
-	<string name="tweet_source_to">to %1$s</string>
+	<string name="message_source_from">from %1$s</string>
+	<string name="message_source_in_reply_to">in reply to %1$s</string>
+	<string name="message_source_to">to %1$s</string>
 	<string name="reblogged_by">reblogged by %1$s</string>
-    <string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
+	<string name="reblogged_by_twitter">retweeted by %1$s</string>
+	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Not implemented.</string>
 </resources>

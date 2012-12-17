@@ -1153,7 +1153,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
         if (mTimelineType != TimelineTypeEnum.DIRECT) {
-            createMessageButton.setText(getString(R.string.button_create_message));
+            createMessageButton.setText(getString(MyAccount.getCurrentMyAccount().alternativeTermResourceId(R.string.button_create_message)));
             createMessageButton.setVisibility(View.VISIBLE);
         } else {
             createMessageButton.setVisibility(View.GONE);
@@ -1571,7 +1571,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 } else {
                     // Don't allow a User to reblog himself 
                     if (ma.getUserId() != c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))) {
-                        menu.add(0, CONTEXT_MENU_ITEM_REBLOG, m++, R.string.menu_item_reblog);
+                        menu.add(0, CONTEXT_MENU_ITEM_REBLOG, m++, ma.alternativeTermResourceId(R.string.menu_item_reblog));
                     }
                 }
                 if (ma.getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))
@@ -1650,7 +1650,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                             StringBuilder text = new StringBuilder();
                             String msgBody = c.getString(c.getColumnIndex(MyDatabase.Msg.BODY));
         
-                            subject.append(getText(R.string.button_create_message));
+                            subject.append(getText(ma.alternativeTermResourceId(R.string.message)));
                             subject.append(" - " + msgBody);
                             int maxlength = 80;
                             if (subject.length() > maxlength) {
@@ -1662,10 +1662,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         
                             text.append(msgBody);
                             text.append("\n-- \n" + userName);
-                            text.append("\n URL: " + "http://twitter.com/"
-                                    + userName 
-                                    + "/status/"
-                                    + c.getString(c.getColumnIndex(MyDatabase.Msg.MSG_OID)));
+                            text.append("\n URL: " + ma.messagePermalink(userName, 
+                                    c.getString(c.getColumnIndex(MyDatabase.Msg.MSG_OID))));
                             
                             Intent share = new Intent(android.content.Intent.ACTION_SEND); 
                             share.setType("text/plain"); 

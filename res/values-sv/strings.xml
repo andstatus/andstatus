@@ -170,8 +170,8 @@
 	<string name="title_preference_username">Användarnamn</string>
 	<string name="title_preference_use_avatars">Display Avatars</string>
 	<string name="title_preference_vibration">Vibration</string>
-	<string name="tweet_source_from">från %1$s</string>
-	<string name="tweet_source_in_reply_to">in reply to %1$s</string>
+	<string name="message_source_from">från %1$s</string>
+	<string name="message_source_in_reply_to">in reply to %1$s</string>
 	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Not implemented.</string>
 </resources>

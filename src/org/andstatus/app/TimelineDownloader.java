@@ -254,7 +254,7 @@ public class TimelineDownloader {
                 authorId = insertUserFromJSONObject(author);
 
                 if (ma.getUserId() == senderId) {
-                    // Msg was retweeted by current User (he is Sender)
+                    // Msg was reblogged by current User (he is Sender)
                     values.put(MyDatabase.MsgOfUser.REBLOGGED, 1);
                 }
                 

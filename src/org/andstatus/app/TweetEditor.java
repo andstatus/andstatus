@@ -212,12 +212,12 @@ class TweetEditor {
                         textInitial += " ";
                     }
                     textInitial = "@" + replyToName + " ";
-                    messageDetails += " " + String.format(Locale.getDefault(), MyPreferences.getContext().getText(R.string.tweet_source_in_reply_to).toString(), replyToName);
+                    messageDetails += " " + String.format(Locale.getDefault(), MyPreferences.getContext().getText(R.string.message_source_in_reply_to).toString(), replyToName);
                 }
             } else {
                 String recipientName = MyProvider.userIdToName(recipientId);
                 if (!TextUtils.isEmpty(recipientName)) {
-                    messageDetails += " " + String.format(Locale.getDefault(), MyPreferences.getContext().getText(R.string.tweet_source_to).toString(), recipientName);
+                    messageDetails += " " + String.format(Locale.getDefault(), MyPreferences.getContext().getText(R.string.message_source_to).toString(), recipientName);
                 }
             }
             mEditText.setText(textInitial);
