@@ -132,9 +132,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     public static final int CONTEXT_MENU_ITEM_BLOCK = Menu.FIRST + 6;
 
-    public static final int CONTEXT_MENU_ITEM_RETWEET = Menu.FIRST + 7;
+    public static final int CONTEXT_MENU_ITEM_REBLOG = Menu.FIRST + 7;
 
-    public static final int CONTEXT_MENU_ITEM_DESTROY_RETWEET = Menu.FIRST + 8;
+    public static final int CONTEXT_MENU_ITEM_DESTROY_REBLOG = Menu.FIRST + 8;
 
     public static final int CONTEXT_MENU_ITEM_PROFILE = Menu.FIRST + 9;
 
@@ -1282,7 +1282,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         
         queryListData(false, false);
 
-        if (mTweetEditor.isVisible()) {
+        if (mTweetEditor.isStateLoaded()) {
+            mTweetEditor.continueEditingLoadedState();
+        } else if (mTweetEditor.isVisible()) {
             // This is done to request focus (if we need this...)
             mTweetEditor.show();
         }
@@ -1549,7 +1551,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         Cursor c = getContentResolver().query(uri, new String[] {
                 MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID, 
                 MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED, 
-                MyDatabase.MsgOfUser.RETWEETED
+                MyDatabase.MsgOfUser.REBLOGGED
         }, null, null, null);
         try {
             if (c != null && c.getCount() > 0) {
@@ -1562,12 +1564,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 } else {
                     menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, m++, R.string.menu_item_favorite);
                 }
-                if (c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.RETWEETED)) == 1) {
+                if (c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.REBLOGGED)) == 1) {
                     // TODO:
-                    //menu.add(0, CONTEXT_MENU_ITEM_DESTROY_RETWEET, m++,
-                    //        R.string.menu_item_destroy_retweet);
+                    //menu.add(0, CONTEXT_MENU_ITEM_DESTROY_REBLOG, m++,
+                    //        R.string.menu_item_destroy_reblog);
                 } else {
-                    menu.add(0, CONTEXT_MENU_ITEM_RETWEET, m++, R.string.menu_item_retweet);
+                    // Don't allow a User to reblog himself 
+                    if (ma.getUserId() != c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))) {
+                        menu.add(0, CONTEXT_MENU_ITEM_REBLOG, m++, R.string.menu_item_reblog);
+                    }
                 }
                 if (ma.getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))
                         && ma.getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.AUTHOR_ID))
@@ -1615,8 +1620,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     }
                     break;
 
-                case CONTEXT_MENU_ITEM_RETWEET:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.RETWEET, ma.getAccountGuid(), mCurrentId));
+                case CONTEXT_MENU_ITEM_REBLOG:
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.REBLOG, ma.getAccountGuid(), mCurrentId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_DESTROY_STATUS:

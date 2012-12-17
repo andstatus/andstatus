@@ -55,7 +55,7 @@ public abstract class Connection {
         FAVORITES_CREATE_BASE,
         FAVORITES_DESTROY_BASE,        
         POST_DIRECT_MESSAGE,
-        POST_RETWEET,
+        POST_REBLOG,
         STATUSES_DESTROY,
         STATUSES_HOME_TIMELINE,
         STATUSES_MENTIONS_TIMELINE,
@@ -113,7 +113,7 @@ public abstract class Connection {
             case POST_DIRECT_MESSAGE:
                 url = mBaseUrl + "/direct_messages/new" + EXTENSION;
                 break;
-            case POST_RETWEET:
+            case POST_REBLOG:
                 url = mBaseUrl + "/statuses/retweet/";
                 break;
             case STATUSES_DESTROY:
@@ -317,15 +317,15 @@ public abstract class Connection {
             throws ConnectionException;
 
     /**
-     * Post retweet
+     * Post reblog ("Retweet")
      * @see <a
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/retweet/%3Aid">POST statuses/retweet/:id</a>
      * 
-     * @param retweetedId id of the Retweeted status
+     * @param rebloggedId id of the Reblogged message
      * @return
      * @throws ConnectionException
      */
-    public abstract JSONObject postRetweet(String retweetedId)
+    public abstract JSONObject postReblog(String rebloggedId)
             throws ConnectionException;
     
     /**

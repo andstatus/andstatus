@@ -77,7 +77,7 @@
 	<string name="menu_item_favorite">Als Favorit</string>
 	<string name="menu_item_follow">Follow</string>
 	<string name="menu_item_reply">Antworten</string>
-	<string name="menu_item_retweet">Retweet</string>
+	<string name="menu_item_reblog">Retweet</string>
 	<string name="menu_item_unfollow">UnFollow</string>
 	<string name="menu_item_view_profile">Profil anschauen</string>
 	<string name="message_sent">Deine Nachricht wurde gesendet.</string>

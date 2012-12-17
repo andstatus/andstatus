@@ -292,7 +292,7 @@ public class ConversationActivity extends Activity {
                         messageDetails += ";";
                     }
                     messageDetails += " "
-                            + String.format(Locale.getDefault(), getText(R.string.retweeted_by)
+                            + String.format(Locale.getDefault(), getText(R.string.reblogged_by)
                                     .toString(), row.sender);
                 }
             }

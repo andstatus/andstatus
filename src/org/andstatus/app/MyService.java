@@ -153,6 +153,11 @@ public class MyService extends Service {
     public static final String EXTRA_ACCOUNT_NAME = packageName + ".ACCOUNT_NAME";
 
     /**
+     * Do we need to show the account?
+     */
+    public static final String EXTRA_SHOW_ACCOUNT = packageName + ".SHOW_ACCOUNT";
+    
+    /**
      * Name of the preference to set
      */
     public static final String EXTRA_PREFERENCE_KEY = packageName + ".PREFERENCE_KEY";
@@ -249,7 +254,7 @@ public class MyService extends Service {
         DESTROY_STATUS("destroy-status"),
         GET_STATUS("get-status"),
         
-        RETWEET("retweet"),
+        REBLOG("reblog"),
 
         RATE_LIMIT_STATUS("rate-limit-status"),
 
@@ -1205,8 +1210,8 @@ public class MyService extends Service {
                         // Retry in a case of an error
                         retry = !ok;
                         break;
-                    case RETWEET:
-                        ok = retweet(commandData.accountName, commandData.itemId);
+                    case REBLOG:
+                        ok = reblog(commandData.accountName, commandData.itemId);
                         retry = !ok;
                         break;
                     case RATE_LIMIT_STATUS:
@@ -1535,17 +1540,17 @@ public class MyService extends Service {
             return ok;
         }
 
-        private boolean retweet(String accountNameIn, long retweetedId) {
+        private boolean reblog(String accountNameIn, long rebloggedId) {
             MyAccount ma = MyAccount.getMyAccount(accountNameIn);
-            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, retweetedId);
+            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, rebloggedId);
             boolean ok = false;
             JSONObject result = new JSONObject();
             try {
                 result = ma.getConnection()
-                        .postRetweet(oid);
+                        .postReblog(oid);
                 ok = (result != null);
             } catch (ConnectionException e) {
-                Log.e(TAG, "retweet Exception: " + e.toString());
+                Log.e(TAG, "reblog Exception: " + e.toString());
             }
             if (ok) {
                 synchronized(MyService.this) {
@@ -1558,10 +1563,10 @@ public class MyService extends Service {
 
                             fl.insertFromJSONObject(result, true);
                         } catch (JSONException e) {
-                            Log.e(TAG, "retweet JSONException: " + e.toString());
+                            Log.e(TAG, "reblog JSONException: " + e.toString());
                         }
                     } else {
-                        Log.e(TAG, "retweet - " + SERVICE_NOT_RESTORED_TEXT);
+                        Log.e(TAG, "reblog - " + SERVICE_NOT_RESTORED_TEXT);
                     }
                 }        
             }

@@ -317,7 +317,7 @@ public class MyProvider extends ContentProvider {
                     msgOfUserValues.put(MsgOfUser.USER_ID, accountId);
                     moveKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
                     moveKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
-                    moveKey(MsgOfUser.RETWEETED, values, msgOfUserValues);
+                    moveKey(MsgOfUser.REBLOGGED, values, msgOfUserValues);
                     moveKey(MsgOfUser.MENTIONED, values, msgOfUserValues);
                     moveKey(MsgOfUser.REPLIED, values, msgOfUserValues);
                     moveKey(MsgOfUser.DIRECTED, values, msgOfUserValues);
@@ -657,7 +657,7 @@ public class MyProvider extends ContentProvider {
         sTweetsProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
         sTweetsProjectionMap.put(MsgOfUser.USER_ID, MsgOfUser.USER_ID);
         sTweetsProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
-        sTweetsProjectionMap.put(MsgOfUser.RETWEETED, MsgOfUser.RETWEETED);
+        sTweetsProjectionMap.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
         sTweetsProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
         sTweetsProjectionMap.put(Msg.SENT_DATE, Msg.SENT_DATE);
         sTweetsProjectionMap.put(Msg.INS_DATE, Msg.INS_DATE);

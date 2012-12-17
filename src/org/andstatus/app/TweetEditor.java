@@ -69,8 +69,18 @@ class TweetEditor {
     /**
      * {@link MyAccount} to use with this message (send/reply As ...)
      */
-    private String mAccountGuid = "";
+    private MyAccount mAccount = null;
     private boolean mShowAccount = false;
+
+    /**
+     * Do we hold loaded but not restored state
+     */
+    private boolean mIsStateLoaded = false;
+    private String mStatus_restored = "";
+    private long mReplyToId_restored = 0;
+    private long mRecipientId_restored = 0;
+    private String mAccountGuid_restored = "";
+    private boolean mShowAccount_restored = false;
     
     public TweetEditor(TimelineActivity activity) {
         mActivity = activity;
@@ -89,7 +99,9 @@ class TweetEditor {
 
         mEditText.addTextChangedListener(new TextWatcher() {
             public void afterTextChanged(Editable s) {
-                mCharsLeftText.setText(String.valueOf(MyAccount.getCurrentMyAccount().messageCharactersLeft(s.toString())));
+                if (mAccount != null) {
+                    mCharsLeftText.setText(String.valueOf(mAccount.messageCharactersLeft(s.toString())));
+                }
             }
 
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -112,7 +124,7 @@ class TweetEditor {
                                 return true;
                             }
                         default:
-                            mCharsLeftText.setText(String.valueOf(MyAccount.getCurrentMyAccount()
+                            mCharsLeftText.setText(String.valueOf(mAccount
                                     .messageCharactersLeft(mEditText.getText().toString())));
                             break;
                     }
@@ -149,7 +161,7 @@ class TweetEditor {
     }
 
     public void show() {
-        mCharsLeftText.setText(String.valueOf(MyAccount.getCurrentMyAccount()
+        mCharsLeftText.setText(String.valueOf(mAccount
                 .messageCharactersLeft(mEditText.getText().toString())));
 
         mEditor.setVisibility(View.VISIBLE);
@@ -181,14 +193,18 @@ class TweetEditor {
      * @param recipientId =0 if this is Public message
      */
     public void startEditingMessage(String textInitial, long replyToId, long recipientId, String accountGuid, boolean showAccount) {
+        String accountGuid_prev = "";
+        if (mAccount != null) {
+            accountGuid_prev = mAccount.getAccountGuid();
+        }
         if (mReplyToId != replyToId || mRecipientId != recipientId 
-                || mAccountGuid.compareTo(accountGuid) != 0
+                || accountGuid_prev.compareTo(accountGuid) != 0 || !mAccount.isPersistent()
                 || mShowAccount != showAccount) {
             mReplyToId = replyToId;
             mRecipientId = recipientId;
-            mAccountGuid = accountGuid;
+            mAccount = MyAccount.getMyAccount(accountGuid);
             mShowAccount = showAccount;
-            String messageDetails = (showAccount ? mAccountGuid : "");
+            String messageDetails = (showAccount ? mAccount.getAccountGuid() : "");
             if (recipientId == 0) {
                 if (replyToId != 0) {
                     String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, replyToId);
@@ -215,7 +231,7 @@ class TweetEditor {
         }
         
         // Start asynchronous task that will show Rate limit status
-        mActivity.serviceConnector.sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccountGuid));
+        mActivity.serviceConnector.sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccount.getAccountGuid()));
         
         show();
     }
@@ -231,13 +247,13 @@ class TweetEditor {
         if (TextUtils.isEmpty(status.trim())) {
             Toast.makeText(mActivity, R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
-        } else if (MyAccount.getCurrentMyAccount().messageCharactersLeft(status) < 0) {
+        } else if (mAccount.messageCharactersLeft(status) < 0) {
             Toast.makeText(mActivity, R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
             CommandData commandData = new CommandData(
                     CommandEnum.UPDATE_STATUS,
-                    MyAccount.getCurrentMyAccount().getAccountGuid());
+                    mAccount.getAccountGuid());
             commandData.bundle.putString(MyService.EXTRA_STATUS, status);
             if (mReplyToId != 0) {
                 commandData.bundle.putLong(MyService.EXTRA_INREPLYTOID, mReplyToId);
@@ -253,6 +269,8 @@ class TweetEditor {
             mReplyToId = 0;
             mRecipientId = 0;
             mEditText.setText("");
+            mAccount = null;
+            mShowAccount = false;
 
             hide();
         }
@@ -267,16 +285,50 @@ class TweetEditor {
     }
     
     public void saveState(Bundle outState) {
+        mIsStateLoaded = false;
         if (outState != null) {
-            outState.putLong(MyService.EXTRA_INREPLYTOID, mReplyToId);
+            if (mEditText != null && mAccount != null) {
+                String status = mEditText.getText().toString();
+                if (!TextUtils.isEmpty(status)) {
+                    outState.putString(MyService.EXTRA_STATUS, status);
+                    outState.putLong(MyService.EXTRA_INREPLYTOID, mReplyToId);
+                    outState.putLong(MyService.EXTRA_RECIPIENTID, mRecipientId);
+                    outState.putString(MyService.EXTRA_ACCOUNT_NAME, mAccount.getAccountGuid());
+                    outState.putBoolean(MyService.EXTRA_SHOW_ACCOUNT, mShowAccount);
+                }
+            }
         }
     }
     
     public void loadState(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             if (savedInstanceState.containsKey(MyService.EXTRA_INREPLYTOID)) {
-                mReplyToId = savedInstanceState.getLong(MyService.EXTRA_INREPLYTOID);
+                if (savedInstanceState.containsKey(MyService.EXTRA_STATUS)) {
+                    String status = savedInstanceState.getString(MyService.EXTRA_STATUS);
+                    if (!TextUtils.isEmpty(status)) {
+                        mStatus_restored = status;
+                        mReplyToId_restored = savedInstanceState.getLong(MyService.EXTRA_INREPLYTOID);
+                        mRecipientId_restored = savedInstanceState.getLong(MyService.EXTRA_RECIPIENTID);
+                        mAccountGuid_restored = savedInstanceState.getString(MyService.EXTRA_ACCOUNT_NAME);
+                        mShowAccount_restored = savedInstanceState.getBoolean(MyService.EXTRA_SHOW_ACCOUNT);
+                        mIsStateLoaded = true;
+                    }
+                }
             }
+        }
+    }
+    
+    /**
+     * Do we hold loaded but not restored state?
+     */
+    public boolean isStateLoaded() {
+        return mIsStateLoaded;
+    }
+    
+    public void continueEditingLoadedState() {
+        if (isStateLoaded()) {
+            mIsStateLoaded = false;
+            startEditingMessage(mStatus_restored, mReplyToId_restored, mRecipientId_restored, mAccountGuid_restored, mShowAccount_restored);
         }
     }
 }

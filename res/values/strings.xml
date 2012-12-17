@@ -112,7 +112,7 @@
 	<string name="menu_item_favorite">Favorite</string>
 	<string name="menu_item_follow">Follow</string>
 	<string name="menu_item_reply">Reply</string>
-	<string name="menu_item_retweet">Reblog</string>
+	<string name="menu_item_reblog">Reblog</string>
     <string name="menu_item_share">Share</string>
 	<string name="menu_item_unfollow">Unfollow</string>
 	<string name="menu_item_view_profile">View Profile</string>
@@ -232,7 +232,7 @@
 	<string name="tweet_source_from">from %1$s</string>
 	<string name="tweet_source_in_reply_to">in reply to %1$s</string>
 	<string name="tweet_source_to">to %1$s</string>
-	<string name="retweeted_by">reblogged by %1$s</string>
+	<string name="reblogged_by">reblogged by %1$s</string>
     <string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Not implemented.</string>
 </resources>

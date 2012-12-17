@@ -213,9 +213,9 @@ public class TimelineDownloader {
         try {
             ContentValues values = new ContentValues();
 
-            // We use Created date from this message even for retweets in order to
+            // We use Created date from this message even for reblogs in order to
             // get natural order of the tweets.
-            // Otherwise retweeted message may appear as old
+            // Otherwise reblogged message may appear as old
             if (msg.has("created_at")) {
                 Long created = 0L;
                 String createdAt = msg.getString("created_at");
@@ -245,24 +245,24 @@ public class TimelineDownloader {
             
             // Author
             long authorId = senderId;
-            // Is this retweet
+            // Is this reblog
             if (msg.has("retweeted_status")) {
-                JSONObject retweetedMessage = msg.getJSONObject("retweeted_status");
+                JSONObject rebloggedMessage = msg.getJSONObject("retweeted_status");
                 // Author of that message
                 JSONObject author;
-                author = retweetedMessage.getJSONObject("user");
+                author = rebloggedMessage.getJSONObject("user");
                 authorId = insertUserFromJSONObject(author);
 
                 if (ma.getUserId() == senderId) {
                     // Msg was retweeted by current User (he is Sender)
-                    values.put(MyDatabase.MsgOfUser.RETWEETED, 1);
+                    values.put(MyDatabase.MsgOfUser.REBLOGGED, 1);
                 }
                 
-                // And replace retweet with original message!
-                // So we won't have lots of retweets but rather one original message
-                msg = retweetedMessage;
+                // And replace reblog with original message!
+                // So we won't have lots of reblogs but rather one original message
+                msg = rebloggedMessage;
 
-                // Created date may be different for retweets:
+                // Created date may be different for reblogs:
                 if (msg.has("created_at")) {
                     Long created = 0L;
                     String createdAt = msg.getString("created_at");

@@ -109,7 +109,7 @@
 	<string name="menu_item_favorite">Mettre en favori</string>
 	<string name="menu_item_follow">S\'abonner</string>
 	<string name="menu_item_reply">Répondre</string>
-	<string name="menu_item_retweet">Retweeter</string>
+	<string name="menu_item_reblog">Retweeter</string>
     <string name="menu_item_share">Partager</string>
 	<string name="menu_item_unfollow">Se désabonner</string>
 	<string name="menu_item_view_profile">Voir le profile</string>
@@ -229,7 +229,7 @@
 	<string name="tweet_source_from">de %1$s</string>
 	<string name="tweet_source_in_reply_to">en réponse à %1$s</string>
 	<string name="tweet_source_to">à %1$s</string>
-	<string name="retweeted_by">retweeté par %1$s</string>
+	<string name="reblogged_by">retweeté par %1$s</string>
     <string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Non implémenté.</string>
 </resources>
