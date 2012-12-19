@@ -201,10 +201,10 @@ public class ConnectionBasicAuth extends Connection {
     }
 
     @Override
-    public JSONObject postRetweet(String retweetedId) throws ConnectionException {
+    public JSONObject postReblog(String rebloggedId) throws ConnectionException {
         JSONObject jObj = null;
         try {
-            jObj = new JSONObject(postRequest(getApiUrl(apiEnum.POST_RETWEET) + retweetedId + EXTENSION));
+            jObj = new JSONObject(postRequest(getApiUrl(apiEnum.POST_REBLOG) + rebloggedId + EXTENSION));
             String error = jObj.optString("error");
             if ("Could not authenticate you.".equals(error)) {
                 throw new ConnectionException(error);

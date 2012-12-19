@@ -185,7 +185,9 @@ public class TimelineDownloader {
                 }
             }
             if (mMessages > 0) {
-                mContentResolver.notifyChange(MyProvider.getTimelineUri(ma.getUserId()), null);
+                // Notify all timelines, 
+                // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
+                mContentResolver.notifyChange(MyProvider.TIMELINE_URI, null);
             }
             ma.getMyAccountPreferences().edit().putLong(MyAccount.KEY_LAST_TIMELINE_ID + mTimelineType.save(),
                     lastMsgId).commit();
@@ -211,9 +213,9 @@ public class TimelineDownloader {
         try {
             ContentValues values = new ContentValues();
 
-            // We use Created date from this message even for retweets in order to
+            // We use Created date from this message even for reblogs in order to
             // get natural order of the tweets.
-            // Otherwise retweeted message may appear as old
+            // Otherwise reblogged message may appear as old
             if (msg.has("created_at")) {
                 Long created = 0L;
                 String createdAt = msg.getString("created_at");
@@ -243,24 +245,24 @@ public class TimelineDownloader {
             
             // Author
             long authorId = senderId;
-            // Is this retweet
+            // Is this reblog
             if (msg.has("retweeted_status")) {
-                JSONObject retweetedMessage = msg.getJSONObject("retweeted_status");
+                JSONObject rebloggedMessage = msg.getJSONObject("retweeted_status");
                 // Author of that message
                 JSONObject author;
-                author = retweetedMessage.getJSONObject("user");
+                author = rebloggedMessage.getJSONObject("user");
                 authorId = insertUserFromJSONObject(author);
 
                 if (ma.getUserId() == senderId) {
-                    // Msg was retweeted by current User (he is Sender)
-                    values.put(MyDatabase.MsgOfUser.RETWEETED, 1);
+                    // Msg was reblogged by current User (he is Sender)
+                    values.put(MyDatabase.MsgOfUser.REBLOGGED, 1);
                 }
                 
-                // And replace retweet with original message!
-                // So we won't have lots of retweets but rather one original message
-                msg = retweetedMessage;
+                // And replace reblog with original message!
+                // So we won't have lots of reblogs but rather one original message
+                msg = rebloggedMessage;
 
-                // Created date may be different for retweets:
+                // Created date may be different for reblogs:
                 if (msg.has("created_at")) {
                     Long created = 0L;
                     String createdAt = msg.getString("created_at");
@@ -415,7 +417,7 @@ public class TimelineDownloader {
             if (rowId == 0) {
                 // There was no such row so add new one
                 msgUri = mContentResolver.insert(MyProvider.getTimelineUri(ma.getUserId()), values);
-                rowId = Long.parseLong(msgUri.getPathSegments().get(3));
+                rowId = MyProvider.uriToMessageId(msgUri);
             } else {
               mContentResolver.update(msgUri, values, null, null);
             }
@@ -536,9 +538,7 @@ public class TimelineDownloader {
             SQLiteConstraintException {
         long rowId = insertFromJSONObject(jo);
         if (notify) {
-            // Construct the Uri to the Msg
-            Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
-            mContentResolver.notifyChange(msgUri, null);
+            mContentResolver.notifyChange(MyProvider.TIMELINE_URI, null);
         }
         return rowId;
     }

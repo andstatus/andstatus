@@ -33,6 +33,7 @@ import android.widget.RemoteViews;
 import org.andstatus.app.MyService;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
@@ -227,12 +228,12 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 					break;
 		
 				case NOTIFY_DIRECT_MESSAGE:
-					data.numMessages += numSomethingReceived;
+					data.numDirectMessages += numSomethingReceived;
                     data.checked();
 					break;
 		
-				case NOTIFY_TIMELINE:
-					data.numTweets += numSomethingReceived;
+				case NOTIFY_HOME_TIMELINE:
+					data.numHomeTimeline += numSomethingReceived;
                     data.checked();
 					break;
 		
@@ -273,22 +274,22 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 	                                R.array.appwidget_mention_patterns,
 	                                R.array.appwidget_mention_formats);
 	            }
-	            if (data.numMessages > 0) {
+	            if (data.numDirectMessages > 0) {
 	                isFound = true;
 	                widgetText += (widgetText.length() > 0 ? "\n" : "")
 	                        + I18n.formatQuantityMessage(context,
 	                                R.string.appwidget_new_message_format,
-	                                data.numMessages,
-	                                R.array.appwidget_message_patterns,
-	                                R.array.appwidget_message_formats);
+	                                data.numDirectMessages,
+	                                R.array.appwidget_directmessage_patterns,
+	                                R.array.appwidget_directmessage_formats);
 	            }
-	            if (data.numTweets > 0) {
+	            if (data.numHomeTimeline > 0) {
 	                isFound = true;
 	                widgetText += (widgetText.length() > 0 ? "\n" : "")
 	                        + I18n.formatQuantityMessage(context,
 	                                R.string.appwidget_new_tweet_format,
-	                                data.numTweets, R.array.appwidget_tweet_patterns,
-	                                R.array.appwidget_tweet_formats);
+	                                data.numHomeTimeline, R.array.appwidget_message_patterns,
+	                                R.array.appwidget_message_formats);
 	            }
 	            if (!isFound) {
 	                widgetComment = data.nothingPref;
@@ -331,11 +332,11 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			views.setTextViewText(R.id.appwidget_time, widgetTime);
 
 			// When user clicks on widget, launch main AndStatus activity,
-			//   Open timeline, where there are new tweets, or "Home" timeline
+			//   Open timeline, where there are new messages, or "Home" timeline
 			Intent intent;
-			MyDatabase.TimelineTypeEnum timeLineType = TimelineTypeEnum.UNKNOWN;
+			MyDatabase.TimelineTypeEnum timeLineType = TimelineTypeEnum.HOME;
             intent = new Intent(context, TimelineActivity.class);
-			if (data.numMessages > 0) {
+			if (data.numDirectMessages > 0) {
 			    timeLineType = MyDatabase.TimelineTypeEnum.DIRECT;
 			} else {
 			    if (data.numMentions > 0) {
@@ -344,10 +345,20 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			}
             intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
                     timeLineType.save());
+
+            if ( data.areNew() ) {
+                // TODO: We don't mention MyAccount in the intent 
+                // On the other hand the Widget is also is not Account aware yet,
+                //   so for now this is correct.
+                if (MyAccount.list().length > 1) {
+                    // There are more than one account, 
+                    // so turn Combined timeline on in order to show all new messages.
+                    intent.putExtra(MyService.EXTRA_TIMELINE_IS_COMBINED, true);
+                }
+            }
+            
             // This line is necessary to actually bring Extra to the target intent
             // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
-            // TODO: This line currently doesn't mention MyAccount. On the other hand the Widget is also is not Account aware yet,
-            //   so for now this is correct.
             intent.setData((android.net.Uri.parse(MyProvider.TIMELINE_URI.toString() + "#" + android.os.SystemClock.elapsedRealtime())));
 			PendingIntent pendingIntent = PendingIntent.getActivity(context,
 					0 /* no requestCode */, intent, 0 /* no flags */);

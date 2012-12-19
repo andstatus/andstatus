@@ -407,8 +407,8 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
     }
     
     @Override
-    public JSONObject postRetweet(String retweetedId) throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(apiEnum.POST_RETWEET) + retweetedId + EXTENSION);
+    public JSONObject postReblog(String rebloggedId) throws ConnectionException {
+        HttpPost post = new HttpPost(getApiUrl(apiEnum.POST_REBLOG) + rebloggedId + EXTENSION);
         return postRequest(post);
     }
 

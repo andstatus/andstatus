@@ -403,13 +403,16 @@ public class AccountSettings extends PreferenceActivity implements
             }
             
             if (state.myAccount == null) {
-                if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
+                if (!state.getAccountAction().equals(Intent.ACTION_INSERT)) {
+                    state.myAccount = MyAccount.getCurrentMyAccount();
+                }
+                if (state.myAccount == null) {
+                    state.setAccountAction(Intent.ACTION_INSERT);
                     state.myAccount = MyAccount.getMyAccount("");
                     // Check if there are changes to avoid "ripples"
                     // ...
                     // TODO check this: state.actionCompleted = false;
                 } else {
-                    state.myAccount = MyAccount.getCurrentMyAccount();
                     state.setAccountAction(Intent.ACTION_VIEW);
                 }
             } else {
@@ -437,7 +440,7 @@ public class AccountSettings extends PreferenceActivity implements
             case REQUEST_SELECT_ACCOUNT:
                 if (resultCode == RESULT_OK) {
                     state.myAccount = MyAccount.getCurrentMyAccount();
-                    if (!state.myAccount.isPersistent()) {
+                    if (state.myAccount == null) {
                         mIsFinishing = true;
                     }
                 } else {

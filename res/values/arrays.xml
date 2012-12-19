@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
+    Copyright (C) 2012 Yuri Volkov, yvolk@yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +16,11 @@
 	limitations under the License.
  -->
 <resources>
-	<string-array name="appwidget_tweet_formats">
-		<item>"{0} tweet"</item>
-		<item>"{0} tweets"</item>
+	<string-array name="appwidget_message_formats">
+		<item>"{0} message"</item>
+		<item>"{0} messages"</item>
 	</string-array>
-	<string-array name="appwidget_tweet_patterns">
+	<string-array name="appwidget_message_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
@@ -28,17 +29,17 @@
 		<item>"{0} mentions"</item>
 	</string-array>
 	<string-array name="appwidget_mention_patterns">
-		<!-- same as @appwidget_tweet_patterns,
+		<!-- same as @appwidget_message_patterns,
 		but I couldn't refer to existing resource, e.g. by 
-		@array/appwidget_tweet_patterns -->
+		@array/appwidget_message_patterns -->
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
-	<string-array name="appwidget_message_formats">
-		<item>"{0} message"</item>
-		<item>"{0} messages"</item>
+	<string-array name="appwidget_directmessage_formats">
+		<item>"{0} direct"</item>
+		<item>"{0} direct"</item>
 	</string-array>
-	<string-array name="appwidget_message_patterns">
+	<string-array name="appwidget_directmessage_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>

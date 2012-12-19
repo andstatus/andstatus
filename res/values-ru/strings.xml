@@ -32,7 +32,7 @@
 	<string name="activity_title_format">%1$s: %2$s</string>
 	<string name="activity_title_mentions">Упоминания</string>
 	<string name="activity_title_search">Поиск</string>
-	<string name="activity_title_timeline">Дом</string>
+	<string name="activity_title_home">Дом</string>
 
     <string name="appwidget_configure_instructions">Настройте сообщение Виджета, которое показывается в том случае, если нет ничего нового:</string>
     <string name="appwidget_nothingnew_default">Ничего нового после:</string>
@@ -44,8 +44,9 @@
 	<string name="authentication_never">Пока не аутентифицирован</string>
 	<string name="authentication_successful">Успешная аутентификация (проверка логина и пароля…)!</string>
 	<string name="button_send">Отправить</string>
-    <string name="button_create_tweet">Твит</string>
-	<string name="cannot_send_empty_message">Невозможно отправить пустое сообщение.</string>
+    <string name="button_create_message">Блог</string>
+    <string name="button_create_message_twitter">Блог</string>
+    <string name="cannot_send_empty_message">Невозможно отправить пустое сообщение.</string>
 	<string name="category_title_preference_appearance">Внешний вид</string>
 	<string name="category_title_preference_automatic_updates">Обновления</string>
 	<string name="category_title_preference_credentials">Имя пользователя и пароль</string>
@@ -98,7 +99,9 @@
     <string name="label_conversation">Обсуждение</string>
 	<string name="label_conversationactivity">Твит</string>
     <string name="loading">Загрузка…</string>
-	<string name="message_edit_hint">Что происходит?</string>
+    <string name="message">Сообщение</string>
+    <string name="message_twitter">Сообщение</string>
+    <string name="message_edit_hint">Что происходит?</string>
 	<string name="message_characters_left">Осталось символов:</string>
     <string name="message_is_too_long">Сообщение - слишком длинное.</string>
     <string name="menu_item_block">Блокировать</string>
@@ -108,8 +111,9 @@
 	<string name="menu_item_favorite">Добавить в избранное</string>
 	<string name="menu_item_follow">Следить</string>
 	<string name="menu_item_reply">Ответить</string>
-	<string name="menu_item_retweet">Пересказать</string>
-    <string name="menu_item_share">Поделиться</string>
+	<string name="menu_item_reblog">Пересказать</string>
+	<string name="menu_item_reblog_twitter">Пересказать</string>
+	<string name="menu_item_share">Поделиться</string>
     <string name="menu_item_unfollow">Не следить</string>
 	<string name="menu_item_view_profile">Посмотреть профиль</string>
 	<string name="message_sent">Ваше сообщение отправлено.</string>
@@ -223,10 +227,11 @@
 	<string name="title_preference_verify_credentials">Перепроверить аккаунт</string>
 	<string name="title_preference_verify_credentials_failed">Проверить аккаунт</string>
 	<string name="title_preference_vibration">Виброзвонок</string>
-	<string name="tweet_source_from">из %1$s</string>
-	<string name="tweet_source_in_reply_to">в ответ на %1$s</string>
-	<string name="tweet_source_to">для %1$s</string>
-	<string name="retweeted_by">пересказано %1$s</string>
-    <string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
+	<string name="message_source_from">из %1$s</string>
+	<string name="message_source_in_reply_to">в ответ на %1$s</string>
+	<string name="message_source_to">для %1$s</string>
+	<string name="reblogged_by">пересказано %1$s</string>
+	<string name="reblogged_by_twitter">пересказано %1$s</string>
+	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Не реализовано.</string>
 </resources>

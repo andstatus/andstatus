@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-	Copyright (C) 2010 Yuri Volkov, yvolk@yurivolkov.com
+	Copyright (C) 2010-2012 Yuri Volkov, yvolk@yurivolkov.com
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 	Note: Test RegEx at http://www.regexplanet.com/simple/index.html
  -->
 <resources>
-	<string-array name="appwidget_tweet_formats">
-		<item>"{0} твит"</item>
-		<item>"{0} твита"</item>
-		<item>"{0} твитов"</item>
+	<string-array name="appwidget_message_formats">
+		<item>"{0} сообщение"</item>
+		<item>"{0} сообщения"</item>
+		<item>"{0} сообщений"</item>
 	</string-array>
-	<string-array name="appwidget_tweet_patterns">
+	<string-array name="appwidget_message_patterns">
 		<item>".*[^1]1|1"</item> <!--  ..except 11 at the end of line... -->
 		<item>".*[^1][234]|2|3|4"</item> <!--  ..except 12,13 and 14 at the end of line... -->
 		<item>".*"</item>
@@ -37,12 +37,12 @@
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>
 	</string-array>
-	<string-array name="appwidget_message_formats">
-		<item>"{0} сообщение"</item>
-		<item>"{0} сообщения"</item>
-		<item>"{0} сообщений"</item>
+	<string-array name="appwidget_directmessage_formats">
+		<item>"{0} личное"</item>
+		<item>"{0} личных"</item>
+		<item>"{0} личных"</item>
 	</string-array>
-	<string-array name="appwidget_message_patterns">
+	<string-array name="appwidget_directmessage_patterns">
 		<item>".*[^1]1|1"</item>
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>

@@ -113,16 +113,11 @@ public class ConversationActivity extends Activity {
         final Intent intent = getIntent();
         Uri uri = intent.getData();
 
-        long accountId = MyProvider.uriToAccountId(uri);
-        if (accountId != 0) {
-            ma = MyAccount.getMyAccount(accountId);
-        }
-        if (ma == null) {
-            ma = MyAccount.getCurrentMyAccount();
-        }
-
         mCurrentId = MyProvider.uriToMessageId(uri);
-        showConversation();
+        ma = MyAccount.getMyAccountForTheMessage(mCurrentId, MyProvider.uriToAccountId(uri));
+        if (ma != null) {
+            showConversation();
+        }
     }
 
     protected void showConversation() {
@@ -282,13 +277,13 @@ public class ConversationActivity extends Activity {
             if (!MyPreferences.isEmpty(row.via)) {
                 messageDetails += " " + String.format(
                         Locale.getDefault(),
-                        getText(R.string.tweet_source_from).toString(),
+                        getText(R.string.message_source_from).toString(),
                         row.via);
             }
             if (!MyPreferences.isEmpty(row.replyToName)) {
                 messageDetails += " "
                         + String.format(Locale.getDefault(),
-                                getText(R.string.tweet_source_in_reply_to).toString(),
+                                getText(R.string.message_source_in_reply_to).toString(),
                                 row.replyToName);
             }
             if (!MyPreferences.isEmpty(row.sender)) {
@@ -297,13 +292,13 @@ public class ConversationActivity extends Activity {
                         messageDetails += ";";
                     }
                     messageDetails += " "
-                            + String.format(Locale.getDefault(), getText(R.string.retweeted_by)
+                            + String.format(Locale.getDefault(), getText(ma.alternativeTermResourceId(R.string.reblogged_by))
                                     .toString(), row.sender);
                 }
             }
             if (!MyPreferences.isEmpty(row.recipientName)) {
                 messageDetails += " "
-                        + String.format(Locale.getDefault(), getText(R.string.tweet_source_to)
+                        + String.format(Locale.getDefault(), getText(R.string.message_source_to)
                                 .toString(), row.recipientName);
             }
             details.setText(messageDetails);

@@ -15,11 +15,11 @@
 	limitations under the License.
  -->
 <resources>
-	<string-array name="appwidget_tweet_formats">
+	<string-array name="appwidget_message_formats">
 		<item>"{0} tweet"</item>
 		<item>"{0} tweets"</item>
 	</string-array>
-	<string-array name="appwidget_tweet_patterns">
+	<string-array name="appwidget_message_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
@@ -28,17 +28,17 @@
 		<item>"{0} mentions"</item>
 	</string-array>
 	<string-array name="appwidget_mention_patterns">
-		<!-- same as @appwidget_tweet_patterns,
+		<!-- same as @appwidget_message_patterns,
 		but I couldn't refer to existing resource, e.g. by 
-		@array/appwidget_tweet_patterns -->
+		@array/appwidget_message_patterns -->
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
-	<string-array name="appwidget_message_formats">
+	<string-array name="appwidget_directmessage_formats">
 		<item>"{0} message"</item>
 		<item>"{0} messages"</item>
 	</string-array>
-	<string-array name="appwidget_message_patterns">
+	<string-array name="appwidget_directmessage_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>

@@ -15,12 +15,15 @@
  */
 package org.andstatus.app.account;
 
+import android.net.Uri;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 import android.util.Log;
 
+import org.andstatus.app.R;
+import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionBasicAuth;
 import org.andstatus.app.net.ConnectionOAuth;
@@ -41,12 +44,18 @@ public class Origin {
         TWITTER,
         IDENTICA
     }
+
+    /**
+     * Predefined ID for Twitter system 
+     * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
+     */
+    public static long ORIGIN_ID_TWITTER = 1;
     
     /**
      * Default value for the Originating system mId.
      * TODO: Create a table of these "Origins" ?!
      */
-    public static long ORIGIN_ID_DEFAULT = 1;
+    public static long ORIGIN_ID_DEFAULT = ORIGIN_ID_TWITTER;
     /**
      * Predefined ID for default Status.net system 
      * <a href="http://status.net/wiki/Twitter-compatible_API">identi.ca API</a>
@@ -55,7 +64,7 @@ public class Origin {
     /**
      * Name of the default Originating system (it is unique and permanent as an ID).
      */
-    public static String ORIGIN_NAME_DEFAULT = "Twitter";
+    public static String ORIGIN_NAME_TWITTER = "Twitter";
     public static String ORIGIN_NAME_IDENTICA = "identi.ca";
 
     /**
@@ -199,9 +208,9 @@ public class Origin {
     private Origin(String name) {
         mName = name;
         // TODO: Persistence for Origins
-        if (this.mName.compareToIgnoreCase(ORIGIN_NAME_DEFAULT) == 0) {
+        if (this.mName.compareToIgnoreCase(ORIGIN_NAME_TWITTER) == 0) {
             mApi = OriginApiEnum.TWITTER;
-            mId = ORIGIN_ID_DEFAULT;
+            mId = ORIGIN_ID_TWITTER;
             mOAuth = true;
             mCanChangeOAuth = false;
             mCanSetUsername = false;
@@ -219,7 +228,7 @@ public class Origin {
     }
     
     private Origin(long id) {
-        this(id == ORIGIN_ID_DEFAULT ? ORIGIN_NAME_DEFAULT :
+        this(id == ORIGIN_ID_TWITTER ? ORIGIN_NAME_TWITTER :
                 id == ORIGIN_ID_IDENTICA ? ORIGIN_NAME_IDENTICA :
                         "");
     }
@@ -247,5 +256,52 @@ public class Origin {
             
         }
         return (CHARS_MAX - messageLength);
+    }
+    
+    /**
+     * In order to comply with Twitter's "Developer Display Requirements" 
+     *   https://dev.twitter.com/terms/display-requirements
+     * @param resId
+     * @return Id of alternative (proprietary) term/phrase
+     */
+    public int alternativeTermResourceId(int resId) {
+        int resId_out = resId;
+        if (getId() == ORIGIN_ID_TWITTER) {
+            switch (resId) {
+                case R.string.button_create_message:
+                    resId_out = R.string.button_create_message_twitter;
+                    break;
+                case R.string.menu_item_reblog:
+                    resId_out = R.string.menu_item_reblog_twitter;
+                    break;
+                case R.string.message:
+                    resId_out = R.string.message_twitter;
+                    break;
+                case R.string.reblogged_by:
+                    resId_out = R.string.reblogged_by_twitter;
+                    break;
+            }
+        }
+        return resId_out;
+    }
+    
+    /**
+     * @param userName Username in the Originating system
+     * @param messageOid {@link MyDatabase.Msg#MSG_OID}
+     * @return URL
+     */
+    public String messagePermalink(String userName, String messageOid) {
+        String url = "";
+        if (getId() == ORIGIN_ID_TWITTER) {
+            url = "https://twitter.com/"
+                    + userName 
+                    + "/status/"
+                    + messageOid;
+        } else if (getId() == ORIGIN_ID_IDENTICA) {
+            url = "http://identi.ca/"
+                    + userName; 
+        } 
+        
+        return url;
     }
 }

@@ -372,24 +372,31 @@ public class MyAccount implements Parcelable {
                 ind = 0;
             }
         }
-        if (ind < 0) {
-            // Add new MyAccount with empty name
-            ma = getMyAccount("");
-        } else {
+        if (ind >= 0) {
             ma = mMyAccounts.elementAt(ind);
-        }
-        
-        // Correct Current and Default Accounts if needed
-        if (TextUtils.isEmpty(currentAccountName)) {
-            ma.setCurrentMyAccount();
-        }
-        if (TextUtils.isEmpty(defaultAccountName)) {
-            ma.setDefaultMyAccount();
+            // Correct Current and Default Accounts if needed
+            if (TextUtils.isEmpty(currentAccountName)) {
+                ma.setCurrentMyAccount();
+            }
+            if (TextUtils.isEmpty(defaultAccountName)) {
+                ma.setDefaultMyAccount();
+            }
         }
 
         return ma;
     }
 
+    /**
+     * @return 0 if no current account
+     */
+    public static long getCurrentMyAccountUserId() {
+        long userId = 0;
+        if (getCurrentMyAccount() != null) {
+            userId = getCurrentMyAccount().getUserId();
+        }
+        return userId;
+    }
+    
     /** 
      * Array of MyAccount objects
      */
@@ -478,6 +485,55 @@ public class MyAccount implements Parcelable {
             }
         }
         if (!found) { ma = null;}
+        return ma;
+    }
+
+
+    /**
+     * Return first found MyAccount with provided originId
+     * @param originId
+     * @return null if not found
+     */
+    private static MyAccount findFirstMyAccountByOriginId(long originId) {
+        boolean found = false;
+        MyAccount ma = null;
+        for (int ind = 0; ind < mMyAccounts.size(); ind++) {
+            if (mMyAccounts.elementAt(ind).getOriginId() == originId) {
+                found = true;
+                ma = mMyAccounts.elementAt(ind);
+                break;
+            }
+        }
+        if (!found) { ma = null;}
+        return ma;
+    }
+    
+    /**
+     * For any action with the message we should choose an Account 
+     * from the same originating (source) System
+     * @param systemId  Message ID, 0 for the message creation
+     * @param userId User ID in the timeline, 0 if the message doesn't belong to any timeline
+     * @return null if not found
+     */
+    public static MyAccount getMyAccountForTheMessage(long systemId, long userId)
+    {
+        MyAccount ma = null;
+        if (systemId == 0) {
+            ma = getCurrentMyAccount();
+        } else {
+            ma = getMyAccount(userId);
+            if (ma == null) {
+                ma = getCurrentMyAccount();
+            }
+            long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, systemId);
+            if ( originId != ma.getOriginId()) {
+               ma = findFirstMyAccountByOriginId(originId); 
+            }
+        }
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            Log.v(TAG, "getMyAccountForTheMessage systemId=" + systemId +"; userId=" + userId 
+                    + "; account=" + (ma==null ? "null" : ma.getAccountGuid()));
+        }
         return ma;
     }
     
@@ -623,7 +679,7 @@ public class MyAccount implements Parcelable {
     private static String fixAccountName(String accountName) {
         accountName = fixUsername(accountName);
         if (accountName.indexOf("/") < 0) {
-            accountName = Origin.ORIGIN_NAME_DEFAULT + "/" + accountName;   
+            accountName = Origin.ORIGIN_NAME_TWITTER + "/" + accountName;   
            }
         return accountName;
     }
@@ -656,7 +712,7 @@ public class MyAccount implements Parcelable {
     private static String accountNameToOriginName(String accountName) {
         accountName = fixAccountName(accountName);
         int indSlash = accountName.indexOf("/");
-        String originName = Origin.ORIGIN_NAME_DEFAULT;
+        String originName = Origin.ORIGIN_NAME_TWITTER;
         if (indSlash >= 0) {
             originName = accountName.substring(0, indSlash);
         }
@@ -716,13 +772,13 @@ public class MyAccount implements Parcelable {
         }
         mAccount = account;
 
-        String originName = Origin.ORIGIN_NAME_DEFAULT;
+        String originName = Origin.ORIGIN_NAME_TWITTER;
         String userName = "";
         if (isPersistent()) {
             originName = accountNameToOriginName(getAccount().name);
             userName = accountNameToUsername(getAccount().name);
         } else {
-            originName = getDataString(MyAccount.KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_DEFAULT);
+            originName = getDataString(MyAccount.KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER);
             userName = getDataString(MyAccount.KEY_USERNAME, "");
         }
         mOrigin = Origin.getOrigin(originName);
@@ -925,7 +981,7 @@ public class MyAccount implements Parcelable {
                 setDataString(MyAccount.KEY_USERNAME, mUsername);
                 changed = true;
             }
-            if (mOrigin.getName().compareTo(getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_DEFAULT)) != 0) {
+            if (mOrigin.getName().compareTo(getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER)) != 0) {
                 setDataString(KEY_ORIGIN_NAME, mOrigin.getName());
                 changed = true;
             }
@@ -1031,6 +1087,20 @@ public class MyAccount implements Parcelable {
      */
     public int messageCharactersLeft(String message) {
         return mOrigin.messageCharactersLeft(message);
+    }
+
+    /**
+     * {@link Origin#alternativeTermResourceId(int)}
+     */
+    public int alternativeTermResourceId(int resId) {
+        return mOrigin.alternativeTermResourceId(resId);
+    }
+    
+    /**
+     * {@link Origin#messagePermalink(String, String)}
+     */
+    public String messagePermalink(String userName, String messageOid) {
+        return mOrigin.messagePermalink(userName, messageOid);
     }
     
     /**

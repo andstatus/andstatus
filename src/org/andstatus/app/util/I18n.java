@@ -39,7 +39,7 @@ public class I18n {
 	 *  2 твита ( same for 3, 4, 22, ... )
 	 *  5 твитов (same for 5, ... 11, 12, 20 ...)
 	 *  ...
-	 *  see /res/values-ru/arrays.xml (R.array.appwidget_tweet_patterns)
+	 *  see /res/values-ru/arrays.xml (R.array.appwidget_message_patterns)
 	 * 
 	 * @author yvolk (Yuri Volkov), http://yurivolkov.com
 	 */

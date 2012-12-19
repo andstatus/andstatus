@@ -153,6 +153,11 @@ public class MyService extends Service {
     public static final String EXTRA_ACCOUNT_NAME = packageName + ".ACCOUNT_NAME";
 
     /**
+     * Do we need to show the account?
+     */
+    public static final String EXTRA_SHOW_ACCOUNT = packageName + ".SHOW_ACCOUNT";
+    
+    /**
      * Name of the preference to set
      */
     public static final String EXTRA_PREFERENCE_KEY = packageName + ".PREFERENCE_KEY";
@@ -176,10 +181,15 @@ public class MyService extends Service {
 
     /**
      * This extra is used to determine which timeline to show in
-     * TimelineActivity Value is integer (TODO: enum...)
+     * TimelineActivity Value is {@link MyDatabase.TimelineTypeEnum} 
      */
     public static final String EXTRA_TIMELINE_TYPE = packageName + ".TIMELINE_TYPE";
 
+    /**
+     * Is the timeline combined in {@link TimelineActivity} 
+     */
+    public static final String EXTRA_TIMELINE_IS_COMBINED = packageName + ".TIMELINE_IS_COMBINED";
+   
     /**
      * The command to the MyService or to MyAppWidgetProvider as a
      * enum We use 'code' for persistence
@@ -244,7 +254,7 @@ public class MyService extends Service {
         DESTROY_STATUS("destroy-status"),
         GET_STATUS("get-status"),
         
-        RETWEET("retweet"),
+        REBLOG("reblog"),
 
         RATE_LIMIT_STATUS("rate-limit-status"),
 
@@ -257,8 +267,15 @@ public class MyService extends Service {
          * Commands to the Widget New tweets|messages were successfully loaded
          * from the server
          */
-        NOTIFY_DIRECT_MESSAGE("notify-direct-message"), NOTIFY_TIMELINE("notify-timeline"), NOTIFY_MENTIONS(
-                "notify-mentions"), 
+        NOTIFY_DIRECT_MESSAGE("notify-direct-message"),
+        /**
+         * New messages in the Home timeline of Account
+         */
+        NOTIFY_HOME_TIMELINE("notify-home-timeline"),
+        /**
+         * Mentions and replies are currently shown in one timeline
+         */
+        NOTIFY_MENTIONS("notify-mentions"), 
                 // TODO: Add NOTIFY_REPLIES("notify-replies"),
         /**
          * Clear previous notifications (because e.g. user open tweet list...)
@@ -1193,8 +1210,8 @@ public class MyService extends Service {
                         // Retry in a case of an error
                         retry = !ok;
                         break;
-                    case RETWEET:
-                        ok = retweet(commandData.accountName, commandData.itemId);
+                    case REBLOG:
+                        ok = reblog(commandData.accountName, commandData.itemId);
                         retry = !ok;
                         break;
                     case RATE_LIMIT_STATUS:
@@ -1523,17 +1540,17 @@ public class MyService extends Service {
             return ok;
         }
 
-        private boolean retweet(String accountNameIn, long retweetedId) {
+        private boolean reblog(String accountNameIn, long rebloggedId) {
             MyAccount ma = MyAccount.getMyAccount(accountNameIn);
-            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, retweetedId);
+            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, rebloggedId);
             boolean ok = false;
             JSONObject result = new JSONObject();
             try {
                 result = ma.getConnection()
-                        .postRetweet(oid);
+                        .postReblog(oid);
                 ok = (result != null);
             } catch (ConnectionException e) {
-                Log.e(TAG, "retweet Exception: " + e.toString());
+                Log.e(TAG, "reblog Exception: " + e.toString());
             }
             if (ok) {
                 synchronized(MyService.this) {
@@ -1546,10 +1563,10 @@ public class MyService extends Service {
 
                             fl.insertFromJSONObject(result, true);
                         } catch (JSONException e) {
-                            Log.e(TAG, "retweet JSONException: " + e.toString());
+                            Log.e(TAG, "reblog JSONException: " + e.toString());
                         }
                     } else {
-                        Log.e(TAG, "retweet - " + SERVICE_NOT_RESTORED_TEXT);
+                        Log.e(TAG, "reblog - " + SERVICE_NOT_RESTORED_TEXT);
                     }
                 }        
             }
@@ -1815,7 +1832,7 @@ public class MyService extends Service {
                 notified = true;
             }
             if (msgAdded > 0 || !notified) {
-                notifyOfNewTweets(msgAdded, CommandEnum.NOTIFY_TIMELINE);
+                notifyOfNewTweets(msgAdded, CommandEnum.NOTIFY_HOME_TIMELINE);
                 notified = true;
             }
         }
@@ -1850,7 +1867,7 @@ public class MyService extends Service {
         /**
          * Notify the user of new tweets.
          * 
-         * @param numTweets
+         * @param numHomeTimeline
          */
         private void notifyOfNewTweets(int numTweets, CommandEnum msgType) {
             MyLog.d(TAG, "notifyOfNewTweets n=" + numTweets + "; msgType=" + msgType);
@@ -1891,7 +1908,7 @@ public class MyService extends Service {
                     if (!notificationsMessages)
                         return;
                     break;
-                case NOTIFY_TIMELINE:
+                case NOTIFY_HOME_TIMELINE:
                     if (!notificationsTimeline)
                         return;
                     break;
@@ -1956,7 +1973,7 @@ public class MyService extends Service {
                             intent, 0);
                     break;
 
-                case NOTIFY_TIMELINE:
+                case NOTIFY_HOME_TIMELINE:
                 default:
                     aMessage = I18n
                             .formatQuantityMessage(getApplicationContext(),
@@ -2123,14 +2140,17 @@ public class MyService extends Service {
      * -android-inetaddress-never-timeouts
      */
     public boolean isOnline() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        // test for connection
-        if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable()
-                && cm.getActiveNetworkInfo().isConnected()) {
-            return true;
-        } else {
-            MyLog.v(TAG, "Internet Connection Not Present");
-            return false;
-        }
+        boolean is = false;
+        try {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            // test for connection
+            if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable()
+                    && cm.getActiveNetworkInfo().isConnected()) {
+                is = true;
+            } else {
+                MyLog.v(TAG, "Internet Connection Not Present");
+            }
+        } catch (Exception e) {}
+        return is;
     }
 }

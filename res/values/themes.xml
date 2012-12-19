@@ -33,7 +33,7 @@
 		<item name="tweetSentDateStyle">italic</item>
 
 		<item name="textEditColor">?android:attr/textColorPrimaryInverse</item>
-        <item name="windowBackgroundColor">?android:attr/colorBackground</item>
+        <item name="windowBackgroundColor">@android:color/background_dark</item>
         
         <!-- On custom title see 
           http://staticallytyped.wordpress.com/2011/03/18/android-dynamic-and-custom-title-bars/ 
@@ -59,9 +59,6 @@
 
 	<!-- The Light style is in fact style with inverted colors  -->	
 	<style name="Theme.Light">
-        <item name="android:windowBackground">@android:drawable/screen_background_light</item>
-        <item name="android:colorBackground">@android:color/background_light</item>
-
         <item name="android:textColorPrimary">@android:color/primary_text_light</item>
         <item name="android:textColorSecondary">@android:color/secondary_text_light</item>
         <item name="android:textColorTertiary">@android:color/tertiary_text_light</item>

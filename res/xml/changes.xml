@@ -33,6 +33,28 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
  -->
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
+    <release android:versionName="1.11.0" android:versionCode="65"
+        versionDate="2012-12-15">
+        <changes>
+            <change>Terminology, independent from twitter.com, is used. 
+From now on we will avoid all proprietary terms for non-Twitter accounts. 
+At the same time, in order to comply with Twitter "Developer Display Requirements", we will use alternative
+(Twitter's proprietary) terms "tweet" and "retweet" in Twitter accounts and messages ("tweets").
+            </change>
+            <change>Combined timeline added. 
+In a case of many accounts it's becoming harder to check for new messages in each account.
+A "Combined timeline" allows both read all new messages in one stream 
+and search for all messages stored locally in all accounts, 
+even if they were downloaded from different systems.
+The "Home Combined" timeline shows not only messages from "Home" timelines of all accounts, 
+but also messages, downloaded during other requests: e.g. previous messages of Conversations.
+You can do all usual operations with messages in the Combined Timeline, including favoriting,
+replying and reblogging.            </change>
+        </changes>
+        <change>Timeline type selection (Home/Favorites/Mentions/Direct Messages) moved 
+            from a legacy "Options menu" to the top bar.
+            </change>
+    </release>
     <release android:versionName="1.10.0" android:versionCode="62"
         versionDate="2012-08-12">
         <changes><change>"Share via AndStatus" added for text data (including Web page sharing). 
@@ -40,7 +62,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
             Choose AndStatus, and the page title and its URL will be inserted into the new tweet.
             </change>
         </changes>
-</release>
+    </release>
     <release android:versionName="1.9.1" android:versionCode="61"
         versionDate="2012-08-06">
         <changes>

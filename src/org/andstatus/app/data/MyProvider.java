@@ -94,7 +94,7 @@ public class MyProvider extends ContentProvider {
     private static final int MSG_COUNT = 2;
     private static final int TIMELINE_SEARCH = 3;
     /**
-     * Message id in the Timeline
+     * The Timeline URI contains Message id 
      */
     private static final int TIMELINE_MSG_ID = 4;
     private static final int USERS = 5;
@@ -178,6 +178,7 @@ public class MyProvider extends ContentProvider {
                     }
                     */
                     db.setTransactionSuccessful();
+                    getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
                 } catch(Exception e) {
                     MyLog.d(TAG, e.toString() + "; SQL='" + sqlDesc + "'");
                 } finally {
@@ -200,8 +201,6 @@ public class MyProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
-
-        getContext().getContentResolver().notifyChange(uri, null);
         return count;
     }
 
@@ -318,7 +317,7 @@ public class MyProvider extends ContentProvider {
                     msgOfUserValues.put(MsgOfUser.USER_ID, accountId);
                     moveKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
                     moveKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
-                    moveKey(MsgOfUser.RETWEETED, values, msgOfUserValues);
+                    moveKey(MsgOfUser.REBLOGGED, values, msgOfUserValues);
                     moveKey(MsgOfUser.MENTIONED, values, msgOfUserValues);
                     moveKey(MsgOfUser.REPLIED, values, msgOfUserValues);
                     moveKey(MsgOfUser.DIRECTED, values, msgOfUserValues);
@@ -361,12 +360,11 @@ public class MyProvider extends ContentProvider {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean built = false;
         String sql = "";
-        long accountId = uriToAccountId(uri);
 
         int matchedCode = sUriMatcher.match(uri);
         switch (matchedCode) {
             case TIMELINE:
-                qb.setTables(tablesForTimeline(projection, accountId));
+                qb.setTables(tablesForTimeline(uri, projection));
                 qb.setProjectionMap(sTweetsProjectionMap);
                 break;
 
@@ -378,13 +376,13 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case TIMELINE_MSG_ID:
-                qb.setTables(tablesForTimeline(projection, accountId));
+                qb.setTables(tablesForTimeline(uri, projection));
                 qb.setProjectionMap(sTweetsProjectionMap);
                 qb.appendWhere(MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + uriToMessageId(uri));
                 break;
 
             case TIMELINE_SEARCH:
-                qb.setTables(tablesForTimeline(projection, accountId));
+                qb.setTables(tablesForTimeline(uri, projection));
                 qb.setProjectionMap(sTweetsProjectionMap);
                 String s1 = uri.getLastPathSegment();
                 if (s1 != null) {
@@ -463,15 +461,17 @@ public class MyProvider extends ContentProvider {
             boolean logQuery = MyLog.isLoggable(TAG, Log.VERBOSE);
             try {
                 if (sql.length() == 0) {
-                    // c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
-                    /* selectionArgs does work here, although it doesn't substitute selectionArgs at all!
-                     * see <a href="http://stackoverflow.com/questions/2481322/sqlitequerybuilder-buildquery-not-using-selectargs">SQLiteQueryBuilder.buildQuery not using selectArgs?</a> 
+                    /* We don't use selectionArgs here, they will be actually used (substitute ?-s in selection)
+                     * when the query is executed. 
+                     * See <a href="http://stackoverflow.com/questions/2481322/sqlitequerybuilder-buildquery-not-using-selectargs">SQLiteQueryBuilder.buildQuery not using selectArgs?</a> 
                      * and here: <a href="http://code.google.com/p/android/issues/detail?id=4467">SQLiteQueryBuilder.buildQuery ignores selectionArgs</a>
                      */
                     sql = qb.buildQuery(projection, selection, selectionArgs, null, null, orderBy, null);
+                    // We cannot use this method in API 10...
+                    // sql = qb.buildQuery(projection, selection, null, null, orderBy, null);
                     built = true;
                 }
-                // Here we substitute selectionArgs
+                // Here we substitute ?-s in selection with values from selectionArgs
                 c = db.rawQuery(sql, selectionArgs);
             } catch (Exception e) {
                 logQuery = true;
@@ -504,17 +504,22 @@ public class MyProvider extends ContentProvider {
     }
 
     /**
-     * TODO: Different joins based on projection requested...
-     * 
+     * @param uri the same as uri for {@link MyProvider#query(Uri, String[], String, String[], String)}
      * @param projection
-     * @param accountId Account for which the Timeline is or 0 for "all timelines" 
      * @return String for {@link SQLiteQueryBuilder#setTables(String)}
+     * TODO: Different joins based on projection requested...
      */
-    private static String tablesForTimeline(String[] projection, long accountId) {
+    private static String tablesForTimeline(Uri uri, String[] projection) {
        String tables = MyDatabase.MSG_TABLE_NAME;
+       long accountId = uriToAccountId(uri);
+       boolean isCombined = uriToIsCombined(uri);
        
-       if (accountId != 0) {
+       if (isCombined || accountId == 0) {
            tables += " LEFT OUTER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
+                   + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
+                   ;
+       } else {
+           tables += " INNER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
                    + " AND " + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID + "=" + accountId
                    ;
@@ -570,7 +575,7 @@ public class MyProvider extends ContentProvider {
 
             case TIMELINE_MSG_ID:
                 accountId = Long.parseLong(uri.getPathSegments().get(1));
-                String rowId = uri.getPathSegments().get(3);
+                String rowId = uri.getPathSegments().get(5);
                 ContentValues msgOfUserValues = prepareMsgOfUserValues(values, accountId);
                 count = db.update(MyDatabase.MSG_TABLE_NAME, values, Msg._ID + "=" + rowId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
@@ -620,13 +625,16 @@ public class MyProvider extends ContentProvider {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
         /** 
-         * The first parameter is ACCOUNT_ID, after MyDatabase.MSG_TABLE_NAME - MSG_ID
+         * The order of parameters of timelines in the URI
+         * 1. The first parameter is ACCOUNT_ID,
+         * 2 - 3. "combined/" +  0 or 1  (1 for combined timeline) 
+         * 4 - 5. MyDatabase.MSG_TABLE_NAME + "/" + MSG_ID  (optional, used to access specific Message)
          */
-        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#", TIMELINE);
+        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/combined/#", TIMELINE);
+        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/combined/#/" + MyDatabase.MSG_TABLE_NAME + "/#", TIMELINE_MSG_ID);
+        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/combined/#/search/*", TIMELINE_SEARCH);
+
         sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME, MSG);
-        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/" + MyDatabase.MSG_TABLE_NAME + "/#", TIMELINE_MSG_ID);
-        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/search/*",
-                TIMELINE_SEARCH);
         sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/count", MSG_COUNT);
 
         sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME, USERS);
@@ -647,8 +655,9 @@ public class MyProvider extends ContentProvider {
         sTweetsProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
         sTweetsProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
         sTweetsProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
+        sTweetsProjectionMap.put(MsgOfUser.USER_ID, MsgOfUser.USER_ID);
         sTweetsProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
-        sTweetsProjectionMap.put(MsgOfUser.RETWEETED, MsgOfUser.RETWEETED);
+        sTweetsProjectionMap.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
         sTweetsProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
         sTweetsProjectionMap.put(Msg.SENT_DATE, Msg.SENT_DATE);
         sTweetsProjectionMap.put(Msg.INS_DATE, Msg.INS_DATE);
@@ -824,32 +833,49 @@ public class MyProvider extends ContentProvider {
     
     public static long msgIdToUserId(String msgUserColumnName, long systemId) {
         long userId = 0;
-        SQLiteStatement prog = null;
-        String sql = "";
         try {
             if (msgUserColumnName.contentEquals(MyDatabase.Msg.SENDER_ID) ||
                     msgUserColumnName.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
                     msgUserColumnName.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID) ||
                     msgUserColumnName.contentEquals(MyDatabase.Msg.RECIPIENT_ID)) {
-                sql = "SELECT " + MyDatabase.MSG_TABLE_NAME + "." + msgUserColumnName
-                        + " FROM " + MyDatabase.MSG_TABLE_NAME
-                        + " WHERE " + MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + systemId;
+                userId = msgIdToLongColumnValue(msgUserColumnName, systemId);
             } else {
                 throw new IllegalArgumentException("msgIdToUserId; Unknown name \"" + msgUserColumnName);
             }
-            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
-            prog = db.compileStatement(sql);
-            userId = prog.simpleQueryForLong();
-        } catch (SQLiteDoneException ed) {
-            userId = 0;
         } catch (Exception e) {
             Log.e(TAG, "msgIdToUserId: " + e.toString());
             return 0;
         }
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "msgIdTo" + msgUserColumnName + ": " + systemId + " -> " + userId );
-        }
         return userId;
+    }
+
+    /**
+     * Convenience method to get column value
+     * @param columnName without table name
+     * @param systemId  MyDatabase.MSG_TABLE_NAME + "." + Msg._ID
+     * @return 0 in case not found or error
+     */
+    public static long msgIdToLongColumnValue(String columnName, long systemId) {
+        long columnValue = 0;
+        SQLiteStatement prog = null;
+        String sql = "";
+        try {
+            sql = "SELECT " + MyDatabase.MSG_TABLE_NAME + "." + columnName
+                    + " FROM " + MyDatabase.MSG_TABLE_NAME
+                    + " WHERE " + MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + systemId;
+            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            prog = db.compileStatement(sql);
+            columnValue = prog.simpleQueryForLong();
+        } catch (SQLiteDoneException ed) {
+            columnValue = 0;
+        } catch (Exception e) {
+            Log.e(TAG, "msgIdToLongColumnValue, column='" + columnName + "': " + e.toString());
+            return 0;
+        }
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            MyLog.v(TAG, "msgIdTo" + columnName + ": " + systemId + " -> " + columnValue );
+        }
+        return columnValue;
     }
     
     /**
@@ -914,14 +940,21 @@ public class MyProvider extends ContentProvider {
         }
         return id;
     }
-
     
     public static Uri getTimelineUri(long accountId) {
-        return ContentUris.withAppendedId(TIMELINE_URI, accountId);
+        return getTimelineUri(accountId, false);
     }
     
-    public static Uri getCurrentTimelineUri() {
-        return getTimelineUri(MyAccount.getCurrentMyAccount().getUserId());
+    /**
+     * Build a Timeline URI for this {@link MyAccount}
+     * @param accountId  {@link MyAccount#getUserId()} 
+     * @param isCombined true for a Combined Timeline
+     * @return
+     */
+    public static Uri getTimelineUri(long accountId, boolean isCombined) {
+        Uri uri = ContentUris.withAppendedId(TIMELINE_URI, accountId);
+        uri = Uri.withAppendedPath(uri, "combined/" + (isCombined ? "1" : "0"));
+        return uri;
     }
 
     /**
@@ -930,19 +963,11 @@ public class MyProvider extends ContentProvider {
      * @return Uri for the message in the account's timeline
      */
     public static Uri getTimelineMsgUri(long accountId, long msgId) {
-        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(accountId), MyDatabase.MSG_TABLE_NAME), msgId);
-    }
-
-    /**
-     * @param msgId
-     * @return Uri for the message in the current account's timeline
-     */
-    public static Uri getCurrentTimelineMsgUri(long msgId) {
-        return getTimelineMsgUri(MyAccount.getCurrentMyAccount().getUserId(), msgId);
+        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(accountId, true), MyDatabase.MSG_TABLE_NAME), msgId);
     }
     
-    public static Uri getCurrentTimelineSearchUri(String queryString) {
-        Uri uri = Uri.withAppendedPath(getCurrentTimelineUri(), SEARCH_SEGMENT);
+    public static Uri getTimelineSearchUri(long accountId, boolean isCombined, String queryString) {
+        Uri uri = Uri.withAppendedPath(getTimelineUri(accountId, isCombined), SEARCH_SEGMENT);
         if (!TextUtils.isEmpty(queryString)) {
             uri = Uri.withAppendedPath(uri, Uri.encode(queryString));
         }
@@ -957,13 +982,32 @@ public class MyProvider extends ContentProvider {
         return accountId;        
     }
 
+    /**
+     * 
+     * @param uri URI to decode, e.g. the one built by {@link MyProvider#getTimelineUri(long, boolean)}
+     * @return Is the timeline combined. false for URIs that don't contain such information
+     */
+    public static boolean uriToIsCombined(Uri uri) {
+        boolean isCombined = false;
+        try {
+            int matchedCode = sUriMatcher.match(uri);
+            switch (matchedCode) {
+                case TIMELINE:
+                case TIMELINE_SEARCH:
+                case TIMELINE_MSG_ID:
+                    isCombined = ( (Long.parseLong(uri.getPathSegments().get(3)) == 0) ? false : true);
+            }
+        } catch (Exception e) {}
+        return isCombined;        
+    }
+
     public static long uriToMessageId(Uri uri) {
         long messageId = 0;
         try {
             int matchedCode = sUriMatcher.match(uri);
             switch (matchedCode) {
                 case TIMELINE_MSG_ID:
-                    messageId = Long.parseLong(uri.getPathSegments().get(3));
+                    messageId = Long.parseLong(uri.getPathSegments().get(5));
             }
         } catch (Exception e) {}
         return messageId;        

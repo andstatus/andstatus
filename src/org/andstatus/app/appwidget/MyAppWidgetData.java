@@ -47,9 +47,9 @@ public class MyAppWidgetData {
 	/**
 	 * Key to store number of new tweets received
 	 */
-	public static final String PREF_NUM_TWEETS_KEY = "num_tweets";
-	public static final String PREF_NUM_MENTIONS_KEY = "num_mentions";
-	public static final String PREF_NUM_MESSAGES_KEY = "num_messages";
+	private static final String PREF_NUM_HOME_TIMELINE_KEY = "num_messages";
+	private static final String PREF_NUM_MENTIONS_KEY = "num_mentions";
+	private static final String PREF_NUM_DIRECTMESSAGES_KEY = "num_directmessages";
 	/**
 	 * Words shown in a case there is nothing new
 	 */
@@ -71,11 +71,11 @@ public class MyAppWidgetData {
 
 	public String nothingPref = "";
 
-	// Numbers of new Tweets accumulated
+	// Numbers of new Messages accumulated
 	// TODO: GETTER AND SETTER METHODS, REMEMBER "OLD VALUE"...
-	public int numTweets = 0;
+	public int numHomeTimeline = 0;
 	public int numMentions = 0;
-	public int numMessages = 0;
+	public int numDirectMessages = 0;
 
     /**
      *  When server was successfully checked for new tweets
@@ -101,13 +101,22 @@ public class MyAppWidgetData {
 	 */
 	public void clearCounters() {
 		numMentions = 0;
-		numMessages = 0;
-		numTweets = 0;
+		numDirectMessages = 0;
+		numHomeTimeline = 0;
 		// New Tweets etc. will be since dateChecked ! 
 		dateCleared = dateChecked;
 		changed = true;
 	}
 
+	/**
+	 * Are there any new messages in any of timelines
+	 * @return
+	 */
+	public boolean areNew() {
+	    boolean are = (numMentions >0) || (numDirectMessages > 0) || (numHomeTimeline > 0);
+	    return are;
+	}
+	
     /**
      * Data on the server was successfully checked now
      */
@@ -139,9 +148,9 @@ public class MyAppWidgetData {
 			if (dateChecked == 0) {
 				clearCounters();
 			} else {
-				numTweets = prefs.getInt(PREF_NUM_TWEETS_KEY, 0);
+				numHomeTimeline = prefs.getInt(PREF_NUM_HOME_TIMELINE_KEY, 0);
 				numMentions = prefs.getInt(PREF_NUM_MENTIONS_KEY, 0);
-				numMessages = prefs.getInt(PREF_NUM_MESSAGES_KEY, 0);
+				numDirectMessages = prefs.getInt(PREF_NUM_DIRECTMESSAGES_KEY, 0);
 	            dateCleared = prefs.getLong(PREF_DATECLEARED_KEY, 0);
 			}
 
@@ -166,9 +175,9 @@ public class MyAppWidgetData {
 				Log.e(TAG, "Prefs Editor was not loaded");
 			} else {
 				prefs.putString(PREF_NOTHING_KEY, nothingPref);
-				prefs.putInt(PREF_NUM_TWEETS_KEY, numTweets);
+				prefs.putInt(PREF_NUM_HOME_TIMELINE_KEY, numHomeTimeline);
 				prefs.putInt(PREF_NUM_MENTIONS_KEY, numMentions);
-				prefs.putInt(PREF_NUM_MESSAGES_KEY, numMessages);
+				prefs.putInt(PREF_NUM_DIRECTMESSAGES_KEY, numDirectMessages);
 				
                 prefs.putLong(PREF_DATECHECKED_KEY, dateChecked);
 				prefs.putLong(PREF_DATECLEARED_KEY, dateCleared);

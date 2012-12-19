@@ -89,7 +89,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String MSG_OID = "msg_oid";
         /**
          * Author of the message = User._ID
-         * If message was "Retweeted" ("Redented", ...) this is Original author (whose message was retweeted)
+         * If message was "Reblogged" ("Retweeted", "Repeated", ...) this is Original author (whose message was reblogged)
          */
         public static final String AUTHOR_ID = "author_id";
 		/**
@@ -129,7 +129,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 		public static final String CREATED_DATE = "msg_created_date";
         /**
          * Date and time when the message was sent,
-         * it's not equal to {@link MyDatabase.Msg#CREATED_DATE} for retweeted messages
+         * it's not equal to {@link MyDatabase.Msg#CREATED_DATE} for reblogged messages
          */
         public static final String SENT_DATE = "msg_sent_date";
 		/**
@@ -173,11 +173,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String FAVORITED = "favorited";
         /**
-         * The Msg is retweeted by this User
-         * In some sense RETWEETED is like FAVORITED. 
-         * Main difference: visibility. RETWEETED are shown for all followers in their Home timelines. 
+         * The Msg is reblogged by this User
+         * In some sense REBLOGGED is like FAVORITED. 
+         * Main difference: visibility. REBLOGGED are shown for all followers in their Home timelines.
+         * TODO: Rename to "reblogged" on next database upgrade 
          */
-        public static final String RETWEETED = "retweeted";
+        public static final String REBLOGGED = "retweeted";
         /**
          * User is mentioned in this message
          */
@@ -381,7 +382,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + MsgOfUser.MSG_ID + " INTEGER NOT NULL," 
                 + MsgOfUser.SUBSCRIBED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.FAVORITED + " BOOLEAN DEFAULT 0 NOT NULL," 
-                + MsgOfUser.RETWEETED + " BOOLEAN DEFAULT 0 NOT NULL," 
+                + MsgOfUser.REBLOGGED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.MENTIONED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.REPLIED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.DIRECTED + " BOOLEAN DEFAULT 0 NOT NULL," 
