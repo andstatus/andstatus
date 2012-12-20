@@ -40,13 +40,15 @@ public class AccountSelector extends ListActivity {
         
         setContentView(R.layout.accountlist);
         
-        // Fill the list of accounts
+        // Fill the list of accounts with persistent accounts only
         ArrayList<Map<String, String>> data = new ArrayList<Map<String, String>>();
         for (int ind = 0; ind < MyAccount.list().length; ind++) {
-            HashMap<String, String> map = new HashMap<String, String>();
-            map.put(KEY_NAME, MyAccount.list()[ind].getAccountGuid());
-            map.put(KEY_TYPE, TYPE_ACCOUNT);
-            data.add(map);
+            if (MyAccount.list()[ind].isPersistent()) {
+                HashMap<String, String> map = new HashMap<String, String>();
+                map.put(KEY_NAME, MyAccount.list()[ind].getAccountGuid());
+                map.put(KEY_TYPE, TYPE_ACCOUNT);
+                data.add(map);
+            }
         }
         
         ListAdapter adapter = new SimpleAdapter(this, 

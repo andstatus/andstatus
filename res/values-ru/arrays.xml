@@ -97,15 +97,15 @@
 		<item>AndStatus.Small</item>
 	</string-array>
 	<string-array name="history_size_values">
-		<item>"500 твитов"</item>
-		<item>"1000 твитов"</item>
-		<item>"2000 твитов"</item>
-		<item>"5000 твитов"</item>
-		<item>"10000 твитов"</item>
-		<item>"20000 твитов"</item>
-		<item>"50000 твитов"</item>
-		<item>"100000 твитов"</item>
-		<item>"1 млн. твитов"</item>
+		<item>"500 сообщений"</item>
+		<item>"1000 сообщений"</item>
+		<item>"2000 сообщений"</item>
+		<item>"5000 сообщений"</item>
+		<item>"10000 сообщений"</item>
+		<item>"20000 сообщений"</item>
+		<item>"50000 сообщений"</item>
+		<item>"100000 сообщений"</item>
+		<item>"1 млн. сообщений"</item>
 	</string-array>
 	<string-array name="history_size_keys">
 		<item>500</item>
@@ -119,15 +119,15 @@
         <item>1000000</item>
     </string-array>
 	<string-array name="history_size_display">
-		<item>"500 твитов"</item>
-		<item>"1000 твитов"</item>
-		<item>"2000 твитов"</item>
-		<item>"5000 твитов"</item>
-		<item>"10000 твитов"</item>
-		<item>"20000 твитов"</item>
-		<item>"50000 твитов"</item>
-		<item>"100000 твитов"</item>
-		<item>"1 млн. твитов"</item>
+		<item>"500 сообщений"</item>
+		<item>"1000 сообщений"</item>
+		<item>"2000 сообщений"</item>
+		<item>"5000 сообщений"</item>
+		<item>"10000 сообщений"</item>
+		<item>"20000 сообщений"</item>
+		<item>"50000 сообщений"</item>
+		<item>"100000 сообщений"</item>
+		<item>"1 млн. сообщений"</item>
 	</string-array>
 	<string-array name="history_time_values">
 		<item>"1 день"</item>
@@ -166,9 +166,9 @@
 		<item>"10 лет"</item>
 	</string-array>
 	<string-array name="notification_tweet_formats">
-		<item>"{0} новый твит"</item>
-		<item>"{0} новых твита"</item>
-		<item>"{0} новых твитов"</item>
+		<item>"{0} сообщение"</item>
+		<item>"{0} сообщения"</item>
+		<item>"{0} сообщений"</item>
 	</string-array>
 	<string-array name="notification_tweet_patterns">
 		<item>".*[^1]1|1"</item>
@@ -176,9 +176,9 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="notification_mention_formats">
-		<item>"{0} новое упоминание"</item>
-		<item>"{0} новых упоминания"</item>
-		<item>"{0} новых упоминаний"</item>
+		<item>"{0} упоминание"</item>
+		<item>"{0} упоминания"</item>
+		<item>"{0} упоминаний"</item>
 	</string-array>
 	<string-array name="notification_mention_patterns">
 		<item>".*[^1]1|1"</item>
@@ -186,9 +186,9 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="notification_message_formats">
-		<item>"{0} новое сообщение"</item>
-		<item>"{0} новых сообщения"</item>
-		<item>"{0} новых сообщений"</item>
+		<item>"{0} личное сообщение"</item>
+		<item>"{0} личных сообщения"</item>
+		<item>"{0} личных сообщений"</item>
 	</string-array>
 	<string-array name="notification_message_patterns">
 		<item>".*[^1]1|1"</item>
