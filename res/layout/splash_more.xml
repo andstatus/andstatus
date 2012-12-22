@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
+    Copyright (c) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,33 +26,47 @@
 		<ViewFlipper android:id="@+id/splash_more_flipper"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
-			android:outAnimation="@org.andstatus.app:anim/push_left_out"
-			android:inAnimation="@org.andstatus.app:anim/push_left_in">
-			<TextView android:layout_height="match_parent"
-				android:layout_width="match_parent" android:padding="16dip"
-				android:id="@+id/splash_more_text_content_1" android:textSize="8pt"
-				android:textColor="#ffffffff"
-				android:text="@string/splash_text_learn_more_1"/>
-			<TextView android:layout_height="match_parent"
-				android:layout_width="match_parent" android:padding="16dip"
-				android:id="@+id/splash_more_text_content_2" android:textSize="8pt"
-				android:textColor="#ffffffff" 
-				android:text="@string/splash_text_learn_more_2" />
-			<TextView android:layout_height="match_parent"
-				android:layout_width="match_parent" android:padding="16dip"
-				android:id="@+id/splash_more_text_content_3" android:textSize="8pt"
-				android:textColor="#ffffffff" 
-				android:text="@string/splash_text_learn_more_3" />
-			<TextView android:layout_height="match_parent"
-				android:layout_width="match_parent" android:padding="16dip"
-				android:id="@+id/splash_more_text_content_4" android:textSize="8pt"
-				android:textColor="#ffffffff" 
-				android:text="@string/splash_text_learn_more_4" />
-			<TextView android:layout_height="match_parent"
-				android:layout_width="match_parent" android:padding="16dip"
-				android:id="@+id/splash_more_text_content_5" android:textSize="8pt"
-				android:textColor="#ffffffff" 
-				android:text="@string/splash_text_learn_more_5" />
+            android:autoStart="false">
+            <ScrollView  android:layout_height="match_parent"
+                android:layout_width="match_parent">
+    			<TextView android:layout_height="match_parent"
+    				android:layout_width="match_parent" android:padding="16dip"
+    				android:textSize="8pt"
+    				android:textColor="#ffffffff"
+    				android:text="@string/splash_text_learn_more_1"/>
+            </ScrollView>
+            <ScrollView  android:layout_height="match_parent"
+                android:layout_width="match_parent">
+                <TextView android:layout_height="match_parent"
+                    android:layout_width="match_parent" android:padding="16dip"
+                    android:textSize="8pt"
+                    android:textColor="#ffffffff"
+                    android:text="@string/splash_text_learn_more_2"/>
+            </ScrollView>
+            <ScrollView  android:layout_height="match_parent"
+                android:layout_width="match_parent">
+    			<TextView android:layout_height="match_parent"
+    				android:layout_width="match_parent" android:padding="16dip"
+    				android:textSize="8pt"
+    				android:textColor="#ffffffff"
+    				android:text="@string/splash_text_learn_more_3"/>
+            </ScrollView>
+            <ScrollView  android:layout_height="match_parent"
+                android:layout_width="match_parent">
+    			<TextView android:layout_height="match_parent"
+    				android:layout_width="match_parent" android:padding="16dip"
+    				android:textSize="8pt"
+    				android:textColor="#ffffffff"
+    				android:text="@string/splash_text_learn_more_4"/>
+            </ScrollView>
+            <ScrollView  android:layout_height="match_parent"
+                android:layout_width="match_parent">
+    			<TextView android:layout_height="match_parent"
+    				android:layout_width="match_parent" android:padding="16dip"
+    				android:textSize="8pt"
+    				android:textColor="#ffffffff"
+    				android:text="@string/splash_text_learn_more_5"/>
+            </ScrollView>
 		</ViewFlipper>
 	</LinearLayout>
 	<LinearLayout android:layout_width="match_parent"

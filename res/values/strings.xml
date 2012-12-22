@@ -152,11 +152,26 @@
 	<string name="splash_button_learn_more">Learn More</string>
 	<string name="splash_button_get_started">Get Started</string>
 	<string name="splash_payoff_line">Light-Weight Twitter and identi.ca Client for Android™</string>
-	<string name="splash_text_learn_more_1"><h1><b>1. AndStatus BASICS</b></h1>\n\nThe first view of AndStatus contains Home timeline.\n\nIn order to perform an action on a message in the list you can <b>hold down</b> on it to get a menu.\n\nYou can <b>click</b> on a message to get more details.\n\nPress the <b>Menu</b> button to switch to other views.</string>
-	<string name="splash_text_learn_more_2"><h1><b>2. SENDING AND REPLYING</b></h1>\n\nIn order to update your status simply type it into the text area and click <b>Send</b>.\n\nIn order to reply, <b>hold down</b> and select <b>Reply</b> and type in your reply at the bottom.\n\nTo abort a reply, delete all text in the bottom text area.</string>
-	<string name="splash_text_learn_more_3"><h1><b>3. DIRECT MESSAGES</b></h1>\n\nClick <b>Menu</b> and then <b>Messages</b>.\n\nIn order to <b>delete</b> a direct message, <b>hold down</b> on it and select <b>Delete</b>.\n\nNew messages are fetched if you have turned on <b>Automatic Updates</b>.</string>
-	<string name="splash_text_learn_more_4"><h1><b>4. LISTING MENTIONS</b></h1>\n\nClick <b>Menu</b> and then <b>Mentions</b>.\n\nMentions will list every message that mentions your <b>@username</b>.</string>
-	<string name="splash_text_learn_more_5"><h1><b>5. SEARCHING</b></h1>\n\nClick <b>Menu</b> and then <b>Search</b>, or you can click the <b>Search</b> button on your phone.\n\nA search will find any text contained within a message. If you wish to show messages from a specific user, search for "<b>username</b>."\n\nTo see mentions of a specific user, search for "<b>@username</b>"</string>
+	<string name="splash_text_learn_more_1"><h1><b>1. AndStatus BASICS</b></h1>\n\n
+        The first view of AndStatus contains the Home timeline.\n\n
+        In order to perform an action on a message in the list you should <b>hold down</b> on it to get a context menu.\n\n
+        You may <b>click</b> on a message to get more details on it or to see a conversation thread to which the message belongs.\n\n
+        Press the <b>Menu</b> button on your device to switch to other views.</string>
+	<string name="splash_text_learn_more_2"><h1><b>2. SENDING AND REPLYING</b></h1>\n\n
+        In order to update your status, press the "Blog" button ("Tweet" for Twitter), type in a text into the text area at the bottom of the screen and click <b>Send</b>.\n\n
+        In order to reply, <b>hold down</b> a message and select <b>Reply</b>, type in your reply at the bottom.\n\n
+        To abort a reply, simply press the "Blog/Tweet" button to hide the text area.</string>
+	<string name="splash_text_learn_more_3"><h1><b>3. DIRECT MESSAGES</b></h1>\n\n
+        Click <b>Home</b> (Timeline type) button and select <b>Direct Messages</b>.\n\n
+        In order to <b>delete</b> a direct message, <b>hold down</b> on it and select <b>Delete</b>.\n\n
+        New messages are fetched if you have turned on <b>Automatic Updates</b> in Preferences.</string>
+	<string name="splash_text_learn_more_4"><h1><b>4. LISTING MENTIONS</b></h1>\n\n
+        Click <b>Home</b> and then <b>Mentions</b>.\n\n
+        Mentions will list every message that mentions your <b>@username</b>.</string>
+	<string name="splash_text_learn_more_5"><h1><b>5. SEARCHING</b></h1>\n\n
+        Click <b>Menu</b> and then <b>Search</b>, or you can click the <b>Search</b> button on your phone.\n\n
+        A search will find any text contained within a message. If you wish to show messages from a specific user, search for "<b>username</b>."\n\n
+        To see mentions of a specific user, search for "<b>@username</b>"</string>
 	<string name="search_timeline_label">Search messages, users, and hashtags</string>
 	<string name="search_timeline_hint">Enter a username/phrase</string>
 	<string name="search_direct_messages_label">Search direct messages</string>
