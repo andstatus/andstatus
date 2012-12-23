@@ -18,6 +18,8 @@
 package org.andstatus.app;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.util.ActivitySwipeDetector;
+import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.Xslt;
 
 import java.text.MessageFormat;
@@ -36,14 +38,16 @@ import android.view.View.OnClickListener;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 /**
  * @author Torgny & yvolk
  *
  */
-public class HelpActivity extends Activity {
+public class HelpActivity extends Activity implements SwipeInterface {
 
 	// Constants
 	public static final String TAG = "HelpActivity";
@@ -125,6 +129,16 @@ public class HelpActivity extends Activity {
 		    getStarted.setVisibility(View.GONE);
 		}
 
+		// In order to have swipe gestures we need to add listeners to every page
+		// Only in case of WebView (changelog) we need to set listener on than WebView,
+		// not on its parent: ScrollView
+		ActivitySwipeDetector swipe = new ActivitySwipeDetector(this, this);
+        for (int ind = 0; ind < mFlipper.getChildCount()-1; ind++ ) {
+            mFlipper.getChildAt(ind).setOnTouchListener(swipe);
+        }
+        View view = findViewById(R.id.help_changelog);
+        view.setOnTouchListener(swipe);
+		
 		final Button learn_more = (Button) findViewById(R.id.button_help_learn_more);
 		learn_more.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -141,7 +155,8 @@ public class HelpActivity extends Activity {
 		
         
         AlphaAnimation anim = (AlphaAnimation) AnimationUtils.loadAnimation(HelpActivity.this, R.anim.fade_in);
-        findViewById(R.id.help_container).startAnimation(anim);
+//        findViewById(R.id.help_container).startAnimation(anim);
+        mFlipper.startAnimation(anim);
 		
 	}
 
@@ -161,4 +176,20 @@ public class HelpActivity extends Activity {
 			finish();
 		}
 	}
+
+    @Override
+    public void onLeftToRight(View v) {
+        //Toast.makeText(HelpActivity.this, "right", Toast.LENGTH_SHORT).show();
+        if (mFlipper != null) {
+            mFlipper.showPrevious();
+        }
+    }
+
+    @Override
+    public void onRightToLeft(View v) {
+        //Toast.makeText(HelpActivity.this, "left", Toast.LENGTH_SHORT).show();
+        if (mFlipper != null) {
+            mFlipper.showNext();
+        }
+    }
 }

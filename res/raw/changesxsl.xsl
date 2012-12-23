@@ -23,13 +23,13 @@
 <xsl:output method="html" encoding='UTF-8' media-type="text/html; charset=UTF-8"/>
 
 <xsl:template match="/">
-  <h1><b><xsl:value-of select="/document/header/title"/></b></h1>
+  <h1><b><xsl:copy-of select="/document/header/title/node()"/></b></h1>
   <xsl:for-each select="/document/release">
       <h2><xsl:value-of select="@versionDate"/> 
-          v.<xsl:value-of select="@android:versionName"/></h2>
+          v.<xsl:value-of select="@android:versionName"/> (<xsl:value-of select="@android:versionCode"/>)</h2>
       <ol>
       <xsl:for-each select="changes/change">  
-        <li><xsl:value-of select="."/></li>
+        <li><xsl:copy-of select="node()"/></li>
       </xsl:for-each>   
       </ol>  
       </xsl:for-each>   

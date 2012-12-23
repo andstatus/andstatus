@@ -16,12 +16,12 @@
  -->
 
 <!-- 
-	I didn't find any "standard" way to store Recent changes (ChangeLog)... yet,
-	so let them be here for awhile :-)
+	Starting from v.1.11.3 of AndStatus the Recent changes may be seen 
+    through Preferences-"Change Log"
 	
 	'changes' element contains text for the "Recent changes" section in the Market.
 	
-Legend: (maybe it's not for this document, but rather for the User Interface)
+Legend: (not used yet. Maybe it's not for this document, but rather for the User Interface)
 
  * -> Security Fix
  # -> Bug Fix
@@ -34,7 +34,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
     <header>
-        <title>AndStatus Change Log</title>
+        <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
     <release android:versionName="1.11.3" android:versionCode="68"
         versionDate="2012-12-23">
@@ -43,6 +43,7 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
 From now on we will avoid all proprietary terms for non-Twitter accounts. 
 At the same time, in order to comply with Twitter "Developer Display Requirements", we will use alternative
 (Twitter's proprietary) terms "tweet" and "retweet" in Twitter accounts and messages ("tweets").
+See <a href="https://github.com/andstatus/andstatus/issues/15">Ussue #15</a>.
             </change>
             <change>Combined timeline added. 
 In a case of many accounts it's becoming harder to check for new messages in each account.
@@ -56,11 +57,15 @@ replying and reblogging.            </change>
             <change>Timeline type selection (Home/Favorites/Mentions/Direct Messages) moved 
             from a legacy "Options menu" to the top bar.
             </change>
-            <change>French translation added.
+            <change>French translation added. Thanks to <a href="https://github.com/kvnco">Kevin C.</a>
             </change>
             <change>Application Help screens rearranged and are accessible through 
-                Preferences-"About AndStatus" menu.
+                Preferences-"About AndStatus" menu. You may use swipe gestures to 
+                turn help pages left and right.
                 Change Log is also accessible locally via Preferences-"Change Log".</change>
+            <change>In case you have accounts from more that one Microblogging system, 
+                the "Select an account" button shows not only username but but name of the system also. 
+                See <a href="https://github.com/andstatus/andstatus/issues/24">Ussue #24</a>.</change>
         </changes>
     </release>
     <release android:versionName="1.10.0" android:versionCode="62"

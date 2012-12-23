@@ -29,7 +29,8 @@
             android:autoStart="false">
         	<LinearLayout android:layout_width="match_parent"
         		android:layout_height="match_parent" android:layout_weight="1"
-        		android:gravity="center" android:orientation="vertical" android:id="@+id/splash_container">
+        		android:gravity="center" android:orientation="vertical"
+                android:id="@+id/splash_container">
         		<ImageView android:src="@drawable/splash_logo"
         			android:layout_height="wrap_content" android:layout_gravity="center"
         			android:layout_width="wrap_content" android:id="@+id/splash_logo_image"
@@ -46,7 +47,8 @@
         			android:textColor="#ff7bc7cb"></TextView>
         	</LinearLayout>
 		    <ScrollView  android:layout_height="match_parent"
-                android:layout_width="match_parent">
+                android:layout_width="match_parent"
+                android:id="@+id/help_page1">
     			<TextView android:layout_height="match_parent"
     				android:layout_width="match_parent" android:padding="16dip"
     				android:textSize="8pt"
@@ -54,37 +56,41 @@
     				android:text="@string/splash_text_learn_more_1"/>
             </ScrollView>
             <ScrollView  android:layout_height="match_parent"
-                android:layout_width="match_parent">
+                android:layout_width="match_parent"
+                android:id="@+id/help_page2">
                 <TextView android:layout_height="match_parent"
                     android:layout_width="match_parent" android:padding="16dip"
                     android:textSize="8pt"
                     android:textColor="#ffffffff"
                     android:text="@string/splash_text_learn_more_2"/>
-            </ScrollView>
+                </ScrollView>
             <ScrollView  android:layout_height="match_parent"
-                android:layout_width="match_parent">
+                android:layout_width="match_parent"
+                android:id="@+id/help_page3">
     			<TextView android:layout_height="match_parent"
     				android:layout_width="match_parent" android:padding="16dip"
     				android:textSize="8pt"
     				android:textColor="#ffffffff"
     				android:text="@string/splash_text_learn_more_3"/>
-            </ScrollView>
+    			</ScrollView>
             <ScrollView  android:layout_height="match_parent"
-                android:layout_width="match_parent">
+                android:layout_width="match_parent"
+                android:id="@+id/help_page4">
     			<TextView android:layout_height="match_parent"
     				android:layout_width="match_parent" android:padding="16dip"
     				android:textSize="8pt"
     				android:textColor="#ffffffff"
     				android:text="@string/splash_text_learn_more_4"/>
-            </ScrollView>
+    			</ScrollView>
             <ScrollView  android:layout_height="match_parent"
-                android:layout_width="match_parent">
+                android:layout_width="match_parent"
+                android:id="@+id/help_page5">
     			<TextView android:layout_height="match_parent"
     				android:layout_width="match_parent" android:padding="16dip"
     				android:textSize="8pt"
     				android:textColor="#ffffffff"
     				android:text="@string/splash_text_learn_more_5"/>
-            </ScrollView>
+    			</ScrollView>
             <ScrollView  android:layout_height="match_parent"
                 android:layout_width="match_parent">
     			<WebView android:id="@+id/help_changelog" 

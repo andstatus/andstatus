@@ -434,12 +434,35 @@ public class MyAccount implements Parcelable {
         for (ind = 0; ind < mMyAccounts.size(); ind++) {
             if (mMyAccounts.elementAt(ind).isPersistent()) {
                 count += 1;
-                break;
             }
         }
         return count;
     }
 
+    
+    /**
+     * Are authenticated users from more than one different Originating system?
+     * @return count
+     */
+    public static boolean moreThanOneOriginatingSystem() {
+        int count = 0;
+        long originId = 0;
+        int ind = -1;
+
+        for (ind = 0; ind < mMyAccounts.size(); ind++) {
+            if (mMyAccounts.elementAt(ind).isPersistent()) {
+                if (originId != mMyAccounts.elementAt(ind).getOriginId() ) {
+                    count += 1;
+                    originId = mMyAccounts.elementAt(ind).getOriginId();
+                    if (count >1) {
+                        break;
+                    }
+                }
+            }
+        }
+        return (count>1);
+    }
+    
     /**
      * Initialize internal static memory 
      * Initialize User's list if it wasn't initialized yet.
