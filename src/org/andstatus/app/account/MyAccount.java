@@ -374,15 +374,19 @@ public class MyAccount implements Parcelable {
         }
         if (ind >= 0) {
             ma = mMyAccounts.elementAt(ind);
-            // Correct Current and Default Accounts if needed
-            if (TextUtils.isEmpty(currentAccountName)) {
-                ma.setCurrentMyAccount();
-            }
-            if (TextUtils.isEmpty(defaultAccountName)) {
-                ma.setDefaultMyAccount();
+            if (ma.isPersistent()) {
+                // Correct Current and Default Accounts if needed
+                if (TextUtils.isEmpty(currentAccountName)) {
+                    ma.setCurrentMyAccount();
+                }
+                if (TextUtils.isEmpty(defaultAccountName)) {
+                    ma.setDefaultMyAccount();
+                }
+            } else {
+                // Return null if the account appeared to be not persistent
+                ma = null;
             }
         }
-
         return ma;
     }
 

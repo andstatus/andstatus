@@ -447,16 +447,18 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
 
         if (!mIsFinishing) {
+            boolean startHelp = false;
             if (!MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
                 Log.i(TAG, "We are running the Application for the very first time?");
-                startActivity(new Intent(this, SplashActivity.class));
-                finish();
-            }
-        }
-        if (!mIsFinishing) {
-            if (MyAccount.getCurrentMyAccount() == null) {
+                startHelp = true;
+            } else if (MyAccount.getCurrentMyAccount() == null) {
                 Log.i(TAG, "No current MyAccount");
-                startActivity(new Intent(this, SplashActivity.class));
+                startHelp = true;
+            } 
+            if (startHelp) {
+                Intent intent = new Intent(this, HelpActivity.class);
+                intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
+                startActivity(intent);
                 finish();
             }
         }

@@ -114,6 +114,26 @@ public class PreferencesActivity extends PreferenceActivity implements
                 return false;
             }
         });
+        
+        myPref = (Preference) findPreference("about_application");
+        myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(PreferencesActivity.this, HelpActivity.class);
+                startActivity(intent);
+                return false;
+            }
+        });
+        
+        myPref = (Preference) findPreference("change_log");
+        myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(PreferencesActivity.this, HelpActivity.class);
+                intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
+                startActivity(intent);
+                return false;
+            }
+        });
+        
     }
 
     @Override

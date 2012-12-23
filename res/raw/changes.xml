@@ -33,8 +33,11 @@ Legend: (maybe it's not for this document, but rather for the User Interface)
  -->
 
 <document xmlns:android="http://schemas.android.com/apk/res/android">
+    <header>
+        <title>AndStatus Change Log</title>
+    </header>
     <release android:versionName="1.11.3" android:versionCode="68"
-        versionDate="2012-12-22">
+        versionDate="2012-12-23">
         <changes>
             <change>Terminology, independent from twitter.com, is used. 
 From now on we will avoid all proprietary terms for non-Twitter accounts. 
@@ -55,6 +58,9 @@ replying and reblogging.            </change>
             </change>
             <change>French translation added.
             </change>
+            <change>Application Help screens rearranged and are accessible through 
+                Preferences-"About AndStatus" menu.
+                Change Log is also accessible locally via Preferences-"Change Log".</change>
         </changes>
     </release>
     <release android:versionName="1.10.0" android:versionCode="62"
@@ -301,21 +307,22 @@ replying and reblogging.            </change>
 	</release>
 	<release android:versionName="1.0.5" android:versionCode="35"
 		versionDate="2011-02-19">
-		1. "Favorites" list added.
-		2. Favorites are protected from
-		automatic deletion (unlike other old tweets)
-		3. Click on Widget opens
-		the timeline, that has something new, in this order: messages,
-		mentions, tweets
-		4. Maximum History time (to store tweets) is 1 year
-		now
-		5. OAuth is On By Default.
-		6. Mentions are not "quick Search" any
-		more, they are just another type of "Timeline". So we may search in
-		Mentions also.
-		7. "Automatic updates" setting is not being turned off
-		by the System. (in beta1:)
-		8. Fixed issue: Old records are not being
-		deleted.
+        <changes>
+            <change>"Favorites" list added.</change>
+            <change>Favorites are protected from
+        automatic deletion (unlike other old tweets)</change>
+            <change>Click on Widget opens
+        the timeline, that has something new, in this order: messages,
+        mentions, tweets</change>
+            <change>Maximum History time (to store tweets) is 1 year now</change>
+            <change>OAuth is On By Default.</change>
+            <change>Mentions are not "quick Search" any
+        more, they are just another type of "Timeline". So we may search in
+        Mentions also.</change>
+            <change>"Automatic updates" setting is not being turned off
+        by the System. (in beta1:)</change>
+            <change>Fixed issue: Old records are not being
+        deleted.</change>
+        </changes>
 	</release>
 </document>

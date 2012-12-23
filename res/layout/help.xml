@@ -22,12 +22,30 @@
 	<LinearLayout android:layout_width="match_parent"
 		android:layout_height="match_parent" android:layout_weight="1"
 		android:gravity="center" android:orientation="vertical"
-		android:id="@+id/splash_container">
-		<ViewFlipper android:id="@+id/splash_more_flipper"
+		android:id="@+id/help_container">
+		<ViewFlipper android:id="@+id/help_flipper"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
             android:autoStart="false">
-            <ScrollView  android:layout_height="match_parent"
+        	<LinearLayout android:layout_width="match_parent"
+        		android:layout_height="match_parent" android:layout_weight="1"
+        		android:gravity="center" android:orientation="vertical" android:id="@+id/splash_container">
+        		<ImageView android:src="@drawable/splash_logo"
+        			android:layout_height="wrap_content" android:layout_gravity="center"
+        			android:layout_width="wrap_content" android:id="@+id/splash_logo_image"
+        			android:focusable="false" android:focusableInTouchMode="false"></ImageView>
+        		<TextView android:layout_height="wrap_content"
+        			android:gravity="center_horizontal" android:typeface="sans"
+        			android:text="@string/splash_payoff_line" android:textSize="5pt"
+        			android:layout_marginBottom="12dip" android:id="@+id/splash_payoff_line"
+        			android:layout_width="match_parent" android:focusable="false"
+        			android:focusableInTouchMode="false"></TextView>
+        		<TextView android:layout_width="wrap_content"
+        			android:layout_height="wrap_content" android:textSize="5pt"
+        			android:id="@+id/splash_application_version" android:text="(application version)"
+        			android:textColor="#ff7bc7cb"></TextView>
+        	</LinearLayout>
+		    <ScrollView  android:layout_height="match_parent"
                 android:layout_width="match_parent">
     			<TextView android:layout_height="match_parent"
     				android:layout_width="match_parent" android:padding="16dip"
@@ -67,6 +85,12 @@
     				android:textColor="#ffffffff"
     				android:text="@string/splash_text_learn_more_5"/>
             </ScrollView>
+            <ScrollView  android:layout_height="match_parent"
+                android:layout_width="match_parent">
+    			<WebView android:id="@+id/help_changelog" 
+                    android:layout_height="match_parent"
+    				android:layout_width="match_parent" android:padding="16dip"/>
+            </ScrollView>
 		</ViewFlipper>
 	</LinearLayout>
 	<LinearLayout android:layout_width="match_parent"
@@ -75,11 +99,11 @@
 		android:background="#44000000">
 		<Button android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:paddingLeft="20dip"
-			android:paddingRight="20dip" android:id="@+id/button_splash_get_started"
+			android:paddingRight="20dip" android:id="@+id/button_help_get_started"
 			android:text="@string/splash_button_get_started"></Button>
 		<Button android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:paddingLeft="20dip"
-			android:paddingRight="20dip" android:id="@+id/button_splash_learn_more"
+			android:paddingRight="20dip" android:id="@+id/button_help_learn_more"
 			android:text="@string/splash_button_learn_more"></Button>
 	</LinearLayout>
 </LinearLayout>

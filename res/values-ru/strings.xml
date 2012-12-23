@@ -19,7 +19,7 @@
 	<string name="app_name">AndStatus</string>
 
     <!-- Menu item / Window title -->
-    <string name="account_settings_action">Настройки Учётных записей AndStatus</string>
+    <string name="account_settings_action">Настройки Учётных записей (Аккаунтов)</string>
     <!-- On Settings screen, summary line when called via AccountManager [CHAR LIMIT=50] -->
     <string name="account_settings_summary">Частота синхронизации, уведомления и др.</string>
 
@@ -60,7 +60,7 @@
 	<string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>
 	<string name="dialog_summary_acquiring_a_request_token">Пожалуйста подождите завершения получения токена запроса для OAuth</string>
 	<string name="dialog_summary_authentication_failed">Пожалуйста проверьте Ваши имя пользователя и пароль.</string>
-	<string name="dialog_summary_checking_credentials">Пожалуйста подождите завершения проверки имени пользователя и пароля учётной записи.</string>
+	<string name="dialog_summary_checking_credentials">Пожалуйста подождите завершения проверки имени пользователя и пароля учётной записи (аккаунта).</string>
 	<string name="dialog_summary_connection_timeout">Время соединения закончилось. Пожалуйста, повторите попытку позднее.</string>
 	<string name="dialog_summary_executing_command">Пожалуйста, подождите завершения обработки команды на сервере.</string>
 	<string name="dialog_summary_external_storage">Обнаружена внешняя память (SD-карта). Вы хотите, чтобы AndStatus сохранял данные на ней? Старые данные перенести туда нельзя, но они останутся во внутренней памяти Вашего устройства.</string>
@@ -97,10 +97,10 @@
 	<string name="favorite_destroyed">Сообщение удалено из избранного.</string>
     <!-- Accounts & Synchronization settings --><skip/>
     <!-- Header title for list of accounts on Accounts & Synchronization settings -->
-    <string name="header_manage_accounts">Управление учётными записями</string>    
+    <string name="header_manage_accounts">Управление аккаунтами</string>    
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
     <string name="id_of_this_message_was_not_specified">Идентификатор этого сообщения не был указан</string>
-	<string name="label_accountselector">Выберите учётную запись</string>
+	<string name="label_accountselector">Выберите аккаунт</string>
     <string name="label_conversation">Обсуждение</string>
 	<string name="label_conversationactivity">Сообщение</string>
     <string name="loading">Загрузка…</string>
@@ -178,7 +178,7 @@
 	<string name="search_direct_messages_hint">Введите имя или фразу</string>
 	<string name="status_destroyed">Сообщение удалено.</string>
     <string name="summary_preference_add_account_oauth">Щёлкните здесь для открытия сайта Системы в браузере.</string>
-    <string name="summary_preference_add_account_basic">Щёлкните здесь для аутентификации пользователя и добавления учётной записис.</string>
+    <string name="summary_preference_add_account_basic">Щёлкните здесь для аутентификации пользователя и добавления учётной записи (аккаунта).</string>
     <string name="summary_preference_appearance">Изменить внешний вид программы AndStatus</string>
 	<string name="summary_preference_automatic_updates">Изменить параметры автоматических обновлений</string>
 	<string name="summary_preference_automatic_updates_off">Автоматические обновления отключены</string>
