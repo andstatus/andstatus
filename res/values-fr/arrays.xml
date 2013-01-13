@@ -16,8 +16,8 @@
  -->
 <resources>
 	<string-array name="appwidget_message_formats">
-		<item>"{0} tweet"</item>
-		<item>"{0} tweets"</item>
+		<item>"{0} message"</item>
+		<item>"{0} messages"</item>
 	</string-array>
 	<string-array name="appwidget_message_patterns">
 		<item>"1"</item>
@@ -35,8 +35,8 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="appwidget_directmessage_formats">
-		<item>"{0} message"</item>
-		<item>"{0} messages"</item>
+		<item>"{0} message privé"</item>
+		<item>"{0} messages privés"</item>
 	</string-array>
 	<string-array name="appwidget_directmessage_patterns">
 		<item>"1"</item>
@@ -111,15 +111,15 @@
 		<item>AndStatus.Large</item>
 	</string-array>
 	<string-array name="history_size_values">
-		<item>500 tweets</item>
-		<item>1000 tweets</item>
-		<item>2000 tweets</item>
-		<item>5000 tweets</item>
-		<item>10000 tweets</item>
-		<item>20000 tweets</item>
-		<item>50000 tweets</item>
-		<item>100000 tweets</item>
-        <item>1 mln tweets</item>
+		<item>500 messages</item>
+		<item>1000 messages</item>
+		<item>2000 messages</item>
+		<item>5000 messages</item>
+		<item>10000 messages</item>
+		<item>20000 messages</item>
+		<item>50000 messages</item>
+		<item>100000 messages</item>
+        <item>1 mln messages</item>
     </string-array>
 	<string-array name="history_size_keys">
 		<item>500</item>
@@ -133,15 +133,15 @@
         <item>1000000</item>
     </string-array>
 	<string-array name="history_size_display">
-		<item>500 tweets</item>
-		<item>1000 tweets</item>
-		<item>2000 tweets</item>
-		<item>5000 tweets</item>
-		<item>10000 tweets</item>
-		<item>20000 tweets</item>
-		<item>50000 tweets</item>
-		<item>100000 tweets</item>
-        <item>1 mln tweets</item>
+		<item>500 messages</item>
+		<item>1000 messages</item>
+		<item>2000 messages</item>
+		<item>5000 messages</item>
+		<item>10000 messages</item>
+		<item>20000 messages</item>
+		<item>50000 messages</item>
+		<item>100000 messages</item>
+        <item>1 mln messages</item>
     </string-array>
 	<string-array name="history_time_values">
 		<item>1 jour</item>
@@ -180,24 +180,24 @@
         <item>10 years</item>
     </string-array>
 	<string-array name="notification_tweet_formats">
-		<item>"{0} nouveau tweet"</item>
-		<item>"{0} nouveaux tweets"</item>
+		<item>"{0} message"</item>
+		<item>"{0} messages"</item>
 	</string-array>
 	<string-array name="notification_tweet_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
 	<string-array name="notification_mention_formats">
-		<item>"{0} nouvelle mention"</item>
-		<item>"{0} nouvelles mentions"</item>
+		<item>"{0} mention"</item> 
+		<item>"{0} mentions"</item>
 	</string-array>
 	<string-array name="notification_mention_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
 	<string-array name="notification_message_formats">
-		<item>"{0} nouveau message"</item>
-		<item>"{0} nouveaux messages"</item>
+		<item>"{0} message privé"</item>
+		<item>"{0} messages privés"</item>
 	</string-array>
 	<string-array name="notification_message_patterns">
 		<item>"1"</item>
