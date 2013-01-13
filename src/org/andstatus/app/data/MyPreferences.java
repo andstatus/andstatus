@@ -89,7 +89,10 @@ public class MyPreferences {
      * Is the timeline combined in {@link TimelineActivity} 
      */
     public static final String KEY_TIMELINE_IS_COMBINED = "timeline_is_combined";
-    
+    /**
+     * Version code of last opened application (int) 
+     */
+    public static final String KEY_VERSION_CODE_LAST = "version_code_last";
     
     /**
      * System time when shared preferences were examined and took into account

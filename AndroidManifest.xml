@@ -18,7 +18,7 @@
     TODO: Add narrow enough intent filters to activities in order not to see these activities everywhere ("Open with...")
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="org.andstatus.app" android:versionName="1.11.2" android:versionCode="67">
+	package="org.andstatus.app" android:versionName="1.11.4" android:versionCode="69">
 
 	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="10" />
     
@@ -111,14 +111,7 @@
             </intent-filter>
         </activity>
 
-		<activity android:name=".SplashActivity" android:launchMode="singleTop">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN"/>
-				<category android:name="android.intent.category.DEFAULT"/>
-			</intent-filter>
-		</activity>
-
-		<activity android:name=".SplashMoreActivity"
+		<activity android:name=".HelpActivity"
 			android:launchMode="singleTop">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>

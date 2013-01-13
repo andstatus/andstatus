@@ -144,11 +144,13 @@
 
 	<!-- INFORMATION -->
 	<PreferenceCategory android:title="@string/category_title_preference_information">
-        <Preference android:key="about_application" android:title="@string/title_preference_about_application">
-            <intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/wiki" />
+        <Preference android:key="about_application" 
+            android:title="@string/title_preference_about_application"
+            android:persistent="false">
         </Preference>
-		<Preference android:key="change_log" android:title="@string/title_preference_change_log">
-			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/wiki/changelog" />
+		<Preference android:key="change_log" 
+            android:title="@string/title_preference_change_log"
+            android:persistent="false">
 		</Preference>
         <ListPreference android:entryValues="@array/log_level_keys"
             android:entries="@array/log_level_values" android:summary="@string/summary_preference_min_log_level"

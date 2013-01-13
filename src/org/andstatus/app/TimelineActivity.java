@@ -28,6 +28,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
@@ -75,6 +78,8 @@ import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.json.JSONObject;
+
+import java.text.MessageFormat;
 
 /**
  * @author torgny.bjers
@@ -447,17 +452,41 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
 
         if (!mIsFinishing) {
+            boolean helpAsFirstActivity = false;
+            boolean showChangeLog = false;
             if (!MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
                 Log.i(TAG, "We are running the Application for the very first time?");
-                startActivity(new Intent(this, SplashActivity.class));
-                finish();
-            }
-        }
-        if (!mIsFinishing) {
-            if (MyAccount.getCurrentMyAccount() == null) {
+                helpAsFirstActivity = true;
+            } else if (MyAccount.getCurrentMyAccount() == null) {
                 Log.i(TAG, "No current MyAccount");
-                startActivity(new Intent(this, SplashActivity.class));
-                finish();
+                helpAsFirstActivity = true;
+            } else {
+                // Show Change Log after update
+                try {
+                    int versionCodeLast =  MyPreferences.getDefaultSharedPreferences().getInt(MyPreferences.KEY_VERSION_CODE_LAST, 0);
+                    PackageManager pm = getPackageManager();
+                    PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
+                    int versionCode =  pi.versionCode;
+                    if (versionCodeLast < versionCode) {
+                        showChangeLog = true;
+                        MyPreferences.getDefaultSharedPreferences().edit().putInt(MyPreferences.KEY_VERSION_CODE_LAST, versionCode).commit();
+                    }
+                } catch (NameNotFoundException e) {
+                    Log.e(TAG, "Unable to obtain package information", e);
+                }
+            }
+            if (helpAsFirstActivity || showChangeLog) {
+                Intent intent = new Intent(this, HelpActivity.class);
+                if (helpAsFirstActivity) {
+                    intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
+                }
+                if (showChangeLog) {
+                    intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
+                }
+                startActivity(intent);
+                if (helpAsFirstActivity) {
+                    finish();
+                }
             }
         }
         if (mIsFinishing) {
@@ -1144,9 +1173,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         timelineTypeButton.setText(timelinename + (mIsSearchMode ? " *" : ""));
         
         // Show current account info on the left button
-        String username = MyAccount.getCurrentMyAccount().getUsername();
-        Button leftTitle = (Button) findViewById(R.id.selectAccountButton);
-        leftTitle.setText(username);
+        String accountName = "";
+        if (MyAccount.moreThanOneOriginatingSystem()) {
+            accountName = MyAccount.getCurrentMyAccount().getAccountGuid();
+        } else {
+            accountName = MyAccount.getCurrentMyAccount().getUsername();
+        }
+        Button selectAccountButton = (Button) findViewById(R.id.selectAccountButton);
+        selectAccountButton.setText(accountName);
         
         TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
         rightTitle.setText(rightText);
