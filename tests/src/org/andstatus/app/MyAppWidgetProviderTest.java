@@ -223,7 +223,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 
     	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
 		intent.putExtra(EXTRA_NUMTWEETS, numTweets);
-		intent.putExtra(EXTRA_MSGTYPE, msgType);
+		intent.putExtra(EXTRA_MSGTYPE, msgType.save());
 		context.sendBroadcast(intent);
     	
 	}
@@ -235,7 +235,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 	 * @see MyAppWidgetProvider
 	 * For some reason it sends Intents with the same "Extra" info
 	 */
-	private void updateWidgetsPending(int numTweets, int msgType) throws Exception {
+	private void updateWidgetsPending(int numTweets, CommandEnum msgType) throws Exception {
 		
 		// Let's try pending intents
     	Context context = getInstrumentation().getTargetContext();
@@ -248,7 +248,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
     	intent.addCategory("msgType" + msgType);
 		intent.putExtra(EXTRA_NUMTWEETS, numTweets);
-		intent.putExtra(EXTRA_MSGTYPE, msgType);
+		intent.putExtra(EXTRA_MSGTYPE, msgType.save());
     	
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pendingUpdate = PendingIntent.getBroadcast(context,
@@ -269,15 +269,15 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 	 * if there are some installed... (e.g. on the Home screen...) 
 	 * @see MyAppWidgetProvider
 	 */
-	private void updateWidgetsThreads(int numTweets, int msgType) {
+	private void updateWidgetsThreads(int numTweets, CommandEnum msgType) {
 		IntentSender runner = new IntentSender(numTweets, msgType);
 		runner.start();
 	}
 	
 	class IntentSender extends Thread {
 		int numTweets;
-		int msgType;
-		public IntentSender(int numTweets, int msgType) {
+		CommandEnum msgType;
+		public IntentSender(int numTweets, CommandEnum msgType) {
 			this.numTweets = numTweets;
 			this.msgType = msgType;
 		}
@@ -289,7 +289,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 	    	
 	    	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
 			intent.putExtra(EXTRA_NUMTWEETS, numTweets);
-			intent.putExtra(EXTRA_MSGTYPE, msgType);
+			intent.putExtra(EXTRA_MSGTYPE, msgType.save());
 			context.sendBroadcast(intent);
 		}
 	}
