@@ -85,7 +85,7 @@ public class TimelineDownloader {
     private MyAccount ma;
 
     private TimelineTypeEnum mTimelineType;
-    // private OriginApiEnum mApi;
+    // private ApiEnum mApi;
 
     public TimelineDownloader(MyAccount ma_in, Context context, TimelineTypeEnum timelineType) {
         mContext = context;
@@ -209,7 +209,11 @@ public class TimelineDownloader {
         /**
          * Count this message. 
          */
-        boolean countIt = false; 
+        boolean countIt = false;
+        /**
+         * Don't insert this message
+         */
+        boolean skipIt = false;
         try {
             ContentValues values = new ContentValues();
 
@@ -283,143 +287,152 @@ public class TimelineDownloader {
                 // This is for identi.ca
                 rowOid = msg.getString("id");
             } 
-            
-            // Lookup the System's (AndStatus) id from the Originated system's id
-            rowId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), rowOid);
-            // Construct the Uri to the Msg
-            Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
-            
-            String body = "";
-            if (msg.has("text")) {
-                body = Html.fromHtml(msg.getString("text")).toString();
+
+            if (MyPreferences.isEmpty(rowOid)) {
+                Log.w(TAG, "insertFromJSONObject - no message id");
+                skipIt = true;
             }
-            values.put(MyDatabase.Msg.MSG_OID, rowOid);
-            values.put(MyDatabase.Msg.ORIGIN_ID, ma.getOriginId());
-            values.put(MsgOfUser.TIMELINE_TYPE, mTimelineType.save());
-            values.put(MyDatabase.Msg.BODY, body);
+            if (!skipIt) {
+                // Lookup the System's (AndStatus) id from the Originated system's id
+                rowId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), rowOid);
+                // Construct the Uri to the Msg
+                Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
+                
+                String body = "";
+                if (msg.has("text")) {
+                    body = Html.fromHtml(msg.getString("text")).toString();
+                }
+                values.put(MyDatabase.Msg.MSG_OID, rowOid);
+                values.put(MyDatabase.Msg.ORIGIN_ID, ma.getOriginId());
+                values.put(MsgOfUser.TIMELINE_TYPE, mTimelineType.save());
+                values.put(MyDatabase.Msg.BODY, body);
 
-            // As of 2012-07-07 we count only messages that were not in a database yet.
-            // Don't count Messages without body - this may be related messages which were not retrieved yet.
-            countIt = (rowId == 0) && (body.length() > 0);
-            
-            // If the Msg is a Reply to other message
-            String inReplyToUserOid = "";
-            String inReplyToUserName = "";
-            Long inReplyToUserId = 0L;
-            String inReplyToMessageOid = "";
-            Long inReplyToMessageId = 0L;
+                // As of 2012-07-07 we count only messages that were not in a database yet.
+                // Don't count Messages without body - this may be related messages which were not retrieved yet.
+                countIt = (!skipIt) && (rowId == 0) && (body.length() > 0);
+                
+                // If the Msg is a Reply to other message
+                String inReplyToUserOid = "";
+                String inReplyToUserName = "";
+                Long inReplyToUserId = 0L;
+                String inReplyToMessageOid = "";
+                Long inReplyToMessageId = 0L;
 
-            boolean mentioned = (mTimelineType == TimelineTypeEnum.MENTIONS);
-            
-            switch (mTimelineType) {
-                case HOME:
-                case FAVORITES:
-                    values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
-                case ALL:
-                case MENTIONS:
-                    if (msg.has("source")) {
-                        values.put(MyDatabase.Msg.VIA, msg.getString("source"));
-                    }
-                    if (msg.has("favorited")) {
-                        values.put(MyDatabase.MsgOfUser.FAVORITED, MyPreferences.isTrue(msg.getString("favorited")));
-                    }
-
-                    if (msg.has("in_reply_to_user_id_str")) {
-                        inReplyToUserOid = msg.getString("in_reply_to_user_id_str");
-                    } else if (msg.has("in_reply_to_user_id")) {
-                        // This is for identi.ca
-                        inReplyToUserOid = msg.getString("in_reply_to_user_id");
-                    }
-                    if (MyPreferences.isEmpty(inReplyToUserOid)) {
-                        inReplyToUserOid = "";
-                    }
-                    if (inReplyToUserOid.length()>0) {
-                        if (msg.has("in_reply_to_screen_name")) {
-                            inReplyToUserName = msg.getString("in_reply_to_screen_name");
+                boolean mentioned = (mTimelineType == TimelineTypeEnum.MENTIONS);
+                
+                switch (mTimelineType) {
+                    case HOME:
+                    case FAVORITES:
+                        values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
+                    case ALL:
+                    case MENTIONS:
+                        if (msg.has("source")) {
+                            values.put(MyDatabase.Msg.VIA, msg.getString("source"));
                         }
-                        inReplyToUserId = MyProvider.oidToId(MyDatabase.User.CONTENT_URI, ma.getOriginId(), inReplyToUserOid);
-                        
-                        // Construct "User" from available info
-                        JSONObject inReplyToUser = new JSONObject();
-                        inReplyToUser.put("id_str", inReplyToUserOid);
-                        inReplyToUser.put("screen_name", inReplyToUserName);
-                        if (inReplyToUserId == 0) {
-                            inReplyToUserId = insertUserFromJSONObject(inReplyToUser);
-                        }
-                        values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
-                        
-                        if (ma.getUserId() == inReplyToUserId) {
-                            values.put(MyDatabase.MsgOfUser.REPLIED, 1);
-                            if (countIt) { 
-                                mReplies++; 
-                                }
-                            // We consider a Reply to be a Mention also?! 
-                            // ...Yes, at least as long as we don't have "Replies" timeline type 
-                            mentioned = true;
+                        if (msg.has("favorited")) {
+                            values.put(MyDatabase.MsgOfUser.FAVORITED, MyPreferences.isTrue(msg.getString("favorited")));
                         }
 
-                        if (msg.has("in_reply_to_status_id_str")) {
-                            inReplyToMessageOid = msg.getString("in_reply_to_status_id_str");
-                        } else if (msg.has("in_reply_to_status_id")) {
+                        if (msg.has("in_reply_to_user_id_str")) {
+                            inReplyToUserOid = msg.getString("in_reply_to_user_id_str");
+                        } else if (msg.has("in_reply_to_user_id")) {
                             // This is for identi.ca
-                            inReplyToMessageOid = msg.getString("in_reply_to_status_id");
+                            inReplyToUserOid = msg.getString("in_reply_to_user_id");
                         }
-                        if (MyPreferences.isEmpty(inReplyToMessageOid)) {
+                        if (MyPreferences.isEmpty(inReplyToUserOid)) {
                             inReplyToUserOid = "";
                         }
-                        if (inReplyToMessageOid.length() > 0) {
-                            inReplyToMessageId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), inReplyToMessageOid);
-                            if (inReplyToMessageId == 0) {
-                                // Construct Related "Msg" from available info
-                                // and add it recursively
-                                JSONObject inReplyToMessage = new JSONObject();
-                                inReplyToMessage.put("id_str", inReplyToMessageOid);
-                                inReplyToMessage.put(senderObjectName, inReplyToUser);
-                                // Type of the timeline is ALL meaning that message does not belong to this timeline
-                                TimelineDownloader td = new TimelineDownloader(ma, mContext, MyDatabase.TimelineTypeEnum.ALL);
-                                inReplyToMessageId = td.insertFromJSONObject(inReplyToMessage);
+                        if (!MyPreferences.isEmpty(inReplyToUserOid)) {
+                            if (msg.has("in_reply_to_screen_name")) {
+                                inReplyToUserName = msg.getString("in_reply_to_screen_name");
                             }
-                            values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
-                        }
-                    }
-                    break;
-                case DIRECT:
-                    values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
+                            inReplyToUserId = MyProvider.oidToId(MyDatabase.User.CONTENT_URI, ma.getOriginId(), inReplyToUserOid);
+                            
+                            // Construct "User" from available info
+                            JSONObject inReplyToUser = new JSONObject();
+                            inReplyToUser.put("id_str", inReplyToUserOid);
+                            inReplyToUser.put("screen_name", inReplyToUserName);
+                            if (inReplyToUserId == 0) {
+                                inReplyToUserId = insertUserFromJSONObject(inReplyToUser);
+                            }
+                            values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
+                            
+                            if (ma.getUserId() == inReplyToUserId) {
+                                values.put(MyDatabase.MsgOfUser.REPLIED, 1);
+                                if (countIt) { 
+                                    mReplies++; 
+                                    }
+                                // We consider a Reply to be a Mention also?! 
+                                // ...Yes, at least as long as we don't have "Replies" timeline type 
+                                mentioned = true;
+                            }
 
-                    // Recipient
-                    Long recipientId = 0L;
-                    JSONObject recipient = msg.getJSONObject("recipient");
-                    recipientId = insertUserFromJSONObject(recipient);
-                    values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
-                    break;
-            }
-            
-            if (countIt) { 
-                mMessages++;
+                            if (msg.has("in_reply_to_status_id_str")) {
+                                inReplyToMessageOid = msg.getString("in_reply_to_status_id_str");
+                            } else if (msg.has("in_reply_to_status_id")) {
+                                // This is for identi.ca
+                                inReplyToMessageOid = msg.getString("in_reply_to_status_id");
+                            }
+                            if (MyPreferences.isEmpty(inReplyToMessageOid)) {
+                                inReplyToUserOid = "";
+                            }
+                            if (!MyPreferences.isEmpty(inReplyToMessageOid)) {
+                                inReplyToMessageId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), inReplyToMessageOid);
+                                if (inReplyToMessageId == 0) {
+                                    // Construct Related "Msg" from available info
+                                    // and add it recursively
+                                    JSONObject inReplyToMessage = new JSONObject();
+                                    inReplyToMessage.put("id_str", inReplyToMessageOid);
+                                    inReplyToMessage.put(senderObjectName, inReplyToUser);
+                                    // Type of the timeline is ALL meaning that message does not belong to this timeline
+                                    TimelineDownloader td = new TimelineDownloader(ma, mContext, MyDatabase.TimelineTypeEnum.ALL);
+                                    inReplyToMessageId = td.insertFromJSONObject(inReplyToMessage);
+                                }
+                                values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
+                            }
+                        }
+                        break;
+                    case DIRECT:
+                        values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
+
+                        // Recipient
+                        Long recipientId = 0L;
+                        JSONObject recipient = msg.getJSONObject("recipient");
+                        recipientId = insertUserFromJSONObject(recipient);
+                        values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
+                        break;
                 }
-            if (body.length() > 0) {
-                if (!mentioned) {
-                    // Check if current user was mentioned in the text of the message
-                    if (body.length() > 0) {
-                        if (body.contains("@" + ma.getUsername())) {
-                            mentioned = true;
+                
+                if (countIt) { 
+                    mMessages++;
+                    }
+                if (body.length() > 0) {
+                    if (!mentioned) {
+                        // Check if current user was mentioned in the text of the message
+                        if (body.length() > 0) {
+                            if (body.contains("@" + ma.getUsername())) {
+                                mentioned = true;
+                            }
                         }
                     }
                 }
+                if (mentioned) {
+                    if (countIt) { 
+                        mMentions++;
+                        }
+                  values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
+                }
+                
+                if (rowId == 0) {
+                    // There was no such row so add new one
+                    msgUri = mContentResolver.insert(MyProvider.getTimelineUri(ma.getUserId()), values);
+                    rowId = MyProvider.uriToMessageId(msgUri);
+                } else {
+                  mContentResolver.update(msgUri, values, null, null);
+                }
             }
-            if (mentioned) {
-                if (countIt) { 
-                    mMentions++;
-                    }
-              values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
-            }
-            
-            if (rowId == 0) {
-                // There was no such row so add new one
-                msgUri = mContentResolver.insert(MyProvider.getTimelineUri(ma.getUserId()), values);
-                rowId = MyProvider.uriToMessageId(msgUri);
-            } else {
-              mContentResolver.update(msgUri, values, null, null);
+            if (skipIt) {
+                Log.w(TAG, "insertFromJSONObject, the message was skipped: " + msg.toString(2));
             }
         } catch (Exception e) {
             Log.e(TAG, "insertFromJSONObject: " + e.toString());
@@ -461,14 +474,16 @@ public class TimelineDownloader {
                 originId = ma.getOriginId();
             }
         }
-        if (rowOid.length() > 0) {
+        if (MyPreferences.isEmpty(rowOid)) {
+            rowOid = "";
+        } else {
             // Lookup the System's (AndStatus) id from the Originated system's id
             rowId = MyProvider.oidToId(MyDatabase.User.CONTENT_URI, originId, rowOid);
         }
         if (rowId == 0) {
             // Try to Lookup by Username
-            if (userName.length() < 1) {
-                Log.e(TAG, "insertUserFromJSONObject - no username");
+            if (MyPreferences.isEmpty(userName)) {
+                Log.w(TAG, "insertUserFromJSONObject - no username: " + user.toString(2));
                 return 0;
             }
             rowId = MyProvider.userNameToId(originId, userName);

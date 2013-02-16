@@ -34,7 +34,6 @@ import java.util.Vector;
 
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineDownloader;
-import org.andstatus.app.account.Origin.OriginApiEnum;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
@@ -883,33 +882,12 @@ public class MyAccount implements Parcelable {
     public long getOriginId() {
         return mOrigin.getId();
     }
-
-    /**
-     * @return API of the Originating system
-     */
-    public OriginApiEnum getApi() {
-        return mOrigin.getApi();
-    }
     
     /**
      * @return Name of the system in which the User is defined
      */
     public String getOriginName() {
         return mOrigin.getName();
-    }
-    
-    /**
-     * @return Base URL for connection to the System
-     */
-    public String getBaseUrl() {
-        return mOrigin.getBaseUrl();
-    }
-    
-    /**
-     * @return Base URL for OAuth related requests to the System
-     */
-    public String getOauthBaseUrl() {
-        return mOrigin.getOauthBaseUrl();
     }
     
     /**

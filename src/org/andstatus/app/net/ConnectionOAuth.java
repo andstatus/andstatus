@@ -56,11 +56,12 @@ import java.util.LinkedList;
 /**
  * Handles connection to the Twitter REST API using OAuth
  * Based on "BLOA" example, Copyright 2010 - Brion N. Emde
+ * Common code for both 1 and 1.1 API
  * 
  * @see <a
  *      href="http://github.com/brione/Brion-Learns-OAuth">Brion-Learns-OAuth</a>
  */
-public class ConnectionOAuth extends Connection implements MyOAuth {
+public abstract class ConnectionOAuth extends Connection implements MyOAuth {
     private static final String TAG = ConnectionOAuth.class.getSimpleName();
 
     public static final String USER_TOKEN = "user_token";
@@ -86,9 +87,9 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
 
     private HttpClient mClient;
 
-    public ConnectionOAuth(MyAccount ma) {
-        super(ma);
-        mOauthBaseUrl = ma.getOauthBaseUrl();
+    public ConnectionOAuth(MyAccount ma, ApiEnum api, String apiBaseUrl, String apiOauthBaseUrl) {
+        super(ma, api, apiBaseUrl);
+        mOauthBaseUrl = apiOauthBaseUrl;
 
         HttpParams parameters = new BasicHttpParams();
         HttpProtocolParams.setVersion(parameters, HttpVersion.HTTP_1_1);
@@ -106,8 +107,8 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
         mConsumer = new CommonsHttpOAuthConsumer(oak.getConsumerKey(),
                 oak.getConsumerSecret());
 
-        mProvider = new CommonsHttpOAuthProvider(getApiUrl(apiEnum.OAUTH_REQUEST_TOKEN),
-                getApiUrl(apiEnum.OAUTH_ACCESS_TOKEN), getApiUrl(apiEnum.OAUTH_AUTHORIZE));
+        mProvider = new CommonsHttpOAuthProvider(getApiUrl(ApiRoutineEnum.OAUTH_REQUEST_TOKEN),
+                getApiUrl(ApiRoutineEnum.OAUTH_ACCESS_TOKEN), getApiUrl(ApiRoutineEnum.OAUTH_AUTHORIZE));
 
         
         // It turns out this was the missing thing to making standard
@@ -124,26 +125,32 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
     }
     
     /**
-     * @see org.andstatus.app.net.Connection#getApiUrl(org.andstatus.app.net.Connection.apiEnum)
+     * @return Base URL for OAuth related requests to the System
+     */
+    public String getOauthBaseUrl() {
+        return mOauthBaseUrl;
+    }
+    
+    /**
+     * @see org.andstatus.app.net.Connection#getApiUrl1(org.andstatus.app.net.Connection.ApiRoutineEnum)
      */
     @Override
-    protected String getApiUrl(apiEnum api) {
+    protected String getApiUrl1(ApiRoutineEnum routine) {
         String url = "";
-        switch(api) {
+        switch(routine) {
             case OAUTH_ACCESS_TOKEN:
-                url = mOauthBaseUrl + "/oauth/access_token";
+                url = getOauthBaseUrl() + "/oauth/access_token";
                 break;
             case OAUTH_AUTHORIZE:
-                url = mOauthBaseUrl + "/oauth/authorize";
+                url = getOauthBaseUrl() + "/oauth/authorize";
                 break;
             case OAUTH_REQUEST_TOKEN:
-                url = mOauthBaseUrl + "/oauth/request_token";
+                url = getOauthBaseUrl() + "/oauth/request_token";
                 break;
             default:
-                url = super.getApiUrl(api);
+                url = super.getApiUrl1(routine);
                 break;
         }
-        MyLog.v(TAG, "URL=" + url);
         return url;
     }
 
@@ -197,23 +204,8 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
     }
 
     @Override
-    public JSONObject createFavorite(String statusId) throws ConnectionException {
-        StringBuilder url = new StringBuilder(getApiUrl(apiEnum.FAVORITES_CREATE_BASE));
-        url.append(statusId);
-        url.append(EXTENSION);
-        HttpPost post = new HttpPost(url.toString());
-        return postRequest(post);
-    }
-
-    @Override
-    public JSONObject destroyFavorite(String statusId) throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(apiEnum.FAVORITES_DESTROY_BASE) + statusId + EXTENSION);
-        return postRequest(post);
-    }
-
-    @Override
     public JSONObject destroyStatus(String statusId) throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(apiEnum.STATUSES_DESTROY) + statusId + EXTENSION);
+        HttpPost post = new HttpPost(getApiUrl(ApiRoutineEnum.STATUSES_DESTROY) + statusId + EXTENSION);
         return postRequest(post);
     }
 
@@ -221,7 +213,7 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
     public JSONObject getStatus(String statusId) throws ConnectionException {
         JSONObject jso = null;
         try {
-            Uri sUri = Uri.parse(getApiUrl(apiEnum.STATUSES_SHOW));
+            Uri sUri = Uri.parse(getApiUrl(ApiRoutineEnum.STATUSES_SHOW));
             Uri.Builder builder = sUri.buildUpon();
             builder.appendQueryParameter("id", statusId);
             jso = getUrl(builder.build().toString());
@@ -240,13 +232,13 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
      */
     @Override
     public JSONArray getDirectMessages(String sinceId, int limit) throws ConnectionException {
-        String url = getApiUrl(apiEnum.DIRECT_MESSAGES);
+        String url = getApiUrl(ApiRoutineEnum.DIRECT_MESSAGES);
         return getTimeline(url, sinceId, "", limit, 0);
     }
 
     @Override
     public JSONArray getHomeTimeline(String sinceId, int limit) throws ConnectionException {
-        String url = getApiUrl(apiEnum.STATUSES_HOME_TIMELINE);
+        String url = getApiUrl(ApiRoutineEnum.STATUSES_HOME_TIMELINE);
         return getTimeline(url, sinceId, "", limit, 0);
     }
 
@@ -333,16 +325,16 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
 
     @Override
     public JSONArray getMentionsTimeline(String sinceId, int limit) throws ConnectionException {
-        String url = getApiUrl(apiEnum.STATUSES_MENTIONS_TIMELINE);
+        String url = getApiUrl(ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE);
         return getTimeline(url, sinceId, "", limit, 0);
     }
 
     @Override
     public JSONObject rateLimitStatus() throws ConnectionException {
-        return getUrl(getApiUrl(apiEnum.ACCOUNT_RATE_LIMIT_STATUS));
+        return getUrl(getApiUrl(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
     }
 
-    private JSONObject postRequest(HttpPost post) throws ConnectionException {
+    protected JSONObject postRequest(HttpPost post) throws ConnectionException {
         JSONObject jso = null;
         boolean ok = false;
         try {
@@ -369,27 +361,39 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
         }
         return jso;
     }
-
+    
+    protected JSONObject postRequest(HttpPost post, LinkedList<BasicNameValuePair> out) throws ConnectionException {
+        JSONObject jso = null;
+        boolean ok = false;
+        try {
+            post.setEntity(new UrlEncodedFormEntity(out, HTTP.UTF_8));
+            ok = true;
+        } catch (UnsupportedEncodingException e) {
+            Log.e(TAG, e.toString());
+        }
+        if (ok) {
+            jso = postRequest(post);
+        } else {            
+            jso = null;
+        }
+        return jso;
+    }
+    
     @Override
     public JSONObject updateStatus(String message, String inReplyToId)
             throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(apiEnum.STATUSES_UPDATE));
+        HttpPost post = new HttpPost(getApiUrl(ApiRoutineEnum.STATUSES_UPDATE));
         LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
         out.add(new BasicNameValuePair("status", message));
         if ( !TextUtils.isEmpty(inReplyToId)) {
             out.add(new BasicNameValuePair("in_reply_to_status_id", inReplyToId));
         }
-        try {
-            post.setEntity(new UrlEncodedFormEntity(out, HTTP.UTF_8));
-        } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, e.toString());
-        }
-        return postRequest(post);
+        return postRequest(post, out);
     }
 
     @Override
     public JSONObject postDirectMessage(String userId, String screenName, String message) throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(apiEnum.POST_DIRECT_MESSAGE));
+        HttpPost post = new HttpPost(getApiUrl(ApiRoutineEnum.POST_DIRECT_MESSAGE));
         LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
         out.add(new BasicNameValuePair("text", message));
         if ( !TextUtils.isEmpty(userId)) {
@@ -398,17 +402,12 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
         if ( !TextUtils.isEmpty(screenName)) {
             out.add(new BasicNameValuePair("screen_name", screenName));
         }
-        try {
-            post.setEntity(new UrlEncodedFormEntity(out, HTTP.UTF_8));
-        } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, e.toString());
-        }
-        return postRequest(post);
+        return postRequest(post, out);
     }
     
     @Override
     public JSONObject postReblog(String rebloggedId) throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(apiEnum.POST_REBLOG) + rebloggedId + EXTENSION);
+        HttpPost post = new HttpPost(getApiUrl(ApiRoutineEnum.POST_REBLOG) + rebloggedId + EXTENSION);
         return postRequest(post);
     }
 
@@ -430,7 +429,7 @@ public class ConnectionOAuth extends Connection implements MyOAuth {
 
     @Override
     public JSONObject verifyCredentials() throws ConnectionException {
-        return getUrl(getApiUrl(apiEnum.ACCOUNT_VERIFY_CREDENTIALS));
+        return getUrl(getApiUrl(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
     }
 
     @Override

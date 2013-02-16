@@ -27,7 +27,7 @@ public class OAuthKeysOpenSource implements OAuthKeysStrategy {
         if(originId == Origin.ORIGIN_ID_TWITTER) {
             return "XPHj81OgjphGlN6Jb55Kmg";
         } else if(originId == Origin.ORIGIN_ID_IDENTICA) {  
-            return "620cfde429180307d066340582fd6919";
+            return "ac7bc1dc0677451d5e4b06824c58277f";
         } else {
             return "";
         }
@@ -37,7 +37,7 @@ public class OAuthKeysOpenSource implements OAuthKeysStrategy {
         if(originId == Origin.ORIGIN_ID_TWITTER) {  
             return "o2E5AYoDQhZf9qT7ctHLGihpq2ibc5bC4iFAOHURxw";
         } else if(originId == Origin.ORIGIN_ID_IDENTICA) {  
-            return "0798525c8340f5954627974d7969c611";
+            return "3730578440221ba670430cb13719ec64";
         } else {
             return "";
         }

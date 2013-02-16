@@ -19,8 +19,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.webkit.WebView;
 
-import org.andstatus.app.R;
-
 import java.io.StringWriter;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;

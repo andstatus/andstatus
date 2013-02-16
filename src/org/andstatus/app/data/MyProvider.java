@@ -218,72 +218,77 @@ public class MyProvider extends ContentProvider {
         long accountId = 0;
         
         long rowId;
-        // 2010-07-21 yvolk: "now" is calculated exactly like it is in other
-        // parts of the code
-        Long now = System.currentTimeMillis();
-        SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
-
-        String table;
-        String nullColumnHack;
-        Uri contentUri;
-
-        if (initialValues != null) {
-            values = new ContentValues(initialValues);
-        } else {
-            values = new ContentValues();
-        }
-
-        switch (sUriMatcher.match(uri)) {
-            case TIMELINE:
-                accountId = Long.parseLong(uri.getPathSegments().get(1));
-                table = MyDatabase.MSG_TABLE_NAME;
-                nullColumnHack = Msg.BODY;
-                contentUri = TIMELINE_URI;
-                /**
-                 * Add default values for missed required fields
-                 */
-                if (!values.containsKey(Msg.AUTHOR_ID))
-                    values.put(Msg.AUTHOR_ID, values.get(Msg.SENDER_ID).toString());
-                if (!values.containsKey(Msg.BODY))
-                    values.put(Msg.BODY, "");
-                if (!values.containsKey(Msg.VIA))
-                    values.put(Msg.VIA, "");
-                values.put(Msg.INS_DATE, now);
-                
-                msgOfUserValues = prepareMsgOfUserValues(values, accountId);
-                break;
-
-            case USERS:
-                table = MyDatabase.USER_TABLE_NAME;
-                nullColumnHack = User.USERNAME;
-                contentUri = User.CONTENT_URI;
-                values.put(User.INS_DATE, now);
-                break;
-
-            default:
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-
-        rowId = db.insert(table, nullColumnHack, values);
-        if (rowId == -1) {
-            throw new SQLException("Failed to insert row into " + uri);
-        }
-        
-        if (msgOfUserValues != null) {
-            // We need to insert the row:
-            msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
-            long msgOfUserRowId = db.insert(MyDatabase.MSGOFUSER_TABLE_NAME, MsgOfUser.MSG_ID, msgOfUserValues);
-            if (msgOfUserRowId == -1) {
-                throw new SQLException("Failed to insert row into " + MyDatabase.MSGOFUSER_TABLE_NAME);
-            }
-        }
-
         Uri newUri = null;
-        if (contentUri.compareTo(TIMELINE_URI) == 0) {
-            // The resulted Uri has two parameters...
-            newUri = MyProvider.getTimelineMsgUri(accountId, rowId);
-        } else {
-            newUri = ContentUris.withAppendedId(contentUri, rowId);
+        try {
+            // 2010-07-21 yvolk: "now" is calculated exactly like it is in other
+            // parts of the code
+            Long now = System.currentTimeMillis();
+            SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
+
+            String table;
+            String nullColumnHack;
+            Uri contentUri;
+
+            if (initialValues != null) {
+                values = new ContentValues(initialValues);
+            } else {
+                values = new ContentValues();
+            }
+
+            switch (sUriMatcher.match(uri)) {
+                case TIMELINE:
+                    accountId = Long.parseLong(uri.getPathSegments().get(1));
+                    table = MyDatabase.MSG_TABLE_NAME;
+                    nullColumnHack = Msg.BODY;
+                    contentUri = TIMELINE_URI;
+                    /**
+                     * Add default values for missed required fields
+                     */
+                    if (!values.containsKey(Msg.AUTHOR_ID))
+                        values.put(Msg.AUTHOR_ID, values.get(Msg.SENDER_ID).toString());
+                    if (!values.containsKey(Msg.BODY))
+                        values.put(Msg.BODY, "");
+                    if (!values.containsKey(Msg.VIA))
+                        values.put(Msg.VIA, "");
+                    values.put(Msg.INS_DATE, now);
+                    
+                    msgOfUserValues = prepareMsgOfUserValues(values, accountId);
+                    break;
+
+                case USERS:
+                    table = MyDatabase.USER_TABLE_NAME;
+                    nullColumnHack = User.USERNAME;
+                    contentUri = User.CONTENT_URI;
+                    values.put(User.INS_DATE, now);
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Unknown URI " + uri);
+            }
+
+            rowId = db.insert(table, nullColumnHack, values);
+            if (rowId == -1) {
+                throw new SQLException("Failed to insert row into " + uri);
+            }
+            
+            if (msgOfUserValues != null) {
+                // We need to insert the row:
+                msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
+                long msgOfUserRowId = db.insert(MyDatabase.MSGOFUSER_TABLE_NAME, MsgOfUser.MSG_ID, msgOfUserValues);
+                if (msgOfUserRowId == -1) {
+                    throw new SQLException("Failed to insert row into " + MyDatabase.MSGOFUSER_TABLE_NAME);
+                }
+            }
+
+            if (contentUri.compareTo(TIMELINE_URI) == 0) {
+                // The resulted Uri has two parameters...
+                newUri = MyProvider.getTimelineMsgUri(accountId, rowId);
+            } else {
+                newUri = ContentUris.withAppendedId(contentUri, rowId);
+            }
+        } catch (Exception e) {
+          e.printStackTrace();
+          Log.e(TAG, "Insert:" + e.getMessage());
         }
         return newUri;
     }
@@ -654,6 +659,7 @@ public class MyProvider extends ContentProvider {
         sTweetsProjectionMap.put(MsgOfUser.TIMELINE_TYPE, MsgOfUser.TIMELINE_TYPE);
         sTweetsProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
         sTweetsProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
+        sTweetsProjectionMap.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);
         sTweetsProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
         sTweetsProjectionMap.put(MsgOfUser.USER_ID, MsgOfUser.USER_ID);
         sTweetsProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);

@@ -18,6 +18,7 @@ package org.andstatus.app.util;
 import org.andstatus.app.data.MyPreferences;
 
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 import android.util.Log;
 
 /**
@@ -40,10 +41,16 @@ import android.util.Log;
  * honors the &quot;Minimum logging level&quot; preference. Use this class
  * throughout the application.
  * 
- * @author yuvolkov
+ * @author yvolk
  */
 public class MyLog {
     private static final String TAG = MyLog.class.getSimpleName();
+
+    /**
+     * Use this tag to change logging level of the whole application
+     * Is used in isLoggable(APPTAG, ... ) calls
+     */
+    public static final String APPTAG = "AndStatus";
     
     // Cached value of the persistent preference
     protected static int minLogLevel = Log.ASSERT + 1;
@@ -81,6 +88,12 @@ public class MyLog {
         return i;
     }
 
+    /**
+     * 
+     * @param tag If tag is empty then {@link #APPTAG} is used
+     * @param level {@link android.util.Log#INFO} ...
+     * @return
+     */
     public static boolean isLoggable(String tag, int level) {
         boolean is = false;
         if (minLogLevel > Log.ASSERT) {
@@ -113,6 +126,9 @@ public class MyLog {
         if (level >= minLogLevel) {
             is = true;
         } else {
+            if (TextUtils.isEmpty(tag)) {
+                tag = APPTAG;
+            }
             if (tag.length() > 23) {
                 tag = tag.substring(0, 22);
             }

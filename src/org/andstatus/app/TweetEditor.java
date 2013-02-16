@@ -22,6 +22,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.net.Connection.ApiRoutineEnum;
 
 import java.util.Locale;
 
@@ -230,8 +231,10 @@ class TweetEditor {
             }
         }
         
-        // Start asynchronous task that will show Rate limit status
-        mActivity.serviceConnector.sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccount.getAccountGuid()));
+        if (mAccount.getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
+            // Start asynchronous task that will show Rate limit status
+            mActivity.serviceConnector.sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccount.getAccountGuid()));
+        }
         
         show();
     }

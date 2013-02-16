@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-	Copyright (C) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
+	Copyright (C) 2012-2013 yvolk (Yuri Volkov), http://yurivolkov.com
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -36,6 +36,12 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     <header>
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
+    <release android:versionName="1.12.0" android:versionCode="70"
+        versionDate="2013-02-17">
+        <changes><change>Migration to the Twitter API v.1.1. See 
+            <a href="https://github.com/andstatus/andstatus/issues/30">Issue #30</a></change>
+        </changes>
+    </release>
     <release android:versionName="1.11.4" android:versionCode="69"
         versionDate="2012-12-23">
         <changes>

@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.account;
 
-import android.net.Uri;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
@@ -25,8 +24,8 @@ import android.util.Log;
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.net.Connection;
+import org.andstatus.app.net.Connection.ApiEnum;
 import org.andstatus.app.net.ConnectionBasicAuth;
-import org.andstatus.app.net.ConnectionOAuth;
 
 /**
  *  Originating (source) Microblogging system (twitter.com, identi.ca, ... ) where messages are being created. 
@@ -36,14 +35,6 @@ import org.andstatus.app.net.ConnectionOAuth;
  */
 public class Origin {
     private static final String TAG = Origin.class.getSimpleName();
-
-    /**
-     * API used by the Originating system
-     */
-    public enum OriginApiEnum {
-        TWITTER,
-        IDENTICA
-    }
 
     /**
      * Predefined ID for Twitter system 
@@ -80,7 +71,7 @@ public class Origin {
     
     private String mName = "";
     private long mId = 0;
-    private OriginApiEnum mApi;
+    private ApiEnum mApi;
 
     /**
      * Default OAuth setting
@@ -130,7 +121,7 @@ public class Origin {
         return mId;
     }
 
-    public OriginApiEnum getApi() {
+    public ApiEnum getApi() {
         return mApi;
     }
 
@@ -183,7 +174,7 @@ public class Origin {
     }
 
     /**
-     * SharedPreferences - These preferences are per User
+     * Connection is per User
      */
      public Connection getConnection(MyAccount ma, boolean oauth) {
         if (mConnection != null) {
@@ -196,9 +187,15 @@ public class Origin {
                 Log.e(TAG, "MyAccount is null ??" );
             } else {
                 if (oauth) {
-                    mConnection = new ConnectionOAuth(ma);
+                    switch (mApi) {
+                        case TWITTER1P0:
+                            mConnection = new org.andstatus.app.net.ConnectionOAuth1p0(ma, mApi, getBaseUrl(), getOauthBaseUrl());
+                            break;
+                        default:
+                            mConnection = new org.andstatus.app.net.ConnectionOAuth1p1(ma, mApi, getBaseUrl(), getOauthBaseUrl());
+                    }
                 } else {
-                    mConnection = new ConnectionBasicAuth(ma);
+                    mConnection = new ConnectionBasicAuth(ma, mApi, getBaseUrl());
                 }
             }
         }
@@ -209,16 +206,22 @@ public class Origin {
         mName = name;
         // TODO: Persistence for Origins
         if (this.mName.compareToIgnoreCase(ORIGIN_NAME_TWITTER) == 0) {
-            mApi = OriginApiEnum.TWITTER;
             mId = ORIGIN_ID_TWITTER;
+            mApi = ApiEnum.TWITTER1P1;
             mOAuth = true;
             mCanChangeOAuth = false;
             mCanSetUsername = false;
             mOauthBaseUrl = "http://api.twitter.com";
-            mBaseUrl = mOauthBaseUrl + "/1";
+            switch (mApi) {
+                case TWITTER1P0:
+                    mBaseUrl = mOauthBaseUrl + "/1";
+                    break;
+                default:
+                    mBaseUrl = mOauthBaseUrl + "/1.1";
+            }
         } else if (this.mName.compareToIgnoreCase(ORIGIN_NAME_IDENTICA) == 0) {
-            mApi = OriginApiEnum.IDENTICA;
             mId = ORIGIN_ID_IDENTICA;
+            mApi = ApiEnum.TWITTER1P0;
             mOAuth = false;   // TODO: Set this to true once OAuth in identi.ca will work
             mCanChangeOAuth = true;
             mCanSetUsername = true;

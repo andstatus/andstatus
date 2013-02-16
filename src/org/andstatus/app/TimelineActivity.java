@@ -79,8 +79,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.json.JSONObject;
 
-import java.text.MessageFormat;
-
 /**
  * @author torgny.bjers
  */
@@ -1570,49 +1568,66 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             return;
         }
 
-        // Add menu items
-        menu.add(0, CONTEXT_MENU_ITEM_REPLY, m++, R.string.menu_item_reply);
-        menu.add(0, CONTEXT_MENU_ITEM_SHARE, m++, R.string.menu_item_share);
-        menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, m++, R.string.menu_item_direct_message);
-        // menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, m++,
-        // R.string.menu_item_unfollow);
-        // menu.add(0, CONTEXT_MENU_ITEM_BLOCK, m++, R.string.menu_item_block);
-        // menu.add(0, CONTEXT_MENU_ITEM_PROFILE, m++,
-        // R.string.menu_item_view_profile);
-
         // Get the record for the currently selected item
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mCurrentId);
         Cursor c = getContentResolver().query(uri, new String[] {
                 MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID, 
-                MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED, 
+                MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED,
+                MyDatabase.Msg.RECIPIENT_ID,
                 MyDatabase.MsgOfUser.REBLOGGED
         }, null, null, null);
         try {
             if (c != null && c.getCount() > 0) {
                 c.moveToFirst();
+                boolean isDirect = !c.isNull(c.getColumnIndex(MyDatabase.Msg.RECIPIENT_ID));
+                
                 menu.setHeaderTitle( (mIsTimelineCombined ? ma.getAccountGuid() + ": " : "" )
                          + c.getString(c.getColumnIndex(MyDatabase.Msg.BODY)));
-                if (c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED)) == 1) {
-                    menu.add(0, CONTEXT_MENU_ITEM_DESTROY_FAVORITE, m++,
-                            R.string.menu_item_destroy_favorite);
-                } else {
-                    menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, m++, R.string.menu_item_favorite);
+
+                // Add menu items
+                if (!isDirect) {
+                    menu.add(0, CONTEXT_MENU_ITEM_REPLY, m++, R.string.menu_item_reply);
                 }
-                if (c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.REBLOGGED)) == 1) {
-                    // TODO:
-                    //menu.add(0, CONTEXT_MENU_ITEM_DESTROY_REBLOG, m++,
-                    //        R.string.menu_item_destroy_reblog);
-                } else {
-                    // Don't allow a User to reblog himself 
-                    if (ma.getUserId() != c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))) {
-                        menu.add(0, CONTEXT_MENU_ITEM_REBLOG, m++, ma.alternativeTermResourceId(R.string.menu_item_reblog));
+                menu.add(0, CONTEXT_MENU_ITEM_SHARE, m++, R.string.menu_item_share);
+                
+                // TODO: Only if he follows me?
+                menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, m++, R.string.menu_item_direct_message);
+                
+                // menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, m++,
+                // R.string.menu_item_unfollow);
+                // menu.add(0, CONTEXT_MENU_ITEM_BLOCK, m++, R.string.menu_item_block);
+                // menu.add(0, CONTEXT_MENU_ITEM_PROFILE, m++,
+                // R.string.menu_item_view_profile);
+                
+                if (!isDirect) {
+                    if (c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED)) == 1) {
+                        menu.add(0, CONTEXT_MENU_ITEM_DESTROY_FAVORITE, m++,
+                                R.string.menu_item_destroy_favorite);
+                    } else {
+                        menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, m++, R.string.menu_item_favorite);
+                    }
+                    if (c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.REBLOGGED)) == 1) {
+                        // TODO:
+                        //menu.add(0, CONTEXT_MENU_ITEM_DESTROY_REBLOG, m++,
+                        //        R.string.menu_item_destroy_reblog);
+                    } else {
+                        // Don't allow a User to reblog himself 
+                        if (ma.getUserId() != c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))) {
+                            menu.add(0, CONTEXT_MENU_ITEM_REBLOG, m++, ma.alternativeTermResourceId(R.string.menu_item_reblog));
+                        }
                     }
                 }
                 if (ma.getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))
                         && ma.getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.AUTHOR_ID))
                         ) {
-                    menu.add(0, CONTEXT_MENU_ITEM_DESTROY_STATUS, m++,
-                            R.string.menu_item_destroy_status);
+                    // Message of current User - we may delete it.
+                    if (isDirect) {
+                        // This is Direct Message
+                        // TODO: Delete Direct message
+                    } else {
+                        menu.add(0, CONTEXT_MENU_ITEM_DESTROY_STATUS, m++,
+                                R.string.menu_item_destroy_status);
+                    }
                 }
             }
         } catch (Exception e) {

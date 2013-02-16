@@ -29,6 +29,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.ForegroundCheckTask;
 import org.andstatus.app.util.I18n;
@@ -69,12 +70,6 @@ import android.util.Log;
  */
 public class MyService extends Service {
     private static final String TAG = MyService.class.getSimpleName();
-
-    /**
-     * Use this tag to change logging level of the whole application Is used is
-     * isLoggable(APPTAG, ... ) calls
-     */
-    public static final String APPTAG = "AndStatus";
 
     private static final String packageName = MyService.class.getPackage().getName();
 
@@ -1415,6 +1410,9 @@ public class MyService extends Service {
             try {
                 result = ma.getConnection().destroyStatus(oid);
                 ok = (result != null);
+                if (ok && MyLog.isLoggable(null, Log.VERBOSE)) {
+                    Log.v(TAG, "destroyStatus response: " + result.toString(2));
+                }
             } catch (ConnectionException e) {
                 if (e.getStatusCode() == 404) {
                     // This means that there is no such "Status", so we may
@@ -1423,6 +1421,8 @@ public class MyService extends Service {
                 } else {
                     Log.e(TAG, "destroyStatus Connection Exception: " + e.toString());
                 }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
 
             if (ok) {
@@ -1690,14 +1690,14 @@ public class MyService extends Service {
                             ok = fl.loadTimeline();
                             switch (timelineType) {
                                 case MENTIONS:
-                                    mentionsAdded = fl.mentionsCount();
+                                    mentionsAdded += fl.mentionsCount();
                                     break;
                                 case HOME:
-                                    msgAdded = fl.messagesCount();
+                                    msgAdded += fl.messagesCount();
                                     mentionsAdded += fl.mentionsCount();
                                     break;
                                 case DIRECT:
-                                    directedAdded = fl.messagesCount();
+                                    directedAdded += fl.messagesCount();
                                     break;
                                 default:
                                     ok = false;
@@ -2021,11 +2021,29 @@ public class MyService extends Service {
         private boolean rateLimitStatus(String accountNameIn) {
             boolean ok = false;
             JSONObject result = new JSONObject();
+            int remaining = 0;
+            int limit = 0;
             try {
-                result = MyAccount.getMyAccount(accountNameIn).getConnection().rateLimitStatus();
+                Connection conn = MyAccount.getMyAccount(accountNameIn).getConnection();
+                result = conn.rateLimitStatus();
                 ok = (result != null);
+                if (ok) {
+                    switch (conn.getApi()) {
+                        case TWITTER1P0:
+                            remaining = result.getInt("remaining_hits");
+                            limit = result.getInt("hourly_limit");
+                            break;
+                        default:
+                            JSONObject resources = result.getJSONObject("resources");
+                            JSONObject limitObject = resources.getJSONObject("statuses").getJSONObject("/statuses/home_timeline");
+                            remaining = limitObject.getInt("remaining");
+                            limit = limitObject.getInt("limit");
+                    }
+                }
             } catch (ConnectionException e) {
                 Log.e(TAG, "rateLimitStatus Exception: " + e.toString());
+            } catch (JSONException e) {
+                Log.e(TAG, e.toString());
             }
 
             if (ok) {
@@ -2036,13 +2054,10 @@ public class MyService extends Service {
                             try {
                                 IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
                                 if (cb != null) {
-                                    cb.rateLimitStatus(result.getInt("remaining_hits"),
-                                            result.getInt("hourly_limit"));
+                                    cb.rateLimitStatus(remaining, limit);
                                 }
                             } catch (RemoteException e) {
                                 MyLog.d(TAG, e.toString());
-                            } catch (JSONException e) {
-                                Log.e(TAG, e.toString());
                             }
                         }
                         mCallbacks.finishBroadcast();

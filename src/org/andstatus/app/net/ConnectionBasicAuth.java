@@ -58,8 +58,8 @@ public class ConnectionBasicAuth extends Connection {
     /**
      * Creates a new ConnectionBasicAuth instance.
      */
-    public ConnectionBasicAuth(MyAccount ma) {
-        super(ma);
+    public ConnectionBasicAuth(MyAccount ma, ApiEnum api, String apiBaseUrl) {
+        super(ma, api , apiBaseUrl);
     }
 
 	@Override
@@ -67,7 +67,7 @@ public class ConnectionBasicAuth extends Connection {
 	    setSinceId(sinceId);
 	    setLimit(limit);
 	    
-		String url = getApiUrl(apiEnum.STATUSES_HOME_TIMELINE);
+		String url = getApiUrl(ApiRoutineEnum.STATUSES_HOME_TIMELINE);
 		url += "?count=" + mLimit;
 		if (mSinceId.length() > 1) {
 			url += "&since_id=" + mSinceId;
@@ -95,7 +95,7 @@ public class ConnectionBasicAuth extends Connection {
         setSinceId(sinceId);
         setLimit(limit);
 
-        String url = getApiUrl(apiEnum.STATUSES_MENTIONS_TIMELINE);
+        String url = getApiUrl(ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE);
 		url += "?count=" + mLimit;
 		if (mSinceId.length() > 1) {
 			url += "&since_id=" + mSinceId;
@@ -123,7 +123,7 @@ public class ConnectionBasicAuth extends Connection {
         setSinceId(sinceId);
         setLimit(limit);
 
-		String url = getApiUrl(apiEnum.DIRECT_MESSAGES);
+		String url = getApiUrl(ApiRoutineEnum.DIRECT_MESSAGES);
 		url += "?count=" + mLimit;
 		if (mSinceId.length() > 1) {
 			url += "&since_id=" + mSinceId;
@@ -148,7 +148,7 @@ public class ConnectionBasicAuth extends Connection {
 
 	@Override
     public JSONObject updateStatus(String message, String inReplyToId) throws ConnectionException {
-		String url = getApiUrl(apiEnum.STATUSES_UPDATE);
+		String url = getApiUrl(ApiRoutineEnum.STATUSES_UPDATE);
 		List<NameValuePair> formParams = new ArrayList<NameValuePair>();
 		formParams.add(new BasicNameValuePair("status", message));
 		
@@ -175,7 +175,7 @@ public class ConnectionBasicAuth extends Connection {
 
     @Override
     public JSONObject postDirectMessage(String userId, String screenName, String message) throws ConnectionException {
-        String url = getApiUrl(apiEnum.POST_DIRECT_MESSAGE);
+        String url = getApiUrl(ApiRoutineEnum.POST_DIRECT_MESSAGE);
         List<NameValuePair> formParams = new ArrayList<NameValuePair>();
         formParams.add(new BasicNameValuePair("text", message));
         
@@ -204,7 +204,7 @@ public class ConnectionBasicAuth extends Connection {
     public JSONObject postReblog(String rebloggedId) throws ConnectionException {
         JSONObject jObj = null;
         try {
-            jObj = new JSONObject(postRequest(getApiUrl(apiEnum.POST_REBLOG) + rebloggedId + EXTENSION));
+            jObj = new JSONObject(postRequest(getApiUrl(ApiRoutineEnum.POST_REBLOG) + rebloggedId + EXTENSION));
             String error = jObj.optString("error");
             if ("Could not authenticate you.".equals(error)) {
                 throw new ConnectionException(error);
@@ -219,7 +219,7 @@ public class ConnectionBasicAuth extends Connection {
     public JSONObject destroyStatus(String statusId) throws ConnectionException {
 		JSONObject jso = null;
 		try {
-			jso = new JSONObject(postRequest(getApiUrl(apiEnum.STATUSES_DESTROY) + statusId + EXTENSION));
+			jso = new JSONObject(postRequest(getApiUrl(ApiRoutineEnum.STATUSES_DESTROY) + statusId + EXTENSION));
 			String error = jso.optString("error");
 			if ("Could not authenticate you.".equals(error)) {
 				throw new ConnectionException(error);
@@ -234,7 +234,7 @@ public class ConnectionBasicAuth extends Connection {
     public JSONObject getStatus(String statusId) throws ConnectionException {
         JSONObject jso = null;
         try {
-            Uri sUri = Uri.parse(getApiUrl(apiEnum.STATUSES_SHOW));
+            Uri sUri = Uri.parse(getApiUrl(ApiRoutineEnum.STATUSES_SHOW));
             Uri.Builder builder = sUri.buildUpon();
             builder.appendQueryParameter("id", statusId);
             String response = getRequest(builder.build().toString());
@@ -248,7 +248,7 @@ public class ConnectionBasicAuth extends Connection {
     
 	@Override
     public JSONObject createFavorite(String statusId) throws ConnectionException {
-		StringBuilder url = new StringBuilder(getApiUrl(apiEnum.FAVORITES_CREATE_BASE));
+		StringBuilder url = new StringBuilder(getApiUrl(ApiRoutineEnum.FAVORITES_CREATE_BASE));
 		url.append(statusId);
 		url.append(EXTENSION);
 		JSONObject jObj = null;
@@ -266,7 +266,7 @@ public class ConnectionBasicAuth extends Connection {
 
 	@Override
     public JSONObject destroyFavorite(String statusId) throws ConnectionException {
-		StringBuilder url = new StringBuilder(getApiUrl(apiEnum.FAVORITES_DESTROY_BASE));
+		StringBuilder url = new StringBuilder(getApiUrl(ApiRoutineEnum.FAVORITES_DESTROY_BASE));
 		url.append(statusId);
 		url.append(EXTENSION);
 		JSONObject jObj = null;
@@ -306,7 +306,7 @@ public class ConnectionBasicAuth extends Connection {
          */
         JSONObject jo = null;
         try {
-            jo = new JSONObject(getRequest(getApiUrl(apiEnum.ACCOUNT_VERIFY_CREDENTIALS),
+            jo = new JSONObject(getRequest(getApiUrl(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS),
                     new DefaultHttpClient(new BasicHttpParams())));
         } catch (JSONException e) {
             Log.e(TAG, "verifyCredentials: " + e.toString());
@@ -319,7 +319,7 @@ public class ConnectionBasicAuth extends Connection {
     public JSONObject rateLimitStatus() throws ConnectionException {
         JSONObject jo = null;
 		try {
-            jo = new JSONObject(getRequest(getApiUrl(apiEnum.ACCOUNT_RATE_LIMIT_STATUS), new DefaultHttpClient(new BasicHttpParams())));
+            jo = new JSONObject(getRequest(getApiUrl(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS), new DefaultHttpClient(new BasicHttpParams())));
         } catch (JSONException e) {
             e.printStackTrace();
         }

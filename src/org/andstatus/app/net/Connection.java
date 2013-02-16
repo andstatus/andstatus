@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2011-2013 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,9 +17,13 @@
 
 package org.andstatus.app.net;
 
+import android.text.TextUtils;
+import android.util.Log;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.Connection;
+import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +35,7 @@ import org.json.JSONObject;
  * @author torgny.bjers
  */
 public abstract class Connection {
-
+    
     /**
      * Base URL for connection to the System
      */
@@ -46,9 +50,24 @@ public abstract class Connection {
     protected static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 20000;
 
     /**
-     * API enumerated
+     * Connection APIs known
      */
-    protected enum apiEnum {
+    public enum ApiEnum {
+        /** Twitter API v.1 https://dev.twitter.com/docs/api/1     */
+        TWITTER1P0,
+        /** Twitter API v.1.1 https://dev.twitter.com/docs/api/1.1 */
+        TWITTER1P1
+    }
+
+    /**
+     * API of this Connection
+     */
+    private ApiEnum mApi;
+    
+    /**
+     * API routines (functions, "resources" in terms of Twitter)  enumerated
+     */
+    public enum ApiRoutineEnum {
         ACCOUNT_RATE_LIMIT_STATUS,
         ACCOUNT_VERIFY_CREDENTIALS,
         DIRECT_MESSAGES,
@@ -86,53 +105,98 @@ public abstract class Connection {
 
     protected String mPassword;
 
-    protected Connection(MyAccount ma) {
+    public Connection() {}
+    
+    protected Connection(MyAccount ma, ApiEnum api, String apiBaseUrl) {
         mUsername = ma.getDataString(MyAccount.KEY_USERNAME, "");
         mPassword = ma.getDataString(MyAccount.KEY_PASSWORD, "");
-        mBaseUrl = ma.getBaseUrl();
+        mApi = api;
+        mBaseUrl = apiBaseUrl;
     }
 
-    protected String getApiUrl(apiEnum api) {
+    /**
+     * @return API of this Connection
+     */
+    public ApiEnum getApi() {
+        return mApi;
+    }
+    
+    /**
+     * @return Base URL for connection to the System
+     */
+    public String getBaseUrl() {
+        return mBaseUrl;
+    }
+
+    /**
+     * Not logged
+     * @param routine
+     * @return URL or an empty string in case the API routine is not supported
+     */
+    protected String getApiUrl1(ApiRoutineEnum routine) {
         String url = "";
-        switch(api) {
+        switch(routine) {
             case ACCOUNT_RATE_LIMIT_STATUS:
-                url = mBaseUrl + "/account/rate_limit_status" + EXTENSION;
+                url = getBaseUrl() + "/account/rate_limit_status" + EXTENSION;
                 break;
             case ACCOUNT_VERIFY_CREDENTIALS:
-                url = mBaseUrl + "/account/verify_credentials" + EXTENSION;
+                url = getBaseUrl() + "/account/verify_credentials" + EXTENSION;
                 break;
             case DIRECT_MESSAGES:
-                url = mBaseUrl + "/direct_messages" + EXTENSION;
+                url = getBaseUrl() + "/direct_messages" + EXTENSION;
                 break;
             case FAVORITES_CREATE_BASE:
-                url = mBaseUrl + "/favorites/create/";
+                url = getBaseUrl() + "/favorites/create/";
                 break;
             case FAVORITES_DESTROY_BASE:
-                url = mBaseUrl + "/favorites/destroy/";
+                url = getBaseUrl() + "/favorites/destroy/";
                 break;
             case POST_DIRECT_MESSAGE:
-                url = mBaseUrl + "/direct_messages/new" + EXTENSION;
+                url = getBaseUrl() + "/direct_messages/new" + EXTENSION;
                 break;
             case POST_REBLOG:
-                url = mBaseUrl + "/statuses/retweet/";
+                url = getBaseUrl() + "/statuses/retweet/";
                 break;
             case STATUSES_DESTROY:
-                url = mBaseUrl + "/statuses/destroy/";
+                url = getBaseUrl() + "/statuses/destroy/";
                 break;
             case STATUSES_HOME_TIMELINE:
-                url = mBaseUrl + "/statuses/home_timeline" + EXTENSION;
+                url = getBaseUrl() + "/statuses/home_timeline" + EXTENSION;
                 break;
             case STATUSES_MENTIONS_TIMELINE:
-                url = mBaseUrl  + "/statuses/mentions" + EXTENSION;
+                url = getBaseUrl()  + "/statuses/mentions" + EXTENSION;
                 break;
             case STATUSES_SHOW:
-                url = mBaseUrl + "/statuses/show" + EXTENSION;
+                url = getBaseUrl() + "/statuses/show" + EXTENSION;
                 break;
             case STATUSES_UPDATE:
-                url = mBaseUrl + "/statuses/update" + EXTENSION;
+                url = getBaseUrl() + "/statuses/update" + EXTENSION;
                 break;
         }
         return url;
+    }
+
+    /**
+     * If the url is empty, log error 
+     * Otherwise Log verbosely  
+     * @param url
+     */
+    protected String getApiUrl(ApiRoutineEnum routine) {
+        String url = this.getApiUrl1(routine);
+        if (TextUtils.isEmpty(url)) {
+            Log.e(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");
+        } else if (MyLog.isLoggable(null, Log.VERBOSE )) {
+            Log.v(this.getClass().getSimpleName(), "API '" + routine + "' URL=" + url);  
+        }
+        return url;
+    }
+    
+    public boolean isApiSupported(ApiRoutineEnum routine) {
+        boolean is = !TextUtils.isEmpty(this.getApiUrl1(routine));
+        if (!is && MyLog.isLoggable(null, Log.VERBOSE )) {
+          Log.v(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");  
+        }
+        return (is);
     }
     
     /**
@@ -175,8 +239,8 @@ public abstract class Connection {
      * user is returned.  Otherwise, the rate limit status for the requester's 
      * IP address is returned.
      * @see <a
-     *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-account%C2%A0rate_limit_status">Twitter
-     *      REST API Method: account rate_limit_status</a>
+           href="https://dev.twitter.com/docs/api/1/get/account/rate_limit_status">GET 
+           account/rate_limit_status</a>
      * 
      * @return JSONObject
      * @throws ConnectionException
