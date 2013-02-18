@@ -38,9 +38,12 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
     <release android:versionName="1.12.0" android:versionCode="70"
         versionDate="2013-02-17">
-        <changes><change>Migration to the Twitter API v.1.1. See 
+        <changes><change>Migration to the Twitter API v.1.1. 
+            Twitter plans to start turning off an older API after March 1, 
+            so this upgrade will be required very soon. See 
             <a href="https://github.com/andstatus/andstatus/issues/30">Issue #30</a></change>
         </changes>
+        <change>Fixed: Mentions notifications missed in the Widget.</change>
     </release>
     <release android:versionName="1.11.4" android:versionCode="69"
         versionDate="2012-12-23">

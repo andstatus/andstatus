@@ -65,9 +65,9 @@ public class Origin {
     /**
      * Length of the link after changing to the shortened link
      * -1 means that length doesn't change
-     * For Twitter.com see https://dev.twitter.com/docs/api/1/get/help/configuration
+     * For Twitter.com see <a href="https://dev.twitter.com/docs/api/1.1/get/help/configuration">GET help/configuration</a>
      */
-    private static int LINK_LENGTH = 21;
+    private static int LINK_LENGTH = 23;
     
     private String mName = "";
     private long mId = 0;
