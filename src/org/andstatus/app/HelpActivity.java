@@ -57,7 +57,8 @@ public class HelpActivity extends Activity implements SwipeInterface {
      */
     public static final String EXTRA_HELP_PAGE_ID = packageName + ".HELP_PAGE_ID";
     /**
-     * boolean - If the activity is first than we should provide means to start {@link TimelineActivity}
+     * boolean - If the activity is the first then we should provide means 
+     * to start {@link TimelineActivity} from this activity
      */
     public static final String EXTRA_IS_FIRST_ACTIVITY = packageName + ".IS_FIRST_ACTIVITY";
 

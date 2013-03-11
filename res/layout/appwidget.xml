@@ -12,7 +12,7 @@
 	android:layout_height="match_parent"
 	android:layout_width="match_parent">
 
-	<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+	<TextView
 		android:id="@+id/appwidget_time"
 		android:paddingTop="0dip"
 		android:layout_width="match_parent"
@@ -23,7 +23,7 @@
 		android:paddingLeft="5dip"
 		android:layout_alignParentBottom="true" 
 		android:gravity="bottom"/>
-	<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	<RelativeLayout
 		android:layout_width="match_parent"
 		android:id="@+id/appwidget_lineone"
 		android:layout_above="@+id/appwidget_time" 
@@ -47,7 +47,7 @@
 			android:layout_toLeftOf="@+id/icon"
 			android:layout_alignParentLeft="true" 
 			>
-			<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+			<TextView
 				android:id="@+id/appwidget_text"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
@@ -55,7 +55,7 @@
 				android:layout_alignParentTop="true"
 				android:layout_alignParentLeft="true"
 				android:textStyle="bold"/>
-			<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+			<TextView
 				android:id="@+id/appwidget_comment"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
