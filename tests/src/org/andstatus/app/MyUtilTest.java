@@ -19,6 +19,7 @@ import android.content.Context;
 import android.test.ActivityTestCase;
 import android.util.Log;
 
+import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.*;
 
 public class MyUtilTest extends ActivityTestCase {
@@ -30,7 +31,7 @@ public class MyUtilTest extends ActivityTestCase {
      */
     public void test001MessageFormat() throws Exception {
     	Log.i(TAG,"testMessageFormat started");
-    	Context context = getInstrumentation().getTargetContext();
+    	Context context = MyPreferences.getContext();
     	
         int len = messageFormatTests.length;
         for (int index = 0; index < len; index++) {

@@ -21,6 +21,8 @@ import org.andstatus.app.account.Origin;
 import org.andstatus.app.appwidget.MyAppWidgetConfigure;
 import org.andstatus.app.util.MyLog;
 
+import java.util.Locale;
+
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -48,9 +50,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     /** TODO: Do we really need this? */
 	public static final String TWITTER_DATE_FORMAT = "EEE MMM dd HH:mm:ss Z yyyy";
 	
-	public static final String MSG_TABLE_NAME = Msg.class.getSimpleName().toLowerCase();
-	public static final String MSGOFUSER_TABLE_NAME = MsgOfUser.class.getSimpleName().toLowerCase();
-	public static final String USER_TABLE_NAME = User.class.getSimpleName().toLowerCase();
+	public static final String MSG_TABLE_NAME = Msg.class.getSimpleName().toLowerCase(Locale.US);
+	public static final String MSGOFUSER_TABLE_NAME = MsgOfUser.class.getSimpleName().toLowerCase(Locale.US);
+	public static final String USER_TABLE_NAME = User.class.getSimpleName().toLowerCase(Locale.US);
 	
 	/**
 	 * Table for both public and direct messages 

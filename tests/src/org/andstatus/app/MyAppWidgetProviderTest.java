@@ -21,6 +21,7 @@ import android.app.PendingIntent;
 import android.text.format.Time;
 import android.util.Log;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
+import org.andstatus.app.data.MyPreferences;
 
 import static org.andstatus.app.MyService.*;
 
@@ -43,7 +44,12 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     
     public void test001WidgetTime() throws Exception {
     	Log.i(TAG,"testWidgetTime started");
-    	Context targetContext = getInstrumentation().getTargetContext();
+    	Context targetContext = this.getInstrumentation().getTargetContext();
+    	if (targetContext == null) {
+    	    Log.e(TAG, "targetContext is null.");
+    	    throw new Exception("this.getInstrumentation().getTargetContext() returned null");
+    	}
+        MyPreferences.initialize(targetContext, this);
     	
     	MyAppWidgetProvider widget = new MyAppWidgetProvider();
     	Log.i(TAG,"MyAppWidgetProvider created");
@@ -216,7 +222,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 	 * @see MyAppWidgetProvider
 	 */
 	private void updateWidgetsNow(int numTweets, CommandEnum msgType){
-    	Context context = getInstrumentation().getTargetContext();
+    	Context context = this.getInstrumentation().getContext();
     	//Context context = getInstrumentation().getContext();
 
     	Log.i(TAG,"Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
@@ -238,7 +244,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 	private void updateWidgetsPending(int numTweets, CommandEnum msgType) throws Exception {
 		
 		// Let's try pending intents
-    	Context context = getInstrumentation().getTargetContext();
+    	Context context = this.getInstrumentation().getContext();
     	//Context context = getInstrumentation().getContext();
     	long triggerTime;
 

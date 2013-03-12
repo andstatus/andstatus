@@ -105,7 +105,7 @@ public class MyPreferences {
     }
     
     /**
-     * 
+     * This method should be called before any other operations in the application (as early as possible)
      * @param context_in
      * @param object - object that initialized the class 
      */
@@ -115,21 +115,35 @@ public class MyPreferences {
             origin_in = object.toString();
         }
         if (!misInitialized) {
-            // Maybe we should use context_in.getApplicationContext() ??
-            context = context_in.getApplicationContext();
             origin = origin_in;
+            Log.v(TAG, "Starting initialization by " + origin);
+            if (context_in != null) {
+                // Maybe we should use context_in.getApplicationContext() ??
+                context = context_in.getApplicationContext();
+                Log.v(TAG, "getApplicationContext is null, trying the context_in itself: " + context_in.getClass().getName());
             
-            /* This may be useful to know from where the class was initialized
-            StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
-            for(int i=0; i<elements.length; i++) { 
-                Log.v(TAG, elements[i].toString()); 
+                /* This may be useful to know from where the class was initialized
+                StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
+                for(int i=0; i<elements.length; i++) { 
+                    Log.v(TAG, elements[i].toString()); 
+                }
+                */
+            
+                if ( context == null) {
+                    Log.v(TAG, "getApplicationContext is null, trying the context_in itself: " + context_in.getClass().getName());
+                    context = context_in;
+                }
             }
-            */
-            
-            MyLog.v(TAG, "Initialized by " + origin + " context: " + context.getClass().getName());
-            misInitialized = true;
-            
-            MyAccount.initialize();
+            if ( context != null) {
+                misInitialized = true;
+
+                MyAccount.initialize();
+            }
+            if (misInitialized) {
+                MyLog.v(TAG, "Initialized by " + origin + " context: " + context.getClass().getName());
+            } else {
+                Log.e(TAG, "Failed to initialize by " + origin);
+            }
         } else {
             MyLog.v(TAG, "Already initialized by " + origin +  " (called by: " + origin_in + ")");
         }
@@ -175,6 +189,11 @@ public class MyPreferences {
     public static SharedPreferences getDefaultSharedPreferences() {
         if (context == null) {
             Log.e(TAG, "getDefaultSharedPreferences - Was not initialized yet");
+            /* TODO: */
+            StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
+            for(int i=0; i<elements.length; i++) { 
+                Log.v(TAG, elements[i].toString()); 
+            }
             return null;
         } else {
             return PreferenceManager.getDefaultSharedPreferences(context);

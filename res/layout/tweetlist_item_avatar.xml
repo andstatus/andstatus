@@ -20,7 +20,7 @@
 	android:paddingRight="6dip" android:paddingBottom="2dip" android:paddingTop="2dip">
 
 	<ImageView android:id="@+id/tweet_avatar_image"
-		android:width="20px"
+		android:width="20dp"
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
 		android:layout_alignParentTop="true"
