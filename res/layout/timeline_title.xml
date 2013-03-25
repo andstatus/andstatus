@@ -10,14 +10,22 @@
 		android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-		android:text="@string/activity_title_home"
+		android:text="@string/timeline_title_home"
         android:onClick="onTimelineTypeButtonClick" />
+
+    <TextView android:id="@+id/selected_user_title_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/timelineTypeButton"
+        android:layout_centerVertical="true"
+        android:textColor="@android:color/secondary_text_dark"
+        android:visibility="gone" />
     
     <ToggleButton 
         android:id="@+id/combinedTimelineToggle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/timelineTypeButton"
+        android:layout_toRightOf="@+id/selected_user_title_text"
         android:textOn="@string/combined_timeline_on"
         android:textOff="@string/combined_timeline_off"
         android:onClick="onCombinedTimelineToggle" />
@@ -43,7 +51,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:textColor="@android:color/secondary_text_dark"
-        android:textSize="14dip" android:textStyle="normal"
+        android:textSize="14sp" android:textStyle="normal"
         android:text="@string/dialog_title_timeline_loading" 
         android:layout_toRightOf="@+id/selectAccountButton"/>
 </RelativeLayout>

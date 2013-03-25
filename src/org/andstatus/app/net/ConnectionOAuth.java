@@ -223,24 +223,6 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
         }
         return jso;
     }
-    
-    /**
-     * Returns the 20 most recent direct messages sent to the authenticating user
-     *
-     * TODO: GET direct_messages/sent: Returns the 20 most recent direct messages sent by the authenticating user. 
-     * See https://dev.twitter.com/docs/api/1/get/direct_messages/sent
-     */
-    @Override
-    public JSONArray getDirectMessages(String sinceId, int limit) throws ConnectionException {
-        String url = getApiUrl(ApiRoutineEnum.DIRECT_MESSAGES);
-        return getTimeline(url, sinceId, "", limit, 0);
-    }
-
-    @Override
-    public JSONArray getHomeTimeline(String sinceId, int limit) throws ConnectionException {
-        String url = getApiUrl(ApiRoutineEnum.STATUSES_HOME_TIMELINE);
-        return getTimeline(url, sinceId, "", limit, 0);
-    }
 
     private JSONObject getRequest(HttpGet get) throws ConnectionException {
         JSONObject jso = null;
@@ -266,39 +248,23 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
         return getRequest(get);
     }
 
-    /**
-     * Universal method for several Timelines...
-     * 
-     * @param url URL predefined for this timeline
-     * @param sinceId
-     * @param maxId
-     * @param limit
-     * @param page
-     * @return
-     * @throws ConnectionException
-     */
-    private JSONArray getTimeline(String url, String sinceId, String maxId, int limit, int page)
+    @Override
+    protected JSONArray getTimeline(String url, String sinceId, int limit, String userId)
             throws ConnectionException {
-        setSinceId(sinceId);
-        setLimit(limit);
-
         boolean ok = false;
         JSONArray jArr = null;
         HttpGet get = null;
         try {
             Uri sUri = Uri.parse(url);
             Uri.Builder builder = sUri.buildUpon();
-            if (getSinceId().length() > 1) {
-                // For some reason "0" results in "bad request"
-                builder.appendQueryParameter("since_id", getSinceId());
-            } else if (maxId.length() > 1) { // these are mutually exclusive
-                builder.appendQueryParameter("max_id", String.valueOf(maxId));
+            if (!TextUtils.isEmpty(fixSinceId(sinceId))) {
+                builder.appendQueryParameter("since_id", fixSinceId(sinceId));
             }
-            if (getLimit() != 0) {
-                builder.appendQueryParameter("count", String.valueOf(getLimit()));
+            if (fixLimit(limit) > 0) {
+                builder.appendQueryParameter("count", String.valueOf(fixLimit(limit)));
             }
-            if (page != 0) {
-                builder.appendQueryParameter("page", String.valueOf(page));
+            if (!TextUtils.isEmpty(userId)) {
+                builder.appendQueryParameter("user_id", userId);
             }
             get = new HttpGet(builder.build().toString());
             getConsumer().sign(get);
@@ -321,12 +287,6 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
                     + (ok ? "OK, " + jArr.length() + " statuses" : "FAILED"));
         }
         return jArr;
-    }
-
-    @Override
-    public JSONArray getMentionsTimeline(String sinceId, int limit) throws ConnectionException {
-        String url = getApiUrl(ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE);
-        return getTimeline(url, sinceId, "", limit, 0);
     }
 
     @Override

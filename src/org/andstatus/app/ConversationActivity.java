@@ -114,7 +114,7 @@ public class ConversationActivity extends Activity {
         Uri uri = intent.getData();
 
         mCurrentId = MyProvider.uriToMessageId(uri);
-        ma = MyAccount.getMyAccountForTheMessage(mCurrentId, MyProvider.uriToAccountId(uri));
+        ma = MyAccount.getMyAccountForTheMessage(mCurrentId, MyProvider.uriToUserId(uri));
         if (ma != null) {
             showConversation();
         }

@@ -170,6 +170,11 @@ public class MyService extends Service {
     public static final String EXTRA_RECIPIENTID = packageName + ".RECIPIENTID";
 
     /**
+     * Selected User. E.g. the User whose messages we are seeing  
+     */
+    public static final String EXTRA_SELECTEDUSERID = packageName + ".SELECTEDUSERID";
+    
+    /**
      * Number of new tweets. Value is integer
      */
     public static final String EXTRA_NUMTWEETS = packageName + ".NUMTWEETS";
@@ -224,6 +229,10 @@ public class MyService extends Service {
          * Fetch Direct messages
          */
         FETCH_DIRECT_MESSAGES("fetch-dm"),
+        /**
+         * Fetch a User timeline (messages by the selected user)
+         */
+        FETCH_USER_TIMELINE("fetch-user-timeline"),
         /**
          * The recurring alarm that is used to implement recurring tweet
          * downloads should be started.
@@ -341,7 +350,9 @@ public class MyService extends Service {
         public String accountName = "";
         
         /**
-         * This is generally {@link android.provider.BaseColumns#_ID} of the {@link MyDatabase.Msg}
+         * This is: 
+         * 1. Generally: {@link android.provider.BaseColumns#_ID} of the {@link MyDatabase.Msg}.
+         * 2.  User ID ( {@link MyDatabase.User#USER_ID} ) for the {@link CommandEnum#FETCH_USER_TIMELINE}
          */
         public long itemId = 0;
 
@@ -575,7 +586,7 @@ public class MyService extends Service {
      */
     final RemoteCallbackList<IMyServiceCallback> mCallbacks = new RemoteCallbackList<IMyServiceCallback>();
 
-    private static final int MILLISECONDS = 1000;
+    static final int MILLISECONDS = 1000;
 
     /**
      * Send broadcast to Widgets even if there are no new tweets
@@ -1169,16 +1180,19 @@ public class MyService extends Service {
                 switch (commandData.command) {
                     case AUTOMATIC_UPDATE:
                     case FETCH_ALL_TIMELINES:
-                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.ALL);
+                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.ALL, 0);
                         break;
                     case FETCH_HOME:
-                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.HOME);
+                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.HOME, 0);
                         break;
                     case FETCH_MENTIONS:
-                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.MENTIONS);
+                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.MENTIONS, 0);
                         break;
                     case FETCH_DIRECT_MESSAGES:
-                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.DIRECT);
+                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.DIRECT, 0);
+                        break;
+                    case FETCH_USER_TIMELINE:
+                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.USER, commandData.itemId);
                         break;
                     case CREATE_FAVORITE:
                     case DESTROY_FAVORITE:
@@ -1376,7 +1390,7 @@ public class MyService extends Service {
                                 TimelineDownloader fl = new TimelineDownloader(ma,
                                         MyService.this.getApplicationContext(),
                                         TimelineTypeEnum.HOME);
-                                fl.insertFromJSONObject(result, true);
+                                fl.insertMsgFromJSONObject(result, true);
                             } catch (JSONException e) {
                                 Log.e(TAG,
                                         "Error marking as " + (create ? "" : "not ") + "favorite: "
@@ -1478,7 +1492,7 @@ public class MyService extends Service {
                             TimelineDownloader fl = new TimelineDownloader(ma,
                                     MyService.this.getApplicationContext(),
                                     TimelineTypeEnum.ALL);
-                            fl.insertFromJSONObject(result);
+                            fl.insertMsgFromJSONObject(result);
                         } catch (Exception e) {
                             Log.e(TAG, "Error inserting status: " + e.toString());
                         }
@@ -1488,9 +1502,8 @@ public class MyService extends Service {
                 }
             }
             MyLog.d(TAG, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + msgId);
-            if (ok) {
-                notifyOfDataLoadingCompletion();
-            }
+
+            notifyOfDataLoadingCompletion();
             return ok;
         }
         
@@ -1528,7 +1541,7 @@ public class MyService extends Service {
                                     MyService.this.getApplicationContext(),
                                     (recipientId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT);
 
-                            fl.insertFromJSONObject(result, true);
+                            fl.insertMsgFromJSONObject(result, true);
                         } catch (JSONException e) {
                             Log.e(TAG, "updateStatus JSONException: " + e.toString());
                         }
@@ -1561,7 +1574,7 @@ public class MyService extends Service {
                                     MyService.this.getApplicationContext(),
                                     TimelineTypeEnum.HOME);
 
-                            fl.insertFromJSONObject(result, true);
+                            fl.insertMsgFromJSONObject(result, true);
                         } catch (JSONException e) {
                             Log.e(TAG, "reblog JSONException: " + e.toString());
                         }
@@ -1580,7 +1593,7 @@ public class MyService extends Service {
          * @return True if everything Succeeded
          */
         private boolean loadTimeline(String accountNameIn,
-                MyDatabase.TimelineTypeEnum timelineType_in) {
+                MyDatabase.TimelineTypeEnum timelineType_in, long userId) {
             boolean okAllAccounts = true;
             
             if (TextUtils.isEmpty(accountNameIn)) {
@@ -1589,7 +1602,7 @@ public class MyService extends Service {
                     MyAccount acc = MyAccount.list()[ind];
                     if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
                         // Only if User was authenticated already
-                        boolean ok = loadTimelineAccount(acc, timelineType_in);
+                        boolean ok = loadTimelineAccount(acc, timelineType_in, userId);
                         if (!ok) {
                             okAllAccounts = false;
                         }
@@ -1599,7 +1612,7 @@ public class MyService extends Service {
                 MyAccount acc = MyAccount.getMyAccount(accountNameIn);
                 if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
                     // Only if User was authenticated already
-                    boolean ok = loadTimelineAccount(acc, timelineType_in);
+                    boolean ok = loadTimelineAccount(acc, timelineType_in, userId);
                     if (!ok) {
                         okAllAccounts = false;
                     }
@@ -1615,12 +1628,12 @@ public class MyService extends Service {
         /**
          * Load Timeline(s) for one MyAccount
          * @param acc MyAccount, should be not null
-         * @param loadHomeAndMentions - Should we load Home and Mentions
-         * @param loadDirectMessages - Should we load direct messages
+         * @param timelineType_in
+         * @param userId - for the User timeline
          * @return True if everything Succeeded
          */
         private boolean loadTimelineAccount(MyAccount acc,
-                MyDatabase.TimelineTypeEnum timelineType_in) {
+                MyDatabase.TimelineTypeEnum timelineType_in, long userId) {
                 boolean okAllTimelines = true;
                 if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
                     // Only if User was authenticated already
@@ -1686,7 +1699,7 @@ public class MyService extends Service {
                             descr = "loading " + timelineType.save();
                             fl = new TimelineDownloader(acc,
                                     MyService.this.getApplicationContext(),
-                                    timelineType);
+                                    timelineType, userId);
                             ok = fl.loadTimeline();
                             switch (timelineType) {
                                 case MENTIONS:
@@ -1698,6 +1711,9 @@ public class MyService extends Service {
                                     break;
                                 case DIRECT:
                                     directedAdded += fl.messagesCount();
+                                    break;
+                                case USER:
+                                    // Don't count anything for now...
                                     break;
                                 default:
                                     ok = false;
@@ -2092,8 +2108,8 @@ public class MyService extends Service {
      * 
      * @return the number of milliseconds
      */
-    private int getFetchFrequencyS() {
-        int frequencyS = Integer.parseInt(getSp().getString("fetch_frequency", "180"));
+    private int getFetchFrequencyMs() {
+        int frequencyS = Integer.parseInt(getSp().getString(MyPreferences.KEY_FETCH_FREQUENCY, "180"));
         return (frequencyS * MILLISECONDS);
     }
 
@@ -2103,7 +2119,7 @@ public class MyService extends Service {
     private boolean scheduleRepeatingAlarm() {
         final AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         final PendingIntent pIntent = getRepeatingIntent();
-        final int frequencyMs = getFetchFrequencyS();
+        final int frequencyMs = getFetchFrequencyMs();
         final long firstTime = SystemClock.elapsedRealtime() + frequencyMs;
         am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, frequencyMs, pIntent);
         MyLog.d(TAG, "Started repeating alarm in a " + frequencyMs + "ms rhythm.");

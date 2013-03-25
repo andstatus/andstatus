@@ -95,7 +95,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
             TextView version = (TextView) findViewById(R.id.splash_application_version);
             PackageManager pm = getPackageManager();
             PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
-            version.setText(MessageFormat.format("{0} {1}", new Object[] {pi.packageName, pi.versionName}));
+            version.setText(pi.packageName + " v." + pi.versionName);
         } catch (NameNotFoundException e) {
             Log.e(TAG, "Unable to obtain package information", e);
         }

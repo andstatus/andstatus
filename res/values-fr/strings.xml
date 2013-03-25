@@ -27,12 +27,10 @@
     <!-- Settings activity title [CHAR LIMIT=40]-->
     <string name="settings_activity_title">Paramétrages</string>
     	
-    <string name="activity_title_direct_messages">Messages privés</string>
-	<string name="activity_title_favorites">Favoris</string>
-	<string name="activity_title_format">%1$s: %2$s</string>
-	<string name="activity_title_mentions">Mentions</string>
-	<string name="activity_title_search">Recherche</string>
-	<string name="activity_title_home">Principale</string>
+    <string name="timeline_title_direct_messages">Messages privés</string>
+	<string name="timeline_title_favorites">Favoris</string>
+	<string name="timeline_title_mentions">Mentions</string>
+	<string name="timeline_title_home">Principale</string>
 
     <string name="appwidget_configure_instructions">Personnaliser le message du widget AndStatus affiché s\'il n\'y a pas rien de nouveau :</string>
     <string name="appwidget_nothingnew_default">Rien de nouveau depuis :</string>

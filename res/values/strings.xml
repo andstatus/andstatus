@@ -28,13 +28,12 @@
     <!-- Settings activity title [CHAR LIMIT=40]-->
     <string name="settings_activity_title">Settings</string>
     	
-    <string name="activity_title_direct_messages">Direct messages</string>
-	<string name="activity_title_favorites">Favorites</string>
-	<string name="activity_title_format">%1$s: %2$s</string>
-	<string name="activity_title_mentions">Mentions</string>
-	<string name="activity_title_search">Search</string>
-	<string name="activity_title_home">Home</string>
-
+    <string name="timeline_title_direct_messages">Direct messages</string>
+	<string name="timeline_title_favorites">Favorites</string>
+	<string name="timeline_title_mentions">Mentions</string>
+	<string name="timeline_title_home">Home</string>
+    <string name="timeline_title_user">User</string>
+    
     <string name="appwidget_configure_instructions">Customize AndStatus Widget message, shown in a case there is nothing new:</string>
     <string name="appwidget_nothingnew_default">Nothing new since:</string>
 	<string name="appwidget_new_tweet_format">{0}</string>
@@ -115,12 +114,13 @@
 	<string name="menu_item_direct_message">Direct Message</string>
 	<string name="menu_item_favorite">Favorite</string>
 	<string name="menu_item_follow">Follow</string>
-	<string name="menu_item_reply">Reply</string>
+    <string name="menu_item_reply">Reply</string>
 	<string name="menu_item_reblog">Reblog</string>
 	<string name="menu_item_reblog_twitter">Retweet</string>
 	<string name="menu_item_share">Share</string>
 	<string name="menu_item_unfollow">Unfollow</string>
-	<string name="menu_item_view_profile">View Profile</string>
+    <string name="menu_item_user_messages">Messages by "%1s"</string>
+    <string name="menu_item_view_profile">View Profile</string>
 	<string name="message_sent">Your message has been sent.</string>
 	<string name="messages_activity">Direct Messages</string>
     <string name="not_set">not set</string>

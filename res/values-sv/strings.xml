@@ -16,11 +16,9 @@
  -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<string name="app_name">AndStatus</string>
-	<string name="activity_title_direct_messages">Meddelanden</string>
-	<string name="activity_title_format">%1$s: %2$s</string>
-	<string name="activity_title_mentions">Omnämningar</string>
-	<string name="activity_title_search">Sök</string>
-	<string name="activity_title_home">Vänner</string>
+	<string name="timeline_title_direct_messages">Meddelanden</string>
+	<string name="timeline_title_mentions">Omnämningar</string>
+	<string name="timeline_title_home">Vänner</string>
 
     <string name="appwidget_configure_instructions">Anpassa
     AndStatus Widget meddelande, visas när inget nytt finns:</string>

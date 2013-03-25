@@ -78,6 +78,7 @@ public abstract class Connection {
         STATUSES_DESTROY,
         STATUSES_HOME_TIMELINE,
         STATUSES_MENTIONS_TIMELINE,
+        STATUSES_USER_TIMELINE,
         STATUSES_SHOW,
         STATUSES_UPDATE,
         
@@ -89,18 +90,6 @@ public abstract class Connection {
         OAUTH_REQUEST_TOKEN
     }
     
-    /*
-     * TODO: Not implemented (yet?) protected static final String
-     * STATUSES_PUBLIC_TIMELINE_URL = BASE_URL_OLD + "/statuses/public_timeline" +
-     * EXTENSION; protected static final String STATUSES_FOLLOWERS_URL =
-     * BASE_URL_OLD + "/statuses/followers" + EXTENSION; protected static final
-     * String DIRECT_MESSAGES_SENT_URL = BASE_URL_OLD + "/direct_messages/sent" +
-     * EXTENSION;
-     */
-
-    protected String mSinceId = "";
-    protected int mLimit = 200;
-
     protected String mUsername;
 
     protected String mPassword;
@@ -165,6 +154,9 @@ public abstract class Connection {
                 break;
             case STATUSES_MENTIONS_TIMELINE:
                 url = getBaseUrl()  + "/statuses/mentions" + EXTENSION;
+                break;
+            case STATUSES_USER_TIMELINE:
+                url = getBaseUrl() + "/statuses/user_timeline" + EXTENSION;
                 break;
             case STATUSES_SHOW:
                 url = getBaseUrl() + "/statuses/show" + EXTENSION;
@@ -393,12 +385,29 @@ public abstract class Connection {
             throws ConnectionException;
     
     /**
-     * Get Direct messages
+     * Universal method for several Timeline Types...
      * 
-     * @throws ConnectionException 
+     * @param url URL predefined for this timeline
+     * @param sinceId
+     * @param limit
+     * @param userId For the {@link ApiRoutineEnum#STATUSES_USER_TIMELINE}
+     * @return
+     * @throws ConnectionException
      */
-    public abstract JSONArray getDirectMessages(String sinceId, int limit)
+    protected abstract JSONArray getTimeline(String url, String sinceId, int limit, String userId)
             throws ConnectionException;
+    
+    
+    /**
+     * Returns the 20 most recent direct messages sent to the authenticating user
+     *
+     * TODO: GET direct_messages/sent: Returns the 20 most recent direct messages sent by the authenticating user. 
+     * See https://dev.twitter.com/docs/api/1/get/direct_messages/sent
+     */
+    public JSONArray getDirectMessages(String sinceId, int limit) throws ConnectionException {
+        String url = this.getApiUrl(ApiRoutineEnum.DIRECT_MESSAGES);
+        return this.getTimeline(url, sinceId, limit, "");
+    }
     
     /**
      * Get the user's replies.
@@ -409,8 +418,10 @@ public abstract class Connection {
      * @return JSONArray
      * @throws ConnectionException 
      */
-    public abstract JSONArray getMentionsTimeline(String sinceId, int limit)
-            throws ConnectionException;
+    public JSONArray getMentionsTimeline(String sinceId, int limit) throws ConnectionException {
+        String url = this.getApiUrl(ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE);
+        return this.getTimeline(url, sinceId, limit, "");
+    }
 
     /**
      * Get the Home timeline (whatever it is...).
@@ -420,31 +431,46 @@ public abstract class Connection {
      * @return JSONArray
      * @throws ConnectionException 
      */
-    public abstract JSONArray getHomeTimeline(String sinceId, int limit)
-            throws ConnectionException;
-
-    protected String getSinceId() {
-        return mSinceId;
+    public JSONArray getHomeTimeline(String sinceId, int limit) throws ConnectionException {
+        String url = this.getApiUrl(ApiRoutineEnum.STATUSES_HOME_TIMELINE);
+        return this.getTimeline(url, sinceId, limit, "");
     }
 
-    protected String setSinceId(String sinceId) {
-        if (sinceId.length() > 0) {
-            mSinceId = sinceId;
+    /**
+     * Get the User timeline for the user with the selectedUserId. We use credentials of Account which may be
+     * not the same user. 
+     * @param userId  The ID of the user for whom to return results for
+     * @param sinceId  Returns results with an ID greater than (that is, more recent than) the specified MessageID
+     * @param limit
+     * @return
+     * @throws ConnectionException
+     */
+    public JSONArray getUserTimeline(String userId, String sinceId, int limit)
+            throws ConnectionException {
+        String url = getApiUrl(ApiRoutineEnum.STATUSES_USER_TIMELINE);
+        return getTimeline(url, sinceId, limit, userId);
+    }
+
+    protected String fixSinceId(String sinceId) {
+        String out = "";
+        if (!TextUtils.isEmpty(sinceId) && sinceId.length()>1) {
+            // For some reason "0" results in "bad request"
+            out = sinceId;
         }
-        return mSinceId;
+        return out;
     }
 
-    protected int getLimit() {
-        return mLimit;
-    }
-
-    protected int setLimit(int limit) {
-        if (limit > 0) {
-            mLimit = limit;
-            if (mLimit > 200)
-                mLimit = 200;
+    /**
+     * Restrict the limit to 1 - 200
+     * @param limit
+     * @return
+     */
+    protected int fixLimit(int limit) {
+        int out = 200;
+        if (limit > 0 && limit < 200) {
+            out = limit;
         }
-        return mLimit;
+        return out;
     }
 
 }

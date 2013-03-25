@@ -62,90 +62,32 @@ public class ConnectionBasicAuth extends Connection {
         super(ma, api , apiBaseUrl);
     }
 
-	@Override
-    public JSONArray getHomeTimeline(String sinceId, int limit) throws ConnectionException {
-	    setSinceId(sinceId);
-	    setLimit(limit);
-	    
-		String url = getApiUrl(ApiRoutineEnum.STATUSES_HOME_TIMELINE);
-		url += "?count=" + mLimit;
-		if (mSinceId.length() > 1) {
-			url += "&since_id=" + mSinceId;
-		}
-		JSONArray jArr = null;
-		String request = getRequest(url);
-		try {
-			jArr = new JSONArray(request);
-		} catch (JSONException e) {
-			try {
-				JSONObject jObj = new JSONObject(request);
-				String error = jObj.optString("error");
-				if ("Could not authenticate you.".equals(error)) {
-					throw new ConnectionException(error);
-				}
-			} catch (JSONException e1) {
-				throw new ConnectionException(e);
-			}
-		}
-		return jArr;
-	}
-
-	@Override
-    public JSONArray getMentionsTimeline(String sinceId, int limit) throws ConnectionException {
-        setSinceId(sinceId);
-        setLimit(limit);
-
-        String url = getApiUrl(ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE);
-		url += "?count=" + mLimit;
-		if (mSinceId.length() > 1) {
-			url += "&since_id=" + mSinceId;
-		}
-		JSONArray jArr = null;
-		String request = getRequest(url);
-		try {
-			jArr = new JSONArray(request);
-		} catch (JSONException e) {
-			try {
-				JSONObject jObj = new JSONObject(request);
-				String error = jObj.optString("error");
-				if ("Could not authenticate you.".equals(error)) {
-					throw new ConnectionException(error);
-				}
-			} catch (JSONException e1) {
-				throw new ConnectionException(e);
-			}
-		}
-		return jArr;
-	}
-
-	@Override
-    public JSONArray getDirectMessages(String sinceId, int limit) throws ConnectionException {
-        setSinceId(sinceId);
-        setLimit(limit);
-
-		String url = getApiUrl(ApiRoutineEnum.DIRECT_MESSAGES);
-		url += "?count=" + mLimit;
-		if (mSinceId.length() > 1) {
-			url += "&since_id=" + mSinceId;
-		}
-		JSONArray jArr = null;
-		String request = getRequest(url);
-		try {
-			jArr = new JSONArray(request);
-		} catch (JSONException e) {
-			try {
-				JSONObject jObj = new JSONObject(request);
-				String error = jObj.optString("error");
-				if ("Could not authenticate you.".equals(error)) {
-					throw new ConnectionException(error);
-				}
-			} catch (JSONException e1) {
-				throw new ConnectionException(e);
-			}
-		}
-		return jArr;
-	}
-
+    public JSONArray getTimeline(String url, String sinceId, int limit, String userId) throws ConnectionException {
+        url += "?count=" + Integer.toString(fixLimit(limit));
+        if (!TextUtils.isEmpty(fixSinceId(sinceId))) {
+            url += "&since_id=" + fixSinceId(sinceId);
+        }
+        if (!TextUtils.isEmpty(userId)) {
+            url += "&user_id" + userId;
+        }
+        JSONArray jArr = null;
+        String request = getRequest(url);
+        try {
+            jArr = new JSONArray(request);
+        } catch (JSONException e) {
+            try {
+                JSONObject jObj = new JSONObject(request);
+                String error = jObj.optString("error");
+                if ("Could not authenticate you.".equals(error)) {
+                    throw new ConnectionException(error);
+                }
+            } catch (JSONException e1) {
+                throw new ConnectionException(e);
+            }
+        }
+        return jArr;
+    }
+	
 	@Override
     public JSONObject updateStatus(String message, String inReplyToId) throws ConnectionException {
 		String url = getApiUrl(ApiRoutineEnum.STATUSES_UPDATE);

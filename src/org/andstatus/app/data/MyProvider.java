@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2012-2013 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,9 +55,13 @@ public class MyProvider extends ContentProvider {
     /**
      * Projection map used by SQLiteQueryBuilder
      * @see android.database.sqlite.SQLiteQueryBuilder#setProjectionMap
+     * Projection map for the {@link MyDatabase.Msg} table
      */
-    private static HashMap<String, String> sTweetsProjectionMap;
-    private static HashMap<String, String> sUsersProjectionMap;
+    private static HashMap<String, String> msgProjectionMap;
+    /**
+     * Projection map for the {@link MyDatabase.User} table
+     */
+    private static HashMap<String, String> userProjectionMap;
     
     /**
      * "Authority", represented by this ContentProvider subclass 
@@ -84,7 +88,7 @@ public class MyProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher;
     /**
      * Matched codes, returned by {@link UriMatcher#match(Uri)}
-     * This first member is for a Timeline of selected Account (or all timelines...) and it corresponds to the {@link #TIMELINE_URI}
+     * This first member is for a Timeline of selected User (Account) (or all timelines...) and it corresponds to the {@link #TIMELINE_URI}
      */
     private static final int TIMELINE = 1;
     /**
@@ -215,7 +219,7 @@ public class MyProvider extends ContentProvider {
 
         ContentValues values;
         ContentValues msgOfUserValues = null;
-        long accountId = 0;
+        long userId = 0;
         
         long rowId;
         Uri newUri = null;
@@ -237,7 +241,7 @@ public class MyProvider extends ContentProvider {
 
             switch (sUriMatcher.match(uri)) {
                 case TIMELINE:
-                    accountId = Long.parseLong(uri.getPathSegments().get(1));
+                    userId = Long.parseLong(uri.getPathSegments().get(1));
                     table = MyDatabase.MSG_TABLE_NAME;
                     nullColumnHack = Msg.BODY;
                     contentUri = TIMELINE_URI;
@@ -252,7 +256,7 @@ public class MyProvider extends ContentProvider {
                         values.put(Msg.VIA, "");
                     values.put(Msg.INS_DATE, now);
                     
-                    msgOfUserValues = prepareMsgOfUserValues(values, accountId);
+                    msgOfUserValues = prepareMsgOfUserValues(values, userId);
                     break;
 
                 case USERS:
@@ -282,7 +286,7 @@ public class MyProvider extends ContentProvider {
 
             if (contentUri.compareTo(TIMELINE_URI) == 0) {
                 // The resulted Uri has two parameters...
-                newUri = MyProvider.getTimelineMsgUri(accountId, rowId);
+                newUri = MyProvider.getTimelineMsgUri(userId, rowId);
             } else {
                 newUri = ContentUris.withAppendedId(contentUri, rowId);
             }
@@ -299,19 +303,20 @@ public class MyProvider extends ContentProvider {
      * @param values
      * @return
      */
-    private ContentValues prepareMsgOfUserValues(ContentValues values, long accountId) {
+    private ContentValues prepareMsgOfUserValues(ContentValues values, long userId) {
         ContentValues msgOfUserValues = null;
         MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
         if (values.containsKey(MsgOfUser.TIMELINE_TYPE) ) {
             timelineType = TimelineTypeEnum.load(values.get(MsgOfUser.TIMELINE_TYPE).toString());
             values.remove(MsgOfUser.TIMELINE_TYPE);
         }
-        if (accountId != 0) {
+        if (userId != 0) {
             switch (timelineType) {
                 case HOME:
                 case MENTIONS:
                 case FAVORITES:
                 case DIRECT:
+                case USER:
                 case ALL:
                     
                     // Add MsgOfUser link to Current User MyAccount
@@ -319,7 +324,7 @@ public class MyProvider extends ContentProvider {
                     if (values.containsKey(Msg._ID) ) {
                         msgOfUserValues.put(MsgOfUser.MSG_ID, values.getAsString(Msg._ID));
                     }
-                    msgOfUserValues.put(MsgOfUser.USER_ID, accountId);
+                    msgOfUserValues.put(MsgOfUser.USER_ID, userId);
                     moveKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
                     moveKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
                     moveKey(MsgOfUser.REBLOGGED, values, msgOfUserValues);
@@ -370,7 +375,7 @@ public class MyProvider extends ContentProvider {
         switch (matchedCode) {
             case TIMELINE:
                 qb.setTables(tablesForTimeline(uri, projection));
-                qb.setProjectionMap(sTweetsProjectionMap);
+                qb.setProjectionMap(msgProjectionMap);
                 break;
 
             case MSG_COUNT:
@@ -382,13 +387,13 @@ public class MyProvider extends ContentProvider {
 
             case TIMELINE_MSG_ID:
                 qb.setTables(tablesForTimeline(uri, projection));
-                qb.setProjectionMap(sTweetsProjectionMap);
+                qb.setProjectionMap(msgProjectionMap);
                 qb.appendWhere(MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + uriToMessageId(uri));
                 break;
 
             case TIMELINE_SEARCH:
                 qb.setTables(tablesForTimeline(uri, projection));
-                qb.setProjectionMap(sTweetsProjectionMap);
+                qb.setProjectionMap(msgProjectionMap);
                 String s1 = uri.getLastPathSegment();
                 if (s1 != null) {
                     // These two lines don't work:
@@ -419,12 +424,12 @@ public class MyProvider extends ContentProvider {
 
             case USERS:
                 qb.setTables(MyDatabase.USER_TABLE_NAME);
-                qb.setProjectionMap(sUsersProjectionMap);
+                qb.setProjectionMap(userProjectionMap);
                 break;
 
             case USER_ID:
                 qb.setTables(MyDatabase.USER_TABLE_NAME);
-                qb.setProjectionMap(sUsersProjectionMap);
+                qb.setProjectionMap(userProjectionMap);
                 qb.appendWhere(User._ID + "=" + uri.getPathSegments().get(1));
                 break;
 
@@ -516,17 +521,17 @@ public class MyProvider extends ContentProvider {
      */
     private static String tablesForTimeline(Uri uri, String[] projection) {
        String tables = MyDatabase.MSG_TABLE_NAME;
-       long accountId = uriToAccountId(uri);
+       long userId = uriToUserId(uri);
        boolean isCombined = uriToIsCombined(uri);
        
-       if (isCombined || accountId == 0) {
+       if (isCombined || userId == 0) {
            tables += " LEFT OUTER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
                    ;
        } else {
            tables += " INNER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
-                   + " AND " + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID + "=" + accountId
+                   + " AND " + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID + "=" + userId
                    ;
        }
        tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME 
@@ -571,7 +576,7 @@ public class MyProvider extends ContentProvider {
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
         int count;
-        long accountId = 0;
+        long userId = 0;
         int matchedCode = sUriMatcher.match(uri);
         switch (matchedCode) {
             case MSG:
@@ -579,9 +584,9 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case TIMELINE_MSG_ID:
-                accountId = Long.parseLong(uri.getPathSegments().get(1));
-                String rowId = uri.getPathSegments().get(5);
-                ContentValues msgOfUserValues = prepareMsgOfUserValues(values, accountId);
+                userId = Long.parseLong(uri.getPathSegments().get(1));
+                String rowId = uri.getPathSegments().get(7);
+                ContentValues msgOfUserValues = prepareMsgOfUserValues(values, userId);
                 count = db.update(MyDatabase.MSG_TABLE_NAME, values, Msg._ID + "=" + rowId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
@@ -589,7 +594,7 @@ public class MyProvider extends ContentProvider {
                 if (msgOfUserValues != null) {
                     String where = "(" + MsgOfUser.MSG_ID + "=" + rowId + " AND "
                             + MsgOfUser.USER_ID + "="
-                            + accountId + ")";
+                            + userId + ")";
                     String sql = "SELECT * FROM " + MyDatabase.MSGOFUSER_TABLE_NAME + " WHERE "
                             + where;
                     Cursor c = db.rawQuery(sql, null);
@@ -611,8 +616,8 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case USER_ID:
-                String userId = uri.getPathSegments().get(1);
-                count = db.update(MyDatabase.USER_TABLE_NAME, values, User._ID + "=" + userId
+                String selectedUserId = uri.getPathSegments().get(1);
+                count = db.update(MyDatabase.USER_TABLE_NAME, values, User._ID + "=" + selectedUserId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
                 break;
@@ -625,19 +630,22 @@ public class MyProvider extends ContentProvider {
         return count;
     }
 
-    // Static Definitions for UriMatcher and Projection Maps
+    /**
+     *  Static Definitions for UriMatcher and Projection Maps
+     */
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
         /** 
-         * The order of parameters of timelines in the URI
-         * 1. The first parameter is ACCOUNT_ID,
-         * 2 - 3. "combined/" +  0 or 1  (1 for combined timeline) 
-         * 4 - 5. MyDatabase.MSG_TABLE_NAME + "/" + MSG_ID  (optional, used to access specific Message)
+         * The order of PathSegments (parameters of timelines) in the URI
+         * 1. USER_ID is the first parameter (this is his timeline!)
+         * 2 - 3. "tt/" +  {@link MyDatabase.TimelineTypeEnum.save()} 
+         * 4 - 5. "combined/" +  0 or 1  (1 for combined timeline) 
+         * 6 - 7. MyDatabase.MSG_TABLE_NAME + "/" + MSG_ID  (optional, used to access specific Message)
          */
-        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/combined/#", TIMELINE);
-        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/combined/#/" + MyDatabase.MSG_TABLE_NAME + "/#", TIMELINE_MSG_ID);
-        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/combined/#/search/*", TIMELINE_SEARCH);
+        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#", TIMELINE);
+        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/" + MyDatabase.MSG_TABLE_NAME + "/#", TIMELINE_MSG_ID);
+        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/search/*", TIMELINE_SEARCH);
 
         sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME, MSG);
         sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/count", MSG_COUNT);
@@ -645,38 +653,49 @@ public class MyProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME, USERS);
         sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#", USER_ID);
 
-        sTweetsProjectionMap = new HashMap<String, String>();
-        sTweetsProjectionMap.put(Msg._ID, MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + " AS " + Msg._ID);
-        sTweetsProjectionMap.put(Msg.MSG_ID, MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + " AS " + Msg.MSG_ID);
-        sTweetsProjectionMap.put(Msg.ORIGIN_ID, Msg.ORIGIN_ID);
-        sTweetsProjectionMap.put(Msg.MSG_OID, Msg.MSG_OID);
-        sTweetsProjectionMap.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
-        sTweetsProjectionMap.put(User.AUTHOR_NAME, User.AUTHOR_NAME);
-        sTweetsProjectionMap.put(Msg.SENDER_ID, Msg.SENDER_ID);
-        sTweetsProjectionMap.put(User.SENDER_NAME, User.SENDER_NAME);
-        sTweetsProjectionMap.put(Msg.BODY, Msg.BODY);
-        sTweetsProjectionMap.put(Msg.VIA, Msg.VIA);
-        sTweetsProjectionMap.put(MsgOfUser.TIMELINE_TYPE, MsgOfUser.TIMELINE_TYPE);
-        sTweetsProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
-        sTweetsProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
-        sTweetsProjectionMap.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);
-        sTweetsProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
-        sTweetsProjectionMap.put(MsgOfUser.USER_ID, MsgOfUser.USER_ID);
-        sTweetsProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
-        sTweetsProjectionMap.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
-        sTweetsProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
-        sTweetsProjectionMap.put(Msg.SENT_DATE, Msg.SENT_DATE);
-        sTweetsProjectionMap.put(Msg.INS_DATE, Msg.INS_DATE);
+        msgProjectionMap = new HashMap<String, String>();
+        msgProjectionMap.put(Msg._ID, MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + " AS " + Msg._ID);
+        msgProjectionMap.put(Msg.MSG_ID, MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + " AS " + Msg.MSG_ID);
+        msgProjectionMap.put(Msg.ORIGIN_ID, Msg.ORIGIN_ID);
+        msgProjectionMap.put(Msg.MSG_OID, Msg.MSG_OID);
+        msgProjectionMap.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
+        msgProjectionMap.put(User.AUTHOR_NAME, User.AUTHOR_NAME);
+        msgProjectionMap.put(Msg.SENDER_ID, Msg.SENDER_ID);
+        msgProjectionMap.put(User.SENDER_NAME, User.SENDER_NAME);
+        msgProjectionMap.put(Msg.BODY, Msg.BODY);
+        msgProjectionMap.put(Msg.VIA, Msg.VIA);
+        msgProjectionMap.put(MsgOfUser.TIMELINE_TYPE, MsgOfUser.TIMELINE_TYPE);
+        msgProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
+        msgProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
+        msgProjectionMap.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);
+        msgProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
+        msgProjectionMap.put(MsgOfUser.USER_ID, MsgOfUser.USER_ID);
+        msgProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
+        msgProjectionMap.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
+        msgProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
+        msgProjectionMap.put(Msg.SENT_DATE, Msg.SENT_DATE);
+        msgProjectionMap.put(Msg.INS_DATE, Msg.INS_DATE);
 
-        sUsersProjectionMap = new HashMap<String, String>();
-        sUsersProjectionMap.put(User._ID, MyDatabase.USER_TABLE_NAME + "." + User._ID + " AS " + User._ID);
-        sUsersProjectionMap.put(User.USER_ID, MyDatabase.USER_TABLE_NAME + "." + User._ID + " AS " + User.USER_ID);
-        sUsersProjectionMap.put(User.USER_OID, User.USER_OID);
-        sUsersProjectionMap.put(User.ORIGIN_ID, User.ORIGIN_ID);
-        sUsersProjectionMap.put(User.USERNAME, User.USERNAME);
-        sUsersProjectionMap.put(User.AVATAR_BLOB, User.AVATAR_BLOB);
-        sUsersProjectionMap.put(User.CREATED_DATE, User.CREATED_DATE);
-        sUsersProjectionMap.put(User.INS_DATE, User.INS_DATE);
+        userProjectionMap = new HashMap<String, String>();
+        userProjectionMap.put(User._ID, MyDatabase.USER_TABLE_NAME + "." + User._ID + " AS " + User._ID);
+        userProjectionMap.put(User.USER_ID, MyDatabase.USER_TABLE_NAME + "." + User._ID + " AS " + User.USER_ID);
+        userProjectionMap.put(User.USER_OID, User.USER_OID);
+        userProjectionMap.put(User.ORIGIN_ID, User.ORIGIN_ID);
+        userProjectionMap.put(User.USERNAME, User.USERNAME);
+        userProjectionMap.put(User.AVATAR_BLOB, User.AVATAR_BLOB);
+        userProjectionMap.put(User.CREATED_DATE, User.CREATED_DATE);
+        userProjectionMap.put(User.INS_DATE, User.INS_DATE);
+        
+        userProjectionMap.put(User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_MSG_ID);
+        userProjectionMap.put(User.HOME_TIMELINE_DATE, User.HOME_TIMELINE_DATE);
+        userProjectionMap.put(User.FAVORITES_TIMELINE_MSG_ID, User.FAVORITES_TIMELINE_MSG_ID);
+        userProjectionMap.put(User.FAVORITES_TIMELINE_DATE, User.FAVORITES_TIMELINE_DATE);
+        userProjectionMap.put(User.DIRECT_TIMELINE_MSG_ID, User.DIRECT_TIMELINE_MSG_ID);
+        userProjectionMap.put(User.DIRECT_TIMELINE_DATE, User.DIRECT_TIMELINE_DATE);
+        userProjectionMap.put(User.MENTIONS_TIMELINE_MSG_ID, User.MENTIONS_TIMELINE_MSG_ID);
+        userProjectionMap.put(User.MENTIONS_TIMELINE_DATE, User.MENTIONS_TIMELINE_DATE);
+        userProjectionMap.put(User.USER_TIMELINE_MSG_ID, User.USER_TIMELINE_MSG_ID);
+        userProjectionMap.put(User.USER_TIMELINE_DATE, User.USER_TIMELINE_DATE);
     }
     
     /**
@@ -836,7 +855,17 @@ public class MyProvider extends ContentProvider {
         }
         return userName;
     }
-    
+
+    /**
+     * Convenience method to get column value from {@link MyDatabase.User} table
+     * @param columnName without table name
+     * @param systemId {@link MyDatabase.User#USER_ID}
+     * @return 0 in case not found or error
+     */
+    public static long userIdToLongColumnValue(String columnName, long systemId) {
+        return idToLongColumnValue(MyDatabase.USER_TABLE_NAME, columnName, systemId);
+    }
+
     public static long msgIdToUserId(String msgUserColumnName, long systemId) {
         long userId = 0;
         try {
@@ -856,30 +885,45 @@ public class MyProvider extends ContentProvider {
     }
 
     /**
-     * Convenience method to get column value
+     * Convenience method to get column value from {@link MyDatabase.Msg} table
      * @param columnName without table name
      * @param systemId  MyDatabase.MSG_TABLE_NAME + "." + Msg._ID
      * @return 0 in case not found or error
      */
     public static long msgIdToLongColumnValue(String columnName, long systemId) {
+        return idToLongColumnValue(MyDatabase.MSG_TABLE_NAME, columnName, systemId);
+    }
+
+    /**
+     * Convenience method to get long column value from the 'tableName' table
+     * @param tableName e.g. {@link MyDatabase#MSG_TABLE_NAME} 
+     * @param columnName without table name
+     * @param systemId tableName._id
+     * @return 0 in case not found or error or systemId==0
+     */
+    private static long idToLongColumnValue(String tableName, String columnName, long systemId) {
         long columnValue = 0;
-        SQLiteStatement prog = null;
-        String sql = "";
-        try {
-            sql = "SELECT " + MyDatabase.MSG_TABLE_NAME + "." + columnName
-                    + " FROM " + MyDatabase.MSG_TABLE_NAME
-                    + " WHERE " + MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + systemId;
-            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
-            prog = db.compileStatement(sql);
-            columnValue = prog.simpleQueryForLong();
-        } catch (SQLiteDoneException ed) {
-            columnValue = 0;
-        } catch (Exception e) {
-            Log.e(TAG, "msgIdToLongColumnValue, column='" + columnName + "': " + e.toString());
-            return 0;
-        }
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "msgIdTo" + columnName + ": " + systemId + " -> " + columnValue );
+        if (TextUtils.isEmpty(tableName) || TextUtils.isEmpty(columnName)) {
+            throw new IllegalArgumentException("idToLongColumnValue; tableName or columnName are empty");
+        } else if (systemId != 0) {
+            SQLiteStatement prog = null;
+            String sql = "";
+            try {
+                sql = "SELECT t." + columnName
+                        + " FROM " + tableName + " AS t"
+                        + " WHERE t._id=" + systemId;
+                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+                prog = db.compileStatement(sql);
+                columnValue = prog.simpleQueryForLong();
+            } catch (SQLiteDoneException ed) {
+                columnValue = 0;
+            } catch (Exception e) {
+                Log.e(TAG, "idToLongColumnValue table='" + tableName + "', column='" + columnName + "': " + e.toString());
+                return 0;
+            }
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                MyLog.v(TAG, "idToLongColumnValue table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
+            }
         }
         return columnValue;
     }
@@ -947,45 +991,42 @@ public class MyProvider extends ContentProvider {
         return id;
     }
     
-    public static Uri getTimelineUri(long accountId) {
-        return getTimelineUri(accountId, false);
-    }
-    
     /**
-     * Build a Timeline URI for this {@link MyAccount}
-     * @param accountId  {@link MyAccount#getUserId()} 
+     * Build a Timeline URI for this User / {@link MyAccount}
+     * @param userId {@link MyDatabase.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()} 
      * @param isCombined true for a Combined Timeline
      * @return
      */
-    public static Uri getTimelineUri(long accountId, boolean isCombined) {
-        Uri uri = ContentUris.withAppendedId(TIMELINE_URI, accountId);
+    public static Uri getTimelineUri(long userId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined) {
+        Uri uri = ContentUris.withAppendedId(TIMELINE_URI, userId);
+        uri = Uri.withAppendedPath(uri, "tt/" + timelineType.save());
         uri = Uri.withAppendedPath(uri, "combined/" + (isCombined ? "1" : "0"));
         return uri;
     }
 
     /**
-     * @param accountId
+     * @param userId
      * @param msgId
-     * @return Uri for the message in the account's timeline
+     * @return Uri for the message in the account's <u>HOME Combined</u> timeline
      */
-    public static Uri getTimelineMsgUri(long accountId, long msgId) {
-        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(accountId, true), MyDatabase.MSG_TABLE_NAME), msgId);
+    public static Uri getTimelineMsgUri(long userId, long msgId) {
+        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(userId, MyDatabase.TimelineTypeEnum.HOME, true), MyDatabase.MSG_TABLE_NAME), msgId);
     }
     
-    public static Uri getTimelineSearchUri(long accountId, boolean isCombined, String queryString) {
-        Uri uri = Uri.withAppendedPath(getTimelineUri(accountId, isCombined), SEARCH_SEGMENT);
+    public static Uri getTimelineSearchUri(long userId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined, String queryString) {
+        Uri uri = Uri.withAppendedPath(getTimelineUri(userId, timelineType, isCombined), SEARCH_SEGMENT);
         if (!TextUtils.isEmpty(queryString)) {
             uri = Uri.withAppendedPath(uri, Uri.encode(queryString));
         }
         return uri;
     }
     
-    public static long uriToAccountId(Uri uri) {
-        long accountId = 0;
+    public static long uriToUserId(Uri uri) {
+        long userId = 0;
         try {
-            accountId = Long.parseLong(uri.getPathSegments().get(1));
+            userId = Long.parseLong(uri.getPathSegments().get(1));
         } catch (Exception e) {}
-        return accountId;        
+        return userId;        
     }
 
     /**
@@ -1001,7 +1042,7 @@ public class MyProvider extends ContentProvider {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
                 case TIMELINE_MSG_ID:
-                    isCombined = ( (Long.parseLong(uri.getPathSegments().get(3)) == 0) ? false : true);
+                    isCombined = ( (Long.parseLong(uri.getPathSegments().get(5)) == 0) ? false : true);
             }
         } catch (Exception e) {}
         return isCombined;        
@@ -1013,7 +1054,7 @@ public class MyProvider extends ContentProvider {
             int matchedCode = sUriMatcher.match(uri);
             switch (matchedCode) {
                 case TIMELINE_MSG_ID:
-                    messageId = Long.parseLong(uri.getPathSegments().get(5));
+                    messageId = Long.parseLong(uri.getPathSegments().get(7));
             }
         } catch (Exception e) {}
         return messageId;        

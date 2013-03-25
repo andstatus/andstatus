@@ -60,6 +60,9 @@ public class MyPreferences {
 
     public static final String KEY_HISTORY_SIZE = "history_size";
     public static final String KEY_HISTORY_TIME = "history_time";
+    /**
+     * Period of automatic updates in seconds
+     */
     public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
     public static final String KEY_AUTOMATIC_UPDATES = "automatic_updates";
     public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";

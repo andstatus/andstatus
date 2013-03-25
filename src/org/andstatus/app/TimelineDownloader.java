@@ -74,25 +74,36 @@ public class TimelineDownloader {
     private int mMessages;
 
     /**
-     * Number of Mentions received (through {@link TimelineDownloader#insertFromJSONObject(JSONObject)} 
+     * Number of Mentions received (through {@link TimelineDownloader#insertMsgFromJSONObject(JSONObject)} 
      */
     private int mMentions;
     /**
-     * Number of Replies received (through {@link TimelineDownloader#insertFromJSONObject(JSONObject)} 
+     * Number of Replies received (through {@link TimelineDownloader#insertMsgFromJSONObject(JSONObject)} 
      */
     private int mReplies;
 
     private MyAccount ma;
 
     private TimelineTypeEnum mTimelineType;
-    // private ApiEnum mApi;
+    
+    /**
+     * The timeline parameter. Used in the {@link TimelineTypeEnum#USER} timeline.
+     */
+    private long mUserId = 0;
+    
+    public LastMsgInfo lastMsgInfo;
 
     public TimelineDownloader(MyAccount ma_in, Context context, TimelineTypeEnum timelineType) {
+        this(ma_in, context, timelineType, 0);
+    }
+    
+    public TimelineDownloader(MyAccount ma_in, Context context, TimelineTypeEnum timelineType, long userId) {
         mContext = context;
         mContentResolver = mContext.getContentResolver();
         ma = ma_in;
         // mApi = ma.getApi();
         mTimelineType = timelineType;
+        mUserId = userId;
         
         switch (mTimelineType) {
             case HOME:
@@ -100,9 +111,16 @@ public class TimelineDownloader {
             case DIRECT:
             case ALL:
                 break;
+            case USER:
+                if (mUserId == 0) {
+                    Log.e(TAG, "UserId is required for the Timeline type: " + mTimelineType.save());
+                }
+                break;
             default:
                 Log.e(TAG, "Unknown Timeline type: " + mTimelineType);
         }
+        
+        lastMsgInfo = new LastMsgInfo();
     }
     
     /**
@@ -122,17 +140,22 @@ public class TimelineDownloader {
             return ok;
         }
 
-        long lastMsgId = ma.getMyAccountPreferences().getLong(MyAccount.KEY_LAST_TIMELINE_ID + mTimelineType.save(), 0);
-        long lastDate = MyProvider.msgSentDate(lastMsgId);
-        if (lastDate == 0) {
-            MyLog.d(TAG, "There is no message with " + MyDatabase.Msg._ID + "=" + lastMsgId + " yet"); 
-            lastMsgId = 0;
+        String userOid =  "";
+        if (mUserId != 0) {
+            userOid =  MyProvider.idToOid(MyDatabase.User.CONTENT_URI, mUserId);
         }
         
+        long lastMsgId = lastMsgInfo.getLastMsgId();
+        long lastMsgDate = lastMsgInfo.getLastMsgDate();
+        
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-            String strLog = "Loading timeline " + mTimelineType.save() + " for " + ma.getUsername();
-            if (lastDate > 0) {
-                strLog += " since " + new Date(lastDate).toGMTString();
+            String strLog = "Loading timeline " + mTimelineType.save() + "; account=" + ma.getUsername();
+            if (mUserId != 0) {
+                strLog += "; user=" + MyProvider.userIdToName(mUserId);
+            }
+            if (lastMsgDate > 0) {
+                strLog += "; since=" + (new Date(lastMsgDate).toString())
+                        + "; last time downloaded at " +  (new Date(lastMsgInfo.getTimelineDate()).toString());
             }
             MyLog.d(TAG, strLog);
         }
@@ -150,6 +173,9 @@ public class TimelineDownloader {
                     break;
                 case DIRECT:
                     jArr = ma.getConnection().getDirectMessages(lastOid, limit);
+                    break;
+                case USER:
+                    jArr = ma.getConnection().getUserTimeline(userOid, lastOid, limit);
                     break;
                 default:
                     Log.e(TAG, "Got unhandled Timeline type: " + mTimelineType.save());
@@ -173,10 +199,10 @@ public class TimelineDownloader {
                                 created = Date.parse(createdAt);
                             }
                         }
-                        long idInserted = insertFromJSONObject(msg);
+                        long idInserted = insertMsgFromJSONObject(msg);
                         // Check if this message is newer than any we got earlier
-                        if (created > lastDate && idInserted > lastMsgId) {
-                            lastDate = created;
+                        if (created > lastMsgDate && idInserted > lastMsgId) {
+                            lastMsgDate = created;
                             lastMsgId = idInserted;
                         }
                     }
@@ -189,12 +215,11 @@ public class TimelineDownloader {
                 // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
                 mContentResolver.notifyChange(MyProvider.TIMELINE_URI, null);
             }
-            ma.getMyAccountPreferences().edit().putLong(MyAccount.KEY_LAST_TIMELINE_ID + mTimelineType.save(),
-                    lastMsgId).commit();
+            lastMsgInfo.saveLastMsgInfo(lastMsgId, lastMsgDate);
         }
         return ok;
     }
-
+    
     /**
      * Insert a Timeline row from a JSONObject
      * or update existing one.
@@ -204,7 +229,7 @@ public class TimelineDownloader {
      * @throws JSONException
      * @throws SQLiteConstraintException
      */
-    public long insertFromJSONObject(JSONObject msg) throws JSONException, SQLiteConstraintException {
+    public long insertMsgFromJSONObject(JSONObject msg) throws JSONException, SQLiteConstraintException {
         Long rowId = 0L;
         /**
          * Count this message. 
@@ -386,7 +411,7 @@ public class TimelineDownloader {
                                     inReplyToMessage.put(senderObjectName, inReplyToUser);
                                     // Type of the timeline is ALL meaning that message does not belong to this timeline
                                     TimelineDownloader td = new TimelineDownloader(ma, mContext, MyDatabase.TimelineTypeEnum.ALL);
-                                    inReplyToMessageId = td.insertFromJSONObject(inReplyToMessage);
+                                    inReplyToMessageId = td.insertMsgFromJSONObject(inReplyToMessage);
                                 }
                                 values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
                             }
@@ -425,7 +450,7 @@ public class TimelineDownloader {
                 
                 if (rowId == 0) {
                     // There was no such row so add new one
-                    msgUri = mContentResolver.insert(MyProvider.getTimelineUri(ma.getUserId()), values);
+                    msgUri = mContentResolver.insert(MyProvider.getTimelineUri(ma.getUserId(), MyDatabase.TimelineTypeEnum.HOME, false), values);
                     rowId = MyProvider.uriToMessageId(msgUri);
                 } else {
                   mContentResolver.update(msgUri, values, null, null);
@@ -453,7 +478,7 @@ public class TimelineDownloader {
         String userName = "";
         if (user.has("screen_name")) {
             userName = user.getString("screen_name");
-            if (userName.compareTo("null") == 0) {
+            if (MyPreferences.isEmpty(userName)) {
                 userName = "";
             }
         }
@@ -540,7 +565,7 @@ public class TimelineDownloader {
     
     
     /**
-     * Insert a row from a JSONObject. Takes an optional parameter to notify
+     * Insert one message from a JSONObject. Takes an optional parameter to notify
      * listeners of the change.
      * 
      * @param jo
@@ -549,9 +574,9 @@ public class TimelineDownloader {
      * @throws JSONException
      * @throws SQLiteConstraintException
      */
-    public long insertFromJSONObject(JSONObject jo, boolean notify) throws JSONException,
+    public long insertMsgFromJSONObject(JSONObject jo, boolean notify) throws JSONException,
             SQLiteConstraintException {
-        long rowId = insertFromJSONObject(jo);
+        long rowId = insertMsgFromJSONObject(jo);
         if (notify) {
             mContentResolver.notifyChange(MyProvider.TIMELINE_URI, null);
         }
@@ -677,5 +702,119 @@ public class TimelineDownloader {
         // TODO: Maybe we should use Timeline Uri...
         return mContentResolver.delete(MyDatabase.Msg.CONTENT_URI, MyDatabase.Msg._ID + " = " + statusId,
                 null);
+    }
+    
+    /**
+     * Retrieve and save information about the last downloaded message from this timeline
+     */
+    public class LastMsgInfo {
+        boolean mLastMsgInfoRetrieved = false;
+        /**
+         * 0 - none were downloaded
+         */
+        long mLastMsgId = 0;
+        /**
+         * {@link MyDatabase.Msg#SENT_DATE} of the {@link #mLastMsgId}
+         */
+        long mLastMsgDate = 0;
+        /**
+         * Last date when this timeline was successfully downloaded
+         */
+        long mTimelineDate = 0;
+        
+        public LastMsgInfo() {
+            loadLastMsgInfo();
+        }
+
+        /**
+         * Retrieve information about the last downloaded message from this timeline
+         */
+        private void loadLastMsgInfo() {
+            if (!mLastMsgInfoRetrieved) {
+                long userId = mUserId;
+                if (mTimelineType != TimelineTypeEnum.USER) {
+                    userId = ma.getUserId();
+                }
+                mTimelineDate = MyProvider.userIdToLongColumnValue(mTimelineType.columnNameDate(), userId);
+                mLastMsgId = MyProvider.userIdToLongColumnValue(mTimelineType.columnNameMsgId(), userId);
+                mLastMsgDate = MyProvider.msgSentDate(mLastMsgId);
+                if (mLastMsgId > 0 && mLastMsgDate == 0) {
+                    MyLog.d(TAG, "There is no message with " + MyDatabase.Msg._ID + "=" + mLastMsgId + " yet"); 
+                    mLastMsgId = 0;
+                }
+                
+            }
+        }
+        
+        /**
+         * @return Id of the last downloaded message from this timeline
+         */
+        public long getLastMsgId() {
+            return mLastMsgId;
+        }
+        /**
+         * @return Date of the last downloaded message 
+         */
+        public long getLastMsgDate() {
+            return mLastMsgDate;
+        }
+
+        /**
+         * @return Last date when this timeline was successfully downloaded
+         */
+        public long getTimelineDate() {
+            return mTimelineDate;
+        }
+
+        public void saveLastMsgInfo(long lastMsgId, long lastMsgDate) {
+            mLastMsgId = lastMsgId;
+            mLastMsgDate = lastMsgDate;
+            mTimelineDate = System.currentTimeMillis();
+            long userId = mUserId;
+            if (mTimelineType != TimelineTypeEnum.USER) {
+                userId = ma.getUserId();
+            }
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                MyLog.v(TAG, "Timeline " + mTimelineType.save() 
+                        + " for the user=" + MyProvider.userIdToName(userId) 
+                        + " downloaded at " + (new Date(getTimelineDate()).toString()));
+            }
+
+            try {
+                ContentValues values = new ContentValues();
+                values.put(mTimelineType.columnNameDate(), mTimelineDate );
+                values.put(mTimelineType.columnNameMsgId(), mLastMsgId );
+                Uri userUri = ContentUris.withAppendedId(MyDatabase.User.CONTENT_URI, userId);
+                mContentResolver.update(userUri, values, null, null);
+            } catch (Exception e) {
+                Log.e(TAG, "saveLastMsgInfo: " + e.toString());
+            }
+        
+        }
+        
+        /**
+         * @return true if it's time to auto update this timeline
+         */
+        public boolean itsTimeToAutoUpdate() {
+            boolean blnOut = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_AUTOMATIC_UPDATES, false);
+            if (!blnOut) {
+                // Automatic updates are disabled
+                return false;
+            }
+            long intervalMs = Integer.parseInt(MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_FETCH_FREQUENCY, "180")) * MyService.MILLISECONDS;
+            long passedMs = System.currentTimeMillis() - getTimelineDate(); 
+            blnOut = (passedMs > intervalMs);
+            
+            if (blnOut && MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                long userId = mUserId;
+                if (mTimelineType != TimelineTypeEnum.USER) {
+                    userId = ma.getUserId();
+                }
+                MyLog.v(TAG, "It's time to auto update " + mTimelineType.save() 
+                        + " for the user=" + MyProvider.userIdToName(userId)
+                        + ". Minutes passed=" + passedMs/1000/60);
+            }
+            return blnOut;
+        }
     }
 }
