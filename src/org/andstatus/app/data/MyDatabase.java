@@ -185,6 +185,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String REBLOGGED = "retweeted";
         /**
+         * ID in the originating system of the "reblog" message
+         * null for the message that was not reblogged
+         * We use THIS id when we need to "undo reblog"
+         */
+        public static final String REBLOG_OID = "reblog_oid";
+        /**
          * User is mentioned in this message
          */
         public static final String MENTIONED = "mentioned";
@@ -310,6 +316,22 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 	
     private static final String TAG = MyDatabase.class.getSimpleName();
 
+    /**
+     * ids in originating system
+     */
+    public enum OidEnum {
+        /** oid of this message */
+        MSG_OID,
+        /** If the message was reblogged by the User,
+         * then oid of the "reblog" message,  
+         * else oid of the reblogged message (the first message which was reblogged)
+         */
+        REBLOG_OID,
+        /** oid of this User */
+        USER_OID
+    }
+    
+    
     /**
      * These values help set timeline filters closer to the database (in ContentProvider...)
      */
@@ -447,6 +469,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + MsgOfUser.SUBSCRIBED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.FAVORITED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.REBLOGGED + " BOOLEAN DEFAULT 0 NOT NULL," 
+                + MsgOfUser.REBLOG_OID + " STRING," 
                 + MsgOfUser.MENTIONED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.REPLIED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.DIRECTED + " BOOLEAN DEFAULT 0 NOT NULL," 
@@ -607,6 +630,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     private int convert9to10(SQLiteDatabase db, int oldVersion) {
         final int versionTo = 10;
         boolean ok = false;
+        String sql = "";
         try {
             Log.i(TAG, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
             String[] columns = {"home_timeline_msg_id", "home_timeline_date", 
@@ -615,8 +639,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                     "mentions_timeline_msg_id", "mentions_timeline_date", 
                     "user_timeline_msg_id", "user_timeline_date"};
             for ( String column: columns ) {
-                db.execSQL("ALTER TABLE user ADD COLUMN " + column + " INTEGER DEFAULT 0 NOT NULL");
+                sql = "ALTER TABLE user ADD COLUMN " + column + " INTEGER DEFAULT 0 NOT NULL";
+                db.execSQL(sql);
             }
+            
+            sql = "ALTER TABLE msgofuser ADD COLUMN reblog_oid STRING";
+            db.execSQL(sql);
             ok = true;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
@@ -624,7 +652,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         if (ok) {
             Log.i(TAG, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
         } else {
-            Log.e(TAG, "Database upgrading step failed to upgrade database from " + oldVersion + " to version " + versionTo);
+            Log.e(TAG, "Database upgrading step failed to upgrade database from " + oldVersion 
+                    + " to version " + versionTo
+                    + " SQL='" + sql +"'");
         }
         return (ok ? versionTo : oldVersion) ;
     }

@@ -22,7 +22,9 @@ import java.util.Date;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
@@ -142,7 +144,7 @@ public class TimelineDownloader {
 
         String userOid =  "";
         if (mUserId != 0) {
-            userOid =  MyProvider.idToOid(MyDatabase.User.CONTENT_URI, mUserId);
+            userOid =  MyProvider.idToOid(OidEnum.USER_OID, mUserId, 0);
         }
         
         long lastMsgId = lastMsgInfo.getLastMsgId();
@@ -162,7 +164,7 @@ public class TimelineDownloader {
         
         int limit = 200;
         if ((ma.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) && MyPreferences.isDataAvailable()) {
-            String lastOid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, lastMsgId);
+            String lastOid = MyProvider.idToOid(OidEnum.MSG_OID, lastMsgId, 0);
             JSONArray jArr = null;
             switch (mTimelineType) {
                 case HOME:
@@ -225,26 +227,26 @@ public class TimelineDownloader {
      * or update existing one.
      * 
      * @param msg - The row to insert
-     * @return id of this row in the database
+     * @return id of this Message in our system (row in the database)
      * @throws JSONException
      * @throws SQLiteConstraintException
      */
     public long insertMsgFromJSONObject(JSONObject msg) throws JSONException, SQLiteConstraintException {
+        /**
+         * Id of the message in our system, see {@link MyDatabase.Msg#MSG_ID}
+         */
         Long rowId = 0L;
-        /**
-         * Count this message. 
-         */
-        boolean countIt = false;
-        /**
-         * Don't insert this message
-         */
-        boolean skipIt = false;
         try {
+            /**
+             * Don't insert this message
+             */
+            boolean skipIt = false;
             ContentValues values = new ContentValues();
 
-            // We use Created date from this message even for reblogs in order to
+            // We use Created date from this message as "Sent date" even for reblogs in order to
             // get natural order of the tweets.
             // Otherwise reblogged message may appear as old
+            long sentDate = 0;
             if (msg.has("created_at")) {
                 Long created = 0L;
                 String createdAt = msg.getString("created_at");
@@ -252,7 +254,7 @@ public class TimelineDownloader {
                     created = Date.parse(createdAt);
                 }
                 if (created > 0) {
-                    values.put(MyDatabase.Msg.SENT_DATE, created);
+                    sentDate = created;
                     values.put(MyDatabase.Msg.CREATED_DATE, created);
                 }
             }
@@ -270,11 +272,18 @@ public class TimelineDownloader {
             }
             sender = msg.getJSONObject(senderObjectName);
             senderId = insertUserFromJSONObject(sender);
-            values.put(MyDatabase.Msg.SENDER_ID, senderId);
+
+            String rowOid = "";
+            if (msg.has("id_str")) {
+                rowOid = msg.getString("id_str");
+            } else if (msg.has("id")) {
+                // This is for identi.ca
+                rowOid = msg.getString("id");
+            } 
             
             // Author
             long authorId = senderId;
-            // Is this reblog
+            // Is this a reblog?
             if (msg.has("retweeted_status")) {
                 JSONObject rebloggedMessage = msg.getJSONObject("retweeted_status");
                 // Author of that message
@@ -283,14 +292,28 @@ public class TimelineDownloader {
                 authorId = insertUserFromJSONObject(author);
 
                 if (ma.getUserId() == senderId) {
-                    // Msg was reblogged by current User (he is Sender)
+                    // Msg was reblogged by current User (he is the Sender)
                     values.put(MyDatabase.MsgOfUser.REBLOGGED, 1);
+
+                    // Remember original id of the reblog message
+                    // We will need it to "undo reblog" for our reblog
+                    if (!MyPreferences.isEmpty(rowOid)) {
+                        values.put(MyDatabase.MsgOfUser.REBLOG_OID, rowOid);
+                    }
                 }
-                
+
                 // And replace reblog with original message!
                 // So we won't have lots of reblogs but rather one original message
                 msg = rebloggedMessage;
 
+                // Try to retrieve the message id again
+                if (msg.has("id_str")) {
+                    rowOid = msg.getString("id_str");
+                } else if (msg.has("id")) {
+                    // This is for identi.ca
+                    rowOid = msg.getString("id");
+                } 
+                
                 // Created date may be different for reblogs:
                 if (msg.has("created_at")) {
                     Long created = 0L;
@@ -305,36 +328,62 @@ public class TimelineDownloader {
             }
             values.put(MyDatabase.Msg.AUTHOR_ID, authorId);
 
-            String rowOid = "";
-            if (msg.has("id_str")) {
-                rowOid = msg.getString("id_str");
-            } else if (msg.has("id")) {
-                // This is for identi.ca
-                rowOid = msg.getString("id");
-            } 
-
             if (MyPreferences.isEmpty(rowOid)) {
                 Log.w(TAG, "insertFromJSONObject - no message id");
                 skipIt = true;
             }
             if (!skipIt) {
+                /**
+                 * Is the row first time retrieved?
+                 * Actually we count a message as "New" also in a case
+                 *  there was only "a stub" stored (without a sent date and a body)
+                 */
+                boolean isNew = true;
+                /**
+                 * Is the message newer than stored in the database (e.g. the newer reblog of existing message)
+                 */
+                boolean isNewer = true;
+                /**
+                 * Count this message. 
+                 */
+                boolean countIt = false;
+
                 // Lookup the System's (AndStatus) id from the Originated system's id
                 rowId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), rowOid);
                 // Construct the Uri to the Msg
                 Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
+
+                long sentDate_stored = 0;
+                if (rowId != 0) {
+                    sentDate_stored = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, rowId);
+                    isNew = (sentDate_stored == 0);
+                }
+                if (sentDate > sentDate_stored) {
+                    isNewer = true;
+                    // This message is newer than already stored in our database, so count it!
+                    countIt = true;
+                }
                 
                 String body = "";
                 if (msg.has("text")) {
                     body = Html.fromHtml(msg.getString("text")).toString();
                 }
-                values.put(MyDatabase.Msg.MSG_OID, rowOid);
-                values.put(MyDatabase.Msg.ORIGIN_ID, ma.getOriginId());
                 values.put(MsgOfUser.TIMELINE_TYPE, mTimelineType.save());
-                values.put(MyDatabase.Msg.BODY, body);
 
-                // As of 2012-07-07 we count only messages that were not in a database yet.
-                // Don't count Messages without body - this may be related messages which were not retrieved yet.
-                countIt = (!skipIt) && (rowId == 0) && (body.length() > 0);
+                if (isNew) {
+                    // Store the Sender only for the first retrieved message.
+                    // Don't overwrite the original sender (especially the first reblogger) 
+                    values.put(MyDatabase.Msg.SENDER_ID, senderId);
+
+                    values.put(MyDatabase.Msg.MSG_OID, rowOid);
+                    values.put(MyDatabase.Msg.ORIGIN_ID, ma.getOriginId());
+                    values.put(MyDatabase.Msg.BODY, body);
+                }
+                if (isNewer) {
+                    // Remember the latest sent date in order to see the reblogged message 
+                    // at the top of the sorted list 
+                    values.put(MyDatabase.Msg.SENT_DATE, sentDate);
+                }
                 
                 // If the Msg is a Reply to other message
                 String inReplyToUserOid = "";

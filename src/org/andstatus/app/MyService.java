@@ -26,6 +26,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyPreferences;
@@ -259,6 +260,7 @@ public class MyService extends Service {
         GET_STATUS("get-status"),
         
         REBLOG("reblog"),
+        DESTROY_REBLOG("destroy-reblog"),
 
         RATE_LIMIT_STATUS("rate-limit-status"),
 
@@ -1319,7 +1321,7 @@ public class MyService extends Service {
         private boolean createOrDestroyFavorite(String accountNameIn, boolean create, long msgId) {
             boolean ok = false;
             MyAccount ma = MyAccount.getMyAccount(accountNameIn);
-            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, msgId);
+            String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
             JSONObject result = new JSONObject();
             if (oid.length() > 0) {
                 try {
@@ -1419,7 +1421,7 @@ public class MyService extends Service {
         private boolean destroyStatus(String accountNameIn, long msgId) {
             boolean ok = false;
             MyAccount ma = MyAccount.getMyAccount(accountNameIn);
-            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, msgId);
+            String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
             JSONObject result = new JSONObject();
             try {
                 result = ma.getConnection().destroyStatus(oid);
@@ -1471,7 +1473,7 @@ public class MyService extends Service {
         private boolean getStatus(String accountNameIn, long msgId) {
             boolean ok = false;
             MyAccount ma = MyAccount.getMyAccount(accountNameIn);
-            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, msgId);
+            String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
             JSONObject result = new JSONObject();
             try {
                 result = ma.getConnection().getStatus(oid);
@@ -1519,11 +1521,11 @@ public class MyService extends Service {
             JSONObject result = new JSONObject();
             try {
                 if (recipientId == 0) {
-                    String replyToOid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, replyToId);
+                    String replyToOid = MyProvider.idToOid(OidEnum.MSG_OID, replyToId, 0);
                     result = ma.getConnection()
                             .updateStatus(status.trim(), replyToOid);
                 } else {
-                    String recipientOid = MyProvider.idToOid(MyDatabase.User.CONTENT_URI, recipientId);
+                    String recipientOid = MyProvider.idToOid(OidEnum.MSG_OID, recipientId, 0);
                     // Currently we don't use Screen Name, I guess id is enough.
                     result = ma.getConnection()
                             .postDirectMessage(recipientOid, "", status);
@@ -1555,7 +1557,7 @@ public class MyService extends Service {
 
         private boolean reblog(String accountNameIn, long rebloggedId) {
             MyAccount ma = MyAccount.getMyAccount(accountNameIn);
-            String oid = MyProvider.idToOid(MyDatabase.Msg.CONTENT_URI, rebloggedId);
+            String oid = MyProvider.idToOid(OidEnum.MSG_OID, rebloggedId, 0);
             boolean ok = false;
             JSONObject result = new JSONObject();
             try {

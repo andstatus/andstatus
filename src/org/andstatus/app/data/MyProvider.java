@@ -37,6 +37,7 @@ import android.util.Log;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
@@ -325,25 +326,27 @@ public class MyProvider extends ContentProvider {
                         msgOfUserValues.put(MsgOfUser.MSG_ID, values.getAsString(Msg._ID));
                     }
                     msgOfUserValues.put(MsgOfUser.USER_ID, userId);
-                    moveKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
-                    moveKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
-                    moveKey(MsgOfUser.REBLOGGED, values, msgOfUserValues);
-                    moveKey(MsgOfUser.MENTIONED, values, msgOfUserValues);
-                    moveKey(MsgOfUser.REPLIED, values, msgOfUserValues);
-                    moveKey(MsgOfUser.DIRECTED, values, msgOfUserValues);
+                    moveBooleanKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
+                    moveBooleanKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
+                    moveBooleanKey(MsgOfUser.REBLOGGED, values, msgOfUserValues);
+                    // The value is String!
+                    moveStringKey(MsgOfUser.REBLOG_OID, values, msgOfUserValues);
+                    moveBooleanKey(MsgOfUser.MENTIONED, values, msgOfUserValues);
+                    moveBooleanKey(MsgOfUser.REPLIED, values, msgOfUserValues);
+                    moveBooleanKey(MsgOfUser.DIRECTED, values, msgOfUserValues);
             }
         }
         return msgOfUserValues;
     }
     
     /**
-     * Move integer value of the key from valuesIn to valuesOut and remove it from valuesIn
+     * Move boolean value of the key from valuesIn to valuesOut and remove it from valuesIn
      * @param key
      * @param valuesIn
      * @param valuesOut  may be null
      * @return 1 for true, 0 for false and 2 for "not present" 
      */
-    private int moveKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
+    private int moveBooleanKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
         int ret = 2;
         if (valuesIn != null) {
             if (valuesIn.containsKey(key) ) {
@@ -357,6 +360,28 @@ public class MyProvider extends ContentProvider {
         return ret;
     }
 
+    /**
+     * Move String value of the key from valuesIn to valuesOut and remove it from valuesIn
+     * @param key
+     * @param valuesIn
+     * @param valuesOut  may be null
+     * @return 1 for not empty, 0 for empty and 2 for "not present" 
+     */
+    private int moveStringKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
+        int ret = 2;
+        if (valuesIn != null) {
+            if (valuesIn.containsKey(key) ) {
+                String value =  valuesIn.getAsString(key);
+                ret = MyPreferences.isEmpty(value) ? 0 : 1;
+                valuesIn.remove(key);
+                if (valuesOut != null) {
+                    valuesOut.put(key, value);
+                }
+            }
+        }
+        return ret;
+    }
+    
     /**
      * Get a cursor to the database
      * 
@@ -672,6 +697,7 @@ public class MyProvider extends ContentProvider {
         msgProjectionMap.put(MsgOfUser.USER_ID, MsgOfUser.USER_ID);
         msgProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
         msgProjectionMap.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
+        msgProjectionMap.put(MsgOfUser.REBLOG_OID, MsgOfUser.REBLOG_OID);
         msgProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
         msgProjectionMap.put(Msg.SENT_DATE, Msg.SENT_DATE);
         msgProjectionMap.put(Msg.INS_DATE, Msg.INS_DATE);
@@ -752,39 +778,53 @@ public class MyProvider extends ContentProvider {
     /**
      * Lookup Originated system's id from the System's (AndStatus) id
      * 
-     * @param uri - URI of the database table
-     * @param systemId - see {@link MyDatabase.Msg#_ID}
+     * @param oe what oid we need
+     * @param msgId - see {@link MyDatabase.Msg#_ID}
+     * @param userId Is needed to find reblog by this user
      * @return - oid in Originated system (i.e. in the table, e.g.
      *         {@link MyDatabase.Msg#MSG_OID} empty string in case of an error
      */
-    public static String idToOid(Uri uri, long systemId) {
+    public static String idToOid(OidEnum oe, long msgId, long userId) {
         String oid = "";
         SQLiteStatement prog = null;
         String sql = "";
 
-        if (systemId > 0) {
+        if (msgId > 0) {
             try {
-                int matchedCode = sUriMatcher.match(uri);
-                switch (matchedCode) {
-                    case MSG:
-                    case TIMELINE:
+                switch (oe) {
+                    case MSG_OID:
                         sql = "SELECT " + MyDatabase.Msg.MSG_OID + " FROM "
-                                + MyDatabase.MSG_TABLE_NAME + " WHERE " + Msg._ID + "=" + systemId;
+                                + MyDatabase.MSG_TABLE_NAME + " WHERE " + Msg._ID + "=" + msgId;
                         break;
 
-                    case USERS:
+                    case USER_OID:
                         sql = "SELECT " + MyDatabase.User.USER_OID + " FROM "
                                 + MyDatabase.USER_TABLE_NAME + " WHERE " + User._ID + "="
-                                + systemId;
+                                + msgId;
+                        break;
+
+                    case REBLOG_OID:
+                        if (userId == 0) {
+                            Log.e(TAG, "idToOid: userId was not defined");
+                        }
+                        sql = "SELECT " + MyDatabase.MsgOfUser.REBLOG_OID + " FROM "
+                                + MyDatabase.MSGOFUSER_TABLE_NAME + " WHERE " 
+                                + MsgOfUser.MSG_ID + "=" + msgId + " AND "
+                                + MsgOfUser.USER_ID + "=" + userId;
                         break;
 
                     default:
-                        throw new IllegalArgumentException("idToOid; Unknown URI \"" + uri
-                                + "\"; matchedCode=" + matchedCode);
+                        throw new IllegalArgumentException("idToOid; Unknown parameter: " + oe);
                 }
                 SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 oid = prog.simpleQueryForString();
+                
+                if (TextUtils.isEmpty(oid) && oe == OidEnum.REBLOG_OID) {
+                    // This not reblogged message
+                    oid = idToOid(OidEnum.MSG_OID, msgId, 0);
+                }
+                
             } catch (SQLiteDoneException ed) {
                 oid = "";
             } catch (Exception e) {
@@ -792,7 +832,7 @@ public class MyProvider extends ContentProvider {
                 return "";
             }
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                MyLog.v(TAG, "idToOid: " + systemId + " -> " + oid);
+                MyLog.v(TAG, "idToOid: " + oe + " + " + msgId + " -> " + oid);
             }
         }
         return oid;

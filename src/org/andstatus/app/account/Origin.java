@@ -274,6 +274,9 @@ public class Origin {
                 case R.string.button_create_message:
                     resId_out = R.string.button_create_message_twitter;
                     break;
+                case R.string.menu_item_destroy_reblog:
+                    resId_out = R.string.menu_item_destroy_reblog_twitter;
+                    break;
                 case R.string.menu_item_reblog:
                     resId_out = R.string.menu_item_reblog_twitter;
                     break;

@@ -110,7 +110,9 @@
     <string name="message_is_too_long">Сообщение - слишком длинное.</string>
     <string name="menu_item_block">Блокировать</string>
 	<string name="menu_item_destroy_favorite">Удалить из избранного</string>
-	<string name="menu_item_destroy_status">Удалить сообщение</string>
+    <string name="menu_item_destroy_reblog">Удалить перессказ</string>
+    <string name="menu_item_destroy_reblog_twitter">Удалить перессказ</string>
+    <string name="menu_item_destroy_status">Удалить сообщение</string>
 	<string name="menu_item_direct_message">Личное сообщение</string>
 	<string name="menu_item_favorite">Добавить в избранное</string>
 	<string name="menu_item_follow">Следить</string>

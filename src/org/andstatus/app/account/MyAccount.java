@@ -536,28 +536,30 @@ public class MyAccount implements Parcelable {
     
     /**
      * For any action with the message we should choose an Account 
-     * from the same originating (source) System
-     * @param systemId  Message ID, 0 for the message creation
-     * @param userId User ID in the timeline, 0 if the message doesn't belong to any timeline
+     * from the same originating (source) System. Start from the account (if any), linked to this message
+     * @param msgId  Message ID, 0 for the message creation
+     * @param userId The message is in his timeline. 0 if the message doesn't belong to any timeline
+     * @param myAccountUserId Preferred account if any
      * @return null if not found
      */
-    public static MyAccount getMyAccountForTheMessage(long systemId, long userId)
+    public static MyAccount getMyAccountLinkedToThisMessage(long msgId, long userId, long myAccountUserId)
     {
         MyAccount ma = null;
-        if (systemId == 0) {
-            ma = getCurrentMyAccount();
+        if (msgId == 0) {
+            ma = getMyAccount(myAccountUserId);
         } else {
             ma = getMyAccount(userId);
+            // This may be e.g. when the User is not an account.
             if (ma == null) {
-                ma = getCurrentMyAccount();
+                ma = getMyAccount(myAccountUserId);
             }
-            long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, systemId);
-            if ( originId != ma.getOriginId()) {
+            long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, msgId);
+            if (ma == null || originId != ma.getOriginId()) {
                ma = findFirstMyAccountByOriginId(originId); 
             }
         }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "getMyAccountForTheMessage systemId=" + systemId +"; userId=" + userId 
+            Log.v(TAG, "getMyAccountForTheMessage systemId=" + msgId +"; userId=" + userId 
                     + "; account=" + (ma==null ? "null" : ma.getAccountGuid()));
         }
         return ma;

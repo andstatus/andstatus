@@ -37,7 +37,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
     <release android:versionName="1.13.0" android:versionCode="71"
-        versionDate="2013-03-25">
+        versionDate="2013-03-28">
         <changes><change>The new "User" timeline added. Normally when you select "User" from the list
              of the timelines,  timeline of the current Account is shown.
              But when you select the "Messages by this User" menu item, a "User" timeline 
@@ -49,8 +49,15 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             </change>
             <change>"Tweet/Blog" button can be accessed using keys. 
                 <a href="https://github.com/andstatus/andstatus/issues/31" >Issue #31</a> </change>
+            <change>In the combined timeline, actions on a selected message may be done
+                on behalf of the selected account. I.e. not only on behalf of the account 
+                whose timeline the message belongs to. This allows subscribing to the message
+                in one accound and replying to it from another  
+                (e.g. from account which is more relevant to the topic of current message).</change>
+             <change>TODO: "Undo reblog" implemented. Each reblog (retweet) of the same message (tweet) is shown
+                 as a separate item in the timeline now. This allows to undo reblog from specific account.
+                 Information about original reblogger is stored also (in case we received the message alreagy as a reblog).</change>
         </changes>
-        <change>Fixed: Mentions notifications missed in the Widget.</change>
     </release>
     <release android:versionName="1.12.0" android:versionCode="70"
         versionDate="2013-02-17">

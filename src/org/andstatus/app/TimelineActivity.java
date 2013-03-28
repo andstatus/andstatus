@@ -257,7 +257,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * Id of the Message that was selected (clicked, or whose context menu item
      * was selected) TODO: clicked, restore position...
      */
-    protected long mCurrentId = 0;
+    protected long mCurrentMsgId = 0;
+    /**
+     *  Corresponding account information ( "Reply As..." ... ) 
+     *  oh whose behalf we are going to execute an action on this message 
+     */
+    private long mMyAccountUserIdForCurrentMessage = 0;
 
     /** 
      * Controls of the TweetEditor
@@ -371,7 +376,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     } else {
                         Toast.makeText(TimelineActivity.this, R.string.status_destroyed,
                                 Toast.LENGTH_SHORT).show();
-                        mCurrentId = 0;
+                        mCurrentMsgId = 0;
                     }
                     break;
 
@@ -386,7 +391,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     } else {
                         Toast.makeText(TimelineActivity.this, R.string.favorite_created,
                                 Toast.LENGTH_SHORT).show();
-                        mCurrentId = 0;
+                        mCurrentMsgId = 0;
                     }
                     break;
 
@@ -401,7 +406,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     } else {
                         Toast.makeText(TimelineActivity.this, R.string.favorite_destroyed,
                                 Toast.LENGTH_SHORT).show();
-                        mCurrentId = 0;
+                        mCurrentMsgId = 0;
                     }
                     break;
 
@@ -533,7 +538,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     setIsLoading(savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING));
                 }
                 if (savedInstanceState.containsKey(MyService.EXTRA_TWEETID)) {
-                    mCurrentId = savedInstanceState.getLong(MyService.EXTRA_TWEETID);
+                    mCurrentMsgId = savedInstanceState.getLong(MyService.EXTRA_TWEETID);
                 }
                 if (savedInstanceState.containsKey(MyService.EXTRA_TIMELINE_IS_COMBINED)) {
                     mIsTimelineCombined = savedInstanceState.getBoolean(MyService.EXTRA_TIMELINE_IS_COMBINED);
@@ -1122,6 +1127,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     /**
      * @param position Of current item in the {@link #mCursor}
+     * @return id of the User linked to this message. This link reflects the User's timeline 
+     * or an Account which was used to retrieved the message
      */
     private long getUserIdFromCursor(int position) {
         long userId = 0;
@@ -1572,7 +1579,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         mTweetEditor.saveState(outState);
         outState.putString(MyService.EXTRA_TIMELINE_TYPE, mTimelineType.save());
-        outState.putLong(MyService.EXTRA_TWEETID, mCurrentId);
+        outState.putLong(MyService.EXTRA_TWEETID, mCurrentMsgId);
         outState.putBoolean(MyService.EXTRA_TIMELINE_IS_COMBINED, mIsTimelineCombined);
         outState.putString(SearchManager.QUERY, mQueryString);
         outState.putLong(MyService.EXTRA_SELECTEDUSERID, mSelectedUserId);
@@ -1621,14 +1628,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
 
         int menuItemId = 0;
-        mCurrentId = info.id;
-        MyAccount ma = MyAccount.getMyAccountForTheMessage(mCurrentId, getUserIdFromCursor(info.position));
+        mCurrentMsgId = info.id;
+        mMyAccountUserIdForCurrentMessage = 0;
+        MyAccount ma = MyAccount.getMyAccountLinkedToThisMessage(mCurrentMsgId, getUserIdFromCursor(info.position), mCurrentMyAccountUserId);
         if (ma == null) {
             return;
         }
 
         // Get the record for the currently selected item
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mCurrentId);
+        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mCurrentMsgId);
         Cursor c = getContentResolver().query(uri, new String[] {
                 MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID, 
                 MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED,
@@ -1640,6 +1648,23 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 c.moveToFirst();
                 boolean isDirect = !c.isNull(c.getColumnIndex(MyDatabase.Msg.RECIPIENT_ID));
                 long authorId = c.getLong(c.getColumnIndex(MyDatabase.Msg.AUTHOR_ID));
+                boolean favorited = c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED)) == 1;
+                boolean reblogged = c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.REBLOGGED)) == 1;
+                /** This message was sent by current User, hence we may delete it.
+                 */
+                boolean isSender = (ma.getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))
+                     //   && ma.getUserId() == authorId
+                        );
+                
+                /* Let's check if we can use current account instead of linked to this message  */
+                if (!isDirect && !favorited && !reblogged && !isSender && ma.getUserId() != mCurrentMyAccountUserId) {
+                    MyAccount ma2 = MyAccount.getMyAccount(mCurrentMyAccountUserId);
+                    if (ma.getOriginId() == ma2.getOriginId()) {
+                        // Yes, use current Account!
+                        ma = ma2;
+                    }
+                }
+                mMyAccountUserIdForCurrentMessage = ma.getUserId();
                 
                 menu.setHeaderTitle( (mIsTimelineCombined ? ma.getAccountGuid() + ": " : "" )
                          + c.getString(c.getColumnIndex(MyDatabase.Msg.BODY)));
@@ -1660,19 +1685,18 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 // R.string.menu_item_view_profile);
                 
                 if (!isDirect) {
-                    if (c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED)) == 1) {
+                    if (favorited) {
                         menu.add(0, CONTEXT_MENU_ITEM_DESTROY_FAVORITE, menuItemId++,
                                 R.string.menu_item_destroy_favorite);
                     } else {
                         menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, menuItemId++, R.string.menu_item_favorite);
                     }
-                    if (c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.REBLOGGED)) == 1) {
-                        // TODO:
-                        //menu.add(0, CONTEXT_MENU_ITEM_DESTROY_REBLOG, m++,
-                        //        R.string.menu_item_destroy_reblog);
+                    if (reblogged) {
+                        menu.add(0, CONTEXT_MENU_ITEM_DESTROY_REBLOG, menuItemId++,
+                                ma.alternativeTermResourceId(R.string.menu_item_destroy_reblog));
                     } else {
                         // Don't allow a User to reblog himself 
-                        if (ma.getUserId() != c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))) {
+                        if (mMyAccountUserIdForCurrentMessage != c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))) {
                             menu.add(0, CONTEXT_MENU_ITEM_REBLOG, menuItemId++, ma.alternativeTermResourceId(R.string.menu_item_reblog));
                         }
                     }
@@ -1686,14 +1710,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                             MyProvider.userIdToName(authorId)));
                 }
                 
-                if (ma.getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))
-                        && ma.getUserId() == authorId
-                        ) {
+                if (isSender) {
                     // This message is by current User, hence we may delete it.
                     if (isDirect) {
                         // This is a Direct Message
                         // TODO: Delete Direct message
-                    } else {
+                    } else if (!reblogged) {
                         menu.add(0, CONTEXT_MENU_ITEM_DESTROY_STATUS, menuItemId++,
                                 R.string.menu_item_destroy_status);
                     }
@@ -1718,44 +1740,48 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             return false;
         }
 
-        mCurrentId = info.id;
-        MyAccount ma = MyAccount.getMyAccountForTheMessage(mCurrentId, getUserIdFromCursor(info.position));
+        mCurrentMsgId = info.id;
+        MyAccount ma = MyAccount.getMyAccount(mMyAccountUserIdForCurrentMessage);
         if (ma != null) {
             Uri uri;
             String userName;
             Cursor c;
-            long authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentId);
+            long authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
 
             switch (item.getItemId()) {
                 case CONTEXT_MENU_ITEM_REPLY:
-                    mTweetEditor.startEditingMessage("", mCurrentId, 0, ma.getAccountGuid(), mIsTimelineCombined);
+                    mTweetEditor.startEditingMessage("", mCurrentMsgId, 0, ma.getAccountGuid(), mIsTimelineCombined);
                     return true;
 
                 case CONTEXT_MENU_ITEM_DIRECT_MESSAGE:
                     if (authorId != 0) {
-                        mTweetEditor.startEditingMessage("", mCurrentId, authorId, ma.getAccountGuid(), mIsTimelineCombined);
+                        mTweetEditor.startEditingMessage("", mCurrentMsgId, authorId, ma.getAccountGuid(), mIsTimelineCombined);
                         return true;
                     }
                     break;
 
                 case CONTEXT_MENU_ITEM_REBLOG:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.REBLOG, ma.getAccountGuid(), mCurrentId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.REBLOG, ma.getAccountGuid(), mCurrentMsgId));
+                    return true;
+
+                case CONTEXT_MENU_ITEM_DESTROY_REBLOG:
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_REBLOG, ma.getAccountGuid(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_DESTROY_STATUS:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, ma.getAccountGuid(), mCurrentId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, ma.getAccountGuid(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_FAVORITE:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, ma.getAccountGuid(), mCurrentId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, ma.getAccountGuid(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_DESTROY_FAVORITE:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, ma.getAccountGuid(), mCurrentId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, ma.getAccountGuid(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_SHARE:
-                    userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentId);
+                    userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
                     uri = MyProvider.getTimelineMsgUri(ma.getUserId(), info.id);
                     c = getContentResolver().query(uri, new String[] {
                             MyDatabase.Msg.MSG_OID, MyDatabase.Msg.BODY

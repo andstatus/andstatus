@@ -17,7 +17,9 @@
 package org.andstatus.app;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -27,6 +29,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Html;
+import android.text.TextUtils;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
@@ -35,6 +38,7 @@ import android.widget.TextView;
 import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
@@ -54,14 +58,17 @@ public class ConversationActivity extends Activity {
     private static final String[] PROJECTION = new String[] {
             Msg._ID,
             Msg.IN_REPLY_TO_MSG_ID,
+            Msg.AUTHOR_ID,
             User.AUTHOR_NAME,
-            User.SENDER_NAME,
+            Msg.SENDER_ID,
             Msg.BODY,
             Msg.VIA,
             User.IN_REPLY_TO_NAME,
             Msg.IN_REPLY_TO_MSG_ID,
             User.RECIPIENT_NAME,
-            Msg.CREATED_DATE
+            Msg.CREATED_DATE,
+            MsgOfUser.USER_ID,
+            MsgOfUser.REBLOGGED
     };
 
     /**
@@ -114,7 +121,7 @@ public class ConversationActivity extends Activity {
         Uri uri = intent.getData();
 
         mCurrentId = MyProvider.uriToMessageId(uri);
-        ma = MyAccount.getMyAccountForTheMessage(mCurrentId, MyProvider.uriToUserId(uri));
+        ma = MyAccount.getMyAccountLinkedToThisMessage(mCurrentId, MyProvider.uriToUserId(uri), 0);
         if (ma != null) {
             showConversation();
         }
@@ -136,7 +143,14 @@ public class ConversationActivity extends Activity {
             long prevId = 0;
             long createdDate = 0;
             String author = "";
-            String sender = "";
+            /**
+             * Was this messaged reblogged by {@link ConversationActivity#ma}
+             */
+            boolean reblogged = false;
+            /**
+             * Comma separated list of the names of all known rebloggers of the message
+             */
+            String rebloggersString = "";
             String body = "";
             String via = "";
             String replyToName = "";
@@ -181,21 +195,53 @@ public class ConversationActivity extends Activity {
             }
             if (msg != null) {
                 if (msg.moveToFirst()) {
-                    row.prevId = msg.getLong(msg.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
-                    row.createdDate = msg.getLong(msg.getColumnIndex(Msg.CREATED_DATE));
-                    row.author = msg.getString(msg.getColumnIndex(User.AUTHOR_NAME));
-                    row.sender = msg.getString(msg.getColumnIndex(User.SENDER_NAME));
-                    row.body = msg.getString(msg.getColumnIndex(Msg.BODY));
-                    row.via = Html.fromHtml(msg.getString(msg.getColumnIndex(Msg.VIA))).toString();
-                    int colIndex = msg.getColumnIndex(User.IN_REPLY_TO_NAME);
-                    if (colIndex > -1) {
-                        row.replyToName = msg.getString(colIndex);
-                    }
-                    colIndex = msg.getColumnIndex(User.RECIPIENT_NAME);
-                    if (colIndex > -1) {
-                        row.recipientName = msg.getString(colIndex);
-                    }
+                    /**
+                     * IDs of all known senders of this message except for the Author
+                     * These "senders" reblogged the message
+                     */
+                    Set<Long> rebloggers = new HashSet<Long>();
+                    int ind=0;
+                    do {
+                        long senderId = msg.getLong(msg.getColumnIndex(Msg.SENDER_ID));
+                        long authorId = msg.getLong(msg.getColumnIndex(Msg.AUTHOR_ID));
+                        long linkedUserId = msg.getLong(msg.getColumnIndex(MsgOfUser.USER_ID));
 
+                        if (ind == 0) {
+                            // This is the same for all retrieved rows
+                            row.prevId = msg.getLong(msg.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
+                            row.createdDate = msg.getLong(msg.getColumnIndex(Msg.CREATED_DATE));
+                            row.author = msg.getString(msg.getColumnIndex(User.AUTHOR_NAME));
+                            row.body = msg.getString(msg.getColumnIndex(Msg.BODY));
+                            row.via = Html.fromHtml(msg.getString(msg.getColumnIndex(Msg.VIA))).toString();
+                            int colIndex = msg.getColumnIndex(User.IN_REPLY_TO_NAME);
+                            if (colIndex > -1) {
+                                row.replyToName = msg.getString(colIndex);
+                            }
+                            colIndex = msg.getColumnIndex(User.RECIPIENT_NAME);
+                            if (colIndex > -1) {
+                                row.recipientName = msg.getString(colIndex);
+                            }
+                        }
+
+                        if (senderId != authorId) {
+                            rebloggers.add(linkedUserId);
+                        }
+                        if (msg.getInt(msg.getColumnIndex(MsgOfUser.REBLOGGED)) == 1) {
+                            if (linkedUserId != authorId) {
+                                rebloggers.add(linkedUserId);
+                            }
+                        }
+                        
+                        ind++;
+                    } while (msg.moveToNext());
+
+                    row.reblogged = !rebloggers.isEmpty();
+                    for (long rebloggerId : rebloggers) {
+                        if (!TextUtils.isEmpty(row.rebloggersString)) {
+                            row.rebloggersString += ", ";
+                        }
+                        row.rebloggersString += MyProvider.userIdToName(rebloggerId);
+                    }
                     if (rows.contains(row)) {
                         MyLog.v(TAG, "Message " + msgId + " is in the list already");
                     } else {
@@ -286,14 +332,14 @@ public class ConversationActivity extends Activity {
                                 getText(R.string.message_source_in_reply_to).toString(),
                                 row.replyToName);
             }
-            if (!MyPreferences.isEmpty(row.sender)) {
-                if (!row.sender.equals(row.author)) {
+            if (!MyPreferences.isEmpty(row.rebloggersString)) {
+                if (!row.rebloggersString.equals(row.author)) {
                     if (!MyPreferences.isEmpty(row.replyToName)) {
                         messageDetails += ";";
                     }
                     messageDetails += " "
                             + String.format(Locale.getDefault(), getText(ma.alternativeTermResourceId(R.string.reblogged_by))
-                                    .toString(), row.sender);
+                                    .toString(), row.rebloggersString);
                 }
             }
             if (!MyPreferences.isEmpty(row.recipientName)) {

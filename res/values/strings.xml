@@ -109,9 +109,11 @@
 	<string name="message_characters_left">Characters left:</string>
     <string name="message_is_too_long">Message is too long.</string>
     <string name="menu_item_block">Block</string>
-	<string name="menu_item_destroy_favorite">Unfavorite</string>
-	<string name="menu_item_destroy_status">Remove message</string>
-	<string name="menu_item_direct_message">Direct Message</string>
+	<string name="menu_item_destroy_favorite">Undo favorite</string>
+    <string name="menu_item_destroy_reblog">Undo reblog</string>
+    <string name="menu_item_destroy_reblog_twitter">Undo retweet</string>
+    <string name="menu_item_destroy_status">Remove message</string>
+    <string name="menu_item_direct_message">Direct Message</string>
 	<string name="menu_item_favorite">Favorite</string>
 	<string name="menu_item_follow">Follow</string>
     <string name="menu_item_reply">Reply</string>

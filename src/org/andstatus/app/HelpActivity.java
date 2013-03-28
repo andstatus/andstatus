@@ -22,8 +22,6 @@ import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.Xslt;
 
-import java.text.MessageFormat;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
