@@ -287,7 +287,7 @@ public class MyProvider extends ContentProvider {
 
             if (contentUri.compareTo(TIMELINE_URI) == 0) {
                 // The resulted Uri has two parameters...
-                newUri = MyProvider.getTimelineMsgUri(userId, rowId);
+                newUri = MyProvider.getTimelineMsgUri(userId, rowId, true);
             } else {
                 newUri = ContentUris.withAppendedId(contentUri, rowId);
             }
@@ -1047,10 +1047,11 @@ public class MyProvider extends ContentProvider {
     /**
      * @param userId
      * @param msgId
-     * @return Uri for the message in the account's <u>HOME Combined</u> timeline
+     * @param isCombined Combined timeline?
+     * @return Uri for the message in the account's <u>HOME</u> timeline
      */
-    public static Uri getTimelineMsgUri(long userId, long msgId) {
-        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(userId, MyDatabase.TimelineTypeEnum.HOME, true), MyDatabase.MSG_TABLE_NAME), msgId);
+    public static Uri getTimelineMsgUri(long userId, long msgId, boolean isCombined) {
+        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(userId, MyDatabase.TimelineTypeEnum.HOME, isCombined), MyDatabase.MSG_TABLE_NAME), msgId);
     }
     
     public static Uri getTimelineSearchUri(long userId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined, String queryString) {

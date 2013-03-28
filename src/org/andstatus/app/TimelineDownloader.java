@@ -351,7 +351,7 @@ public class TimelineDownloader {
                 // Lookup the System's (AndStatus) id from the Originated system's id
                 rowId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), rowOid);
                 // Construct the Uri to the Msg
-                Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId);
+                Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId, false);
 
                 long sentDate_stored = 0;
                 if (rowId != 0) {

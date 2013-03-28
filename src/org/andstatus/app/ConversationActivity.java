@@ -186,7 +186,7 @@ public class ConversationActivity extends Activity {
 
         private void findMessage(long msgId) {
             MyLog.v(TAG, "findMessage " + msgId);
-            Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), msgId);
+            Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), msgId, true);
             boolean skip = true;
             Cursor msg = null;
             OneRow row = new OneRow(msgId);
@@ -224,7 +224,7 @@ public class ConversationActivity extends Activity {
                         }
 
                         if (senderId != authorId) {
-                            rebloggers.add(linkedUserId);
+                            rebloggers.add(senderId);
                         }
                         if (msg.getInt(msg.getColumnIndex(MsgOfUser.REBLOGGED)) == 1) {
                             if (linkedUserId != authorId) {

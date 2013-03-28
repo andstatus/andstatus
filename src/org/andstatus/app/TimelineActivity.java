@@ -1105,12 +1105,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
             return;
         }
-        long userId = getUserIdFromCursor(position);
+        long linkedUserId = getLinkedUserIdFromCursor(position);
         
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onItemClick, id=" + id + "; userId=" + userId);
+            Log.v(TAG, "onItemClick, id=" + id + "; linkedUserId=" + linkedUserId);
         }
-        Uri uri = MyProvider.getTimelineMsgUri(userId, id);
+        Uri uri = MyProvider.getTimelineMsgUri(linkedUserId, id, true);
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
             if (MyLog.isLoggable(TAG, Log.DEBUG)) {
@@ -1130,7 +1130,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * @return id of the User linked to this message. This link reflects the User's timeline 
      * or an Account which was used to retrieved the message
      */
-    private long getUserIdFromCursor(int position) {
+    private long getLinkedUserIdFromCursor(int position) {
         long userId = 0;
         try {
             mCursor.moveToPosition(position);
@@ -1630,13 +1630,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         int menuItemId = 0;
         mCurrentMsgId = info.id;
         mMyAccountUserIdForCurrentMessage = 0;
-        MyAccount ma = MyAccount.getMyAccountLinkedToThisMessage(mCurrentMsgId, getUserIdFromCursor(info.position), mCurrentMyAccountUserId);
+        long linkedUserId = getLinkedUserIdFromCursor(info.position);
+        MyAccount ma = MyAccount.getMyAccountLinkedToThisMessage(mCurrentMsgId, linkedUserId, mCurrentMyAccountUserId);
         if (ma == null) {
             return;
         }
 
         // Get the record for the currently selected item
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mCurrentMsgId);
+        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mCurrentMsgId, false);
         Cursor c = getContentResolver().query(uri, new String[] {
                 MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID, 
                 MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED,
@@ -1782,7 +1783,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
                 case CONTEXT_MENU_ITEM_SHARE:
                     userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    uri = MyProvider.getTimelineMsgUri(ma.getUserId(), info.id);
+                    uri = MyProvider.getTimelineMsgUri(ma.getUserId(), info.id, true);
                     c = getContentResolver().query(uri, new String[] {
                             MyDatabase.Msg.MSG_OID, MyDatabase.Msg.BODY
                     }, null, null, null);
