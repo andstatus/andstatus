@@ -37,7 +37,8 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
     <release android:versionName="1.13.0" android:versionCode="71"
-        versionDate="2013-03-28">
+        versionDate="2013-03-29"
+        versionTitle="User Timeline and Undo Reblog">
         <changes><change>The new "User" timeline added. Normally when you select "User" from the list
              of the timelines,  timeline of the current Account is shown.
              But when you select the "Messages by this User" menu item, a "User" timeline 
@@ -54,13 +55,14 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 whose timeline the message belongs to. This allows subscribing to the message
                 in one accound and replying to it from another  
                 (e.g. from account which is more relevant to the topic of current message).</change>
-             <change>TODO: "Undo reblog" implemented. Each reblog (retweet) of the same message (tweet) is shown
+             <change>"Undo reblog" implemented. Each reblog (retweet) of the same message (tweet) is shown
                  as a separate item in the timeline now. This allows to undo reblog from specific account.
                  Information about original reblogger is stored also (in case we received the message alreagy as a reblog).</change>
         </changes>
     </release>
     <release android:versionName="1.12.0" android:versionCode="70"
-        versionDate="2013-02-17">
+        versionDate="2013-02-17"
+        versionTitle="Migration to the Twitter API v.1.1.">
         <changes><change>Migration to the Twitter API v.1.1. 
             Twitter plans to start turning off an older API after March 1, 
             so this upgrade will be required very soon. See 
@@ -69,7 +71,8 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <change>Fixed: Mentions notifications missed in the Widget.</change>
     </release>
     <release android:versionName="1.11.4" android:versionCode="69"
-        versionDate="2012-12-23">
+        versionDate="2012-12-23"
+        versionTitle="Combined timeline added">
         <changes>
             <change>Terminology, independent from twitter.com, is used. 
 From now on we will avoid all proprietary terms for non-Twitter accounts. 
@@ -101,7 +104,8 @@ replying and reblogging.            </change>
         </changes>
     </release>
     <release android:versionName="1.10.0" android:versionCode="62"
-        versionDate="2012-08-12">
+        versionDate="2012-08-12"
+        versionTitle="Share via AndStatus">
         <changes><change>"Share via AndStatus" added for text data (including Web page sharing). 
             E.g. in a Web browser select "Share" menu item and you will see "AndStatus" in the list of destinations.
             Choose AndStatus, and the page title and its URL will be inserted into the new tweet.
@@ -109,7 +113,8 @@ replying and reblogging.            </change>
         </changes>
     </release>
     <release android:versionName="1.9.1" android:versionCode="61"
-        versionDate="2012-08-06">
+        versionDate="2012-08-06"
+        versionTitle="Conversation view">
         <changes>
             <change>Single message (Tweet) view expanded to show full conversation
                  in case the Tweet is a reply to other Tweet.
@@ -118,19 +123,22 @@ replying and reblogging.            </change>
             </changes>
     </release>
     <release android:versionName="1.8.0" android:versionCode="59"
-        versionDate="2012-08-01">
+        versionDate="2012-08-01"
+        versionTitle="identi.ca support added">
         <changes>
             <change>Identi.ca support added. Currently only basic authentication works (i.e. no OAuth for identi.ca yet).</change>
             </changes>
     </release>
     <release android:versionName="1.7.0" android:versionCode="58"
-        versionDate="2012-07-28">
+        versionDate="2012-07-28"
+        versionTitle="Manage Accounts code adapted for Jelly Bean">
         <changes>
             <change>Manage Accounts code adapted for Jelly Bean. The app works ok on Android v.2.2 - 4.1 now.</change>
             </changes>
     </release>
     <release android:versionName="1.6.0" android:versionCode="57"
-        versionDate="2012-07-07">
+        versionDate="2012-07-07"
+        versionTitle="Send Direct Message added">
         <changes>
             <change>Send Direct Message added.</change>
             <change>Message is counted as new only if it didn't exist in the database yet.</change>
@@ -139,7 +147,8 @@ replying and reblogging.            </change>
             </changes>
     </release>
     <release android:versionName="1.5.0" android:versionCode="56"
-        versionDate="2012-06-09">
+        versionDate="2012-06-09"
+        versionTitle="Multiple User accounts support">
         <changes>
             <change>Multiple User Accounts support added.
                 User can easily switch timeline between accounts.</change>
@@ -152,7 +161,8 @@ replying and reblogging.            </change>
         </changes>
     </release>
     <release android:versionName="1.4.2" android:versionCode="55"
-        versionDate="2012-03-20">
+        versionDate="2012-03-20"
+        versionTitle="&quot;Native&quot; Retweets, Advanced Data Model and moving to Android 2.2">
         <changes>
             <change>"Native" Retweet implemented. Tweets retweeted in AndStatus
              are shown as "Retweeted" in twitter.com also.</change>
@@ -172,7 +182,8 @@ replying and reblogging.            </change>
         </changes>
     </release>
     <release android:versionName="1.3.2" android:versionCode="52"
-        versionDate="2012-02-25">
+        versionDate="2012-02-25"
+        versionTitle="External storage">
         <changes>
             <change>Added "Use External Storage" option. When a User changes
                 this option, System moves database file to External storage

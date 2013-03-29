@@ -145,7 +145,7 @@ public class MyProvider extends ContentProvider {
     }
 
     /**
-     * Delete a record from the database.
+     * Delete a record(s) from the database.
      * 
      * @see android.content.ContentProvider#delete(android.net.Uri,
      *      java.lang.String, java.lang.String[])
@@ -600,7 +600,7 @@ public class MyProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
-        int count;
+        int count = 0;
         long userId = 0;
         int matchedCode = sUriMatcher.match(uri);
         switch (matchedCode) {
@@ -612,10 +612,11 @@ public class MyProvider extends ContentProvider {
                 userId = Long.parseLong(uri.getPathSegments().get(1));
                 String rowId = uri.getPathSegments().get(7);
                 ContentValues msgOfUserValues = prepareMsgOfUserValues(values, userId);
-                count = db.update(MyDatabase.MSG_TABLE_NAME, values, Msg._ID + "=" + rowId
-                        + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
-                        selectionArgs);
-
+                if (values.size() > 0) {
+                    count = db.update(MyDatabase.MSG_TABLE_NAME, values, Msg._ID + "=" + rowId
+                            + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
+                            selectionArgs);
+                }
                 if (msgOfUserValues != null) {
                     String where = "(" + MsgOfUser.MSG_ID + "=" + rowId + " AND "
                             + MsgOfUser.USER_ID + "="
@@ -626,11 +627,11 @@ public class MyProvider extends ContentProvider {
                     if (c == null || c.getCount() == 0) {
                         // There was no such row
                         msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
-                        db.insert(MyDatabase.MSGOFUSER_TABLE_NAME, MsgOfUser.MSG_ID,
+                        count += db.insert(MyDatabase.MSGOFUSER_TABLE_NAME, MsgOfUser.MSG_ID,
                                 msgOfUserValues);
                     } else {
                         c.close();
-                        db.update(MyDatabase.MSGOFUSER_TABLE_NAME, msgOfUserValues, where,
+                        count += db.update(MyDatabase.MSGOFUSER_TABLE_NAME, msgOfUserValues, where,
                                 null);
                     }
                 }

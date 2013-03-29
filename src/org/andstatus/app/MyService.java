@@ -541,17 +541,12 @@ public class MyService extends Service {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
+        public boolean equals(Object o) {
+            if (!(o instanceof CommandData)) {
                 return false;
             }
-            if (obj == this) {
-                return true;
-            }
-            if (obj.getClass() != getClass()) {
-                return false;
-            }
-            return (this.hashCode() == ((CommandData) obj).hashCode());
+            CommandData cd = (CommandData) o;
+            return (hashCode() == cd.hashCode());
         }
 
         /**
@@ -1216,6 +1211,11 @@ public class MyService extends Service {
                         // Retry in a case of an error
                         retry = !ok;
                         break;
+                    case DESTROY_REBLOG:
+                        ok = destroyReblog(commandData.accountName, commandData.itemId);
+                        // Retry in a case of an error
+                        retry = !ok;
+                        break;
                     case GET_STATUS:
                         ok = getStatus(commandData.accountName, commandData.itemId);
                         // Retry in a case of an error
@@ -1415,7 +1415,8 @@ public class MyService extends Service {
         }
 
         /**
-         * @param statusId
+         * @param accountNameIn Account whose message (status) to destroy
+         * @param msgId ID of the message to destroy
          * @return boolean ok
          */
         private boolean destroyStatus(String accountNameIn, long msgId) {
@@ -1465,6 +1466,56 @@ public class MyService extends Service {
             return ok;
         }
 
+
+        /**
+         * @param accountNameIn Account whose reblog to destroy ("undo reblog")
+         * @param msgId ID of the message to destroy
+         * @return boolean ok
+         */
+        private boolean destroyReblog(String accountNameIn, long msgId) {
+            boolean ok = false;
+            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
+            String oid = MyProvider.idToOid(OidEnum.REBLOG_OID, msgId, ma.getUserId());
+            JSONObject result = new JSONObject();
+            try {
+                result = ma.getConnection().destroyStatus(oid);
+                ok = (result != null);
+                if (ok && MyLog.isLoggable(null, Log.VERBOSE)) {
+                    Log.v(TAG, "destroyStatus response: " + result.toString(2));
+                }
+            } catch (ConnectionException e) {
+                if (e.getStatusCode() == 404) {
+                    // This means that there is no such "Status", so we may
+                    // assume that it's Ok!
+                    ok = true;
+                } else {
+                    Log.e(TAG, "destroyStatus Connection Exception: " + e.toString());
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            if (ok) {
+                synchronized (MyService.this) {
+                    if (mStateRestored) {
+                        // And delete the status from the local storage
+                        try {
+                            TimelineDownloader fl = new TimelineDownloader(ma,
+                                    MyService.this.getApplicationContext(),
+                                    TimelineTypeEnum.HOME);
+                            fl.destroyReblog(msgId);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error destroying reblog locally: " + e.toString());
+                        }
+                    } else {
+                        Log.e(TAG, "destroyReblog - " + SERVICE_NOT_RESTORED_TEXT);
+                    }
+                }
+            }
+
+            MyLog.d(TAG, "Destroying reblog " + (ok ? "succeded" : "failed") + ", id=" + msgId);
+            return ok;
+        }
 
         /**
          * @param statusId

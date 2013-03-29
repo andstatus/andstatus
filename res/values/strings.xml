@@ -179,7 +179,7 @@
 	<string name="search_direct_messages_label">Search direct messages</string>
 	<string name="search_direct_messages_hint">Enter a username or phrase</string>
 	<string name="status_destroyed">The message has been removed.</string>
-    <string name="summary_preference_add_account_oauth">Tap here to open the Microblogging system site in the browser.</string>
+    <string name="summary_preference_add_account_oauth">Tap here to open the Microblogging system site in a browser.</string>
     <string name="summary_preference_add_account_basic">Tap here to verify credentials and add the account.</string>
     <string name="summary_preference_appearance">Change the AndStatus look and feel</string>
 	<string name="summary_preference_automatic_updates">Change automatic update settings</string>

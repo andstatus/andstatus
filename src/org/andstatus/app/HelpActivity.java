@@ -109,22 +109,19 @@ public class HelpActivity extends Activity implements SwipeInterface {
                 startActivity(intent);
             }
         });
-		
+
+        //The button is always visible in order to avoid a User's confusion,
 		final Button getStarted = (Button) findViewById(R.id.button_help_get_started);
-		if (mIsFirstActivity) {
-	        getStarted.setOnClickListener(new OnClickListener() {
-	            public void onClick(View v) {
-	                if (MyAccount.getCurrentMyAccount() == null) {
-	                    startActivity(new Intent(HelpActivity.this, PreferencesActivity.class));
-	                } else {
-	                    startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
-	                }
-	                finish();
-	            }
-	        });
-		} else {
-		    getStarted.setVisibility(View.GONE);
-		}
+        getStarted.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                if (MyAccount.getCurrentMyAccount() == null) {
+                    startActivity(new Intent(HelpActivity.this, PreferencesActivity.class));
+                } else {
+                    startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
+                }
+                finish();
+            }
+        });
 
 		// In order to have swipe gestures we need to add listeners to every page
 		// Only in case of WebView (changelog) we need to set listener on than WebView,

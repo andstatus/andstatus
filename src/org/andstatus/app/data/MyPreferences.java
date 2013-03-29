@@ -33,6 +33,7 @@ import java.text.MessageFormat;
 
 /**
  * This is central point of accessing SharedPreferences and other global objects, used by AndStatus
+ * Noninstantiable class 
  * @author yvolk
  */
 public class MyPreferences {
@@ -105,6 +106,7 @@ public class MyPreferences {
     public static final String KEY_PREFERENCES_EXAMINE_TIME = "preferences_examine_time";
 
     private MyPreferences(){
+        throw new AssertionError();
     }
     
     /**

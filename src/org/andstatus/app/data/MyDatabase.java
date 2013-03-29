@@ -20,7 +20,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.Origin;
 import org.andstatus.app.appwidget.MyAppWidgetConfigure;
-import org.andstatus.app.util.MyLog;
 
 import java.util.Locale;
 
@@ -135,6 +134,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         /**
          * Date and time when the message was sent,
          * it's not equal to {@link MyDatabase.Msg#CREATED_DATE} for reblogged messages
+         * We change the value if we reblog the message in the application 
+         * or if we receive new reblog of the message
          */
         public static final String SENT_DATE = "msg_sent_date";
 		/**

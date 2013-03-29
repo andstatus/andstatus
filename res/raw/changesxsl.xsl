@@ -26,7 +26,8 @@
   <h1><b><xsl:copy-of select="/document/header/title/node()"/></b></h1>
   <xsl:for-each select="/document/release">
       <h2><xsl:value-of select="@versionDate"/> 
-          v.<xsl:value-of select="@android:versionName"/> (<xsl:value-of select="@android:versionCode"/>)</h2>
+          v.<xsl:value-of select="@android:versionName"/> (<xsl:value-of select="@android:versionCode"/>)
+          <xsl:value-of select="@versionTitle"/></h2>
       <ol>
       <xsl:for-each select="changes/change">  
         <li><xsl:copy-of select="node()"/></li>

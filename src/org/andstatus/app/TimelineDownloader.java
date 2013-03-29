@@ -17,6 +17,7 @@
 
 package org.andstatus.app;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.andstatus.app.account.MyAccount;
@@ -247,6 +248,7 @@ public class TimelineDownloader {
             // get natural order of the tweets.
             // Otherwise reblogged message may appear as old
             long sentDate = 0;
+            long createdDate = 0;
             if (msg.has("created_at")) {
                 Long created = 0L;
                 String createdAt = msg.getString("created_at");
@@ -255,7 +257,7 @@ public class TimelineDownloader {
                 }
                 if (created > 0) {
                     sentDate = created;
-                    values.put(MyDatabase.Msg.CREATED_DATE, created);
+                    createdDate = created;
                 }
             }
             
@@ -314,7 +316,7 @@ public class TimelineDownloader {
                     rowOid = msg.getString("id");
                 } 
                 
-                // Created date may be different for reblogs:
+                // Created date is usually earlier for reblogs:
                 if (msg.has("created_at")) {
                     Long created = 0L;
                     String createdAt = msg.getString("created_at");
@@ -322,7 +324,7 @@ public class TimelineDownloader {
                         created = Date.parse(createdAt);
                     }
                     if (created > 0) {
-                        values.put(MyDatabase.Msg.CREATED_DATE, created);
+                        createdDate = created;
                     }
                 }
             }
@@ -342,7 +344,7 @@ public class TimelineDownloader {
                 /**
                  * Is the message newer than stored in the database (e.g. the newer reblog of existing message)
                  */
-                boolean isNewer = true;
+                boolean isNewer = false;
                 /**
                  * Count this message. 
                  */
@@ -371,6 +373,8 @@ public class TimelineDownloader {
                 values.put(MsgOfUser.TIMELINE_TYPE, mTimelineType.save());
 
                 if (isNew) {
+                    values.put(MyDatabase.Msg.CREATED_DATE, createdDate);
+                    
                     // Store the Sender only for the first retrieved message.
                     // Don't overwrite the original sender (especially the first reblogger) 
                     values.put(MyDatabase.Msg.SENDER_ID, senderId);
@@ -497,8 +501,14 @@ public class TimelineDownloader {
                   values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
                 }
                 
+                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                    Log.v(TAG, ((rowId==0) ? "insertMsg" : "updateMsg") 
+                            + ":" 
+                            + (isNew ? " new;" : "") 
+                            + (isNewer ? " newer, sent at " + new Date(sentDate).toString() + ";" : "") );
+                }
                 if (rowId == 0) {
-                    // There was no such row so add new one
+                    // There was no such row so add the new one
                     msgUri = mContentResolver.insert(MyProvider.getTimelineUri(ma.getUserId(), MyDatabase.TimelineTypeEnum.HOME, false), values);
                     rowId = MyProvider.uriToMessageId(msgUri);
                 } else {
@@ -751,6 +761,24 @@ public class TimelineDownloader {
         // TODO: Maybe we should use Timeline Uri...
         return mContentResolver.delete(MyDatabase.Msg.CONTENT_URI, MyDatabase.Msg._ID + " = " + statusId,
                 null);
+    }
+
+    
+    /**
+     * Destroy reblog of the message specified by ID.
+     * 
+     * @param msgId
+     * @return Number of rows updated
+     */
+    public int destroyReblog(long msgId) {
+        ContentValues values = new ContentValues();
+        values.put(MsgOfUser.TIMELINE_TYPE, mTimelineType.save());
+        values.put(MyDatabase.MsgOfUser.REBLOGGED, 0);
+        values.putNull(MyDatabase.MsgOfUser.REBLOG_OID);
+        
+        Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), msgId, false);
+        
+        return mContentResolver.update(msgUri, values, null, null);
     }
     
     /**

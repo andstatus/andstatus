@@ -1298,7 +1298,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         if (mTimelineType == TimelineTypeEnum.UNKNOWN) {
             /* Set default values */
             mTimelineType = TimelineTypeEnum.HOME;
-            mIsTimelineCombined = true;
+            mIsTimelineCombined = (MyAccount.countOfAuthenticatedUsers() > 1);
             mQueryString = "";
             mSelectedUserId = 0;
         }
@@ -1351,7 +1351,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             selecteUserText.setVisibility(View.VISIBLE);
         } else {
             selecteUserText.setVisibility(View.GONE);
-            combinedTimelineToggle.setVisibility(View.VISIBLE);
+            // Show the "Combined" toggle only if we have more than one account
+            if (MyAccount.countOfAuthenticatedUsers() > 1) {
+                combinedTimelineToggle.setVisibility(View.VISIBLE);
+            } else {
+                combinedTimelineToggle.setVisibility(View.GONE);
+                mIsTimelineCombined = false;
+            }
         }
         
         queryListData(false, false);
