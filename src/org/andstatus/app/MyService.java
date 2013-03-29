@@ -1562,24 +1562,24 @@ public class MyService extends Service {
         
         /**
          * @param status
-         * @param replyToId
-         * @param recipientId !=0 for Direct messages
+         * @param replyToMsgId - Message Id
+         * @param recipientUserId !=0 for Direct messages - User Id
          * @return ok
          */
-        private boolean updateStatus(String accountNameIn, String status, long replyToId, long recipientId) {
+        private boolean updateStatus(String accountNameIn, String status, long replyToMsgId, long recipientUserId) {
             boolean ok = false;
             MyAccount ma = MyAccount.getMyAccount(accountNameIn);
             JSONObject result = new JSONObject();
             try {
-                if (recipientId == 0) {
-                    String replyToOid = MyProvider.idToOid(OidEnum.MSG_OID, replyToId, 0);
+                if (recipientUserId == 0) {
+                    String replyToMsgOid = MyProvider.idToOid(OidEnum.MSG_OID, replyToMsgId, 0);
                     result = ma.getConnection()
-                            .updateStatus(status.trim(), replyToOid);
+                            .updateStatus(status.trim(), replyToMsgOid);
                 } else {
-                    String recipientOid = MyProvider.idToOid(OidEnum.MSG_OID, recipientId, 0);
+                    String recipientOid = MyProvider.idToOid(OidEnum.USER_OID, recipientUserId, 0);
                     // Currently we don't use Screen Name, I guess id is enough.
                     result = ma.getConnection()
-                            .postDirectMessage(recipientOid, "", status);
+                            .postDirectMessage(status.trim(), recipientOid);
                 }
                 ok = (result != null);
             } catch (ConnectionException e) {
@@ -1592,7 +1592,7 @@ public class MyService extends Service {
                             // The tweet was sent successfully
                             TimelineDownloader fl = new TimelineDownloader(ma, 
                                     MyService.this.getApplicationContext(),
-                                    (recipientId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT);
+                                    (recipientUserId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT);
 
                             fl.insertMsgFromJSONObject(result, true);
                         } catch (JSONException e) {

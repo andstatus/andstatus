@@ -365,11 +365,10 @@ public abstract class Connection {
      * 
      * @param message
      * @param userId {@link User#USER_OID} - The ID of the user who should receive the direct message
-     * @param screenName {@link User#USERNAME} - The screen name of the user who should receive the direct message
      * @return The sent message in the requested format if successful.
      * @throws ConnectionException
      */
-    public abstract JSONObject postDirectMessage(String userId, String screenName, String message)
+    public abstract JSONObject postDirectMessage(String message, String userId)
             throws ConnectionException;
 
     /**

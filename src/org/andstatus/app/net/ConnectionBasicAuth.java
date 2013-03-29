@@ -116,16 +116,13 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
     @Override
-    public JSONObject postDirectMessage(String userId, String screenName, String message) throws ConnectionException {
+    public JSONObject postDirectMessage(String message, String userId) throws ConnectionException {
         String url = getApiUrl(ApiRoutineEnum.POST_DIRECT_MESSAGE);
         List<NameValuePair> formParams = new ArrayList<NameValuePair>();
         formParams.add(new BasicNameValuePair("text", message));
         
         if ( !TextUtils.isEmpty(userId)) {
             formParams.add(new BasicNameValuePair("user_id", userId));
-        }
-        if ( !TextUtils.isEmpty(screenName)) {
-            formParams.add(new BasicNameValuePair("screen_name", screenName));
         }
         JSONObject jObj = null;
         try {

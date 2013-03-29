@@ -352,15 +352,12 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
     }
 
     @Override
-    public JSONObject postDirectMessage(String userId, String screenName, String message) throws ConnectionException {
+    public JSONObject postDirectMessage(String message, String userId) throws ConnectionException {
         HttpPost post = new HttpPost(getApiUrl(ApiRoutineEnum.POST_DIRECT_MESSAGE));
         LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
         out.add(new BasicNameValuePair("text", message));
         if ( !TextUtils.isEmpty(userId)) {
             out.add(new BasicNameValuePair("user_id", userId));
-        }
-        if ( !TextUtils.isEmpty(screenName)) {
-            out.add(new BasicNameValuePair("screen_name", screenName));
         }
         return postRequest(post, out);
     }
