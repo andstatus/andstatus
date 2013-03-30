@@ -1682,14 +1682,14 @@ public class MyService extends Service {
          * Load Timeline(s) for one MyAccount
          * @param acc MyAccount, should be not null
          * @param timelineType_in
-         * @param userId - for the User timeline
+         * @param userId - Required for the User timeline
          * @return True if everything Succeeded
          */
         private boolean loadTimelineAccount(MyAccount acc,
                 MyDatabase.TimelineTypeEnum timelineType_in, long userId) {
                 boolean okAllTimelines = true;
                 if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-                    // Only if User was authenticated already
+                    // Only if the User was authenticated already
 
                     boolean ok = false;
                     int msgAdded = 0;
@@ -1697,14 +1697,16 @@ public class MyService extends Service {
                     int directedAdded = 0;
                     String descr = "(starting)";
 
-                    TimelineTypeEnum[] atl = new TimelineTypeEnum[] {
-                            timelineType_in
-                    };
+                    TimelineTypeEnum[] atl;
                     if (timelineType_in == TimelineTypeEnum.ALL) {
                         atl = new TimelineTypeEnum[] {
                                 TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
                                 TimelineTypeEnum.DIRECT
                         };
+                    } else {
+                        atl = new TimelineTypeEnum[] {
+                                timelineType_in 
+                                };
                     }
 
                     int pass = 1;

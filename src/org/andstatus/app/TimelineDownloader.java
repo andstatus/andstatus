@@ -404,6 +404,7 @@ public class TimelineDownloader {
                         values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
                     case ALL:
                     case MENTIONS:
+                    case USER:
                         if (msg.has("source")) {
                             values.put(MyDatabase.Msg.VIA, msg.getString("source"));
                         }

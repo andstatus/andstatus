@@ -1371,7 +1371,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     }
     
     /**
-     * Prepare query to the ContentProvider (to the database) and load List of Tweets with data
+     * Prepare query to the ContentProvider (to the database) and load List of
+     * messages with data
+     * 
      * @param otherThread This method is being accessed from other thread
      * @param loadOneMorePage load one more page of tweets
      */
@@ -1384,21 +1386,24 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     + "; isCombined=" + (mIsTimelineCombined ? "yes" : "no"));
         }
 
-        Uri contentUri = MyProvider.getTimelineUri(mCurrentMyAccountUserId, mTimelineType, mIsTimelineCombined);
+        Uri contentUri = MyProvider.getTimelineUri(mCurrentMyAccountUserId, mTimelineType,
+                mIsTimelineCombined);
 
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
-        // Id of the last (oldest) tweet to retrieve 
+        // Id of the last (oldest) tweet to retrieve
         long lastItemId = -1;
-        
+
         if (!TextUtils.isEmpty(mQueryString)) {
-            // Record the query string in the recent queries of the Suggestion Provider
+            // Record the query string in the recent queries
+            // of the Suggestion Provider
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     TimelineSearchSuggestionProvider.AUTHORITY,
                     TimelineSearchSuggestionProvider.MODE);
             suggestions.saveRecentQuery(mQueryString, null);
 
-            contentUri = MyProvider.getTimelineSearchUri(mCurrentMyAccountUserId, mTimelineType, mIsTimelineCombined, mQueryString);
+            contentUri = MyProvider.getTimelineSearchUri(mCurrentMyAccountUserId, mTimelineType,
+                    mIsTimelineCombined, mQueryString);
         }
 
         if (!contentUri.equals(intent.getData())) {
@@ -1406,47 +1411,55 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
 
         if (sa.nArgs == 0) {
-            // In fact this is needed every time you want to load next page of tweets.
-            // So we have to duplicate here everything we set in
-            // org.andstatus.app.TimelineActivity.onOptionsItemSelected()
-            
+            // In fact this is needed every time you want to load
+            // next page of messages
+
             /* TODO: Other conditions... */
             sa.clear();
-            
+
+            // TODO: Move this selections to the {@link MyProvider} ?!
             switch (mTimelineType) {
                 case HOME:
-                    // In the Home of the combined timeline we see ALL loaded messages,
-                    // even those that we downloaded not as Home timeline of any Account
+                    // In the Home of the combined timeline we see ALL loaded
+                    // messages, even those that we downloaded
+                    // not as Home timeline of any Account
                     if (!mIsTimelineCombined) {
                         sa.addSelection(MyDatabase.MsgOfUser.SUBSCRIBED + " = ?", new String[] {
                                 "1"
-                            });
+                        });
                     }
                     break;
                 case MENTIONS:
                     sa.addSelection(MyDatabase.MsgOfUser.MENTIONED + " = ?", new String[] {
                             "1"
-                        });
-                    /* We already figured it out!
-                    sa.addSelection(MyDatabase.Msg.BODY + " LIKE ?", new String[] {
-                            "%@" + MyAccount.getTwitterUser().getUsername() + "%"
-                        });
-                    */
+                    });
+                    /*
+                     * We already figured this out and set {@link MyDatabase.MsgOfUser.MENTIONED}:
+                     * sa.addSelection(MyDatabase.Msg.BODY + " LIKE ?" ...
+                     */
                     break;
                 case FAVORITES:
                     sa.addSelection(MyDatabase.MsgOfUser.FAVORITED + " = ?", new String[] {
                             "1"
-                        });
+                    });
                     break;
                 case DIRECT:
                     sa.addSelection(MyDatabase.MsgOfUser.DIRECTED + " = ?", new String[] {
                             "1"
-                        });
+                    });
                     break;
                 case USER:
-                    sa.addSelection(MyDatabase.Msg.AUTHOR_ID + " = ?", new String[] {
-                           Long.toString(mSelectedUserId)
-                        });
+                    // Reblogs are included also
+                    sa.addSelection(MyDatabase.Msg.AUTHOR_ID + " = ? OR "
+                            + MyDatabase.Msg.SENDER_ID + " = ? OR "
+                            + "("
+                            + MsgOfUser.USER_ID + " = ? AND "
+                            + MyDatabase.MsgOfUser.REBLOGGED + " = 1"
+                            + ")",
+                            new String[] {
+                                    Long.toString(mSelectedUserId), Long.toString(mSelectedUserId),
+                                    Long.toString(mSelectedUserId)
+                            });
                     break;
             }
         }
@@ -1471,9 +1484,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
 
         if (lastItemId > 0) {
-            sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENT_DATE + " >= ?", new String[] {
-                String.valueOf(MyProvider.msgSentDate(lastItemId))
-            });
+            sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENT_DATE + " >= ?",
+                    new String[] {
+                        String.valueOf(MyProvider.msgSentDate(lastItemId))
+                    });
         } else {
             if (loadOneMorePage) {
                 nTweets += PAGE_SIZE;
@@ -1484,14 +1498,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
 
         // This is for testing pruneOldRecords
-//        try {
-//            TimelineDownloader fl = new TimelineDownloader(TimelineActivity.this,
-//                    TimelineActivity.TIMELINE_TYPE_HOME);
-//            fl.pruneOldRecords();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        // try {
+        // TimelineDownloader fl = new TimelineDownloader(TimelineActivity.this,
+        // TimelineActivity.TIMELINE_TYPE_HOME);
+        // fl.pruneOldRecords();
+        //
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // }
 
         mCursor = getContentResolver().query(contentUri, PROJECTION, sa.selection,
                 sa.selectionArgs, sortOrder);
