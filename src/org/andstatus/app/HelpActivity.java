@@ -63,7 +63,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
     /**
      * Change Log page index
      */
-    public static final int HELP_PAGE_CHANGELOG = 6;
+    public static final int HELP_PAGE_CHANGELOG = 2;
     
 	// Local objects
 	private ViewFlipper mFlipper;
