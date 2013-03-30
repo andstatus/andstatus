@@ -154,26 +154,52 @@
 	<string name="splash_button_learn_more">Learn More</string>
 	<string name="splash_button_get_started">Get Started</string>
 	<string name="splash_payoff_line">Light-Weight Twitter and identi.ca Client for Android™</string>
-	<string name="splash_text_learn_more_1"><h1><b>1. AndStatus BASICS</b></h1>\n\n
-        The first view of AndStatus contains the Home timeline.\n\n
-        In order to perform an action on a message in the list you should <b>hold down</b> on it to get a context menu.\n\n
-        You may <b>click</b> on a message to get more details on it or to see a conversation thread to which the message belongs.\n\n
-        Press the <b>Menu</b> button on your device to switch to other views.</string>
-	<string name="splash_text_learn_more_2"><h1><b>2. SENDING AND REPLYING</b></h1>\n\n
-        In order to update your status, press the "Blog" button ("Tweet" for Twitter), type in a text into the text area at the bottom of the screen and click <b>Send</b>.\n\n
-        In order to reply, <b>hold down</b> a message and select <b>Reply</b>, type in your reply at the bottom.\n\n
-        To abort a reply, simply press the "Blog/Tweet" button to hide the text area.</string>
-	<string name="splash_text_learn_more_3"><h1><b>3. DIRECT MESSAGES</b></h1>\n\n
-        Click <b>Home</b> (Timeline type) button and select <b>Direct Messages</b>.\n\n
-        In order to <b>delete</b> a direct message, <b>hold down</b> on it and select <b>Delete</b>.\n\n
-        New messages are fetched if you have turned on <b>Automatic Updates</b> in Preferences.</string>
-	<string name="splash_text_learn_more_4"><h1><b>4. LISTING MENTIONS</b></h1>\n\n
-        Click <b>Home</b> and then <b>Mentions</b>.\n\n
-        Mentions will list every message that mentions your <b>@username</b>.</string>
-	<string name="splash_text_learn_more_5"><h1><b>5. SEARCHING</b></h1>\n\n
-        Click <b>Menu</b> and then <b>Search</b>, or you can click the <b>Search</b> button on your phone.\n\n
-        A search will find any text contained within a message. If you wish to show messages from a specific user, search for "<b>username</b>."\n\n
-        To see mentions of a specific user, search for "<b>@username</b>"</string>
+	<string name="splash_text_learn_more_1"><h1><b>1. AndStatus getting started</b></h1>\n\n
+        In order to start using the application, you must add at least one \"AndStatus\" 
+        account to your device the same way you add Google accounts.\n
+        Press \"Get Started\" button below and select the \"Manage accounts\" option
+        in the AndStatus preferences <i>or</i> simply go to the \"Settings\" of Your device, 
+        select \"Add account\" option and add an account of the \"AndStatus\" type.\n
+        You will be prompted to select desired Microblogging system (Twitter or identi.ca) 
+        and authorise the AndStatus application\'s access to it
+        at the Microblogging system\'s web site.\n 
+        Please note that currently for identi.ca only \"Basic auhentication\" works; i.e. no OAuth.\n
+        After successful creation of the account please launch AndStatus application again. 
+        This time you will be presented with the Change Log. 
+        Press the \"Get Started\" button below - and you will get to the main AndStatus window.\n
+        Congratulations! Read below what you can do further.\n\n
+        And don\'t forget to add AndStatus widget to the Home screen: 
+        the widget will inform you about new messages and may be used to launch AndStatus.\n\n        
+        <h1><b>2. AndStatus BASICS</b></h1>\n\n
+        The first view of AndStatus contains the Home timeline.\n
+        In order to perform an action on a message in the list you should <b>hold down</b>
+        on it to get a context menu.\n
+        You may <b>click</b> on a message to get more details on it or to see
+        a conversation thread to which the message belongs.\n
+        Press the <b>Menu</b> button on your device to switch to other views.\n\n
+        <h1><b>3. SENDING AND REPLYING</b></h1>\n\n
+        In order to update your status, press the \"Blog\" button (\"Tweet\" for Twitter),
+        type in a text into the text area at the bottom of the screen and click <b>Send</b>.\n
+        In order to reply, <b>hold down</b> a message and select <b>Reply</b>,
+        type in your reply at the bottom.\n
+        To abort a reply, simply press the \"Blog/Tweet\" button to hide the text area.\n\n
+        <h1><b>4. DIRECT MESSAGES</b></h1>\n\n
+        Click <b>Home</b> (Timeline type) button and select <b>Direct Messages</b>.\n
+        In order to <b>delete</b> a direct message, <b>hold down</b> on it
+        and select <b>Delete</b>.\n
+        New messages are fetched if you have turned on <b>Automatic Updates</b>
+        in Preferences. In any case you may always get updates from the Internet
+        manually using \"Reload\" command in the Menu.\n\n
+        <h1><b>5. LISTING MENTIONS</b></h1>\n\n
+        Click <b>Home</b> and then <b>Mentions</b>.\n
+        Mentions will list every message that mentions your <b>@username</b>.\n\n
+        <h1><b>6. SEARCHING</b></h1>\n\n
+        Click <b>Menu</b> and then <b>Search</b>, or you can click the <b>Search</b> button
+        on your phone.\n
+        A search will find any text contained within a message. 
+        If you wish to show messages from a specific user, search for \"<b>username</b>.\"\n
+        To see mentions of a specific user, search for \"<b>@username</b>\".\n\n
+        </string>
 	<string name="search_timeline_label">Search messages, users, and hashtags</string>
 	<string name="search_timeline_hint">Enter a username/phrase</string>
 	<string name="search_direct_messages_label">Search direct messages</string>

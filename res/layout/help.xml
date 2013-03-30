@@ -49,52 +49,16 @@
 		    <ScrollView  android:layout_height="match_parent"
                 android:layout_width="match_parent"
                 android:id="@+id/help_page1">
-    			<TextView android:layout_height="match_parent"
+    			<TextView android:layout_height="wrap_content"
     				android:layout_width="match_parent" android:padding="16dip"
     				android:textSize="8pt"
     				android:textColor="#ffffffff"
     				android:text="@string/splash_text_learn_more_1"/>
             </ScrollView>
             <ScrollView  android:layout_height="match_parent"
-                android:layout_width="match_parent"
-                android:id="@+id/help_page2">
-                <TextView android:layout_height="match_parent"
-                    android:layout_width="match_parent" android:padding="16dip"
-                    android:textSize="8pt"
-                    android:textColor="#ffffffff"
-                    android:text="@string/splash_text_learn_more_2"/>
-                </ScrollView>
-            <ScrollView  android:layout_height="match_parent"
-                android:layout_width="match_parent"
-                android:id="@+id/help_page3">
-    			<TextView android:layout_height="match_parent"
-    				android:layout_width="match_parent" android:padding="16dip"
-    				android:textSize="8pt"
-    				android:textColor="#ffffffff"
-    				android:text="@string/splash_text_learn_more_3"/>
-    			</ScrollView>
-            <ScrollView  android:layout_height="match_parent"
-                android:layout_width="match_parent"
-                android:id="@+id/help_page4">
-    			<TextView android:layout_height="match_parent"
-    				android:layout_width="match_parent" android:padding="16dip"
-    				android:textSize="8pt"
-    				android:textColor="#ffffffff"
-    				android:text="@string/splash_text_learn_more_4"/>
-    			</ScrollView>
-            <ScrollView  android:layout_height="match_parent"
-                android:layout_width="match_parent"
-                android:id="@+id/help_page5">
-    			<TextView android:layout_height="match_parent"
-    				android:layout_width="match_parent" android:padding="16dip"
-    				android:textSize="8pt"
-    				android:textColor="#ffffffff"
-    				android:text="@string/splash_text_learn_more_5"/>
-    			</ScrollView>
-            <ScrollView  android:layout_height="match_parent"
                 android:layout_width="match_parent">
     			<WebView android:id="@+id/help_changelog" 
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
     				android:layout_width="match_parent" android:padding="16dip"/>
             </ScrollView>
 		</ViewFlipper>
@@ -105,11 +69,11 @@
 		android:background="#44000000">
 		<Button android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:paddingLeft="20dip"
-			android:paddingRight="20dip" android:id="@+id/button_help_get_started"
-			android:text="@string/splash_button_get_started"></Button>
-		<Button android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:paddingLeft="20dip"
 			android:paddingRight="20dip" android:id="@+id/button_help_learn_more"
 			android:text="@string/splash_button_learn_more"></Button>
+		<Button android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:paddingLeft="20dip"
+			android:paddingRight="20dip" android:id="@+id/button_help_get_started"
+			android:text="@string/splash_button_get_started"></Button>
 	</LinearLayout>
 </LinearLayout>

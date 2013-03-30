@@ -17,7 +17,6 @@
 
 package org.andstatus.app;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.andstatus.app.account.MyAccount;

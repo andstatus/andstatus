@@ -37,27 +37,31 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
     <release android:versionName="1.13.0" android:versionCode="71"
-        versionDate="2013-03-29"
+        versionDate="2013-03-30"
         versionTitle="User Timeline and Undo Reblog">
         <changes><change>The new "User" timeline added. Normally when you select "User" from the list
              of the timelines,  timeline of the current Account is shown.
-             But when you select the "Messages by this User" menu item, a "User" timeline 
+             But when you select the "Messages by this User" context menu item, a "User" timeline 
              for the selected User is been shown. 
              The timeline has messages from the cache which are shown immediately.
-             The "Reload" options menu loads the timeline from the Internet. Automatic updates setting
-             are taken into account for automatic update/download even without the manual "Reload" command.
-             <a href="https://github.com/andstatus/andstatus/issues/18" >Issue #18</a>
+             The "Reload" options menu loads the timeline from the Internet. If you have "Automatic updates"
+             enabled in preferences, the User's timeline will be updated asynchronously 
+             even without the manual "Reload" command.
+             <a href="https://github.com/andstatus/andstatus/issues/18" >Issue #18</a>.
             </change>
             <change>"Tweet/Blog" button can be accessed using keys. 
-                <a href="https://github.com/andstatus/andstatus/issues/31" >Issue #31</a> </change>
+                <a href="https://github.com/andstatus/andstatus/issues/31" >Issue #31</a>. </change>
             <change>In the combined timeline, actions on a selected message may be done
                 on behalf of the selected account. I.e. not only on behalf of the account 
                 whose timeline the message belongs to. This allows subscribing to the message
                 in one accound and replying to it from another  
-                (e.g. from account which is more relevant to the topic of current message).</change>
+                (e.g. from the account which is more relevant to the topic of current message).</change>
              <change>"Undo reblog" implemented. Each reblog (retweet) of the same message (tweet) is shown
                  as a separate item in the timeline now. This allows to undo reblog from specific account.
-                 Information about original reblogger is stored also (in case we received the message alreagy as a reblog).</change>
+                 Information about original reblogger is stored also 
+                 (in case we received the message already as a reblog).</change>
+             <change>Help (welcome) screen improved and it gives now more information
+                 for the first time users.</change>
         </changes>
     </release>
     <release android:versionName="1.12.0" android:versionCode="70"

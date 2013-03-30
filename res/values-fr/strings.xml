@@ -149,11 +149,26 @@
 	<string name="splash_button_learn_more">En savoir plus</string>
 	<string name="splash_button_get_started">Commencer</string>
 	<string name="splash_payoff_line">Client de microblogage Twitter et identi.ca léger pour Android™</string>
-	<string name="splash_text_learn_more_1"><h1><b>1. Les BASES d\'AndStatus</b></h1>\n\nLe premier écran d\'AndStatus affiche votre timeline.\n\nPour effectuer une action sur un message de la liste, effectuez un <b>appui long</b> sur celui-ci pour faire apparaître un menu.\n\nVous pouvez <b>cliquer</b> sur un message pour afficher plus de détails.\n\nAppuyez sur le bouton <b>Menu</b> pour changer d\'écran.</string>
-	<string name="splash_text_learn_more_2"><h1><b>2. POSTER ET RÉPONDRE</b></h1>\n\nPour mettre à jour votre statut, saisissez simplement votre message dans la zone de texte, et cliquez sur <b>Envoyer</b>.\n\nPour répondre, effectuez un <b>appui long</b> et choisissez <b>Répondre</b> puis tapez votre réponse.\n\nPour annuler une réponse, supprimez le texte dans la zone de saisie.</string>
-	<string name="splash_text_learn_more_3"><h1><b>3. MESSAGES PRIVÉS</b></h1>\n\nCliquez sur <b>Menu</b> puis <b>Messages</b>.\n\nPour <b>supprimer</b> un message privé, effectuez un <b>appui long</b> dessus et choisissez <b>Supprimer</b>.\n\nLes nouveaux messages sont récupérés si vous avez activé le <b>Rafraîchissement automatique</b>.</string>
-	<string name="splash_text_learn_more_4"><h1><b>4. LISTER LES MENTIONS</b></h1>\n\nCliquez sur <b>Menu</b> puis <b>Mentions</b>.\n\nL\'écran Mentions liste tous les messages mentionnant votre <b>@identifiant</b>.</string>
-    <string name="splash_text_learn_more_5"><h1><b>5. RECHERCHER</b></h1>\n\nCliquez sur <b>Menu</b> puis <b>Rechercher</b> ou sur le bouton <b>Rechercher</b> de votre téléphone.\n\nLa recherche se fait dans le texte du message. Si vous souhaitez afficher les messages d\'un utilisateur spécifique, rechercher "<b>identifiant</b>".\n\nPour afficher les mentions d\'un utilisateur spécifique, recherchez "<b>@identifiant</b>".</string>
+	<string name="splash_text_learn_more_1"><h1><b>1. Les BASES d\'AndStatus</b></h1>\n\n
+        Le premier écran d\'AndStatus affiche votre timeline.\n
+        Pour effectuer une action sur un message de la liste, effectuez un <b>appui long</b> sur celui-ci pour faire apparaître un menu.\n
+        Vous pouvez <b>cliquer</b> sur un message pour afficher plus de détails.\n
+        Appuyez sur le bouton <b>Menu</b> pour changer d\'écran.\n\n
+        <h1><b>2. POSTER ET RÉPONDRE</b></h1>\n\n
+        Pour mettre à jour votre statut, saisissez simplement votre message dans la zone de texte, et cliquez sur <b>Envoyer</b>.\n
+        Pour répondre, effectuez un <b>appui long</b> et choisissez <b>Répondre</b> puis tapez votre réponse.\n
+        Pour annuler une réponse, supprimez le texte dans la zone de saisie.\n\n
+        <h1><b>3. MESSAGES PRIVÉS</b></h1>\n\n
+        Cliquez sur <b>Menu</b> puis <b>Messages</b>.\n
+        Pour <b>supprimer</b> un message privé, effectuez un <b>appui long</b> dessus et choisissez <b>Supprimer</b>.\n
+        Les nouveaux messages sont récupérés si vous avez activé le <b>Rafraîchissement automatique</b>.\n\n
+        <h1><b>4. LISTER LES MENTIONS</b></h1>\n\n
+        Cliquez sur <b>Menu</b> puis <b>Mentions</b>.\n
+        L\'écran Mentions liste tous les messages mentionnant votre <b>@identifiant</b>.\n\n
+        <h1><b>5. RECHERCHER</b></h1>\n\n
+        Cliquez sur <b>Menu</b> puis <b>Rechercher</b> ou sur le bouton <b>Rechercher</b> de votre téléphone.\n
+        La recherche se fait dans le texte du message. Si vous souhaitez afficher les messages d\'un utilisateur spécifique, rechercher "<b>identifiant</b>".\n
+        Pour afficher les mentions d\'un utilisateur spécifique, recherchez "<b>@identifiant</b>".</string>
 	<string name="search_timeline_label">Rechercher des messages, utilisateurs, ou hashtags</string>
     <string name="search_timeline_hint">Saisir un(e) identifiant/expression</string>
 	<string name="search_direct_messages_label">Rechercher un message privé</string>

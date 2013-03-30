@@ -103,12 +103,8 @@
 	<string name="resolve_view">View Tweet</string>
 	<string name="splash_button_learn_more">Learn More</string>
 	<string name="splash_button_get_started">Get Started</string>
-	<string name="splash_payoff_line">Light-Weight Twitter Client for Android™</string>
-	<string name="splash_text_learn_more_1"><h1><b>1. AndStatus BASICS</b></h1>\n\nThe first view of AndStatus contains your friend timeline.\n\nIn order to perform an action on a tweet in the list you can <b>hold down</b> on it to get a menu.\n\nYou can <b>click</b> on a tweet to get more details.\n\nPress the <b>Menu</b> button to switch to other views.</string>
-	<string name="splash_text_learn_more_2"><h1><b>2. SENDING AND REPLYING</b></h1>\n\nIn order to update your status simply type it into the text area and click <b>Send</b>.\n\nIn order to reply, <b>hold down</b> and select <b>Reply</b> and type in your reply at the bottom.\n\nTo abort a reply, delete all text in the bottom text area.</string>
-	<string name="splash_text_learn_more_3"><h1><b>3. DIRECT MESSAGES</b></h1>\n\nClick <b>Menu</b> and then <b>Messages</b>.\n\nIn order to <b>delete</b> a direct message, <b>hold down</b> on it and select <b>Delete</b>.\n\nNew messages are fetched if you have turned on <b>Automatic Updates</b>.</string>
-	<string name="splash_text_learn_more_4"><h1><b>4. LISTING MENTIONS</b></h1>\n\nClick <b>Menu</b> and then <b>Mentions</b>.\n\nMentions will list every tweet that mentions your <b>@username</b>.</string>
-	<string name="splash_text_learn_more_5"><h1><b>5. SEARCHING</b></h1>\n\nClick <b>Menu</b> and then <b>Search</b>, or you can click the <b>Search</b> button on your phone.\n\nA search will find any text contained within a tweet. If you wish to show tweets from a specific user, search for "<b>username</b>."\n\nTo see mentions of a specific user, search for "<b>@username</b>"</string>
+	<string name="splash_payoff_line">Light-Weight Twitter and identi.ca Client for Android™</string>
+    <string name="splash_text_learn_more_1">(To be translated)</string>
 	<string name="search_timeline_label">Search tweets, users, and hashtags</string>
 	<string name="search_timeline_hint">Enter a username/phrase</string>
 	<string name="search_direct_messages_label">Search direct messages</string>
