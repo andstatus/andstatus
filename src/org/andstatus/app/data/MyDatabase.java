@@ -433,7 +433,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 
     MyDatabase(Context context) {
         // We use TAG instead of 'this' which cannot be used in this context
-        super(MyPreferences.initialize(context, TAG), DATABASE_NAME, null, DATABASE_VERSION);
+        super(MyPreferences.initializeAndGetContext(context, TAG), DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     /**

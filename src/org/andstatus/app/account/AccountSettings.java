@@ -49,7 +49,9 @@ import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 
+import org.andstatus.app.PreferencesActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.ConnectionAuthenticationException;
@@ -59,6 +61,7 @@ import org.andstatus.app.net.ConnectionOAuth;
 import org.andstatus.app.net.ConnectionUnavailableException;
 import org.andstatus.app.net.MyOAuth;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -473,7 +476,7 @@ public class AccountSettings extends PreferenceActivity implements
         MyAccount ma = state.myAccount;
         
         mOriginName.setValue(ma.getOriginName());
-        MyPreferences.showListPreference(this, MyAccount.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
+        SharedPreferencesUtil.showListPreference(this, MyAccount.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
         mOriginName.setEnabled(!ma.isPersistent());
         
         if (mEditTextUsername.getText() == null
@@ -576,6 +579,8 @@ public class AccountSettings extends PreferenceActivity implements
                     // Credentials are not present,
                     // so start asynchronous OAuth Authentication process 
                     new OAuthAcquireRequestTokenTask().execute();
+                    // and return back to default screen
+                    overrideBackButton = true;
                 }
             }
 
@@ -916,9 +921,12 @@ public class AccountSettings extends PreferenceActivity implements
                 // This is needed in order to complete the process after redirect
                 // from the Browser to the same activity.
                 state.actionCompleted = false;
+                
                 // Start Internet Browser
-                AccountSettings.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
-                        .parse(authUrl)));
+                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
+                // Trying to skip Browser activities on Back button press
+                i.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                AccountSettings.this.startActivity(i);
 
                 requestSucceeded = true;
             } catch (OAuthMessageSignerException e) {
@@ -1209,12 +1217,18 @@ public class AccountSettings extends PreferenceActivity implements
         state.forget();
         if (overrideBackButton) {
             doFinish = true;
-            startManageAccountsActivity(this);
         }
         if (doFinish) {
             MyLog.v(TAG, "finish: action=" + state.getAccountAction() + "; " + message);
             mIsFinishing = true;
             finish();
+        }
+        if (overrideBackButton) {
+            MyLog.v(TAG, "Returning to our Preferences Activity");
+            // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+            Intent i = new Intent(this, PreferencesActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
         }
         return mIsFinishing;
     }

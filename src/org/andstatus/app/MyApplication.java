@@ -16,13 +16,11 @@ import java.io.File;
 
 /**
  *
+ * @author yvolk (Yuri Volkov), http://yurivolkov.com
  */
 public class MyApplication extends Application {
-    private static final String TAG = "MyApplication";
+    private static final String TAG = MyApplication.class.getSimpleName();
 
-    /**
-     * @see android.app.Application#onCreate()
-     */
     @Override
     public void onCreate() {
         MyPreferences.initialize(this, this);
@@ -32,21 +30,11 @@ public class MyApplication extends Application {
         super.onCreate();
     }
 
-    /**
-     * @see android.content.ContextWrapper#getDatabasePath(java.lang.String)
-     */
     @Override
     public File getDatabasePath(String name) {
-        File dbDir = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DATABASES);
-        File dbAbsolutePath = null;
-        if (dbDir != null) {
-            dbAbsolutePath = new File(dbDir.getPath() + "/" + name);
-        }
-        return dbAbsolutePath;
+        return MyPreferences.getDatabasePath(name, null);
     }
 
-    /**
-     */
     @Override
     public SQLiteDatabase openOrCreateDatabase(String name, int mode, CursorFactory factory) {
         SQLiteDatabase db = null;

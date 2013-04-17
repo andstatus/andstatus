@@ -52,7 +52,7 @@ public class MyServiceConnector {
 
     public static final int MSG_UPDATED_TITLE = 10;
 
-    protected long instanceId;
+    private int instanceId;
 
     /**
      * Activity to which the {@link MyServiceConnector} is attached
@@ -73,7 +73,7 @@ public class MyServiceConnector {
      */
     protected IMyService mService;
 
-    public MyServiceConnector(long instanceId) {
+    public MyServiceConnector(int instanceId) {
         this.instanceId = instanceId;
     }
 
@@ -86,10 +86,9 @@ public class MyServiceConnector {
             mActivity = activity;
             mHandler = handler;
             Intent serviceIntent = new Intent(IMyService.class.getName());
-            if (!MyServiceManager.isStarted()) {
+            if (MyServiceManager.getServiceState() != MyService.ServiceState.RUNNING) {
                 // Ensure that MyService is running
-                MyServiceManager.startAndStatusService(MyPreferences.getContext(),
-                        new CommandData(CommandEnum.EMPTY, ""));
+                MyServiceManager.startMyService(new CommandData(CommandEnum.EMPTY, ""));
             }
             // startService(serviceIntent);
             mActivity.bindService(serviceIntent, mServiceConnection, 0);
@@ -212,7 +211,7 @@ public class MyServiceConnector {
          */
         public void dataLoading(int value) throws RemoteException {
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "dataLoading value=" + value + ", instance " + instanceId);
+                Log.v(TAG, "dataLoading value=" + value + ", instanceId=" + instanceId);
             }
             mHandler.sendMessage(mHandler.obtainMessage(MSG_DATA_LOADING, value, 0));
         }

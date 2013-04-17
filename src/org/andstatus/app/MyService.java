@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2011-2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2011-2013 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,9 +18,9 @@
 package org.andstatus.app;
 
 import java.util.HashSet;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
@@ -107,10 +107,10 @@ public class MyService extends Service {
     public static final String ACTION_ALARM = ACTIONPREFIX + "ALARM";
 
     /**
-     * This action is being sent by {@link MyService} to notify that it
-     * was stopped
+     * Broadcast with this action is being sent by {@link MyService} to notify of its state.
+     *  Actually {@link MyServiceManager} receives it.
      */
-    public static final String ACTION_SERVICE_STOPPED = ACTIONPREFIX + "SERVICE_STOPPED";
+    public static final String ACTION_SERVICE_STATE = ACTIONPREFIX + "SERVICE_STATE";
 
     /**
      * This action is used in any intent sent to this service. Actual command to
@@ -137,6 +137,11 @@ public class MyService extends Service {
      * Command parameter: long - ID of the Tweet (or Msg)
      */
     public static final String EXTRA_TWEETID = packageName + ".TWEETID";
+
+    /**
+     * ({@link ServiceState}
+     */
+    public static final String EXTRA_SERVICE_STATE = packageName + ".SERVICE_STATE";
 
     /**
      * Text of the status message
@@ -190,7 +195,45 @@ public class MyService extends Service {
      * Is the timeline combined in {@link TimelineActivity} 
      */
     public static final String EXTRA_TIMELINE_IS_COMBINED = packageName + ".TIMELINE_IS_COMBINED";
-   
+
+    /**
+     * Communicate state of this service 
+     */
+    public enum ServiceState {
+        RUNNING,
+        STOPPING,
+        STOPPED,
+        UNKNOWN;
+        
+        /**
+         * Like valueOf but doesn't throw exceptions: it returns UNKNOWN instead 
+         */
+        public static ServiceState load(String str) {
+            ServiceState state;
+            try {
+                state = valueOf(str);
+            } catch (IllegalArgumentException e) {
+                state = UNKNOWN;
+            }
+            return state;
+        }
+        public String save() {
+            return this.toString();
+        }
+    }
+    
+    private ServiceState getServiceState() {
+        ServiceState state = ServiceState.STOPPED; 
+        if (mInitialized) {
+            if (mIsStopping) {
+                state = ServiceState.STOPPING;
+            } else {
+                state = ServiceState.RUNNING;
+            }
+        }
+        return state;
+    }
+    
     /**
      * The command to the MyService or to MyAppWidgetProvider as a
      * enum We use 'code' for persistence
@@ -289,14 +332,19 @@ public class MyService extends Service {
         NOTIFY_CLEAR("notify-clear"),
 
         /**
-         * Reload all preferences...
+         * Boot completed, do what is needed...
          */
-        PREFERENCES_CHANGED("preferences-changed"),
+        BOOT_COMPLETED("boot-completed"),
 
         /**
          * Stop the service after finishing all asynchronous treads (i.e. not immediately!)
          */
         STOP_SERVICE("stop-service"),
+
+        /**
+         * Broadcast back state of {@link MyService}
+         */
+        BROADCAST_SERVICE_STATE("broadcast-service-state"),
         
         /**
          * Save SharePreverence. We try to use it because sometimes Android
@@ -596,23 +644,23 @@ public class MyService extends Service {
     private boolean mNotificationsVibrate;
 
     /**
-     * We are going to finish this service
+     * We are going to finish this service. The flag is being checked by background threads
      */
-    protected boolean mIsFinishing = false;
+    private volatile boolean mIsStopping = false;
     /**
      * Flag to control the Service state persistence
      */
-    private boolean mStateRestored = false;
+    private volatile boolean mInitialized = false;
 
     /**
      * Commands queue to be processed by the Service
      */
-    private BlockingQueue<CommandData> mCommands = new ArrayBlockingQueue<CommandData>(100, true);
+    private Queue<CommandData> mCommands = new ArrayBlockingQueue<CommandData>(100, true);
 
     /**
      * Retry Commands queue
      */
-    private BlockingQueue<CommandData> mRetryQueue = new ArrayBlockingQueue<CommandData>(100, true);
+    private Queue<CommandData> mRetryQueue = new ArrayBlockingQueue<CommandData>(100, true);
 
     /**
      * The set of threads that are currently executing commands For now let's
@@ -628,7 +676,7 @@ public class MyService extends Service {
     private volatile PowerManager.WakeLock mWakeLock = null;
 
     /**
-     * Time when shared preferences where changed
+     * Time when shared preferences where changed as this knows it.
      */
     protected long preferencesChangeTime = 0;
     /**
@@ -652,15 +700,16 @@ public class MyService extends Service {
     private SharedPreferences getMyServicePreferences() {
         return MyPreferences.getSharedPreferences(TAG, MODE_PRIVATE);
     }
-    
+
+    /**
+     * After this the service state remains "STOPPED": we didn't initialize the instance yet!
+     */
     @Override
     public void onCreate() {
-        MyPreferences.initialize(this, this);
-        preferencesChangeTime = MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0);
+        preferencesChangeTime = MyPreferences.initialize(this, this);
         preferencesExamineTime = getMyServicePreferences().getLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, 0);
         MyLog.d(TAG, "Service created, preferencesChangeTime=" + preferencesChangeTime + ", examined=" + preferencesExamineTime);
 
-        registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
     }
 
     private BroadcastReceiver intentReceiver = new BroadcastReceiver() {
@@ -674,53 +723,61 @@ public class MyService extends Service {
     };
     
     /**
-     * Stop after finishing background processes
+     * Notify background processes that the service is stopping.
+     * Stop if background processes has finished.
+     * Persist everything that we'll need on next Service creation and free resources
      */
-    private void stopDelayed() {
-        mIsFinishing = true;
-        boolean doStop = (mExecutors.size() == 0);
+    private synchronized void stopDelayed() {
+        if (!mInitialized) return;
 
-        if (doStop) {
-            MyLog.d(TAG, "Service is being stopped");
-            relealeWakeLock();
-            stopSelf();
+        mIsStopping = true;
+        boolean doStop = (mExecutors.size() == 0);
+        if (!doStop) {
+            broadcastState();
+            return;
         }
+
+        // Unregister all callbacks.
+        mCallbacks.kill();
+
+        unregisterReceiver(intentReceiver);
+
+        // Clear notifications if any
+        notifyOfQueue(true);
+        
+        int count = 0;
+        // Save Queues
+        count += persistQueue(mCommands, TAG + "_" + "mCommands");
+        count += persistQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
+        MyLog.d(TAG, "State saved, " + (count>0 ? count : "no ") + " msg in the Queues");
+        
+        stopSelf();
+        relealeWakeLock();
+
+        mInitialized = false;
+        mIsStopping = false;
+        
+        broadcastState();
     }
 
-    @Override
-    public void onDestroy() {
-        synchronized(this) {
-            sendBroadcast(new Intent(ACTION_SERVICE_STOPPED));
-            
-            // Unregister all callbacks.
-            mCallbacks.kill();
-
-            unregisterReceiver(intentReceiver);
-
-            // Clear notifications if any
-            int count = notifyOfQueue(true);
-            saveState();
-            
-            MyLog.d(TAG, "Service destroyed" + (count>0 ? ", " + count + " msg in the Queue" : ""));
-            MyPreferences.forget();
-        }
+    /**
+     * Send broadcast informing of the current state of this service
+     */
+    private void broadcastState() {
+        Intent intent = new Intent(ACTION_SERVICE_STATE);
+        ServiceState state = getServiceState();
+        intent.putExtra(EXTRA_SERVICE_STATE, state.save());
+        sendBroadcast(intent);
+        MyLog.v(TAG, "state: " + state);
     }
     
-    /**
-     * Persist everything that we'll need on next Service creation.
-     */
-    private void saveState() {
-        if (mStateRestored) {
-            int count = 0;
-            // TODO: Save Queues
-            count += saveQueue(mCommands, TAG + "_" + "mCommands");
-            count += saveQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
-            MyLog.d(TAG, "State saved" + (count>0 ? ", " + count + " msg in the Queues" : ""));
-        }
-        mStateRestored = false;
+    @Override
+    public void onDestroy() {
+        stopDelayed();
+        MyLog.d(TAG, "Service destroyed");
     }
 
-    private int saveQueue(BlockingQueue<CommandData> q, String prefsFileName) {
+    private int persistQueue(Queue<CommandData> q, String prefsFileName) {
         Context context = MyPreferences.getContext();
         int count = 0;
         // Delete any existing saved queue
@@ -739,22 +796,59 @@ public class MyService extends Service {
     }
     
     /**
-     * Restore state if it was not restored yet
+     * Initialize and restore the state if it was not restored yet
      */
-    private void restoreState() {
-        synchronized(this) {
-            if (!mStateRestored) {
-                int count = 0;
-                // TODO: Restore Queues
-                count += restoreQueue(mCommands, TAG + "_" + "mCommands");
-                count += restoreQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
-                MyLog.d(TAG, "State restored" + (count>0 ? ", " + count + " msg in the Queues" : ""));
+    private synchronized void initialize() {
+
+        // Check when preferences were changed
+        long preferencesChangeTimeNew = MyPreferences.initialize(this, this);
+        long preferencesExamineTimeNew = java.lang.System.currentTimeMillis();
+
+
+        if (!mInitialized) {
+            int count = 0;
+            // Restore Queues
+            count += restoreQueue(mCommands, TAG + "_" + "mCommands");
+            count += restoreQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
+            MyLog.d(TAG, "State restored, " + (count>0 ?  count : "no") + " msg in the Queues");
+
+            registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
+            
+            mInitialized = true;
+            broadcastState();
+        }
+        
+        if (preferencesChangeTime != preferencesChangeTimeNew
+                || preferencesExamineTime < preferencesChangeTimeNew) {
+            // Preferences changed...
+            
+            if (preferencesChangeTimeNew > preferencesExamineTime) {
+                MyLog.d(TAG, "Examine at=" + preferencesExamineTimeNew + " Preferences changed at=" + preferencesChangeTimeNew);
+            } else if (preferencesChangeTimeNew > preferencesChangeTime) {
+                MyLog.d(TAG, "Preferences changed at=" + preferencesChangeTimeNew);
+            } else if (preferencesChangeTimeNew == preferencesChangeTime) {
+                MyLog.d(TAG, "Preferences didn't change, still at=" + preferencesChangeTimeNew);
+            } else {
+                Log.e(TAG, "Preferences change time error, time=" + preferencesChangeTimeNew);
             }
-            mStateRestored = true;
-        }        
+            preferencesChangeTime = preferencesChangeTimeNew;
+            preferencesExamineTime = preferencesExamineTimeNew;
+            getMyServicePreferences().edit().putLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, preferencesExamineTime).commit();
+
+            // Stop existing alarm in any case
+            cancelRepeatingAlarm();
+
+            SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
+            if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
+                /**
+                 * Schedule Automatic updates according to the preferences.
+                 */
+                scheduleRepeatingAlarm();
+            }
+        }
     }
 
-    private int restoreQueue(BlockingQueue<CommandData> q, String prefsFileName) {
+    private int restoreQueue(Queue<CommandData> q, String prefsFileName) {
         Context context = MyPreferences.getContext();
         int count = 0;
         if (SharedPreferencesUtil.exists(context, prefsFileName)) {
@@ -765,13 +859,12 @@ public class MyService extends Service {
                 if (cd.command == CommandEnum.UNKNOWN) {
                     done = true;
                 } else {
-                    try {
-                        q.put(cd);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    if ( q.offer(cd) ) {
+                        MyLog.v(TAG, "Command restored: " + cd.toString());
+                        count += 1;
+                    } else {
+                        Log.e(TAG, "Error restoring queue, command: " + cd.toString());
                     }
-                    MyLog.v(TAG, "Command restored: " + cd.toString());
-                    count += 1;
                 }
             } while (!done);
             sp = null;
@@ -794,10 +887,10 @@ public class MyService extends Service {
     }
 
     @Override
-    public void onStart(Intent intent, int startId) {
-        super.onStart(intent, startId);
-        MyLog.d(TAG, "onStart(): startid: " + startId);
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        MyLog.d(TAG, "onStartCommand: startid=" + startId);
         receiveCommand(intent);
+        return START_NOT_STICKY;
     }
 
     /**
@@ -812,27 +905,21 @@ public class MyService extends Service {
         CommandData commandData = null;
         if (intent != null) {
             commandData = new CommandData(intent);
-            if (commandData.command == CommandEnum.STOP_SERVICE) {
-                mIsFinishing = true;
-                // Try to stop immediately
-                stopDelayed();
-            } else {
-                // Cancel finishing if we received next command
-                mIsFinishing = false;
+            switch (commandData.command) {
+                case STOP_SERVICE:
+                    // Try to stop immediately
+                    stopDelayed();
+                    return;
+                case BROADCAST_SERVICE_STATE:
+                    broadcastState();
+                    return;
+                case BOOT_COMPLETED:
+                    // Force reexamining preferences
+                    preferencesExamineTime = 0;
             }
         }
-        if (mIsFinishing) {
-            return;
-        }
         
-        long preferencesChangeTimeNew = MyPreferences.getDefaultSharedPreferences().getLong(
-                MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0);
-        if (preferencesChangeTime != preferencesChangeTimeNew
-                || preferencesExamineTime < preferencesChangeTimeNew) {
-            examinePreferences();
-        }
-        
-        restoreState();
+        initialize();
         
         if (mCommands.isEmpty()) {
             // This is a good place to send commands from retry Queue
@@ -872,7 +959,7 @@ public class MyService extends Service {
         }
 
         // Start Executor if necessary
-        startEndStuff(true, null, null);
+        startEndExecutor(true, null);
     }
 
     /**
@@ -910,10 +997,8 @@ public class MyService extends Service {
 
                 case UNKNOWN:
                 case EMPTY:
+                case BOOT_COMPLETED:
                     // Nothing to do
-                    break;
-                case PREFERENCES_CHANGED:
-                    examinePreferences();
                     break;
 
                 case PUT_BOOLEAN_PREFERENCE:
@@ -983,55 +1068,16 @@ public class MyService extends Service {
     }
 
     /**
-     * Examine changed preferences and behave accordingly
-     * Clear all (including static) members, that depend on preferences
-     * and need to be reread...
-     */
-    private boolean examinePreferences() {
-        boolean ok = true;
-        
-        // Check when preferences were changed
-        long preferencesChangeTimeNew = MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0);
-        long preferencesExamineTimeNew = java.lang.System.currentTimeMillis();
-        
-        if (preferencesChangeTimeNew > preferencesExamineTime) {
-            MyLog.d(TAG, "Examine at=" + preferencesExamineTimeNew + " Preferences changed at=" + preferencesChangeTimeNew);
-        } else if (preferencesChangeTimeNew > preferencesChangeTime) {
-            MyLog.d(TAG, "Preferences changed at=" + preferencesChangeTimeNew);
-        } else if (preferencesChangeTimeNew == preferencesChangeTime) {
-            MyLog.d(TAG, "Preferences didn't change, still at=" + preferencesChangeTimeNew);
-        } else {
-            Log.e(TAG, "Preferences change time error, time=" + preferencesChangeTimeNew);
-        }
-        preferencesChangeTime = preferencesChangeTimeNew;
-        preferencesExamineTime = preferencesExamineTimeNew;
-        getMyServicePreferences().edit().putLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, preferencesExamineTime).commit();
-
-        // Forget and reload preferences...
-        MyPreferences.forget();
-        MyPreferences.initialize(this, this);
-
-        // Stop existing alarm in any case
-        ok = cancelRepeatingAlarm();
-
-        SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
-        if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
-            /**
-             * Schedule Automatic updates according to the preferences.
-             */
-            ok = scheduleRepeatingAlarm();
-        }
-        return ok;
-    }
-
-    /**
      * Start Execution thread if none is already running or stop execution
      * 
      * @param start true: start, false: stop
      * @param executor - existing executor or null (if starting new executor)
      * @param logMsg a log message to include for debugging
      */
-    private synchronized void startEndStuff(boolean start, CommandExecutor executorIn, String logMsg) {
+    private synchronized void startEndExecutor(boolean start, CommandExecutor executorIn) {
+        if (start) {
+            start = !mIsStopping;
+        }
         if (start) {
             SharedPreferences sp = getSp();
             mNotificationsEnabled = sp.getBoolean("notifications_enabled", false);
@@ -1050,9 +1096,6 @@ public class MyService extends Service {
                         } else {
                             executor = new CommandExecutor();
                         }
-                        if (logMsg != null) {
-                            MyLog.d(TAG, logMsg);
-                        }
                         mExecutors.add(executor);
                         executor.execute();
                     }
@@ -1062,13 +1105,10 @@ public class MyService extends Service {
             }
         } else {
             // Stop
-            if (logMsg != null) {
-                MyLog.d(TAG, logMsg);
-            }
             mExecutors.remove(executorIn);
             if (mExecutors.size() == 0) {
                 relealeWakeLock();
-                if (mIsFinishing) {
+                if (mIsStopping) {
                     stopDelayed();
                 } else if ( notifyOfQueue(false) == 0) {
                     if (! ForegroundCheckTask.isAppOnForeground(MyPreferences.getContext())) {
@@ -1123,6 +1163,7 @@ public class MyService extends Service {
 
             /**
              * Kick the commands queue by sending empty command
+             * This Intent will be sent upon a User tapping the notification 
              */
             PendingIntent pi = PendingIntent.getBroadcast(this, 0, new CommandData(
                     CommandEnum.EMPTY, "").toIntent(), 0);
@@ -1138,33 +1179,19 @@ public class MyService extends Service {
      * 
      * @author yvolk
      */
-    private class CommandExecutor extends AsyncTask<Void, Void, JSONObject> {
-        // private boolean skip = false;
-        private final String SERVICE_NOT_RESTORED_TEXT = "MyService state is not restored";
+    private class CommandExecutor extends AsyncTask<Void, Void, Boolean> {
 
         @Override
-        protected void onPreExecute() {
-
-        }
-
-        @Override
-        protected JSONObject doInBackground(Void... arg0) {
-            JSONObject jso = null;
-
-            int what = 0;
-            String message = "";
+        protected Boolean doInBackground(Void... arg0) {
             MyLog.d(TAG, "CommandExecutor, " + mCommands.size() + " commands to process");
 
             do {
                 boolean ok = false;
-                CommandData commandData = null;
-                synchronized(MyService.this) {
-                    if (mStateRestored) {
-                        // Get commands from the Queue one by one and execute them
-                        // The queue is Blocking, so we can do this
-                        commandData = mCommands.poll();
-                    }
-                }        
+                if (mIsStopping) break;
+                
+                // Get commands from the Queue one by one and execute them
+                // The queue is Blocking, so we can do this
+                CommandData commandData = mCommands.poll();
                 if (commandData == null) {
                     // All work is done
                     break;
@@ -1246,16 +1273,11 @@ public class MyService extends Service {
                     // last retry)
                     if (commandData.retriesLeft > 0) {
                         synchronized(MyService.this) {
-                            if (mStateRestored) {
-                                // Put the command to the retry queue
-                                if (!mRetryQueue.contains(commandData)) {
-                                    if (!mRetryQueue.offer(commandData)) {
-                                        Log.e(TAG, "mRetryQueue is full?");
-                                    }
+                            // Put the command to the retry queue
+                            if (!mRetryQueue.contains(commandData)) {
+                                if (!mRetryQueue.offer(commandData)) {
+                                    Log.e(TAG, "mRetryQueue is full?");
                                 }
-                            } else {
-                                Log.e(TAG, SERVICE_NOT_RESTORED_TEXT);
-                                ok2 = false;
                             }
                         }        
                     } else {
@@ -1270,53 +1292,20 @@ public class MyService extends Service {
                     break;
                 }
             } while (true);
-
-            try {
-                jso = new JSONObject();
-                jso.put("what", what);
-                jso.put("message", message);
-            } catch (JSONException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return jso;
+            return true;
         }
 
         /**
-         * TODO: Delete unnecessary lines... This is in the UI thread, so we can
-         * mess with the UI
-         * 
-         * @return ok
+         * This is in the UI thread, so we can mess with the UI
          */
-        protected void onPostExecute(JSONObject jso) {
-            // boolean succeeded = false;
-            String message = null;
-            if (jso != null) {
-                try {
-                    int what = jso.getInt("what");
-                    message = jso.getString("message");
-
-                    switch (what) {
-                        case 0:
-
-                            // succeeded = true;
-                            break;
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            synchronized(MyService.this) {
-                if (mStateRestored) {
-                    startEndStuff(false, this, message);
-                }
-            }        
+        protected void onPostExecute(Boolean notUsed) {
+            startEndExecutor(false, this);
         }
 
         /**
          * @param create true - create, false - destroy
          * @param msgId
-         * @return boolean ok
+         * @return ok
          */
         private boolean createOrDestroyFavorite(String accountNameIn, boolean create, long msgId) {
             boolean ok = false;
@@ -1341,70 +1330,62 @@ public class MyService extends Service {
                         (create ? "create" : "destroy") + "Favorite; msgId not found: " + msgId);
             }
             if (ok) {
-                synchronized (MyService.this) {
-                    if (mStateRestored) {
-                        try {
-                            boolean favorited = result.getBoolean("favorited");
-                            if (favorited != create) {
-                                /**
-                                 * yvolk: 2011-09-27 Twitter docs state that
-                                 * this may happen due to asynchronous nature of
-                                 * the process, see
-                                 * https://dev.twitter.com/docs/
-                                 * api/1/post/favorites/create/%3Aid
-                                 */
-                                if (create) {
-                                    // For the case we created favorite, let's
-                                    // change
-                                    // the flag manually.
-                                    result.put("favorited", create);
+                try {
+                    boolean favorited = result.getBoolean("favorited");
+                    if (favorited != create) {
+                        /**
+                         * yvolk: 2011-09-27 Twitter docs state that
+                         * this may happen due to asynchronous nature of
+                         * the process, see
+                         * https://dev.twitter.com/docs/
+                         * api/1/post/favorites/create/%3Aid
+                         */
+                        if (create) {
+                            // For the case we created favorite, let's
+                            // change
+                            // the flag manually.
+                            result.put("favorited", create);
 
-                                    MyLog.d(TAG,
-                                            (create ? "create" : "destroy")
-                                                    + ". Favorited flag didn't change yet.");
+                            MyLog.d(TAG,
+                                    (create ? "create" : "destroy")
+                                            + ". Favorited flag didn't change yet.");
 
-                                    // Let's try to assume that everything was
-                                    // Ok:
-                                    ok = true;
-                                } else {
-                                    // yvolk: 2011-09-27 Sometimes this
-                                    // twitter.com 'async' process doesn't work
-                                    // so let's try another time...
-                                    // This is safe, because "delete favorite"
-                                    // works
-                                    // even for "Unfavorited" tweet :-)
-                                    ok = false;
+                            // Let's try to assume that everything was
+                            // Ok:
+                            ok = true;
+                        } else {
+                            // yvolk: 2011-09-27 Sometimes this
+                            // twitter.com 'async' process doesn't work
+                            // so let's try another time...
+                            // This is safe, because "delete favorite"
+                            // works
+                            // even for "Unfavorited" tweet :-)
+                            ok = false;
 
-                                    Log.e(TAG,
-                                            (create ? "create" : "destroy")
-                                                    + ". Favorited flag didn't change yet.");
-                                }
-                            }
-                        } catch (JSONException e) {
                             Log.e(TAG,
                                     (create ? "create" : "destroy")
-                                            + ". Checking resulted favorited flag: "
-                                            + e.toString());
+                                            + ". Favorited flag didn't change yet.");
                         }
-
-                        if (ok) {
-                            try {
-                                TimelineDownloader fl = new TimelineDownloader(ma,
-                                        MyService.this.getApplicationContext(),
-                                        TimelineTypeEnum.HOME);
-                                fl.insertMsgFromJSONObject(result, true);
-                            } catch (JSONException e) {
-                                Log.e(TAG,
-                                        "Error marking as " + (create ? "" : "not ") + "favorite: "
-                                                + e.toString());
-                            }
-                        }
-                    } else {
-                        Log.e(TAG, (create ? "create" : "destroy") + "Favorite - "
-                                + SERVICE_NOT_RESTORED_TEXT);
                     }
+                } catch (JSONException e) {
+                    Log.e(TAG,
+                            (create ? "create" : "destroy")
+                                    + ". Checking resulted favorited flag: "
+                                    + e.toString());
                 }
 
+                if (ok) {
+                    try {
+                        TimelineDownloader fl = new TimelineDownloader(ma,
+                                MyService.this.getApplicationContext(),
+                                TimelineTypeEnum.HOME);
+                        fl.insertMsgFromJSONObject(result, true);
+                    } catch (JSONException e) {
+                        Log.e(TAG,
+                                "Error marking as " + (create ? "" : "not ") + "favorite: "
+                                        + e.toString());
+                    }
+                }
             }
 
             // TODO: Maybe we need to notify the caller about the result?!
@@ -1443,20 +1424,14 @@ public class MyService extends Service {
             }
 
             if (ok) {
-                synchronized (MyService.this) {
-                    if (mStateRestored) {
-                        // And delete the status from the local storage
-                        try {
-                            TimelineDownloader fl = new TimelineDownloader(ma,
-                                    MyService.this.getApplicationContext(),
-                                    TimelineTypeEnum.HOME);
-                            fl.destroyStatus(msgId);
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error destroying status locally: " + e.toString());
-                        }
-                    } else {
-                        Log.e(TAG, "destroyStatus - " + SERVICE_NOT_RESTORED_TEXT);
-                    }
+                // And delete the status from the local storage
+                try {
+                    TimelineDownloader fl = new TimelineDownloader(ma,
+                            MyService.this.getApplicationContext(),
+                            TimelineTypeEnum.HOME);
+                    fl.destroyStatus(msgId);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error destroying status locally: " + e.toString());
                 }
             }
 
@@ -1496,20 +1471,14 @@ public class MyService extends Service {
             }
 
             if (ok) {
-                synchronized (MyService.this) {
-                    if (mStateRestored) {
-                        // And delete the status from the local storage
-                        try {
-                            TimelineDownloader fl = new TimelineDownloader(ma,
-                                    MyService.this.getApplicationContext(),
-                                    TimelineTypeEnum.HOME);
-                            fl.destroyReblog(msgId);
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error destroying reblog locally: " + e.toString());
-                        }
-                    } else {
-                        Log.e(TAG, "destroyReblog - " + SERVICE_NOT_RESTORED_TEXT);
-                    }
+                // And delete the status from the local storage
+                try {
+                    TimelineDownloader fl = new TimelineDownloader(ma,
+                            MyService.this.getApplicationContext(),
+                            TimelineTypeEnum.HOME);
+                    fl.destroyReblog(msgId);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error destroying reblog locally: " + e.toString());
                 }
             }
 
@@ -1538,20 +1507,14 @@ public class MyService extends Service {
             }
 
             if (ok) {
-                synchronized (MyService.this) {
-                    if (mStateRestored) {
-                        // And add the message to the local storage
-                        try {
-                            TimelineDownloader fl = new TimelineDownloader(ma,
-                                    MyService.this.getApplicationContext(),
-                                    TimelineTypeEnum.ALL);
-                            fl.insertMsgFromJSONObject(result);
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error inserting status: " + e.toString());
-                        }
-                    } else {
-                        Log.e(TAG, "getStatus - " + SERVICE_NOT_RESTORED_TEXT);
-                    }
+                // And add the message to the local storage
+                try {
+                    TimelineDownloader fl = new TimelineDownloader(ma,
+                            MyService.this.getApplicationContext(),
+                            TimelineTypeEnum.ALL);
+                    fl.insertMsgFromJSONObject(result);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error inserting status: " + e.toString());
                 }
             }
             MyLog.d(TAG, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + msgId);
@@ -1586,22 +1549,16 @@ public class MyService extends Service {
                 Log.e(TAG, "updateStatus Exception: " + e.toString());
             }
             if (ok) {
-                synchronized(MyService.this) {
-                    if (mStateRestored) {
-                        try {
-                            // The tweet was sent successfully
-                            TimelineDownloader fl = new TimelineDownloader(ma, 
-                                    MyService.this.getApplicationContext(),
-                                    (recipientUserId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT);
+                try {
+                    // The tweet was sent successfully
+                    TimelineDownloader fl = new TimelineDownloader(ma, 
+                            MyService.this.getApplicationContext(),
+                            (recipientUserId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT);
 
-                            fl.insertMsgFromJSONObject(result, true);
-                        } catch (JSONException e) {
-                            Log.e(TAG, "updateStatus JSONException: " + e.toString());
-                        }
-                    } else {
-                        Log.e(TAG, "updateStatus - " + SERVICE_NOT_RESTORED_TEXT);
-                    }
-                }        
+                    fl.insertMsgFromJSONObject(result, true);
+                } catch (JSONException e) {
+                    Log.e(TAG, "updateStatus JSONException: " + e.toString());
+                }
             }
             return ok;
         }
@@ -1619,22 +1576,16 @@ public class MyService extends Service {
                 Log.e(TAG, "reblog Exception: " + e.toString());
             }
             if (ok) {
-                synchronized(MyService.this) {
-                    if (mStateRestored) {
-                        try {
-                            // The tweet was sent successfully
-                            TimelineDownloader fl = new TimelineDownloader(ma, 
-                                    MyService.this.getApplicationContext(),
-                                    TimelineTypeEnum.HOME);
+                try {
+                    // The tweet was sent successfully
+                    TimelineDownloader fl = new TimelineDownloader(ma, 
+                            MyService.this.getApplicationContext(),
+                            TimelineTypeEnum.HOME);
 
-                            fl.insertMsgFromJSONObject(result, true);
-                        } catch (JSONException e) {
-                            Log.e(TAG, "reblog JSONException: " + e.toString());
-                        }
-                    } else {
-                        Log.e(TAG, "reblog - " + SERVICE_NOT_RESTORED_TEXT);
-                    }
-                }        
+                    fl.insertMsgFromJSONObject(result, true);
+                } catch (JSONException e) {
+                    Log.e(TAG, "reblog JSONException: " + e.toString());
+                }
             }
             return ok;
         }
@@ -1715,7 +1666,7 @@ public class MyService extends Service {
                     boolean oKs[] = new boolean[atl.length];
                     try {
                         for (int ind = 0; ind <= atl.length; ind++) {
-                            if (mIsFinishing || !MyPreferences.isInitialized()) {
+                            if (mIsStopping) {
                                 okAllTimelines = false;
                                 break;
                             }
@@ -1775,19 +1726,11 @@ public class MyService extends Service {
                                     Log.e(TAG, descr + " - not implemented");
                             }
 
-                            if (ok && timelineType == TimelineTypeEnum.HOME) {
-                                // Currently this procedure is the same for all
-                                // timelines,
+                            if (ok && timelineType == TimelineTypeEnum.HOME && !mIsStopping) {
+                                // Currently this procedure is the same for all timelines,
                                 // so let's do it only for one timeline type!
-                                synchronized (MyService.this) {
-                                    descr = "prune old records";
-                                    if (mStateRestored) {
-                                        fl.pruneOldRecords();
-                                    } else {
-                                        Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
-                                        ok = false;
-                                    }
-                                }
+                                descr = "prune old records";
+                                fl.pruneOldRecords();
                             }
                             if (ok) {
                                 okSomething = true;
@@ -1806,14 +1749,7 @@ public class MyService extends Service {
 
                     if (ok) {
                         descr = "notifying";
-                        synchronized (MyService.this) {
-                            if (mStateRestored) {
-                                notifyOfUpdatedTimeline(msgAdded, mentionsAdded, directedAdded);
-                            } else {
-                                Log.i(TAG, descr + " - " + SERVICE_NOT_RESTORED_TEXT);
-                                ok = false;
-                            }
-                        }
+                        notifyOfUpdatedTimeline(msgAdded, mentionsAdded, directedAdded);
                     }
 
                     String message = "";
@@ -1864,34 +1800,29 @@ public class MyService extends Service {
          */
         private void notifyOfUpdatedTimeline(int msgAdded, int mentionsAdded,
                 int directedAdded) {
-            synchronized (MyService.this) {
-                if (!mStateRestored) {
-                    return;
-                }
-                int N = mCallbacks.beginBroadcast();
+            int N = mCallbacks.beginBroadcast();
 
-                for (int i = 0; i < N; i++) {
-                    try {
-                        MyLog.d(TAG, "finishUpdateTimeline, Notifying callback no. " + i);
-                        IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
-                        if (cb != null) {
-                            if (msgAdded > 0) {
-                                cb.tweetsChanged(msgAdded);
-                            }
-                            if (mentionsAdded > 0) {
-                                cb.repliesChanged(mentionsAdded);
-                            }
-                            if (directedAdded > 0) {
-                                cb.messagesChanged(directedAdded);
-                            }
+            for (int i = 0; i < N; i++) {
+                try {
+                    MyLog.d(TAG, "finishUpdateTimeline, Notifying callback no. " + i);
+                    IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
+                    if (cb != null) {
+                        if (msgAdded > 0) {
+                            cb.tweetsChanged(msgAdded);
                         }
-                    } catch (RemoteException e) {
-                        Log.e(TAG, e.toString());
+                        if (mentionsAdded > 0) {
+                            cb.repliesChanged(mentionsAdded);
+                        }
+                        if (directedAdded > 0) {
+                            cb.messagesChanged(directedAdded);
+                        }
                     }
+                } catch (RemoteException e) {
+                    Log.e(TAG, e.toString());
                 }
-
-                mCallbacks.finishBroadcast();
             }
+
+            mCallbacks.finishBroadcast();
 
             boolean notified = false;
             if (mentionsAdded > 0) {
@@ -1913,26 +1844,21 @@ public class MyService extends Service {
          * to any particular receiver waiting for the data...
          */
         private void notifyOfDataLoadingCompletion() {
-            synchronized (MyService.this) {
-                if (!mStateRestored) {
-                    return;
-                }
-                int N = mCallbacks.beginBroadcast();
+            int N = mCallbacks.beginBroadcast();
 
-                for (int i = 0; i < N; i++) {
-                    try {
-                        MyLog.v(TAG,
-                                "Notifying of data loading completion, Notifying callback no. " + i);
-                        IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
-                        if (cb != null) {
-                            cb.dataLoading(0);
-                        }
-                    } catch (RemoteException e) {
-                        Log.e(TAG, e.toString());
+            for (int i = 0; i < N; i++) {
+                try {
+                    MyLog.v(TAG,
+                            "Notifying of data loading completion, Notifying callback no. " + i);
+                    IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
+                    if (cb != null) {
+                        cb.dataLoading(0);
                     }
+                } catch (RemoteException e) {
+                    Log.e(TAG, e.toString());
                 }
-                mCallbacks.finishBroadcast();
             }
+            mCallbacks.finishBroadcast();
         }
         
         /**
@@ -2118,30 +2044,24 @@ public class MyService extends Service {
             }
 
             if (ok) {
-                synchronized(MyService.this) {
-                    if (mStateRestored) {
-                        int N = mCallbacks.beginBroadcast();
-                        for (int i = 0; i < N; i++) {
-                            try {
-                                IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
-                                if (cb != null) {
-                                    cb.rateLimitStatus(remaining, limit);
-                                }
-                            } catch (RemoteException e) {
-                                MyLog.d(TAG, e.toString());
-                            }
+                int N = mCallbacks.beginBroadcast();
+                for (int i = 0; i < N; i++) {
+                    try {
+                        IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
+                        if (cb != null) {
+                            cb.rateLimitStatus(remaining, limit);
                         }
-                        mCallbacks.finishBroadcast();
-                    } else {
-                        Log.e(TAG, "rateLimitStatus - " + SERVICE_NOT_RESTORED_TEXT);
+                    } catch (RemoteException e) {
+                        MyLog.d(TAG, e.toString());
                     }
-                }        
+                }
+                mCallbacks.finishBroadcast();
             }
             return ok;
         }
     }
 
-    private void acquireWakeLock() {
+    private synchronized void acquireWakeLock() {
         if (mWakeLock == null) {
             MyLog.d(TAG, "Acquiring wakelock");
             PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -2150,7 +2070,7 @@ public class MyService extends Service {
         }
     }
     
-    private void relealeWakeLock() {
+    private synchronized void relealeWakeLock() {
         if (mWakeLock != null) {
             MyLog.d(TAG, "Releasing wakelock");
             mWakeLock.release();
@@ -2163,21 +2083,21 @@ public class MyService extends Service {
      * 
      * @return the number of milliseconds
      */
-    private int getFetchFrequencyMs() {
-        int frequencyS = Integer.parseInt(getSp().getString(MyPreferences.KEY_FETCH_FREQUENCY, "180"));
-        return (frequencyS * MILLISECONDS);
+    private int getFetchPeriodMs() {
+        int periodSeconds = Integer.parseInt(getSp().getString(MyPreferences.KEY_FETCH_PERIOD, "180"));
+        return (periodSeconds * MILLISECONDS);
     }
 
     /**
      * Starts the repeating Alarm that sends the fetch Intent.
      */
     private boolean scheduleRepeatingAlarm() {
-        final AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        final PendingIntent pIntent = getRepeatingIntent();
-        final int frequencyMs = getFetchFrequencyMs();
-        final long firstTime = SystemClock.elapsedRealtime() + frequencyMs;
-        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, frequencyMs, pIntent);
-        MyLog.d(TAG, "Started repeating alarm in a " + frequencyMs + "ms rhythm.");
+        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        PendingIntent pIntent = newRepeatingIntent();
+        int periodMs = getFetchPeriodMs();
+        long firstTime = SystemClock.elapsedRealtime() + periodMs;
+        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, periodMs, pIntent);
+        MyLog.d(TAG, "Started repeating alarm in a " + periodMs + " ms rhythm.");
         return true;
     }
 
@@ -2185,8 +2105,8 @@ public class MyService extends Service {
      * Cancels the repeating Alarm that sends the fetch Intent.
      */
     private boolean cancelRepeatingAlarm() {
-        final AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        final PendingIntent pIntent = getRepeatingIntent();
+        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        PendingIntent pIntent = newRepeatingIntent();
         am.cancel(pIntent);
         MyLog.d(TAG, "Cancelled repeating alarm.");
         return true;
@@ -2197,7 +2117,7 @@ public class MyService extends Service {
      * This alarm will be received by {@link MyServiceManager}
      * @return the Intent
      */
-    private PendingIntent getRepeatingIntent() {
+    private PendingIntent newRepeatingIntent() {
         Intent intent = new Intent(ACTION_ALARM);
         intent.putExtra(MyService.EXTRA_MSGTYPE, CommandEnum.AUTOMATIC_UPDATE.save());
         PendingIntent pIntent = PendingIntent.getBroadcast(this, 0, intent, 0);

@@ -170,6 +170,7 @@ public class MyAccount implements Parcelable {
     /**
      * NEVER - means that User was never successfully authenticated with current credentials,
      *      this is why we reset to state to NEVER every time credentials were changed.
+     *      TODO: Use instance fields instead of ordinals (see [EffectiveJava] Item 31)
      */
     public enum CredentialsVerified {
         NEVER, FAILED, SUCCEEDED;
@@ -235,7 +236,7 @@ public class MyAccount implements Parcelable {
         try {
             String str = getDataString(key, "null");
             if (str.compareTo("null") != 0) {
-                value = (MyPreferences.isTrue(str) != 0);
+                value = (SharedPreferencesUtil.isTrue(str) != 0);
             }
         } catch (Exception e) {}
         return value;
@@ -672,7 +673,7 @@ public class MyAccount implements Parcelable {
     }
     
     /**
-     * Delete everything about the MeAccount
+     * Delete everything about the MyAccount
      * 
      * @return Was the MyAccount (and Account) deleted?
      */

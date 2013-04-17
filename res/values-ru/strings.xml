@@ -217,7 +217,9 @@
 	<string name="search_direct_messages_label">Поиск личных сообщений</string>
 	<string name="search_direct_messages_hint">Введите имя или фразу</string>
 	<string name="status_destroyed">Сообщение удалено.</string>
-    <string name="summary_preference_add_account_oauth">Щёлкните здесь для открытия сайта Системы в браузере.</string>
+    <string name="summary_preference_accounts_absent">Пока нет ни одного AndStatus-аккаунта</string>
+    <string name="summary_preference_accounts_present">Количество аккаунтов</string>
+	<string name="summary_preference_add_account_oauth">Щёлкните здесь для открытия сайта Системы в браузере.</string>
     <string name="summary_preference_add_account_basic">Щёлкните здесь для аутентификации пользователя и добавления учётной записи (аккаунта).</string>
     <string name="summary_preference_appearance">Изменить внешний вид программы AndStatus</string>
 	<string name="summary_preference_automatic_updates">Изменить параметры автоматических обновлений</string>
@@ -259,7 +261,8 @@
 	<string name="summary_preference_vibration">Виброзвонок при входящем сообщении</string>
 	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>
 	<string name="summary_preference_vibration_on">Виброзвонок при входящем сообщении включён</string>
-	<string name="timeline_reloaded">Лента времени обновлена.</string>
+    <string name="system_is_busy_try_later">Система сейчас занята. Пожалуйста, попробуйте попозже.</string>
+    <string name="timeline_reloaded">Лента времени обновлена.</string>
 	<string name="title_preference_about_application">О программе AndStatus</string>
     <string name="title_preference_add_account">Добавить учётную запись</string>
     <string name="title_preference_appearance">Внешний вид</string>

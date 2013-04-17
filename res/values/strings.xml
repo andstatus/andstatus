@@ -204,7 +204,9 @@
 	<string name="search_timeline_hint">Enter a username/phrase</string>
 	<string name="search_direct_messages_label">Search direct messages</string>
 	<string name="search_direct_messages_hint">Enter a username or phrase</string>
-	<string name="status_destroyed">The message has been removed.</string>
+    <string name="status_destroyed">The message has been removed.</string>
+    <string name="summary_preference_accounts_absent">No AndStatus accounts yet</string>
+    <string name="summary_preference_accounts_present">Number of Accounts</string>
     <string name="summary_preference_add_account_oauth">Tap here to open the Microblogging system site in a browser.</string>
     <string name="summary_preference_add_account_basic">Tap here to verify credentials and add the account.</string>
     <string name="summary_preference_appearance">Change the AndStatus look and feel</string>
@@ -247,7 +249,8 @@
 	<string name="summary_preference_vibration">Vibrate on incoming message</string>
 	<string name="summary_preference_vibration_off">Vibration is turned off</string>
 	<string name="summary_preference_vibration_on">Vibrating on incoming message</string>
-	<string name="timeline_reloaded">Timeline has been reloaded.</string>
+    <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
+    <string name="timeline_reloaded">Timeline has been reloaded.</string>
 	<string name="title_preference_about_application">About AndStatus</string>
     <string name="title_preference_add_account">Add an account</string>
     <string name="title_preference_appearance">Appearance</string>

@@ -21,15 +21,13 @@ import org.andstatus.app.util.MyLog;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.SyncResult;
 import android.os.Environment;
-import android.preference.ListPreference;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
-import java.text.MessageFormat;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This is central point of accessing SharedPreferences and other global objects, used by AndStatus
@@ -38,7 +36,7 @@ import java.text.MessageFormat;
  */
 public class MyPreferences {
     private static final String TAG = MyPreferences.class.getSimpleName();
-    private static boolean misInitialized = false;
+    private static volatile boolean initialized = false;
     /**
      * Single context object for which we will request SharedPreferences
      */
@@ -46,13 +44,17 @@ public class MyPreferences {
     /**
      * Name of the object that initialized the class
      */
-    private static String origin;
+    private static String initializedBy;
+    /**
+     * When preferences, loaded into this class, were changed
+     */
+    private static volatile long preferencesChangeTime = 0;
     private static MyDatabase db;
 
     /**
-     * For testing purposes
+     * IDs used for testing purposes to identify instances of reference types.
      */
-    private static long prevInstanceId = 0;
+    private static final AtomicInteger prevInstanceId = new AtomicInteger(0);
     
     /**
      * This is sort of button to start verification of credentials
@@ -64,7 +66,7 @@ public class MyPreferences {
     /**
      * Period of automatic updates in seconds
      */
-    public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
+    public static final String KEY_FETCH_PERIOD = "fetch_frequency";
     public static final String KEY_AUTOMATIC_UPDATES = "automatic_updates";
     public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
     public static final String KEY_CONTACT_DEVELOPER = "contact_developer";
@@ -111,56 +113,83 @@ public class MyPreferences {
     
     /**
      * This method should be called before any other operations in the application (as early as possible)
+     * If the class was initialized but preferences changed later, all preferences are reloaded ("refresh")
      * @param context_in
      * @param object - object that initialized the class 
+     * @return System time when preferences were last changed
      */
-    public static Context initialize(Context context_in, java.lang.Object object ) {
-        String origin_in = object.getClass().getSimpleName();
-        if (origin_in.contentEquals("String")) {
-            origin_in = object.toString();
-        }
-        if (!misInitialized) {
-            origin = origin_in;
-            Log.v(TAG, "Starting initialization by " + origin);
-            if (context_in != null) {
-                // Maybe we should use context_in.getApplicationContext() ??
-                context = context_in.getApplicationContext();
-                Log.v(TAG, "getApplicationContext is null, trying the context_in itself: " + context_in.getClass().getName());
-            
-                /* This may be useful to know from where the class was initialized
-                StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
-                for(int i=0; i<elements.length; i++) { 
-                    Log.v(TAG, elements[i].toString()); 
-                }
-                */
-            
-                if ( context == null) {
-                    Log.v(TAG, "getApplicationContext is null, trying the context_in itself: " + context_in.getClass().getName());
-                    context = context_in;
-                }
-            }
-            if ( context != null) {
-                misInitialized = true;
-
-                MyAccount.initialize();
-            }
-            if (misInitialized) {
-                MyLog.v(TAG, "Initialized by " + origin + " context: " + context.getClass().getName());
-            } else {
-                Log.e(TAG, "Failed to initialize by " + origin);
-            }
+    public static long initialize(Context context_in, Object object ) {
+        boolean justInitialized = false;
+        String initializerName;
+        if (object instanceof String) {
+            initializerName = (String) object;
         } else {
-            MyLog.v(TAG, "Already initialized by " + origin +  " (called by: " + origin_in + ")");
+            initializerName = object.getClass().getSimpleName();
+
         }
-        return getContext();
+        if (initialized) {
+            synchronized(TAG) {
+                if (initialized) {
+                    long preferencesChangeTime_last = getPreferencesChangeTime();
+                    if (preferencesChangeTime != preferencesChangeTime_last) {
+                        MyLog.v(TAG, "Preferences changed " + (java.lang.System.currentTimeMillis() - preferencesChangeTime_last)/1000 +  " seconds ago, refreshing...");
+                        forget();
+                    }
+                }
+            }
+        }
+        if (!initialized) {
+            synchronized(TAG) {
+                if (!initialized) {
+                    initializedBy = initializerName;
+                    Log.v(TAG, "Starting initialization by " + initializedBy);
+                    if (context_in != null) {
+                        // Maybe we should use context_in.getApplicationContext() ??
+                        context = context_in.getApplicationContext();
+                    
+                        /* This may be useful to know from where the class was initialized
+                        StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
+                        for(int i=0; i<elements.length; i++) { 
+                            Log.v(TAG, elements[i].toString()); 
+                        }
+                        */
+                    
+                        if ( context == null) {
+                            Log.v(TAG, "getApplicationContext is null, trying the context_in itself: " + context_in.getClass().getName());
+                            context = context_in;
+                        }
+                    }
+                    if ( context != null) {
+                        initialized = true;
+                        preferencesChangeTime = getPreferencesChangeTime();
+
+                        MyAccount.initialize();
+                    }
+                    justInitialized = initialized;
+                    if (initialized) {
+                        MyLog.v(TAG, "Initialized by " + initializedBy + " context: " + context.getClass().getName());
+                    } else {
+                        Log.e(TAG, "Failed to initialize by " + initializedBy);
+                    }
+                }
+            }
+        } 
+        if (initialized && !justInitialized) {
+            MyLog.v(TAG, "Already initialized by " + initializedBy +  " (called by: " + initializerName + ")");
+        }
+        return preferencesChangeTime;
     }
 
+    public static Context initializeAndGetContext(Context context_in, java.lang.Object object ) {
+        initialize(context_in, object);
+        return getContext();
+    }
+    
     /**
-     * @return Unique for this process Integer, numbers are given in the order starting from 1
+     * @return Unique for this process integer, numbers are given in the order starting from 1
      */
-    public static long nextInstanceId() {
-        prevInstanceId += 1;
-        return prevInstanceId;
+    public static int nextInstanceId() {
+        return prevInstanceId.incrementAndGet();
     }
     
     /**
@@ -168,7 +197,7 @@ public class MyPreferences {
      * e.g. after configuration changes
      */
     public static void forget() {
-        misInitialized = false;
+        initialized = false;
         MyAccount.forget();
         if (db != null) {
             try {
@@ -181,11 +210,11 @@ public class MyPreferences {
         }
         MyLog.forget();
         context = null;
-        origin = null;
+        initializedBy = null;
     }
     
     public static boolean isInitialized() {
-        return (misInitialized);
+        return (initialized);
     }
     
     /**
@@ -226,45 +255,26 @@ public class MyPreferences {
      *  Remember when last changes to the preferences were made
      */
     public static void setPreferencesChangedNow() {
-        if (isInitialized()) {
+        if (initialized) {
             getDefaultSharedPreferences()
             .edit()
-            .putLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME,
+            .putLong(KEY_PREFERENCES_CHANGE_TIME,
                     java.lang.System.currentTimeMillis()).commit();
         }
     }
 
     /**
-     * @param pa Preference Activity
-     * @param keyPreference android:key - Name of the preference key
-     * @param entryValuesR android:entryValues
-     * @param displayR Almost like android:entries but to show in the summary (may be the same as android:entries) 
-     * @param summaryR
+     * @return System time when AndStatus preferences were last time changed. 
+     * We take into account here time when accounts were added/removed...
      */
-    public static void showListPreference(PreferenceActivity pa, String keyPreference, int entryValuesR, int displayR, int summaryR) {
-        String displayParm = "";
-        ListPreference lP = (ListPreference) pa.findPreference(keyPreference);
-        if (lP != null) {
-            String[] k = pa.getResources().getStringArray(entryValuesR);
-            String[] d = pa.getResources().getStringArray(displayR);
-            displayParm = d[0];
-            String listValue = lP.getValue();
-            for (int i = 0; i < k.length; i++) {
-                if (listValue.equals(k[i])) {
-                    displayParm = d[i];
-                    break;
-                }
-            }
-        } else {
-            displayParm = keyPreference + " was not found";
+    public static long getPreferencesChangeTime() {
+        long preferencesChangeTime = 0;
+        if (initialized) {
+            preferencesChangeTime = getDefaultSharedPreferences().getLong(KEY_PREFERENCES_CHANGE_TIME, 0);            
         }
-        MessageFormat sf = new MessageFormat(pa.getText(summaryR)
-                .toString());
-        lP.setSummary(sf.format(new Object[] {
-            displayParm
-        }));
+        return preferencesChangeTime;
     }
-    
+
     public static Context getContext() {
         return context;
     }
@@ -295,11 +305,12 @@ public class MyPreferences {
      * the following Environment constants for a subdirectory:
      * {@link android.os.Environment#DIRECTORY_PICTURES Environment.DIRECTORY_...} (since API 8),
      * {@link #DIRECTORY_DATABASES}
+     * @param forcedUseExternalStorage if not null, use this value instead of stored in preferences as {@link #KEY_USE_EXTERNAL_STORAGE}
      * 
      * @return directory, already created for you OR null in case of error
      * @see <a href="http://developer.android.com/guide/topics/data/data-storage.html#filesExternal">filesExternal</a>
      */
-    public static File getDataFilesDir(String type) {
+    public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage) {
         File baseDir = null;
         String pathToAppend = "";
         File dir = null;
@@ -308,7 +319,11 @@ public class MyPreferences {
         if (context == null) {
             textToLog = "getDataFilesDir - Was not initialized yet";
         } else {
-            useExternalStorage = getDefaultSharedPreferences().getBoolean(KEY_USE_EXTERNAL_STORAGE, false); 
+            if (forcedUseExternalStorage == null) {
+                useExternalStorage = getDefaultSharedPreferences().getBoolean(KEY_USE_EXTERNAL_STORAGE, false); 
+            } else {
+                useExternalStorage = forcedUseExternalStorage;
+            }
             if (useExternalStorage) {
                 String state = Environment.getExternalStorageState();
                 if (Environment.MEDIA_MOUNTED.equals(state)) {    
@@ -348,57 +363,36 @@ public class MyPreferences {
         
         return dir;
     }
+
+    /**
+     * Extends {@link android.content.ContextWrapper#getDatabasePath(java.lang.String)}
+     * @param name The name of the database for which you would like to get its path.
+     * @param forcedUseExternalStorage if not null, use this value instead of stored in preferences as {@link #KEY_USE_EXTERNAL_STORAGE}
+     * @return
+     */
+    public static File getDatabasePath(String name, Boolean forcedUseExternalStorage) {
+        File dbDir = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, forcedUseExternalStorage);
+        File dbAbsolutePath = null;
+        if (dbDir != null) {
+            dbAbsolutePath = new File(dbDir.getPath() + "/" + name);
+        }
+        return dbAbsolutePath;
+    }
     
     /**
      * Simple check that allows to prevent data access errors
      */
     public static boolean isDataAvailable() {
-        return (getDataFilesDir(null) != null);
+        return (getDataFilesDir(null, null) != null);
     }
 
-    /**
-     * Returns true not only for boolean, but for "1" also
-     * @param o
-     * @return  1 = true, 0 - false or null
-     */
-    public static int isTrue(Object o) {
-        boolean is = false;
-        try {
-            if (o != null) {
-                String val = o.toString();
-                is = Boolean.parseBoolean(val);
-                if (!is) {
-                    if ( val.compareTo("1") == 0) {
-                        is = true;
-                    }
-                }
-            }
-        } catch (Exception e) {}
-        return (is ? 1 : 0);
-    }
-    
-    /**
-     * Returns true if the string is null or 0-length or "null"
-     * 
-     * @param str the string to be examined
-     * @return true if str is null or zero length or "null"
-     */
-    public static boolean isEmpty(CharSequence str) {
-        if (TextUtils.isEmpty(str))
-            return true;
-        else if (str.equals("null"))
-            return true;
-        else
-            return false;
-    }
-    
     /**
      * Load the theme according to the preferences.
      */
     public static void loadTheme(String TAG, android.content.Context context) {
-        boolean light = MyPreferences.getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
+        boolean light = getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
         StringBuilder themeName = new StringBuilder();
-        String name = MyPreferences.getDefaultSharedPreferences().getString("theme", "AndStatus");
+        String name = getDefaultSharedPreferences().getString("theme", "AndStatus");
         if (name.indexOf("Theme.") > -1) {
             name = name.substring(name.indexOf("Theme."));
         }

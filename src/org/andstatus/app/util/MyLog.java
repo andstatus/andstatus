@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2011-2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,9 +51,13 @@ public class MyLog {
      * Is used in isLoggable(APPTAG, ... ) calls
      */
     public static final String APPTAG = "AndStatus";
+
+    private static volatile boolean initialized = false;
     
-    // Cached value of the persistent preference
-    protected static int minLogLevel = Log.ASSERT + 1;
+    /** 
+     * Cached value of the persistent preference
+     */
+    private static volatile int minLogLevel = Log.INFO;
 
     /**
      * Shortcut for debugging messages of the application
@@ -96,8 +100,30 @@ public class MyLog {
      */
     public static boolean isLoggable(String tag, int level) {
         boolean is = false;
-        if (minLogLevel > Log.ASSERT) {
-            // The member was not initialized yet.
+        checkInit();
+        if (level >= minLogLevel) {
+            is = true;
+        } else {
+            if (TextUtils.isEmpty(tag)) {
+                tag = APPTAG;
+            }
+            if (tag.length() > 23) {
+                tag = tag.substring(0, 22);
+            }
+            is = Log.isLoggable(tag, level);
+        }
+        
+        return is;
+    }
+    
+    /**
+     * Initialize using a double-check idiom 
+     */
+    private static void checkInit() {
+        if (initialized) return;
+        synchronized (APPTAG) {
+            if (initialized) return;
+            // The class was not initialized yet.
             String val = "(not set)";
             try {
                 SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();  
@@ -122,27 +148,15 @@ public class MyLog {
             if (Log.INFO >= minLogLevel) {
                 Log.i(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
             }
+            initialized = true;
         }
-        if (level >= minLogLevel) {
-            is = true;
-        } else {
-            if (TextUtils.isEmpty(tag)) {
-                tag = APPTAG;
-            }
-            if (tag.length() > 23) {
-                tag = tag.substring(0, 22);
-            }
-            is = Log.isLoggable(tag, level);
-        }
-        
-        return is;
     }
 
     /**
-     * Forget everything in order to reread from the sources if it will be needed
+     * Mark to reread from the sources if it will be needed
      */
     public static void forget() {
-        minLogLevel = Log.ASSERT + 1;
+        initialized = false;
     }
     
 }

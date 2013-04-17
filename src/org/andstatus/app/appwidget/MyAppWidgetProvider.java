@@ -35,6 +35,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.util.I18n;
@@ -65,7 +66,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 	private MyService.CommandEnum msgType = MyService.CommandEnum.UNKNOWN;
 	private int numSomethingReceived = 0;
 	private static Object xlock = new Object();
-	private long instanceId = Math.abs(new java.util.Random().nextInt());
+	private final int instanceId = MyPreferences.nextInstanceId();
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -77,7 +78,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 
 		if (MyService.ACTION_APPWIDGET_UPDATE.equals(action)) {
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "inst=" + instanceId + "; Intent from MyService received!");
+                Log.v(TAG, "instanceId=" + instanceId + "; Intent from MyService received!");
             }
 			Bundle extras = intent.getExtras();
 			if (extras != null) {
@@ -108,7 +109,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 				done = true;
 			}
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "inst=" + instanceId + "; Intent from MyService processed");
+                Log.v(TAG, "instanceId=" + instanceId + "; Intent from MyService processed");
             }
 		} else if (AppWidgetManager.ACTION_APPWIDGET_DELETED.equals(action)) {
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
@@ -203,7 +204,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 		boolean Ok = false;
 		try {
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "inst=" + instanceId + "; updateAppWidget appWidgetId=" + appWidgetId 
+                Log.v(TAG, "instanceId=" + instanceId + "; updateAppWidget appWidgetId=" + appWidgetId 
                         + "; msgType=" + msgType);
             }
 
@@ -375,11 +376,11 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			}
 			Ok = true;
 		} catch (Exception e) {
-			Log.e(TAG, "inst=" + instanceId + "; updateAppWidget exception: " + e.toString() );
+			Log.e(TAG, "instanceId=" + instanceId + "; updateAppWidget exception: " + e.toString() );
 			
 		} finally {
             if ( !Ok || MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "inst=" + instanceId + "; updateAppWidget " + (Ok ? "succeded" : "failed") );
+                Log.v(TAG, "instanceId=" + instanceId + "; updateAppWidget " + (Ok ? "succeded" : "failed") );
             }
 		}
 	}

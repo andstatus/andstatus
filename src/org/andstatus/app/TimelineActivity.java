@@ -205,7 +205,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     /**
      * For testing purposes
      */
-    protected long instanceId = 0;
+    private int instanceId = 0;
     protected MyHandler mHandler = new MyHandler();
     MyServiceConnector serviceConnector;
 
@@ -286,7 +286,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     private class MyHandler extends Handler {
         @Override
         public void handleMessage(android.os.Message msg) {
-            MyLog.v(TAG, "handleMessage, what=" + msg.what + ", instance " + instanceId);
+            MyLog.v(TAG, "handleMessage, what=" + msg.what + ", instanceId=" + instanceId);
             JSONObject result = null;
             switch (msg.what) {
                 case MyServiceConnector.MSG_TWEETS_CHANGED:
@@ -444,7 +444,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * @param isLoading Is loading now?
      */
     void setIsLoading(boolean isLoading) {
-        MyLog.v(TAG, "isLoading set from " + mIsLoading + " to " + isLoading + ", instance " + instanceId );
+        MyLog.v(TAG, "isLoading set from " + mIsLoading + " to " + isLoading + ", instanceId=" + instanceId );
         mIsLoading = isLoading;
     }
     
@@ -459,14 +459,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         if (instanceId == 0) {
             instanceId = MyPreferences.nextInstanceId();
         } else {
-            MyLog.d(TAG, "onCreate reuse the same instance " + instanceId);
+            MyLog.d(TAG, "onCreate reuse the same instanceId=" + instanceId);
         }
 
-        MyPreferences.initialize(this, this);
-        preferencesChangeTime = MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0);
+        preferencesChangeTime = MyPreferences.initialize(this, this);
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-            MyLog.d(TAG, "onCreate instance " + instanceId + " , preferencesChangeTime=" + preferencesChangeTime);
+            MyLog.d(TAG, "onCreate instanceId=" + instanceId + " , preferencesChangeTime=" + preferencesChangeTime);
         }
 
         if (!mIsFinishing) {
@@ -478,27 +477,29 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             } else if (MyAccount.getCurrentMyAccount() == null) {
                 Log.i(TAG, "No current MyAccount");
                 helpAsFirstActivity = true;
-            } else {
-                // Show Change Log after update
-                try {
-                    int versionCodeLast =  MyPreferences.getDefaultSharedPreferences().getInt(MyPreferences.KEY_VERSION_CODE_LAST, 0);
-                    PackageManager pm = getPackageManager();
-                    PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
-                    int versionCode =  pi.versionCode;
-                    if (versionCodeLast < versionCode) {
-                        showChangeLog = true;
-                        MyPreferences.getDefaultSharedPreferences().edit().putInt(MyPreferences.KEY_VERSION_CODE_LAST, versionCode).commit();
-                    }
-                } catch (NameNotFoundException e) {
-                    Log.e(TAG, "Unable to obtain package information", e);
+            } 
+            
+            // Show Change Log after update
+            try {
+                int versionCodeLast =  MyPreferences.getDefaultSharedPreferences().getInt(MyPreferences.KEY_VERSION_CODE_LAST, 0);
+                PackageManager pm = getPackageManager();
+                PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
+                int versionCode =  pi.versionCode;
+                if (versionCodeLast < versionCode) {
+                    // Even if the User will see only the first page of the Help activity,
+                    // count this as showing the Change Log
+                    showChangeLog = true;
+                    MyPreferences.getDefaultSharedPreferences().edit().putInt(MyPreferences.KEY_VERSION_CODE_LAST, versionCode).commit();
                 }
+            } catch (NameNotFoundException e) {
+                Log.e(TAG, "Unable to obtain package information", e);
             }
+
             if (helpAsFirstActivity || showChangeLog) {
                 Intent intent = new Intent(this, HelpActivity.class);
                 if (helpAsFirstActivity) {
                     intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
-                }
-                if (showChangeLog) {
+                } else if (showChangeLog) {
                     intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
                 }
                 startActivity(intent);
@@ -631,10 +632,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     @Override
     protected void onResume() {
         super.onResume();
-        MyLog.v(TAG, "onResume, instance " + instanceId);
+        MyLog.v(TAG, "onResume, instanceId=" + instanceId);
         if (!mIsFinishing) {
             if (MyAccount.getCurrentMyAccount() != null) {
-                if (MyPreferences.getDefaultSharedPreferences().getLong(MyPreferences.KEY_PREFERENCES_CHANGE_TIME, 0) > preferencesChangeTime) {
+                long preferencesChangeTimeNew = MyPreferences.initialize(this, this);
+                if (preferencesChangeTimeNew != preferencesChangeTime) {
                     MyLog.v(TAG, "Restarting this Activity to apply any new changes of preferences");
                     finish();
                     switchTimelineActivity(mTimelineType, mIsTimelineCombined, mSelectedUserId);
@@ -894,7 +896,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void onPause() {
         super.onPause();
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onPause, instance " + instanceId);
+            Log.v(TAG, "onPause, instanceId=" + instanceId);
         }
         // The activity just lost its focus,
         // so we have to start notifying the User about new events after his
@@ -935,7 +937,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     @Override
     public void onDestroy() {
-        MyLog.v(TAG,"onDestroy, instance " + instanceId);
+        MyLog.v(TAG,"onDestroy, instanceId=" + instanceId);
         super.onDestroy();
         if (mCursor != null && !mCursor.isClosed()) {
             mCursor.close();
@@ -947,11 +949,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     @Override
     public void finish() {
-        MyLog.v(TAG,"Finish requested" + (mIsFinishing ? ", already finishing" : "") + ", instance " + instanceId);
+        MyLog.v(TAG,"Finish requested" + (mIsFinishing ? ", already finishing" : "") + ", instanceId=" + instanceId);
         if (!mIsFinishing) {
             mIsFinishing = true;
             if (mHandler == null) {
-                Log.e(TAG,"Finishing. mHandler is already null, instance " + instanceId);
+                Log.e(TAG,"Finishing. mHandler is already null, instanceId=" + instanceId);
             }
             mHandler = null;
         }
@@ -1260,7 +1262,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onNewIntent, instance " + instanceId);
+            Log.v(TAG, "onNewIntent, instanceId=" + instanceId);
         }
         processNewIntent(intent);
         updateThisOnChangedParameters();

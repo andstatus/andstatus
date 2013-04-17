@@ -45,9 +45,11 @@ import android.view.KeyEvent;
 import android.widget.Toast;
 
 import org.andstatus.app.account.AccountSettings;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -83,11 +85,6 @@ public class PreferencesActivity extends PreferenceActivity implements
     private RingtonePreference mNotificationRingtone;
 
     private boolean onSharedPreferenceChanged_busy = false;
-    
-    /**
-     * Use this flag to return from this activity to the TweetListAcivity
-     */
-    private boolean overrideBackButton = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +139,10 @@ public class PreferencesActivity extends PreferenceActivity implements
 
         // Stop service to force preferences reload on the next start
         // Plus disable repeating alarms for awhile (till next start service...)
-        MyServiceManager.stopAndStatusService(this, true);
+        MyServiceManager.stopMyService(true);
+
+        // Ensure MyPreferences are initialized
+        MyPreferences.initialize(this, this);
         
         showAllPreferences();
         MyPreferences.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
@@ -151,11 +151,7 @@ public class PreferencesActivity extends PreferenceActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
-        if (sp != null) {
-            sp.unregisterOnSharedPreferenceChangeListener(
-                    this);
-        }
+        MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -172,22 +168,32 @@ public class PreferencesActivity extends PreferenceActivity implements
                 MyPreferences.KEY_RINGTONE_PREFERENCE, null));
         showMinLogLevel();
         showUseExternalStorage();
+        
+        Preference myPref = (Preference) findPreference("manage_accounts");
+        CharSequence summary;
+        if (MyAccount.countOfAuthenticatedUsers() > 0) {
+            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyAccount.countOfAuthenticatedUsers();
+        } else {
+            summary = getText(R.string.summary_preference_accounts_absent);
+        }
+        myPref.setSummary(summary);
+        
     }
     
     protected void showHistorySize() {
-        MyPreferences.showListPreference(this, MyPreferences.KEY_HISTORY_SIZE, R.array.history_size_keys, R.array.history_size_display, R.string.summary_preference_history_size);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_SIZE, R.array.history_size_keys, R.array.history_size_display, R.string.summary_preference_history_size);
     }
 
     protected void showHistoryTime() {
-        MyPreferences.showListPreference(this, MyPreferences.KEY_HISTORY_TIME, R.array.history_time_keys, R.array.history_time_display, R.string.summary_preference_history_time);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_TIME, R.array.history_time_keys, R.array.history_time_display, R.string.summary_preference_history_time);
     }
 
     protected void showFrequency() {
-        MyPreferences.showListPreference(this, MyPreferences.KEY_FETCH_FREQUENCY, R.array.fetch_frequency_keys, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_FETCH_PERIOD, R.array.fetch_frequency_keys, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
     }
 
     protected void showMinLogLevel() {
-        MyPreferences.showListPreference(this, MyPreferences.KEY_MIN_LOG_LEVEL, R.array.log_level_keys, R.array.log_level_display, R.string.summary_preference_min_log_level);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_MIN_LOG_LEVEL, R.array.log_level_keys, R.array.log_level_display, R.string.summary_preference_min_log_level);
     }
     
     protected void showRingtone(Object newValue) {
@@ -217,7 +223,7 @@ public class PreferencesActivity extends PreferenceActivity implements
     }
     
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (PreferencesActivity.this.mSomethingIsBeingProcessed) {
+        if (mSomethingIsBeingProcessed) {
             return;
         }
         if (onSharedPreferenceChanged_busy || !MyPreferences.isInitialized()) {
@@ -242,7 +248,7 @@ public class PreferencesActivity extends PreferenceActivity implements
 
             MyPreferences.setPreferencesChangedNow();
             
-            if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY)) {
+            if (key.equals(MyPreferences.KEY_FETCH_PERIOD)) {
                 showFrequency();
             }
             if (key.equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {
@@ -296,7 +302,13 @@ public class PreferencesActivity extends PreferenceActivity implements
                     })
                     .setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            new MoveDataBetweenStoragesTask().execute();
+                            if (MyServiceManager.getServiceState() == MyService.ServiceState.STOPPED) {
+                                new MoveDataBetweenStoragesTask().execute();
+                            } else {
+                                MyServiceManager.stopMyService(true);
+                                dialog.cancel();
+                                Toast.makeText(PreferencesActivity.this, getText(R.string.system_is_busy_try_later), Toast.LENGTH_LONG).show();
+                            }
                         }
                     })
                     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -351,7 +363,7 @@ public class PreferencesActivity extends PreferenceActivity implements
      * This semaphore helps to avoid ripple effect: changes in MyAccount cause
      * changes in this activity ...
      */
-    private boolean mSomethingIsBeingProcessed = false;
+    private volatile boolean mSomethingIsBeingProcessed = false;
      
     /**
      * Move Data to/from External Storage
@@ -379,134 +391,134 @@ public class PreferencesActivity extends PreferenceActivity implements
 
             File dbFileOld = null;
             File dbFileNew = null;
+            /**
+             * Did we actually copied database?
+             */
             boolean copied = false;
-            boolean skip = false;
+            /**
+             * Did we lock mSomethingIsBeingProcessed ?
+             */
+            boolean locked = false;
 
-            synchronized (PreferencesActivity.this) {
-                if (PreferencesActivity.this.mSomethingIsBeingProcessed) {
-                    skip = true;
-                    message = "skipped";
-                } else {
-                    PreferencesActivity.this.mSomethingIsBeingProcessed = true;
+            boolean useExternalStorageOld = MyPreferences.getDefaultSharedPreferences()
+                    .getBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false);
+            boolean useExternalStorageNew = PreferencesActivity.this.mUseExternalStorage
+                    .isChecked();
+
+            try {
+                MyLog.d(TAG, "About to move data from " + useExternalStorageOld + " to "
+                        + useExternalStorageNew);
+
+                if (useExternalStorageNew == useExternalStorageOld) {
+                    message = message + "Nothing to do. ";
+                    done = true;
+                    succeeded = true;
                 }
-            }
-            if (!skip) {
-                try {
-                    boolean UseExternalStorageOld = MyPreferences.getDefaultSharedPreferences()
-                            .getBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false);
-                    boolean UseExternalStorageNew = PreferencesActivity.this.mUseExternalStorage
-                            .isChecked();
 
-                    MyLog.d(TAG, "About to move data from " + UseExternalStorageOld + " to "
-                            + UseExternalStorageNew);
-
-                    if (UseExternalStorageNew == UseExternalStorageOld) {
-                        message = message + "Nothing to do. ";
-                        done = true;
-                        succeeded = true;
+                if (!done) {
+                    synchronized (PreferencesActivity.this) {
+                        if (mSomethingIsBeingProcessed) {
+                            done = true;
+                            message = "skipped";
+                        } else {
+                            mSomethingIsBeingProcessed = true;
+                            locked = true;
+                        }
                     }
-                    if (!done) {
-                        try {
-                            if (!done) {
-                                dbFileOld = MyPreferences.getContext().getDatabasePath(
-                                        MyDatabase.DATABASE_NAME);
-                                MyPreferences
-                                        .getDefaultSharedPreferences()
-                                        .edit()
-                                        .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,
-                                                UseExternalStorageNew).commit();
-                                MyPreferences.forget();
-                                MyPreferences.initialize(PreferencesActivity.this, this);
-                                dbFileNew = MyPreferences.getContext().getDatabasePath(
-                                        MyDatabase.DATABASE_NAME);
-                                if (dbFileOld == null) {
-                                    message = message + "No old database. ";
-                                    done = true;
-                                }
-                            }
-                            if (!done) {
-                                if (dbFileNew == null) {
-                                    message = message + "No new database. ";
-                                    done = true;
-                                } else {
-                                    if (!dbFileOld.exists()) {
-                                        message = message + "No old database. ";
-                                        done = true;
-                                        succeeded = true;
-                                    } else if (dbFileNew.exists()) {
-                                        message = "Database already exists. " + message;
-                                        if (!dbFileNew.delete()) {
-                                            message = "Couldn't delete already existed files. "
-                                                    + message;
-                                            done = true;
-                                        }
-                                    }
-                                }
-                            }
-                            if (!done) {
-                                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                                    MyLog.v(TAG, "from: " + dbFileOld.getPath());
-                                    MyLog.v(TAG, "to: " + dbFileNew.getPath());
-                                }
-                                try {
-                                    dbFileNew.createNewFile();
-                                    if (this.copyFile(dbFileOld, dbFileNew)) {
-                                        copied = true;
-                                        succeeded = true;
-                                    }
-                                } catch (Exception e) {
-                                    message = "Couldn't copy database: " + e.getMessage() + ". "
-                                            + message;
-                                }
-                                done = true;
-                            }
-                        } catch (Exception e) {
-                            message = "Error: " + e.getMessage() + ". " + message;
-                            succeeded = false;
-                        } finally {
-                            if (!succeeded) {
-                                try {
-                                    // Revert settings back
-                                    MyPreferences
-                                            .getDefaultSharedPreferences()
-                                            .edit()
-                                            .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,
-                                                    UseExternalStorageOld).commit();
-                                    MyPreferences.forget();
-                                    MyPreferences.initialize(PreferencesActivity.this, this);
-                                } catch (Exception e) {
-                                    message = "Couldn't revert settings. " + e.getMessage()
-                                            + message;
-                                }
-                            }
+                }
 
-                            // Delete old files
-                            try {
-                                if (succeeded) {
-                                    if (copied && dbFileOld != null) {
-                                        if (dbFileOld.exists()) {
-                                            if (!dbFileOld.delete()) {
-                                                message = "Couldn't delete old files. " + message;
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    if (dbFileNew != null) {
-                                        if (dbFileNew.exists()) {
-                                            if (!dbFileNew.delete()) {
-                                                message = "Couldn't delete new files. " + message;
-                                            }
-                                        }
-                                    }
-                                }
-                            } catch (Exception e) {
-                                message = "Couldn't delete old files. " + e.getMessage() + ". "
+                if (!done) {
+                    dbFileOld = MyPreferences.getContext().getDatabasePath(
+                            MyDatabase.DATABASE_NAME);
+                    dbFileNew = MyPreferences.getDatabasePath(
+                            MyDatabase.DATABASE_NAME, useExternalStorageNew);
+                    if (dbFileOld == null) {
+                        message = message + "No old database. ";
+                        done = true;
+                    }
+                }
+                if (!done) {
+                    if (dbFileNew == null) {
+                        message = message + "No new database. ";
+                        done = true;
+                    } else {
+                        if (!dbFileOld.exists()) {
+                            message = message + "No old database. ";
+                            done = true;
+                            succeeded = true;
+                        } else if (dbFileNew.exists()) {
+                            message = "Database already exists. " + message;
+                            if (!dbFileNew.delete()) {
+                                message = "Couldn't delete already existed files. "
                                         + message;
+                                done = true;
                             }
                         }
                     }
-                } finally {
-                    PreferencesActivity.this.mSomethingIsBeingProcessed = false;
+                }
+                if (!done) {
+                    if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                        MyLog.v(TAG, "from: " + dbFileOld.getPath());
+                        MyLog.v(TAG, "to: " + dbFileNew.getPath());
+                    }
+                    try {
+                        dbFileNew.createNewFile();
+                        if (this.copyFile(dbFileOld, dbFileNew)) {
+                            copied = true;
+                            succeeded = true;
+                        }
+                    } catch (Exception e) {
+                        message = "Couldn't copy database: " + e.getMessage() + ". "
+                                + message;
+                    }
+                    done = true;
+                }
+            } catch (Exception e) {
+                message = "Error: " + e.getMessage() + ". " + message;
+                succeeded = false;
+            } finally {
+                // Save new settings
+                if (succeeded && ( useExternalStorageOld != useExternalStorageNew)) {
+                    try {
+                        MyPreferences
+                        .getDefaultSharedPreferences()
+                        .edit()
+                        .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,
+                                useExternalStorageNew).commit();
+                        MyPreferences.forget();
+                        MyPreferences.initialize(PreferencesActivity.this, this);
+                    } catch (Exception e) {
+                        message = "Couldn't save new settings. " + e.getMessage()
+                                + message;
+                    }
+                }
+    
+                // Delete unnecessary files
+                try {
+                    if (succeeded) {
+                        if (copied && dbFileOld != null) {
+                            if (dbFileOld.exists()) {
+                                if (!dbFileOld.delete()) {
+                                    message = "Couldn't delete old files. " + message;
+                                }
+                            }
+                        }
+                    } else {
+                        if (dbFileNew != null) {
+                            if (dbFileNew.exists()) {
+                                if (!dbFileNew.delete()) {
+                                    message = "Couldn't delete new files. " + message;
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    message = "Couldn't delete old files. " + e.getMessage() + ". "
+                            + message;
+                }
+                
+                if (locked) {
+                    mSomethingIsBeingProcessed = false;
                 }
             }
             MyLog.v(TAG, "Move: " + message);
@@ -516,7 +528,6 @@ public class PreferencesActivity extends PreferenceActivity implements
                 jso.put("succeeded", succeeded);
                 jso.put("message", message);
             } catch (JSONException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             return jso;
@@ -528,7 +539,7 @@ public class PreferencesActivity extends PreferenceActivity implements
          * 
          * @param src
          * @param dst
-         * @return true if Ok
+         * @return true if success
          * @throws IOException
          */
         boolean copyFile(File src, File dst) throws IOException {
@@ -594,7 +605,6 @@ public class PreferencesActivity extends PreferenceActivity implements
                     PreferencesActivity.this.showUseExternalStorage();
                     
                 } catch (JSONException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -604,13 +614,17 @@ public class PreferencesActivity extends PreferenceActivity implements
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0
-                && overrideBackButton) {
-            finish();
-            this.sendBroadcast(new Intent(this, TimelineActivity.class));
-            return true;    
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            if (MyAccount.countOfAuthenticatedUsers() > 0) {
+                MyLog.v(TAG, "Going back to the Timeline");
+                finish();
+                // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+                Intent i = new Intent(this, TimelineActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(i);
+                return true;    
+            }
         }        
-        // TODO Auto-generated method stub
         return super.onKeyDown(keyCode, event);
     }
 }

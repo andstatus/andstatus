@@ -1,4 +1,5 @@
 /* 
+ * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +19,8 @@ package org.andstatus.app;
 
 import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
+import org.andstatus.app.MyService.ServiceState;
+import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 import android.content.BroadcastReceiver;
@@ -26,8 +29,9 @@ import android.content.Intent;
 import android.util.Log;
 
 /**
- * This receiver starts and stops {@link MyService}
- * @author torgny.bjers
+ * This receiver starts and stops {@link MyService} and also queries its state.
+ * Android system creates new instance of this type on each Intent received. 
+ * This is why we're keeping a state in static fields. 
  */
 public class MyServiceManager extends BroadcastReceiver {
     private static final String TAG = MyServiceManager.class.getSimpleName();
@@ -36,80 +40,120 @@ public class MyServiceManager extends BroadcastReceiver {
      * Is the service started.
      * @See <a href="http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d">here</a>
      */
-    private static boolean isStarted = false;
+    private static volatile MyService.ServiceState mServiceState = ServiceState.UNKNOWN;
+    /**
+     * {@link System#nanoTime()} when the state was queued or received last time ( 0 - never )  
+     */
+    private static volatile long stateQueuedTime = 0;
+    /**
+     * If true, we sent state request and are waiting for reply from {@link MyService} 
+     */
+    private static boolean waitingForServiceState = false;
+    /**
+     * How long are we waiting for {@link MyService} response before deciding that the service is stopped
+     */
+    private static final int STATE_QUERY_TIMEOUT_SECONDS = 3;
 
     /**
      * If true repeating alarms will be ignored
      */
     private static boolean ignoreAlarms = false;
     
+    
+    private int instanceId;
+    
+    public MyServiceManager() {
+        instanceId = MyPreferences.nextInstanceId();
+        MyLog.v(TAG, TAG + " created, instanceId=" + instanceId);
+    }
+    
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
+        MyPreferences.initialize(context, this);
+        String action = intent.getAction(); 
+        if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
             MyLog.d(TAG, "Starting service on boot.");
-            // Assume preferences were changed
-            startAndStatusService(context, new MyService.CommandData(
-                    CommandEnum.PREFERENCES_CHANGED, ""));
-        } else if (intent.getAction().equals("android.intent.action.ACTION_SHUTDOWN")) {
+            startMyService(new MyService.CommandData(
+                    CommandEnum.BOOT_COMPLETED, ""));
+        } else if (action.equals("android.intent.action.ACTION_SHUTDOWN")) {
             // This system broadcast is Since: API Level 4
             // We need this to persist unsaved data
             MyLog.d(TAG, "Stopping service on Shutdown");
-            stopAndStatusService(context, true);
-        } else if (intent.getAction().equals(MyService.ACTION_ALARM)) {
+            stopMyService(true);
+        } else if (action.equals(MyService.ACTION_ALARM)) {
             if (ignoreAlarms) {
                 MyLog.d(TAG, "Repeating Alarm: Ignore");
             } else {
                 MyLog.d(TAG, "Repeating Alarm: Automatic update");
-                startAndStatusService(context, new MyService.CommandData(
+                startMyService(new MyService.CommandData(
                         CommandEnum.AUTOMATIC_UPDATE, ""));
             }
-        } else if (intent.getAction().equals(MyService.ACTION_SERVICE_STOPPED)) {
-            MyLog.d(TAG, "Notification received: Service stopped");
-            isStarted = false;
+        } else if (action.equals(MyService.ACTION_SERVICE_STATE)) {
+            synchronized(mServiceState) {
+                stateQueuedTime = System.nanoTime();
+                waitingForServiceState = false;
+                mServiceState = MyService.ServiceState.load(intent.getStringExtra(MyService.EXTRA_SERVICE_STATE));
+            }
+            MyLog.d(TAG, "Notification received: Service state=" + mServiceState);
         } else {
             Log.e(TAG, "Received unexpected intent: " + intent.toString());
         }
     }
 
     /**
-     * Starts MyService if it is not already started
+     * Starts MyService  asynchronously if it is not already started
      * and schedule Automatic updates according to the preferences.
      * 
      * @param context 
      * @param commandData to the service or null 
      */
-    public static void startAndStatusService(Context context, MyService.CommandData commandData) {
-        isStarted = true;
+    public static void startMyService(MyService.CommandData commandData) {
         ignoreAlarms = false;
         Intent serviceIntent = new Intent(IMyService.class.getName());
         if (commandData != null) {
             serviceIntent = commandData.toIntent(serviceIntent);
         }
-        context.startService(serviceIntent);
+        MyPreferences.getContext().startService(serviceIntent);
     }
 
     /**
-     * Stop  {@link MyService}
+     * Stop  {@link MyService} asynchronously
      * @param context
      * @param ignoreAlarms - if true repeating alarms will be ignored also after this call
      */
-    public static void stopAndStatusService(Context context, boolean ignoreAlarms_in) {
-        isStarted = false;
+    public static void stopMyService(boolean ignoreAlarms_in) {
         ignoreAlarms = ignoreAlarms_in;
-        // Don't do this, because we may looase some information and (or) get Force Close
+        // Don't do this, because we may loose some information and (or) get Force Close
         // context.stopService(new Intent(IMyService.class.getName()));
         
         //This is "mild" stopping
         CommandData element = new CommandData(CommandEnum.STOP_SERVICE, "");
-        context.sendBroadcast(element.toIntent());
+        MyPreferences.getContext().sendBroadcast(element.toIntent());
     }
 
     /**
-     * Is the service started. 
+     * Returns previous service state and queries service for its current state asynchronously.
+     * Doesn't start the service, so absence of the reply will mean that service is stopped 
      * @See <a href="http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d">here</a>
      */
-    public static boolean isStarted() {
-        return isStarted;
+    public static ServiceState getServiceState() {
+        synchronized(mServiceState) {
+           long time = System.nanoTime();
+           if ( waitingForServiceState && (time - stateQueuedTime) > (STATE_QUERY_TIMEOUT_SECONDS * 1000000000L) ) {
+               // Timeout expired
+               waitingForServiceState = false;
+               mServiceState = ServiceState.STOPPED;
+           } else if ( !waitingForServiceState && mServiceState == ServiceState.UNKNOWN ) {
+               // State is unknown, we need to query the Service again
+               waitingForServiceState = true;
+               stateQueuedTime = time;
+               mServiceState = ServiceState.UNKNOWN;
+               CommandData element = new CommandData(CommandEnum.BROADCAST_SERVICE_STATE, "");
+               MyPreferences.getContext().sendBroadcast(element.toIntent());
+           }
+        }
+        
+        return mServiceState;
     }
     
 }

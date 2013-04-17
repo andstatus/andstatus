@@ -31,6 +31,7 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -187,11 +188,6 @@ public class TimelineDownloader {
                 ok = true;
                 try {
                     for (int index = 0; index < jArr.length(); index++) {
-                        if (!MyPreferences.isInitialized()) {
-                            ok = false;
-                            break;
-                        }
-                        
                         JSONObject msg = jArr.getJSONObject(index);
                         long created = 0L;
                         // This value will be SENT_DATE in the database
@@ -298,7 +294,7 @@ public class TimelineDownloader {
 
                     // Remember original id of the reblog message
                     // We will need it to "undo reblog" for our reblog
-                    if (!MyPreferences.isEmpty(rowOid)) {
+                    if (!SharedPreferencesUtil.isEmpty(rowOid)) {
                         values.put(MyDatabase.MsgOfUser.REBLOG_OID, rowOid);
                     }
                 }
@@ -329,7 +325,7 @@ public class TimelineDownloader {
             }
             values.put(MyDatabase.Msg.AUTHOR_ID, authorId);
 
-            if (MyPreferences.isEmpty(rowOid)) {
+            if (SharedPreferencesUtil.isEmpty(rowOid)) {
                 Log.w(TAG, "insertFromJSONObject - no message id");
                 skipIt = true;
             }
@@ -408,7 +404,7 @@ public class TimelineDownloader {
                             values.put(MyDatabase.Msg.VIA, msg.getString("source"));
                         }
                         if (msg.has("favorited")) {
-                            values.put(MyDatabase.MsgOfUser.FAVORITED, MyPreferences.isTrue(msg.getString("favorited")));
+                            values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(msg.getString("favorited")));
                         }
 
                         if (msg.has("in_reply_to_user_id_str")) {
@@ -417,10 +413,10 @@ public class TimelineDownloader {
                             // This is for identi.ca
                             inReplyToUserOid = msg.getString("in_reply_to_user_id");
                         }
-                        if (MyPreferences.isEmpty(inReplyToUserOid)) {
+                        if (SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
                             inReplyToUserOid = "";
                         }
-                        if (!MyPreferences.isEmpty(inReplyToUserOid)) {
+                        if (!SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
                             if (msg.has("in_reply_to_screen_name")) {
                                 inReplyToUserName = msg.getString("in_reply_to_screen_name");
                             }
@@ -451,10 +447,10 @@ public class TimelineDownloader {
                                 // This is for identi.ca
                                 inReplyToMessageOid = msg.getString("in_reply_to_status_id");
                             }
-                            if (MyPreferences.isEmpty(inReplyToMessageOid)) {
+                            if (SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                                 inReplyToUserOid = "";
                             }
-                            if (!MyPreferences.isEmpty(inReplyToMessageOid)) {
+                            if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
                                 inReplyToMessageId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), inReplyToMessageOid);
                                 if (inReplyToMessageId == 0) {
                                     // Construct Related "Msg" from available info
@@ -537,7 +533,7 @@ public class TimelineDownloader {
         String userName = "";
         if (user.has("screen_name")) {
             userName = user.getString("screen_name");
-            if (MyPreferences.isEmpty(userName)) {
+            if (SharedPreferencesUtil.isEmpty(userName)) {
                 userName = "";
             }
         }
@@ -558,7 +554,7 @@ public class TimelineDownloader {
                 originId = ma.getOriginId();
             }
         }
-        if (MyPreferences.isEmpty(rowOid)) {
+        if (SharedPreferencesUtil.isEmpty(rowOid)) {
             rowOid = "";
         } else {
             // Lookup the System's (AndStatus) id from the Originated system's id
@@ -566,7 +562,7 @@ public class TimelineDownloader {
         }
         if (rowId == 0) {
             // Try to Lookup by Username
-            if (MyPreferences.isEmpty(userName)) {
+            if (SharedPreferencesUtil.isEmpty(userName)) {
                 Log.w(TAG, "insertUserFromJSONObject - no username: " + user.toString(2));
                 return 0;
             }
@@ -878,7 +874,7 @@ public class TimelineDownloader {
                 // Automatic updates are disabled
                 return false;
             }
-            long intervalMs = Integer.parseInt(MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_FETCH_FREQUENCY, "180")) * MyService.MILLISECONDS;
+            long intervalMs = Integer.parseInt(MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_FETCH_PERIOD, "180")) * MyService.MILLISECONDS;
             long passedMs = System.currentTimeMillis() - getTimelineDate(); 
             blnOut = (passedMs > intervalMs);
             

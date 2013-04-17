@@ -45,6 +45,7 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * One selected message and, optionally, whole conversation
@@ -80,7 +81,7 @@ public class ConversationActivity extends Activity {
      */
     protected MyAccount ma;
 
-    protected long instanceId;
+    protected int instanceId;
     Handler mHandler = new MyHandler();
     MyServiceConnector serviceConnector;
 
@@ -109,9 +110,9 @@ public class ConversationActivity extends Activity {
 
         if (instanceId == 0) {
             instanceId = MyPreferences.nextInstanceId();
-            MyLog.v(TAG, "onCreate instance " + instanceId);
+            MyLog.v(TAG, "onCreate instanceId=" + instanceId);
         } else {
-            MyLog.v(TAG, "onCreate reuse the same instance " + instanceId);
+            MyLog.v(TAG, "onCreate reuse the same instanceId=" + instanceId);
         }
         serviceConnector = new MyServiceConnector(instanceId);
 
@@ -128,7 +129,7 @@ public class ConversationActivity extends Activity {
     }
 
     protected void showConversation() {
-        MyLog.v(TAG, "showConversation instance " + instanceId);
+        MyLog.v(TAG, "showConversation, instanceId=" + instanceId);
         if (mCurrentId != 0) {
             new ContentLoader().execute();
         }
@@ -259,7 +260,7 @@ public class ConversationActivity extends Activity {
                     } else {
                         if (row.prevId != 0) {
                             findMessage(row.prevId);
-                        } else if (!MyPreferences.isEmpty(row.replyToName)) {
+                        } else if (!SharedPreferencesUtil.isEmpty(row.replyToName)) {
                             MyLog.v(TAG, "Message " + msgId + " has reply to name ("
                                     + row.replyToName
                                     + ") but no reply to message id");
@@ -320,21 +321,21 @@ public class ConversationActivity extends Activity {
             // Everything else goes to messageDetails
             String messageDetails = RelativeTime.getDifference(ConversationActivity.this,
                     row.createdDate);
-            if (!MyPreferences.isEmpty(row.via)) {
+            if (!SharedPreferencesUtil.isEmpty(row.via)) {
                 messageDetails += " " + String.format(
                         Locale.getDefault(),
                         getText(R.string.message_source_from).toString(),
                         row.via);
             }
-            if (!MyPreferences.isEmpty(row.replyToName)) {
+            if (!SharedPreferencesUtil.isEmpty(row.replyToName)) {
                 messageDetails += " "
                         + String.format(Locale.getDefault(),
                                 getText(R.string.message_source_in_reply_to).toString(),
                                 row.replyToName);
             }
-            if (!MyPreferences.isEmpty(row.rebloggersString)) {
+            if (!SharedPreferencesUtil.isEmpty(row.rebloggersString)) {
                 if (!row.rebloggersString.equals(row.author)) {
-                    if (!MyPreferences.isEmpty(row.replyToName)) {
+                    if (!SharedPreferencesUtil.isEmpty(row.replyToName)) {
                         messageDetails += ";";
                     }
                     messageDetails += " "
@@ -342,7 +343,7 @@ public class ConversationActivity extends Activity {
                                     .toString(), row.rebloggersString);
                 }
             }
-            if (!MyPreferences.isEmpty(row.recipientName)) {
+            if (!SharedPreferencesUtil.isEmpty(row.recipientName)) {
                 messageDetails += " "
                         + String.format(Locale.getDefault(), getText(R.string.message_source_to)
                                 .toString(), row.recipientName);

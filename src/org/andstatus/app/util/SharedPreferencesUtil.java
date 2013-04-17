@@ -16,17 +16,17 @@
 
 package org.andstatus.app.util;
 
-import static android.content.Context.MODE_PRIVATE;
-
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Environment;
+import android.preference.ListPreference;
+import android.preference.PreferenceActivity;
+import android.text.TextUtils;
 import android.util.Log;
+
 
 import java.io.IOException;
 import java.io.File;
-
-import org.andstatus.app.data.MyPreferences;
+import java.text.MessageFormat;
 
 public class SharedPreferencesUtil {
     private static final String TAG = SharedPreferencesUtil.class.getSimpleName();
@@ -78,14 +78,6 @@ public class SharedPreferencesUtil {
         } else {
             File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
             if (prefFile.exists()) {
-                // Commit any changes left
-                SharedPreferences.Editor prefs = MyPreferences.getSharedPreferences(prefsFileName,
-                        MODE_PRIVATE).edit();
-                if (prefs != null) {
-                    prefs.commit();
-                    prefs = null;
-                }
-
                 isDeleted = prefFile.delete();
                 if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                     Log.v(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was "
@@ -127,14 +119,6 @@ public class SharedPreferencesUtil {
             } else {
                 File oldPrefFile = new File(prefsDirectory(context), oldPrefsFileName + FILE_EXTENSION);
                 if (oldPrefFile.exists()) {
-                    // Commit any changes left
-                    SharedPreferences.Editor prefs = MyPreferences.getSharedPreferences(oldPrefsFileName,
-                            MODE_PRIVATE).edit();
-                    if (prefs != null) {
-                        prefs.commit();
-                        prefs = null;
-                    }
-
                     isRenamed = oldPrefFile.renameTo(newPrefFile);
                     if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                         Log.v(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath() + "' was "
@@ -149,5 +133,72 @@ public class SharedPreferencesUtil {
             }
         }
         return isRenamed;
+    }
+
+    /**
+     * @param pa Preference Activity
+     * @param keyPreference android:key - Name of the preference key
+     * @param entryValuesR android:entryValues
+     * @param displayR Almost like android:entries but to show in the summary (may be the same as android:entries) 
+     * @param summaryR
+     */
+    public static void showListPreference(PreferenceActivity pa, String keyPreference, int entryValuesR, int displayR, int summaryR) {
+        String displayParm = "";
+        ListPreference lP = (ListPreference) pa.findPreference(keyPreference);
+        if (lP != null) {
+            String[] k = pa.getResources().getStringArray(entryValuesR);
+            String[] d = pa.getResources().getStringArray(displayR);
+            displayParm = d[0];
+            String listValue = lP.getValue();
+            for (int i = 0; i < k.length; i++) {
+                if (listValue.equals(k[i])) {
+                    displayParm = d[i];
+                    break;
+                }
+            }
+        } else {
+            displayParm = keyPreference + " was not found";
+        }
+        MessageFormat sf = new MessageFormat(pa.getText(summaryR)
+                .toString());
+        lP.setSummary(sf.format(new Object[] {
+            displayParm
+        }));
+    }
+
+    /**
+     * Returns true if the string is null or 0-length or "null"
+     * 
+     * @param str the string to be examined
+     * @return true if str is null or zero length or "null"
+     */
+    public static boolean isEmpty(CharSequence str) {
+        if (TextUtils.isEmpty(str))
+            return true;
+        else if (str.equals("null"))
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * Returns true not only for boolean, but for "1" also
+     * @param o
+     * @return  1 = true, 0 - false or null
+     */
+    public static int isTrue(Object o) {
+        boolean is = false;
+        try {
+            if (o != null) {
+                String val = o.toString();
+                is = Boolean.parseBoolean(val);
+                if (!is) {
+                    if ( val.compareTo("1") == 0) {
+                        is = true;
+                    }
+                }
+            }
+        } catch (Exception e) {}
+        return (is ? 1 : 0);
     }
 }

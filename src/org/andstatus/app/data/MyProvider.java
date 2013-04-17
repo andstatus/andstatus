@@ -41,6 +41,7 @@ import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * Database provider for the MyDatabase database.
@@ -55,8 +56,8 @@ public class MyProvider extends ContentProvider {
 
     /**
      * Projection map used by SQLiteQueryBuilder
-     * @see android.database.sqlite.SQLiteQueryBuilder#setProjectionMap
      * Projection map for the {@link MyDatabase.Msg} table
+     * @see android.database.sqlite.SQLiteQueryBuilder#setProjectionMap
      */
     private static HashMap<String, String> msgProjectionMap;
     /**
@@ -350,7 +351,7 @@ public class MyProvider extends ContentProvider {
         int ret = 2;
         if (valuesIn != null) {
             if (valuesIn.containsKey(key) ) {
-                ret = MyPreferences.isTrue(valuesIn.get(key));
+                ret = SharedPreferencesUtil.isTrue(valuesIn.get(key));
                 valuesIn.remove(key);
                 if (valuesOut != null) {
                     valuesOut.put(key, ret);
@@ -372,7 +373,7 @@ public class MyProvider extends ContentProvider {
         if (valuesIn != null) {
             if (valuesIn.containsKey(key) ) {
                 String value =  valuesIn.getAsString(key);
-                ret = MyPreferences.isEmpty(value) ? 0 : 1;
+                ret = SharedPreferencesUtil.isEmpty(value) ? 0 : 1;
                 valuesIn.remove(key);
                 if (valuesOut != null) {
                     valuesOut.put(key, value);
