@@ -971,7 +971,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                                 android.R.string.ok, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface Dialog, int whichButton) {
                                         startActivity(new Intent(TimelineActivity.this,
-                                                PreferencesActivity.class));
+                                                MyPreferenceActivity.class));
                                     }
                                 }).create();
 
@@ -1062,7 +1062,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         switch (item.getItemId()) {
             case R.id.preferences_menu_id:
-                startPreferencesActivity();
+                startMyPreferenceActivity();
                 break;
 /**
             case R.id.favorites_timeline_menu_id:
@@ -1555,12 +1555,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
     }
     
-    protected void startPreferencesActivity() {
-        // We need to restart this Activity after exiting PreferencesActivity
+    protected void startMyPreferenceActivity() {
+        // We need to restart this Activity after exiting MyPreferenceActivity
         // So let's set the flag:
         //MyPreferences.getDefaultSharedPreferences().edit()
-        //        .putBoolean(PreferencesActivity.KEY_PREFERENCES_CHANGE_TIME, true).commit();
-        startActivity(new Intent(this, PreferencesActivity.class));
+        //        .putBoolean(MyPreferenceActivity.KEY_PREFERENCES_CHANGE_TIME, true).commit();
+        startActivity(new Intent(this, MyPreferenceActivity.class));
     }
 
     /**

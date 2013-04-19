@@ -104,7 +104,7 @@
 			</intent-filter>
 		</activity>
 
-        <activity android:name=".PreferencesActivity"
+        <activity android:name=".MyPreferenceActivity"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

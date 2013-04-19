@@ -115,7 +115,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
         getStarted.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 if (MyAccount.getCurrentMyAccount() == null) {
-                    startActivity(new Intent(HelpActivity.this, PreferencesActivity.class));
+                    startActivity(new Intent(HelpActivity.this, MyPreferenceActivity.class));
                 } else {
                     startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
                 }

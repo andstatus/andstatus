@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2010-2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2013 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,12 +56,11 @@ import org.json.JSONObject;
 /**
  * Application settings
  * 
- * @author torgny.bjers
  */
-public class PreferencesActivity extends PreferenceActivity implements
+public class MyPreferenceActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
 
-    private static final String TAG = PreferencesActivity.class.getSimpleName();
+    private static final String TAG = MyPreferenceActivity.class.getSimpleName();
 
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs
@@ -107,7 +106,7 @@ public class PreferencesActivity extends PreferenceActivity implements
         Preference myPref = (Preference) findPreference("manage_accounts");
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
-                AccountSettings.startManageAccountsActivity(PreferencesActivity.this);
+                AccountSettings.startManageAccountsActivity(MyPreferenceActivity.this);
                 return false;
             }
         });
@@ -115,7 +114,7 @@ public class PreferencesActivity extends PreferenceActivity implements
         myPref = (Preference) findPreference("about_application");
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
-                Intent intent = new Intent(PreferencesActivity.this, HelpActivity.class);
+                Intent intent = new Intent(MyPreferenceActivity.this, HelpActivity.class);
                 startActivity(intent);
                 return false;
             }
@@ -124,7 +123,7 @@ public class PreferencesActivity extends PreferenceActivity implements
         myPref = (Preference) findPreference("change_log");
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
-                Intent intent = new Intent(PreferencesActivity.this, HelpActivity.class);
+                Intent intent = new Intent(MyPreferenceActivity.this, HelpActivity.class);
                 intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
                 startActivity(intent);
                 return false;
@@ -296,8 +295,8 @@ public class PreferencesActivity extends PreferenceActivity implements
                     .setMessage("")
                     .setOnCancelListener(new DialogInterface.OnCancelListener() {
                         public void onCancel(DialogInterface dialog) {
-                            PreferencesActivity.this.showUseExternalStorage();
-                            PreferencesActivity.this.mUseExternalStorage_busy = false;
+                            MyPreferenceActivity.this.showUseExternalStorage();
+                            MyPreferenceActivity.this.mUseExternalStorage_busy = false;
                         }
                     })
                     .setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
@@ -307,7 +306,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                             } else {
                                 MyServiceManager.stopMyService(true);
                                 dialog.cancel();
-                                Toast.makeText(PreferencesActivity.this, getText(R.string.system_is_busy_try_later), Toast.LENGTH_LONG).show();
+                                Toast.makeText(MyPreferenceActivity.this, getText(R.string.system_is_busy_try_later), Toast.LENGTH_LONG).show();
                             }
                         }
                     })
@@ -375,7 +374,7 @@ public class PreferencesActivity extends PreferenceActivity implements
 
         @Override
         protected void onPreExecute() {
-            dlg = ProgressDialog.show(PreferencesActivity.this,
+            dlg = ProgressDialog.show(MyPreferenceActivity.this,
                     getText(R.string.dialog_title_external_storage),
                     getText(R.string.dialog_summary_external_storage), true, // indeterminate
                     // duration
@@ -402,7 +401,7 @@ public class PreferencesActivity extends PreferenceActivity implements
 
             boolean useExternalStorageOld = MyPreferences.getDefaultSharedPreferences()
                     .getBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false);
-            boolean useExternalStorageNew = PreferencesActivity.this.mUseExternalStorage
+            boolean useExternalStorageNew = MyPreferenceActivity.this.mUseExternalStorage
                     .isChecked();
 
             try {
@@ -416,7 +415,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                 }
 
                 if (!done) {
-                    synchronized (PreferencesActivity.this) {
+                    synchronized (MyPreferenceActivity.this) {
                         if (mSomethingIsBeingProcessed) {
                             done = true;
                             message = "skipped";
@@ -486,7 +485,7 @@ public class PreferencesActivity extends PreferenceActivity implements
                         .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,
                                 useExternalStorageNew).commit();
                         MyPreferences.forget();
-                        MyPreferences.initialize(PreferencesActivity.this, this);
+                        MyPreferences.initialize(MyPreferenceActivity.this, this);
                     } catch (Exception e) {
                         message = "Couldn't save new settings. " + e.getMessage()
                                 + message;
@@ -593,16 +592,16 @@ public class PreferencesActivity extends PreferenceActivity implements
 
                     } else {
 
-                        String message2 = PreferencesActivity.this
+                        String message2 = MyPreferenceActivity.this
                         .getString(R.string.error);
                         if (message != null && message.length() > 0) {
                             message2 = message2 + ": " + message;
                             Log.d(TAG, message);
                         }
-                        Toast.makeText(PreferencesActivity.this, message2, Toast.LENGTH_LONG).show();
+                        Toast.makeText(MyPreferenceActivity.this, message2, Toast.LENGTH_LONG).show();
                         
                     }
-                    PreferencesActivity.this.showUseExternalStorage();
+                    MyPreferenceActivity.this.showUseExternalStorage();
                     
                 } catch (JSONException e) {
                     e.printStackTrace();

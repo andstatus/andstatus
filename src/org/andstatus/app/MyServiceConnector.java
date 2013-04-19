@@ -26,7 +26,6 @@ import android.util.Log;
 
 import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 import java.util.concurrent.ArrayBlockingQueue;

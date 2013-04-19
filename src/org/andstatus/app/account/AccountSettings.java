@@ -49,9 +49,8 @@ import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 
-import org.andstatus.app.PreferencesActivity;
+import org.andstatus.app.MyPreferenceActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.ConnectionAuthenticationException;
@@ -1226,7 +1225,7 @@ public class AccountSettings extends PreferenceActivity implements
         if (overrideBackButton) {
             MyLog.v(TAG, "Returning to our Preferences Activity");
             // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-            Intent i = new Intent(this, PreferencesActivity.class);
+            Intent i = new Intent(this, MyPreferenceActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
         }
