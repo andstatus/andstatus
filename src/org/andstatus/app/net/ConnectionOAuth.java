@@ -44,6 +44,7 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.net.Uri;
@@ -296,6 +297,7 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
 
     protected JSONObject postRequest(HttpPost post) throws ConnectionException {
         JSONObject jso = null;
+        String response = null;
         boolean ok = false;
         try {
             // Maybe we'll need this:
@@ -303,13 +305,16 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
 
             // sign the request to authenticate
             getConsumer().sign(post);
-            String response = mClient.execute(post, new BasicResponseHandler());
+            response = mClient.execute(post, new BasicResponseHandler());
             jso = new JSONObject(response);
             ok = true;
         } catch (HttpResponseException e) {
             ConnectionException e2 = new ConnectionException(e.getStatusCode(), e.getLocalizedMessage());
             Log.w(TAG, e2.getLocalizedMessage());
             throw e2;
+        } catch (JSONException e) {
+            Log.w(TAG, "postRequest, response=" + (response == null ? "(null)" : response));
+            throw new ConnectionException(e.getLocalizedMessage());
         } catch (Exception e) {
             // We don't catch other exceptions because in fact it's vary difficult to tell
             // what was a real cause of it. So let's make code clearer.
