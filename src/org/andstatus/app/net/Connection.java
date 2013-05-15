@@ -266,11 +266,11 @@ public abstract class Connection {
      * @param editor
      * @return true if something changed
      */
-    public boolean save(MyAccount ma) {
+    public boolean save(MyAccount.Builder mab) {
         boolean changed = false;
         
-        if (mPassword.compareTo(ma.getDataString(MyAccount.KEY_PASSWORD, "")) != 0) {
-            ma.setDataString(MyAccount.KEY_PASSWORD, mPassword);
+        if (mPassword.compareTo(mab.getMyAccount().getDataString(MyAccount.KEY_PASSWORD, "")) != 0) {
+            mab.setDataString(MyAccount.KEY_PASSWORD, mPassword);
             changed = true;
         }
         

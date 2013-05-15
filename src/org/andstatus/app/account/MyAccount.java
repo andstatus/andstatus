@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010-2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,17 +50,492 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONObject;
 
 /**
- * The object holds MyAccount specific information including 
- * an Instant messaging System (twitter.com, identi.ca etc.), 
+ * Immutable class that holds MyAccount-specific information including: 
+ * a Microblogging System (twitter.com, identi.ca etc.), 
  * Username in that system and connection to it.
- * 
- * Current version works with twitter.com only!
  * 
  * @author Yuri Volkov
  */
-public class MyAccount implements Parcelable {
+public class MyAccount {
     private static final String TAG = MyAccount.class.getSimpleName();
 
+    /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
+    public static class Builder implements Parcelable {
+        private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
+        
+        /**
+         * Factory of Builder-s
+         * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
+         * 
+         * @param accountName - AccountGuid (in the form of systemname/username - with slash "/" between them)
+         *  if accountName doesn't have systemname (before slash), default system name is assumed
+         * @return Builder - existed or newly created. For new Builder we assume that it is not persistent.
+         */
+        public static Builder valueOf(String accountName) {
+            int ind = indexOfMyAccount(accountName);
+            Builder mab;
+            if (ind < 0) {
+                // Create temporary MyAccount.Builder
+                mab = new Builder(accountName);
+            } else {
+                mab = new Builder(mMyAccounts.elementAt(ind));
+            }
+            return mab;
+        }
+        
+        
+        /**
+         * The whole data is here
+         */
+        private MyAccount ma;
+        
+        private Builder(Parcel source) {
+            ma = new MyAccount();
+            boolean isPersistent = ma.getDataBoolean(KEY_PERSISTENT, false);
+            ma.mUserData = source.readBundle();
+            
+            // Load as if the account is not persisted to force loading everything from mUserData
+            loadMyAccount(null, false);
+
+            // Do this as a last step
+            if (isPersistent) {
+                ma.mAccount = ma.mUserData.getParcelable(KEY_ACCOUNT);
+                if (ma.mAccount == null) {
+                    isPersistent = false;
+                    Log.e(TAG, "The account was marked as persistent:" + this);
+                }
+                ma.mIsPersistent = isPersistent;
+            }
+        }
+        
+        /**
+         * Creates new account, which is not Persistent yet
+         * @param accountName
+         */
+        private Builder(String accountName) {
+            ma = new MyAccount();
+            ma.mOrigin = Origin.getOrigin(accountNameToOriginName(accountName));
+            ma.mUsername = accountNameToUsername(accountName);
+            ma.mOAuth = ma.mOrigin.isOAuth();
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                Log.v(TAG, "New temporary account created: " + this.toString());
+            }
+        }
+
+        private Builder (MyAccount ma) {
+            this.ma = ma;
+        }
+        
+        /**
+         * Loads existing account from Persistence 
+         * @param account should not be null
+         */
+        Builder(android.accounts.Account account) {
+            ma = new MyAccount();
+            if (account == null) {
+                throw new IllegalArgumentException(TAG + " null account is not allowed the constructor");
+            }
+            ma.mAccount = account;
+            ma.mIsPersistent = true;
+
+            ma.mOrigin = Origin.getOrigin(accountNameToOriginName(ma.getAccount().name));
+            ma.mUsername = accountNameToUsername(ma.getAccount().name);
+            
+            // Load stored data for the User
+            ma.mCredentialsVerified = CredentialsVerified.load(ma);
+            ma.mOAuth = ma.getDataBoolean(MyAccount.KEY_OAUTH, ma.mOrigin.isOAuth());
+            ma.mUserId = ma.getDataLong(MyAccount.KEY_USER_ID, 0L);
+            
+            if (ma.mUserId==0) {
+                setUsernameAuthenticated(ma.mUsername);
+                Log.e(TAG, "MyAccount '" + ma.getUsername() + "' was not connected to the User table. UserId=" + ma.mUserId);
+            }
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                Log.v(TAG, "Loaded persistent " + this.toString());
+            }
+        }
+        
+        public MyAccount getMyAccount() {
+            return ma;
+        }
+        
+        /**
+         * Clear Authentication information
+         * 
+         * @param context
+         */
+        public void clearAuthInformation() {
+            setCredentialsVerified(CredentialsVerified.NEVER);
+            ma.getConnection().clearAuthInformation();
+        }
+
+        /**
+         * Delete all User's data
+         * @return true = success 
+         */
+        private boolean deleteData() {
+            boolean ok = true;
+
+            // Old preferences file may be deleted, if it exists...
+            ok = SharedPreferencesUtil.delete(MyPreferences.getContext(), ma.prefsFileName());
+
+            if (ma.isPersistent()) {
+                if (ma.mUserId != 0) {
+                    // TODO: Delete databases for this User
+                    
+                    ma.mUserId = 0;
+                }
+
+                // We don't delete Account from Account Manager here
+                ma.mAccount = null;
+                ma.mIsPersistent = false;
+            }
+            return ok;
+        }
+
+
+        /**
+         * Loads existing account from Persistence or from mUserData in a case the account is not persistent 
+         * @param account should not be null
+         */
+        private void loadMyAccount(android.accounts.Account account, boolean isPersistent) {
+            ma.mIsPersistent = isPersistent;
+            if (ma.isPersistent() && account == null) {
+                throw new IllegalArgumentException(TAG + " null account for persistent MyAccount is not allowed");
+            }
+            ma.mAccount = account;
+
+            String originName = Origin.ORIGIN_NAME_TWITTER;
+            String userName = "";
+            if (ma.isPersistent()) {
+                originName = accountNameToOriginName(ma.getAccount().name);
+                userName = accountNameToUsername(ma.getAccount().name);
+            } else {
+                originName = ma.getDataString(MyAccount.KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER);
+                userName = ma.getDataString(MyAccount.KEY_USERNAME, "");
+            }
+            ma.mOrigin = Origin.getOrigin(originName);
+            ma.mUsername = fixUsername(userName);
+            
+            // Load stored data for the MyAccount
+            ma.mCredentialsVerified = CredentialsVerified.load(ma);
+            ma.mOAuth = ma.getDataBoolean(MyAccount.KEY_OAUTH, ma.mOrigin.isOAuth());
+            ma.mUserId = ma.getDataLong(MyAccount.KEY_USER_ID, 0L);
+            
+            if (ma.mUserId==0) {
+                setUsernameAuthenticated(ma.mUsername);
+                Log.e(TAG, "MyAccount '" + ma.getUsername() + "' was not connected to the User table. UserId=" + ma.mUserId);
+            }
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                Log.v(TAG, "Loaded persistent " + this.toString());
+            }
+        }
+        
+        public void setDataString(String key, String value) {
+            try {
+                if (TextUtils.isEmpty(value)) {
+                    ma.mUserData.remove(key);
+                } else {
+                    ma.mUserData.putString(key, value);
+                }
+                if (ma.isPersistent()) {
+                    if (ma.getAccount() == null) {
+                        Log.e(TAG, "setDataString key=" + key + "; mAccount is null ");
+                        return;
+                    }
+                    android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
+                    am.setUserData(ma.getAccount(), key, value);
+                }
+            } catch (Exception e) {}
+        }
+
+        public void setDataInt(String key, int value) {
+            try {
+                setDataString(key, Integer.toString(value));
+            } catch (Exception e) {}
+        }
+
+        public void setDataLong(String key, long value) {
+            try {
+                setDataString(key, Long.toString(value));
+            } catch (Exception e) {}
+        }
+        
+        public void setDataBoolean(String key, boolean value) {
+            try {
+                setDataString(key, Boolean.toString(value));
+            } catch (Exception e) {}
+        }
+        
+
+        /**
+         * Save this MyAccount:
+         * 1) to internal Bundle (mUserData). 
+         * 2) If it is not Persistent yet and may be added to AccountManager, do it (i.e. Persist it). 
+         * 3) If it isPersitent, save everything to AccountManager also. 
+         * @return true if completed successfully
+         */
+        public boolean save() {
+            boolean ok = false;
+            boolean changed = false;
+            
+            try {
+                if (!ma.isPersistent() && (ma.getCredentialsVerified() == CredentialsVerified.SUCCEEDED)) {
+                    try {
+                        // Now add this account to the Account Manager
+                        // See {@link com.android.email.provider.EmailProvider.createAccountManagerAccount(Context, String, String)}
+                        AccountManager accountManager = AccountManager.get(MyPreferences.getContext());
+
+                        /* Note: We could add userdata from {@link mUserData} Bundle, 
+                         * but we decided to add it below one by one item
+                         */
+                        accountManager.addAccountExplicitly(ma.getAccount(), ma.getPassword(), null);
+                        // Immediately mark as persistent
+                        ma.mIsPersistent = true;
+                        
+                        // TODO: This is not enough, we need "sync adapter":
+                        // SyncManager(865): can't find a sync adapter for SyncAdapterType Key 
+                        // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, removing settings for it
+                        ContentResolver.setIsSyncable(ma.getAccount(), MyProvider.AUTHORITY, 1);
+                        ContentResolver.setSyncAutomatically(ma.getAccount(), MyProvider.AUTHORITY, true);
+                        
+                        MyLog.v(TAG, "Persisted " + ma.getAccountGuid());
+                    } catch (Exception e) {
+                        Log.e(TAG, "Adding Account to AccountManager: " + e.getMessage());
+                    }
+                }
+                
+                if (ma.getDataString(KEY_USERNAME, "").compareTo(ma.mUsername) !=0 ) {
+                    setDataString(MyAccount.KEY_USERNAME, ma.mUsername);
+                    changed = true;
+                }
+                if (ma.mOrigin.getName().compareTo(ma.getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER)) != 0) {
+                    setDataString(KEY_ORIGIN_NAME, ma.mOrigin.getName());
+                    changed = true;
+                }
+                if (ma.mCredentialsVerified != CredentialsVerified.load(ma)) {
+                    ma.mCredentialsVerified.put(this);
+                    changed = true;
+                }
+                if (ma.mOAuth != ma.getDataBoolean(MyAccount.KEY_OAUTH, ma.mOrigin.isOAuth())) {
+                    setDataBoolean(MyAccount.KEY_OAUTH, ma.mOAuth);
+                    changed = true;
+                }
+                if (ma.mUserId != ma.getDataLong(MyAccount.KEY_USER_ID, 0L)) {
+                    setDataLong(MyAccount.KEY_USER_ID, ma.mUserId);
+                    changed = true;
+                }
+                if (ma.getConnection().save(this)) {
+                    changed = true;
+                }
+                if (ma.mIsPersistent != ma.getDataBoolean(MyAccount.KEY_PERSISTENT, false)) {
+                    setDataBoolean(MyAccount.KEY_PERSISTENT, ma.mIsPersistent);
+                    changed = true;
+                }
+
+                if (changed && ma.isPersistent()) {
+                    MyPreferences.setPreferencesChangedNow();
+                }
+
+                MyLog.v(TAG, "Saved " + (changed ? " changed " : " no changes " ) + this);
+                ok = true;
+            } catch (Exception e) {
+                Log.e(TAG, "saving " + ma.getAccountGuid() + ": " + e.toString());
+                e.printStackTrace();
+                ok = false;
+            }
+            return ok;
+        }
+        
+        
+
+        /**
+         * Verify the user's credentials. Returns true if authentication was
+         * successful
+         * 
+         * @see CredentialsVerified
+         * @param reVerify Verify even if it was verified already
+         * @return boolean
+         * @throws ConnectionException
+         * @throws ConnectionUnavailableException
+         * @throws ConnectionAuthenticationException
+         * @throws SocketTimeoutException
+         * @throws ConnectionCredentialsOfOtherUserException
+         */
+        public boolean verifyCredentials(boolean reVerify) throws ConnectionException,
+                ConnectionUnavailableException, ConnectionAuthenticationException,
+                SocketTimeoutException, ConnectionCredentialsOfOtherUserException {
+            boolean ok = false;
+            if (!reVerify) {
+                if (ma.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+                    ok = true;
+                }
+            }
+            if (!ok) {
+                JSONObject jso = null;
+                try {
+                    jso = ma.getConnection().verifyCredentials();
+                    ok = (jso != null);
+                } finally {
+                    String newName = null;
+                    boolean credentialsOfOtherUser = false;
+                    boolean errorSettingUsername = false;
+                    if (ok) {
+                        if (jso.optInt("id") < 1) {
+                            ok = false;
+                        }
+                    }
+                    if (ok) {
+                        newName = Connection.getScreenName(jso);
+                        ok = isUsernameValid(newName);
+                    }
+
+                    if (ok) {
+                        // We are comparing user names ignoring case, but we fix correct case
+                        // as the Originating system tells us. 
+                        if (!TextUtils.isEmpty(ma.getUsername()) && ma.getUsername().compareToIgnoreCase(newName) != 0) {
+                            // Credentials belong to other User ??
+                            ok = false;
+                            credentialsOfOtherUser = true;
+                        }
+                    }
+                    if (ok) {
+                        setCredentialsVerified(CredentialsVerified.SUCCEEDED);
+                    }
+                    if (ok && !ma.isPersistent()) {
+                        // Now we know the name (or proper case of the name) of this User!
+                        ok = setUsernameAuthenticated(newName);
+                        if (!ok) {
+                            errorSettingUsername = true;
+                        }
+                    }
+                    if (!ok) {
+                        clearAuthInformation();
+                        setCredentialsVerified(CredentialsVerified.FAILED);
+                    }
+                    // Save the account here
+                    save();
+
+                    if (credentialsOfOtherUser) {
+                        Log.e(TAG, MyPreferences.getContext().getText(R.string.error_credentials_of_other_user) + ": "
+                                + newName);
+                        throw (new ConnectionCredentialsOfOtherUserException(newName));
+                    }
+                    if (errorSettingUsername) {
+                        String msg = MyPreferences.getContext().getText(R.string.error_set_username) + newName;
+                        Log.e(TAG, msg);
+                        throw (new ConnectionAuthenticationException(msg));
+                    }
+                }
+            }
+            return ok;
+        }
+        
+        public void setAuthInformation(String token, String secret) {
+            if(ma.isOAuth()) {
+                ConnectionOAuth conn = ((ConnectionOAuth) ma.getConnection());
+                conn.setAuthInformation(token, secret);
+            } else {
+                Log.e(TAG, "saveAuthInformation is for OAuth only!");
+            }
+        }
+
+        public void setCredentialsVerified(CredentialsVerified cv) {
+            ma.mCredentialsVerified = cv;
+            if (cv == CredentialsVerified.FAILED) {
+               clearAuthInformation(); 
+            }
+        }
+
+        /**
+         * @param oAuth to set
+         */
+        public void setOAuth(boolean oauth) {
+            if (!ma.mOrigin.canChangeOAuth()) {
+                oauth = ma.mOrigin.isOAuth();
+            }
+            if (ma.mOAuth != oauth) {
+                setCredentialsVerified(CredentialsVerified.NEVER);
+                ma.mOAuth = oauth;
+            }
+        }
+
+        /**
+         * Password was moved to the connection object because it is needed there
+         * 
+         * @param password
+         */
+        public void setPassword(String password) {
+            if (password.compareTo(ma.getConnection().getPassword()) != 0) {
+                setCredentialsVerified(CredentialsVerified.NEVER);
+                ma.getConnection().setPassword(password);
+            }
+        }
+        
+        /**
+         * 1. Set Username for the User who was first time authenticated (and was not saved yet)
+         * Remember that the User was ever authenticated
+         * 2. Connect this account to the {@link MyDatabase.User} 
+         * 
+         * @param username - new Username to set.
+         */
+        private boolean setUsernameAuthenticated(String username) {
+            username = fixUsername(username);
+            boolean ok = false;
+
+            if (!ma.isPersistent()) {
+                // Now we know the name of this User!
+                ma.mUsername = username;
+                ok = true;
+            }
+            if (ma.mUserId == 0) {
+                ma.mUserId = MyProvider.userNameToId(ma.getOriginId(), username);
+                if (ma.mUserId == 0) {
+                    TimelineDownloader td = new TimelineDownloader(ma, MyPreferences.getContext(), TimelineTypeEnum.HOME);
+                    try {
+                        // Construct "User" from available account info
+                        // We need this User in order to be able to link Messages to him
+                        JSONObject dbUser = new JSONObject();
+                        dbUser.put("screen_name", ma.getUsername());
+                        dbUser.put(MyDatabase.User.ORIGIN_ID, ma.getOriginId());
+                        ma.mUserId = td.insertUserFromJSONObject(dbUser);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Construct user: " + e.toString());
+                    }
+                }
+            }
+            return ok;
+        }
+        
+        @Override
+        public int describeContents() {
+            // TODO Auto-generated method stub
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            save();
+            // We don't need this until it is persisted
+            if (ma.isPersistent()) {
+                ma.mUserData.putParcelable(KEY_ACCOUNT, ma.getAccount());
+            }
+            dest.writeParcelable(ma.mUserData, flags);
+        }
+        
+        public static final Creator<Builder> CREATOR = new Creator<Builder>() {
+            @Override
+            public Builder createFromParcel(Parcel source) {
+                return new Builder(source);
+            }
+
+            @Override
+            public Builder[] newArray(int size) {
+                return new Builder[size];
+            }
+        };
+    }
+    
     /**
      * Key: Guid of the default account
      */
@@ -68,11 +543,11 @@ public class MyAccount implements Parcelable {
     /**
      * Guid of the default account
      */
-    public static String defaultAccountName = "";
+    private static String defaultAccountName = "";
     /**
      * Guid of current account: it is not stored when application is killed
      */
-    public static String currentAccountName = "";
+    private static String currentAccountName = "";
     
     /**
      * Prefix of the user's Preferences file
@@ -204,8 +679,8 @@ public class MyAccount implements Parcelable {
             editor.putInt(KEY, ordinal());
         }
 
-        public void put(MyAccount ma) {
-            ma.setDataInt(KEY, ordinal());
+        public void put(MyAccount.Builder mab) {
+            mab.setDataInt(KEY, ordinal());
         }
     }
 
@@ -283,42 +758,6 @@ public class MyAccount implements Parcelable {
         } catch (Exception e) {}
         return contains;
     }
-
-    public void setDataString(String key, String value) {
-        try {
-            if (TextUtils.isEmpty(value)) {
-                mUserData.remove(key);
-            } else {
-                mUserData.putString(key, value);
-            }
-            if (isPersistent()) {
-                if (getAccount() == null) {
-                    Log.e(TAG, "setDataString key=" + key + "; mAccount is null ");
-                    return;
-                }
-                android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
-                am.setUserData(getAccount(), key, value);
-            }
-        } catch (Exception e) {}
-    }
-
-    public void setDataInt(String key, int value) {
-        try {
-            setDataString(key, Integer.toString(value));
-        } catch (Exception e) {}
-    }
-
-    public void setDataLong(String key, long value) {
-        try {
-            setDataString(key, Long.toString(value));
-        } catch (Exception e) {}
-    }
-    
-    public void setDataBoolean(String key, boolean value) {
-        try {
-            setDataString(key, Boolean.toString(value));
-        } catch (Exception e) {}
-    }
     
     public boolean getCredentialsPresent() {
         return getConnection().getCredentialsPresent(this);
@@ -326,22 +765,6 @@ public class MyAccount implements Parcelable {
     
     public CredentialsVerified getCredentialsVerified() {
         return mCredentialsVerified;
-    }
-
-    public void setCredentialsVerified(CredentialsVerified cv) {
-        mCredentialsVerified = cv;
-        if (cv == CredentialsVerified.FAILED) {
-           clearAuthInformation(); 
-        }
-    }
-
-    public void setAuthInformation(String token, String secret) {
-        if(isOAuth()) {
-            ConnectionOAuth conn = ((ConnectionOAuth) getConnection());
-            conn.setAuthInformation(token, secret);
-        } else {
-            Log.e(TAG, "saveAuthInformation is for OAuth only!");
-        }
     }
     
     /**
@@ -377,10 +800,10 @@ public class MyAccount implements Parcelable {
             if (ma.isPersistent()) {
                 // Correct Current and Default Accounts if needed
                 if (TextUtils.isEmpty(currentAccountName)) {
-                    ma.setCurrentMyAccount();
+                    setCurrentMyAccountGuid(ma.getAccountGuid());
                 }
                 if (TextUtils.isEmpty(defaultAccountName)) {
-                    ma.setDefaultMyAccount();
+                    setDefaultMyAccountGuid(ma.getAccountGuid());
                 }
             } else {
                 // Return null if the account appeared to be not persistent
@@ -389,7 +812,22 @@ public class MyAccount implements Parcelable {
         }
         return ma;
     }
-
+    
+    /**
+     * Get Guid of current MyAccount (MyAccount selected by the user). The account isPersistent
+     * 
+     * @param Context
+     * @return Account GUID or empty string if no persistent accounts exist
+     */
+    public static String getCurrentMyAccountGuid() {
+        MyAccount ma = getCurrentMyAccount();
+        if (ma != null) {
+            return ma.getAccountGuid();
+        } else {
+            return "";
+        }
+    }
+    
     /**
      * @return 0 if no current account
      */
@@ -477,8 +915,8 @@ public class MyAccount implements Parcelable {
             android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
             android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
             for (int ind = 0; ind < aa.length; ind++) {
-                MyAccount tu = new MyAccount(aa[ind], true);
-                mMyAccounts.add(tu);
+                Builder mab = new Builder(aa[ind]);
+                mMyAccounts.add(mab.getMyAccount());
             }
             MyLog.v(TAG, "Account list initialized, " + mMyAccounts.size() + " accounts");
         }
@@ -515,6 +953,26 @@ public class MyAccount implements Parcelable {
         return ma;
     }
 
+    
+    /**
+     * Factory of MyAccount-s
+     * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
+     * 
+     * @param accountName - AccountGuid (in the form of systemname/username - with slash "/" between them)
+     *  if accountName doesn't have systemname (before slash), default system name is assumed
+     * @return MyAccount - existed or newly created. For new MyAccount we assume that it is not persistent.
+     */
+    public static MyAccount getMyAccount(String accountName) {
+        int ind = indexOfMyAccount(accountName);
+        MyAccount ma = null;
+        if (ind < 0) {
+            // Create temporary MyAccount
+            ma = new Builder(accountName).getMyAccount();
+        } else {
+            ma = mMyAccounts.elementAt(ind);
+        }
+        return ma;
+    }
 
     /**
      * Return first found MyAccount with provided originId
@@ -567,62 +1025,7 @@ public class MyAccount implements Parcelable {
     }
     
     /**
-     * Factory of MyAccount-s
-     * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
-     * 
-     * @param accountName - AccountGuid (in the form of systemname/username - with slash "/" between them)
-     *  if accountName doesn't have systemname (before slash), default system name is assumed
-     * @return MyAccount - existed or newly created. For new MyAccount we assume that it is not persistent.
-     */
-    public static MyAccount getMyAccount(String accountName) {
-        int ind = -1;
-        MyAccount ma = null;
-
-        accountName = fixAccountName(accountName);
-        ind = indexOfMyAccount(accountName);
-        if (ind < 0) {
-            removeNotPersistentMyAccounts();
-            // Create temporary MyAccount
-            ma = new MyAccount(accountName);
-            mMyAccounts.add(ma);
-        } else {
-            ma = mMyAccounts.elementAt(ind);
-        }
-        return ma;
-    }
-
-    /**
-     * Factory of MyAccount-s
-     * If MyAccount for this Account didn't exist yet, new temporary MyAccount will be created.
-     * 
-     * @param account If it's null, new MyAccount with empty username will be created
-     * @param isPersistent true if this account is persistent already
-     * @return MyAccount - existed or newly created.
-     */
-    public static MyAccount getMyAccount(android.accounts.Account account, boolean isPersistent) {
-        MyAccount ma = null;
-        if (account == null) {
-           ma = getMyAccount("");
-        } else {
-            int ind = -1;
-            String accountName = fixAccountName(account.name);
-            if (accountName.compareTo(account.name) != 0) {
-                Log.e(TAG,"Invalid persistent account.name: '" + account.name + "'");
-            }
-            ind = indexOfMyAccount(accountName);
-            if (ind < 0) {
-                removeNotPersistentMyAccounts();
-                ma = new MyAccount(account, isPersistent);
-                mMyAccounts.add(ma);
-            } else {
-                ma = mMyAccounts.elementAt(ind);
-            }
-        }
-        return ma;
-    }
-    
-    /**
-     * Find MyAccount in mMyAccounts by accountName
+     * Find MyAccount by accountName in local cache AND in Android AccountManager
      * @param accountName
      * @return -1 if was not found or index in mMyAccounts
      */
@@ -649,11 +1052,15 @@ public class MyAccount implements Parcelable {
                 for (int ind = 0; ind < aa.length; ind++) {
                   if (aa[ind].name.compareTo(accountName)==0) {
                       found = true;
-                      MyAccount ma = new MyAccount(aa[ind], true);
+                      MyAccount ma = new Builder(aa[ind]).getMyAccount();
                       mMyAccounts.add(ma);
                       indReturn = mMyAccounts.size() - 1;
                       break;
                   }
+                }
+                if (found) {
+                    // It looks like preferences has changed...
+                    MyPreferences.setPreferencesChangedNow();
                 }
             }
         }
@@ -693,7 +1100,7 @@ public class MyAccount implements Parcelable {
                 }
             }
             if (found) {
-                ma.deleteData();
+                new Builder(ma).deleteData();
 
                 // And delete the object from the list
                 mMyAccounts.removeElementAt(ind);
@@ -749,101 +1156,24 @@ public class MyAccount implements Parcelable {
     }
     
     /**
-     * Creates new account, which is not Persistent yet
-     * @param accountName
+     * Set current MyAccount to 'this' object.
+     * Current account selection is not persistent
      */
-    private MyAccount(String accountName) {
-        mOrigin = Origin.getOrigin(accountNameToOriginName(accountName));
-        mUsername = accountNameToUsername(accountName);
-        mOAuth = mOrigin.isOAuth();
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "New temporary account created: " + this.toString());
-        }
+    public static synchronized void setCurrentMyAccountGuid(String accountGuid) {
+        currentAccountName = accountGuid;
     }
 
     /**
-     * Loads existing account from Persistence or from mUserData in a case the account is not persistent 
-     * @param account should not be null
-     * @param isPersistent true for Persistent account
+     * Set this MyAccount as a default one.
+     * Default account selection is persistent
      */
-    private MyAccount(android.accounts.Account account, boolean isPersistent) {
-        if (account == null) {
-            throw new IllegalArgumentException(TAG + " null account is not allowed the constructor");
-        }
-        mAccount = account;
-        mIsPersistent = isPersistent;
-
-        mOrigin = Origin.getOrigin(accountNameToOriginName(getAccount().name));
-        mUsername = accountNameToUsername(getAccount().name);
-        
-        // Load stored data for the User
-        mCredentialsVerified = CredentialsVerified.load(this);
-        mOAuth = getDataBoolean(MyAccount.KEY_OAUTH, mOrigin.isOAuth());
-        mUserId = getDataLong(MyAccount.KEY_USER_ID, 0L);
-        
-        if (mUserId==0) {
-            setUsernameAuthenticated(mUsername);
-            Log.e(TAG, "MyAccount '" + getUsername() + "' was not connected to the User table. UserId=" + mUserId);
-        }
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "Loaded persistent " + this.toString());
-        }
-    }
-
-    /**
-     * Loads existing account from Persistence or from mUserData in a case the account is not persistent 
-     * @param account should not be null
-     */
-    private void loadMyAccount(android.accounts.Account account, boolean isPersistent) {
-        mIsPersistent = isPersistent;
-        if (isPersistent() && account == null) {
-            throw new IllegalArgumentException(TAG + " null account for persistent MyAccount is not allowed");
-        }
-        mAccount = account;
-
-        String originName = Origin.ORIGIN_NAME_TWITTER;
-        String userName = "";
-        if (isPersistent()) {
-            originName = accountNameToOriginName(getAccount().name);
-            userName = accountNameToUsername(getAccount().name);
-        } else {
-            originName = getDataString(MyAccount.KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER);
-            userName = getDataString(MyAccount.KEY_USERNAME, "");
-        }
-        mOrigin = Origin.getOrigin(originName);
-        mUsername = fixUsername(userName);
-        
-        // Load stored data for the MyAccount
-        mCredentialsVerified = CredentialsVerified.load(this);
-        mOAuth = getDataBoolean(MyAccount.KEY_OAUTH, mOrigin.isOAuth());
-        mUserId = getDataLong(MyAccount.KEY_USER_ID, 0L);
-        
-        if (mUserId==0) {
-            setUsernameAuthenticated(mUsername);
-            Log.e(TAG, "MyAccount '" + getUsername() + "' was not connected to the User table. UserId=" + mUserId);
-        }
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "Loaded persistent " + this.toString());
-        }
+    public static synchronized void setDefaultMyAccountGuid(String accountGuid) {
+        defaultAccountName = accountGuid;
+        MyPreferences.getDefaultSharedPreferences().edit()
+                .putString(KEY_DEFAULT_ACCOUNT_NAME, defaultAccountName).commit();
     }
     
-    private MyAccount(Parcel source) {
-        boolean isPersistent = getDataBoolean(KEY_PERSISTENT, false);
-        mUserData = source.readBundle();
-        
-        // Load as if the account is not persisted to force loading everything from mUserData
-        loadMyAccount(null, false);
-
-        // Do this as a last step
-        if (isPersistent) {
-            mAccount = mUserData.getParcelable(KEY_ACCOUNT);
-            if (mAccount == null) {
-                isPersistent = false;
-                Log.e(TAG, "The account was marked as persistent:" + this);
-            }
-            mIsPersistent = isPersistent;
-        }
-    }
+    private MyAccount() {};
 
     /**
      * @return the mUsername
@@ -914,120 +1244,6 @@ public class MyAccount implements Parcelable {
     }
 
     /**
-     * 1. Set Username for the User who was first time authenticated (and was not saved yet)
-     * Remember that the User was ever authenticated
-     * 2. Connect this account to the {@link MyDatabase.User} 
-     * 
-     * @param username - new Username to set.
-     */
-    private boolean setUsernameAuthenticated(String username) {
-        username = fixUsername(username);
-        boolean ok = false;
-
-        if (!isPersistent()) {
-            // Now we know the name of this User!
-            mUsername = username;
-            ok = true;
-        }
-        if (mUserId == 0) {
-            mUserId = MyProvider.userNameToId(getOriginId(), username);
-            if (mUserId == 0) {
-                TimelineDownloader td = new TimelineDownloader(this, MyPreferences.getContext(), TimelineTypeEnum.HOME);
-                try {
-                    // Construct "User" from available account info
-                    // We need this User in order to be able to link Messages to him
-                    JSONObject dbUser = new JSONObject();
-                    dbUser.put("screen_name", getUsername());
-                    dbUser.put(MyDatabase.User.ORIGIN_ID, getOriginId());
-                    mUserId = td.insertUserFromJSONObject(dbUser);
-                } catch (Exception e) {
-                    Log.e(TAG, "Construct user: " + e.toString());
-                }
-            }
-        }
-        return ok;
-    }
-
-    /**
-     * Save this MyAccount:
-     * 1) to internal Bundle (mUserData). 
-     * 2) If it is not Persistent yet and may be added to AccountManager, do it (i.e. Persist it). 
-     * 3) If it isPersitent, save everything to AccountManager also. 
-     * @return true if completed successfully
-     */
-    public boolean save() {
-        boolean ok = false;
-        boolean changed = false;
-        
-        try {
-            if (!isPersistent() && (getCredentialsVerified() == CredentialsVerified.SUCCEEDED)) {
-                try {
-                    // Now add this account to account manager
-                    // See {@link com.android.email.provider.EmailProvider.createAccountManagerAccount(Context, String, String)}
-                    AccountManager accountManager = AccountManager.get(MyPreferences.getContext());
-
-                    /* Note: We could add userdata from {@link mUserData} Bundle, 
-                     * but we decided to add it below one by one item
-                     */
-                    accountManager.addAccountExplicitly(getAccount(), getPassword(), null);
-                    // Immediately mark as persistent
-                    mIsPersistent = true;
-                    
-                    // TODO: This is not enough, we need "sync adapter":
-                    // SyncManager(865): can't find a sync adapter for SyncAdapterType Key 
-                    // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, removing settings for it
-                    ContentResolver.setIsSyncable(getAccount(), MyProvider.AUTHORITY, 1);
-                    ContentResolver.setSyncAutomatically(getAccount(), MyProvider.AUTHORITY, true);
-                    
-                    MyLog.v(TAG, "Persisted " + getAccountGuid());
-                } catch (Exception e) {
-                    Log.e(TAG, "Adding Account to AccountManager: " + e.getMessage());
-                }
-            }
-            
-            if (getDataString(KEY_USERNAME, "").compareTo(mUsername) !=0 ) {
-                setDataString(MyAccount.KEY_USERNAME, mUsername);
-                changed = true;
-            }
-            if (mOrigin.getName().compareTo(getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER)) != 0) {
-                setDataString(KEY_ORIGIN_NAME, mOrigin.getName());
-                changed = true;
-            }
-            if (mCredentialsVerified != CredentialsVerified.load(this)) {
-                mCredentialsVerified.put(this);
-                changed = true;
-            }
-            if (mOAuth != getDataBoolean(MyAccount.KEY_OAUTH, mOrigin.isOAuth())) {
-                setDataBoolean(MyAccount.KEY_OAUTH, mOAuth);
-                changed = true;
-            }
-            if (mUserId != getDataLong(MyAccount.KEY_USER_ID, 0L)) {
-                setDataLong(MyAccount.KEY_USER_ID, mUserId);
-                changed = true;
-            }
-            if (getConnection().save(this)) {
-                changed = true;
-            }
-            if (mIsPersistent != getDataBoolean(MyAccount.KEY_PERSISTENT, false)) {
-                setDataBoolean(MyAccount.KEY_PERSISTENT, mIsPersistent);
-                changed = true;
-            }
-
-            if (changed && isPersistent()) {
-                MyPreferences.setPreferencesChangedNow();
-            }
-
-            MyLog.v(TAG, "Saved " + (changed ? " changed " : " no changes " ) + this);
-            ok = true;
-        } catch (Exception e) {
-            Log.e(TAG, "saving " + getAccountGuid() + ": " + e.toString());
-            e.printStackTrace();
-            ok = false;
-        }
-        return ok;
-    }
-
-    /**
      * @return Is this object persistent 
      */
     public boolean isPersistent() {
@@ -1041,30 +1257,6 @@ public class MyAccount implements Parcelable {
             if (!ok && MyLog.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "The Username is not valid: \"" + username + "\"");
             }
-        }
-        return ok;
-    }
-
-    /**
-     * Delete all User's data
-     * @return true = success 
-     */
-    private boolean deleteData() {
-        boolean ok = true;
-
-        // Old preferences file may be deleted, if it exists...
-        ok = SharedPreferencesUtil.delete(MyPreferences.getContext(), prefsFileName());
-
-        if (isPersistent()) {
-            if (mUserId != 0) {
-                // TODO: Delete databases for this User
-                
-                mUserId = 0;
-            }
-
-            // We don't delete Account from Account Manager here
-            mAccount = null;
-            mIsPersistent = false;
         }
         return ok;
     }
@@ -1110,16 +1302,6 @@ public class MyAccount implements Parcelable {
     public String messagePermalink(String userName, String messageOid) {
         return mOrigin.messagePermalink(userName, messageOid);
     }
-    
-    /**
-     * Clear Authentication information
-     * 
-     * @param context
-     */
-    public void clearAuthInformation() {
-        setCredentialsVerified(CredentialsVerified.NEVER);
-        this.getConnection().clearAuthInformation();
-    }
 
     /**
      * @return the mOAuth
@@ -1128,133 +1310,8 @@ public class MyAccount implements Parcelable {
         return mOAuth;
     }
 
-    /**
-     * @param oAuth to set
-     */
-    public void setOAuth(boolean oauth) {
-        if (!mOrigin.canChangeOAuth()) {
-            oauth = mOrigin.isOAuth();
-        }
-        if (mOAuth != oauth) {
-            setCredentialsVerified(CredentialsVerified.NEVER);
-            mOAuth = oauth;
-        }
-    }
-
-    /**
-     * Password was moved to the connection object because it is needed there
-     * 
-     * @param password
-     */
-    public void setPassword(String password) {
-        if (password.compareTo(getConnection().getPassword()) != 0) {
-            setCredentialsVerified(CredentialsVerified.NEVER);
-            getConnection().setPassword(password);
-        }
-    }
-
     public String getPassword() {
         return getConnection().getPassword();
-    }
-
-    /**
-     * Verify the user's credentials. Returns true if authentication was
-     * successful
-     * 
-     * @see CredentialsVerified
-     * @param reVerify Verify even if it was verified already
-     * @return boolean
-     * @throws ConnectionException
-     * @throws ConnectionUnavailableException
-     * @throws ConnectionAuthenticationException
-     * @throws SocketTimeoutException
-     * @throws ConnectionCredentialsOfOtherUserException
-     */
-    public boolean verifyCredentials(boolean reVerify) throws ConnectionException,
-            ConnectionUnavailableException, ConnectionAuthenticationException,
-            SocketTimeoutException, ConnectionCredentialsOfOtherUserException {
-        boolean ok = false;
-        if (!reVerify) {
-            if (getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-                ok = true;
-            }
-        }
-        if (!ok) {
-            JSONObject jso = null;
-            try {
-                jso = getConnection().verifyCredentials();
-                ok = (jso != null);
-            } finally {
-                String newName = null;
-                boolean credentialsOfOtherUser = false;
-                boolean errorSettingUsername = false;
-                if (ok) {
-                    if (jso.optInt("id") < 1) {
-                        ok = false;
-                    }
-                }
-                if (ok) {
-                    newName = Connection.getScreenName(jso);
-                    ok = isUsernameValid(newName);
-                }
-
-                if (ok) {
-                    // We are comparing user names ignoring case, but we fix correct case
-                    // as the Originating system tells us. 
-                    if (!TextUtils.isEmpty(getUsername()) && getUsername().compareToIgnoreCase(newName) != 0) {
-                        // Credentials belong to other User ??
-                        ok = false;
-                        credentialsOfOtherUser = true;
-                    }
-                }
-                if (ok) {
-                    setCredentialsVerified(CredentialsVerified.SUCCEEDED);
-                }
-                if (ok && !isPersistent()) {
-                    // Now we know the name (or proper case of the name) of this User!
-                    ok = setUsernameAuthenticated(newName);
-                    if (!ok) {
-                        errorSettingUsername = true;
-                    }
-                }
-                if (!ok) {
-                    clearAuthInformation();
-                    setCredentialsVerified(CredentialsVerified.FAILED);
-                }
-                // Save the account here
-                save();
-
-                if (credentialsOfOtherUser) {
-                    Log.e(TAG, MyPreferences.getContext().getText(R.string.error_credentials_of_other_user) + ": "
-                            + newName);
-                    throw (new ConnectionCredentialsOfOtherUserException(newName));
-                }
-                if (errorSettingUsername) {
-                    String msg = MyPreferences.getContext().getText(R.string.error_set_username) + newName;
-                    Log.e(TAG, msg);
-                    throw (new ConnectionAuthenticationException(msg));
-                }
-            }
-        }
-        return ok;
-    }
-
-    /**
-     * Set current MyAccount to 'this' object.
-     * Current account selection is not persistent
-     */
-    public synchronized void setCurrentMyAccount() {
-        currentAccountName = getAccountGuid();
-    }
-
-    /**
-     * Set this MyAccount as a default one.
-     * Default account selection is persistent
-     */
-    public synchronized void setDefaultMyAccount() {
-        defaultAccountName = getAccountGuid();
-        MyPreferences.getDefaultSharedPreferences().edit()
-                .putString(KEY_DEFAULT_ACCOUNT_NAME, defaultAccountName).commit();
     }
     
     /**
@@ -1294,29 +1351,4 @@ public class MyAccount implements Parcelable {
         } catch (Exception e) {}
         return str + "{" + members + "}";
     }
-
-    public int describeContents() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    public void writeToParcel(Parcel dest, int flags) {
-        save();
-        // We don't need this until it is persisted
-        if (isPersistent()) {
-            mUserData.putParcelable(KEY_ACCOUNT, getAccount());
-        }
-        dest.writeParcelable(mUserData, flags);
-    }
-    
-    public static final Creator<MyAccount> CREATOR = new Creator<MyAccount>() {
-        public MyAccount createFromParcel(Parcel source) {
-            return new MyAccount(source);
-        }
-
-        public MyAccount[] newArray(int size) {
-            return new MyAccount[size];
-        }
-    };
-    
 }

@@ -65,7 +65,7 @@ public class AccountSelector extends ListActivity {
                 String  accountName = ((TextView)view.findViewById(R.id.name)).getText().toString();
                 MyAccount ma = MyAccount.getMyAccount(accountName);
                 if (ma.isPersistent()) {
-                    ma.setCurrentMyAccount();
+                    MyAccount.setCurrentMyAccountGuid(ma.getAccountGuid());
                     AccountSelector.this.setResult(RESULT_OK);
                     finish();
                 }

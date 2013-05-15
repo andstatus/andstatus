@@ -173,26 +173,26 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
      * @see org.andstatus.app.net.Connection#save(android.content.SharedPreferences, android.content.SharedPreferences.Editor)
      */
     @Override
-    public boolean save(MyAccount ma) {
-        boolean changed = super.save(ma);
+    public boolean save(MyAccount.Builder mab) {
+        boolean changed = super.save(mab);
 
-        if ( !TextUtils.equals(mToken, ma.getDataString(ConnectionOAuth.USER_TOKEN, null)) ||
-                !TextUtils.equals(mSecret, ma.getDataString(ConnectionOAuth.USER_SECRET, null)) 
+        if ( !TextUtils.equals(mToken, mab.getMyAccount().getDataString(ConnectionOAuth.USER_TOKEN, null)) ||
+                !TextUtils.equals(mSecret, mab.getMyAccount().getDataString(ConnectionOAuth.USER_SECRET, null)) 
                 ) {
             changed = true;
 
             if (TextUtils.isEmpty(mToken)) {
-                ma.setDataString(ConnectionOAuth.USER_TOKEN, null);
+                mab.setDataString(ConnectionOAuth.USER_TOKEN, null);
                 MyLog.d(TAG, "Clearing OAuth Token");
             } else {
-                ma.setDataString(ConnectionOAuth.USER_TOKEN, mToken);
+                mab.setDataString(ConnectionOAuth.USER_TOKEN, mToken);
                 MyLog.d(TAG, "Saving OAuth Token: " + mToken);
             }
             if (TextUtils.isEmpty(mSecret)) {
-                ma.setDataString(ConnectionOAuth.USER_SECRET, null);
+                mab.setDataString(ConnectionOAuth.USER_SECRET, null);
                 MyLog.d(TAG, "Clearing OAuth Secret");
             } else {
-                ma.setDataString(ConnectionOAuth.USER_SECRET, mSecret);
+                mab.setDataString(ConnectionOAuth.USER_SECRET, mSecret);
                 MyLog.d(TAG, "Saving OAuth Secret: " + mSecret);
             }
         }

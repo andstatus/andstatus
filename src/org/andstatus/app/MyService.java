@@ -749,7 +749,7 @@ public class MyService extends Service {
         // Save Queues
         count += persistQueue(mCommands, TAG + "_" + "mCommands");
         count += persistQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
-        MyLog.d(TAG, "State saved, " + (count>0 ? count : "no ") + " msg in the Queues");
+        MyLog.d(TAG, "State saved, " + (count>0 ? Integer.toString(count) : "no ") + " msg in the Queues");
         
         stopSelf();
         relealeWakeLock();
@@ -810,7 +810,7 @@ public class MyService extends Service {
             // Restore Queues
             count += restoreQueue(mCommands, TAG + "_" + "mCommands");
             count += restoreQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
-            MyLog.d(TAG, "State restored, " + (count>0 ?  count : "no") + " msg in the Queues");
+            MyLog.d(TAG, "State restored, " + (count>0 ? Integer.toString(count) : "no") + " msg in the Queues");
 
             registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
             
