@@ -1,6 +1,6 @@
 package org.andstatus.app.net;
 
-import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.AccountDataReader;
 import org.apache.http.client.methods.HttpPost;
 import org.json.JSONObject;
 
@@ -10,8 +10,8 @@ import org.json.JSONObject;
  */
 public class ConnectionOAuth1p0 extends ConnectionOAuth {
 
-    public ConnectionOAuth1p0(MyAccount ma, ApiEnum api, String apiBaseUrl, String apiOauthBaseUrl) {
-        super(ma, api, apiBaseUrl, apiOauthBaseUrl);
+    public ConnectionOAuth1p0(AccountDataReader dr, ApiEnum api, String apiBaseUrl, String apiOauthBaseUrl) {
+        super(dr, api, apiBaseUrl, apiOauthBaseUrl);
     }
 
     @Override

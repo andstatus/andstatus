@@ -22,7 +22,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.AccountDataReader;
+import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.util.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -55,13 +56,22 @@ public class ConnectionBasicAuth extends Connection {
 	private static final String USER_AGENT = "AndStatus/1.0";
 	private static final String TAG = ConnectionBasicAuth.class.getSimpleName();
 
+    public static final String KEY_PASSWORD = "password";
+	
+    protected String mUsername;
+
+    protected String mPassword;
+	
     /**
      * Creates a new ConnectionBasicAuth instance.
      */
-    public ConnectionBasicAuth(MyAccount ma, ApiEnum api, String apiBaseUrl) {
-        super(ma, api , apiBaseUrl);
+    public ConnectionBasicAuth(AccountDataReader dr, ApiEnum api, String apiBaseUrl) {
+        super(dr, api , apiBaseUrl);
+        mUsername = dr.getUsername();
+        mPassword = dr.getDataString(KEY_PASSWORD, "");
     }
 
+    @Override
     public JSONArray getTimeline(String url, String sinceId, int limit, String userId) throws ConnectionException {
         url += "?count=" + Integer.toString(fixLimit(limit));
         if (!TextUtils.isEmpty(fixSinceId(sinceId))) {
@@ -222,10 +232,10 @@ public class ConnectionBasicAuth extends Connection {
 	}
 
 	@Override
-    public boolean getCredentialsPresent(MyAccount ma) {
+    public boolean getCredentialsPresent(AccountDataReader dr) {
         boolean yes = false;
         // This is not set for the new account
-        mUsername = ma.getUsername();
+        mUsername = dr.getUsername();
         if (!TextUtils.isEmpty(mUsername) && !TextUtils.isEmpty(mPassword)) {
             yes = true;
         }
@@ -434,9 +444,32 @@ public class ConnectionBasicAuth extends Connection {
     public boolean isPasswordNeeded() {
         return true;
     }
+    /**
+     * Set User's password if the Connection object needs it
+     */
+    @Override
+    public void setPassword(String password) {
+        if (password == null) {
+            password = "";
+        }
+        if (password.compareTo(mPassword) != 0) {
+            mPassword = password;
+        }
+    }
+    @Override
+    public String getPassword() {
+        return mPassword;
+    }
 
     @Override
-    public boolean isOAuth() {
-        return false;
+    public boolean save(AccountDataWriter dw) {
+        boolean changed = super.save(dw);
+        
+        if (mPassword.compareTo(dw.getDataString(KEY_PASSWORD, "")) != 0) {
+            dw.setDataString(KEY_PASSWORD, mPassword);
+            changed = true;
+        }
+        
+        return changed;
     }
 }

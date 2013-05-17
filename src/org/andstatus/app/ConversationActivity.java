@@ -148,6 +148,7 @@ public class ConversationActivity extends Activity {
              * Was this messaged reblogged by {@link ConversationActivity#ma}
              */
             boolean reblogged = false;
+            
             /**
              * Comma separated list of the names of all known rebloggers of the message
              */
@@ -163,11 +164,16 @@ public class ConversationActivity extends Activity {
 
             @Override
             public boolean equals(Object o) {
-                boolean equal = false;
-                if (o != null && this.getClass().isAssignableFrom(o.getClass())) {
-                    equal = (this.id == ((OneRow) o).id);
+                if (!(o instanceof OneRow)) {
+                    return false;
                 }
-                return equal;
+                OneRow row = (OneRow) o;
+                return (id == row.id);
+            }
+
+            @Override
+            public int hashCode() {
+                return Long.valueOf(id).hashCode();
             }
 
         }

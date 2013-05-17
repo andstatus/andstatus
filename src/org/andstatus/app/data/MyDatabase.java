@@ -558,7 +558,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
             // Associate all currently loaded messages with one current
             // User MyAccount (to be created...)
             String username = MyPreferences.getDefaultSharedPreferences().getString(
-                    MyAccount.KEY_USERNAME, "");
+                    "username", "");
             if (username.length() > 0) {
                 db.execSQL("INSERT INTO user(_id, origin_id, username, user_ins_date) VALUES(1, 1, '"
                         + username + "'," + System.currentTimeMillis() + ")");

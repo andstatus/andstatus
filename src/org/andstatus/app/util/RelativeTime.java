@@ -126,7 +126,8 @@ public class RelativeTime {
 	 * 
 	 * @return String
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return getDifference(mContext, mCalendar.getTimeInMillis());
 	}
 }

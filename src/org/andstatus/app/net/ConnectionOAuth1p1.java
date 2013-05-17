@@ -1,6 +1,6 @@
 package org.andstatus.app.net;
 
-import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.AccountDataReader;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
@@ -13,8 +13,8 @@ import java.util.LinkedList;
  */
 public class ConnectionOAuth1p1 extends ConnectionOAuth {
 
-    public ConnectionOAuth1p1(MyAccount ma, ApiEnum api, String apiBaseUrl, String apiOauthBaseUrl) {
-        super(ma, api, apiBaseUrl, apiOauthBaseUrl);
+    public ConnectionOAuth1p1(AccountDataReader dr, ApiEnum api, String apiBaseUrl, String apiOauthBaseUrl) {
+        super(dr, api, apiBaseUrl, apiOauthBaseUrl);
     }
 
     @Override

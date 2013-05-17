@@ -20,7 +20,9 @@ package org.andstatus.app.net;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.AccountDataReader;
+import org.andstatus.app.account.AccountDataWriter;
+import org.andstatus.app.account.Origin;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.util.MyLog;
@@ -29,10 +31,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Handles connection to the Twitter API
+ * Handles connection to the API of the Microblogging System (i.e. to the {@link Origin})
  * 
- * @author yvolk
- * @author torgny.bjers
+ * @author yvolk, torgny.bjers
  */
 public abstract class Connection {
     
@@ -89,16 +90,10 @@ public abstract class Connection {
         OAUTH_AUTHORIZE,
         OAUTH_REQUEST_TOKEN
     }
-    
-    protected String mUsername;
-
-    protected String mPassword;
 
     public Connection() {}
     
-    protected Connection(MyAccount ma, ApiEnum api, String apiBaseUrl) {
-        mUsername = ma.getDataString(MyAccount.KEY_USERNAME, "");
-        mPassword = ma.getDataString(MyAccount.KEY_PASSWORD, "");
+    protected Connection(AccountDataReader dr, ApiEnum api, String apiBaseUrl) {
         mApi = api;
         mBaseUrl = apiBaseUrl;
     }
@@ -194,12 +189,10 @@ public abstract class Connection {
     /**
      * @return Does this connection use OAuth?
      */
-    public abstract boolean isOAuth();
-    
-    public String getUsername() {
-        return mUsername;
+    public boolean isOAuth() {
+        return false;
     }
-
+    
     // Get stuff from the two types of Twitter JSONObject we deal with: credentials and status 
     private static String getCurrentTweet(JSONObject status) {
         return status.optString("text");
@@ -249,30 +242,19 @@ public abstract class Connection {
     /**
      * Set User's password if the Connection object needs it
      */
-    public void setPassword(String password) {
-        if (password == null) {
-            password = "";
-        }
-        if (password.compareTo(mPassword) != 0) {
-            mPassword = password;
-        }
-    }
+    public void setPassword(String password) { }
     public String getPassword() {
-        return mPassword;
+        return "";
     }
     
     /**
      * Persist the connection data
-     * @param editor
      * @return true if something changed
      */
-    public boolean save(MyAccount.Builder mab) {
+    public boolean save(AccountDataWriter dw) {
         boolean changed = false;
-        
-        if (mPassword.compareTo(mab.getMyAccount().getDataString(MyAccount.KEY_PASSWORD, "")) != 0) {
-            mab.setDataString(MyAccount.KEY_PASSWORD, mPassword);
-            changed = true;
-        }
+
+        // Nothing to save
         
         return changed;
     }
@@ -281,7 +263,7 @@ public abstract class Connection {
      * Do we have enough credentials to verify them?
      * @return true == yes
      */
-    public abstract boolean getCredentialsPresent(MyAccount ma);  
+    public abstract boolean getCredentialsPresent(AccountDataReader dr);  
     
     /**
      * Verify the user's credentials.

@@ -60,7 +60,8 @@ public class AtTokenizer implements Tokenizer {
 	/**
 	 * @see android.widget.MultiAutoCompleteTextView.Tokenizer#terminateToken(java.lang.CharSequence)
 	 */
-	public CharSequence terminateToken(CharSequence text) {
+	@Override
+    public CharSequence terminateToken(CharSequence text) {
 		int i = text.length();
 		while (i > 0 && text.charAt(i - 1) == ' ')
 			i--;

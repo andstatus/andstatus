@@ -54,6 +54,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.ConnectionAuthenticationException;
+import org.andstatus.app.net.ConnectionBasicAuth;
 import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionOAuth;
@@ -325,10 +326,10 @@ public class AccountSettings extends PreferenceActivity implements
         
         addPreferencesFromResource(R.xml.account_settings);
         
-        mOriginName = (ListPreference) findPreference(MyAccount.KEY_ORIGIN_NAME);
-        mOAuth = (CheckBoxPreference) findPreference(MyAccount.KEY_OAUTH);
-        mEditTextUsername = (EditTextPreference) findPreference(MyAccount.KEY_USERNAME_NEW);
-        mEditTextPassword = (EditTextPreference) findPreference(MyAccount.KEY_PASSWORD);
+        mOriginName = (ListPreference) findPreference(MyAccount.Builder.KEY_ORIGIN_NAME);
+        mOAuth = (CheckBoxPreference) findPreference(MyAccount.Builder.KEY_OAUTH);
+        mEditTextUsername = (EditTextPreference) findPreference(MyAccount.Builder.KEY_USERNAME_NEW);
+        mEditTextPassword = (EditTextPreference) findPreference(ConnectionBasicAuth.KEY_PASSWORD);
         mVerifyCredentials = (Preference) findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
 
         setState(getIntent(), "onCreate");
@@ -480,7 +481,7 @@ public class AccountSettings extends PreferenceActivity implements
         MyAccount ma = state.getMyAccount();
         
         mOriginName.setValue(ma.getOriginName());
-        SharedPreferencesUtil.showListPreference(this, MyAccount.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
+        SharedPreferencesUtil.showListPreference(this, MyAccount.Builder.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
         mOriginName.setEnabled(!ma.isPersistent());
         
         if (mEditTextUsername.getText() == null
@@ -629,20 +630,20 @@ public class AccountSettings extends PreferenceActivity implements
             // Here and below:
             // Check if there are changes to avoid "ripples": don't set new value if no changes
             
-            if (key.equals(MyAccount.KEY_ORIGIN_NAME)) {
+            if (key.equals(MyAccount.Builder.KEY_ORIGIN_NAME)) {
                 if (state.getMyAccount().getOriginName().compareToIgnoreCase(mOriginName.getValue()) != 0) {
                     // If we have changed the System, we should recreate the Account
                     state.builder = MyAccount.Builder.valueOf(mOriginName.getValue() + "/" + state.getMyAccount().getUsername());
                     showUserPreferences();
                 }
             }
-            if (key.equals(MyAccount.KEY_OAUTH)) {
+            if (key.equals(MyAccount.Builder.KEY_OAUTH)) {
                 if (state.getMyAccount().isOAuth() != mOAuth.isChecked()) {
                     state.builder.setOAuth(mOAuth.isChecked());
                     showUserPreferences();
                 }
             }
-            if (key.equals(MyAccount.KEY_USERNAME_NEW)) {
+            if (key.equals(MyAccount.Builder.KEY_USERNAME_NEW)) {
                 String usernameNew = mEditTextUsername.getText();
                 if (usernameNew.compareTo(state.getMyAccount().getUsername()) != 0) {
                     boolean oauth = state.getMyAccount().isOAuth();
@@ -653,7 +654,7 @@ public class AccountSettings extends PreferenceActivity implements
                     showUserPreferences();
                 }
             }
-            if (key.equals(MyAccount.KEY_PASSWORD)) {
+            if (key.equals(ConnectionBasicAuth.KEY_PASSWORD)) {
                 if (state.getMyAccount().getPassword().compareTo(mEditTextPassword.getText()) != 0) {
                     state.builder.setPassword(mEditTextPassword.getText());
                     showUserPreferences();

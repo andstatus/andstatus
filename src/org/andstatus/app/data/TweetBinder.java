@@ -38,7 +38,8 @@ public class TweetBinder implements ViewBinder {
 	/**
 	 * @see android.widget.SimpleCursorAdapter.ViewBinder#setViewValue(android.view.View, android.database.Cursor, int)
 	 */
-	public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+	@Override
+    public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
 		int colIndex = -1;
 		switch (view.getId()) {
 		case R.id.message_details:

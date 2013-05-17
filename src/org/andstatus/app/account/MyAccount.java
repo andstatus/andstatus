@@ -52,16 +52,54 @@ import org.json.JSONObject;
 /**
  * Immutable class that holds MyAccount-specific information including: 
  * a Microblogging System (twitter.com, identi.ca etc.), 
- * Username in that system and connection to it.
+ * Username in that system and {@link Connection} to it.
  * 
  * @author Yuri Volkov
  */
-public class MyAccount {
+public class MyAccount implements AccountDataReader {
     private static final String TAG = MyAccount.class.getSimpleName();
 
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
-    public static class Builder implements Parcelable {
+    public static class Builder implements Parcelable, AccountDataWriter {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
+
+
+        //------------------------------------------------------------
+        // Key names for MyAccount preferences are below:
+        
+        /**
+         * The Key for the android.accounts.Account bundle;
+         */
+        public static final String KEY_ACCOUNT = "account";
+        /**
+         * Is the MyAccount persistent in AccountManager;
+         */
+        public static final String KEY_PERSISTENT = "persistent";
+
+        /**
+         * This Key is both global for the application and the same - for one MyAccount
+         * Global: Username of currently selected MyAccount (Current MyAccount)
+         * This MyAccount: Username of the {@link MyDatabase.User} corresponding to this {@link MyAccount}
+         */
+        public static final String KEY_USERNAME = "username";
+        /**
+         * New Username typed / selected in UI
+         * It doesn't immediately change "Current MyAccount"
+         */
+        public static final String KEY_USERNAME_NEW = "username_new";
+        /**
+         *  Unique originating (source) system (twitter.com, identi.ca, ... )
+         */
+        public static final String KEY_ORIGIN_NAME = "origin_name";
+        /**
+         * {@link MyDatabase.User#_ID} in our System.
+         */
+        public static final String KEY_USER_ID = "user_id";
+
+        /**
+         * Is OAuth on for this MyAccount?
+         */
+        public static final String KEY_OAUTH = "oauth";
         
         /**
          * Factory of Builder-s
@@ -112,7 +150,7 @@ public class MyAccount {
          * Creates new account, which is not Persistent yet
          * @param accountName
          */
-        private Builder(String accountName) {
+        private Builder (String accountName) {
             ma = new MyAccount();
             ma.mOrigin = Origin.getOrigin(accountNameToOriginName(accountName));
             ma.mUsername = accountNameToUsername(accountName);
@@ -143,8 +181,8 @@ public class MyAccount {
             
             // Load stored data for the User
             ma.mCredentialsVerified = CredentialsVerified.load(ma);
-            ma.mOAuth = ma.getDataBoolean(MyAccount.KEY_OAUTH, ma.mOrigin.isOAuth());
-            ma.mUserId = ma.getDataLong(MyAccount.KEY_USER_ID, 0L);
+            ma.mOAuth = ma.getDataBoolean(KEY_OAUTH, ma.mOrigin.isOAuth());
+            ma.mUserId = ma.getDataLong(KEY_USER_ID, 0L);
             
             if (ma.mUserId==0) {
                 setUsernameAuthenticated(ma.mUsername);
@@ -211,16 +249,16 @@ public class MyAccount {
                 originName = accountNameToOriginName(ma.getAccount().name);
                 userName = accountNameToUsername(ma.getAccount().name);
             } else {
-                originName = ma.getDataString(MyAccount.KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER);
-                userName = ma.getDataString(MyAccount.KEY_USERNAME, "");
+                originName = ma.getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER);
+                userName = ma.getDataString(KEY_USERNAME, "");
             }
             ma.mOrigin = Origin.getOrigin(originName);
             ma.mUsername = fixUsername(userName);
             
             // Load stored data for the MyAccount
             ma.mCredentialsVerified = CredentialsVerified.load(ma);
-            ma.mOAuth = ma.getDataBoolean(MyAccount.KEY_OAUTH, ma.mOrigin.isOAuth());
-            ma.mUserId = ma.getDataLong(MyAccount.KEY_USER_ID, 0L);
+            ma.mOAuth = ma.getDataBoolean(KEY_OAUTH, ma.mOrigin.isOAuth());
+            ma.mUserId = ma.getDataLong(KEY_USER_ID, 0L);
             
             if (ma.mUserId==0) {
                 setUsernameAuthenticated(ma.mUsername);
@@ -231,6 +269,7 @@ public class MyAccount {
             }
         }
         
+        @Override
         public void setDataString(String key, String value) {
             try {
                 if (TextUtils.isEmpty(value)) {
@@ -249,6 +288,7 @@ public class MyAccount {
             } catch (Exception e) {}
         }
 
+        @Override
         public void setDataInt(String key, int value) {
             try {
                 setDataString(key, Integer.toString(value));
@@ -306,7 +346,7 @@ public class MyAccount {
                 }
                 
                 if (ma.getDataString(KEY_USERNAME, "").compareTo(ma.mUsername) !=0 ) {
-                    setDataString(MyAccount.KEY_USERNAME, ma.mUsername);
+                    setDataString(KEY_USERNAME, ma.mUsername);
                     changed = true;
                 }
                 if (ma.mOrigin.getName().compareTo(ma.getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER)) != 0) {
@@ -317,19 +357,19 @@ public class MyAccount {
                     ma.mCredentialsVerified.put(this);
                     changed = true;
                 }
-                if (ma.mOAuth != ma.getDataBoolean(MyAccount.KEY_OAUTH, ma.mOrigin.isOAuth())) {
-                    setDataBoolean(MyAccount.KEY_OAUTH, ma.mOAuth);
+                if (ma.mOAuth != ma.getDataBoolean(KEY_OAUTH, ma.mOrigin.isOAuth())) {
+                    setDataBoolean(KEY_OAUTH, ma.mOAuth);
                     changed = true;
                 }
-                if (ma.mUserId != ma.getDataLong(MyAccount.KEY_USER_ID, 0L)) {
-                    setDataLong(MyAccount.KEY_USER_ID, ma.mUserId);
+                if (ma.mUserId != ma.getDataLong(KEY_USER_ID, 0L)) {
+                    setDataLong(KEY_USER_ID, ma.mUserId);
                     changed = true;
                 }
                 if (ma.getConnection().save(this)) {
                     changed = true;
                 }
-                if (ma.mIsPersistent != ma.getDataBoolean(MyAccount.KEY_PERSISTENT, false)) {
-                    setDataBoolean(MyAccount.KEY_PERSISTENT, ma.mIsPersistent);
+                if (ma.mIsPersistent != ma.getDataBoolean(KEY_PERSISTENT, false)) {
+                    setDataBoolean(KEY_PERSISTENT, ma.mIsPersistent);
                     changed = true;
                 }
 
@@ -534,6 +574,31 @@ public class MyAccount {
                 return new Builder[size];
             }
         };
+
+        @Override
+        public boolean dataContains(String key) {
+            return ma.dataContains(key);
+        }
+
+        @Override
+        public int getDataInt(String key, int defValue) {
+            return ma.getDataInt(key, defValue);
+        }
+
+        @Override
+        public String getDataString(String key, String defValue) {
+            return ma.getDataString(key, defValue);
+        }
+        
+        @Override
+        public long getOriginId() {
+            return ma.getOriginId();
+        }
+
+        @Override
+        public String getUsername() {
+            return ma.getUsername();
+        }
     }
     
     /**
@@ -598,50 +663,6 @@ public class MyAccount {
      */
     private boolean mOAuth = true;
 
-    //------------------------------------------------------------
-    // MyAccount preferences are below:
-    
-    /**
-     * The Key for the android.accounts.Account bundle;
-     */
-    public static final String KEY_ACCOUNT = "account";
-    /**
-     * Is the MyAccount persistent in AccountManager;
-     */
-    public static final String KEY_PERSISTENT = "persistent";
-
-    /**
-     * This Key is both global for the application and the same - for one MyAccount
-     * Global: Username of currently selected MyAccount (Current MyAccount)
-     * This MyAccount: Username of the {@link MyDatabase.User} corresponding to this {@link MyAccount}
-     */
-    public static final String KEY_USERNAME = "username";
-    /**
-     * New Username typed / selected in UI
-     * It doesn't immediately change "Current MyAccount"
-     */
-    public static final String KEY_USERNAME_NEW = "username_new";
-    public static final String KEY_PASSWORD = "password";
-    /**
-     *  Unique originating (source) system (twitter.com, identi.ca, ... )
-     */
-    public static final String KEY_ORIGIN_NAME = "origin_name";
-    /**
-     * {@link MyDatabase.User#_ID} in our System.
-     */
-    public static final String KEY_USER_ID = "user_id";
-
-    /**
-     * Is OAuth on for this MyAccount?
-     */
-    public static final String KEY_OAUTH = "oauth";
-
-    /**
-     * Id of the last message downloaded from this timeline type and for this MyAccount
-     * for actual key name append timelinetypeid to this key 
-     */
-    public static final String KEY_LAST_TIMELINE_ID = "last_timeline_id_";
-
     /**
      * NEVER - means that User was never successfully authenticated with current credentials,
      *      this is why we reset to state to NEVER every time credentials were changed.
@@ -661,29 +682,18 @@ public class MyAccount {
             return cv;
         }
         
-        public static CredentialsVerified load(MyAccount ma) {
-            int ind = ma.getDataInt(KEY, NEVER.ordinal());
+        public static CredentialsVerified load(AccountDataReader dr) {
+            int ind = dr.getDataInt(KEY, NEVER.ordinal());
             CredentialsVerified cv = CredentialsVerified.values()[ind];
             return cv;
         }
         
-        public void save(SharedPreferences sp) {
-            synchronized (sp) {
-                SharedPreferences.Editor editor = sp.edit();
-                put(editor);
-                editor.commit();
-            }
-        }
-
-        public void put(SharedPreferences.Editor editor) {
-            editor.putInt(KEY, ordinal());
-        }
-
-        public void put(MyAccount.Builder mab) {
-            mab.setDataInt(KEY, ordinal());
+        public void put(AccountDataWriter dw) {
+            dw.setDataInt(KEY, ordinal());
         }
     }
 
+    @Override
     public int getDataInt(String key, int defValue) {
         int value = defValue;
         try {
@@ -695,7 +705,7 @@ public class MyAccount {
         return value;
     }
 
-    public long getDataLong(String key, long defValue) {
+    private long getDataLong(String key, long defValue) {
         long value = defValue;
         try {
             String str = getDataString(key, "null");
@@ -706,7 +716,7 @@ public class MyAccount {
         return value;
     }
 
-    public boolean getDataBoolean(String key, boolean defValue) {
+    private boolean getDataBoolean(String key, boolean defValue) {
         boolean value = defValue;
         try {
             String str = getDataString(key, "null");
@@ -720,11 +730,12 @@ public class MyAccount {
     /**
      * User Data associated with the account
      */
+    @Override
     public String getDataString(String key, String defValue) {
         String value = defValue;
         if (isPersistent()) {
             if (getAccount() == null) {
-                Log.e(TAG, "getDataString key=" + key + "; mAccount is null ");
+                Log.e(TAG, "getDataString key=" + key + "; Account is null ");
                 return null;
             }
             android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
@@ -748,6 +759,7 @@ public class MyAccount {
         return value;
     }
     
+    @Override
     public boolean dataContains(String key) {
         boolean contains = false;
         try {
@@ -1066,18 +1078,6 @@ public class MyAccount {
         }
         return indReturn;
     }
-
-    /**
-     * Remove all not persistent MyAccounts from mMyAccounts
-     */
-    private static void removeNotPersistentMyAccounts() {
-        for (int ind = mMyAccounts.size() - 1 ; ind >= 0; ind--) {
-            if (!mMyAccounts.elementAt(ind).isPersistent()) {
-                // Simply delete the object from the list
-                mMyAccounts.removeElementAt(ind);
-            }
-        }
-    }
     
     /**
      * Delete everything about the MyAccount
@@ -1178,6 +1178,7 @@ public class MyAccount {
     /**
      * @return the mUsername
      */
+    @Override
     public String getUsername() {
         return mUsername;
     }
@@ -1212,6 +1213,7 @@ public class MyAccount {
     /**
      * @return id of the system in which the User is defined, see {@link MyDatabase.User#ORIGIN_ID}
      */
+    @Override
     public long getOriginId() {
         return mOrigin.getId();
     }

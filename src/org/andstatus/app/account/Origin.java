@@ -29,7 +29,7 @@ import org.andstatus.app.net.ConnectionBasicAuth;
 
 /**
  *  Originating (source) Microblogging system (twitter.com, identi.ca, ... ) where messages are being created. 
- *  TODO: Currently the class is almost a stub and serves for ONE origin only :-)
+ *  TODO: Currently the class is almost a stub and serves for TWO predefined origins only :-)
  * @author yvolk
  *
  */

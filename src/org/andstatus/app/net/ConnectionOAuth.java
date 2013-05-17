@@ -22,7 +22,8 @@ import oauth.signpost.OAuthProvider;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
 
-import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.AccountDataReader;
+import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
@@ -88,8 +89,8 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
 
     private HttpClient mClient;
 
-    public ConnectionOAuth(MyAccount ma, ApiEnum api, String apiBaseUrl, String apiOauthBaseUrl) {
-        super(ma, api, apiBaseUrl);
+    public ConnectionOAuth(AccountDataReader dr, ApiEnum api, String apiBaseUrl, String apiOauthBaseUrl) {
+        super(dr, api, apiBaseUrl);
         mOauthBaseUrl = apiOauthBaseUrl;
 
         HttpParams parameters = new BasicHttpParams();
@@ -104,7 +105,7 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
         ClientConnectionManager tsccm = new ThreadSafeClientConnManager(parameters, schReg);
         mClient = new DefaultHttpClient(tsccm, parameters);
 
-        OAuthKeys oak = new OAuthKeys(ma.getOriginId());
+        OAuthKeys oak = new OAuthKeys(dr.getOriginId());
         mConsumer = new CommonsHttpOAuthConsumer(oak.getConsumerKey(),
                 oak.getConsumerSecret());
 
@@ -117,10 +118,10 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
         mProvider.setOAuth10a(true);
         
         // We look for saved user keys
-        if (ma.dataContains(ConnectionOAuth.USER_TOKEN) && ma.dataContains(ConnectionOAuth.USER_SECRET)) {
+        if (dr.dataContains(ConnectionOAuth.USER_TOKEN) && dr.dataContains(ConnectionOAuth.USER_SECRET)) {
             setAuthInformation(
-                    ma.getDataString(ConnectionOAuth.USER_TOKEN, null),
-                    ma.getDataString(ConnectionOAuth.USER_SECRET, null)
+                    dr.getDataString(ConnectionOAuth.USER_TOKEN, null),
+                    dr.getDataString(ConnectionOAuth.USER_SECRET, null)
                     );
         }
     }
@@ -173,26 +174,26 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
      * @see org.andstatus.app.net.Connection#save(android.content.SharedPreferences, android.content.SharedPreferences.Editor)
      */
     @Override
-    public boolean save(MyAccount.Builder mab) {
-        boolean changed = super.save(mab);
+    public boolean save(AccountDataWriter dw) {
+        boolean changed = super.save(dw);
 
-        if ( !TextUtils.equals(mToken, mab.getMyAccount().getDataString(ConnectionOAuth.USER_TOKEN, null)) ||
-                !TextUtils.equals(mSecret, mab.getMyAccount().getDataString(ConnectionOAuth.USER_SECRET, null)) 
+        if ( !TextUtils.equals(mToken, dw.getDataString(ConnectionOAuth.USER_TOKEN, null)) ||
+                !TextUtils.equals(mSecret, dw.getDataString(ConnectionOAuth.USER_SECRET, null)) 
                 ) {
             changed = true;
 
             if (TextUtils.isEmpty(mToken)) {
-                mab.setDataString(ConnectionOAuth.USER_TOKEN, null);
+                dw.setDataString(ConnectionOAuth.USER_TOKEN, null);
                 MyLog.d(TAG, "Clearing OAuth Token");
             } else {
-                mab.setDataString(ConnectionOAuth.USER_TOKEN, mToken);
+                dw.setDataString(ConnectionOAuth.USER_TOKEN, mToken);
                 MyLog.d(TAG, "Saving OAuth Token: " + mToken);
             }
             if (TextUtils.isEmpty(mSecret)) {
-                mab.setDataString(ConnectionOAuth.USER_SECRET, null);
+                dw.setDataString(ConnectionOAuth.USER_SECRET, null);
                 MyLog.d(TAG, "Clearing OAuth Secret");
             } else {
-                mab.setDataString(ConnectionOAuth.USER_SECRET, mSecret);
+                dw.setDataString(ConnectionOAuth.USER_SECRET, mSecret);
                 MyLog.d(TAG, "Saving OAuth Secret: " + mSecret);
             }
         }
@@ -377,12 +378,12 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
      * @see org.andstatus.app.net.Connection#getCredentialsPresent()
      */
     @Override
-    public boolean getCredentialsPresent(MyAccount ma) {
+    public boolean getCredentialsPresent(AccountDataReader dr) {
         boolean yes = false;
-        if (ma.dataContains(ConnectionOAuth.USER_TOKEN) && ma.dataContains(ConnectionOAuth.USER_SECRET)) {
-            mToken = ma.getDataString(ConnectionOAuth.USER_TOKEN, null);
-            mSecret = ma.getDataString(ConnectionOAuth.USER_SECRET, null);
-            if (!(mToken == null || mSecret == null)) {
+        if (dr.dataContains(ConnectionOAuth.USER_TOKEN) && dr.dataContains(ConnectionOAuth.USER_SECRET)) {
+            mToken = dr.getDataString(ConnectionOAuth.USER_TOKEN, null);
+            mSecret = dr.getDataString(ConnectionOAuth.USER_SECRET, null);
+            if (!(TextUtils.isEmpty(mToken) || TextUtils.isEmpty(mSecret))) {
                 yes = true;
             }
         }
