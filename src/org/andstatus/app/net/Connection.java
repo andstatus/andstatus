@@ -26,16 +26,28 @@ import org.andstatus.app.account.Origin;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.util.MyLog;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 /**
  * Handles connection to the API of the Microblogging System (i.e. to the {@link Origin})
+ * Authenticated User info (User account in the Microblogging system) and connection properties 
+ * are provided in the constructor.
  * 
  * @author yvolk, torgny.bjers
  */
 public abstract class Connection {
+    private static final String TAG = Connection.class.getSimpleName();
     
     /**
      * Base URL for connection to the System
@@ -71,17 +83,34 @@ public abstract class Connection {
     public enum ApiRoutineEnum {
         ACCOUNT_RATE_LIMIT_STATUS,
         ACCOUNT_VERIFY_CREDENTIALS,
+        /** Returns most recent direct messages sent to the authenticating user */
         DIRECT_MESSAGES,
         FAVORITES_CREATE_BASE,
-        FAVORITES_DESTROY_BASE,        
+        FAVORITES_DESTROY_BASE,
+        FOLLOW_USER,
         POST_DIRECT_MESSAGE,
         POST_REBLOG,
         STATUSES_DESTROY,
+        /**
+         * Get the Home timeline (whatever it is...).
+         * This is the equivalent of /home on the Web.
+         */
         STATUSES_HOME_TIMELINE,
+        /**
+         * Get the user's replies.
+         * 
+         * Returns most recent @replies (status updates prefixed with @username) 
+         * for the authenticating user.
+         */
         STATUSES_MENTIONS_TIMELINE,
+        /**
+         * Get the User timeline for the user with the selectedUserId. We use credentials of Account which may be
+         * not the same user. 
+         */
         STATUSES_USER_TIMELINE,
         STATUSES_SHOW,
         STATUSES_UPDATE,
+        STOP_FOLLOWING_USER,
         
         /**
          * OAuth APIs
@@ -113,62 +142,18 @@ public abstract class Connection {
     }
 
     /**
-     * Not logged
+     * URL of the API. Not logged
      * @param routine
      * @return URL or an empty string in case the API routine is not supported
      */
-    protected String getApiUrl1(ApiRoutineEnum routine) {
-        String url = "";
-        switch(routine) {
-            case ACCOUNT_RATE_LIMIT_STATUS:
-                url = getBaseUrl() + "/account/rate_limit_status" + EXTENSION;
-                break;
-            case ACCOUNT_VERIFY_CREDENTIALS:
-                url = getBaseUrl() + "/account/verify_credentials" + EXTENSION;
-                break;
-            case DIRECT_MESSAGES:
-                url = getBaseUrl() + "/direct_messages" + EXTENSION;
-                break;
-            case FAVORITES_CREATE_BASE:
-                url = getBaseUrl() + "/favorites/create/";
-                break;
-            case FAVORITES_DESTROY_BASE:
-                url = getBaseUrl() + "/favorites/destroy/";
-                break;
-            case POST_DIRECT_MESSAGE:
-                url = getBaseUrl() + "/direct_messages/new" + EXTENSION;
-                break;
-            case POST_REBLOG:
-                url = getBaseUrl() + "/statuses/retweet/";
-                break;
-            case STATUSES_DESTROY:
-                url = getBaseUrl() + "/statuses/destroy/";
-                break;
-            case STATUSES_HOME_TIMELINE:
-                url = getBaseUrl() + "/statuses/home_timeline" + EXTENSION;
-                break;
-            case STATUSES_MENTIONS_TIMELINE:
-                url = getBaseUrl()  + "/statuses/mentions" + EXTENSION;
-                break;
-            case STATUSES_USER_TIMELINE:
-                url = getBaseUrl() + "/statuses/user_timeline" + EXTENSION;
-                break;
-            case STATUSES_SHOW:
-                url = getBaseUrl() + "/statuses/show" + EXTENSION;
-                break;
-            case STATUSES_UPDATE:
-                url = getBaseUrl() + "/statuses/update" + EXTENSION;
-                break;
-        }
-        return url;
-    }
+    protected abstract String getApiUrl1(ApiRoutineEnum routine);
 
     /**
-     * If the url is empty, log error 
-     * Otherwise Log verbosely  
-     * @param url
+     * URL of the API. Logged
+     * @param routine
+     * @return URL or an empty string in case the API routine is not supported
      */
-    protected String getApiUrl(ApiRoutineEnum routine) {
+    protected final String getApiUrl(ApiRoutineEnum routine) {
         String url = this.getApiUrl1(routine);
         if (TextUtils.isEmpty(url)) {
             Log.e(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");
@@ -178,6 +163,12 @@ public abstract class Connection {
         return url;
     }
     
+    /**
+     * Use this method to check the connection's (Account's) capability before attempting to use it
+     * and even before presenting corresponding action to the User. 
+     * @param routine
+     * @return true if supported
+     */
     public boolean isApiSupported(ApiRoutineEnum routine) {
         boolean is = !TextUtils.isEmpty(this.getApiUrl1(routine));
         if (!is && MyLog.isLoggable(null, Log.VERBOSE )) {
@@ -193,42 +184,15 @@ public abstract class Connection {
         return false;
     }
     
-    // Get stuff from the two types of Twitter JSONObject we deal with: credentials and status 
-    private static String getCurrentTweet(JSONObject status) {
-        return status.optString("text");
-    }
-    
     public static String getScreenName(JSONObject credentials) {
         return credentials.optString("screen_name");
-    }
-
-    public static String getLastTweet(JSONObject credentials) {
-        try {
-            JSONObject status = credentials.getJSONObject("status");
-            return getCurrentTweet(status);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return "";
-        }
     }
 
     public abstract void clearAuthInformation();
     
     /**
      * Check API requests status.
-     * 
-     * Returns the remaining number of API requests available to the requesting 
-     * user before the API limit is reached for the current hour. Calls to 
-     * rate_limit_status do not count against the rate limit.  If authentication 
-     * credentials are provided, the rate limit status for the authenticating 
-     * user is returned.  Otherwise, the rate limit status for the requester's 
-     * IP address is returned.
-     * @see <a
-           href="https://dev.twitter.com/docs/api/1/get/account/rate_limit_status">GET 
-           account/rate_limit_status</a>
-     * 
-     * @return JSONObject
-     * @throws ConnectionException
+     * TODO: Formalize this for different microblogging systems.
      */
     public abstract JSONObject rateLimitStatus() throws ConnectionException;
 
@@ -239,17 +203,20 @@ public abstract class Connection {
     public boolean isPasswordNeeded() {
         return false;
     }
+    
     /**
      * Set User's password if the Connection object needs it
      */
     public void setPassword(String password) { }
+
+    
     public String getPassword() {
         return "";
     }
     
     /**
      * Persist the connection data
-     * @return true if something changed
+     * @return true if something changed (so it needs to be rewritten to persistence...)
      */
     public boolean save(AccountDataWriter dw) {
         boolean changed = false;
@@ -315,18 +282,13 @@ public abstract class Connection {
     /**
      * Returns a single status, specified by the id parameter below.
      * The status's author will be returned inline.
-     * @see <a
-     *      href="https://dev.twitter.com/docs/api/1/get/statuses/show/%3Aid">Twitter
-     *      REST API Method: statuses/destroy</a>
-     * 
-     * @throws ConnectionException
      */
     public abstract JSONObject getStatus(String statusId) throws ConnectionException;
     
     /**
      * Update user status by posting to the Twitter REST API.
      * 
-     * Updates the authenticating user's status, also known as tweeting.
+     * Updates the authenticating user's status, also known as tweeting/blogging.
      * To upload an image to accompany the tweet, use POST statuses/update_with_media.
      * 
      * @param message       Text of the "status"
@@ -364,75 +326,86 @@ public abstract class Connection {
      */
     public abstract JSONObject postReblog(String rebloggedId)
             throws ConnectionException;
-    
+
     /**
      * Universal method for several Timeline Types...
      * 
-     * @param url URL predefined for this timeline
+     * @param apiRoutine - which timeline to retrieve
      * @param sinceId
      * @param limit
-     * @param userId For the {@link ApiRoutineEnum#STATUSES_USER_TIMELINE}
+     * @param userId For the {@link ApiRoutineEnum#STATUSES_USER_TIMELINE}, null for the other timelines
      * @return
      * @throws ConnectionException
      */
-    protected abstract JSONArray getTimeline(String url, String sinceId, int limit, String userId)
+    public abstract JSONArray getTimeline(ApiRoutineEnum apiRoutine, String sinceId, int limit, String userId)
             throws ConnectionException;
-    
-    
-    /**
-     * Returns the 20 most recent direct messages sent to the authenticating user
-     *
-     * TODO: GET direct_messages/sent: Returns the 20 most recent direct messages sent by the authenticating user. 
-     * See https://dev.twitter.com/docs/api/1/get/direct_messages/sent
-     */
-    public JSONArray getDirectMessages(String sinceId, int limit) throws ConnectionException {
-        String url = this.getApiUrl(ApiRoutineEnum.DIRECT_MESSAGES);
-        return this.getTimeline(url, sinceId, limit, "");
-    }
-    
-    /**
-     * Get the user's replies.
-     * 
-     * Returns the 20 most recent @replies (status updates prefixed with @username) 
-     * for the authenticating user.
-     * 
-     * @return JSONArray
-     * @throws ConnectionException 
-     */
-    public JSONArray getMentionsTimeline(String sinceId, int limit) throws ConnectionException {
-        String url = this.getApiUrl(ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE);
-        return this.getTimeline(url, sinceId, limit, "");
-    }
 
     /**
-     * Get the Home timeline (whatever it is...).
-     * 
-     * This is the equivalent of /home on the Web.
-     * 
-     * @return JSONArray
-     * @throws ConnectionException 
-     */
-    public JSONArray getHomeTimeline(String sinceId, int limit) throws ConnectionException {
-        String url = this.getApiUrl(ApiRoutineEnum.STATUSES_HOME_TIMELINE);
-        return this.getTimeline(url, sinceId, limit, "");
-    }
-
-    /**
-     * Get the User timeline for the user with the selectedUserId. We use credentials of Account which may be
-     * not the same user. 
-     * @param userId  The ID of the user for whom to return results for
-     * @param sinceId  Returns results with an ID greater than (that is, more recent than) the specified MessageID
-     * @param limit
-     * @return
+     * Allows this User to follow the user specified in the userId parameter
+     * Allows this User to stop following the user specified in the userId parameter
+     * @param userId
+     * @param follow true - Follow, false - Stop following
+     * @return User object with 'following' flag set/reset
      * @throws ConnectionException
      */
-    public JSONArray getUserTimeline(String userId, String sinceId, int limit)
-            throws ConnectionException {
-        String url = getApiUrl(ApiRoutineEnum.STATUSES_USER_TIMELINE);
-        return getTimeline(url, sinceId, limit, userId);
+    public abstract JSONObject followUser(String userId, Boolean follow) throws ConnectionException;
+    
+    /**
+     * Execute a POST request against the API url
+     * 
+     * @throws ConnectionException 
+     */
+    protected JSONObject postRequest(String url) throws ConnectionException {
+        HttpPost post = new HttpPost(url);
+        return postRequest(post);
     }
 
-    protected String fixSinceId(String sinceId) {
+    
+    /**
+     * Execute a POST request against enumerated API.
+     * 
+     * @param ApiRoutineEnum apiRoutine
+     * @param List<NameValuePair> - Post form parameters
+     * @throws ConnectionException
+     */
+    protected final JSONObject postRequest(ApiRoutineEnum apiRoutine, List<NameValuePair> formParams) throws ConnectionException {
+        JSONObject jso = null;
+        String url = getApiUrl(apiRoutine);
+        HttpPost postMethod = new HttpPost(url);
+        try {
+            if (formParams != null) {
+                UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams, HTTP.UTF_8);
+                postMethod.setEntity(formEntity);
+            }
+            jso = postRequest(postMethod);
+        } catch (UnsupportedEncodingException e) {
+            Log.e(TAG, e.toString());
+        }
+        return jso;
+    }
+    
+    protected abstract JSONObject postRequest(HttpPost post) throws ConnectionException;
+
+    protected final JSONObject getRequest(String url) throws ConnectionException {
+        HttpGet get = new HttpGet(url);
+        return getRequestAsObject(get);
+    }
+
+    protected final JSONObject getRequestAsObject(HttpGet get) throws ConnectionException {
+        JSONObject jso = null;
+        JSONTokener jst = getRequest(get);
+        try {
+            jso = (JSONObject) jst.nextValue();
+        } catch (JSONException e) {
+            Log.w(TAG, "getRequestAsObject, response=" + (jst == null ? "(null)" : jst.toString()));
+            throw new ConnectionException(e.getLocalizedMessage());
+        }
+        return jso;
+    }
+    
+    protected abstract JSONTokener getRequest(HttpGet get) throws ConnectionException;
+    
+    protected final String fixSinceId(String sinceId) {
         String out = "";
         if (!TextUtils.isEmpty(sinceId) && sinceId.length()>1) {
             // For some reason "0" results in "bad request"
@@ -446,7 +419,7 @@ public abstract class Connection {
      * @param limit
      * @return
      */
-    protected int fixLimit(int limit) {
+    protected final int fixLimit(int limit) {
         int out = 200;
         if (limit > 0 && limit < 200) {
             out = limit;

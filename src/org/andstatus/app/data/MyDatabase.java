@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,18 +35,22 @@ import android.util.Log;
  * Used mainly by {@link MyProvider}
  */
 public final class MyDatabase extends SQLiteOpenHelper  {
+    private static final String TAG = MyDatabase.class.getSimpleName();
+    
     /**
      * Current database scheme version, defined by AndStatus developers.
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
+     * v.11 2013-05-18 yvolk. FollowingUser table added. User table extended with a column
+     *      to store the date the list of Following users was loaded.
      * v.10 2013-03-23 yvolk. User table extended with columns
      *      to store information on timelines loaded.
      * v.9 2012-02-26 yvolk. Totally new database design using table joins.
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    static final int DATABASE_VERSION = 10;
+    static final int DATABASE_VERSION = 11;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
     /** TODO: Do we really need this? */
@@ -55,6 +59,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 	public static final String MSG_TABLE_NAME = Msg.class.getSimpleName().toLowerCase(Locale.US);
 	public static final String MSGOFUSER_TABLE_NAME = MsgOfUser.class.getSimpleName().toLowerCase(Locale.US);
 	public static final String USER_TABLE_NAME = User.class.getSimpleName().toLowerCase(Locale.US);
+    public static final String FOLLOWING_USER_TABLE_NAME = FollowingUser.class.getSimpleName().toLowerCase(Locale.US);
 	
 	/**
 	 * Table for both public and direct messages 
@@ -160,8 +165,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *   (e.g. SUBSCRIBED by the User who is not sender not recipient...).
      * This table is used to filter User's timelines (based on flags: SUBSCRIBED etc.) 
      */
-    public static final class MsgOfUser implements BaseColumns {
-        // Table columns
+    public static final class MsgOfUser {
+        // Columns in the database:
         
         /**
          * Fields for joining tables
@@ -215,8 +220,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     }
 
 	/**
-	 * Users table (they are both senders AND recipients in the Msg table)
-	 * Some of these Users are Accounts (connected to accounts in AndStatus), see {@link MyAccount#getUserId()}
+	 * Users table (they are both senders AND recipients in the {@link Msg} table)
+	 * Some of these Users are Accounts (connected to accounts in AndStatus), 
+	 * see {@link MyAccount#getUserId()}
 	 */
 	public static final class User implements BaseColumns {
 		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + USER_TABLE_NAME);
@@ -265,7 +271,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * Date and time when the row was created in the originating system.
          * We store it as long returned by {@link java.util.Date#parse(String) }. 
          * NULL means the row was not retrieved from the Internet yet
-         * (And maybe there is no such user in the originating system...)
+         * (And maybe there is no such User in the originating system...)
          */
 		public static final String CREATED_DATE = "user_created_date";
         /**
@@ -287,6 +293,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String MENTIONS_TIMELINE_DATE = "mentions_timeline_date";
         public static final String USER_TIMELINE_MSG_ID = "user_timeline_msg_id";
         public static final String USER_TIMELINE_DATE = "user_timeline_date";
+        /**
+         * For the list ("collection") of following users 
+         * we store only the date-time of the last retrieval of the list 
+         */
+        public static final String FOLLOWING_USER_DATE = "following_user_date";
 		
 		/*
          * Derived columns (they are not stored in this table but are result of joins)
@@ -314,9 +325,31 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 
         public static final String DEFAULT_SORT_ORDER = USERNAME + " ASC";
 	}
-	
-    private static final String TAG = MyDatabase.class.getSimpleName();
 
+    /**
+     * Following users for the {@link FollowingUser#USER_ID}. 
+     * I.e. this is a list of user IDs for every user the specified 
+     * (by {@link FollowingUser#USER_ID}) user is following (otherwise known as their "friends"). 
+     */
+    public static final class FollowingUser {
+        
+        public static final String USER_ID = User.USER_ID;
+        public static final String FOLLOWING_USER_ID = "following_user_id";
+        /**
+         * two state (1/0) flag showing if {@link FollowingUser#USER_ID} is following {@link FollowingUser#FOLLOWING_USER_ID}
+         */
+        public static final String USER_FOLLOWED = "user_followed";
+        
+        /**
+         * Derived column: if the Author of the message is followed by the User
+         */
+        public static final String AUTHOR_FOLLOWED = "author_followed";
+        /**
+         * Derived column: if the Sender of the message is followed by the User
+         */
+        public static final String SENDER_FOLLOWED = "sender_followed";
+    }
+	
     /**
      * ids in originating system
      */
@@ -498,12 +531,20 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.MENTIONS_TIMELINE_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.MENTIONS_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.USER_TIMELINE_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.USER_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL" 
+                + User.USER_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
+                + User.FOLLOWING_USER_DATE + " INTEGER DEFAULT 0 NOT NULL" 
                 + ");");
 
         db.execSQL("CREATE UNIQUE INDEX idx_username ON " + USER_TABLE_NAME + " (" 
                 + User.ORIGIN_ID + ", "
                 + User.USERNAME  
+                + ");");
+
+        db.execSQL("CREATE TABLE " + FOLLOWING_USER_TABLE_NAME + " (" 
+                + FollowingUser.USER_ID + " INTEGER NOT NULL," 
+                + FollowingUser.FOLLOWING_USER_ID + " INTEGER NOT NULL," 
+                + FollowingUser.USER_FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL," 
+                + " CONSTRAINT pk_followinguser PRIMARY KEY (" + FollowingUser.USER_ID + " ASC, " + FollowingUser.FOLLOWING_USER_ID + " ASC)"
                 + ");");
         
     }
@@ -532,6 +573,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         }
         if (currentVersion == 9) {
             currentVersion = convert9to10(db, currentVersion);
+        }
+        if (currentVersion == 10) {
+            currentVersion = convert10to11(db, currentVersion);
         }
         if ( currentVersion == newVersion) {
             Log.i(TAG, "Successfully upgraded database from version " + oldVersion + " to version "
@@ -624,7 +668,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         return (ok ? versionTo : oldVersion) ;
     }
 
-    
     /**
      * @return new db version, the same as old in a case of a failure
      */
@@ -645,6 +688,39 @@ public final class MyDatabase extends SQLiteOpenHelper  {
             }
             
             sql = "ALTER TABLE msgofuser ADD COLUMN reblog_oid STRING";
+            db.execSQL(sql);
+            ok = true;
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+        if (ok) {
+            Log.i(TAG, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
+        } else {
+            Log.e(TAG, "Database upgrading step failed to upgrade database from " + oldVersion 
+                    + " to version " + versionTo
+                    + " SQL='" + sql +"'");
+        }
+        return (ok ? versionTo : oldVersion) ;
+    }
+
+    /**
+     * @return new db version, the same as old in a case of a failure
+     */
+    private int convert10to11(SQLiteDatabase db, int oldVersion) {
+        final int versionTo = 11;
+        boolean ok = false;
+        String sql = "";
+        try {
+            Log.i(TAG, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+            sql = "ALTER TABLE user ADD COLUMN following_user_date INTEGER DEFAULT 0 NOT NULL";
+            db.execSQL(sql);
+            
+            sql = "CREATE TABLE " + "followinguser" + " (" 
+                    + "user_id" + " INTEGER NOT NULL," 
+                    + "following_user_id" + " INTEGER NOT NULL," 
+                    + "user_followed" + " BOOLEAN DEFAULT 1 NOT NULL," 
+                    + " CONSTRAINT pk_followinguser PRIMARY KEY (" + "user_id" + " ASC, " + "following_user_id" + " ASC)"
+                    + ");";
             db.execSQL(sql);
             ok = true;
         } catch (Exception e) {

@@ -74,11 +74,11 @@
 	<string name="menu_item_destroy_status">Tweet entfernen</string>
 	<string name="menu_item_direct_message">Direktnachrichten</string>
 	<string name="menu_item_favorite">Als Favorit</string>
-	<string name="menu_item_follow">Follow</string>
+	<string name="menu_item_follow_user">Follow "%1s"</string>
 	<string name="menu_item_reply">Antworten</string>
 	<string name="menu_item_reblog">Reblog</string>
     <string name="menu_item_reblog_twitter">Retweet</string>
-    <string name="menu_item_unfollow">UnFollow</string>
+	<string name="menu_item_stop_following_user">Stop following "%1s"</string>
 	<string name="menu_item_view_profile">Profil anschauen</string>
 	<string name="message_sent">Deine Nachricht wurde gesendet.</string>
 	<string name="messages_activity">Direktnachrichten</string>

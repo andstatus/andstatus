@@ -18,6 +18,7 @@
 package org.andstatus.app.data;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 
 import android.content.ContentProvider;
@@ -35,6 +36,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
@@ -103,9 +105,87 @@ public class MyProvider extends ContentProvider {
      * The Timeline URI contains Message id 
      */
     private static final int TIMELINE_MSG_ID = 4;
+    /**
+     * Matched code for the list of Users
+     */
     private static final int USERS = 5;
+    /**
+     * Matched code for the User
+     */
     private static final int USER_ID = 6;
 
+    /**
+     * Helper class to update the "Following" information (see {@link MyDatabase.FollowingUser}) 
+     * @author yvolk
+     */
+    private static class FollowingUserValues {
+        public long userId;
+        public long followingUserId;
+        private ContentValues contentValues = new ContentValues();
+
+        /**
+         * Move all keys that belong to {@link FollowingUser} table from values to the newly created ContentValues.
+         * @param userId - first part of key
+         * @param followingUserId - second part of key
+         * @param values - all other fields (currently only 1)
+         * @return
+         */
+        public static FollowingUserValues valueOf(long userId, long followingUserId, ContentValues values) {
+            FollowingUserValues userValues = new FollowingUserValues(userId, followingUserId);
+            MyProvider.moveBooleanKey(FollowingUser.USER_FOLLOWED, values, userValues.contentValues);
+            return userValues;
+        }
+        
+        public FollowingUserValues(long userId, long followingUserId) {
+            this.userId = userId;
+            this.followingUserId = followingUserId;
+        }
+        
+        /**
+         * Update information in the database 
+         */
+        public void update(SQLiteDatabase db) {
+            boolean followed = false;
+            if (contentValues.containsKey(FollowingUser.USER_FOLLOWED)) {
+                followed = contentValues.getAsBoolean(FollowingUser.USER_FOLLOWED);
+            } else {
+                // Don't change anything as there is no information
+                return;
+            }
+            String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
+                    + " AND " + MyDatabase.FollowingUser.FOLLOWING_USER_ID + "=" + followingUserId;
+            String sql = "SELECT * FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + " WHERE " + where;
+            
+            // TODO: create universal dExists method...
+            Cursor c = null;
+            boolean exists = false;
+            try {
+                c = db.rawQuery(sql, null);
+                if (c != null && c.getCount() > 0) {
+                    exists = true;
+                }
+            } finally {
+                if (c != null) {
+                    c.close();
+                }
+            }
+
+            if (exists) {
+                db.update(MyDatabase.FOLLOWING_USER_TABLE_NAME, contentValues, where,
+                        null);
+            } else if (followed) {
+                // There was no such row
+                ContentValues cv = new ContentValues(contentValues);
+                // Add Key fields
+                cv.put(FollowingUser.USER_ID, userId);
+                cv.put(FollowingUser.FOLLOWING_USER_ID, followingUserId);
+                
+                db.insert(MyDatabase.FOLLOWING_USER_TABLE_NAME, null, cv);
+            }
+        }
+    }
+    
+    
     /**
      * @see android.content.ContentProvider#onCreate()
      */
@@ -198,7 +278,7 @@ public class MyProvider extends ContentProvider {
 
             case USER_ID:
                 // TODO: Delete related records also... 
-                String userId = uri.getPathSegments().get(1);
+                long userId = uriToUserId(uri);
                 count = db.delete(MyDatabase.USER_TABLE_NAME, User._ID + "=" + userId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
@@ -221,7 +301,8 @@ public class MyProvider extends ContentProvider {
 
         ContentValues values;
         ContentValues msgOfUserValues = null;
-        long userId = 0;
+        FollowingUserValues followingUserValues = null;
+        long accountUserId = 0;
         
         long rowId;
         Uri newUri = null;
@@ -243,7 +324,7 @@ public class MyProvider extends ContentProvider {
 
             switch (sUriMatcher.match(uri)) {
                 case TIMELINE:
-                    userId = Long.parseLong(uri.getPathSegments().get(1));
+                    accountUserId = uriToAccountUserId(uri);
                     table = MyDatabase.MSG_TABLE_NAME;
                     nullColumnHack = Msg.BODY;
                     contentUri = TIMELINE_URI;
@@ -258,14 +339,17 @@ public class MyProvider extends ContentProvider {
                         values.put(Msg.VIA, "");
                     values.put(Msg.INS_DATE, now);
                     
-                    msgOfUserValues = prepareMsgOfUserValues(values, userId);
+                    msgOfUserValues = prepareMsgOfUserValues(accountUserId, values);
                     break;
 
-                case USERS:
+                case USER_ID:
+                    accountUserId = uriToAccountUserId(uri);
                     table = MyDatabase.USER_TABLE_NAME;
                     nullColumnHack = User.USERNAME;
                     contentUri = User.CONTENT_URI;
                     values.put(User.INS_DATE, now);
+
+                    followingUserValues = FollowingUserValues.valueOf(accountUserId, 0, values);
                     break;
 
                 default:
@@ -285,12 +369,16 @@ public class MyProvider extends ContentProvider {
                     throw new SQLException("Failed to insert row into " + MyDatabase.MSGOFUSER_TABLE_NAME);
                 }
             }
+            if (followingUserValues != null) {
+                followingUserValues.followingUserId =  rowId;
+                followingUserValues.update(db);
+            }
 
             if (contentUri.compareTo(TIMELINE_URI) == 0) {
                 // The resulted Uri has two parameters...
-                newUri = MyProvider.getTimelineMsgUri(userId, rowId, true);
+                newUri = MyProvider.getTimelineMsgUri(accountUserId, rowId, true);
             } else {
-                newUri = ContentUris.withAppendedId(contentUri, rowId);
+                newUri = MyProvider.getUserUri(accountUserId, rowId);
             }
         } catch (Exception e) {
           e.printStackTrace();
@@ -305,7 +393,7 @@ public class MyProvider extends ContentProvider {
      * @param values
      * @return
      */
-    private ContentValues prepareMsgOfUserValues(ContentValues values, long userId) {
+    private ContentValues prepareMsgOfUserValues(long userId, ContentValues values) {
         ContentValues msgOfUserValues = null;
         MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
         if (values.containsKey(MsgOfUser.TIMELINE_TYPE) ) {
@@ -347,7 +435,7 @@ public class MyProvider extends ContentProvider {
      * @param valuesOut  may be null
      * @return 1 for true, 0 for false and 2 for "not present" 
      */
-    private int moveBooleanKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
+    private static int moveBooleanKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
         int ret = 2;
         if (valuesIn != null) {
             if (valuesIn.containsKey(key) ) {
@@ -456,7 +544,7 @@ public class MyProvider extends ContentProvider {
             case USER_ID:
                 qb.setTables(MyDatabase.USER_TABLE_NAME);
                 qb.setProjectionMap(userProjectionMap);
-                qb.appendWhere(User._ID + "=" + uri.getPathSegments().get(1));
+                qb.appendWhere(User._ID + "=" + uriToUserId(uri));
                 break;
 
             default:
@@ -549,6 +637,7 @@ public class MyProvider extends ContentProvider {
        String tables = MyDatabase.MSG_TABLE_NAME;
        long userId = uriToUserId(uri);
        boolean isCombined = uriToIsCombined(uri);
+       Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
        
        if (isCombined || userId == 0) {
            tables += " LEFT OUTER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
@@ -576,6 +665,34 @@ public class MyProvider extends ContentProvider {
                + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS recipient ON "
                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient." + MyDatabase.User._ID
                ;
+       if (columns.contains(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) {
+           tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
+                   + MyDatabase.FollowingUser.USER_ID + ", "
+                   + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
+                   + MyDatabase.FollowingUser.USER_FOLLOWED + " AS " + MyDatabase.FollowingUser.AUTHOR_FOLLOWED 
+                   + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + ") AS followingauthor ON ("
+                   + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID 
+                   + "=followingauthor." + MyDatabase.FollowingUser.USER_ID
+                   + " AND "
+                   + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID 
+                   + "=followingauthor." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                   + ")"
+                   ;
+       }
+       if (columns.contains(MyDatabase.FollowingUser.SENDER_FOLLOWED)) {
+           tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
+                   + MyDatabase.FollowingUser.USER_ID + ", "
+                   + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
+                   + MyDatabase.FollowingUser.USER_FOLLOWED + " AS " + MyDatabase.FollowingUser.SENDER_FOLLOWED 
+                   + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + ") AS followingsender ON ("
+                   + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID 
+                   + "=followingsender." + MyDatabase.FollowingUser.USER_ID
+                   + " AND "
+                   + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID 
+                   + "=followingsender." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                   + ")"
+                   ;
+       }
         return tables;
     }
     
@@ -593,7 +710,7 @@ public class MyProvider extends ContentProvider {
     }
 
     /**
-     * Update a record in the database
+     * Update objects (one or several records) in the database
      * 
      * @see android.content.ContentProvider#update(android.net.Uri,
      *      android.content.ContentValues, java.lang.String, java.lang.String[])
@@ -602,17 +719,18 @@ public class MyProvider extends ContentProvider {
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
         int count = 0;
-        long userId = 0;
+        long accountUserId = 0;
         int matchedCode = sUriMatcher.match(uri);
+        //MyLog.v(TAG, "update, matched=" + matchedCode + "; PID=" + android.os.Process.myPid() + "; TID=" + android.os.Process.myTid());
         switch (matchedCode) {
             case MSG:
                 count = db.update(MyDatabase.MSG_TABLE_NAME, values, selection, selectionArgs);
                 break;
 
             case TIMELINE_MSG_ID:
-                userId = Long.parseLong(uri.getPathSegments().get(1));
-                String rowId = uri.getPathSegments().get(7);
-                ContentValues msgOfUserValues = prepareMsgOfUserValues(values, userId);
+                accountUserId = uriToAccountUserId(uri);
+                long rowId = uriToMessageId(uri);
+                ContentValues msgOfUserValues = prepareMsgOfUserValues(accountUserId, values);
                 if (values.size() > 0) {
                     count = db.update(MyDatabase.MSG_TABLE_NAME, values, Msg._ID + "=" + rowId
                             + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
@@ -621,7 +739,7 @@ public class MyProvider extends ContentProvider {
                 if (msgOfUserValues != null) {
                     String where = "(" + MsgOfUser.MSG_ID + "=" + rowId + " AND "
                             + MsgOfUser.USER_ID + "="
-                            + userId + ")";
+                            + accountUserId + ")";
                     String sql = "SELECT * FROM " + MyDatabase.MSGOFUSER_TABLE_NAME + " WHERE "
                             + where;
                     Cursor c = db.rawQuery(sql, null);
@@ -643,10 +761,13 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case USER_ID:
-                String selectedUserId = uri.getPathSegments().get(1);
+                accountUserId = uriToAccountUserId(uri);
+                long selectedUserId = uriToUserId(uri);
+                FollowingUserValues followingUserValues = FollowingUserValues.valueOf(accountUserId, selectedUserId, values);
                 count = db.update(MyDatabase.USER_TABLE_NAME, values, User._ID + "=" + selectedUserId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
+                followingUserValues.update(db);
                 break;
 
             default:
@@ -665,20 +786,25 @@ public class MyProvider extends ContentProvider {
 
         /** 
          * The order of PathSegments (parameters of timelines) in the URI
-         * 1. USER_ID is the first parameter (this is his timeline!)
-         * 2 - 3. "tt/" +  {@link MyDatabase.TimelineTypeEnum.save()} 
+         * 1. MyAccount USER_ID is the first parameter (this is his timeline of the type specified below!)
+         * 2 - 3. "tt/" +  {@link MyDatabase.TimelineTypeEnum.save()} - The timeline type 
          * 4 - 5. "combined/" +  0 or 1  (1 for combined timeline) 
          * 6 - 7. MyDatabase.MSG_TABLE_NAME + "/" + MSG_ID  (optional, used to access specific Message)
          */
-        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#", TIMELINE);
-        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/" + MyDatabase.MSG_TABLE_NAME + "/#", TIMELINE_MSG_ID);
         sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/search/*", TIMELINE_SEARCH);
+        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/" + MyDatabase.MSG_TABLE_NAME + "/#", TIMELINE_MSG_ID);
+        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#", TIMELINE);
 
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME, MSG);
         sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/count", MSG_COUNT);
+        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME, MSG);
 
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME, USERS);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#", USER_ID);
+        /** 
+         * The order of PathSegments in the URI
+         * 1. MyAccount USER_ID is the first parameter (so we can add 'following' information...)
+         * 2 - 3. "su/" + USER_ID  (optional, used to access specific User)
+         */
+        sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#/su/#", USER_ID);
+        sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#", USERS);
 
         msgProjectionMap = new HashMap<String, String>();
         msgProjectionMap.put(Msg._ID, MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + " AS " + Msg._ID);
@@ -703,6 +829,8 @@ public class MyProvider extends ContentProvider {
         msgProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
         msgProjectionMap.put(Msg.SENT_DATE, Msg.SENT_DATE);
         msgProjectionMap.put(Msg.INS_DATE, Msg.INS_DATE);
+        msgProjectionMap.put(FollowingUser.AUTHOR_FOLLOWED, FollowingUser.AUTHOR_FOLLOWED);
+        msgProjectionMap.put(FollowingUser.SENDER_FOLLOWED, FollowingUser.SENDER_FOLLOWED);
 
         userProjectionMap = new HashMap<String, String>();
         userProjectionMap.put(User._ID, MyDatabase.USER_TABLE_NAME + "." + User._ID + " AS " + User._ID);
@@ -735,36 +863,31 @@ public class MyProvider extends ContentProvider {
      * @return - id in our System (i.e. in the table, e.g.
      *         {@link MyDatabase.Msg#_ID} ). Or 0 if nothing was found.
      */
-    public static long oidToId(Uri uri, long originId, String oid) {
+    public static long oidToId(MyDatabase.OidEnum oidEnum, long originId, String oid) {
         long id = 0;
         SQLiteStatement prog = null;
         String sql = "";
 
         try {
-            if (!TextUtils.isEmpty(oid)) {
-                int matchedCode = sUriMatcher.match(uri);
-                switch (matchedCode) {
-                    case MSG:
-                    case TIMELINE:
-                        sql = "SELECT " + MyDatabase.Msg._ID + " FROM " + MyDatabase.MSG_TABLE_NAME
-                                + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
-                                + "=" + oid;
-                        break;
+            switch (oidEnum) {
+                case MSG_OID:
+                    sql = "SELECT " + MyDatabase.Msg._ID + " FROM " + MyDatabase.MSG_TABLE_NAME
+                            + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
+                            + "=" + oid;
+                    break;
 
-                    case USERS:
-                        sql = "SELECT " + MyDatabase.User._ID + " FROM " + MyDatabase.USER_TABLE_NAME
-                                + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USER_OID
-                                + "=" + oid;
-                        break;
+                case USER_OID:
+                    sql = "SELECT " + MyDatabase.User._ID + " FROM " + MyDatabase.USER_TABLE_NAME
+                            + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USER_OID
+                            + "=" + oid;
+                    break;
 
-                    default:
-                        throw new IllegalArgumentException("oidToId; Unknown URI \"" + uri
-                                + "\"; matchedCode=" + matchedCode);
-                }
-                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
-                prog = db.compileStatement(sql);
-                id = prog.simpleQueryForLong();
+                default:
+                    throw new IllegalArgumentException("oidToId; Unknown oidEnum \"" + oidEnum);
             }
+            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            prog = db.compileStatement(sql);
+            id = prog.simpleQueryForLong();
         } catch (SQLiteDoneException ed) {
             id = 0;
         } catch (Exception e) {
@@ -772,7 +895,7 @@ public class MyProvider extends ContentProvider {
             return 0;
         }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "oidToId:" + originId + "+" + oid + " -> " + id + " uri=" + uri );
+            MyLog.v(TAG, "oidToId:" + originId + "+" + oid + " -> " + id + " oidEnum=" + oidEnum );
         }
         return id;
     }
@@ -1063,13 +1186,17 @@ public class MyProvider extends ContentProvider {
         }
         return uri;
     }
-    
-    public static long uriToUserId(Uri uri) {
-        long userId = 0;
-        try {
-            userId = Long.parseLong(uri.getPathSegments().get(1));
-        } catch (Exception e) {}
-        return userId;        
+
+    /**
+     * URI of the user as seen from the {@link MyAccount} User point of view
+     * @param accountUserId userId of MyAccount
+     * @param selectedUserId ID of the selected User; 0 - if the User doesn't exist
+     */
+    public static Uri getUserUri(long accountUserId, long selectedUserId) {
+        Uri uri = ContentUris.withAppendedId(MyDatabase.User.CONTENT_URI, accountUserId);
+        uri = Uri.withAppendedPath(uri, "su");
+        uri = ContentUris.withAppendedId(uri, selectedUserId);
+        return uri;
     }
 
     /**
@@ -1103,4 +1230,31 @@ public class MyProvider extends ContentProvider {
         return messageId;        
     }
     
+    public static long uriToAccountUserId(Uri uri) {
+        long accountUserId = 0;
+        try {
+            int matchedCode = sUriMatcher.match(uri);
+            switch (matchedCode) {
+                case TIMELINE:
+                case TIMELINE_SEARCH:
+                case TIMELINE_MSG_ID:
+                case USERS:
+                case USER_ID:
+                    accountUserId = Long.parseLong(uri.getPathSegments().get(1));
+            }
+        } catch (Exception e) {}
+        return accountUserId;        
+    }
+    
+    public static long uriToUserId(Uri uri) {
+        long userId = 0;
+        try {
+            int matchedCode = sUriMatcher.match(uri);
+            switch (matchedCode) {
+                case USER_ID:
+                    userId = Long.parseLong(uri.getPathSegments().get(3));
+            }
+        } catch (Exception e) {}
+        return userId;        
+    }
 }

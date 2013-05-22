@@ -115,12 +115,12 @@
     <string name="menu_item_destroy_status">Удалить сообщение</string>
 	<string name="menu_item_direct_message">Личное сообщение</string>
 	<string name="menu_item_favorite">Добавить в избранное</string>
-	<string name="menu_item_follow">Следить</string>
+	<string name="menu_item_follow_user">Следить за "%1s"</string>
 	<string name="menu_item_reply">Ответить</string>
 	<string name="menu_item_reblog">Пересказать</string>
 	<string name="menu_item_reblog_twitter">Пересказать</string>
 	<string name="menu_item_share">Поделиться</string>
-    <string name="menu_item_unfollow">Не следить</string>
+	<string name="menu_item_stop_following_user">Не следить за "%1s"</string>
     <string name="menu_item_user_messages">Сообщения "%1s"</string>
     <string name="menu_item_view_profile">Посмотреть профиль</string>
 	<string name="message_sent">Ваше сообщение отправлено.</string>

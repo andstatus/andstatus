@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ClientConnectionManager;
@@ -38,22 +37,17 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
-import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
-
-import java.io.UnsupportedEncodingException;
-import java.util.LinkedList;
 
 /**
  * Handles connection to the Twitter REST API using OAuth
@@ -63,7 +57,7 @@ import java.util.LinkedList;
  * @see <a
  *      href="http://github.com/brione/Brion-Learns-OAuth">Brion-Learns-OAuth</a>
  */
-public abstract class ConnectionOAuth extends Connection implements MyOAuth {
+public abstract class ConnectionOAuth extends ConnectionTwitter implements MyOAuth {
     private static final String TAG = ConnectionOAuth.class.getSimpleName();
 
     public static final String USER_TOKEN = "user_token";
@@ -206,36 +200,17 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
     }
 
     @Override
-    public JSONObject destroyStatus(String statusId) throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(ApiRoutineEnum.STATUSES_DESTROY) + statusId + EXTENSION);
-        return postRequest(post);
-    }
-
-    @Override
-    public JSONObject getStatus(String statusId) throws ConnectionException {
-        JSONObject jso = null;
-        try {
-            Uri sUri = Uri.parse(getApiUrl(ApiRoutineEnum.STATUSES_SHOW));
-            Uri.Builder builder = sUri.buildUpon();
-            builder.appendQueryParameter("id", statusId);
-            jso = getUrl(builder.build().toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ConnectionException(e.getLocalizedMessage());
-        }
-        return jso;
-    }
-
-    private JSONObject getRequest(HttpGet get) throws ConnectionException {
-        JSONObject jso = null;
+    protected JSONTokener getRequest(HttpGet get) throws ConnectionException {
+        JSONTokener jso = null;
+        String response = null;
         boolean ok = false;
         try {
             getConsumer().sign(get);
-            String response = mClient.execute(get, new BasicResponseHandler());
-            jso = new JSONObject(response);
-            // Log.d(TAG, "authenticatedQuery: " + jso.toString(2));
+            response = mClient.execute(get, new BasicResponseHandler());
+            jso = new JSONTokener(response);
             ok = true;
         } catch (Exception e) {
+            Log.e(TAG, "Exception was caught, URL='" + get.getURI().toString() + "'");
             e.printStackTrace();
             throw new ConnectionException(e.getLocalizedMessage());
         }
@@ -245,57 +220,7 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
         return jso;
     }
 
-    private JSONObject getUrl(String url) throws ConnectionException {
-        HttpGet get = new HttpGet(url);
-        return getRequest(get);
-    }
-
     @Override
-    protected JSONArray getTimeline(String url, String sinceId, int limit, String userId)
-            throws ConnectionException {
-        boolean ok = false;
-        JSONArray jArr = null;
-        HttpGet get = null;
-        try {
-            Uri sUri = Uri.parse(url);
-            Uri.Builder builder = sUri.buildUpon();
-            if (!TextUtils.isEmpty(fixSinceId(sinceId))) {
-                builder.appendQueryParameter("since_id", fixSinceId(sinceId));
-            }
-            if (fixLimit(limit) > 0) {
-                builder.appendQueryParameter("count", String.valueOf(fixLimit(limit)));
-            }
-            if (!TextUtils.isEmpty(userId)) {
-                builder.appendQueryParameter("user_id", userId);
-            }
-            get = new HttpGet(builder.build().toString());
-            getConsumer().sign(get);
-            String response = mClient.execute(get, new BasicResponseHandler());
-            jArr = new JSONArray(response);
-            ok = (jArr != null);
-        } catch (NullPointerException e) {
-            // It looks like a bug in the library, but we have to catch it 
-            Log.e(TAG, "NullPointerException was caught, URL='" + url + "'");
-            e.printStackTrace();
-        } catch (Exception e) {
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                MyLog.v(TAG, get != null ? get.getRequestLine().toString() : " get is null");
-            }
-            e.printStackTrace();
-            throw new ConnectionException(e.getLocalizedMessage());
-        }
-        if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "getTimeline '" + url + "' "
-                    + (ok ? "OK, " + jArr.length() + " statuses" : "FAILED"));
-        }
-        return jArr;
-    }
-
-    @Override
-    public JSONObject rateLimitStatus() throws ConnectionException {
-        return getUrl(getApiUrl(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
-    }
-
     protected JSONObject postRequest(HttpPost post) throws ConnectionException {
         JSONObject jso = null;
         String response = null;
@@ -327,52 +252,6 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
         }
         return jso;
     }
-    
-    protected JSONObject postRequest(HttpPost post, LinkedList<BasicNameValuePair> out) throws ConnectionException {
-        JSONObject jso = null;
-        boolean ok = false;
-        try {
-            post.setEntity(new UrlEncodedFormEntity(out, HTTP.UTF_8));
-            ok = true;
-        } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, e.toString());
-        }
-        if (ok) {
-            jso = postRequest(post);
-        } else {            
-            jso = null;
-        }
-        return jso;
-    }
-    
-    @Override
-    public JSONObject updateStatus(String message, String inReplyToId)
-            throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(ApiRoutineEnum.STATUSES_UPDATE));
-        LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
-        out.add(new BasicNameValuePair("status", message));
-        if ( !TextUtils.isEmpty(inReplyToId)) {
-            out.add(new BasicNameValuePair("in_reply_to_status_id", inReplyToId));
-        }
-        return postRequest(post, out);
-    }
-
-    @Override
-    public JSONObject postDirectMessage(String message, String userId) throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(ApiRoutineEnum.POST_DIRECT_MESSAGE));
-        LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
-        out.add(new BasicNameValuePair("text", message));
-        if ( !TextUtils.isEmpty(userId)) {
-            out.add(new BasicNameValuePair("user_id", userId));
-        }
-        return postRequest(post, out);
-    }
-    
-    @Override
-    public JSONObject postReblog(String rebloggedId) throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(ApiRoutineEnum.POST_REBLOG) + rebloggedId + EXTENSION);
-        return postRequest(post);
-    }
 
     /**
      * @see org.andstatus.app.net.Connection#getCredentialsPresent()
@@ -392,7 +271,7 @@ public abstract class ConnectionOAuth extends Connection implements MyOAuth {
 
     @Override
     public JSONObject verifyCredentials() throws ConnectionException {
-        return getUrl(getApiUrl(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
+        return getRequest(getApiUrl(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -169,16 +170,16 @@ public class TimelineDownloader {
             JSONArray jArr = null;
             switch (mTimelineType) {
                 case HOME:
-                    jArr = ma.getConnection().getHomeTimeline(lastOid, limit);
+                    jArr = ma.getConnection().getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, lastOid, limit, null);
                     break;
                 case MENTIONS:
-                    jArr = ma.getConnection().getMentionsTimeline(lastOid, limit);
+                    jArr = ma.getConnection().getTimeline(ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE, lastOid, limit, null);
                     break;
                 case DIRECT:
-                    jArr = ma.getConnection().getDirectMessages(lastOid, limit);
+                    jArr = ma.getConnection().getTimeline(ApiRoutineEnum.DIRECT_MESSAGES, lastOid, limit, null);
                     break;
                 case USER:
-                    jArr = ma.getConnection().getUserTimeline(userOid, lastOid, limit);
+                    jArr = ma.getConnection().getTimeline(ApiRoutineEnum.STATUSES_USER_TIMELINE, lastOid, limit, userOid);
                     break;
                 default:
                     Log.e(TAG, "Got unhandled Timeline type: " + mTimelineType.save());
@@ -346,7 +347,7 @@ public class TimelineDownloader {
                 boolean countIt = false;
 
                 // Lookup the System's (AndStatus) id from the Originated system's id
-                rowId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), rowOid);
+                rowId = MyProvider.oidToId(OidEnum.MSG_OID, ma.getOriginId(), rowOid);
                 // Construct the Uri to the Msg
                 Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), rowId, false);
 
@@ -420,7 +421,7 @@ public class TimelineDownloader {
                             if (msg.has("in_reply_to_screen_name")) {
                                 inReplyToUserName = msg.getString("in_reply_to_screen_name");
                             }
-                            inReplyToUserId = MyProvider.oidToId(MyDatabase.User.CONTENT_URI, ma.getOriginId(), inReplyToUserOid);
+                            inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, ma.getOriginId(), inReplyToUserOid);
                             
                             // Construct "User" from available info
                             JSONObject inReplyToUser = new JSONObject();
@@ -451,7 +452,7 @@ public class TimelineDownloader {
                                 inReplyToUserOid = "";
                             }
                             if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
-                                inReplyToMessageId = MyProvider.oidToId(MyDatabase.Msg.CONTENT_URI, ma.getOriginId(), inReplyToMessageOid);
+                                inReplyToMessageId = MyProvider.oidToId(OidEnum.MSG_OID, ma.getOriginId(), inReplyToMessageOid);
                                 if (inReplyToMessageId == 0) {
                                     // Construct Related "Msg" from available info
                                     // and add it recursively
@@ -558,7 +559,7 @@ public class TimelineDownloader {
             rowOid = "";
         } else {
             // Lookup the System's (AndStatus) id from the Originated system's id
-            rowId = MyProvider.oidToId(MyDatabase.User.CONTENT_URI, originId, rowOid);
+            rowId = MyProvider.oidToId(OidEnum.USER_OID, originId, rowOid);
         }
         if (rowId == 0) {
             // Try to Lookup by Username
@@ -603,12 +604,23 @@ public class TimelineDownloader {
                 }
             }
 
+            if (!user.isNull("following")) {
+                boolean followed = false;
+                try {
+                    followed = user.getBoolean("following");
+                    values.put(MyDatabase.FollowingUser.USER_FOLLOWED, followed);
+                    MyLog.v(TAG, "insertUserFromJSONObject: '" + userName + "' is " + (followed ? "followed" : "not followed") );
+                } catch (JSONException e) {
+                    Log.e(TAG, "insertUserFromJSONObject error; following='" + user.getString("following") +"'. " + e.toString());
+                }
+            }
+            
             // Construct the Uri to the User
-            Uri userUri = ContentUris.withAppendedId(MyDatabase.User.CONTENT_URI, rowId);
+            Uri userUri = MyProvider.getUserUri(ma.getUserId(), rowId);
             if (rowId == 0) {
                 // There was no such row so add new one
-                userUri = mContentResolver.insert(MyDatabase.User.CONTENT_URI, values);
-                rowId = Long.parseLong(userUri.getPathSegments().get(1));
+                userUri = mContentResolver.insert(userUri, values);
+                rowId = MyProvider.uriToUserId(userUri);
             } else {
               mContentResolver.update(userUri, values, null, null);
             }
@@ -857,7 +869,7 @@ public class TimelineDownloader {
                 ContentValues values = new ContentValues();
                 values.put(mTimelineType.columnNameDate(), mTimelineDate );
                 values.put(mTimelineType.columnNameMsgId(), mLastMsgId );
-                Uri userUri = ContentUris.withAppendedId(MyDatabase.User.CONTENT_URI, userId);
+                Uri userUri = MyProvider.getUserUri(ma.getUserId(), userId);
                 mContentResolver.update(userUri, values, null, null);
             } catch (Exception e) {
                 Log.e(TAG, "saveLastMsgInfo: " + e.toString());

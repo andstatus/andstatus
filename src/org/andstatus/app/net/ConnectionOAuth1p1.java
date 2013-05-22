@@ -1,11 +1,12 @@
 package org.andstatus.app.net;
 
 import org.andstatus.app.account.AccountDataReader;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Twitter API v.1.1 https://dev.twitter.com/docs/api/1.1
@@ -42,17 +43,15 @@ public class ConnectionOAuth1p1 extends ConnectionOAuth {
 
     @Override
     public JSONObject createFavorite(String statusId) throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(ApiRoutineEnum.FAVORITES_CREATE_BASE));
-        LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
+        List<NameValuePair> out = new LinkedList<NameValuePair>();
         out.add(new BasicNameValuePair("id", statusId));
-        return postRequest(post, out);
+        return postRequest(ApiRoutineEnum.FAVORITES_CREATE_BASE, out);
     }
 
     @Override
     public JSONObject destroyFavorite(String statusId) throws ConnectionException {
-        HttpPost post = new HttpPost(getApiUrl(ApiRoutineEnum.FAVORITES_DESTROY_BASE));
-        LinkedList<BasicNameValuePair> out = new LinkedList<BasicNameValuePair>();
+        List<NameValuePair> out = new LinkedList<NameValuePair>();
         out.add(new BasicNameValuePair("id", statusId));
-        return postRequest(post, out);
+        return postRequest(ApiRoutineEnum.FAVORITES_DESTROY_BASE, out);
     }
 }

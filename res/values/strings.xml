@@ -115,12 +115,12 @@
     <string name="menu_item_destroy_status">Remove message</string>
     <string name="menu_item_direct_message">Direct Message</string>
 	<string name="menu_item_favorite">Favorite</string>
-	<string name="menu_item_follow">Follow</string>
+	<string name="menu_item_follow_user">Follow "%1s"</string>
     <string name="menu_item_reply">Reply</string>
 	<string name="menu_item_reblog">Reblog</string>
 	<string name="menu_item_reblog_twitter">Retweet</string>
 	<string name="menu_item_share">Share</string>
-	<string name="menu_item_unfollow">Unfollow</string>
+	<string name="menu_item_stop_following_user">Stop following "%1s"</string>
     <string name="menu_item_user_messages">Messages by "%1s"</string>
     <string name="menu_item_view_profile">View Profile</string>
 	<string name="message_sent">Your message has been sent.</string>

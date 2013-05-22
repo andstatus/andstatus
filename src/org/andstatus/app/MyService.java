@@ -295,6 +295,8 @@ public class MyService extends Service {
 
         CREATE_FAVORITE("create-favorite"), DESTROY_FAVORITE("destroy-favorite"),
 
+        FOLLOW_USER("follow-user"), STOP_FOLLOWING_USER("stop-following-user"),
+
         /**
          * This command is for sending both public and direct messages
          */
@@ -401,8 +403,9 @@ public class MyService extends Service {
         
         /**
          * This is: 
-         * 1. Generally: {@link android.provider.BaseColumns#_ID} of the {@link MyDatabase.Msg}.
-         * 2.  User ID ( {@link MyDatabase.User#USER_ID} ) for the {@link CommandEnum#FETCH_USER_TIMELINE}
+         * 1. Generally: Message ID ({@link MyDatabase.Msg#MSG_ID} of the {@link MyDatabase.Msg}).
+         * 2. User ID ( {@link MyDatabase.User#USER_ID} ) for the {@link CommandEnum#FETCH_USER_TIMELINE}, 
+         *      {@link CommandEnum#FOLLOW_USER}, {@link CommandEnum#STOP_FOLLOWING_USER} 
          */
         public long itemId = 0;
 
@@ -1220,9 +1223,17 @@ public class MyService extends Service {
                         break;
                     case CREATE_FAVORITE:
                     case DESTROY_FAVORITE:
-                        ok = createOrDestroyFavorite(commandData.accountName, 
-                                commandData.command == CommandEnum.CREATE_FAVORITE,
-                                commandData.itemId);
+                        ok = createOrDestroyFavorite(commandData.accountName,
+                                commandData.itemId, 
+                                commandData.command == CommandEnum.CREATE_FAVORITE);
+                        // Retry in a case of an error
+                        retry = !ok;
+                        break;
+                    case FOLLOW_USER:
+                    case STOP_FOLLOWING_USER:
+                        ok = followOrStopFollowingUser(commandData.accountName,
+                                commandData.itemId, 
+                                commandData.command == CommandEnum.FOLLOW_USER);
                         // Retry in a case of an error
                         retry = !ok;
                         break;
@@ -1307,7 +1318,7 @@ public class MyService extends Service {
          * @param msgId
          * @return ok
          */
-        private boolean createOrDestroyFavorite(String accountNameIn, boolean create, long msgId) {
+        private boolean createOrDestroyFavorite(String accountNameIn, long msgId, boolean create) {
             boolean ok = false;
             MyAccount ma = MyAccount.getMyAccount(accountNameIn);
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
@@ -1358,8 +1369,7 @@ public class MyService extends Service {
                             // twitter.com 'async' process doesn't work
                             // so let's try another time...
                             // This is safe, because "delete favorite"
-                            // works
-                            // even for "Unfavorited" tweet :-)
+                            // works even for the "Unfavorited" tweet :-)
                             ok = false;
 
                             Log.e(TAG,
@@ -1395,6 +1405,78 @@ public class MyService extends Service {
             return ok;
         }
 
+
+        /**
+         * @param userId
+         * @param follow true - Follow, false - Stop following
+         * @return ok
+         */
+        private boolean followOrStopFollowingUser(String accountNameIn, long userId, boolean follow) {
+            boolean ok = false;
+            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
+            String oid = MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
+            JSONObject result = new JSONObject();
+            if (oid.length() > 0) {
+                try {
+                    result = ma.getConnection().followUser(oid, follow);
+                    ok = (result != null);
+                } catch (ConnectionException e) {
+                    Log.e(TAG,
+                            (follow ? "Follow" : "Stop following") + " User Connection Exception: "
+                                    + e.toString());
+                }
+            } else {
+                Log.e(TAG,
+                        (follow ? "Follow" : "Stop following") + " User; userId not found: " + userId);
+            }
+            if (ok) {
+                try {
+                    boolean following = result.getBoolean("following");
+                    if (following != follow) {
+                        if (follow) {
+                            // Act just like for creating favorite...
+                            result.put("following", follow);
+
+                            MyLog.d(TAG,
+                                    (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");
+
+                            // Let's try to assume that everything was
+                            // Ok:
+                            ok = true;
+                        } else {
+                            ok = false;
+
+                            Log.e(TAG,
+                                    (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");
+                        }
+                    }
+                } catch (JSONException e) {
+                    Log.e(TAG,
+                            (follow ? "Follow" : "Stop following") + " User. Checking resulted 'following' flag: "
+                                    + e.toString());
+                }
+
+                if (ok) {
+                    try {
+                        TimelineDownloader fl = new TimelineDownloader(ma,
+                                MyService.this.getApplicationContext(),
+                                TimelineTypeEnum.HOME);
+                        fl.insertUserFromJSONObject(result);
+                    } catch (JSONException e) {
+                        Log.e(TAG,
+                                "Error on " + (follow ? "Follow" : "Stop following") + " User: "
+                                        + e.toString());
+                    }
+                }
+            }
+
+            // TODO: Maybe we need to notify the caller about the result?!
+
+            MyLog.d(TAG, (follow ? "Follow" : "Stop following") + " User "
+                    + (ok ? "succeded" : "failed") + ", id=" + userId);
+            return ok;
+        }
+        
         /**
          * @param accountNameIn Account whose message (status) to destroy
          * @param msgId ID of the message to destroy

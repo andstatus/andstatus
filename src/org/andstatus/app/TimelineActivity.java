@@ -132,8 +132,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     public static final int CONTEXT_MENU_ITEM_DIRECT_MESSAGE = Menu.FIRST + 4;
 
-    public static final int CONTEXT_MENU_ITEM_UNFOLLOW = Menu.FIRST + 5;
-
     public static final int CONTEXT_MENU_ITEM_BLOCK = Menu.FIRST + 6;
 
     public static final int CONTEXT_MENU_ITEM_REBLOG = Menu.FIRST + 7;
@@ -149,6 +147,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     public static final int CONTEXT_MENU_ITEM_SHARE = Menu.FIRST + 12;
 
     public static final int CONTEXT_MENU_ITEM_USER_MESSAGES = Menu.FIRST + 13;
+
+    public static final int CONTEXT_MENU_ITEM_FOLLOW_SENDER = Menu.FIRST + 14;
+
+    public static final int CONTEXT_MENU_ITEM_STOP_FOLLOWING_SENDER = Menu.FIRST + 15;
+
+    public static final int CONTEXT_MENU_ITEM_FOLLOW_AUTHOR = Menu.FIRST + 16;
+
+    public static final int CONTEXT_MENU_ITEM_STOP_FOLLOWING_AUTHOR = Menu.FIRST + 17;
     
     // Intent bundle result keys
     public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
@@ -756,11 +762,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             if (save) {
-                Log.v(TAG, "Position saved \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+                Log.v(TAG, "Position saved    \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
                         + firstItemId + "; index=" + firstScrollPos + "; lastId="
                         + lastItemId + "; index=" + lastScrollPos);
             } else {
-                Log.v(TAG, "Position forgot \"" + ps.accountGuid + "\"; " + ps.keyFirst);
+                Log.v(TAG, "Position forgot   \"" + ps.accountGuid + "\"; " + ps.keyFirst);
             }
         }
     }
@@ -774,7 +780,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         long firstItemId = -3;
         try {
             int scrollPos = -1;
-            firstItemId = getSavedPosition(ps, false);
+            firstItemId = ps.getSavedPosition(false);
             if (firstItemId > 0) {
                 scrollPos = listPosForId(firstItemId);
             }
@@ -782,8 +788,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 getListView().setSelectionFromTop(scrollPos, 0);
                 loaded = true;
                 if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                    Log.v(TAG, "Restored position \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
-                            + firstItemId +"; list index=" + scrollPos);
+                    Log.v(TAG, "Position restored \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+                            + firstItemId +"; index=" + scrollPos);
                 }
             } else {
                 // There is no stored position
@@ -798,8 +804,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 }
             }
         } catch (Exception e) {
-            saveOrForgetPosition(false);
-            firstItemId = -2;
+            Log.v(TAG, "Position error    \"" + e.getLocalizedMessage());
+            loaded = false;
         }
         if (!loaded) {
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
@@ -810,35 +816,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             saveOrForgetPosition(false);
         }
         positionRestored = true;
-    }
-
-    /**
-     * @param ps
-     * @param lastRow Key for First visible row (false) or Last row that will be retrieved (true)
-     * @return Saved Tweet id or < 0 if none was found.
-     */
-    protected long getSavedPosition(PositionStorage ps, boolean lastRow) {
-        SharedPreferences sp;
-        if (mIsTimelineCombined) {
-            sp = MyPreferences.getDefaultSharedPreferences();
-        } else {
-            MyAccount ma = MyAccount.getCurrentMyAccount();
-            sp = ma.getMyAccountPreferences();
-            
-        }
-        long savedItemId = -3;
-        if (!mIsSearchMode
-                || (mQueryString.compareTo(sp.getString(
-                        ps.keyQueryString, "")) == 0)) {
-            // Load saved position in Search mode only if that position was
-            // saved for the same query string
-            if (lastRow) {
-                savedItemId = sp.getLong(ps.keyLast, -1);
-            } else {
-                savedItemId = sp.getLong(ps.keyFirst, -1);
-            }
-        }
-        return savedItemId;
     }
 
     private void setSelectionAtBottom(int scrollPos) {
@@ -1469,7 +1446,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         if (!positionRestored) {
             // We have to ensure that saved position will be
             // loaded from database into the list
-            lastItemId = getSavedPosition(new PositionStorage(), true);
+            lastItemId = new PositionStorage().getSavedPosition(true);
         }
 
         int nTweets = 0;
@@ -1653,7 +1630,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         mCurrentMsgId = info.id;
         mMyAccountUserIdForCurrentMessage = 0;
         long linkedUserId = getLinkedUserIdFromCursor(info.position);
-        MyAccount ma = MyAccount.getMyAccountLinkedToThisMessage(mCurrentMsgId, linkedUserId, mCurrentMyAccountUserId);
+        MyAccount ma = MyAccount.getMyAccountLinkedToThisMessage(mCurrentMsgId, linkedUserId,
+                mCurrentMyAccountUserId);
         if (ma == null) {
             return;
         }
@@ -1661,26 +1639,38 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // Get the record for the currently selected item
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mCurrentMsgId, false);
         Cursor c = getContentResolver().query(uri, new String[] {
-                MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID, 
+                MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
                 MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED,
                 MyDatabase.Msg.RECIPIENT_ID,
-                MyDatabase.MsgOfUser.REBLOGGED
+                MyDatabase.MsgOfUser.REBLOGGED,
+                MyDatabase.FollowingUser.SENDER_FOLLOWED,
+                MyDatabase.FollowingUser.AUTHOR_FOLLOWED
         }, null, null, null);
         try {
             if (c != null && c.getCount() > 0) {
                 c.moveToFirst();
                 boolean isDirect = !c.isNull(c.getColumnIndex(MyDatabase.Msg.RECIPIENT_ID));
                 long authorId = c.getLong(c.getColumnIndex(MyDatabase.Msg.AUTHOR_ID));
+                long senderId = c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID));
                 boolean favorited = c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED)) == 1;
                 boolean reblogged = c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.REBLOGGED)) == 1;
-                /** This message was sent by current User, hence we may delete it.
+                boolean senderFollowed = c.getInt(c
+                        .getColumnIndex(MyDatabase.FollowingUser.SENDER_FOLLOWED)) == 1;
+                boolean authorFollowed = c.getInt(c
+                        .getColumnIndex(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) == 1;
+                /**
+                 * This message was sent by current User, hence we may delete
+                 * it.
                  */
-                boolean isSender = (ma.getUserId() == c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))
-                     //   && ma.getUserId() == authorId
-                        );
-                
-                /* Let's check if we can use current account instead of linked to this message  */
-                if (!isDirect && !favorited && !reblogged && !isSender && ma.getUserId() != mCurrentMyAccountUserId) {
+                boolean isSender = (ma.getUserId() == senderId);
+                boolean isAuthor = (ma.getUserId() == authorId);
+
+                /*
+                 * Let's check if we can use current account instead of linked
+                 * to this message
+                 */
+                if (!isDirect && !favorited && !reblogged && !isSender
+                        && ma.getUserId() != mCurrentMyAccountUserId) {
                     MyAccount ma2 = MyAccount.getMyAccount(mCurrentMyAccountUserId);
                     if (ma.getOriginId() == ma2.getOriginId()) {
                         // Yes, use current Account!
@@ -1688,51 +1678,59 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     }
                 }
                 mMyAccountUserIdForCurrentMessage = ma.getUserId();
-                
-                menu.setHeaderTitle( (mIsTimelineCombined ? ma.getAccountGuid() + ": " : "" )
-                         + c.getString(c.getColumnIndex(MyDatabase.Msg.BODY)));
+
+                menu.setHeaderTitle((mIsTimelineCombined ? ma.getAccountGuid() + ": " : "")
+                        + c.getString(c.getColumnIndex(MyDatabase.Msg.BODY)));
 
                 // Add menu items
                 if (!isDirect) {
                     menu.add(0, CONTEXT_MENU_ITEM_REPLY, menuItemId++, R.string.menu_item_reply);
                 }
                 menu.add(0, CONTEXT_MENU_ITEM_SHARE, menuItemId++, R.string.menu_item_share);
-                
+
                 // TODO: Only if he follows me?
-                menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, menuItemId++, R.string.menu_item_direct_message);
-                
+                menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, menuItemId++,
+                        R.string.menu_item_direct_message);
+
                 // menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, m++,
                 // R.string.menu_item_unfollow);
-                // menu.add(0, CONTEXT_MENU_ITEM_BLOCK, m++, R.string.menu_item_block);
+                // menu.add(0, CONTEXT_MENU_ITEM_BLOCK, m++,
+                // R.string.menu_item_block);
                 // menu.add(0, CONTEXT_MENU_ITEM_PROFILE, m++,
                 // R.string.menu_item_view_profile);
-                
+
                 if (!isDirect) {
                     if (favorited) {
                         menu.add(0, CONTEXT_MENU_ITEM_DESTROY_FAVORITE, menuItemId++,
                                 R.string.menu_item_destroy_favorite);
                     } else {
-                        menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, menuItemId++, R.string.menu_item_favorite);
+                        menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, menuItemId++,
+                                R.string.menu_item_favorite);
                     }
                     if (reblogged) {
                         menu.add(0, CONTEXT_MENU_ITEM_DESTROY_REBLOG, menuItemId++,
                                 ma.alternativeTermResourceId(R.string.menu_item_destroy_reblog));
                     } else {
-                        // Don't allow a User to reblog himself 
-                        if (mMyAccountUserIdForCurrentMessage != c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID))) {
-                            menu.add(0, CONTEXT_MENU_ITEM_REBLOG, menuItemId++, ma.alternativeTermResourceId(R.string.menu_item_reblog));
+                        // Don't allow a User to reblog himself
+                        if (mMyAccountUserIdForCurrentMessage != c.getLong(c
+                                .getColumnIndex(MyDatabase.Msg.SENDER_ID))) {
+                            menu.add(0, CONTEXT_MENU_ITEM_REBLOG, menuItemId++,
+                                    ma.alternativeTermResourceId(R.string.menu_item_reblog));
                         }
                     }
                 }
-                
+
                 if (mSelectedUserId != authorId) {
-                    /* Messages by the Author of this message ("User timeline" of that user) */
-                    menu.add(0, CONTEXT_MENU_ITEM_USER_MESSAGES, menuItemId++, 
+                    /*
+                     * Messages by the Author of this message ("User timeline"
+                     * of that user)
+                     */
+                    menu.add(0, CONTEXT_MENU_ITEM_USER_MESSAGES, menuItemId++,
                             String.format(Locale.getDefault(),
-                            getText(R.string.menu_item_user_messages).toString(),
-                            MyProvider.userIdToName(authorId)));
+                                    getText(R.string.menu_item_user_messages).toString(),
+                                    MyProvider.userIdToName(authorId)));
                 }
-                
+
                 if (isSender) {
                     // This message is by current User, hence we may delete it.
                     if (isDirect) {
@@ -1743,6 +1741,34 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                                 R.string.menu_item_destroy_status);
                     }
                 }
+
+                if (!isSender) {
+                    if (senderFollowed) {
+                        menu.add(0, CONTEXT_MENU_ITEM_STOP_FOLLOWING_SENDER, menuItemId++,
+                                String.format(Locale.getDefault(),
+                                        getText(R.string.menu_item_stop_following_user).toString(),
+                                        MyProvider.userIdToName(senderId)));
+                    } else {
+                        menu.add(0, CONTEXT_MENU_ITEM_FOLLOW_SENDER, menuItemId++,
+                                String.format(Locale.getDefault(),
+                                        getText(R.string.menu_item_follow_user).toString(),
+                                        MyProvider.userIdToName(senderId)));
+                    }
+                }
+                if (!isAuthor && (authorId != senderId)) {
+                    if (authorFollowed) {
+                        menu.add(0, CONTEXT_MENU_ITEM_STOP_FOLLOWING_AUTHOR, menuItemId++,
+                                String.format(Locale.getDefault(),
+                                        getText(R.string.menu_item_stop_following_user).toString(),
+                                        MyProvider.userIdToName(authorId)));
+                    } else {
+                        menu.add(0, CONTEXT_MENU_ITEM_FOLLOW_AUTHOR, menuItemId++,
+                                String.format(Locale.getDefault(),
+                                        getText(R.string.menu_item_follow_user).toString(),
+                                        MyProvider.userIdToName(authorId)));
+                    }
+                }
+
             }
         } catch (Exception e) {
             Log.e(TAG, "onCreateContextMenu: " + e.toString());
@@ -1766,17 +1792,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         mCurrentMsgId = info.id;
         MyAccount ma = MyAccount.getMyAccount(mMyAccountUserIdForCurrentMessage);
         if (ma != null) {
-            Uri uri;
-            String userName;
-            Cursor c;
-            long authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-
+            long authorId;
+            long senderId;
             switch (item.getItemId()) {
                 case CONTEXT_MENU_ITEM_REPLY:
                     mTweetEditor.startEditingMessage("", mCurrentMsgId, 0, ma.getAccountGuid(), mIsTimelineCombined);
                     return true;
 
                 case CONTEXT_MENU_ITEM_DIRECT_MESSAGE:
+                    authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
                     if (authorId != 0) {
                         mTweetEditor.startEditingMessage("", mCurrentMsgId, authorId, ma.getAccountGuid(), mIsTimelineCombined);
                         return true;
@@ -1804,9 +1828,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     return true;
 
                 case CONTEXT_MENU_ITEM_SHARE:
-                    userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    uri = MyProvider.getTimelineMsgUri(ma.getUserId(), info.id, true);
-                    c = getContentResolver().query(uri, new String[] {
+                    String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
+                    Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), info.id, true);
+                    Cursor c = getContentResolver().query(uri, new String[] {
                             MyDatabase.Msg.MSG_OID, MyDatabase.Msg.BODY
                     }, null, null, null);
                     try {
@@ -1848,13 +1872,32 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     return true;
 
                 case CONTEXT_MENU_ITEM_USER_MESSAGES:
+                {
+                    authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
                     if (authorId != 0) {
                         switchTimelineActivity(TimelineTypeEnum.USER, mIsTimelineCombined, authorId);
                         return true;
                     }
+                }
                     break;
+
+                case CONTEXT_MENU_ITEM_FOLLOW_SENDER:
+                    senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountGuid(), senderId));
+                    return true;
+                case CONTEXT_MENU_ITEM_STOP_FOLLOWING_SENDER:
+                    senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountGuid(), senderId));
+                    return true;
+                case CONTEXT_MENU_ITEM_FOLLOW_AUTHOR:
+                    authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountGuid(), authorId));
+                    return true;
+                case CONTEXT_MENU_ITEM_STOP_FOLLOWING_AUTHOR:
+                    authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountGuid(), authorId));
+                    return true;
                     
-                case CONTEXT_MENU_ITEM_UNFOLLOW:
                 case CONTEXT_MENU_ITEM_BLOCK:
                 case CONTEXT_MENU_ITEM_PROFILE:
                     Toast.makeText(this, R.string.unimplemented, Toast.LENGTH_SHORT).show();
@@ -1936,6 +1979,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 MyAccount ma = MyAccount.getMyAccount(mCurrentMyAccountUserId);
                 if (ma != null) {
                     sp = ma.getMyAccountPreferences();
+                    accountGuid = ma.getAccountGuid();
                 } else {
                     Log.e(TAG, "No accoount for IserId=" + mCurrentMyAccountUserId);
                 }
@@ -1951,5 +1995,27 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             keyLast = keyFirst + "_last";
             keyQueryString = LAST_POS_KEY + mTimelineType.save() + "_querystring";
         }
+        
+        /**
+         * @param ps
+         * @param lastRow Key for First visible row (false) or Last row that will be retrieved (true)
+         * @return Saved Tweet id or -1 or -4 if none was found.
+         */
+        protected long getSavedPosition(boolean lastRow) {
+            long savedItemId = -4;
+            if (!mIsSearchMode
+                    || (mQueryString.compareTo(sp.getString(
+                            keyQueryString, "")) == 0)) {
+                // Load saved position in Search mode only if that position was
+                // saved for the same query string
+                if (lastRow) {
+                    savedItemId = sp.getLong(keyLast, -1);
+                } else {
+                    savedItemId = sp.getLong(keyFirst, -1);
+                }
+            }
+            return savedItemId;
+        }
+        
     }
 }

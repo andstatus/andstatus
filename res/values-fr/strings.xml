@@ -111,12 +111,12 @@
 	<string name="menu_item_destroy_status">Supprimer ce message</string>
 	<string name="menu_item_direct_message">Message privé</string>
 	<string name="menu_item_favorite">Mettre en favori</string>
-	<string name="menu_item_follow">S\'abonner</string>
+	<string name="menu_item_follow_user">S\'abonner "%1s"</string>
 	<string name="menu_item_reply">Répondre</string>
 	<string name="menu_item_reblog">Reposter</string>
 	<string name="menu_item_reblog_twitter">Retweeter</string>
 	<string name="menu_item_share">Partager</string>
-	<string name="menu_item_unfollow">Se désabonner</string>
+    <string name="menu_item_stop_following_user">Se désabonner "%1s"</string>
 	<string name="menu_item_view_profile">Voir le profile</string>
 	<string name="message_sent">Le message a été envoyé.</string>
 	<string name="messages_activity">Messages privés</string>
