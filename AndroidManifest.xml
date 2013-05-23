@@ -18,7 +18,7 @@
     TODO: Add narrow enough intent filters to activities in order not to see these activities everywhere ("Open with...")
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="org.andstatus.app" android:versionName="1.14.0" android:versionCode="73">
+	package="org.andstatus.app" android:versionName="1.15.0" android:versionCode="74">
 
 	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="10" />
     

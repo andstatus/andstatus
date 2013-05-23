@@ -88,6 +88,7 @@ public abstract class Connection {
         FAVORITES_CREATE_BASE,
         FAVORITES_DESTROY_BASE,
         FOLLOW_USER,
+        GET_FRIENDS_IDS,
         POST_DIRECT_MESSAGE,
         POST_REBLOG,
         STATUSES_DESTROY,
@@ -279,6 +280,12 @@ public abstract class Connection {
      */
     public abstract JSONObject destroyStatus(String statusId) throws ConnectionException;
 
+    /**
+     * Returns an array of numeric IDs for every user the specified user is following.
+     * @throws ConnectionException
+     */
+    public abstract JSONObject getFriendsIds(String userId) throws ConnectionException;
+    
     /**
      * Returns a single status, specified by the id parameter below.
      * The status's author will be returned inline.

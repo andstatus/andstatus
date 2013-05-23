@@ -36,6 +36,15 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     <header>
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
+    <release android:versionName="1.15.0" android:versionCode="74"
+        versionDate="2013-05-22"
+        versionTitle="Follow and Stop following a User">
+        <changes><change>Follow and Stop following a user actions added. For a retweeted (reblogged)
+            message you may Follow/Unfollow a Sender and/or an Author of the message.
+             <a href="https://github.com/andstatus/andstatus/issues/14" >Issue #14</a>.
+             </change>
+        </changes>
+    </release>
     <release android:versionName="1.14.0" android:versionCode="73"
         versionDate="2013-04-17"
         versionTitle="Managing accounts is easier now">

@@ -57,6 +57,9 @@ public abstract class ConnectionTwitter extends Connection {
             case FOLLOW_USER:
                 url = getBaseUrl() + "/friendships/create" + EXTENSION;
                 break;
+            case GET_FRIENDS_IDS:
+                url = getBaseUrl() + "/friends/ids" + EXTENSION;
+                break;
             case POST_DIRECT_MESSAGE:
                 url = getBaseUrl() + "/direct_messages/new" + EXTENSION;
                 break;
@@ -106,6 +109,21 @@ public abstract class ConnectionTwitter extends Connection {
         return postRequest((follow ? ApiRoutineEnum.FOLLOW_USER : ApiRoutineEnum.STOP_FOLLOWING_USER), out);
     } 
 
+    /**
+     * Returns an array of numeric IDs for every user the specified user is following.
+     * Current implementation is restricted to 5000 IDs (no paged cursors are used...)
+     * @see <a
+     *      href="https://dev.twitter.com/docs/api/1.1/get/friends/ids">GET friends/ids</a>
+     * @throws ConnectionException
+     */
+    @Override
+    public JSONObject getFriendsIds(String userId) throws ConnectionException {
+        Uri sUri = Uri.parse(getApiUrl(ApiRoutineEnum.GET_FRIENDS_IDS));
+        Uri.Builder builder = sUri.buildUpon();
+        builder.appendQueryParameter("user_id", userId);
+        return getRequest(builder.build().toString());
+    }
+    
     /**
      * Returns a single status, specified by the id parameter below.
      * The status's author will be returned inline.

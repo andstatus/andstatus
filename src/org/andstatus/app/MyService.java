@@ -296,6 +296,7 @@ public class MyService extends Service {
         CREATE_FAVORITE("create-favorite"), DESTROY_FAVORITE("destroy-favorite"),
 
         FOLLOW_USER("follow-user"), STOP_FOLLOWING_USER("stop-following-user"),
+        UPDATE_FOLLOWING_USERS_IF_NECESSARY("update-following-users-ifnecessary"),
 
         /**
          * This command is for sending both public and direct messages
