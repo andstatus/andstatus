@@ -635,18 +635,18 @@ public class MyProvider extends ContentProvider {
      */
     private static String tablesForTimeline(Uri uri, String[] projection) {
        String tables = MyDatabase.MSG_TABLE_NAME;
-       long userId = uriToUserId(uri);
+       long accountUserId = uriToAccountUserId(uri);
        boolean isCombined = uriToIsCombined(uri);
        Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
        
-       if (isCombined || userId == 0) {
+       if (isCombined || accountUserId == 0) {
            tables += " LEFT OUTER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
                    ;
        } else {
            tables += " INNER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
-                   + " AND " + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID + "=" + userId
+                   + " AND " + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID + "=" + accountUserId
                    ;
        }
        tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME 
@@ -1158,29 +1158,29 @@ public class MyProvider extends ContentProvider {
     
     /**
      * Build a Timeline URI for this User / {@link MyAccount}
-     * @param userId {@link MyDatabase.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()} 
+     * @param accountUserId {@link MyDatabase.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()} 
      * @param isCombined true for a Combined Timeline
      * @return
      */
-    public static Uri getTimelineUri(long userId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined) {
-        Uri uri = ContentUris.withAppendedId(TIMELINE_URI, userId);
+    public static Uri getTimelineUri(long accountUserId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined) {
+        Uri uri = ContentUris.withAppendedId(TIMELINE_URI, accountUserId);
         uri = Uri.withAppendedPath(uri, "tt/" + timelineType.save());
         uri = Uri.withAppendedPath(uri, "combined/" + (isCombined ? "1" : "0"));
         return uri;
     }
 
     /**
-     * @param userId
+     * @param accountUserId
      * @param msgId
      * @param isCombined Combined timeline?
      * @return Uri for the message in the account's <u>HOME</u> timeline
      */
-    public static Uri getTimelineMsgUri(long userId, long msgId, boolean isCombined) {
-        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(userId, MyDatabase.TimelineTypeEnum.HOME, isCombined), MyDatabase.MSG_TABLE_NAME), msgId);
+    public static Uri getTimelineMsgUri(long accountUserId, long msgId, boolean isCombined) {
+        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(accountUserId, MyDatabase.TimelineTypeEnum.HOME, isCombined), MyDatabase.MSG_TABLE_NAME), msgId);
     }
     
-    public static Uri getTimelineSearchUri(long userId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined, String queryString) {
-        Uri uri = Uri.withAppendedPath(getTimelineUri(userId, timelineType, isCombined), SEARCH_SEGMENT);
+    public static Uri getTimelineSearchUri(long accountUserId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined, String queryString) {
+        Uri uri = Uri.withAppendedPath(getTimelineUri(accountUserId, timelineType, isCombined), SEARCH_SEGMENT);
         if (!TextUtils.isEmpty(queryString)) {
             uri = Uri.withAppendedPath(uri, Uri.encode(queryString));
         }

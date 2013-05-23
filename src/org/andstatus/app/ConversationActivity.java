@@ -122,7 +122,7 @@ public class ConversationActivity extends Activity {
         Uri uri = intent.getData();
 
         mCurrentId = MyProvider.uriToMessageId(uri);
-        ma = MyAccount.getMyAccountLinkedToThisMessage(mCurrentId, MyProvider.uriToUserId(uri), 0);
+        ma = MyAccount.getMyAccountLinkedToThisMessage(mCurrentId, 0, MyProvider.uriToAccountUserId(uri));
         if (ma != null) {
             showConversation();
         }

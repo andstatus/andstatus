@@ -189,7 +189,7 @@ public class MyAccount implements AccountDataReader {
                 Log.e(TAG, "MyAccount '" + ma.getUsername() + "' was not connected to the User table. UserId=" + ma.mUserId);
             }
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "Loaded persistent " + this.toString());
+                Log.v(TAG, "Loaded " + this.toString());
             }
         }
         
@@ -265,7 +265,7 @@ public class MyAccount implements AccountDataReader {
                 Log.e(TAG, "MyAccount '" + ma.getUsername() + "' was not connected to the User table. UserId=" + ma.mUserId);
             }
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "Loaded persistent " + this.toString());
+                Log.v(TAG, "Loaded " + this.toString());
             }
         }
         
@@ -598,6 +598,11 @@ public class MyAccount implements AccountDataReader {
         @Override
         public String getUsername() {
             return ma.getUsername();
+        }
+
+        @Override
+        public String toString() {
+            return ma.toString();
         }
     }
     
@@ -1006,32 +1011,29 @@ public class MyAccount implements AccountDataReader {
     }
     
     /**
+     * Find account of the User linked to this message, 
+     * or other appropriate account in a case the User is not an Account.
      * For any action with the message we should choose an Account 
-     * from the same originating (source) System. Start from the account (if any), linked to this message
-     * @param msgId  Message ID, 0 for the message creation
+     * from the same originating (source) System.
+     * @param msgId  Message ID
      * @param userId The message is in his timeline. 0 if the message doesn't belong to any timeline
-     * @param myAccountUserId Preferred account if any
-     * @return null if not found
+     * @param myAccountUserId Preferred account (or 0), used in a case userId is not an Account 
+     *          or is not linked to the message 
+     * @return null if nothing suitable found
      */
     public static MyAccount getMyAccountLinkedToThisMessage(long msgId, long userId, long myAccountUserId)
     {
-        MyAccount ma = null;
-        if (msgId == 0) {
+        MyAccount ma = getMyAccount(userId);
+        if (msgId == 0 || ma == null) {
             ma = getMyAccount(myAccountUserId);
-        } else {
-            ma = getMyAccount(userId);
-            // This may be e.g. when the User is not an account.
-            if (ma == null) {
-                ma = getMyAccount(myAccountUserId);
-            }
-            long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, msgId);
-            if (ma == null || originId != ma.getOriginId()) {
-               ma = findFirstMyAccountByOriginId(originId); 
-            }
+        }
+        long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, msgId);
+        if (ma == null || originId != ma.getOriginId()) {
+           ma = findFirstMyAccountByOriginId(originId); 
         }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "getMyAccountForTheMessage systemId=" + msgId +"; userId=" + userId 
-                    + "; account=" + (ma==null ? "null" : ma.getAccountGuid()));
+            Log.v(TAG, "getMyAccountLinkedToThisMessage msgId=" + msgId +"; userId=" + userId 
+                    + " -> account=" + (ma==null ? "null" : ma.getAccountGuid()));
         }
         return ma;
     }
@@ -1337,7 +1339,7 @@ public class MyAccount implements AccountDataReader {
      */
     @Override
     public String toString() {
-        String str = super.toString();
+        String str = TAG;
         String members = getAccountGuid();
         try {
             if (isPersistent()) {

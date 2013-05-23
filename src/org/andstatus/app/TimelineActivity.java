@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2011-2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2011-2013 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -79,11 +79,10 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.json.JSONObject;
 
-import java.sql.Savepoint;
 import java.util.Locale;
 
 /**
- * @author torgny.bjers
+ * @author yvolk, torgny.bjers
  */
 public class TimelineActivity extends ListActivity implements ITimelineActivity {
 
@@ -146,15 +145,17 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     public static final int CONTEXT_MENU_ITEM_SHARE = Menu.FIRST + 12;
 
-    public static final int CONTEXT_MENU_ITEM_USER_MESSAGES = Menu.FIRST + 13;
+    public static final int CONTEXT_MENU_ITEM_SENDER_MESSAGES = Menu.FIRST + 13;
 
-    public static final int CONTEXT_MENU_ITEM_FOLLOW_SENDER = Menu.FIRST + 14;
+    public static final int CONTEXT_MENU_ITEM_AUTHOR_MESSAGES = Menu.FIRST + 14;
 
-    public static final int CONTEXT_MENU_ITEM_STOP_FOLLOWING_SENDER = Menu.FIRST + 15;
+    public static final int CONTEXT_MENU_ITEM_FOLLOW_SENDER = Menu.FIRST + 15;
 
-    public static final int CONTEXT_MENU_ITEM_FOLLOW_AUTHOR = Menu.FIRST + 16;
+    public static final int CONTEXT_MENU_ITEM_STOP_FOLLOWING_SENDER = Menu.FIRST + 16;
 
-    public static final int CONTEXT_MENU_ITEM_STOP_FOLLOWING_AUTHOR = Menu.FIRST + 17;
+    public static final int CONTEXT_MENU_ITEM_FOLLOW_AUTHOR = Menu.FIRST + 17;
+
+    public static final int CONTEXT_MENU_ITEM_STOP_FOLLOWING_AUTHOR = Menu.FIRST + 18;
     
     // Intent bundle result keys
     public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
@@ -266,7 +267,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     protected long mCurrentMsgId = 0;
     /**
      *  Corresponding account information ( "Reply As..." ... ) 
-     *  oh whose behalf we are going to execute an action on this message 
+     *  oh whose behalf we are going to execute an action on this line in the list (message...) 
      */
     private long mMyAccountUserIdForCurrentMessage = 0;
 
@@ -563,6 +564,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         Button accountButton = (Button) findViewById(R.id.selectAccountButton);
         accountButton.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
                 Intent i = new Intent(TimelineActivity.this, AccountSelector.class);
                 startActivityForResult(i, REQUEST_SELECT_ACCOUNT);
@@ -571,6 +573,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
        
         Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
         createMessageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
                 if (mTweetEditor.isVisible()) {
                     mTweetEditor.hide();
@@ -934,6 +937,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                         .setTitle(R.string.dialog_title_authentication_failed).setMessage(
                                 R.string.dialog_summary_authentication_failed).setPositiveButton(
                                 android.R.string.ok, new DialogInterface.OnClickListener() {
+                                    @Override
                                     public void onClick(DialogInterface Dialog, int whichButton) {
                                         startActivity(new Intent(TimelineActivity.this,
                                                 MyPreferenceActivity.class));
@@ -945,6 +949,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                         .setTitle(R.string.dialog_title_service_unavailable).setMessage(
                                 R.string.dialog_summary_service_unavailable).setPositiveButton(
                                 android.R.string.ok, new DialogInterface.OnClickListener() {
+                                    @Override
                                     public void onClick(DialogInterface Dialog, int whichButton) {
                                     }
                                 }).create();
@@ -954,6 +959,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                         .setTitle(R.string.dialog_title_connection_timeout).setMessage(
                                 R.string.dialog_summary_connection_timeout).setPositiveButton(
                                 android.R.string.ok, new DialogInterface.OnClickListener() {
+                                    @Override
                                     public void onClick(DialogInterface Dialog, int whichButton) {
                                     }
                                 }).create();
@@ -976,6 +982,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                         getString(MyDatabase.TimelineTypeEnum.USER.resId())
                 };
                 builder.setItems(timelines, new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // The 'which' argument contains the index position of the selected item
                         switch (which) {
@@ -1065,6 +1072,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * @param position
      * @param id
      */
+    @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         if (id <= 0) {
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
@@ -1073,11 +1081,17 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             return;
         }
         long linkedUserId = getLinkedUserIdFromCursor(position);
+        MyAccount ma = MyAccount.getMyAccountLinkedToThisMessage(id, linkedUserId,
+                mCurrentMyAccountUserId);
+        if (ma == null) {
+            Log.e(TAG, "Account for the message " + id + " was not found");
+            return;
+        }
         
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onItemClick, id=" + id + "; linkedUserId=" + linkedUserId);
+            Log.v(TAG, "onItemClick, id=" + id + "; linkedUserId=" + linkedUserId + " account=" + ma.getAccountGuid());
         }
-        Uri uri = MyProvider.getTimelineMsgUri(linkedUserId, id, true);
+        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), id, true);
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
             if (MyLog.isLoggable(TAG, Log.DEBUG)) {
@@ -1681,8 +1695,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     finish();
                     TimelineTypeEnum timelineTypeNew = mTimelineType;
                     if (mTimelineType == TimelineTypeEnum.USER && mSelectedUserId != mCurrentMyAccountUserId) {
-                        /*  "Other User timeline" vs "My User timeline" 
-                         * Actually saw messages of other user, not of (previous) MyAccount,
+                        /*  "Other User's timeline" vs "My User's timeline" 
+                         * Actually we saw messages of other user, not of (previous) MyAccount,
                          * so let's switch to the HOME
                          * TODO: Open "Other User timeline" in a separate Activity
                          */
@@ -1697,7 +1711,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
         
     }
-    
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
@@ -1716,151 +1729,121 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         mCurrentMsgId = info.id;
         mMyAccountUserIdForCurrentMessage = 0;
         long linkedUserId = getLinkedUserIdFromCursor(info.position);
-        MyAccount ma = MyAccount.getMyAccountLinkedToThisMessage(mCurrentMsgId, linkedUserId,
-                mCurrentMyAccountUserId);
-        if (ma == null) {
+        MessageDataForContextMenu md = new MessageDataForContextMenu(this, mCurrentMsgId,
+                linkedUserId, mCurrentMyAccountUserId);
+        if (md.ma == null) {
             return;
         }
+        if (md.canUseCurrentAccountInsteadOfLinked) {
+            // Yes, use current Account!
+            md = new MessageDataForContextMenu(this, mCurrentMsgId, mCurrentMyAccountUserId, 0);
+        }
+        mMyAccountUserIdForCurrentMessage = md.ma.getUserId();
 
-        // Get the record for the currently selected item
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mCurrentMsgId, false);
-        Cursor c = getContentResolver().query(uri, new String[] {
-                MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
-                MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED,
-                MyDatabase.Msg.RECIPIENT_ID,
-                MyDatabase.MsgOfUser.REBLOGGED,
-                MyDatabase.FollowingUser.SENDER_FOLLOWED,
-                MyDatabase.FollowingUser.AUTHOR_FOLLOWED
-        }, null, null, null);
+        // Create the Context menu
         try {
-            if (c != null && c.getCount() > 0) {
-                c.moveToFirst();
-                boolean isDirect = !c.isNull(c.getColumnIndex(MyDatabase.Msg.RECIPIENT_ID));
-                long authorId = c.getLong(c.getColumnIndex(MyDatabase.Msg.AUTHOR_ID));
-                long senderId = c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID));
-                boolean favorited = c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED)) == 1;
-                boolean reblogged = c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.REBLOGGED)) == 1;
-                boolean senderFollowed = c.getInt(c
-                        .getColumnIndex(MyDatabase.FollowingUser.SENDER_FOLLOWED)) == 1;
-                boolean authorFollowed = c.getInt(c
-                        .getColumnIndex(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) == 1;
-                /**
-                 * This message was sent by current User, hence we may delete
-                 * it.
-                 */
-                boolean isSender = (ma.getUserId() == senderId);
-                boolean isAuthor = (ma.getUserId() == authorId);
+            menu.setHeaderTitle((mIsTimelineCombined ? md.ma.getAccountGuid() + ": " : "")
+                    + md.body);
 
-                /*
-                 * Let's check if we can use current account instead of linked
-                 * to this message
-                 */
-                if (!isDirect && !favorited && !reblogged && !isSender
-                        && ma.getUserId() != mCurrentMyAccountUserId) {
-                    MyAccount ma2 = MyAccount.getMyAccount(mCurrentMyAccountUserId);
-                    if (ma.getOriginId() == ma2.getOriginId()) {
-                        // Yes, use current Account!
-                        ma = ma2;
-                    }
-                }
-                mMyAccountUserIdForCurrentMessage = ma.getUserId();
-
-                menu.setHeaderTitle((mIsTimelineCombined ? ma.getAccountGuid() + ": " : "")
-                        + c.getString(c.getColumnIndex(MyDatabase.Msg.BODY)));
-
-                // Add menu items
-                if (!isDirect) {
-                    menu.add(0, CONTEXT_MENU_ITEM_REPLY, menuItemId++, R.string.menu_item_reply);
-                }
-                menu.add(0, CONTEXT_MENU_ITEM_SHARE, menuItemId++, R.string.menu_item_share);
-
-                // TODO: Only if he follows me?
-                menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, menuItemId++,
-                        R.string.menu_item_direct_message);
-
-                // menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, m++,
-                // R.string.menu_item_unfollow);
-                // menu.add(0, CONTEXT_MENU_ITEM_BLOCK, m++,
-                // R.string.menu_item_block);
-                // menu.add(0, CONTEXT_MENU_ITEM_PROFILE, m++,
-                // R.string.menu_item_view_profile);
-
-                if (!isDirect) {
-                    if (favorited) {
-                        menu.add(0, CONTEXT_MENU_ITEM_DESTROY_FAVORITE, menuItemId++,
-                                R.string.menu_item_destroy_favorite);
-                    } else {
-                        menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, menuItemId++,
-                                R.string.menu_item_favorite);
-                    }
-                    if (reblogged) {
-                        menu.add(0, CONTEXT_MENU_ITEM_DESTROY_REBLOG, menuItemId++,
-                                ma.alternativeTermResourceId(R.string.menu_item_destroy_reblog));
-                    } else {
-                        // Don't allow a User to reblog himself
-                        if (mMyAccountUserIdForCurrentMessage != c.getLong(c
-                                .getColumnIndex(MyDatabase.Msg.SENDER_ID))) {
-                            menu.add(0, CONTEXT_MENU_ITEM_REBLOG, menuItemId++,
-                                    ma.alternativeTermResourceId(R.string.menu_item_reblog));
-                        }
-                    }
-                }
-
-                if (mSelectedUserId != authorId) {
-                    /*
-                     * Messages by the Author of this message ("User timeline"
-                     * of that user)
-                     */
-                    menu.add(0, CONTEXT_MENU_ITEM_USER_MESSAGES, menuItemId++,
-                            String.format(Locale.getDefault(),
-                                    getText(R.string.menu_item_user_messages).toString(),
-                                    MyProvider.userIdToName(authorId)));
-                }
-
-                if (isSender) {
-                    // This message is by current User, hence we may delete it.
-                    if (isDirect) {
-                        // This is a Direct Message
-                        // TODO: Delete Direct message
-                    } else if (!reblogged) {
-                        menu.add(0, CONTEXT_MENU_ITEM_DESTROY_STATUS, menuItemId++,
-                                R.string.menu_item_destroy_status);
-                    }
-                }
-
-                if (!isSender) {
-                    if (senderFollowed) {
-                        menu.add(0, CONTEXT_MENU_ITEM_STOP_FOLLOWING_SENDER, menuItemId++,
-                                String.format(Locale.getDefault(),
-                                        getText(R.string.menu_item_stop_following_user).toString(),
-                                        MyProvider.userIdToName(senderId)));
-                    } else {
-                        menu.add(0, CONTEXT_MENU_ITEM_FOLLOW_SENDER, menuItemId++,
-                                String.format(Locale.getDefault(),
-                                        getText(R.string.menu_item_follow_user).toString(),
-                                        MyProvider.userIdToName(senderId)));
-                    }
-                }
-                if (!isAuthor && (authorId != senderId)) {
-                    if (authorFollowed) {
-                        menu.add(0, CONTEXT_MENU_ITEM_STOP_FOLLOWING_AUTHOR, menuItemId++,
-                                String.format(Locale.getDefault(),
-                                        getText(R.string.menu_item_stop_following_user).toString(),
-                                        MyProvider.userIdToName(authorId)));
-                    } else {
-                        menu.add(0, CONTEXT_MENU_ITEM_FOLLOW_AUTHOR, menuItemId++,
-                                String.format(Locale.getDefault(),
-                                        getText(R.string.menu_item_follow_user).toString(),
-                                        MyProvider.userIdToName(authorId)));
-                    }
-                }
-
+            // Add menu items
+            if (!md.isDirect) {
+                menu.add(0, CONTEXT_MENU_ITEM_REPLY, menuItemId++, R.string.menu_item_reply);
             }
+            menu.add(0, CONTEXT_MENU_ITEM_SHARE, menuItemId++, R.string.menu_item_share);
+
+            // TODO: Only if he follows me?
+            menu.add(0, CONTEXT_MENU_ITEM_DIRECT_MESSAGE, menuItemId++,
+                    R.string.menu_item_direct_message);
+
+            // menu.add(0, CONTEXT_MENU_ITEM_UNFOLLOW, m++,
+            // R.string.menu_item_unfollow);
+            // menu.add(0, CONTEXT_MENU_ITEM_BLOCK, m++,
+            // R.string.menu_item_block);
+            // menu.add(0, CONTEXT_MENU_ITEM_PROFILE, m++,
+            // R.string.menu_item_view_profile);
+
+            if (!md.isDirect) {
+                if (md.favorited) {
+                    menu.add(0, CONTEXT_MENU_ITEM_DESTROY_FAVORITE, menuItemId++,
+                            R.string.menu_item_destroy_favorite);
+                } else {
+                    menu.add(0, CONTEXT_MENU_ITEM_FAVORITE, menuItemId++,
+                            R.string.menu_item_favorite);
+                }
+                if (md.reblogged) {
+                    menu.add(0, CONTEXT_MENU_ITEM_DESTROY_REBLOG, menuItemId++,
+                            md.ma.alternativeTermResourceId(R.string.menu_item_destroy_reblog));
+                } else {
+                    // Don't allow a User to reblog himself
+                    if (mMyAccountUserIdForCurrentMessage != md.senderId) {
+                        menu.add(0, CONTEXT_MENU_ITEM_REBLOG, menuItemId++,
+                                md.ma.alternativeTermResourceId(R.string.menu_item_reblog));
+                    }
+                }
+            }
+
+            if (mSelectedUserId != md.senderId) {
+                /*
+                 * Messages by the Sender of this message ("User timeline" of
+                 * that user)
+                 */
+                menu.add(0, CONTEXT_MENU_ITEM_SENDER_MESSAGES, menuItemId++,
+                        String.format(Locale.getDefault(),
+                                getText(R.string.menu_item_user_messages).toString(),
+                                MyProvider.userIdToName(md.senderId)));
+            }
+
+            if (mSelectedUserId != md.authorId && md.senderId != md.authorId) {
+                /*
+                 * Messages by the Author of this message ("User timeline" of
+                 * that user)
+                 */
+                menu.add(0, CONTEXT_MENU_ITEM_AUTHOR_MESSAGES, menuItemId++,
+                        String.format(Locale.getDefault(),
+                                getText(R.string.menu_item_user_messages).toString(),
+                                MyProvider.userIdToName(md.authorId)));
+            }
+
+            if (md.isSender) {
+                // This message is by current User, hence we may delete it.
+                if (md.isDirect) {
+                    // This is a Direct Message
+                    // TODO: Delete Direct message
+                } else if (!md.reblogged) {
+                    menu.add(0, CONTEXT_MENU_ITEM_DESTROY_STATUS, menuItemId++,
+                            R.string.menu_item_destroy_status);
+                }
+            }
+
+            if (!md.isSender) {
+                if (md.senderFollowed) {
+                    menu.add(0, CONTEXT_MENU_ITEM_STOP_FOLLOWING_SENDER, menuItemId++,
+                            String.format(Locale.getDefault(),
+                                    getText(R.string.menu_item_stop_following_user).toString(),
+                                    MyProvider.userIdToName(md.senderId)));
+                } else {
+                    menu.add(0, CONTEXT_MENU_ITEM_FOLLOW_SENDER, menuItemId++,
+                            String.format(Locale.getDefault(),
+                                    getText(R.string.menu_item_follow_user).toString(),
+                                    MyProvider.userIdToName(md.senderId)));
+                }
+            }
+            if (!md.isAuthor && (md.authorId != md.senderId)) {
+                if (md.authorFollowed) {
+                    menu.add(0, CONTEXT_MENU_ITEM_STOP_FOLLOWING_AUTHOR, menuItemId++,
+                            String.format(Locale.getDefault(),
+                                    getText(R.string.menu_item_stop_following_user).toString(),
+                                    MyProvider.userIdToName(md.authorId)));
+                } else {
+                    menu.add(0, CONTEXT_MENU_ITEM_FOLLOW_AUTHOR, menuItemId++,
+                            String.format(Locale.getDefault(),
+                                    getText(R.string.menu_item_follow_user).toString(),
+                                    MyProvider.userIdToName(md.authorId)));
+                }
+            }
+
         } catch (Exception e) {
             Log.e(TAG, "onCreateContextMenu: " + e.toString());
-        } finally {
-            if (c != null && !c.isClosed())
-                c.close();
         }
     }
 
@@ -1957,10 +1940,30 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     }
                     return true;
 
-                case CONTEXT_MENU_ITEM_USER_MESSAGES:
+                case CONTEXT_MENU_ITEM_SENDER_MESSAGES:
+                {
+                    senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
+                    if (senderId != 0) {
+                        /**
+                         * We better switch to the account selected for this message in order not to
+                         * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
+                         */
+                        MyAccount.setCurrentMyAccountGuid(ma.getAccountGuid());
+                        switchTimelineActivity(TimelineTypeEnum.USER, mIsTimelineCombined, senderId);
+                        return true;
+                    }
+                }
+                    break;
+
+                case CONTEXT_MENU_ITEM_AUTHOR_MESSAGES:
                 {
                     authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
                     if (authorId != 0) {
+                        /**
+                         * We better switch to the account selected for this message in order not to
+                         * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
+                         */
+                        MyAccount.setCurrentMyAccountGuid(ma.getAccountGuid());
                         switchTimelineActivity(TimelineTypeEnum.USER, mIsTimelineCombined, authorId);
                         return true;
                     }
