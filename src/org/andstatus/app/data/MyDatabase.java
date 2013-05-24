@@ -374,15 +374,24 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * The Timeline type is unknown
          */
         UNKNOWN("unknown", R.string.unimplemented, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE),
+        /**
+         * The Home timeline and other information (replies...).
+         */
         HOME("home", R.string.timeline_title_home, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE),
+        /**
+         * The Mentions timeline and other information (replies...).
+         */
         MENTIONS("mentions", R.string.timeline_title_mentions, User.MENTIONS_TIMELINE_MSG_ID, User.MENTIONS_TIMELINE_DATE),
         /**
          * Direct messages (direct dents...)
          */
         DIRECT("direct", R.string.timeline_title_direct_messages, User.DIRECT_TIMELINE_MSG_ID, User.DIRECT_TIMELINE_DATE),
+        /**
+         * Favorites (favorited messages)
+         */
         FAVORITES("favorites", R.string.timeline_title_favorites, User.FAVORITES_TIMELINE_MSG_ID, User.FAVORITES_TIMELINE_DATE),
         /**
-         * Messages of the selected User. 
+         * Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet). 
          * This User may be not the same as a user of current account ( {@link MyAccount#currentAccountName}}.
          * Moreover, the User may not be "AndStatus account" at all.
          * Hence this timeline type requires the User parameter.
@@ -398,7 +407,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         FOLLOWING_USER("following_user", R.string.timeline_title_following_user, User.HOME_TIMELINE_MSG_ID, User.FOLLOWING_USER_DATE),
         /**
-         * All timelines (e.g. for download...)
+         * All timelines (e.g. for download of all timelines. 
+         * This is generally done after addition of the new MyAccount).
          */
         ALL("all", R.string.unimplemented, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE);
         

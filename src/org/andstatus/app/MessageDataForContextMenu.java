@@ -3,7 +3,6 @@ package org.andstatus.app;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.util.Log;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
@@ -15,8 +14,6 @@ import org.andstatus.app.data.MyProvider;
  * @author yvolk
  */
 class MessageDataForContextMenu {
-    private static final String TAG = MessageDataForContextMenu.class.getSimpleName();
-
     /**
      * MyAccount, suitable for this message, null if nothing was found
      */

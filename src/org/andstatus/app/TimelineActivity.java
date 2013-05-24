@@ -66,6 +66,7 @@ import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
+import org.andstatus.app.data.LastMsgInfo;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.PagedCursorAdapter;
@@ -525,8 +526,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 if (savedInstanceState.containsKey(BUNDLE_KEY_IS_LOADING)) {
                     setIsLoading(savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING));
                 }
-                if (savedInstanceState.containsKey(MyService.EXTRA_TWEETID)) {
-                    mCurrentMsgId = savedInstanceState.getLong(MyService.EXTRA_TWEETID);
+                if (savedInstanceState.containsKey(MyService.EXTRA_ITEMID)) {
+                    mCurrentMsgId = savedInstanceState.getLong(MyService.EXTRA_ITEMID);
                 }
                 if (savedInstanceState.containsKey(MyService.EXTRA_TIMELINE_IS_COMBINED)) {
                     mIsTimelineCombined = savedInstanceState.getBoolean(MyService.EXTRA_TIMELINE_IS_COMBINED);
@@ -651,13 +652,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     // new MyAccount
                     manualReload(true);
                 } 
-                if (mTimelineType == TimelineTypeEnum.USER) {
-                    // This timeline doesn't update automatically so let's do it now if necessary
-                    TimelineDownloader td = new TimelineDownloader(ma, this, mTimelineType, mSelectedUserId);
-                    if (td.lastMsgInfo.itsTimeToAutoUpdate()) {
-                        manualReload(false);
-                    }
-                }
             }
         }
     }
@@ -1346,8 +1340,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         if (mTimelineType == TimelineTypeEnum.USER) {
             // This timeline doesn't update automatically so let's do it now if necessary
-            TimelineDownloader td = new TimelineDownloader(MyAccount.getMyAccount(mCurrentMyAccountUserId), TimelineActivity.this, mTimelineType, mSelectedUserId);
-            if (td.lastMsgInfo.itsTimeToAutoUpdate()) {
+            LastMsgInfo lmi = new LastMsgInfo(MyAccount.getMyAccount(mCurrentMyAccountUserId), TimelineActivity.this, mTimelineType, mSelectedUserId);
+            if (lmi.itsTimeToAutoUpdate()) {
                 manualReload(false);
             }
         }
@@ -1597,8 +1591,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     }
     
     /**
-     * Only newer tweets (newer that last loaded) are being loaded from the
-     * Internet, old ones are not being reloaded.
+     * Ask a service to load data from the Internet for the selected TimelineType
+     * Only newer messages (newer than last loaded) are being loaded from the
+     * Internet, older ones are not being reloaded.
      */
     protected void manualReload(boolean allTimelineTypes) {
 
@@ -1607,30 +1602,26 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         mListFooter.setVisibility(View.VISIBLE);
         //TimelineActivity.this.findViewById(R.id.item_loading).setVisibility(View.VISIBLE);
 
-        // Ask service to load data for this mTimelineType
-        MyService.CommandEnum command;
-        MyService.CommandData cd = null;
-        String accountGuid = MyAccount.getMyAccount(mCurrentMyAccountUserId).getAccountGuid();
+        MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.HOME;
+        long userId = 0;
         switch (mTimelineType) {
             case DIRECT:
-                command = CommandEnum.FETCH_DIRECT_MESSAGES;
-                break;
             case MENTIONS:
-                command = CommandEnum.FETCH_MENTIONS;
+                timelineType = mTimelineType;
                 break;
             case USER:
-                cd = new CommandData(CommandEnum.FETCH_USER_TIMELINE, accountGuid, mSelectedUserId);
-            default:
-                command = CommandEnum.FETCH_HOME;
+                timelineType = mTimelineType;
+                userId = mSelectedUserId;
+                break;
         }
-        if (cd == null) {
-            cd = new CommandData(command,
-                    mIsTimelineCombined ? "" : accountGuid);
-        }
+
+        String accountGuid = MyAccount.getMyAccount(mCurrentMyAccountUserId).getAccountGuid();
+        MyService.CommandData cd = new CommandData(CommandEnum.FETCH_TIMELINE,
+                    mIsTimelineCombined ? "" : accountGuid, timelineType, userId);
         serviceConnector.sendCommand(cd);
 
         if (allTimelineTypes) {
-            serviceConnector.sendCommand(new CommandData(CommandEnum.FETCH_ALL_TIMELINES, accountGuid));
+            serviceConnector.sendCommand(new CommandData(CommandEnum.FETCH_TIMELINE, accountGuid, TimelineTypeEnum.ALL, 0));
         }
     }
     
@@ -1680,7 +1671,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         mTweetEditor.saveState(outState);
         outState.putString(MyService.EXTRA_TIMELINE_TYPE, mTimelineType.save());
-        outState.putLong(MyService.EXTRA_TWEETID, mCurrentMsgId);
+        outState.putLong(MyService.EXTRA_ITEMID, mCurrentMsgId);
         outState.putBoolean(MyService.EXTRA_TIMELINE_IS_COMBINED, mIsTimelineCombined);
         outState.putString(SearchManager.QUERY, mQueryString);
         outState.putLong(MyService.EXTRA_SELECTEDUSERID, mSelectedUserId);

@@ -25,7 +25,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
+import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
@@ -46,6 +49,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -136,7 +140,7 @@ public class MyService extends Service {
     /**
      * Command parameter: long - ID of the Tweet (or Msg)
      */
-    public static final String EXTRA_TWEETID = packageName + ".TWEETID";
+    public static final String EXTRA_ITEMID = packageName + ".ITEMID";
 
     /**
      * ({@link ServiceState}
@@ -257,26 +261,9 @@ public class MyService extends Service {
          */
         AUTOMATIC_UPDATE("automatic-update"),
         /**
-         * Fetch all timelines for current MyAccount 
-         * (this is generally done after addition of the new MyAccount)
+         * Fetch timeline(s) of the specified type for the specified MyAccount. 
          */
-        FETCH_ALL_TIMELINES("fetch-all-timelines"),
-        /**
-         * Fetch the Home timeline and other information (replies...).
-         */
-        FETCH_HOME("fetch-home"),
-        /**
-         * Fetch the Mentions timeline and other information (replies...).
-         */
-        FETCH_MENTIONS("fetch-mention"),
-        /**
-         * Fetch Direct messages
-         */
-        FETCH_DIRECT_MESSAGES("fetch-dm"),
-        /**
-         * Fetch a User timeline (messages by the selected user)
-         */
-        FETCH_USER_TIMELINE("fetch-user-timeline"),
+        FETCH_TIMELINE("fetch-timeline"),
         /**
          * The recurring alarm that is used to implement recurring tweet
          * downloads should be started.
@@ -395,12 +382,17 @@ public class MyService extends Service {
      */
     public static class CommandData {
         public CommandEnum command;
-
+        
         /**
          * Unique name of {@link MyAccount} for this command. Empty string if command is not Account specific 
          * (e.g. {@link CommandEnum#AUTOMATIC_UPDATE} which works for all accounts) 
          */
         public String accountName = "";
+
+        /**
+         * Timeline type used for the {@link CommandEnum#FETCH_TIMELINE} command 
+         */
+        public MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
         
         /**
          * This is: 
@@ -432,6 +424,11 @@ public class MyService extends Service {
         public CommandData(CommandEnum commandIn, String accountNameIn, long itemIdIn) {
             this(commandIn, accountNameIn);
             itemId = itemIdIn;
+        }
+
+        public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn, long itemIdIn) {
+            this(commandIn, accountNameIn, itemIdIn);
+            timelineType = timelineTypeIn;
         }
 
         /**
@@ -487,7 +484,8 @@ public class MyService extends Service {
             if (bundle != null) {
                 strCommand = bundle.getString(EXTRA_MSGTYPE);
                 accountName = bundle.getString(EXTRA_ACCOUNT_NAME);
-                itemId = bundle.getLong(EXTRA_TWEETID);
+                timelineType = TimelineTypeEnum.load(bundle.getString(EXTRA_TIMELINE_TYPE));
+                itemId = bundle.getLong(EXTRA_ITEMID);
             }
             command = CommandEnum.load(strCommand);
         }
@@ -503,7 +501,8 @@ public class MyService extends Service {
             // Decode command
             String strCommand = sp.getString(EXTRA_MSGTYPE + si, CommandEnum.UNKNOWN.save());
             accountName = sp.getString(EXTRA_ACCOUNT_NAME + si, "");
-            itemId = sp.getLong(EXTRA_TWEETID + si, 0);
+            timelineType = TimelineTypeEnum.load(sp.getString(EXTRA_TIMELINE_TYPE + si, ""));
+            itemId = sp.getLong(EXTRA_ITEMID + si, 0);
             command = CommandEnum.load(strCommand);
 
             switch (command) {
@@ -518,7 +517,7 @@ public class MyService extends Service {
         }
         
         /**
-         * It's used in equals() method We need to distinguish duplicated
+         * It's used in equals() method. We need to distinguish duplicated
          * commands
          */
         @Override
@@ -527,6 +526,9 @@ public class MyService extends Service {
                 String text = Long.toString(command.ordinal());
                 if (!TextUtils.isEmpty(accountName)) {
                     text += accountName;
+                }
+                if (timelineType != TimelineTypeEnum.UNKNOWN) {
+                    text += timelineType.save();
                 }
                 if (itemId != 0) {
                     text += Long.toString(itemId);
@@ -560,6 +562,7 @@ public class MyService extends Service {
         public String toString() {
             return "CommandData [" + "command=" + command.save()
                     + (TextUtils.isEmpty(accountName) ? "" : "; account=" + accountName)
+                    + (timelineType == TimelineTypeEnum.UNKNOWN ? "" : "; timeline=" + timelineType.save())
                     + (itemId == 0 ? "" : "; id=" + itemId) + ", hashCode=" + hashCode() + "]";
         }
 
@@ -585,8 +588,11 @@ public class MyService extends Service {
             if (!TextUtils.isEmpty(accountName)) {
                 bundle.putString(MyService.EXTRA_ACCOUNT_NAME, accountName);
             }
+            if (timelineType != TimelineTypeEnum.UNKNOWN) {
+                bundle.putString(MyService.EXTRA_TIMELINE_TYPE, timelineType.save());
+            }
             if (itemId != 0) {
-                bundle.putLong(MyService.EXTRA_TWEETID, itemId);
+                bundle.putLong(MyService.EXTRA_ITEMID, itemId);
             }
             intent.putExtras(bundle);
             return intent;
@@ -604,7 +610,9 @@ public class MyService extends Service {
         /**
          * Persist the object to the SharedPreferences 
          * We're not storing all types of commands here because not all commands
-         *   go to the queue
+         *   go to the queue.
+         * SharedPreferences should not contain any previous versions of the same entries 
+         * (we don't store default values!)
          * @param sp
          * @param index Index of the preference's name to be used
          */
@@ -616,8 +624,11 @@ public class MyService extends Service {
             if (!TextUtils.isEmpty(accountName)) {
                 ed.putString(EXTRA_ACCOUNT_NAME + si, accountName);
             }
+            if (timelineType != TimelineTypeEnum.UNKNOWN) {
+                ed.putString(MyService.EXTRA_TIMELINE_TYPE + si, timelineType.save());
+            }
             if (itemId != 0) {
-                ed.putLong(EXTRA_TWEETID + si, itemId);
+                ed.putLong(EXTRA_ITEMID + si, itemId);
             }
             switch (command) {
                 case UPDATE_STATUS:
@@ -635,7 +646,7 @@ public class MyService extends Service {
      */
     final RemoteCallbackList<IMyServiceCallback> mCallbacks = new RemoteCallbackList<IMyServiceCallback>();
 
-    static final int MILLISECONDS = 1000;
+    public static final int MILLISECONDS = 1000;
 
     /**
      * Send broadcast to Widgets even if there are no new tweets
@@ -1207,20 +1218,8 @@ public class MyService extends Service {
 
                 switch (commandData.command) {
                     case AUTOMATIC_UPDATE:
-                    case FETCH_ALL_TIMELINES:
-                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.ALL, 0);
-                        break;
-                    case FETCH_HOME:
-                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.HOME, 0);
-                        break;
-                    case FETCH_MENTIONS:
-                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.MENTIONS, 0);
-                        break;
-                    case FETCH_DIRECT_MESSAGES:
-                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.DIRECT, 0);
-                        break;
-                    case FETCH_USER_TIMELINE:
-                        ok = loadTimeline(commandData.accountName, MyDatabase.TimelineTypeEnum.USER, commandData.itemId);
+                    case FETCH_TIMELINE:
+                        ok = loadTimeline(commandData.accountName, commandData.timelineType, commandData.itemId);
                         break;
                     case CREATE_FAVORITE:
                     case DESTROY_FAVORITE:
@@ -1387,10 +1386,9 @@ public class MyService extends Service {
 
                 if (ok) {
                     try {
-                        TimelineDownloader fl = new TimelineDownloader(ma,
+                        new DataInserter(ma,
                                 MyService.this.getApplicationContext(),
-                                TimelineTypeEnum.HOME);
-                        fl.insertMsgFromJSONObject(result, true);
+                                TimelineTypeEnum.HOME).insertMsgFromJSONObject(result, true);
                     } catch (JSONException e) {
                         Log.e(TAG,
                                 "Error marking as " + (create ? "" : "not ") + "favorite: "
@@ -1459,10 +1457,9 @@ public class MyService extends Service {
 
                 if (ok) {
                     try {
-                        TimelineDownloader fl = new TimelineDownloader(ma,
+                        new DataInserter(ma,
                                 MyService.this.getApplicationContext(),
-                                TimelineTypeEnum.HOME);
-                        fl.insertUserFromJSONObject(result);
+                                TimelineTypeEnum.HOME).insertUserFromJSONObject(result);
                     } catch (JSONException e) {
                         Log.e(TAG,
                                 "Error on " + (follow ? "Follow" : "Stop following") + " User: "
@@ -1509,10 +1506,10 @@ public class MyService extends Service {
             if (ok) {
                 // And delete the status from the local storage
                 try {
-                    TimelineDownloader fl = new TimelineDownloader(ma,
-                            MyService.this.getApplicationContext(),
-                            TimelineTypeEnum.HOME);
-                    fl.destroyStatus(msgId);
+                    // TODO: Maybe we should use Timeline Uri...
+                    MyService.this.getApplicationContext().getContentResolver()
+                            .delete(MyDatabase.Msg.CONTENT_URI, MyDatabase.Msg._ID + " = " + msgId, 
+                                    null);
                 } catch (Exception e) {
                     Log.e(TAG, "Error destroying status locally: " + e.toString());
                 }
@@ -1556,10 +1553,12 @@ public class MyService extends Service {
             if (ok) {
                 // And delete the status from the local storage
                 try {
-                    TimelineDownloader fl = new TimelineDownloader(ma,
-                            MyService.this.getApplicationContext(),
-                            TimelineTypeEnum.HOME);
-                    fl.destroyReblog(msgId);
+                    ContentValues values = new ContentValues();
+                    values.put(MsgOfUser.TIMELINE_TYPE, TimelineTypeEnum.HOME.save());
+                    values.put(MyDatabase.MsgOfUser.REBLOGGED, 0);
+                    values.putNull(MyDatabase.MsgOfUser.REBLOG_OID);
+                    Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), msgId, false);
+                    MyService.this.getApplicationContext().getContentResolver().update(msgUri, values, null, null);
                 } catch (Exception e) {
                     Log.e(TAG, "Error destroying reblog locally: " + e.toString());
                 }
@@ -1592,10 +1591,9 @@ public class MyService extends Service {
             if (ok) {
                 // And add the message to the local storage
                 try {
-                    TimelineDownloader fl = new TimelineDownloader(ma,
+                    new DataInserter(ma,
                             MyService.this.getApplicationContext(),
-                            TimelineTypeEnum.ALL);
-                    fl.insertMsgFromJSONObject(result);
+                            TimelineTypeEnum.ALL).insertMsgFromJSONObject(result);
                 } catch (Exception e) {
                     Log.e(TAG, "Error inserting status: " + e.toString());
                 }
@@ -1634,11 +1632,10 @@ public class MyService extends Service {
             if (ok) {
                 try {
                     // The tweet was sent successfully
-                    TimelineDownloader fl = new TimelineDownloader(ma, 
+                    new DataInserter(ma, 
                             MyService.this.getApplicationContext(),
-                            (recipientUserId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT);
-
-                    fl.insertMsgFromJSONObject(result, true);
+                            (recipientUserId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT)
+                    .insertMsgFromJSONObject(result, true);
                 } catch (JSONException e) {
                     Log.e(TAG, "updateStatus JSONException: " + e.toString());
                 }
@@ -1661,11 +1658,9 @@ public class MyService extends Service {
             if (ok) {
                 try {
                     // The tweet was sent successfully
-                    TimelineDownloader fl = new TimelineDownloader(ma, 
+                    new DataInserter(ma, 
                             MyService.this.getApplicationContext(),
-                            TimelineTypeEnum.HOME);
-
-                    fl.insertMsgFromJSONObject(result, true);
+                            TimelineTypeEnum.HOME).insertMsgFromJSONObject(result, true);
                 } catch (JSONException e) {
                     Log.e(TAG, "reblog JSONException: " + e.toString());
                 }
@@ -1674,9 +1669,10 @@ public class MyService extends Service {
         }
         
         /**
-         * @param accountNameIn If empty load the Timeline for all MyAccounts
-         * @param loadHomeAndMentions - Should we load Home and Mentions
-         * @param loadDirectMessages - Should we load direct messages
+         * Load one or all timeline(s) for one or all accounts
+         * @param accountNameIn If empty load Timeline(s) for all MyAccounts
+         * @param timelineType_in - May mean one or "all" timelines (for {@link TimelineTypeEnum#ALL} )
+         * @param userId - Required for the User timeline
          * @return True if everything Succeeded
          */
         private boolean loadTimeline(String accountNameIn,
@@ -1708,6 +1704,11 @@ public class MyService extends Service {
                 // (presumably "Manual reload" from the Timeline)
                 notifyOfDataLoadingCompletion();
             } // for one MyAccount
+            
+            if (okAllAccounts && timelineType_in == TimelineTypeEnum.ALL && !mIsStopping) {
+                new DataPruner(MyService.this.getApplicationContext()).prune();
+            }
+            
 
             return okAllAccounts;
         }
@@ -1801,6 +1802,7 @@ public class MyService extends Service {
                                 case DIRECT:
                                     directedAdded += fl.messagesCount();
                                     break;
+                                case FOLLOWING_USER:
                                 case USER:
                                     // Don't count anything for now...
                                     break;
@@ -1809,12 +1811,6 @@ public class MyService extends Service {
                                     Log.e(TAG, descr + " - not implemented");
                             }
 
-                            if (ok && timelineType == TimelineTypeEnum.HOME && !mIsStopping) {
-                                // Currently this procedure is the same for all timelines,
-                                // so let's do it only for one timeline type!
-                                descr = "prune old records";
-                                fl.pruneOldRecords();
-                            }
                             if (ok) {
                                 okSomething = true;
                             } else {

@@ -31,9 +31,8 @@ import java.net.SocketTimeoutException;
 import java.util.regex.Pattern;
 import java.util.Vector;
 
-
 import org.andstatus.app.R;
-import org.andstatus.app.TimelineDownloader;
+import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
@@ -531,14 +530,14 @@ public class MyAccount implements AccountDataReader {
             if (ma.mUserId == 0) {
                 ma.mUserId = MyProvider.userNameToId(ma.getOriginId(), username);
                 if (ma.mUserId == 0) {
-                    TimelineDownloader td = new TimelineDownloader(ma, MyPreferences.getContext(), TimelineTypeEnum.HOME);
+                    DataInserter di = new DataInserter(ma, MyPreferences.getContext(), TimelineTypeEnum.HOME);
                     try {
                         // Construct "User" from available account info
                         // We need this User in order to be able to link Messages to him
                         JSONObject dbUser = new JSONObject();
                         dbUser.put("screen_name", ma.getUsername());
                         dbUser.put(MyDatabase.User.ORIGIN_ID, ma.getOriginId());
-                        ma.mUserId = td.insertUserFromJSONObject(dbUser);
+                        ma.mUserId = di.insertUserFromJSONObject(dbUser);
                     } catch (Exception e) {
                         Log.e(TAG, "Construct user: " + e.toString());
                     }
