@@ -1550,6 +1550,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                                 mCursor = cursor;
                             } else {
                                 doRestorePosition = false;
+                                // We don't need this cursor: assuming it is the same as existing
+                                cursor.close();
                             }
                             cursorSet = true; 
                         }

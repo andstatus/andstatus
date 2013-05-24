@@ -819,8 +819,8 @@ public class TimelineDownloader {
                 if (mTimelineType != TimelineTypeEnum.USER) {
                     userId = ma.getUserId();
                 }
-                mTimelineDate = MyProvider.userIdToLongColumnValue(mTimelineType.columnNameDate(), userId);
-                mLastMsgId = MyProvider.userIdToLongColumnValue(mTimelineType.columnNameMsgId(), userId);
+                mTimelineDate = MyProvider.userIdToLongColumnValue(mTimelineType.columnNameTimelineDate(), userId);
+                mLastMsgId = MyProvider.userIdToLongColumnValue(mTimelineType.columnNameLatestMsgId(), userId);
                 mLastMsgDate = MyProvider.msgSentDate(mLastMsgId);
                 if (mLastMsgId > 0 && mLastMsgDate == 0) {
                     MyLog.d(TAG, "There is no message with " + MyDatabase.Msg._ID + "=" + mLastMsgId + " yet"); 
@@ -866,8 +866,8 @@ public class TimelineDownloader {
 
             try {
                 ContentValues values = new ContentValues();
-                values.put(mTimelineType.columnNameDate(), mTimelineDate );
-                values.put(mTimelineType.columnNameMsgId(), mLastMsgId );
+                values.put(mTimelineType.columnNameTimelineDate(), mTimelineDate );
+                values.put(mTimelineType.columnNameLatestMsgId(), mLastMsgId );
                 Uri userUri = MyProvider.getUserUri(ma.getUserId(), userId);
                 mContentResolver.update(userUri, values, null, null);
             } catch (Exception e) {

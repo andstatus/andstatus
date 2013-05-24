@@ -30,7 +30,8 @@
     
 	<string name="timeline_title_direct_messages">Личные сообщения</string>
 	<string name="timeline_title_favorites">Избранное</string>
-	<string name="timeline_title_mentions">Упоминания</string>
+    <string name="timeline_title_following_user">Следуем за</string>
+    <string name="timeline_title_mentions">Упоминания</string>
 	<string name="timeline_title_home">Дом</string>
     <string name="timeline_title_user">Пользователь</string>
     

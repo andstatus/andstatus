@@ -383,10 +383,20 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         FAVORITES("favorites", R.string.timeline_title_favorites, User.FAVORITES_TIMELINE_MSG_ID, User.FAVORITES_TIMELINE_DATE),
         /**
          * Messages of the selected User. 
-         * This User may be not the same as a user of current account ( {@link MyAccount#currentAccountName}}
+         * This User may be not the same as a user of current account ( {@link MyAccount#currentAccountName}}.
+         * Moreover, the User may not be "AndStatus account" at all.
          * Hence this timeline type requires the User parameter.
          */
         USER("user", R.string.timeline_title_user, User.USER_TIMELINE_MSG_ID, User.USER_TIMELINE_DATE),
+        /**
+         * Latest messages of every Following User (Following by this User - AndStatus account). 
+         * So this is essentially a list of "Following users". 
+         * The timeline reuses Message ID of the Home timeline, because in fact the Home timeline shows messages
+         * from those followed users. But it doesn't change that Message id! 
+         * (It's here for consistency with other timelines)
+         * See {@link FollowingUser}
+         */
+        FOLLOWING_USER("following_user", R.string.timeline_title_following_user, User.HOME_TIMELINE_MSG_ID, User.FOLLOWING_USER_DATE),
         /**
          * All timelines (e.g. for download...)
          */
@@ -397,38 +407,38 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         private String code;
         /**
-         * The id of the string resource with the localized name to use in UI
+         * The id of the string resource with the localized name of this Timeline to use in UI
          */
         private int mResId;
         /**
          * Name of the column with Id of the last message retrieved in the {@link User} table
          */
-        private String mColumnNameMsgId; 
+        private String mColumnNameLatestMsgId; 
         /**
-         * Name of the column with date when the last message for this timeline
-         * was retrieved in the {@link User} table
+         * Name of the column of the {@link User} table. The column contains the date when 
+         * last time this timeline was retrieved.
          */
-        private String mColumnNameDate; 
+        private String mColumnNameTimelineDate; 
 
         /**
          * @return the name of the column with date when the last message for 
          * this timeline was retrieved in the {@link User} table
          */
-        public String columnNameMsgId() {
-            return mColumnNameMsgId;
+        public String columnNameLatestMsgId() {
+            return mColumnNameLatestMsgId;
         }
         /**
-         * @return the mColumnNameDate
+         * @return the mColumnNameTimelineDate
          */
-        public String columnNameDate() {
-            return mColumnNameDate;
+        public String columnNameTimelineDate() {
+            return mColumnNameTimelineDate;
         }
         
-        private TimelineTypeEnum(String codeIn, int resIdIn, String columnNameMsgId_in, String columnNameDate_in) {
+        private TimelineTypeEnum(String codeIn, int resIdIn, String columnNameLatestMsgId_in, String columnNameTimelineDate_in) {
             code = codeIn;
             mResId = resIdIn;
-            mColumnNameMsgId = columnNameMsgId_in;
-            mColumnNameDate = columnNameDate_in;
+            mColumnNameLatestMsgId = columnNameLatestMsgId_in;
+            mColumnNameTimelineDate = columnNameTimelineDate_in;
         }
 
         /**

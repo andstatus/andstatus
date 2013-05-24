@@ -30,9 +30,10 @@
     	
     <string name="timeline_title_direct_messages">Direct messages</string>
 	<string name="timeline_title_favorites">Favorites</string>
-	<string name="timeline_title_mentions">Mentions</string>
+    <string name="timeline_title_following_user">Following</string>
+    <string name="timeline_title_mentions">Mentions</string>
 	<string name="timeline_title_home">Home</string>
-    <string name="timeline_title_user">User</string>
+	<string name="timeline_title_user">User</string>
     
     <string name="appwidget_configure_instructions">Customize AndStatus Widget message, shown in a case there is nothing new:</string>
     <string name="appwidget_nothingnew_default">Nothing new since:</string>
