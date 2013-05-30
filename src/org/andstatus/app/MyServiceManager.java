@@ -20,6 +20,7 @@ package org.andstatus.app;
 import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.MyService.ServiceState;
+import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
@@ -86,7 +87,7 @@ public class MyServiceManager extends BroadcastReceiver {
             } else {
                 MyLog.d(TAG, "Repeating Alarm: Automatic update");
                 startMyService(new MyService.CommandData(
-                        CommandEnum.AUTOMATIC_UPDATE, ""));
+                        CommandEnum.AUTOMATIC_UPDATE, "", TimelineTypeEnum.ALL, 0));
             }
         } else if (action.equals(MyService.ACTION_SERVICE_STATE)) {
             synchronized(mServiceState) {

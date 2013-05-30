@@ -69,7 +69,9 @@ public abstract class Connection {
         /** Twitter API v.1 https://dev.twitter.com/docs/api/1     */
         TWITTER1P0,
         /** Twitter API v.1.1 https://dev.twitter.com/docs/api/1.1 */
-        TWITTER1P1
+        TWITTER1P1,
+        /** Status Net Twitter compatible API http://status.net/wiki/Twitter-compatible_API  */
+        STATUSNET_TWITTER
     }
 
     /**
@@ -89,6 +91,7 @@ public abstract class Connection {
         FAVORITES_DESTROY_BASE,
         FOLLOW_USER,
         GET_FRIENDS_IDS,
+        GET_USER,
         POST_DIRECT_MESSAGE,
         POST_REBLOG,
         STATUSES_DESTROY,
@@ -118,7 +121,12 @@ public abstract class Connection {
          */
         OAUTH_ACCESS_TOKEN,
         OAUTH_AUTHORIZE,
-        OAUTH_REQUEST_TOKEN
+        OAUTH_REQUEST_TOKEN,
+        
+        /**
+         * Simply ignore this API call
+         */
+        DUMMY
     }
 
     public Connection() {}
@@ -284,7 +292,7 @@ public abstract class Connection {
      * Returns an array of numeric IDs for every user the specified user is following.
      * @throws ConnectionException
      */
-    public abstract JSONObject getFriendsIds(String userId) throws ConnectionException;
+    public abstract JSONArray getFriendsIds(String userId) throws ConnectionException;
     
     /**
      * Returns a single status, specified by the id parameter below.
@@ -356,6 +364,15 @@ public abstract class Connection {
      * @throws ConnectionException
      */
     public abstract JSONObject followUser(String userId, Boolean follow) throws ConnectionException;
+
+
+    /**
+     * Get information about the specified User
+     * @param userId
+     * @return User object
+     * @throws ConnectionException
+     */
+    public abstract JSONObject getUser(String userId) throws ConnectionException;
     
     /**
      * Execute a POST request against the API url
@@ -398,13 +415,31 @@ public abstract class Connection {
         return getRequestAsObject(get);
     }
 
+    protected final JSONArray getRequestAsArray(HttpGet get) throws ConnectionException {
+        JSONArray jsa = null;
+        JSONTokener jst = getRequest(get);
+        try {
+            jsa = (JSONArray) jst.nextValue();
+        } catch (JSONException e) {
+            Log.w(TAG, "getRequestAsArray, JSONException response=" + (jst == null ? "(null)" : jst.toString()));
+            throw new ConnectionException(e.getLocalizedMessage());
+        } catch (ClassCastException e) {
+            Log.w(TAG, "getRequestAsArray, ClassCastException response=" + (jst == null ? "(null)" : jst.toString()));
+            throw new ConnectionException(e.getLocalizedMessage());
+        }
+        return jsa;
+    }
+
     protected final JSONObject getRequestAsObject(HttpGet get) throws ConnectionException {
         JSONObject jso = null;
         JSONTokener jst = getRequest(get);
         try {
             jso = (JSONObject) jst.nextValue();
         } catch (JSONException e) {
-            Log.w(TAG, "getRequestAsObject, response=" + (jst == null ? "(null)" : jst.toString()));
+            Log.w(TAG, "getRequestAsObject, JSONException response=" + (jst == null ? "(null)" : jst.toString()));
+            throw new ConnectionException(e.getLocalizedMessage());
+        } catch (ClassCastException e) {
+            Log.w(TAG, "getRequestAsObject, ClassCastException response=" + (jst == null ? "(null)" : jst.toString()));
             throw new ConnectionException(e.getLocalizedMessage());
         }
         return jso;

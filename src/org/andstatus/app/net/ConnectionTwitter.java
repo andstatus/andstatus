@@ -12,7 +12,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -28,7 +27,6 @@ public abstract class ConnectionTwitter extends Connection {
     public ConnectionTwitter(AccountDataReader dr, ApiEnum api, String apiBaseUrl) {
         super(dr, api, apiBaseUrl);
     }
-
 
     /**
      * URL of the API. Not logged
@@ -59,6 +57,9 @@ public abstract class ConnectionTwitter extends Connection {
                 break;
             case GET_FRIENDS_IDS:
                 url = getBaseUrl() + "/friends/ids" + EXTENSION;
+                break;
+            case GET_USER:
+                url = getBaseUrl() + "/users/show" + EXTENSION;
                 break;
             case POST_DIRECT_MESSAGE:
                 url = getBaseUrl() + "/direct_messages/new" + EXTENSION;
@@ -117,11 +118,21 @@ public abstract class ConnectionTwitter extends Connection {
      * @throws ConnectionException
      */
     @Override
-    public JSONObject getFriendsIds(String userId) throws ConnectionException {
+    public JSONArray getFriendsIds(String userId) throws ConnectionException {
         Uri sUri = Uri.parse(getApiUrl(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
-        return getRequest(builder.build().toString());
+        JSONObject jso = getRequest(builder.build().toString());
+        JSONArray jArr = null;
+        if (jso != null) {
+            try {
+                jArr = jso.getJSONArray("ids");
+            } catch (JSONException e) {
+                Log.w(TAG, "getFriendsIds, response=" + (jso == null ? "(null)" : jso.toString()));
+                throw new ConnectionException(e.getLocalizedMessage());
+            }
+        }
+        return jArr;
     }
     
     /**
@@ -158,14 +169,7 @@ public abstract class ConnectionTwitter extends Connection {
             builder.appendQueryParameter("user_id", userId);
         }
         HttpGet get = new HttpGet(builder.build().toString());
-        JSONTokener jst = getRequest(get);
-        JSONArray jArr = null;
-        try {
-            jArr = (JSONArray) jst.nextValue();
-        } catch (JSONException e) {
-            Log.w(TAG, "getTimeline, response=" + (jst == null ? "(null)" : jst.toString()));
-            throw new ConnectionException(e.getLocalizedMessage());
-        }
+        JSONArray jArr = getRequestAsArray(get);
         
         ok = (jArr != null);
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
@@ -175,6 +179,19 @@ public abstract class ConnectionTwitter extends Connection {
         return jArr;
     }
 
+
+    /**
+     * @see <a
+     *      href="https://dev.twitter.com/docs/api/1.1/get/users/show">GET users/show</a>
+     */
+    @Override
+    public JSONObject getUser(String userId) throws ConnectionException {
+        Uri sUri = Uri.parse(getApiUrl(ApiRoutineEnum.GET_USER));
+        Uri.Builder builder = sUri.buildUpon();
+        builder.appendQueryParameter("user_id", userId);
+        return getRequest(builder.build().toString());
+    }
+    
     @Override
     public JSONObject postDirectMessage(String message, String userId) throws ConnectionException {
         List<NameValuePair> formParams = new ArrayList<NameValuePair>();

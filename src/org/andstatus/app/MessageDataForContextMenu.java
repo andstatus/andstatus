@@ -6,6 +6,7 @@ import android.net.Uri;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
 
 
@@ -35,7 +36,7 @@ class MessageDataForContextMenu {
     
     boolean canUseCurrentAccountInsteadOfLinked = false;
     
-    public MessageDataForContextMenu(Context context, long msgId, long linkedUserId, long currentMyAccountUserId) {
+    public MessageDataForContextMenu(Context context, long currentMyAccountUserId, TimelineTypeEnum timelineType, long msgId, long linkedUserId) {
         ma = MyAccount.getMyAccountLinkedToThisMessage(msgId, linkedUserId,
                 currentMyAccountUserId);
         if (ma == null) {
@@ -43,7 +44,7 @@ class MessageDataForContextMenu {
         }
 
         // Get the record for the currently selected item
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), msgId, false);
+        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), timelineType, false, msgId);
         Cursor c = context.getContentResolver().query(uri, new String[] {
                 MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
                 MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED,
@@ -76,13 +77,16 @@ class MessageDataForContextMenu {
                  * Let's check if we can use current account instead of linked
                  * to this message
                  */
-                if (!isDirect && !favorited && !reblogged && !isSender && !senderFollowed && !authorFollowed
-                        && ma.getUserId() != currentMyAccountUserId) {
-                    MyAccount ma2 = MyAccount.getMyAccount(currentMyAccountUserId);
-                    if (ma2 != null && ma.getOriginId() == ma2.getOriginId()) {
-                        // Yes, use current Account!
-                        canUseCurrentAccountInsteadOfLinked = true;
+                if ( timelineType != TimelineTypeEnum.FOLLOWING_USER) {
+                    if (!isDirect && !favorited && !reblogged && !isSender && !senderFollowed && !authorFollowed
+                            && ma.getUserId() != currentMyAccountUserId) {
+                        MyAccount ma2 = MyAccount.getMyAccount(currentMyAccountUserId);
+                        if (ma2 != null && ma.getOriginId() == ma2.getOriginId()) {
+                            // Yes, use current Account!
+                            canUseCurrentAccountInsteadOfLinked = true;
+                        }
                     }
+                    
                 }
                 
             }

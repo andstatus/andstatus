@@ -17,6 +17,8 @@
 
 package org.andstatus.app;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
@@ -28,6 +30,7 @@ import org.andstatus.app.appwidget.MyAppWidgetProvider;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.UserMsg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -1388,7 +1391,7 @@ public class MyService extends Service {
                     try {
                         new DataInserter(ma,
                                 MyService.this.getApplicationContext(),
-                                TimelineTypeEnum.HOME).insertMsgFromJSONObject(result, true);
+                                TimelineTypeEnum.HOME).insertMsgFromJSONObject(result);
                     } catch (JSONException e) {
                         Log.e(TAG,
                                 "Error marking as " + (create ? "" : "not ") + "favorite: "
@@ -1457,6 +1460,7 @@ public class MyService extends Service {
 
                 if (ok) {
                     try {
+                        Collection<UserMsg> ums = new ArrayList<UserMsg>();
                         new DataInserter(ma,
                                 MyService.this.getApplicationContext(),
                                 TimelineTypeEnum.HOME).insertUserFromJSONObject(result);
@@ -1557,7 +1561,7 @@ public class MyService extends Service {
                     values.put(MsgOfUser.TIMELINE_TYPE, TimelineTypeEnum.HOME.save());
                     values.put(MyDatabase.MsgOfUser.REBLOGGED, 0);
                     values.putNull(MyDatabase.MsgOfUser.REBLOG_OID);
-                    Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), msgId, false);
+                    Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, false, msgId);
                     MyService.this.getApplicationContext().getContentResolver().update(msgUri, values, null, null);
                 } catch (Exception e) {
                     Log.e(TAG, "Error destroying reblog locally: " + e.toString());
@@ -1635,7 +1639,7 @@ public class MyService extends Service {
                     new DataInserter(ma, 
                             MyService.this.getApplicationContext(),
                             (recipientUserId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT)
-                    .insertMsgFromJSONObject(result, true);
+                    .insertMsgFromJSONObject(result);
                 } catch (JSONException e) {
                     Log.e(TAG, "updateStatus JSONException: " + e.toString());
                 }
@@ -1660,7 +1664,7 @@ public class MyService extends Service {
                     // The tweet was sent successfully
                     new DataInserter(ma, 
                             MyService.this.getApplicationContext(),
-                            TimelineTypeEnum.HOME).insertMsgFromJSONObject(result, true);
+                            TimelineTypeEnum.HOME).insertMsgFromJSONObject(result);
                 } catch (JSONException e) {
                     Log.e(TAG, "reblog JSONException: " + e.toString());
                 }
@@ -1709,6 +1713,11 @@ public class MyService extends Service {
                 new DataPruner(MyService.this.getApplicationContext()).prune();
             }
             
+            if (okAllAccounts) {
+                // Notify all timelines, 
+                // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
+                MyPreferences.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
+            }
 
             return okAllAccounts;
         }
@@ -1731,12 +1740,17 @@ public class MyService extends Service {
                     int mentionsAdded = 0;
                     int directedAdded = 0;
                     String descr = "(starting)";
+                    
+                    if (userId == 0) {
+                        userId = acc.getUserId();
+                    }
 
                     TimelineTypeEnum[] atl;
                     if (timelineType_in == TimelineTypeEnum.ALL) {
                         atl = new TimelineTypeEnum[] {
                                 TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
-                                TimelineTypeEnum.DIRECT
+                                TimelineTypeEnum.DIRECT,
+                                TimelineTypeEnum.FOLLOWING_USER
                         };
                     } else {
                         atl = new TimelineTypeEnum[] {
@@ -2106,6 +2120,7 @@ public class MyService extends Service {
                 if (ok) {
                     switch (conn.getApi()) {
                         case TWITTER1P0:
+                        case STATUSNET_TWITTER:
                             remaining = result.getInt("remaining_hits");
                             limit = result.getInt("hourly_limit");
                             break;

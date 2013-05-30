@@ -26,6 +26,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.Connection.ApiEnum;
 import org.andstatus.app.net.ConnectionBasicAuth;
+import org.andstatus.app.net.ConnectionBasicAuthStatusNet;
 
 /**
  *  Originating (source) Microblogging system (twitter.com, identi.ca, ... ) where messages are being created. 
@@ -195,7 +196,13 @@ public class Origin {
                             mConnection = new org.andstatus.app.net.ConnectionOAuth1p1(ma, mApi, getBaseUrl(), getOauthBaseUrl());
                     }
                 } else {
-                    mConnection = new ConnectionBasicAuth(ma, mApi, getBaseUrl());
+                    switch (mApi) {
+                        case STATUSNET_TWITTER:
+                            mConnection = new ConnectionBasicAuthStatusNet(ma, mApi, getBaseUrl());
+                            break;
+                        default:
+                            mConnection = new ConnectionBasicAuth(ma, mApi, getBaseUrl());
+                    }
                 }
             }
         }
@@ -221,7 +228,7 @@ public class Origin {
             }
         } else if (this.mName.compareToIgnoreCase(ORIGIN_NAME_IDENTICA) == 0) {
             mId = ORIGIN_ID_IDENTICA;
-            mApi = ApiEnum.TWITTER1P0;
+            mApi = ApiEnum.STATUSNET_TWITTER;
             mOAuth = false;   // TODO: Set this to true once OAuth in identi.ca will work
             mCanChangeOAuth = true;
             mCanSetUsername = true;

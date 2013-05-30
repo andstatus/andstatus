@@ -33,6 +33,7 @@ import java.util.Vector;
 
 import org.andstatus.app.R;
 import org.andstatus.app.data.DataInserter;
+import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
@@ -537,7 +538,9 @@ public class MyAccount implements AccountDataReader {
                         JSONObject dbUser = new JSONObject();
                         dbUser.put("screen_name", ma.getUsername());
                         dbUser.put(MyDatabase.User.ORIGIN_ID, ma.getOriginId());
-                        ma.mUserId = di.insertUserFromJSONObject(dbUser);
+                        LatestUserMessages lum = new LatestUserMessages();
+                        ma.mUserId = di.insertUserFromJSONObject(dbUser, lum);
+                        lum.save();
                     } catch (Exception e) {
                         Log.e(TAG, "Construct user: " + e.toString());
                     }

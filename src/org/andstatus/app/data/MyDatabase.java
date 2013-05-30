@@ -20,6 +20,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.Origin;
 import org.andstatus.app.appwidget.MyAppWidgetConfigure;
+import org.andstatus.app.net.Connection;
 
 import java.util.Locale;
 
@@ -298,6 +299,14 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * we store only the date-time of the last retrieval of the list 
          */
         public static final String FOLLOWING_USER_DATE = "following_user_date";
+        /**
+         * Id of the latest message where this User was a Sender or an Author
+         */
+        public static final String USER_MSG_ID = "user_msg_id";
+        /**
+         * Date of the latest message where this User was a Sender or an Author
+         */
+        public static final String USER_MSG_DATE = "user_msg_date";
 		
 		/*
          * Derived columns (they are not stored in this table but are result of joins)
@@ -306,6 +315,10 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * Alias for the primary key
          */
         public static final String USER_ID = "user_id";
+        /**
+         * Alias used in a timeline to distinguish messages for different users
+         */
+        public static final String LINKED_USER_ID = "linked_user_id";
         /**
          * Alias for the {@link User}'s primary key used to refer to MyAccount 
          * (e.g. in a case we need to query a Timeline for particular MyAccount (e.g. for current MyAccount) 
@@ -373,44 +386,42 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         /**
          * The Timeline type is unknown
          */
-        UNKNOWN("unknown", R.string.unimplemented, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE),
+        UNKNOWN("unknown", R.string.unimplemented, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
         /**
          * The Home timeline and other information (replies...).
          */
-        HOME("home", R.string.timeline_title_home, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE),
+        HOME("home", R.string.timeline_title_home, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
         /**
          * The Mentions timeline and other information (replies...).
          */
-        MENTIONS("mentions", R.string.timeline_title_mentions, User.MENTIONS_TIMELINE_MSG_ID, User.MENTIONS_TIMELINE_DATE),
+        MENTIONS("mentions", R.string.timeline_title_mentions, User.MENTIONS_TIMELINE_MSG_ID, User.MENTIONS_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE),
         /**
          * Direct messages (direct dents...)
          */
-        DIRECT("direct", R.string.timeline_title_direct_messages, User.DIRECT_TIMELINE_MSG_ID, User.DIRECT_TIMELINE_DATE),
+        DIRECT("direct", R.string.timeline_title_direct_messages, User.DIRECT_TIMELINE_MSG_ID, User.DIRECT_TIMELINE_DATE, Connection.ApiRoutineEnum.DIRECT_MESSAGES),
         /**
          * Favorites (favorited messages)
          */
-        FAVORITES("favorites", R.string.timeline_title_favorites, User.FAVORITES_TIMELINE_MSG_ID, User.FAVORITES_TIMELINE_DATE),
+        FAVORITES("favorites", R.string.timeline_title_favorites, User.FAVORITES_TIMELINE_MSG_ID, User.FAVORITES_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
         /**
          * Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet). 
          * This User may be not the same as a user of current account ( {@link MyAccount#currentAccountName}}.
          * Moreover, the User may not be "AndStatus account" at all.
          * Hence this timeline type requires the User parameter.
          */
-        USER("user", R.string.timeline_title_user, User.USER_TIMELINE_MSG_ID, User.USER_TIMELINE_DATE),
+        USER("user", R.string.timeline_title_user, User.USER_TIMELINE_MSG_ID, User.USER_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE),
         /**
          * Latest messages of every Following User (Following by this User - AndStatus account). 
          * So this is essentially a list of "Following users". 
-         * The timeline reuses Message ID of the Home timeline, because in fact the Home timeline shows messages
-         * from those followed users. But it doesn't change that Message id! 
-         * (It's here for consistency with other timelines)
+         * The timeline doesn't have Message ID because we download User IDs only 
          * See {@link FollowingUser}
          */
-        FOLLOWING_USER("following_user", R.string.timeline_title_following_user, User.HOME_TIMELINE_MSG_ID, User.FOLLOWING_USER_DATE),
+        FOLLOWING_USER("following_user", R.string.timeline_title_following_user, "", User.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.GET_FRIENDS_IDS),
         /**
          * All timelines (e.g. for download of all timelines. 
          * This is generally done after addition of the new MyAccount).
          */
-        ALL("all", R.string.unimplemented, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE);
+        ALL("all", R.string.unimplemented, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY);
         
         /**
          * code of the enum that is used in messages
@@ -428,8 +439,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * Name of the column of the {@link User} table. The column contains the date when 
          * last time this timeline was retrieved.
          */
-        private String mColumnNameTimelineDate; 
-
+        private String mColumnNameTimelineDate;
+        /**
+         * Api routine to download this timeline
+         */
+        private Connection.ApiRoutineEnum connectionApiRoutine;
+        
         /**
          * @return the name of the column with date when the last message for 
          * this timeline was retrieved in the {@link User} table
@@ -444,11 +459,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
             return mColumnNameTimelineDate;
         }
         
-        private TimelineTypeEnum(String codeIn, int resIdIn, String columnNameLatestMsgId_in, String columnNameTimelineDate_in) {
+        private TimelineTypeEnum(String codeIn, int resIdIn, String columnNameLatestMsgId_in, String columnNameTimelineDate_in, Connection.ApiRoutineEnum connectionApiRoutine_in) {
             code = codeIn;
             mResId = resIdIn;
             mColumnNameLatestMsgId = columnNameLatestMsgId_in;
             mColumnNameTimelineDate = columnNameTimelineDate_in;
+            connectionApiRoutine = connectionApiRoutine_in;
         }
 
         /**
@@ -463,6 +479,10 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public int resId() {
             return mResId;
+        }
+        
+        public Connection.ApiRoutineEnum getConnectionApiRoutine() {
+            return connectionApiRoutine;
         }
         
         /**
@@ -552,7 +572,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.MENTIONS_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.USER_TIMELINE_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.USER_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.FOLLOWING_USER_DATE + " INTEGER DEFAULT 0 NOT NULL" 
+                + User.FOLLOWING_USER_DATE + " INTEGER DEFAULT 0 NOT NULL," 
+                + User.USER_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
+                + User.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL" 
                 + ");");
 
         db.execSQL("CREATE UNIQUE INDEX idx_username ON " + USER_TABLE_NAME + " (" 
@@ -701,7 +723,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                     "favorites_timeline_msg_id", "favorites_timeline_date",
                     "direct_timeline_msg_id", "direct_timeline_date", 
                     "mentions_timeline_msg_id", "mentions_timeline_date", 
-                    "user_timeline_msg_id", "user_timeline_date"};
+                    "user_timeline_msg_id", "user_timeline_date",
+                    "user_msg_id", "user_msg_date"};
             for ( String column: columns ) {
                 sql = "ALTER TABLE user ADD COLUMN " + column + " INTEGER DEFAULT 0 NOT NULL";
                 db.execSQL(sql);

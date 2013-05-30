@@ -39,6 +39,7 @@ import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
@@ -68,7 +69,7 @@ public class ConversationActivity extends Activity {
             Msg.IN_REPLY_TO_MSG_ID,
             User.RECIPIENT_NAME,
             Msg.CREATED_DATE,
-            MsgOfUser.USER_ID,
+            User.LINKED_USER_ID,
             MsgOfUser.REBLOGGED
     };
 
@@ -193,7 +194,7 @@ public class ConversationActivity extends Activity {
 
         private void findMessage(long msgId) {
             MyLog.v(TAG, "findMessage " + msgId);
-            Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), msgId, true);
+            Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, true, msgId);
             boolean skip = true;
             Cursor msg = null;
             OneRow row = new OneRow(msgId);
@@ -211,7 +212,7 @@ public class ConversationActivity extends Activity {
                     do {
                         long senderId = msg.getLong(msg.getColumnIndex(Msg.SENDER_ID));
                         long authorId = msg.getLong(msg.getColumnIndex(Msg.AUTHOR_ID));
-                        long linkedUserId = msg.getLong(msg.getColumnIndex(MsgOfUser.USER_ID));
+                        long linkedUserId = msg.getLong(msg.getColumnIndex(User.LINKED_USER_ID));
 
                         if (ind == 0) {
                             // This is the same for all retrieved rows

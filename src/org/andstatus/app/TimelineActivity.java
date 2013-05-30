@@ -66,8 +66,9 @@ import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
-import org.andstatus.app.data.LastMsgInfo;
+import org.andstatus.app.data.TimelineMsg;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
@@ -281,10 +282,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * Table columns to use for the messages content
      */
     private static final String[] PROJECTION = new String[] {
-            MyDatabase.Msg._ID, MyDatabase.User.AUTHOR_NAME, MyDatabase.Msg.BODY, User.IN_REPLY_TO_NAME,
+            Msg._ID, User.AUTHOR_NAME, Msg.BODY, User.IN_REPLY_TO_NAME,
             User.RECIPIENT_NAME,
-            MyDatabase.MsgOfUser.FAVORITED, MyDatabase.Msg.CREATED_DATE,
-            MyDatabase.MsgOfUser.USER_ID
+            MsgOfUser.FAVORITED, Msg.CREATED_DATE,
+            User.LINKED_USER_ID
     };
 
     /**
@@ -973,7 +974,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                         getString(MyDatabase.TimelineTypeEnum.FAVORITES.resId()),
                         getString(MyDatabase.TimelineTypeEnum.MENTIONS.resId()),
                         getString(MyDatabase.TimelineTypeEnum.DIRECT.resId()),
-                        getString(MyDatabase.TimelineTypeEnum.USER.resId())
+                        getString(MyDatabase.TimelineTypeEnum.USER.resId()),
+                        getString(MyDatabase.TimelineTypeEnum.FOLLOWING_USER.resId())
                 };
                 builder.setItems(timelines, new DialogInterface.OnClickListener() {
                     @Override
@@ -998,6 +1000,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
                             case 4:
                                 switchTimelineActivity(MyDatabase.TimelineTypeEnum.USER, mIsTimelineCombined, mCurrentMyAccountUserId);
+                                break;
+
+                            case 5:
+                                switchTimelineActivity(MyDatabase.TimelineTypeEnum.FOLLOWING_USER, mIsTimelineCombined, mCurrentMyAccountUserId);
                                 break;
                         }
                     }
@@ -1085,7 +1091,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onItemClick, id=" + id + "; linkedUserId=" + linkedUserId + " account=" + ma.getAccountGuid());
         }
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), id, true);
+        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mTimelineType, true, id);
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
             if (MyLog.isLoggable(TAG, Log.DEBUG)) {
@@ -1109,7 +1115,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         long userId = 0;
         try {
             mCursor.moveToPosition(position);
-            int columnIndex = mCursor.getColumnIndex(MsgOfUser.USER_ID);
+            int columnIndex = mCursor.getColumnIndex(User.LINKED_USER_ID);
             if (columnIndex > -1) {
                 try {
                     userId = mCursor.getLong(columnIndex);
@@ -1338,12 +1344,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         queryListData(false);
 
-        if (mTimelineType == TimelineTypeEnum.USER) {
-            // This timeline doesn't update automatically so let's do it now if necessary
-            LastMsgInfo lmi = new LastMsgInfo(MyAccount.getMyAccount(mCurrentMyAccountUserId), TimelineActivity.this, mTimelineType, mSelectedUserId);
-            if (lmi.itsTimeToAutoUpdate()) {
-                manualReload(false);
-            }
+        switch (mTimelineType) {
+            case USER:
+            case FOLLOWING_USER:
+                // This timeline doesn't update automatically so let's do it now if necessary
+                TimelineMsg lmi = new TimelineMsg(mTimelineType, mSelectedUserId);
+                if (lmi.isTimeToAutoUpdate()) {
+                    manualReload(false);
+                }
         }
         
         if (mTweetEditor.isStateLoaded()) {
@@ -1471,7 +1479,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                             sa.addSelection(MyDatabase.Msg.AUTHOR_ID + " = ? OR "
                                     + MyDatabase.Msg.SENDER_ID + " = ? OR "
                                     + "("
-                                    + MsgOfUser.USER_ID + " = ? AND "
+                                    + User.LINKED_USER_ID + " = ? AND "
                                     + MyDatabase.MsgOfUser.REBLOGGED + " = 1"
                                     + ")",
                                     new String[] {
@@ -1501,7 +1509,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 if (lastItemId > 0) {
                     sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENT_DATE + " >= ?",
                             new String[] {
-                                String.valueOf(MyProvider.msgSentDate(lastItemId))
+                                String.valueOf(MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.SENT_DATE, lastItemId))
                             });
                 } else {
                     if (loadOneMorePage) {
@@ -1610,6 +1618,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 timelineType = mTimelineType;
                 break;
             case USER:
+            case FOLLOWING_USER:
                 timelineType = mTimelineType;
                 userId = mSelectedUserId;
                 break;
@@ -1650,6 +1659,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             case HOME:
             case DIRECT:
             case USER:
+            case FOLLOWING_USER:
                 intent = new Intent(this, TimelineActivity.class);
                 break;
 
@@ -1722,14 +1732,14 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         mCurrentMsgId = info.id;
         mMyAccountUserIdForCurrentMessage = 0;
         long linkedUserId = getLinkedUserIdFromCursor(info.position);
-        MessageDataForContextMenu md = new MessageDataForContextMenu(this, mCurrentMsgId,
-                linkedUserId, mCurrentMyAccountUserId);
+        MessageDataForContextMenu md = new MessageDataForContextMenu(this, mCurrentMyAccountUserId, mTimelineType, mCurrentMsgId,
+                linkedUserId);
         if (md.ma == null) {
             return;
         }
         if (md.canUseCurrentAccountInsteadOfLinked) {
             // Yes, use current Account!
-            md = new MessageDataForContextMenu(this, mCurrentMsgId, mCurrentMyAccountUserId, 0);
+            md = new MessageDataForContextMenu(this, mCurrentMyAccountUserId, mTimelineType, mCurrentMsgId, 0);
         }
         mMyAccountUserIdForCurrentMessage = md.ma.getUserId();
 
@@ -1891,7 +1901,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
                 case CONTEXT_MENU_ITEM_SHARE:
                     String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), info.id, true);
+                    Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mTimelineType, true, info.id);
                     Cursor c = getContentResolver().query(uri, new String[] {
                             MyDatabase.Msg.MSG_OID, MyDatabase.Msg.BODY
                     }, null, null, null);

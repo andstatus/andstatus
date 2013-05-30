@@ -20,6 +20,8 @@ package org.andstatus.app.data;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -113,78 +115,6 @@ public class MyProvider extends ContentProvider {
      * Matched code for the User
      */
     private static final int USER_ID = 6;
-
-    /**
-     * Helper class to update the "Following" information (see {@link MyDatabase.FollowingUser}) 
-     * @author yvolk
-     */
-    private static class FollowingUserValues {
-        public long userId;
-        public long followingUserId;
-        private ContentValues contentValues = new ContentValues();
-
-        /**
-         * Move all keys that belong to {@link FollowingUser} table from values to the newly created ContentValues.
-         * @param userId - first part of key
-         * @param followingUserId - second part of key
-         * @param values - all other fields (currently only 1)
-         * @return
-         */
-        public static FollowingUserValues valueOf(long userId, long followingUserId, ContentValues values) {
-            FollowingUserValues userValues = new FollowingUserValues(userId, followingUserId);
-            MyProvider.moveBooleanKey(FollowingUser.USER_FOLLOWED, values, userValues.contentValues);
-            return userValues;
-        }
-        
-        public FollowingUserValues(long userId, long followingUserId) {
-            this.userId = userId;
-            this.followingUserId = followingUserId;
-        }
-        
-        /**
-         * Update information in the database 
-         */
-        public void update(SQLiteDatabase db) {
-            boolean followed = false;
-            if (contentValues.containsKey(FollowingUser.USER_FOLLOWED)) {
-                followed = contentValues.getAsBoolean(FollowingUser.USER_FOLLOWED);
-            } else {
-                // Don't change anything as there is no information
-                return;
-            }
-            String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
-                    + " AND " + MyDatabase.FollowingUser.FOLLOWING_USER_ID + "=" + followingUserId;
-            String sql = "SELECT * FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + " WHERE " + where;
-            
-            // TODO: create universal dExists method...
-            Cursor c = null;
-            boolean exists = false;
-            try {
-                c = db.rawQuery(sql, null);
-                if (c != null && c.getCount() > 0) {
-                    exists = true;
-                }
-            } finally {
-                if (c != null) {
-                    c.close();
-                }
-            }
-
-            if (exists) {
-                db.update(MyDatabase.FOLLOWING_USER_TABLE_NAME, contentValues, where,
-                        null);
-            } else if (followed) {
-                // There was no such row
-                ContentValues cv = new ContentValues(contentValues);
-                // Add Key fields
-                cv.put(FollowingUser.USER_ID, userId);
-                cv.put(FollowingUser.FOLLOWING_USER_ID, followingUserId);
-                
-                db.insert(MyDatabase.FOLLOWING_USER_TABLE_NAME, null, cv);
-            }
-        }
-    }
-    
     
     /**
      * @see android.content.ContentProvider#onCreate()
@@ -375,8 +305,8 @@ public class MyProvider extends ContentProvider {
             }
 
             if (contentUri.compareTo(TIMELINE_URI) == 0) {
-                // The resulted Uri has two parameters...
-                newUri = MyProvider.getTimelineMsgUri(accountUserId, rowId, true);
+                // The resulted Uri has several parameters...
+                newUri = MyProvider.getTimelineMsgUri(accountUserId, TimelineTypeEnum.HOME , true, rowId);
             } else {
                 newUri = MyProvider.getUserUri(accountUserId, rowId);
             }
@@ -435,7 +365,7 @@ public class MyProvider extends ContentProvider {
      * @param valuesOut  may be null
      * @return 1 for true, 0 for false and 2 for "not present" 
      */
-    private static int moveBooleanKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
+    protected static int moveBooleanKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
         int ret = 2;
         if (valuesIn != null) {
             if (valuesIn.containsKey(key) ) {
@@ -488,6 +418,7 @@ public class MyProvider extends ContentProvider {
         int matchedCode = sUriMatcher.match(uri);
         switch (matchedCode) {
             case TIMELINE:
+                qb.setDistinct(true);
                 qb.setTables(tablesForTimeline(uri, projection));
                 qb.setProjectionMap(msgProjectionMap);
                 break;
@@ -628,71 +559,143 @@ public class MyProvider extends ContentProvider {
     }
 
     /**
-     * @param uri the same as uri for {@link MyProvider#query(Uri, String[], String, String[], String)}
+     * @param uri the same as uri for
+     *            {@link MyProvider#query(Uri, String[], String, String[], String)}
      * @param projection
-     * @return String for {@link SQLiteQueryBuilder#setTables(String)}
-     * TODO: Different joins based on projection requested...
+     * @return String for {@link SQLiteQueryBuilder#setTables(String)} TODO:
+     *         Different joins based on projection requested...
      */
     private static String tablesForTimeline(Uri uri, String[] projection) {
-       String tables = MyDatabase.MSG_TABLE_NAME;
-       long accountUserId = uriToAccountUserId(uri);
-       boolean isCombined = uriToIsCombined(uri);
-       Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
-       
-       if (isCombined || accountUserId == 0) {
-           tables += " LEFT OUTER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
-                   + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
-                   ;
-       } else {
-           tables += " INNER JOIN " + MyDatabase.MSGOFUSER_TABLE_NAME + " ON "
-                   + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
-                   + " AND " + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID + "=" + accountUserId
-                   ;
-       }
-       tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME 
-               + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS author ON "
-               + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID + "=author." + MyDatabase.User._ID
-               ;
-       tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.SENDER_NAME 
-               + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS sender ON "
-               + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID + "=sender." + MyDatabase.User._ID
-               ;
-       tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.IN_REPLY_TO_NAME 
-                + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS prevauthor ON "
-                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID + "=prevauthor." + MyDatabase.User._ID
-                ;
-       tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.RECIPIENT_NAME
-               + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS recipient ON "
-               + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient." + MyDatabase.User._ID
-               ;
-       if (columns.contains(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) {
-           tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                   + MyDatabase.FollowingUser.USER_ID + ", "
-                   + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
-                   + MyDatabase.FollowingUser.USER_FOLLOWED + " AS " + MyDatabase.FollowingUser.AUTHOR_FOLLOWED 
-                   + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + ") AS followingauthor ON ("
-                   + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID 
-                   + "=followingauthor." + MyDatabase.FollowingUser.USER_ID
-                   + " AND "
-                   + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID 
-                   + "=followingauthor." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
-                   + ")"
-                   ;
-       }
-       if (columns.contains(MyDatabase.FollowingUser.SENDER_FOLLOWED)) {
-           tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                   + MyDatabase.FollowingUser.USER_ID + ", "
-                   + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
-                   + MyDatabase.FollowingUser.USER_FOLLOWED + " AS " + MyDatabase.FollowingUser.SENDER_FOLLOWED 
-                   + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + ") AS followingsender ON ("
-                   + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.USER_ID 
-                   + "=followingsender." + MyDatabase.FollowingUser.USER_ID
-                   + " AND "
-                   + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID 
-                   + "=followingsender." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
-                   + ")"
-                   ;
-       }
+        String tables = MyDatabase.MSG_TABLE_NAME;
+        MyDatabase.TimelineTypeEnum tt = uriToTimelineType(uri);
+        // long selectedUserId = uriToUserId(uri);
+        boolean isCombined = uriToIsCombined(uri);
+        long accountUserId = uriToAccountUserId(uri);
+        int nAccounts = 1;
+        // Allows to link to one or more accounts
+        String accountUserIds = "";
+        if (isCombined || accountUserId == 0) {
+            for (MyAccount ma : MyAccount.list()) {
+                if (!TextUtils.isEmpty(accountUserIds)) {
+                    accountUserIds += ", ";
+                    nAccounts += 1;
+                }
+                accountUserIds += Long.toString(ma.getUserId());
+            }
+
+        } else {
+            accountUserIds = Long.toString(accountUserId);
+        }
+        if (nAccounts == 1) {
+            accountUserIds = "=" + accountUserIds;
+        } else {
+            accountUserIds = " IN (" + accountUserIds + ")";
+        }
+
+        Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
+
+        boolean linkedUserDefined = false;
+        switch (tt) {
+            case FOLLOWING_USER:
+                /**
+                 * Select only the latest message from each following User's
+                 * timeline
+                 */
+                tables +=
+                        " INNER JOIN " + "(SELECT "
+                                + FollowingUser.FOLLOWING_USER_ID + ", "
+                                + MyDatabase.FollowingUser.USER_FOLLOWED + ", "
+                                + FollowingUser.USER_ID + " AS " + User.LINKED_USER_ID
+                                + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + ") as fuser"
+                                + " ON (msg." + MyDatabase.Msg.SENDER_ID + "=fuser."
+                                + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                                + " AND " + MyDatabase.User.LINKED_USER_ID + accountUserIds
+                                + " AND fuser." + MyDatabase.FollowingUser.USER_FOLLOWED + "=1 )";
+                tables = "(" + tables + ")"
+                        + " INNER JOIN " + MyDatabase.USER_TABLE_NAME + " as u1"
+                        + " ON (msg." + MyDatabase.Msg.SENDER_ID + "=u1." + MyDatabase.User._ID
+                        + " AND msg." + MyDatabase.Msg._ID + "=u1."
+                        + MyDatabase.User.USER_MSG_ID + ")";
+                linkedUserDefined = true;
+        }
+
+        if (columns.contains(MyDatabase.MsgOfUser.FAVORITED)
+                || (columns.contains(MyDatabase.User.LINKED_USER_ID) && !linkedUserDefined)) {
+            String tbl = "(SELECT *" 
+                    + (linkedUserDefined ? "" : ", " + MyDatabase.MsgOfUser.USER_ID + " AS " 
+                    + MyDatabase.User.LINKED_USER_ID)   
+                    + " FROM " +  MyDatabase.MSGOFUSER_TABLE_NAME + ") AS mou ON "
+                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "="
+                    + "mou." + MyDatabase.MsgOfUser.MSG_ID;
+            if (tt == TimelineTypeEnum.FOLLOWING_USER) {
+                tbl += " AND mou." + MyDatabase.MsgOfUser.USER_ID 
+                        + "=" + MyDatabase.User.LINKED_USER_ID;
+                tables += " LEFT JOIN " + tbl;
+            } else {
+                tbl += " AND " + MyDatabase.User.LINKED_USER_ID + accountUserIds;
+                if (isCombined) {
+                    tables += " LEFT OUTER JOIN " + tbl;
+                } else {
+                    tables += " INNER JOIN " + tbl;
+                }
+            }
+        }
+
+        if (columns.contains(MyDatabase.User.AUTHOR_NAME)) {
+            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
+                    + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS "
+                    + MyDatabase.User.AUTHOR_NAME
+                    + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS author ON "
+                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
+                    + MyDatabase.User._ID;
+        }
+        if (columns.contains(MyDatabase.User.SENDER_NAME)) {
+            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", "
+                    + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.SENDER_NAME
+                    + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS sender ON "
+                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID + "=sender."
+                    + MyDatabase.User._ID;
+        }
+        if (columns.contains(MyDatabase.User.IN_REPLY_TO_NAME)) {
+            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", "
+                    + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
+                    + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS prevauthor ON "
+                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
+                    + "=prevauthor." + MyDatabase.User._ID;
+        }
+        if (columns.contains(MyDatabase.User.RECIPIENT_NAME)) {
+            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", "
+                    + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.RECIPIENT_NAME
+                    + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS recipient ON "
+                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
+                    + MyDatabase.User._ID;
+        }
+        if (columns.contains(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) {
+            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
+                    + MyDatabase.FollowingUser.USER_ID + ", "
+                    + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
+                    + MyDatabase.FollowingUser.USER_FOLLOWED + " AS "
+                    + MyDatabase.FollowingUser.AUTHOR_FOLLOWED
+                    + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + ") AS followingauthor ON ("
+                    + "followingauthor." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
+                    + " AND "
+                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID
+                    + "=followingauthor." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                    + ")";
+        }
+        if (columns.contains(MyDatabase.FollowingUser.SENDER_FOLLOWED)) {
+            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
+                    + MyDatabase.FollowingUser.USER_ID + ", "
+                    + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
+                    + MyDatabase.FollowingUser.USER_FOLLOWED + " AS "
+                    + MyDatabase.FollowingUser.SENDER_FOLLOWED
+                    + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + ") AS followingsender ON ("
+                    + "followingsender." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
+                    + " AND "
+                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID
+                    + "=followingsender." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
+                    + ")";
+        }
         return tables;
     }
     
@@ -822,7 +825,8 @@ public class MyProvider extends ContentProvider {
         msgProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
         msgProjectionMap.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);
         msgProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
-        msgProjectionMap.put(MsgOfUser.USER_ID, MsgOfUser.USER_ID);
+        msgProjectionMap.put(User.LINKED_USER_ID, User.LINKED_USER_ID);
+        msgProjectionMap.put(MsgOfUser.USER_ID, MyDatabase.MSGOFUSER_TABLE_NAME + "." + MsgOfUser.USER_ID + " AS " + MsgOfUser.USER_ID);
         msgProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
         msgProjectionMap.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
         msgProjectionMap.put(MsgOfUser.REBLOG_OID, MsgOfUser.REBLOG_OID);
@@ -852,6 +856,8 @@ public class MyProvider extends ContentProvider {
         userProjectionMap.put(User.MENTIONS_TIMELINE_DATE, User.MENTIONS_TIMELINE_DATE);
         userProjectionMap.put(User.USER_TIMELINE_MSG_ID, User.USER_TIMELINE_MSG_ID);
         userProjectionMap.put(User.USER_TIMELINE_DATE, User.USER_TIMELINE_DATE);
+        userProjectionMap.put(User.USER_MSG_ID, User.USER_MSG_ID);
+        userProjectionMap.put(User.USER_MSG_DATE, User.USER_MSG_DATE);
     }
     
     /**
@@ -1094,36 +1100,6 @@ public class MyProvider extends ContentProvider {
     }
     
     /**
-     * Find {@link MyDatabase.Msg#SENT_DATE}
-     * @param msgId
-     * @return
-     */
-    public static long msgSentDate(long msgId) {
-        long ret = 0;
-        SQLiteStatement prog = null;
-        String sql = "";
-
-        try {
-            if (msgId > 0) {
-                sql = "SELECT " + Msg.SENT_DATE + " FROM " + MyDatabase.MSG_TABLE_NAME
-                        + " WHERE " + Msg._ID + "=" + msgId;
-                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
-                prog = db.compileStatement(sql);
-                ret = prog.simpleQueryForLong();
-            }
-        } catch (SQLiteDoneException ed) {
-            ret = 0;
-        } catch (Exception e) {
-            Log.e(TAG, "msgSentDate: " + e.toString());
-            return 0;
-        }
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "msgSentDate:" + msgId + " -> " + ret);
-        }
-        return ret;
-    }
-    
-    /**
      * Lookup the User's id based on the Username in the Originating system
      * 
      * @param originId - see {@link MyDatabase.Msg#ORIGIN_ID}
@@ -1175,8 +1151,8 @@ public class MyProvider extends ContentProvider {
      * @param isCombined Combined timeline?
      * @return Uri for the message in the account's <u>HOME</u> timeline
      */
-    public static Uri getTimelineMsgUri(long accountUserId, long msgId, boolean isCombined) {
-        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(accountUserId, MyDatabase.TimelineTypeEnum.HOME, isCombined), MyDatabase.MSG_TABLE_NAME), msgId);
+    public static Uri getTimelineMsgUri(long accountUserId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined, long msgId) {
+        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(accountUserId, timelineType, isCombined), MyDatabase.MSG_TABLE_NAME), msgId);
     }
     
     public static Uri getTimelineSearchUri(long accountUserId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined, String queryString) {
@@ -1200,7 +1176,6 @@ public class MyProvider extends ContentProvider {
     }
 
     /**
-     * 
      * @param uri URI to decode, e.g. the one built by {@link MyProvider#getTimelineUri(long, boolean)}
      * @return Is the timeline combined. false for URIs that don't contain such information
      */
@@ -1218,6 +1193,25 @@ public class MyProvider extends ContentProvider {
         return isCombined;        
     }
 
+
+    /**
+     * @param uri URI to decode, e.g. the one built by {@link MyProvider#getTimelineUri(long, boolean)}
+     * @return The timeline combined. 
+     */
+    public static MyDatabase.TimelineTypeEnum uriToTimelineType(Uri uri) {
+        MyDatabase.TimelineTypeEnum tt = MyDatabase.TimelineTypeEnum.UNKNOWN;
+        try {
+            int matchedCode = sUriMatcher.match(uri);
+            switch (matchedCode) {
+                case TIMELINE:
+                case TIMELINE_SEARCH:
+                case TIMELINE_MSG_ID:
+                    tt = MyDatabase.TimelineTypeEnum.load(uri.getPathSegments().get(3));
+            }
+        } catch (Exception e) {}
+        return tt;        
+    }
+    
     public static long uriToMessageId(Uri uri) {
         long messageId = 0;
         try {
@@ -1256,5 +1250,35 @@ public class MyProvider extends ContentProvider {
             }
         } catch (Exception e) {}
         return userId;        
+    }
+    
+    /**
+     * Following users' Id's (Friends of the specified User) stored in the database
+     * @return IDs, the set is empty if no friends
+     */
+    public static Set<Long> getFriendsIds(long userId) {
+        Set<Long> friends = new HashSet<Long>();
+        String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
+                + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
+        String sql = "SELECT " + MyDatabase.FollowingUser.FOLLOWING_USER_ID 
+                + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME 
+                + " WHERE " + where;
+        
+        SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
+        Cursor c = null;
+        try {
+            c = db.rawQuery(sql, null);
+            if (c != null && c.getCount() > 0) {
+                c.moveToFirst();
+                do {
+                    friends.add(c.getLong(0));
+                } while (c.moveToNext());
+            }
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return friends;
     }
 }

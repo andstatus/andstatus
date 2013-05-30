@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="AndStatus Dump" default="dump_all">
-    <!-- This is include to the Ant build file build.xml    -->
+    <!-- This is included into the Ant build file build.xml    -->
 	
 	<target name="dump_all" description="Creates a local dump (zipped archive) of all AndStatus application-related files, including those not checked into a repository.">
 		<!-- get the versionName from the manifest -->
