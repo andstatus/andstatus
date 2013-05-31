@@ -19,10 +19,11 @@ package org.andstatus.app.data;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseLockedException;
+import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
 import org.andstatus.app.data.MyDatabase.FollowingUser;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * Helper class to update the "Following User" information (see {@link MyDatabase.FollowingUser}) 
@@ -66,7 +67,9 @@ public class FollowingUserValues {
     public void update(SQLiteDatabase db) {
         boolean followed = false;
         if (userId != 0 && followingUserId != 0 && contentValues.containsKey(FollowingUser.USER_FOLLOWED)) {
-            followed = contentValues.getAsBoolean(FollowingUser.USER_FOLLOWED);
+            // This works for API 17 but not for API 10:
+            // followed = contentValues.getAsBoolean(FollowingUser.USER_FOLLOWED);
+            followed = (SharedPreferencesUtil.isTrue(contentValues.get(FollowingUser.USER_FOLLOWED)) == 1);
         } else {
             // Don't change anything as there is no information
             return;
@@ -104,7 +107,9 @@ public class FollowingUserValues {
                     db.insert(MyDatabase.FOLLOWING_USER_TABLE_NAME, null, cv);
                 }
                 break;
-            } catch (SQLiteDatabaseLockedException e) {
+       // This is since API 11, see http://developer.android.com/reference/android/database/sqlite/SQLiteDatabaseLockedException.html
+       //     } catch (SQLiteDatabaseLockedException e) {
+            } catch (SQLiteException e) {
                 Log.w(TAG, "update, Database is locked, pass=" + pass);
                 try {
                     // If the problem persists, maybe we will implement object locking...

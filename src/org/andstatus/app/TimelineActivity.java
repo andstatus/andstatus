@@ -205,7 +205,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * to load more items.
      */
     protected int mTotalItemCount = 0;
-
+    
+    /**
+     * The is no more items in the query, so don't try to load more pages
+     */
+    protected boolean noMoreItems = false;
+    
     /**
      * Items are being loaded into the list (asynchronously...)
      */
@@ -642,17 +647,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             updateTitle();
             if (!isLoading()) {
                 restorePosition();
-            }
-
-            MyAccount ma = MyAccount.getMyAccount(mCurrentMyAccountUserId);
-            if (ma.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-                if (!ma.getMyAccountPreferences().getBoolean("loadedOnce", false)) {
-                    ma.getMyAccountPreferences().edit()
-                            .putBoolean("loadedOnce", true).commit();
-                    // One-time "manually" load tweets from the Internet for the
-                    // new MyAccount
-                    manualReload(true);
-                } 
             }
         }
     }
@@ -1134,7 +1128,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             int totalItemCount) {
         mTotalItemCount = totalItemCount;
 
-        if (positionRestored && !isLoading()) {
+        if (!noMoreItems && positionRestored && !isLoading()) {
             // Idea from
             // http://stackoverflow.com/questions/1080811/android-endless-list
             boolean loadMore = (visibleItemCount > 0) && (firstVisibleItem > 0)
@@ -1341,18 +1335,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 mIsTimelineCombined = false;
             }
         }
+        noMoreItems = false;
 
         queryListData(false);
-
-        switch (mTimelineType) {
-            case USER:
-            case FOLLOWING_USER:
-                // This timeline doesn't update automatically so let's do it now if necessary
-                TimelineMsg lmi = new TimelineMsg(mTimelineType, mSelectedUserId);
-                if (lmi.isTimeToAutoUpdate()) {
-                    manualReload(false);
-                }
-        }
         
         if (mTweetEditor.isStateLoaded()) {
             mTweetEditor.continueEditingLoadedState();
@@ -1551,6 +1536,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                                 ((SimpleCursorAdapter) getListAdapter()).changeCursor(cursor);
                                 mCursor = cursor;
                             } else {
+                                noMoreItems = true;
                                 doRestorePosition = false;
                                 // We don't need this cursor: assuming it is the same as existing
                                 cursor.close();
@@ -1580,6 +1566,24 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 }
                 
                 queryListDataEnded(doRestorePosition);
+                
+                if (!loadOneMorePage) {
+                    switch (mTimelineType) {
+                        case USER:
+                        case FOLLOWING_USER:
+                            // This timeline doesn't update automatically so let's do it now if necessary
+                            TimelineMsg lmi = new TimelineMsg(mTimelineType, mSelectedUserId);
+                            if (lmi.isTimeToAutoUpdate()) {
+                                manualReload(false);
+                            }
+                            break;
+                        default:
+                            if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, mCurrentMyAccountUserId) == 0) {
+                                // This is supposed to be a one time task.
+                                manualReload(true);
+                            } 
+                    }
+                }
             }
         }
         

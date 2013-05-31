@@ -282,7 +282,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         
         /**
          * Columns holding information on timelines downloaded: 
-         * last message id and last date-time the message was retrieved. 
+         * last message id and last date-time the timeline was downloaded. 
          */
         public static final String HOME_TIMELINE_MSG_ID = "home_timeline_msg_id";
         public static final String HOME_TIMELINE_DATE = "home_timeline_date";
