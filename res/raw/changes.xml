@@ -37,15 +37,15 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
     <release android:versionName="1.15.0" android:versionCode="74"
-        versionDate="2013-05-30"
+        versionDate="2013-06-01"
         versionTitle="Follow and Stop following a User">
         <changes><change>Follow and Stop following a user actions added. For a retweeted (reblogged)
-            message you may Follow/Unfollow a Sender and/or an Author of the message.
+            message you may Follow/Unfollow both a Sender and/or an Author of the message.
              <a href="https://github.com/andstatus/andstatus/issues/14" >Issue #14</a>.
              </change>
              <change>"Following" timeline added. This new timeline shows one latest message
                  per followed user (per account in the "combined" view). 
-                 You may Stop following the user right from this timeline</change>
+                 You may Stop following a User right from this timeline.</change>
         </changes>
     </release>
     <release android:versionName="1.14.0" android:versionCode="73"

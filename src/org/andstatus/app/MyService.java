@@ -1736,6 +1736,7 @@ public class MyService extends Service {
                     // Only if the User was authenticated already
 
                     boolean ok = false;
+                    int downloadedCount = 0;
                     int msgAdded = 0;
                     int mentionsAdded = 0;
                     int directedAdded = 0;
@@ -1805,6 +1806,7 @@ public class MyService extends Service {
                                     MyService.this.getApplicationContext(),
                                     timelineType, userId);
                             ok = fl.loadTimeline();
+                            downloadedCount += fl.downloadedCount();
                             switch (timelineType) {
                                 case MENTIONS:
                                     mentionsAdded += fl.mentionsCount();
@@ -1871,8 +1873,11 @@ public class MyService extends Service {
 
                     message += " getting " + timelineType_in.save()
                             + " for " + acc.getAccountGuid();
+                    if (downloadedCount > 0) {
+                        message += ", " + downloadedCount + " downloaded";
+                    }
                     if (msgAdded > 0) {
-                        message += ", " + msgAdded + " tweets";
+                        message += ", " + msgAdded + " messages";
                     }
                     if (mentionsAdded > 0) {
                         message += ", " + mentionsAdded + " mentions";

@@ -48,22 +48,6 @@ public class LatestUserMessages {
         }
         messages.put(um.getUserId(), um);
     }
-
-    /**
-     * Add information about new/updated message by the User
-     */
-    public void onNewUserMsg(long userId_in, long msgId, long msgDate) {
-        onNewUserMsg(new UserMsg(userId_in, msgId, msgDate));
-    }
-    
-    /**
-     * Useful when several new messages arrived at once
-     */
-    public void onNewUserMessages(Collection<UserMsg> messages_in) {
-        for (UserMsg um : messages_in) {
-            onNewUserMsg(um);
-        }
-    }
     
     /**
      * Persist all information into the database

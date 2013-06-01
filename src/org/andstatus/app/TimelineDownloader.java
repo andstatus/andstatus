@@ -60,7 +60,7 @@ public class TimelineDownloader {
     private Context mContext;
 
     /**
-     * Counter. These may be "general" or Direct messages...
+     * New messages Counter. These may be "general" or Direct messages...
      */
     private int mMessages;
 
@@ -72,7 +72,11 @@ public class TimelineDownloader {
      * Number of new Replies received 
      */
     private int mReplies;
-
+    /**
+     * Total number of messages downloaded
+     */
+    private int mDownloaded;
+    
     private MyAccount ma;
 
     private TimelineTypeEnum mTimelineType;
@@ -143,10 +147,11 @@ public class TimelineDownloader {
         }
         
         int limit = 200;
-        String lastOid = MyProvider.idToOid(OidEnum.MSG_OID, timelineMsg.getLastMsgDate(), 0);
+        String lastOid = MyProvider.idToOid(OidEnum.MSG_OID, timelineMsg.getLastMsgId(), 0);
         timelineMsg.onTimelineDownloaded();
         JSONArray jArr = ma.getConnection().getTimeline(mTimelineType.getConnectionApiRoutine(), lastOid, limit, userOid);
         if (jArr != null) {
+            mDownloaded += jArr.length();
             ok = true;
             try {
                 LatestUserMessages lum = new LatestUserMessages();
@@ -196,6 +201,7 @@ public class TimelineDownloader {
         JSONArray jArr = ma.getConnection().getFriendsIds(userOid);
         if (jArr != null) {
             ok = true;
+            mDownloaded += jArr.length();
             
             try {
                 // Old list of followed users
@@ -272,5 +278,12 @@ public class TimelineDownloader {
      */
     public int mentionsCount() {
         return mMentions;
+    }
+
+    /**
+     * Return the number of new Mentions.
+     */
+    public int downloadedCount() {
+        return mDownloaded;
     }
 }
