@@ -723,8 +723,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                     "favorites_timeline_msg_id", "favorites_timeline_date",
                     "direct_timeline_msg_id", "direct_timeline_date", 
                     "mentions_timeline_msg_id", "mentions_timeline_date", 
-                    "user_timeline_msg_id", "user_timeline_date",
-                    "user_msg_id", "user_msg_date"};
+                    "user_timeline_msg_id", "user_timeline_date"};
             for ( String column: columns ) {
                 sql = "ALTER TABLE user ADD COLUMN " + column + " INTEGER DEFAULT 0 NOT NULL";
                 db.execSQL(sql);
@@ -755,8 +754,13 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         String sql = "";
         try {
             Log.i(TAG, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
-            sql = "ALTER TABLE user ADD COLUMN following_user_date INTEGER DEFAULT 0 NOT NULL";
-            db.execSQL(sql);
+
+            String[] columns = {"following_user_date",
+                    "user_msg_id", "user_msg_date"};
+            for ( String column: columns ) {
+                sql = "ALTER TABLE user ADD COLUMN " + column + " INTEGER DEFAULT 0 NOT NULL";
+                db.execSQL(sql);
+            }
             
             sql = "CREATE TABLE " + "followinguser" + " (" 
                     + "user_id" + " INTEGER NOT NULL," 
