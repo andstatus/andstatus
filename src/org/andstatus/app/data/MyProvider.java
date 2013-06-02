@@ -255,6 +255,9 @@ public class MyProvider extends ContentProvider {
             switch (sUriMatcher.match(uri)) {
                 case TIMELINE:
                     accountUserId = uriToAccountUserId(uri);
+                    MyDatabase.TimelineTypeEnum timelineType = uriToTimelineType(uri);
+                    boolean isCombined = uriToIsCombined(uri);
+                    
                     table = MyDatabase.MSG_TABLE_NAME;
                     nullColumnHack = Msg.BODY;
                     contentUri = TIMELINE_URI;
@@ -269,7 +272,7 @@ public class MyProvider extends ContentProvider {
                         values.put(Msg.VIA, "");
                     values.put(Msg.INS_DATE, now);
                     
-                    msgOfUserValues = prepareMsgOfUserValues(accountUserId, values);
+                    msgOfUserValues = prepareMsgOfUserValues(accountUserId, timelineType, isCombined, values);
                     break;
 
                 case USER_ID:
@@ -323,37 +326,23 @@ public class MyProvider extends ContentProvider {
      * @param values
      * @return
      */
-    private ContentValues prepareMsgOfUserValues(long userId, ContentValues values) {
+    private ContentValues prepareMsgOfUserValues(long userId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined, ContentValues values) {
         ContentValues msgOfUserValues = null;
-        MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
-        if (values.containsKey(MsgOfUser.TIMELINE_TYPE) ) {
-            timelineType = TimelineTypeEnum.load(values.get(MsgOfUser.TIMELINE_TYPE).toString());
-            values.remove(MsgOfUser.TIMELINE_TYPE);
-        }
         if (userId != 0) {
-            switch (timelineType) {
-                case HOME:
-                case MENTIONS:
-                case FAVORITES:
-                case DIRECT:
-                case USER:
-                case ALL:
-                    
-                    // Add MsgOfUser link to Current User MyAccount
-                    msgOfUserValues = new ContentValues();
-                    if (values.containsKey(Msg._ID) ) {
-                        msgOfUserValues.put(MsgOfUser.MSG_ID, values.getAsString(Msg._ID));
-                    }
-                    msgOfUserValues.put(MsgOfUser.USER_ID, userId);
-                    moveBooleanKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
-                    moveBooleanKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
-                    moveBooleanKey(MsgOfUser.REBLOGGED, values, msgOfUserValues);
-                    // The value is String!
-                    moveStringKey(MsgOfUser.REBLOG_OID, values, msgOfUserValues);
-                    moveBooleanKey(MsgOfUser.MENTIONED, values, msgOfUserValues);
-                    moveBooleanKey(MsgOfUser.REPLIED, values, msgOfUserValues);
-                    moveBooleanKey(MsgOfUser.DIRECTED, values, msgOfUserValues);
+            // Add MsgOfUser link to Current User MyAccount
+            msgOfUserValues = new ContentValues();
+            if (values.containsKey(Msg._ID) ) {
+                msgOfUserValues.put(MsgOfUser.MSG_ID, values.getAsString(Msg._ID));
             }
+            msgOfUserValues.put(MsgOfUser.USER_ID, userId);
+            moveBooleanKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
+            moveBooleanKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
+            moveBooleanKey(MsgOfUser.REBLOGGED, values, msgOfUserValues);
+            // The value is String!
+            moveStringKey(MsgOfUser.REBLOG_OID, values, msgOfUserValues);
+            moveBooleanKey(MsgOfUser.MENTIONED, values, msgOfUserValues);
+            moveBooleanKey(MsgOfUser.REPLIED, values, msgOfUserValues);
+            moveBooleanKey(MsgOfUser.DIRECTED, values, msgOfUserValues);
         }
         return msgOfUserValues;
     }
@@ -732,8 +721,10 @@ public class MyProvider extends ContentProvider {
 
             case TIMELINE_MSG_ID:
                 accountUserId = uriToAccountUserId(uri);
+                MyDatabase.TimelineTypeEnum timelineType = uriToTimelineType(uri);
+                boolean isCombined = uriToIsCombined(uri);
                 long rowId = uriToMessageId(uri);
-                ContentValues msgOfUserValues = prepareMsgOfUserValues(accountUserId, values);
+                ContentValues msgOfUserValues = prepareMsgOfUserValues(accountUserId, timelineType, isCombined, values);
                 if (values.size() > 0) {
                     count = db.update(MyDatabase.MSG_TABLE_NAME, values, Msg._ID + "=" + rowId
                             + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
@@ -820,7 +811,6 @@ public class MyProvider extends ContentProvider {
         msgProjectionMap.put(User.SENDER_NAME, User.SENDER_NAME);
         msgProjectionMap.put(Msg.BODY, Msg.BODY);
         msgProjectionMap.put(Msg.VIA, Msg.VIA);
-        msgProjectionMap.put(MsgOfUser.TIMELINE_TYPE, MsgOfUser.TIMELINE_TYPE);
         msgProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
         msgProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
         msgProjectionMap.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);

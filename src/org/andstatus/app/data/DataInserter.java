@@ -69,6 +69,10 @@ public class DataInserter {
      * Number of new Replies received 
      */
     private int mReplies;
+    /**
+     * Total number of messages downloaded
+     */
+    private int mDownloaded;
 
     private MyAccount ma;
 
@@ -132,6 +136,7 @@ public class DataInserter {
                 if (created > 0) {
                     sentDate = created;
                     createdDate = created;
+                    mDownloaded += 1;
                 }
             }
             
@@ -253,7 +258,6 @@ public class DataInserter {
                 if (msg.has("text")) {
                     body = Html.fromHtml(msg.getString("text")).toString();
                 }
-                values.put(MsgOfUser.TIMELINE_TYPE, mTimelineType.save());
 
                 if (isNew) {
                     values.put(MyDatabase.Msg.CREATED_DATE, createdDate);
@@ -282,12 +286,20 @@ public class DataInserter {
                 boolean mentioned = (mTimelineType == TimelineTypeEnum.MENTIONS);
                 
                 switch (mTimelineType) {
+                    case DIRECT:
+                        values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
+
+                        // Recipient
+                        Long recipientId = 0L;
+                        JSONObject recipient = msg.getJSONObject("recipient");
+                        recipientId = insertUserFromJSONObject(recipient, lum);
+                        values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
+                        break;
+                        
                     case HOME:
-                    case FAVORITES:
                         values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
-                    case ALL:
-                    case MENTIONS:
-                    case USER:
+                        
+                    default:
                         if (msg.has("source")) {
                             values.put(MyDatabase.Msg.VIA, msg.getString("source"));
                         }
@@ -353,16 +365,6 @@ public class DataInserter {
                                 values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
                             }
                         }
-                        break;
-                    case DIRECT:
-                        values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
-
-                        // Recipient
-                        Long recipientId = 0L;
-                        JSONObject recipient = msg.getJSONObject("recipient");
-                        recipientId = insertUserFromJSONObject(recipient, lum);
-                        values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
-                        break;
                 }
                 
                 if (countIt) { 
@@ -592,5 +594,12 @@ public class DataInserter {
      */
     public int mentionsCount() {
         return mMentions;
+    }
+
+    /**
+     * Return total number of downloaded Messages
+     */
+    public int downloadedCount() {
+        return mDownloaded;
     }
 }

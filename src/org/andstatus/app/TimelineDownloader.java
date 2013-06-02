@@ -151,7 +151,6 @@ public class TimelineDownloader {
         timelineMsg.onTimelineDownloaded();
         JSONArray jArr = ma.getConnection().getTimeline(mTimelineType.getConnectionApiRoutine(), lastOid, limit, userOid);
         if (jArr != null) {
-            mDownloaded += jArr.length();
             ok = true;
             try {
                 LatestUserMessages lum = new LatestUserMessages();
@@ -161,6 +160,7 @@ public class TimelineDownloader {
                     long msgId = di.insertMsgFromJSONObject(msg, lum);
                     timelineMsg.onNewMsg(msgId, 0);
                 }
+                mDownloaded += di.downloadedCount();
                 mMessages += di.messagesCount();
                 mMentions += di.mentionsCount();
                 mReplies += di.repliesCount();
@@ -201,7 +201,6 @@ public class TimelineDownloader {
         JSONArray jArr = ma.getConnection().getFriendsIds(userOid);
         if (jArr != null) {
             ok = true;
-            mDownloaded += jArr.length();
             
             try {
                 // Old list of followed users
@@ -237,6 +236,7 @@ public class TimelineDownloader {
                     }
                 }
                 
+                mDownloaded += di.downloadedCount();
                 mMessages += di.messagesCount();
                 mMentions += di.mentionsCount();
                 mReplies += di.repliesCount();
@@ -281,7 +281,7 @@ public class TimelineDownloader {
     }
 
     /**
-     * Return the number of new Mentions.
+     * Return total number of downloaded Messages
      */
     public int downloadedCount() {
         return mDownloaded;

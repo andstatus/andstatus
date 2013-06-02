@@ -210,14 +210,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * This is Direct message which was sent by (Sender) or to (Recipient) this User
          */
         public static final String DIRECTED = "directed";
-
-        /*
-         * Derived columns (they are not stored in this table but are result of joins and aliasing)
-         */
-        /** Inclusion of this column means that we should join MsgOfUser for current MyAccount (USER_ID)
-         * and analyze flags in this row  
-         * @see MyDatabase#TIMELINE_TYPE_NONE  */
-        public static final String TIMELINE_TYPE = "timeline_type";
     }
 
 	/**

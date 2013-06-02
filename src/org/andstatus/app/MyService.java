@@ -1389,9 +1389,10 @@ public class MyService extends Service {
 
                 if (ok) {
                     try {
+                        // Please note that a Favorited message may be NOT in the User's Home timeline!
                         new DataInserter(ma,
                                 MyService.this.getApplicationContext(),
-                                TimelineTypeEnum.HOME).insertMsgFromJSONObject(result);
+                                TimelineTypeEnum.ALL).insertMsgFromJSONObject(result);
                     } catch (JSONException e) {
                         Log.e(TAG,
                                 "Error marking as " + (create ? "" : "not ") + "favorite: "
@@ -1558,7 +1559,6 @@ public class MyService extends Service {
                 // And delete the status from the local storage
                 try {
                     ContentValues values = new ContentValues();
-                    values.put(MsgOfUser.TIMELINE_TYPE, TimelineTypeEnum.HOME.save());
                     values.put(MyDatabase.MsgOfUser.REBLOGGED, 0);
                     values.putNull(MyDatabase.MsgOfUser.REBLOG_OID);
                     Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, false, msgId);
@@ -1636,6 +1636,7 @@ public class MyService extends Service {
             if (ok) {
                 try {
                     // The tweet was sent successfully
+                    // New User's message should be put into the user's Home timeline.
                     new DataInserter(ma, 
                             MyService.this.getApplicationContext(),
                             (recipientUserId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT)
@@ -1662,6 +1663,7 @@ public class MyService extends Service {
             if (ok) {
                 try {
                     // The tweet was sent successfully
+                    // Reblog should be put into the user's Home timeline!
                     new DataInserter(ma, 
                             MyService.this.getApplicationContext(),
                             TimelineTypeEnum.HOME).insertMsgFromJSONObject(result);
