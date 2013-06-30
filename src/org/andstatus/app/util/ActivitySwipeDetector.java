@@ -40,6 +40,7 @@ public class ActivitySwipeDetector implements View.OnTouchListener {
         activity.onLeftToRight(v);
     }
 
+    @Override
     public boolean onTouch(View v, MotionEvent event) {
         switch(event.getAction()){
         case MotionEvent.ACTION_DOWN: {

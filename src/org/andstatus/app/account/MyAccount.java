@@ -29,6 +29,7 @@ import android.util.Log;
 
 import java.net.SocketTimeoutException;
 import java.util.regex.Pattern;
+import java.util.List;
 import java.util.Vector;
 
 import org.andstatus.app.R;
@@ -105,18 +106,18 @@ public class MyAccount implements AccountDataReader {
          * Factory of Builder-s
          * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
          * 
-         * @param accountName - AccountGuid (in the form of systemname/username - with slash "/" between them)
+         * @param accountName - Account Guid (in the form of systemname/username - with slash "/" between them)
          *  if accountName doesn't have systemname (before slash), default system name is assumed
          * @return Builder - existed or newly created. For new Builder we assume that it is not persistent.
          */
-        public static Builder valueOf(String accountName) {
-            int ind = indexOfMyAccount(accountName);
+        public static Builder newOrExistingFromAccountName(String accountName) {
+            MyAccount myAccount  = MyAccount.fromAccountName(accountName);
             Builder mab;
-            if (ind < 0) {
+            if (myAccount == null) {
                 // Create temporary MyAccount.Builder
                 mab = new Builder(accountName);
             } else {
-                mab = new Builder(mMyAccounts.elementAt(ind));
+                mab = new Builder(myAccount);
             }
             return mab;
         }
@@ -133,16 +134,14 @@ public class MyAccount implements AccountDataReader {
             ma.mUserData = source.readBundle();
             
             // Load as if the account is not persisted to force loading everything from mUserData
-            loadMyAccount(null, false);
+            loadFromUserData();
 
             // Do this as a last step
             if (isPersistent) {
                 ma.mAccount = ma.mUserData.getParcelable(KEY_ACCOUNT);
                 if (ma.mAccount == null) {
-                    isPersistent = false;
                     Log.e(TAG, "The account was marked as persistent:" + this);
                 }
-                ma.mIsPersistent = isPersistent;
             }
         }
         
@@ -174,7 +173,6 @@ public class MyAccount implements AccountDataReader {
                 throw new IllegalArgumentException(TAG + " null account is not allowed the constructor");
             }
             ma.mAccount = account;
-            ma.mIsPersistent = true;
 
             ma.mOrigin = Origin.getOrigin(accountNameToOriginName(ma.getAccount().name));
             ma.mUsername = accountNameToUsername(ma.getAccount().name);
@@ -195,6 +193,13 @@ public class MyAccount implements AccountDataReader {
         
         public MyAccount getMyAccount() {
             return ma;
+        }
+
+        /**
+         * @return Is this object persistent 
+         */
+        public boolean isPersistent() {
+            return ma.isPersistent();
         }
         
         /**
@@ -217,7 +222,7 @@ public class MyAccount implements AccountDataReader {
             // Old preferences file may be deleted, if it exists...
             ok = SharedPreferencesUtil.delete(MyPreferences.getContext(), ma.prefsFileName());
 
-            if (ma.isPersistent()) {
+            if (isPersistent()) {
                 if (ma.mUserId != 0) {
                     // TODO: Delete databases for this User
                     
@@ -226,26 +231,17 @@ public class MyAccount implements AccountDataReader {
 
                 // We don't delete Account from Account Manager here
                 ma.mAccount = null;
-                ma.mIsPersistent = false;
             }
             return ok;
         }
 
-
         /**
-         * Loads existing account from Persistence or from mUserData in a case the account is not persistent 
-         * @param account should not be null
+         * Loads account from mUserData 
          */
-        private void loadMyAccount(android.accounts.Account account, boolean isPersistent) {
-            ma.mIsPersistent = isPersistent;
-            if (ma.isPersistent() && account == null) {
-                throw new IllegalArgumentException(TAG + " null account for persistent MyAccount is not allowed");
-            }
-            ma.mAccount = account;
-
+        private void loadFromUserData() {
             String originName = Origin.ORIGIN_NAME_TWITTER;
             String userName = "";
-            if (ma.isPersistent()) {
+            if (isPersistent()) {
                 originName = accountNameToOriginName(ma.getAccount().name);
                 userName = accountNameToUsername(ma.getAccount().name);
             } else {
@@ -277,11 +273,7 @@ public class MyAccount implements AccountDataReader {
                 } else {
                     ma.mUserData.putString(key, value);
                 }
-                if (ma.isPersistent()) {
-                    if (ma.getAccount() == null) {
-                        Log.e(TAG, "setDataString key=" + key + "; mAccount is null ");
-                        return;
-                    }
+                if (ma.getAccount() != null) {
                     android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
                     am.setUserData(ma.getAccount(), key, value);
                 }
@@ -320,7 +312,7 @@ public class MyAccount implements AccountDataReader {
             boolean changed = false;
             
             try {
-                if (!ma.isPersistent() && (ma.getCredentialsVerified() == CredentialsVerified.SUCCEEDED)) {
+                if (!isPersistent() && (ma.getCredentialsVerified() == CredentialsVerified.SUCCEEDED)) {
                     try {
                         // Now add this account to the Account Manager
                         // See {@link com.android.email.provider.EmailProvider.createAccountManagerAccount(Context, String, String)}
@@ -329,19 +321,21 @@ public class MyAccount implements AccountDataReader {
                         /* Note: We could add userdata from {@link mUserData} Bundle, 
                          * but we decided to add it below one by one item
                          */
-                        accountManager.addAccountExplicitly(ma.getAccount(), ma.getPassword(), null);
-                        // Immediately mark as persistent
-                        ma.mIsPersistent = true;
+
+                        // Create account to be persisted
+                        ma.mAccount = new android.accounts.Account(ma.getAccountName(), AuthenticatorService.ANDROID_ACCOUNT_TYPE);
+                        accountManager.addAccountExplicitly(ma.mAccount, ma.getPassword(), null);
                         
-                        // TODO: This is not enough, we need "sync adapter":
+                        // TODO: This is not enough, we need a "sync adapter":
                         // SyncManager(865): can't find a sync adapter for SyncAdapterType Key 
                         // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, removing settings for it
                         ContentResolver.setIsSyncable(ma.getAccount(), MyProvider.AUTHORITY, 1);
                         ContentResolver.setSyncAutomatically(ma.getAccount(), MyProvider.AUTHORITY, true);
                         
-                        MyLog.v(TAG, "Persisted " + ma.getAccountGuid());
+                        MyLog.v(TAG, "Persisted " + ma.getAccountName());
                     } catch (Exception e) {
                         Log.e(TAG, "Adding Account to AccountManager: " + e.getMessage());
+                        ma.mAccount = null;
                     }
                 }
                 
@@ -368,19 +362,19 @@ public class MyAccount implements AccountDataReader {
                 if (ma.getConnection().save(this)) {
                     changed = true;
                 }
-                if (ma.mIsPersistent != ma.getDataBoolean(KEY_PERSISTENT, false)) {
-                    setDataBoolean(KEY_PERSISTENT, ma.mIsPersistent);
+                if (isPersistent() != ma.getDataBoolean(KEY_PERSISTENT, false)) {
+                    setDataBoolean(KEY_PERSISTENT, isPersistent());
                     changed = true;
                 }
 
-                if (changed && ma.isPersistent()) {
+                if (changed && isPersistent()) {
                     MyPreferences.setPreferencesChangedNow();
                 }
 
                 MyLog.v(TAG, "Saved " + (changed ? " changed " : " no changes " ) + this);
                 ok = true;
             } catch (Exception e) {
-                Log.e(TAG, "saving " + ma.getAccountGuid() + ": " + e.toString());
+                Log.e(TAG, "saving " + ma.getAccountName() + ": " + e.toString());
                 e.printStackTrace();
                 ok = false;
             }
@@ -442,7 +436,7 @@ public class MyAccount implements AccountDataReader {
                     if (ok) {
                         setCredentialsVerified(CredentialsVerified.SUCCEEDED);
                     }
-                    if (ok && !ma.isPersistent()) {
+                    if (ok && !isPersistent()) {
                         // Now we know the name (or proper case of the name) of this User!
                         ok = setUsernameAuthenticated(newName);
                         if (!ok) {
@@ -523,7 +517,7 @@ public class MyAccount implements AccountDataReader {
             username = fixUsername(username);
             boolean ok = false;
 
-            if (!ma.isPersistent()) {
+            if (!isPersistent()) {
                 // Now we know the name of this User!
                 ma.mUsername = username;
                 ok = true;
@@ -559,7 +553,7 @@ public class MyAccount implements AccountDataReader {
         public void writeToParcel(Parcel dest, int flags) {
             save();
             // We don't need this until it is persisted
-            if (ma.isPersistent()) {
+            if (isPersistent()) {
                 ma.mUserData.putParcelable(KEY_ACCOUNT, ma.getAccount());
             }
             dest.writeParcelable(ma.mUserData, flags);
@@ -601,7 +595,7 @@ public class MyAccount implements AccountDataReader {
         public String getUsername() {
             return ma.getUsername();
         }
-
+        
         @Override
         public String toString() {
             return ma.toString();
@@ -609,15 +603,15 @@ public class MyAccount implements AccountDataReader {
     }
     
     /**
-     * Key: Guid of the default account
+     * Persistence key for the Name of the default account
      */
     public static final String KEY_DEFAULT_ACCOUNT_NAME = "default_account_name";
     /**
-     * Guid of the default account
+     * Name of the default account. The name is the same for this class and for {@link android.accounts.Account}
      */
     private static String defaultAccountName = "";
     /**
-     * Guid of current account: it is not stored when application is killed
+     * Name of "current" account: it is not stored when application is killed
      */
     private static String currentAccountName = "";
     
@@ -626,12 +620,6 @@ public class MyAccount implements AccountDataReader {
      */
     public static final String FILE_PREFIX = "user_";
 
-    /**
-     * Is this account persistent?
-     * false - the account was not added (persisted...) yet. This user was not _ever_ authenticated.
-     */
-    private boolean mIsPersistent = false;
-    
     /**
      * This is same name that is used e.g. in Twitter login
      */
@@ -741,10 +729,6 @@ public class MyAccount implements AccountDataReader {
     public String getDataString(String key, String defValue) {
         String value = defValue;
         if (isPersistent()) {
-            if (getAccount() == null) {
-                Log.e(TAG, "getDataString key=" + key + "; Account is null ");
-                return null;
-            }
             android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
             String str = am.getUserData(getAccount(), key);
             if (!TextUtils.isEmpty(str)) {
@@ -790,43 +774,35 @@ public class MyAccount implements AccountDataReader {
      * Forget everything in order to reread from the sources if it will be needed
      */
     public static void forget() {
-        mMyAccounts = null;
+        persistentAccounts.clear();
     }
     
     /**
      * Get instance of current MyAccount (MyAccount selected by the user). The account isPersistent
-     * 
-     * @param Context
      * @return MyAccount or null if no persistent accounts exist
      */
-    public static MyAccount getCurrentMyAccount() {
-        MyAccount ma = null;
-        int ind = indexOfMyAccount(currentAccountName);
-        if (ind < 0) {
-            currentAccountName = "";
-            ind = indexOfMyAccount(defaultAccountName);
-            if (ind < 0) {
-                defaultAccountName = "";
+    public static MyAccount getCurrentAccount() {
+        MyAccount ma = fromAccountName(currentAccountName);
+        if (ma != null) {
+            return ma;
+        }
+        currentAccountName = "";
+        ma = fromAccountName(defaultAccountName);
+        if (ma == null) {
+            defaultAccountName = "";
+        }
+        if (ma == null) {
+            if (persistentAccounts.size() > 0) {
+                ma = persistentAccounts.iterator().next();
             }
         }
-        if (ind < 0) {
-            if (mMyAccounts.size() > 0) {
-                ind = 0;
+        if (ma != null) {
+            // Correct Current and Default Accounts if needed
+            if (TextUtils.isEmpty(currentAccountName)) {
+                setCurrentAccount(ma);
             }
-        }
-        if (ind >= 0) {
-            ma = mMyAccounts.elementAt(ind);
-            if (ma.isPersistent()) {
-                // Correct Current and Default Accounts if needed
-                if (TextUtils.isEmpty(currentAccountName)) {
-                    setCurrentMyAccountGuid(ma.getAccountGuid());
-                }
-                if (TextUtils.isEmpty(defaultAccountName)) {
-                    setDefaultMyAccountGuid(ma.getAccountGuid());
-                }
-            } else {
-                // Return null if the account appeared to be not persistent
-                ma = null;
+            if (TextUtils.isEmpty(defaultAccountName)) {
+                setDefaultAccount(ma);
             }
         }
         return ma;
@@ -838,10 +814,10 @@ public class MyAccount implements AccountDataReader {
      * @param Context
      * @return Account GUID or empty string if no persistent accounts exist
      */
-    public static String getCurrentMyAccountGuid() {
-        MyAccount ma = getCurrentMyAccount();
+    public static String getCurrentAccountName() {
+        MyAccount ma = getCurrentAccount();
         if (ma != null) {
-            return ma.getAccountGuid();
+            return ma.getAccountName();
         } else {
             return "";
         }
@@ -852,50 +828,36 @@ public class MyAccount implements AccountDataReader {
      */
     public static long getCurrentMyAccountUserId() {
         long userId = 0;
-        if (getCurrentMyAccount() != null) {
-            userId = getCurrentMyAccount().getUserId();
+        if (getCurrentAccount() != null) {
+            userId = getCurrentAccount().getUserId();
         }
         return userId;
     }
     
-    /** 
-     * Array of MyAccount objects
-     */
-    private static Vector<MyAccount> mMyAccounts = null;
+    private static List<MyAccount> persistentAccounts = new Vector<MyAccount>();
     
     /**
-     * Get list of all Users, including temporary (never authenticated) user
+     * Get list of all persistent accounts
      * for the purpose of using these "accounts" elsewhere. Value of
      * {@link #getCredentialsVerified()} is the main differentiator.
      * 
      * @param context
-     * @return Array of users
+     * @return Array of users, not null 
      */
     public static MyAccount[] list() {
-        if (mMyAccounts == null) {
-            Log.e(TAG, "Was not initialized");
-            return null;
-        } else {
-            return mMyAccounts.toArray(new MyAccount[mMyAccounts.size()]);
-        }
+        return persistentAccounts.toArray(new MyAccount[persistentAccounts.size()]);
     }
     
-    /**
-     * How many authenticated users are the list of accounts?
-     * @return count
-     */
-    public static int countOfAuthenticatedUsers() {
-        int count = 0;
-        int ind = -1;
-
-        for (ind = 0; ind < mMyAccounts.size(); ind++) {
-            if (mMyAccounts.elementAt(ind).isPersistent()) {
-                count += 1;
-            }
-        }
-        return count;
+    public static int numberOfPersistentAccounts() {
+        return persistentAccounts.size();
     }
 
+    /**
+     * @return Is this object persistent 
+     */
+    private boolean isPersistent() {
+        return (mAccount != null);
+    }
     
     /**
      * Are authenticated users from more than one different Originating system?
@@ -904,16 +866,13 @@ public class MyAccount implements AccountDataReader {
     public static boolean moreThanOneOriginatingSystem() {
         int count = 0;
         long originId = 0;
-        int ind = -1;
 
-        for (ind = 0; ind < mMyAccounts.size(); ind++) {
-            if (mMyAccounts.elementAt(ind).isPersistent()) {
-                if (originId != mMyAccounts.elementAt(ind).getOriginId() ) {
-                    count += 1;
-                    originId = mMyAccounts.elementAt(ind).getOriginId();
-                    if (count >1) {
-                        break;
-                    }
+        for (MyAccount persistentAccount : persistentAccounts) {
+            if (originId != persistentAccount.getOriginId() ) {
+                count += 1;
+                originId = persistentAccount.getOriginId();
+                if (count >1) {
+                    break;
                 }
             }
         }
@@ -927,21 +886,15 @@ public class MyAccount implements AccountDataReader {
      * @param context
      */
     public static void initialize() {
-        if (mMyAccounts == null) {
-            mMyAccounts = new Vector<MyAccount>();
-            defaultAccountName = MyPreferences.getDefaultSharedPreferences().getString(KEY_DEFAULT_ACCOUNT_NAME, "");
+        persistentAccounts.clear();
+        defaultAccountName = MyPreferences.getDefaultSharedPreferences().getString(KEY_DEFAULT_ACCOUNT_NAME, "");
 
-            android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
-            android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
-            for (int ind = 0; ind < aa.length; ind++) {
-                Builder mab = new Builder(aa[ind]);
-                mMyAccounts.add(mab.getMyAccount());
-            }
-            MyLog.v(TAG, "Account list initialized, " + mMyAccounts.size() + " accounts");
+        android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
+        android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+        for (android.accounts.Account account : aa) {
+            persistentAccounts.add(new Builder(account).getMyAccount());
         }
-        else {
-            MyLog.v(TAG, "Already initialized, " + mMyAccounts.size() + " accounts");
-        }
+        MyLog.v(TAG, "Account list initialized, " + persistentAccounts.size() + " accounts");
     }
 
     /**
@@ -949,46 +902,22 @@ public class MyAccount implements AccountDataReader {
      * @return Name without path and extension
      */
     private String prefsFileName() {
-        String fileName = FILE_PREFIX + getAccountGuid().replace("/", "-");
+        String fileName = FILE_PREFIX + getAccountName().replace("/", "-");
         return fileName;
     }
 
     /**
-     * Get MyAccount by its Id
-     * @param accountId
+     * Get MyAccount by the UserId. Valid User may not have an Account (in AndStatus)
+     * @param userId
      * @return null if not found
      */
-    public static MyAccount getMyAccount(long accountId) {
-        boolean found = false;
+    private static MyAccount fromUserId(long userId) {
         MyAccount ma = null;
-        for (int ind = 0; ind < mMyAccounts.size(); ind++) {
-            if (mMyAccounts.elementAt(ind).getUserId() == accountId) {
-                found = true;
-                ma = mMyAccounts.elementAt(ind);
+        for (MyAccount persistentAccount : persistentAccounts) {
+            if (persistentAccount.getUserId() == userId) {
+                ma = persistentAccount;
                 break;
             }
-        }
-        if (!found) { ma = null;}
-        return ma;
-    }
-
-    
-    /**
-     * Factory of MyAccount-s
-     * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
-     * 
-     * @param accountName - AccountGuid (in the form of systemname/username - with slash "/" between them)
-     *  if accountName doesn't have systemname (before slash), default system name is assumed
-     * @return MyAccount - existed or newly created. For new MyAccount we assume that it is not persistent.
-     */
-    public static MyAccount getMyAccount(String accountName) {
-        int ind = indexOfMyAccount(accountName);
-        MyAccount ma = null;
-        if (ind < 0) {
-            // Create temporary MyAccount
-            ma = new Builder(accountName).getMyAccount();
-        } else {
-            ma = mMyAccounts.elementAt(ind);
         }
         return ma;
     }
@@ -999,16 +928,13 @@ public class MyAccount implements AccountDataReader {
      * @return null if not found
      */
     private static MyAccount findFirstMyAccountByOriginId(long originId) {
-        boolean found = false;
         MyAccount ma = null;
-        for (int ind = 0; ind < mMyAccounts.size(); ind++) {
-            if (mMyAccounts.elementAt(ind).getOriginId() == originId) {
-                found = true;
-                ma = mMyAccounts.elementAt(ind);
+        for (MyAccount persistentAccount : persistentAccounts) {
+            if (persistentAccount.getOriginId() == originId) {
+                ma = persistentAccount;
                 break;
             }
         }
-        if (!found) { ma = null;}
         return ma;
     }
     
@@ -1017,70 +943,76 @@ public class MyAccount implements AccountDataReader {
      * or other appropriate account in a case the User is not an Account.
      * For any action with the message we should choose an Account 
      * from the same originating (source) System.
-     * @param msgId  Message ID
-     * @param userId The message is in his timeline. 0 if the message doesn't belong to any timeline
-     * @param myAccountUserId Preferred account (or 0), used in a case userId is not an Account 
+     * @param messageId  Message ID
+     * @param timelineIsOfThisUserId The message is in his timeline. 0 if the message doesn't belong to any timeline
+     * @param preferredAccountUserId Preferred account (or 0), used in a case userId is not an Account 
      *          or is not linked to the message 
      * @return null if nothing suitable found
      */
-    public static MyAccount getMyAccountLinkedToThisMessage(long msgId, long userId, long myAccountUserId)
+    public static MyAccount getAccountLinkedToThisMessage(long messageId, long timelineIsOfThisUserId, long preferredAccountUserId)
     {
-        MyAccount ma = getMyAccount(userId);
-        if (msgId == 0 || ma == null) {
-            ma = getMyAccount(myAccountUserId);
+        MyAccount ma = fromUserId(timelineIsOfThisUserId);
+        if (messageId == 0 || ma == null) {
+            ma = fromUserId(preferredAccountUserId);
         }
-        long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, msgId);
+        long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, messageId);
         if (ma == null || originId != ma.getOriginId()) {
            ma = findFirstMyAccountByOriginId(originId); 
         }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "getMyAccountLinkedToThisMessage msgId=" + msgId +"; userId=" + userId 
-                    + " -> account=" + (ma==null ? "null" : ma.getAccountGuid()));
+            Log.v(TAG, "getMyAccountLinkedToThisMessage msgId=" + messageId +"; userId=" + timelineIsOfThisUserId 
+                    + " -> account=" + (ma==null ? "null" : ma.getAccountName()));
         }
         return ma;
     }
     
     /**
-     * Find MyAccount by accountName in local cache AND in Android AccountManager
-     * @param accountName
-     * @return -1 if was not found or index in mMyAccounts
+     * Find persistent MyAccount by accountName in local cache AND in Android AccountManager
+     * @return null if was not found
      */
-    private static int indexOfMyAccount(String accountName) {
-        boolean found = false;
-        int indReturn = -1;
-
-        accountName = fixAccountName(accountName);
+    public static MyAccount fromAccountName(String accountName_in) {
+        MyAccount myAccount = null;
+        String accountName = fixAccountName(accountName_in);
         
-        // This is Guid
-        for (int ind = 0; ind < mMyAccounts.size(); ind++) {
-            if (mMyAccounts.elementAt(ind).getAccountGuid().compareTo(accountName) == 0) {
-                found = true;
-                indReturn = ind;
-                // MyService.v(TAG, "User '" + tu.getUsername() + "' was found");
+        for (MyAccount persistentAccount : persistentAccounts) {
+            if (persistentAccount.getAccountName().compareTo(accountName) == 0) {
+                myAccount = persistentAccount;
                 break;
             }
         }
-        if (!found) {
+        if (myAccount == null) {
             // Try to find persisted Account which was not loaded yet
             if (!TextUtils.isEmpty(accountName)) {
                 android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
                 android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
                 for (int ind = 0; ind < aa.length; ind++) {
                   if (aa[ind].name.compareTo(accountName)==0) {
-                      found = true;
-                      MyAccount ma = new Builder(aa[ind]).getMyAccount();
-                      mMyAccounts.add(ma);
-                      indReturn = mMyAccounts.size() - 1;
+                      myAccount = new Builder(aa[ind]).getMyAccount();
+                      persistentAccounts.add(myAccount);
+                      // It looks like preferences has changed...
+                      MyPreferences.setPreferencesChangedNow();
                       break;
                   }
                 }
-                if (found) {
-                    // It looks like preferences has changed...
-                    MyPreferences.setPreferencesChangedNow();
-                }
             }
         }
-        return indReturn;
+        return myAccount;
+    }
+
+    /**
+     * Get MyAccount by its Id
+     * @param accountId
+     * @return null if not found
+     */
+    public static MyAccount fromAccountId(long accountId) {
+        MyAccount ma = null;
+        for (MyAccount persistentAccount : persistentAccounts) {
+            if (persistentAccount.getUserId() == accountId) {
+                ma = persistentAccount;
+                break;
+            }
+        }
+        return ma;
     }
     
     /**
@@ -1091,27 +1023,22 @@ public class MyAccount implements AccountDataReader {
     public static boolean removeMyAccount(MyAccount ma) {
         boolean isDeleted = false;
 
-        if (mMyAccounts == null) {
-            Log.e(TAG, "delete: Was not initialized.");
-        } else {
-            // Delete the User's object from the list
-            int ind = -1;
-            boolean found = false;
-            for (ind = 0; ind < mMyAccounts.size(); ind++) {
-                if (mMyAccounts.elementAt(ind).equals(ma)) {
-                    found = true;
-                    break;
-                }
+        // Delete the User's object from the list
+        boolean found = false;
+        for (MyAccount persistentAccount : persistentAccounts) {
+            if (persistentAccount.equals(ma)) {
+                found = true;
+                break;
             }
-            if (found) {
-                new Builder(ma).deleteData();
+        }
+        if (found) {
+            new Builder(ma).deleteData();
 
-                // And delete the object from the list
-                mMyAccounts.removeElementAt(ind);
+            // And delete the object from the list
+            persistentAccounts.remove(ma);
 
-                isDeleted = true;
-                MyPreferences.setPreferencesChangedNow();
-            }
+            isDeleted = true;
+            MyPreferences.setPreferencesChangedNow();
         }
         return isDeleted;
     }
@@ -1160,19 +1087,23 @@ public class MyAccount implements AccountDataReader {
     }
     
     /**
-     * Set current MyAccount to 'this' object.
+     * Set provided MyAccount as Current one.
      * Current account selection is not persistent
      */
-    public static synchronized void setCurrentMyAccountGuid(String accountGuid) {
-        currentAccountName = accountGuid;
+    public static synchronized void setCurrentAccount(MyAccount ma) {
+        if (ma != null) {
+            currentAccountName = ma.getAccountName();
+        }
     }
 
     /**
-     * Set this MyAccount as a default one.
+     * Set provided MyAccount as a default one.
      * Default account selection is persistent
      */
-    public static synchronized void setDefaultMyAccountGuid(String accountGuid) {
-        defaultAccountName = accountGuid;
+    private static synchronized void setDefaultAccount(MyAccount ma) {
+        if (ma != null) {
+            defaultAccountName = ma.getAccountName();
+        }
         MyPreferences.getDefaultSharedPreferences().edit()
                 .putString(KEY_DEFAULT_ACCOUNT_NAME, defaultAccountName).commit();
     }
@@ -1191,10 +1122,6 @@ public class MyAccount implements AccountDataReader {
      * @return Account associated with this MyAccount. Null if MyAccount is not persistent yet
      */
     public android.accounts.Account getAccount() {
-        if (!isPersistent() || mAccount == null) {
-            // Recreate the object for the case something changed
-            mAccount = new android.accounts.Account(getAccountGuid(), AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-        }
         return mAccount;
     }
     
@@ -1202,7 +1129,7 @@ public class MyAccount implements AccountDataReader {
      * @return account name, unique for this application and suitable for android.accounts.AccountManager
      * The name is permanent and cannot be changed. This is why it may be used as Id 
      */
-    public String getAccountGuid() {
+    public String getAccountName() {
         return mOrigin.getName() + "/" + getUsername();
     }
     
@@ -1247,13 +1174,6 @@ public class MyAccount implements AccountDataReader {
             }
         }
         return sp;
-    }
-
-    /**
-     * @return Is this object persistent 
-     */
-    public boolean isPersistent() {
-        return mIsPersistent;
     }
 
     private static boolean isUsernameValid(String username) {
@@ -1342,7 +1262,7 @@ public class MyAccount implements AccountDataReader {
     @Override
     public String toString() {
         String str = TAG;
-        String members = getAccountGuid();
+        String members = getAccountName();
         try {
             if (isPersistent()) {
                 members += "; persistent";

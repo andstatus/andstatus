@@ -66,6 +66,7 @@ public abstract class Connection {
      * Connection APIs known
      */
     public enum ApiEnum {
+        UNKNOWN_API,
         /** Twitter API v.1 https://dev.twitter.com/docs/api/1     */
         TWITTER1P0,
         /** Twitter API v.1.1 https://dev.twitter.com/docs/api/1.1 */

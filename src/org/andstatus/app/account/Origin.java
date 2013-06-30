@@ -72,7 +72,7 @@ public class Origin {
     
     private String mName = "";
     private long mId = 0;
-    private ApiEnum mApi;
+    private ApiEnum mApi = ApiEnum.UNKNOWN_API;
 
     /**
      * Default OAuth setting

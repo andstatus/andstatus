@@ -67,7 +67,8 @@ public class PagedCursorAdapter extends SimpleCursorAdapter implements FilterQue
 		return super.getView(position, convertView, parent);
 	}
 
-	public Cursor runQuery(CharSequence constraint) {
+	@Override
+    public Cursor runQuery(CharSequence constraint) {
 		if (constraint != null) {
 			if (mSortOrder.indexOf("LIMIT 0,") > 0) {
 				String newSortOrder = mSortOrder.substring(0, mSortOrder.indexOf("LIMIT 0,"));

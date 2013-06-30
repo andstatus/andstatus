@@ -17,7 +17,6 @@
 
 package org.andstatus.app;
 
-import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.MyService.ServiceState;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -74,7 +73,7 @@ public class MyServiceManager extends BroadcastReceiver {
         String action = intent.getAction(); 
         if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
             MyLog.d(TAG, "Starting service on boot.");
-            startMyService(new MyService.CommandData(
+            startMyService(new CommandData(
                     CommandEnum.BOOT_COMPLETED, ""));
         } else if (action.equals("android.intent.action.ACTION_SHUTDOWN")) {
             // This system broadcast is Since: API Level 4
@@ -86,7 +85,7 @@ public class MyServiceManager extends BroadcastReceiver {
                 MyLog.d(TAG, "Repeating Alarm: Ignore");
             } else {
                 MyLog.d(TAG, "Repeating Alarm: Automatic update");
-                startMyService(new MyService.CommandData(
+                startMyService(new CommandData(
                         CommandEnum.AUTOMATIC_UPDATE, "", TimelineTypeEnum.ALL, 0));
             }
         } else if (action.equals(MyService.ACTION_SERVICE_STATE)) {
@@ -108,7 +107,7 @@ public class MyServiceManager extends BroadcastReceiver {
      * @param context 
      * @param commandData to the service or null 
      */
-    public static void startMyService(MyService.CommandData commandData) {
+    public static void startMyService(CommandData commandData) {
         ignoreAlarms = false;
         Intent serviceIntent = new Intent(IMyService.class.getName());
         if (commandData != null) {

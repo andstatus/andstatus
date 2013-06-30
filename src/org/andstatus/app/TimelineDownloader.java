@@ -17,7 +17,6 @@
 
 package org.andstatus.app;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
@@ -33,14 +32,12 @@ import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.UserMsg;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;

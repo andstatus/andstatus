@@ -24,7 +24,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
-import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.util.MyLog;
 
@@ -121,6 +120,7 @@ public class MyServiceConnector {
      * Service connection handler.
      */
     private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "onServiceConnected");
@@ -139,6 +139,7 @@ public class MyServiceConnector {
             }
         }
 
+        @Override
         public void onServiceDisconnected(ComponentName name) {
             mService = null;
         }
@@ -175,7 +176,7 @@ public class MyServiceConnector {
                     Log.v(TAG, "Sendings " + mCommands.size() + " commands to MyService");
                 }
                 while (true) {
-                    MyService.CommandData element = mCommands.poll();
+                    CommandData element = mCommands.poll();
                     if (element == null) {
                         break;
                     }
@@ -195,6 +196,7 @@ public class MyServiceConnector {
          * @param value
          * @throws RemoteException
          */
+        @Override
         public void tweetsChanged(int value) throws RemoteException {
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "tweetsChanged value=" + value);
@@ -208,6 +210,7 @@ public class MyServiceConnector {
          * @param value
          * @throws RemoteException
          */
+        @Override
         public void dataLoading(int value) throws RemoteException {
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "dataLoading value=" + value + ", instanceId=" + instanceId);
@@ -221,6 +224,7 @@ public class MyServiceConnector {
          * @param value
          * @throws RemoteException
          */
+        @Override
         public void messagesChanged(int value) throws RemoteException {
             mHandler.sendMessage(mHandler.obtainMessage(MSG_DIRECT_MESSAGES_CHANGED, value, 0));
         }
@@ -231,10 +235,12 @@ public class MyServiceConnector {
          * @param value
          * @throws RemoteException
          */
+        @Override
         public void repliesChanged(int value) throws RemoteException {
             mHandler.sendMessage(mHandler.obtainMessage(MSG_REPLIES_CHANGED, value, 0));
         }
 
+        @Override
         public void rateLimitStatus(int remaining_hits, int hourly_limit)
                 throws RemoteException {
             mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATED_TITLE, remaining_hits,

@@ -64,7 +64,8 @@ public class SearchableCursorAdapter extends SimpleCursorAdapter implements Filt
 	 * 
 	 * @see android.widget.FilterQueryProvider#runQuery(java.lang.CharSequence)
 	 */
-	public Cursor runQuery(CharSequence constraint) {
+	@Override
+    public Cursor runQuery(CharSequence constraint) {
 		String selection = null;
 		String selectionArgs[] = null;
 		if (constraint != null) {

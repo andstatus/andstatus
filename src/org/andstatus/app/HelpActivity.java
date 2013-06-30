@@ -103,6 +103,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
 		
 		View splashContainer = (View) findViewById(R.id.splash_container);
         splashContainer.setOnClickListener(new OnClickListener() {
+            @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse("https://github.com/andstatus/andstatus/wiki"));
@@ -113,8 +114,9 @@ public class HelpActivity extends Activity implements SwipeInterface {
         //The button is always visible in order to avoid a User's confusion,
 		final Button getStarted = (Button) findViewById(R.id.button_help_get_started);
         getStarted.setOnClickListener(new OnClickListener() {
+            @Override
             public void onClick(View v) {
-                if (MyAccount.getCurrentMyAccount() == null) {
+                if (MyAccount.getCurrentAccount() == null) {
                     startActivity(new Intent(HelpActivity.this, MyPreferenceActivity.class));
                 } else {
                     startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
@@ -135,7 +137,8 @@ public class HelpActivity extends Activity implements SwipeInterface {
 		
 		final Button learn_more = (Button) findViewById(R.id.button_help_learn_more);
 		learn_more.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
+			@Override
+            public void onClick(View v) {
 				mFlipper.showNext();
 			}
 		});
@@ -164,7 +167,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
 	protected void onResume() {
 		super.onResume();
 		// We assume that user pressed back after adding first account
-        if ( mIsFirstActivity &&  MyAccount.getCurrentMyAccount() != null ) {
+        if ( mIsFirstActivity &&  MyAccount.getCurrentAccount() != null ) {
 			Intent intent = new Intent(this, TimelineActivity.class);
 			startActivity(intent);
 			finish();

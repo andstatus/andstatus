@@ -44,7 +44,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
-import org.andstatus.app.account.AccountSettings;
+import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
@@ -105,14 +105,16 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         
         Preference myPref = (Preference) findPreference("manage_accounts");
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
             public boolean onPreferenceClick(Preference preference) {
-                AccountSettings.startManageAccountsActivity(MyPreferenceActivity.this);
+                AccountSettingsActivity.startManageAccountsActivity(MyPreferenceActivity.this);
                 return false;
             }
         });
         
         myPref = (Preference) findPreference("about_application");
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
             public boolean onPreferenceClick(Preference preference) {
                 Intent intent = new Intent(MyPreferenceActivity.this, HelpActivity.class);
                 startActivity(intent);
@@ -122,6 +124,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         
         myPref = (Preference) findPreference("change_log");
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
             public boolean onPreferenceClick(Preference preference) {
                 Intent intent = new Intent(MyPreferenceActivity.this, HelpActivity.class);
                 intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
@@ -170,8 +173,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         
         Preference myPref = (Preference) findPreference("manage_accounts");
         CharSequence summary;
-        if (MyAccount.countOfAuthenticatedUsers() > 0) {
-            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyAccount.countOfAuthenticatedUsers();
+        if (MyAccount.numberOfPersistentAccounts() > 0) {
+            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyAccount.numberOfPersistentAccounts();
         } else {
             summary = getText(R.string.summary_preference_accounts_absent);
         }
@@ -221,6 +224,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         }
     }
     
+    @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (mSomethingIsBeingProcessed) {
             return;
@@ -274,6 +278,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         }
     };
 
+    @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (preference.getKey().equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {
             showRingtone(newValue);
@@ -294,12 +299,14 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                 builder.setTitle(getText(R.string.dialog_title_external_storage))
                     .setMessage("")
                     .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
                         public void onCancel(DialogInterface dialog) {
                             MyPreferenceActivity.this.showUseExternalStorage();
                             MyPreferenceActivity.this.mUseExternalStorage_busy = false;
                         }
                     })
                     .setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
+                        @Override
                         public void onClick(DialogInterface dialog, int id) {
                             if (MyServiceManager.getServiceState() == MyService.ServiceState.STOPPED) {
                                 new MoveDataBetweenStoragesTask().execute();
@@ -311,6 +318,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                         }
                     })
                     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
                         public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
                         }
@@ -335,6 +343,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                         .setMessage(summaryId)
                         .setPositiveButton(android.R.string.ok,
                                 new DialogInterface.OnClickListener() {
+                                    @Override
                                     public void onClick(DialogInterface Dialog,
                                             int whichButton) {
                                     }
@@ -573,6 +582,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         }
 
         // This is in the UI thread, so we can mess with the UI
+        @Override
         protected void onPostExecute(JSONObject jso) {
             try {
                 dlg.dismiss();
@@ -614,7 +624,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if (MyAccount.countOfAuthenticatedUsers() > 0) {
+            if (MyAccount.numberOfPersistentAccounts() > 0) {
                 MyLog.v(TAG, "Going back to the Timeline");
                 finish();
                 // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android

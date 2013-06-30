@@ -40,15 +40,12 @@ public class AccountSelector extends ListActivity {
         
         setContentView(R.layout.accountlist);
         
-        // Fill the list of accounts with persistent accounts only
         ArrayList<Map<String, String>> data = new ArrayList<Map<String, String>>();
         for (int ind = 0; ind < MyAccount.list().length; ind++) {
-            if (MyAccount.list()[ind].isPersistent()) {
-                HashMap<String, String> map = new HashMap<String, String>();
-                map.put(KEY_NAME, MyAccount.list()[ind].getAccountGuid());
-                map.put(KEY_TYPE, TYPE_ACCOUNT);
-                data.add(map);
-            }
+            HashMap<String, String> map = new HashMap<String, String>();
+            map.put(KEY_NAME, MyAccount.list()[ind].getAccountName());
+            map.put(KEY_TYPE, TYPE_ACCOUNT);
+            data.add(map);
         }
         
         ListAdapter adapter = new SimpleAdapter(this, 
@@ -61,11 +58,12 @@ public class AccountSelector extends ListActivity {
         setListAdapter(adapter);
 
         getListView().setOnItemClickListener(new OnItemClickListener() {
+            @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String  accountName = ((TextView)view.findViewById(R.id.name)).getText().toString();
-                MyAccount ma = MyAccount.getMyAccount(accountName);
-                if (ma.isPersistent()) {
-                    MyAccount.setCurrentMyAccountGuid(ma.getAccountGuid());
+                MyAccount ma = MyAccount.fromAccountName(accountName);
+                if (ma != null) {
+                    MyAccount.setCurrentAccount(ma);
                     AccountSelector.this.setResult(RESULT_OK);
                     finish();
                 }

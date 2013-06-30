@@ -17,8 +17,6 @@
 
 package org.andstatus.app;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
@@ -30,8 +28,6 @@ import org.andstatus.app.appwidget.MyAppWidgetProvider;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.UserMsg;
-import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
@@ -62,15 +58,12 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.text.TextUtils;
 import android.util.Log;
-
 
 /**
  * This is an application service that serves as a connection between this Android Device
@@ -156,7 +149,7 @@ public class MyService extends Service {
     public static final String EXTRA_STATUS = packageName + ".STATUS";
 
     /**
-     * Account name, see {@link MyAccount#getAccountGuid()}
+     * Account name, see {@link MyAccount#getAccountName()}
      */
     public static final String EXTRA_ACCOUNT_NAME = packageName + ".ACCOUNT_NAME";
 
@@ -376,272 +369,6 @@ public class MyService extends Service {
             return UNKNOWN;
         }
 
-    }
-
-    /**
-     * Command data store (message...)
-     * 
-     * @author yvolk
-     */
-    public static class CommandData {
-        public CommandEnum command;
-        
-        /**
-         * Unique name of {@link MyAccount} for this command. Empty string if command is not Account specific 
-         * (e.g. {@link CommandEnum#AUTOMATIC_UPDATE} which works for all accounts) 
-         */
-        public String accountName = "";
-
-        /**
-         * Timeline type used for the {@link CommandEnum#FETCH_TIMELINE} command 
-         */
-        public MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
-        
-        /**
-         * This is: 
-         * 1. Generally: Message ID ({@link MyDatabase.Msg#MSG_ID} of the {@link MyDatabase.Msg}).
-         * 2. User ID ( {@link MyDatabase.User#USER_ID} ) for the {@link CommandEnum#FETCH_USER_TIMELINE}, 
-         *      {@link CommandEnum#FOLLOW_USER}, {@link CommandEnum#STOP_FOLLOWING_USER} 
-         */
-        public long itemId = 0;
-
-        /**
-         * Other command parameters
-         */
-        public Bundle bundle = new Bundle();
-
-        private int hashcode = 0;
-
-        /**
-         * Number of retries left
-         */
-        public int retriesLeft = 0;
-
-        public CommandData(CommandEnum commandIn, String accountNameIn) {
-            command = commandIn;
-            if (!TextUtils.isEmpty(accountNameIn)) {
-                accountName = accountNameIn;
-            }
-        }
-
-        public CommandData(CommandEnum commandIn, String accountNameIn, long itemIdIn) {
-            this(commandIn, accountNameIn);
-            itemId = itemIdIn;
-        }
-
-        public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn, long itemIdIn) {
-            this(commandIn, accountNameIn, itemIdIn);
-            timelineType = timelineTypeIn;
-        }
-
-        /**
-         * Initialize command to put boolean SharedPreference
-         * 
-         * @param preferenceKey
-         * @param value
-         * @param accountNameIn - preferences for this user, or null if Global
-         *            preferences
-         */
-        public CommandData(String accountNameIn, String preferenceKey, boolean value) {
-            this(CommandEnum.PUT_BOOLEAN_PREFERENCE, accountNameIn);
-            bundle.putString(EXTRA_PREFERENCE_KEY, preferenceKey);
-            bundle.putBoolean(EXTRA_PREFERENCE_VALUE, value);
-        }
-
-        /**
-         * Initialize command to put long SharedPreference
-         * 
-         * @param accountNameIn - preferences for this user, or null if Global
-         *            preferences
-         * @param preferenceKey
-         * @param value
-         */
-        public CommandData(String accountNameIn, String preferenceKey, long value) {
-            this(CommandEnum.PUT_LONG_PREFERENCE, accountNameIn);
-            bundle.putString(EXTRA_PREFERENCE_KEY, preferenceKey);
-            bundle.putLong(EXTRA_PREFERENCE_VALUE, value);
-        }
-
-        /**
-         * Initialize command to put string SharedPreference
-         * 
-         * @param accountNameIn - preferences for this user
-         * @param preferenceKey
-         * @param value
-         */
-        public CommandData(String accountNameIn, String preferenceKey, String value) {
-            this(CommandEnum.PUT_STRING_PREFERENCE, accountNameIn);
-            bundle.putString(EXTRA_PREFERENCE_KEY, preferenceKey);
-            bundle.putString(EXTRA_PREFERENCE_VALUE, value);
-        }
-
-        /**
-         * Used to decode command from the Intent upon receiving it
-         * 
-         * @param intent
-         */
-        public CommandData(Intent intent) {
-            bundle = intent.getExtras();
-            // Decode command
-            String strCommand = "(no command)";
-            if (bundle != null) {
-                strCommand = bundle.getString(EXTRA_MSGTYPE);
-                accountName = bundle.getString(EXTRA_ACCOUNT_NAME);
-                timelineType = TimelineTypeEnum.load(bundle.getString(EXTRA_TIMELINE_TYPE));
-                itemId = bundle.getLong(EXTRA_ITEMID);
-            }
-            command = CommandEnum.load(strCommand);
-        }
-
-        /**
-         * Restore this from the SharedPreferences 
-         * @param sp
-         * @param index Index of the preference's name to be used
-         */
-        public CommandData(SharedPreferences sp, int index) {
-            bundle = new Bundle();
-            String si = Integer.toString(index);
-            // Decode command
-            String strCommand = sp.getString(EXTRA_MSGTYPE + si, CommandEnum.UNKNOWN.save());
-            accountName = sp.getString(EXTRA_ACCOUNT_NAME + si, "");
-            timelineType = TimelineTypeEnum.load(sp.getString(EXTRA_TIMELINE_TYPE + si, ""));
-            itemId = sp.getLong(EXTRA_ITEMID + si, 0);
-            command = CommandEnum.load(strCommand);
-
-            switch (command) {
-                case UPDATE_STATUS:
-                    bundle.putString(EXTRA_STATUS, sp.getString(EXTRA_STATUS + si, ""));
-                    bundle.putLong(EXTRA_INREPLYTOID, sp.getLong(EXTRA_INREPLYTOID + si, 0));
-                    bundle.putLong(EXTRA_RECIPIENTID, sp.getLong(EXTRA_RECIPIENTID + si, 0));
-                    break;
-            }
-
-            MyLog.v(TAG, "Restored command " + (EXTRA_MSGTYPE + si) + " = " + strCommand);
-        }
-        
-        /**
-         * It's used in equals() method. We need to distinguish duplicated
-         * commands
-         */
-        @Override
-        public int hashCode() {
-            if (hashcode == 0) {
-                String text = Long.toString(command.ordinal());
-                if (!TextUtils.isEmpty(accountName)) {
-                    text += accountName;
-                }
-                if (timelineType != TimelineTypeEnum.UNKNOWN) {
-                    text += timelineType.save();
-                }
-                if (itemId != 0) {
-                    text += Long.toString(itemId);
-                }
-                switch (command) {
-                    case UPDATE_STATUS:
-                        text += bundle.getString(EXTRA_STATUS);
-                        break;
-                    case PUT_BOOLEAN_PREFERENCE:
-                        text += bundle.getString(EXTRA_PREFERENCE_KEY)
-                                + bundle.getBoolean(EXTRA_PREFERENCE_VALUE);
-                        break;
-                    case PUT_LONG_PREFERENCE:
-                        text += bundle.getString(EXTRA_PREFERENCE_KEY)
-                                + bundle.getLong(EXTRA_PREFERENCE_VALUE);
-                        break;
-                    case PUT_STRING_PREFERENCE:
-                        text += bundle.getString(EXTRA_PREFERENCE_KEY)
-                                + bundle.getString(EXTRA_PREFERENCE_VALUE);
-                        break;
-                }
-                hashcode = text.hashCode();
-            }
-            return hashcode;
-        }
-
-        /**
-         * @see java.lang.Object#toString()
-         */
-        @Override
-        public String toString() {
-            return "CommandData [" + "command=" + command.save()
-                    + (TextUtils.isEmpty(accountName) ? "" : "; account=" + accountName)
-                    + (timelineType == TimelineTypeEnum.UNKNOWN ? "" : "; timeline=" + timelineType.save())
-                    + (itemId == 0 ? "" : "; id=" + itemId) + ", hashCode=" + hashCode() + "]";
-        }
-
-        /**
-         * @return Intent to be sent to this.AndStatusService
-         */
-        public Intent toIntent() {
-            return toIntent(null);
-        }
-
-        /**
-         * @return Intent to be sent to this.AndStatusService
-         */
-        public Intent toIntent(Intent intent_in) {
-            Intent intent = intent_in;
-            if (intent == null) {
-                intent = new Intent(MyService.ACTION_GO);
-            }
-            if (bundle == null) {
-                bundle = new Bundle();
-            }
-            bundle.putString(MyService.EXTRA_MSGTYPE, command.save());
-            if (!TextUtils.isEmpty(accountName)) {
-                bundle.putString(MyService.EXTRA_ACCOUNT_NAME, accountName);
-            }
-            if (timelineType != TimelineTypeEnum.UNKNOWN) {
-                bundle.putString(MyService.EXTRA_TIMELINE_TYPE, timelineType.save());
-            }
-            if (itemId != 0) {
-                bundle.putLong(MyService.EXTRA_ITEMID, itemId);
-            }
-            intent.putExtras(bundle);
-            return intent;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof CommandData)) {
-                return false;
-            }
-            CommandData cd = (CommandData) o;
-            return (hashCode() == cd.hashCode());
-        }
-
-        /**
-         * Persist the object to the SharedPreferences 
-         * We're not storing all types of commands here because not all commands
-         *   go to the queue.
-         * SharedPreferences should not contain any previous versions of the same entries 
-         * (we don't store default values!)
-         * @param sp
-         * @param index Index of the preference's name to be used
-         */
-        public void save(SharedPreferences sp, int index) {
-            String si = Integer.toString(index);
-
-            android.content.SharedPreferences.Editor ed = sp.edit();
-            ed.putString(EXTRA_MSGTYPE + si, command.save());
-            if (!TextUtils.isEmpty(accountName)) {
-                ed.putString(EXTRA_ACCOUNT_NAME + si, accountName);
-            }
-            if (timelineType != TimelineTypeEnum.UNKNOWN) {
-                ed.putString(MyService.EXTRA_TIMELINE_TYPE + si, timelineType.save());
-            }
-            if (itemId != 0) {
-                ed.putLong(EXTRA_ITEMID + si, itemId);
-            }
-            switch (command) {
-                case UPDATE_STATUS:
-                    ed.putString(EXTRA_STATUS + si, bundle.getString(EXTRA_STATUS));
-                    ed.putLong(EXTRA_INREPLYTOID + si, bundle.getLong(EXTRA_INREPLYTOID));
-                    ed.putLong(EXTRA_RECIPIENTID + si, bundle.getLong(EXTRA_RECIPIENTID));
-                    break;
-            }
-            ed.commit();
-        }
     }
 
     /**
@@ -1027,10 +754,10 @@ public class MyService extends Service {
                     String key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     boolean boolValue = commandData.bundle.getBoolean(EXTRA_PREFERENCE_VALUE);
                     MyLog.v(TAG, "Put boolean Preference '" + key + "'=" + boolValue
-                            + ((!TextUtils.isEmpty(commandData.accountName)) ? " account='" + commandData.accountName + "'" : " global"));
+                            + ((commandData.getAccount() != null ) ? " account='" + commandData.getAccount().getAccountName() + "'" : " global"));
                     SharedPreferences sp = null;
-                    if (!TextUtils.isEmpty(commandData.accountName)) {
-                        sp = MyAccount.getMyAccount(commandData.accountName).getMyAccountPreferences();
+                    if (commandData.getAccount() != null) {
+                        sp = commandData.getAccount().getMyAccountPreferences();
                     } else {
                         sp = getSp();
                     }
@@ -1046,9 +773,9 @@ public class MyService extends Service {
                     key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     long longValue = commandData.bundle.getLong(EXTRA_PREFERENCE_VALUE);
                     MyLog.v(TAG, "Put long Preference '" + key + "'=" + longValue
-                            + ((!TextUtils.isEmpty(commandData.accountName)) ? " account='" + commandData.accountName + "'" : " global"));
-                    if (!TextUtils.isEmpty(commandData.accountName)) {
-                        sp = MyAccount.getMyAccount(commandData.accountName).getMyAccountPreferences();
+                            + ((commandData.getAccount() != null) ? " account='" + commandData.getAccount().getAccountName() + "'" : " global"));
+                    if (commandData.getAccount() != null) {
+                        sp = commandData.getAccount().getMyAccountPreferences();
                     } else {
                         sp = getSp();
                     }
@@ -1064,9 +791,9 @@ public class MyService extends Service {
                     key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     String stringValue = commandData.bundle.getString(EXTRA_PREFERENCE_VALUE);
                     MyLog.v(TAG, "Put String Preference '" + key + "'=" + stringValue
-                            + ((!TextUtils.isEmpty(commandData.accountName)) ? " account='" + commandData.accountName + "'" : " global"));
-                    if (!TextUtils.isEmpty(commandData.accountName)) {
-                        sp = MyAccount.getMyAccount(commandData.accountName).getMyAccountPreferences();
+                            + ((commandData.getAccount() != null) ? " account='" + commandData.getAccount().getAccountName() + "'" : " global"));
+                    if (commandData.getAccount() != null) {
+                        sp = commandData.getAccount().getMyAccountPreferences();
                     } else {
                         sp = getSp();
                     }
@@ -1222,11 +949,11 @@ public class MyService extends Service {
                 switch (commandData.command) {
                     case AUTOMATIC_UPDATE:
                     case FETCH_TIMELINE:
-                        ok = loadTimeline(commandData.accountName, commandData.timelineType, commandData.itemId);
+                        ok = loadTimeline(commandData.getAccount(), commandData.timelineType, commandData.itemId);
                         break;
                     case CREATE_FAVORITE:
                     case DESTROY_FAVORITE:
-                        ok = createOrDestroyFavorite(commandData.accountName,
+                        ok = createOrDestroyFavorite(commandData.getAccount(),
                                 commandData.itemId, 
                                 commandData.command == CommandEnum.CREATE_FAVORITE);
                         // Retry in a case of an error
@@ -1234,7 +961,7 @@ public class MyService extends Service {
                         break;
                     case FOLLOW_USER:
                     case STOP_FOLLOWING_USER:
-                        ok = followOrStopFollowingUser(commandData.accountName,
+                        ok = followOrStopFollowingUser(commandData.getAccount(),
                                 commandData.itemId, 
                                 commandData.command == CommandEnum.FOLLOW_USER);
                         // Retry in a case of an error
@@ -1244,30 +971,30 @@ public class MyService extends Service {
                         String status = commandData.bundle.getString(EXTRA_STATUS).trim();
                         long replyToId = commandData.bundle.getLong(EXTRA_INREPLYTOID);
                         long recipientId = commandData.bundle.getLong(EXTRA_RECIPIENTID);
-                        ok = updateStatus(commandData.accountName, status, replyToId, recipientId);
+                        ok = updateStatus(commandData.getAccount(), status, replyToId, recipientId);
                         retry = !ok;
                         break;
                     case DESTROY_STATUS:
-                        ok = destroyStatus(commandData.accountName, commandData.itemId);
+                        ok = destroyStatus(commandData.getAccount(), commandData.itemId);
                         // Retry in a case of an error
                         retry = !ok;
                         break;
                     case DESTROY_REBLOG:
-                        ok = destroyReblog(commandData.accountName, commandData.itemId);
+                        ok = destroyReblog(commandData.getAccount(), commandData.itemId);
                         // Retry in a case of an error
                         retry = !ok;
                         break;
                     case GET_STATUS:
-                        ok = getStatus(commandData.accountName, commandData.itemId);
+                        ok = getStatus(commandData.getAccount(), commandData.itemId);
                         // Retry in a case of an error
                         retry = !ok;
                         break;
                     case REBLOG:
-                        ok = reblog(commandData.accountName, commandData.itemId);
+                        ok = reblog(commandData.getAccount(), commandData.itemId);
                         retry = !ok;
                         break;
                     case RATE_LIMIT_STATUS:
-                        ok = rateLimitStatus(commandData.accountName);
+                        ok = rateLimitStatus(commandData.getAccount());
                         break;
                     default:
                         Log.e(TAG, "Unexpected command here " + commandData);
@@ -1312,6 +1039,7 @@ public class MyService extends Service {
         /**
          * This is in the UI thread, so we can mess with the UI
          */
+        @Override
         protected void onPostExecute(Boolean notUsed) {
             startEndExecutor(false, this);
         }
@@ -1321,9 +1049,11 @@ public class MyService extends Service {
          * @param msgId
          * @return ok
          */
-        private boolean createOrDestroyFavorite(String accountNameIn, long msgId, boolean create) {
+        private boolean createOrDestroyFavorite(MyAccount ma, long msgId, boolean create) {
+            if (ma == null) {
+                return false;
+            }
             boolean ok = false;
-            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
             JSONObject result = new JSONObject();
             if (oid.length() > 0) {
@@ -1414,9 +1144,11 @@ public class MyService extends Service {
          * @param follow true - Follow, false - Stop following
          * @return ok
          */
-        private boolean followOrStopFollowingUser(String accountNameIn, long userId, boolean follow) {
+        private boolean followOrStopFollowingUser(MyAccount ma, long userId, boolean follow) {
+            if (ma == null) {
+                return false;
+            }
             boolean ok = false;
-            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
             String oid = MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
             JSONObject result = new JSONObject();
             if (oid.length() > 0) {
@@ -1461,7 +1193,6 @@ public class MyService extends Service {
 
                 if (ok) {
                     try {
-                        Collection<UserMsg> ums = new ArrayList<UserMsg>();
                         new DataInserter(ma,
                                 MyService.this.getApplicationContext(),
                                 TimelineTypeEnum.HOME).insertUserFromJSONObject(result);
@@ -1485,9 +1216,11 @@ public class MyService extends Service {
          * @param msgId ID of the message to destroy
          * @return boolean ok
          */
-        private boolean destroyStatus(String accountNameIn, long msgId) {
+        private boolean destroyStatus(MyAccount ma, long msgId) {
+            if (ma == null) {
+                return false;
+            }
             boolean ok = false;
-            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
             JSONObject result = new JSONObject();
             try {
@@ -1532,9 +1265,11 @@ public class MyService extends Service {
          * @param msgId ID of the message to destroy
          * @return boolean ok
          */
-        private boolean destroyReblog(String accountNameIn, long msgId) {
+        private boolean destroyReblog(MyAccount ma, long msgId) {
+            if (ma == null) {
+                return false;
+            }
             boolean ok = false;
-            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
             String oid = MyProvider.idToOid(OidEnum.REBLOG_OID, msgId, ma.getUserId());
             JSONObject result = new JSONObject();
             try {
@@ -1576,9 +1311,11 @@ public class MyService extends Service {
          * @param statusId
          * @return boolean ok
          */
-        private boolean getStatus(String accountNameIn, long msgId) {
+        private boolean getStatus(MyAccount ma, long msgId) {
+            if (ma == null) {
+                return false;
+            }
             boolean ok = false;
-            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
             JSONObject result = new JSONObject();
             try {
@@ -1614,9 +1351,11 @@ public class MyService extends Service {
          * @param recipientUserId !=0 for Direct messages - User Id
          * @return ok
          */
-        private boolean updateStatus(String accountNameIn, String status, long replyToMsgId, long recipientUserId) {
+        private boolean updateStatus(MyAccount ma, String status, long replyToMsgId, long recipientUserId) {
+            if (ma == null) {
+                return false;
+            }
             boolean ok = false;
-            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
             JSONObject result = new JSONObject();
             try {
                 if (recipientUserId == 0) {
@@ -1648,8 +1387,10 @@ public class MyService extends Service {
             return ok;
         }
 
-        private boolean reblog(String accountNameIn, long rebloggedId) {
-            MyAccount ma = MyAccount.getMyAccount(accountNameIn);
+        private boolean reblog(MyAccount ma, long rebloggedId) {
+            if (ma == null) {
+                return false;
+            }
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, rebloggedId, 0);
             boolean ok = false;
             JSONObject result = new JSONObject();
@@ -1681,11 +1422,11 @@ public class MyService extends Service {
          * @param userId - Required for the User timeline
          * @return True if everything Succeeded
          */
-        private boolean loadTimeline(String accountNameIn,
+        private boolean loadTimeline(MyAccount myAccount_in,
                 MyDatabase.TimelineTypeEnum timelineType_in, long userId) {
             boolean okAllAccounts = true;
             
-            if (TextUtils.isEmpty(accountNameIn)) {
+            if (myAccount_in == null) {
                 // Cycle for all accounts
                 for (int ind=0; ind < MyAccount.list().length; ind++) {
                     MyAccount acc = MyAccount.list()[ind];
@@ -1698,10 +1439,9 @@ public class MyService extends Service {
                     }
                 }
             } else {
-                MyAccount acc = MyAccount.getMyAccount(accountNameIn);
-                if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+                if (myAccount_in.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
                     // Only if User was authenticated already
-                    boolean ok = loadTimelineAccount(acc, timelineType_in, userId);
+                    boolean ok = loadTimelineAccount(myAccount_in, timelineType_in, userId);
                     if (!ok) {
                         okAllAccounts = false;
                     }
@@ -1800,7 +1540,7 @@ public class MyService extends Service {
 
                             TimelineTypeEnum timelineType = atl[ind];
                             MyLog.d(TAG, "Getting " + timelineType.save() + " for "
-                                    + acc.getAccountGuid());
+                                    + acc.getAccountName());
 
                             TimelineDownloader fl = null;
                             descr = "loading " + timelineType.save();
@@ -1874,7 +1614,7 @@ public class MyService extends Service {
                     }
 
                     message += " getting " + timelineType_in.save()
-                            + " for " + acc.getAccountGuid();
+                            + " for " + acc.getAccountName();
                     if (downloadedCount > 0) {
                         message += ", " + downloadedCount + " downloaded";
                     }
@@ -2110,18 +1850,21 @@ public class MyService extends Service {
         }
 
         /**
-         * Ask the the Twitter service of how many more requests are allowed:
+         * Ask the the Microblogging system of how many more requests are allowed:
          * number of remaining API calls.
          * 
          * @return ok
          */
-        private boolean rateLimitStatus(String accountNameIn) {
+        private boolean rateLimitStatus(MyAccount myAccount_in) {
+            if (myAccount_in == null) {
+                return false;
+            }
             boolean ok = false;
             JSONObject result = new JSONObject();
             int remaining = 0;
             int limit = 0;
             try {
-                Connection conn = MyAccount.getMyAccount(accountNameIn).getConnection();
+                Connection conn = myAccount_in.getConnection();
                 result = conn.rateLimitStatus();
                 ok = (result != null);
                 if (ok) {
@@ -2229,11 +1972,13 @@ public class MyService extends Service {
      * The IMyService is defined through IDL
      */
     private final IMyService.Stub mBinder = new IMyService.Stub() {
+        @Override
         public void registerCallback(IMyServiceCallback cb) {
             if (cb != null)
                 mCallbacks.register(cb);
         }
 
+        @Override
         public void unregisterCallback(IMyServiceCallback cb) {
             if (cb != null)
                 mCallbacks.unregister(cb);

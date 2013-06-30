@@ -16,7 +16,6 @@
  */
 package org.andstatus.app;
 
-import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
@@ -93,26 +92,31 @@ class TweetEditor {
         mDetails = (TextView) activity.findViewById(R.id.messageEditDetails);
         
         mSendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
                 updateStatus();
             }
         });
 
         mEditText.addTextChangedListener(new TextWatcher() {
+            @Override
             public void afterTextChanged(Editable s) {
                 if (mAccount != null) {
                     mCharsLeftText.setText(String.valueOf(mAccount.messageCharactersLeft(s.toString())));
                 }
             }
 
+            @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
+            @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         });
 
         mEditText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     switch (keyCode) {
@@ -135,6 +139,7 @@ class TweetEditor {
         });
 
         mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (event != null) {
                     if (event.isAltPressed()) {
@@ -193,19 +198,21 @@ class TweetEditor {
      * @param replyToId =0 if not replying
      * @param recipientId =0 if this is Public message
      */
-    public void startEditingMessage(String textInitial, long replyToId, long recipientId, String accountGuid, boolean showAccount) {
+    public void startEditingMessage(String textInitial, long replyToId, long recipientId, MyAccount myAccount, boolean showAccount) {
+        if (myAccount == null) {
+            return;
+        }
         String accountGuid_prev = "";
         if (mAccount != null) {
-            accountGuid_prev = mAccount.getAccountGuid();
+            accountGuid_prev = mAccount.getAccountName();
         }
         if (mReplyToId != replyToId || mRecipientId != recipientId 
-                || accountGuid_prev.compareTo(accountGuid) != 0 || !mAccount.isPersistent()
-                || mShowAccount != showAccount) {
+                || accountGuid_prev.compareTo(myAccount.getAccountName()) != 0 || mShowAccount != showAccount) {
             mReplyToId = replyToId;
             mRecipientId = recipientId;
-            mAccount = MyAccount.getMyAccount(accountGuid);
+            mAccount = myAccount;
             mShowAccount = showAccount;
-            String messageDetails = (showAccount ? mAccount.getAccountGuid() : "");
+            String messageDetails = (showAccount ? mAccount.getAccountName() : "");
             if (recipientId == 0) {
                 if (replyToId != 0) {
                     String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, replyToId);
@@ -233,7 +240,7 @@ class TweetEditor {
         
         if (mAccount.getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
             // Start asynchronous task that will show Rate limit status
-            mActivity.serviceConnector.sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccount.getAccountGuid()));
+            mActivity.serviceConnector.sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccount.getAccountName()));
         }
         
         show();
@@ -256,7 +263,7 @@ class TweetEditor {
         } else {
             CommandData commandData = new CommandData(
                     CommandEnum.UPDATE_STATUS,
-                    mAccount.getAccountGuid());
+                    mAccount.getAccountName());
             commandData.bundle.putString(MyService.EXTRA_STATUS, status);
             if (mReplyToId != 0) {
                 commandData.bundle.putLong(MyService.EXTRA_INREPLYTOID, mReplyToId);
@@ -296,7 +303,7 @@ class TweetEditor {
                     outState.putString(MyService.EXTRA_STATUS, status);
                     outState.putLong(MyService.EXTRA_INREPLYTOID, mReplyToId);
                     outState.putLong(MyService.EXTRA_RECIPIENTID, mRecipientId);
-                    outState.putString(MyService.EXTRA_ACCOUNT_NAME, mAccount.getAccountGuid());
+                    outState.putString(MyService.EXTRA_ACCOUNT_NAME, mAccount.getAccountName());
                     outState.putBoolean(MyService.EXTRA_SHOW_ACCOUNT, mShowAccount);
                 }
             }
@@ -331,7 +338,7 @@ class TweetEditor {
     public void continueEditingLoadedState() {
         if (isStateLoaded()) {
             mIsStateLoaded = false;
-            startEditingMessage(mStatus_restored, mReplyToId_restored, mRecipientId_restored, mAccountGuid_restored, mShowAccount_restored);
+            startEditingMessage(mStatus_restored, mReplyToId_restored, mRecipientId_restored, MyAccount.fromAccountName(mAccountGuid_restored), mShowAccount_restored);
         }
     }
 }

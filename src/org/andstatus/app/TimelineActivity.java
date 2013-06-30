@@ -61,11 +61,9 @@ import android.widget.Toast;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.ToggleButton;
 
-import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.data.TimelineMsg;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -468,7 +466,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             if (!MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
                 Log.i(TAG, "We are running the Application for the very first time?");
                 helpAsFirstActivity = true;
-            } else if (MyAccount.getCurrentMyAccount() == null) {
+            } else if (MyAccount.getCurrentAccount() == null) {
                 Log.i(TAG, "No current MyAccount");
                 helpAsFirstActivity = true;
             } 
@@ -584,8 +582,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             public void onClick(View v) {
                 if (mTweetEditor.isVisible()) {
                     mTweetEditor.hide();
-                } else {
-                    mTweetEditor.startEditingMessage("", 0, 0, MyAccount.getCurrentMyAccount().getAccountGuid(), mIsTimelineCombined);
+                } else if (MyAccount.getCurrentAccount() != null) {
+                    mTweetEditor.startEditingMessage("", 0, 0, MyAccount.getCurrentAccount(), mIsTimelineCombined);
                 }
             }
         });
@@ -630,10 +628,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         super.onResume();
         MyLog.v(TAG, "onResume, instanceId=" + instanceId);
         if (!mIsFinishing) {
-            if (MyAccount.getCurrentMyAccount() != null) {
+            if (MyAccount.getCurrentAccount() != null) {
                 long preferencesChangeTimeNew = MyPreferences.initialize(this, this);
                 if (preferencesChangeTimeNew != preferencesChangeTime) {
-                    MyLog.v(TAG, "Restarting this Activity to apply any new changes of preferences");
+                    MyLog.v(TAG, "Restarting this Activity to apply all new changes of preferences");
                     finish();
                     switchTimelineActivity(mTimelineType, mIsTimelineCombined, mSelectedUserId);
                 }
@@ -1075,7 +1073,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             return;
         }
         long linkedUserId = getLinkedUserIdFromCursor(position);
-        MyAccount ma = MyAccount.getMyAccountLinkedToThisMessage(id, linkedUserId,
+        MyAccount ma = MyAccount.getAccountLinkedToThisMessage(id, linkedUserId,
                 mCurrentMyAccountUserId);
         if (ma == null) {
             Log.e(TAG, "Account for the message " + id + " was not found");
@@ -1083,7 +1081,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
         
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onItemClick, id=" + id + "; linkedUserId=" + linkedUserId + " account=" + ma.getAccountGuid());
+            Log.v(TAG, "onItemClick, id=" + id + "; linkedUserId=" + linkedUserId + " account=" + ma.getAccountName());
         }
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mTimelineType, true, id);
         String action = getIntent().getAction();
@@ -1171,9 +1169,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         // Show current account info on the left button
         String accountName = "";
         if (MyAccount.moreThanOneOriginatingSystem()) {
-            accountName = MyAccount.getCurrentMyAccount().getAccountGuid();
+            accountName = MyAccount.getCurrentAccount().getAccountName();
         } else {
-            accountName = MyAccount.getCurrentMyAccount().getUsername();
+            accountName = MyAccount.getCurrentAccount().getUsername();
         }
         Button selectAccountButton = (Button) findViewById(R.id.selectAccountButton);
         selectAccountButton.setText(accountName);
@@ -1183,7 +1181,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
         if (mTimelineType != TimelineTypeEnum.DIRECT) {
-            createMessageButton.setText(getString(MyAccount.getCurrentMyAccount().alternativeTermResourceId(R.string.button_create_message)));
+            createMessageButton.setText(getString(MyAccount.getCurrentAccount().alternativeTermResourceId(R.string.button_create_message)));
             createMessageButton.setVisibility(View.VISIBLE);
         } else {
             createMessageButton.setVisibility(View.GONE);
@@ -1274,7 +1272,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         if (mTimelineType == TimelineTypeEnum.UNKNOWN) {
             /* Set default values */
             mTimelineType = TimelineTypeEnum.HOME;
-            mIsTimelineCombined = (MyAccount.countOfAuthenticatedUsers() > 1);
+            mIsTimelineCombined = (MyAccount.numberOfPersistentAccounts() > 1);
             mQueryString = "";
             mSelectedUserId = 0;
         }
@@ -1300,7 +1298,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 textInitial += text;
             }
             MyLog.v(TAG, "Intent.ACTION_SEND '" + textInitial +"'");
-            mTweetEditor.startEditingMessage(textInitial, 0, 0, MyAccount.getCurrentMyAccount().getAccountGuid(), mIsTimelineCombined);
+            mTweetEditor.startEditingMessage(textInitial, 0, 0, MyAccount.getCurrentAccount(), mIsTimelineCombined);
         }
 
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
@@ -1328,7 +1326,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         } else {
             selecteUserText.setVisibility(View.GONE);
             // Show the "Combined" toggle only if we have more than one account
-            if (MyAccount.countOfAuthenticatedUsers() > 1) {
+            if (MyAccount.numberOfPersistentAccounts() > 1) {
                 combinedTimelineToggle.setVisibility(View.VISIBLE);
             } else {
                 combinedTimelineToggle.setVisibility(View.GONE);
@@ -1628,8 +1626,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
         }
 
-        String accountGuid = MyAccount.getMyAccount(mCurrentMyAccountUserId).getAccountGuid();
-        MyService.CommandData cd = new CommandData(CommandEnum.FETCH_TIMELINE,
+        String accountGuid = MyAccount.fromAccountId(mCurrentMyAccountUserId).getAccountName();
+        CommandData cd = new CommandData(CommandEnum.FETCH_TIMELINE,
                     mIsTimelineCombined ? "" : accountGuid, timelineType, userId);
         serviceConnector.sendCommand(cd);
 
@@ -1749,7 +1747,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         // Create the Context menu
         try {
-            menu.setHeaderTitle((mIsTimelineCombined ? md.ma.getAccountGuid() + ": " : "")
+            menu.setHeaderTitle((mIsTimelineCombined ? md.ma.getAccountName() + ": " : "")
                     + md.body);
 
             // Add menu items
@@ -1866,41 +1864,41 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
 
         mCurrentMsgId = info.id;
-        MyAccount ma = MyAccount.getMyAccount(mMyAccountUserIdForCurrentMessage);
+        MyAccount ma = MyAccount.fromAccountId(mMyAccountUserIdForCurrentMessage);
         if (ma != null) {
             long authorId;
             long senderId;
             switch (item.getItemId()) {
                 case CONTEXT_MENU_ITEM_REPLY:
-                    mTweetEditor.startEditingMessage("", mCurrentMsgId, 0, ma.getAccountGuid(), mIsTimelineCombined);
+                    mTweetEditor.startEditingMessage("", mCurrentMsgId, 0, ma, mIsTimelineCombined);
                     return true;
 
                 case CONTEXT_MENU_ITEM_DIRECT_MESSAGE:
                     authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
                     if (authorId != 0) {
-                        mTweetEditor.startEditingMessage("", mCurrentMsgId, authorId, ma.getAccountGuid(), mIsTimelineCombined);
+                        mTweetEditor.startEditingMessage("", mCurrentMsgId, authorId, ma, mIsTimelineCombined);
                         return true;
                     }
                     break;
 
                 case CONTEXT_MENU_ITEM_REBLOG:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.REBLOG, ma.getAccountGuid(), mCurrentMsgId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.REBLOG, ma.getAccountName(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_DESTROY_REBLOG:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_REBLOG, ma.getAccountGuid(), mCurrentMsgId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_REBLOG, ma.getAccountName(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_DESTROY_STATUS:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, ma.getAccountGuid(), mCurrentMsgId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, ma.getAccountName(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_FAVORITE:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, ma.getAccountGuid(), mCurrentMsgId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, ma.getAccountName(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_DESTROY_FAVORITE:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, ma.getAccountGuid(), mCurrentMsgId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, ma.getAccountName(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_SHARE:
@@ -1955,7 +1953,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                          * We better switch to the account selected for this message in order not to
                          * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
                          */
-                        MyAccount.setCurrentMyAccountGuid(ma.getAccountGuid());
+                        MyAccount.setCurrentAccount(ma);
                         switchTimelineActivity(TimelineTypeEnum.USER, mIsTimelineCombined, senderId);
                         return true;
                     }
@@ -1970,7 +1968,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                          * We better switch to the account selected for this message in order not to
                          * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
                          */
-                        MyAccount.setCurrentMyAccountGuid(ma.getAccountGuid());
+                        MyAccount.setCurrentAccount(ma);
                         switchTimelineActivity(TimelineTypeEnum.USER, mIsTimelineCombined, authorId);
                         return true;
                     }
@@ -1979,19 +1977,19 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
                 case CONTEXT_MENU_ITEM_FOLLOW_SENDER:
                     senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountGuid(), senderId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), senderId));
                     return true;
                 case CONTEXT_MENU_ITEM_STOP_FOLLOWING_SENDER:
                     senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountGuid(), senderId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), senderId));
                     return true;
                 case CONTEXT_MENU_ITEM_FOLLOW_AUTHOR:
                     authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountGuid(), authorId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), authorId));
                     return true;
                 case CONTEXT_MENU_ITEM_STOP_FOLLOWING_AUTHOR:
                     authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountGuid(), authorId));
+                    serviceConnector.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), authorId));
                     return true;
                     
                 case CONTEXT_MENU_ITEM_BLOCK:
@@ -2053,10 +2051,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         
         public PositionStorage() {
             if ((mTimelineType != TimelineTypeEnum.USER) && !mIsTimelineCombined) {
-                MyAccount ma = MyAccount.getMyAccount(mCurrentMyAccountUserId);
+                MyAccount ma = MyAccount.fromAccountId(mCurrentMyAccountUserId);
                 if (ma != null) {
                     sp = ma.getMyAccountPreferences();
-                    accountGuid = ma.getAccountGuid();
+                    accountGuid = ma.getAccountName();
                 } else {
                     Log.e(TAG, "No accoount for IserId=" + mCurrentMyAccountUserId);
                 }

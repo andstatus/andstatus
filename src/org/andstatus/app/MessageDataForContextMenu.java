@@ -37,7 +37,7 @@ class MessageDataForContextMenu {
     boolean canUseCurrentAccountInsteadOfLinked = false;
     
     public MessageDataForContextMenu(Context context, long currentMyAccountUserId, TimelineTypeEnum timelineType, long msgId, long linkedUserId) {
-        ma = MyAccount.getMyAccountLinkedToThisMessage(msgId, linkedUserId,
+        ma = MyAccount.getAccountLinkedToThisMessage(msgId, linkedUserId,
                 currentMyAccountUserId);
         if (ma == null) {
             return;
@@ -80,7 +80,7 @@ class MessageDataForContextMenu {
                 if ( timelineType != TimelineTypeEnum.FOLLOWING_USER) {
                     if (!isDirect && !favorited && !reblogged && !isSender && !senderFollowed && !authorFollowed
                             && ma.getUserId() != currentMyAccountUserId) {
-                        MyAccount ma2 = MyAccount.getMyAccount(currentMyAccountUserId);
+                        MyAccount ma2 = MyAccount.fromAccountId(currentMyAccountUserId);
                         if (ma2 != null && ma.getOriginId() == ma2.getOriginId()) {
                             // Yes, use current Account!
                             canUseCurrentAccountInsteadOfLinked = true;

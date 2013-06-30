@@ -19,7 +19,6 @@ package org.andstatus.app.account;
 
 import java.net.SocketTimeoutException;
 
-import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -70,25 +69,9 @@ import org.json.JSONObject;
  * 
  * @author yvolk
  */
-public class AccountSettings extends PreferenceActivity implements
+public class AccountSettingsActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
-    private static final String TAG = AccountSettings.class.getSimpleName();
-
-    public static final String INTENT_RESULT_KEY_AUTHENTICATION = "authentication";
-
-    /** Intent extras for launch directly from system account manager
-     * NOTE: This string must match the one in res/xml/account_preferences.xml
-     */
-    private static final String ACTION_ACCOUNT_MANAGER_ENTRY =
-        "org.andstatus.account.setup.ACCOUNT_MANAGER_ENTRY";
-    /** 
-     * NOTE: This constant should eventually be defined in android.accounts.Constants
-     */
-    private static final String EXTRA_ACCOUNT_MANAGER_ACCOUNT = "account";
-    /**
-     * Explicitly defined {@link MyAccount#getAccountGuid()}
-     */
-    public static final String EXTRA_MYACCOUNT_GUID = "myaccount_guid";
+    private static final String TAG = AccountSettingsActivity.class.getSimpleName();
     
     /** 
      * The URI is consistent with "scheme" and "host" in AndroidManifest
@@ -122,185 +105,8 @@ public class AccountSettings extends PreferenceActivity implements
      */
     protected boolean mIsFinishing = false;
     
-    /** State of the Account setup process that we store between the activity execution steps
-    *   It's not proper to persist Bundle, 
-    *   see: <a href="http://groups.google.com/group/android-developers/browse_thread/thread/6526fe81d2d56a98">http://groups.google.com/group/android-developers/browse_thread/thread/6526fe81d2d56a98</a>.
-    *   
-    *   This class will be close to com.android.email.activity.setup.SetupData
-    **/
-    private class StateClass {
-        static final String ACCOUNT_ACTION_KEY = "account_action";
-        static final String ACCOUNT_AUTHENTICATOR_RESPONSE_KEY = "account_authenticator_response";
-        static final String ACCOUNT_KEY = "account";
-        static final String ACTION_COMPLETED_KEY = "action_completed";
-        static final String ACTION_SUCCEEDED_KEY = "action_succeeded";
-        
-        private String accountAction = Intent.ACTION_DEFAULT;
-        boolean actionCompleted = true;
-        boolean actionSucceeded = true;
-        AccountAuthenticatorResponse response = null;
-        MyAccount.Builder builder = null;
-        
-        /**
-         * the state was restored
-         */
-        boolean restored = false;
-        
-        /**
-         * Restore state if it was stored earlier
-         */
-        StateClass() {
-            restored = restore();
-        }
+    private StateOfAccountChangeProcess state = null;
 
-        /**
-         * Don't restore previously stored state 
-         */
-        StateClass(String action) {
-          setAccountAction(action);   
-        }
-
-        private void save(Bundle bundle) {
-            if (bundle != null) {
-                bundle.putString(ACCOUNT_ACTION_KEY, getAccountAction());
-                bundle.putBoolean(ACTION_COMPLETED_KEY, actionCompleted);
-                bundle.putBoolean(ACTION_SUCCEEDED_KEY, actionSucceeded);
-                bundle.putParcelable(ACCOUNT_KEY, builder);
-                bundle.putParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY, response);
-                
-                MyLog.v(TAG, "State saved to Bundle");
-            }
-        }
-
-        private boolean restore(Bundle bundle) {
-            boolean restored = false;
-            if (bundle != null) {
-                if (bundle.containsKey(ACTION_COMPLETED_KEY)) {
-                    setAccountAction(bundle.getString(ACCOUNT_ACTION_KEY));
-                    actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true);
-                    actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY);
-                    builder = bundle.getParcelable(ACCOUNT_KEY);
-                    response = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY);
-                    restored = true;
-                }
-            }
-            this.restored = restored;
-            return restored;
-        }
-        
-        /**
-         * Store the state of the not completed actions in the global static object
-         * or forget old state of completed action
-         */
-        void save() {
-            if (actionCompleted) {
-                forget();
-            } else {
-                AccountSettings.stateStored = new Bundle();
-                save(AccountSettings.stateStored);
-            }
-        }
-        
-        boolean restore() {
-            return restore(AccountSettings.stateStored);
-        }
-
-        /**
-         * Forget stored state
-         */
-        void forget() {
-            response = null;
-            AccountSettings.stateStored = null;
-        }
-
-        String getAccountAction() {
-            return accountAction;
-        }
-
-        MyAccount getMyAccount() {
-            return builder.getMyAccount();
-        }
-        
-        void setAccountAction(String accountAction) {
-            if (TextUtils.isEmpty(accountAction)) {
-                this.accountAction = Intent.ACTION_DEFAULT;
-            } else {
-                this.accountAction = accountAction;
-            }
-        }
-
-        /* The code below to store state in the SharedPreferences
-         * works but it not usable because ACCOUNT_AUTHENTICATOR_RESPONSE_KEY
-         * cannot be marshalled
-         */
-        /*
-        static final String prefsFileName = AccountSettings.class.getSimpleName();
-        static final String prefsKey = StateClass.class.getSimpleName();
-        
-        void save(Context context) {
-            String str = "";
-            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName, MODE_PRIVATE);
-            if (sp != null) {
-                Bundle bundle = new Bundle();
-                save(bundle);
-                
-                // This object cannot be marshalled (it contains Binder...)
-                bundle.remove(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY);
-                
-                Parcel parcel = Parcel.obtain();
-                bundle.writeToParcel(parcel, 0);
-                //p.writeBundle(bundle);
-                byte[] b = parcel.marshall();
-                parcel.recycle();
-                str = Base64.encodeToString(b, Base64.NO_WRAP + Base64.NO_PADDING);
-                Log.v(TAG, "String to   file='" + str + "', bytes=" + b.length);
-                sp.edit().putString(prefsKey, str).commit();
-
-                Log.v(TAG, "State saved to file");
-                
-                // Try to read back to bundle
-                bundle = new Bundle();
-                parcel = Parcel.obtain();
-                parcel.unmarshall(b, 0, b.length);
-                parcel.setDataPosition(0);
-                bundle.readFromParcel(parcel);
-                parcel.recycle();
-                Log.v(TAG, "Bundle test restore Ok");
-                
-            }
-        }
-        
-        boolean restore(Context context) {
-            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName, MODE_PRIVATE);
-            if (sp != null) {
-                String str = sp.getString(prefsKey, "");
-                if (!TextUtils.isEmpty(str)) {
-                    byte[] b = Base64.decode(str, 0);
-                    Log.v(TAG, "String from file='" + str + "', bytes=" + b.length);
-                    Parcel parcel = Parcel.obtain();
-                    parcel.unmarshall(b, 0, b.length);
-                    parcel.setDataPosition(0);
-                    Bundle bundle = new Bundle();
-                    bundle.readFromParcel(parcel);
-                    // response = parcel.readParcelable(null);
-                    parcel.recycle();
-                    restore(bundle);
-                    // And forget saved state
-                    sp.edit().putString(prefsKey, "").commit();
-                }
-            }
-            return restored;
-        }
-        */
-        
-    }
-    private StateClass state = null;
-
-    /** Stored state of single object of this class
-     * It's static so it generally stays intact between the Activity's instantiations 
-     * */
-    private static Bundle stateStored = null;
-    
     private CheckBoxPreference mOAuth;
 
     private EditTextPreference mEditTextUsername;
@@ -332,112 +138,46 @@ public class AccountSettings extends PreferenceActivity implements
         mEditTextPassword = (EditTextPreference) findPreference(ConnectionBasicAuth.KEY_PASSWORD);
         mVerifyCredentials = (Preference) findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
 
-        setState(getIntent(), "onCreate");
+        restoreState(getIntent(), "onCreate");
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        setState(intent, "onNewIntent");
+        restoreState(intent, "onNewIntent");
     }
 
     /**
      * Restore previous state and set the Activity mode depending on input (Intent).
-     * We should decide if we use stored state or create new based on information in intent
+     * We should decide if we should use the stored state or a newly created one
      * @param intent
-     * @param calledFrom
+     * @param calledFrom - for logging only
      * @param savedInstanceState
      */
-    private void setState(Intent intent, String calledFrom) {
-        // We are creating new state?
-        boolean isNew = false;
+    private void restoreState(Intent intent, String calledFrom) {
         String message = "";
-        
         if (state == null)  {
-            state =  new StateClass();
+            state =  StateOfAccountChangeProcess.fromStoredState();
             message += (state.restored ? "Old state restored; " : "No previous state; ");
         } else {
-            message += "State existed and " + (state.restored ? "restored earlier; " : "was not restored earlier; ");
+            message += "State existed and " + (state.restored ? "was restored earlier; " : "was not restored earlier; ");
         }
-        isNew = state.actionCompleted;
-        
-        StateClass stateNew = new StateClass(intent.getAction());
-
-        Bundle extras = intent.getExtras();
-        if (extras != null) {
-            // For a usage example see also com.android.email.activity.setup.AccountSettings.onCreate(Bundle)
-
-            // Unparcel Extras!
-            stateNew.response = extras.getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE);
-            if (stateNew.response != null) {
-                // In order to force initializing state
-                isNew = true;
+        StateOfAccountChangeProcess newState = StateOfAccountChangeProcess.fromIntent(intent);
+        if (state.actionCompleted || newState.useThisState) {
+            message += "New state; ";
+            state = newState;
+            if (state.accountShouldBeSelected) {
+                Intent i = new Intent(this, AccountSelector.class);
+                startActivityForResult(i, REQUEST_SELECT_ACCOUNT);
+                message += "Select account; ";
             }
-            android.accounts.Account ac = null;
-            if (android.os.Build.VERSION.SDK_INT < 16 ) {  // before Jelly Bean
-                // Starting with Jelly Bean (16) there is only one link for the the setting of all AndStatus accounts
-                // So we must select account in our code
-                ac = (android.accounts.Account) intent
-                        .getParcelableExtra(EXTRA_ACCOUNT_MANAGER_ACCOUNT);
-            }
-            if (ac != null) {
-                // We have persistent account in the intent
-                stateNew.builder = new MyAccount.Builder(ac);
-                isNew = true;
-            } else {
-                // Maybe we received MyAccount name as as parameter?!
-                String accountGuid = extras.getString(EXTRA_MYACCOUNT_GUID);
-                if (!TextUtils.isEmpty(accountGuid)) {
-                    stateNew.builder = MyAccount.Builder.valueOf(accountGuid);
-                    isNew = stateNew.getMyAccount().isPersistent();
-                }
-            }
-        }
-
-        if (isNew) {
-            message += "State initialized; ";
-            state = stateNew;
-            if (state.builder == null && !state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-                if (state.getAccountAction().equals(ACTION_ACCOUNT_MANAGER_ENTRY) && android.os.Build.VERSION.SDK_INT < 16) {
-                    // This case occurs if we're changing account settings from Settings -> Accounts
-                    state.setAccountAction(Intent.ACTION_INSERT);
-                } else {
-                    message += "Select Account; ";
-                    Intent i = new Intent(this, AccountSelector.class);
-                    startActivityForResult(i, REQUEST_SELECT_ACCOUNT);
-                }
-            }
-            
-            if (state.builder == null) {
-                if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-                    state.builder = MyAccount.Builder.valueOf("");
-                } else {
-                    state.builder = MyAccount.Builder.valueOf(MyAccount.getCurrentMyAccountGuid());
-                }
-                if (!state.builder.getMyAccount().isPersistent()) {
-                    state.setAccountAction(Intent.ACTION_INSERT);
-                    // Check if there are changes to avoid "ripples"
-                    // ...
-                    // TODO check this: state.actionCompleted = false;
-                } else {
-                    state.setAccountAction(Intent.ACTION_VIEW);
-                }
-            } else {
-                if (state.getMyAccount().isPersistent()) {
-                    state.setAccountAction(Intent.ACTION_EDIT);
-                } else {
-                    state.setAccountAction(Intent.ACTION_INSERT);
-                }
-            }
-
             message += "action=" + state.getAccountAction() + "; ";
 
             showUserPreferences();
         }
-        
-        if (state.response != null) {
-            message += "response; ";
+        if (state.authenticatiorResponse != null) {
+            message += "authenticatiorResponse; ";
         }
         MyLog.v(TAG, "setState from " + calledFrom +"; " + message + "intent=" + intent.toUri(0));
     }
@@ -447,8 +187,8 @@ public class AccountSettings extends PreferenceActivity implements
         switch (requestCode) {
             case REQUEST_SELECT_ACCOUNT:
                 if (resultCode == RESULT_OK) {
-                    state.builder = MyAccount.Builder.valueOf(MyAccount.getCurrentMyAccountGuid());
-                    if (!state.getMyAccount().isPersistent()) {
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyAccount.getCurrentAccountName());
+                    if (!state.builder.isPersistent()) {
                         mIsFinishing = true;
                     }
                 } else {
@@ -482,7 +222,7 @@ public class AccountSettings extends PreferenceActivity implements
         
         mOriginName.setValue(ma.getOriginName());
         SharedPreferencesUtil.showListPreference(this, MyAccount.Builder.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
-        mOriginName.setEnabled(!ma.isPersistent());
+        mOriginName.setEnabled(!state.builder.isPersistent());
         
         if (mEditTextUsername.getText() == null
                 || ma.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
@@ -522,7 +262,7 @@ public class AccountSettings extends PreferenceActivity implements
                         this.getText(R.string.summary_preference_verify_credentials));
                 break;
             default:
-                if (ma.isPersistent()) {
+                if (state.builder.isPersistent()) {
                     titleResId = R.string.title_preference_verify_credentials_failed;
                     summary = new StringBuilder(
                             this.getText(R.string.summary_preference_verify_credentials_failed));
@@ -603,8 +343,9 @@ public class AccountSettings extends PreferenceActivity implements
     /**
      * Only preferences with android:persistent="true" trigger this event! 
      */
+    @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (AccountSettings.this.mSomethingIsBeingProcessed) {
+        if (AccountSettingsActivity.this.somethingIsBeingProcessed) {
             return;
         }
         if (onSharedPreferenceChanged_busy || !MyPreferences.isInitialized()) {
@@ -633,7 +374,7 @@ public class AccountSettings extends PreferenceActivity implements
             if (key.equals(MyAccount.Builder.KEY_ORIGIN_NAME)) {
                 if (state.getMyAccount().getOriginName().compareToIgnoreCase(mOriginName.getValue()) != 0) {
                     // If we have changed the System, we should recreate the Account
-                    state.builder = MyAccount.Builder.valueOf(mOriginName.getValue() + "/" + state.getMyAccount().getUsername());
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(mOriginName.getValue() + "/" + state.getMyAccount().getUsername());
                     showUserPreferences();
                 }
             }
@@ -649,7 +390,7 @@ public class AccountSettings extends PreferenceActivity implements
                     boolean oauth = state.getMyAccount().isOAuth();
                     String originName = state.getMyAccount().getOriginName();
                     // TODO: maybe this is not enough...
-                    state.builder = MyAccount.Builder.valueOf(originName + "/" + usernameNew);
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(originName + "/" + usernameNew);
                     state.builder.setOAuth(oauth);
                     showUserPreferences();
                 }
@@ -698,6 +439,7 @@ public class AccountSettings extends PreferenceActivity implements
                         .setMessage(summaryId)
                         .setPositiveButton(android.R.string.ok,
                                 new DialogInterface.OnClickListener() {
+                                    @Override
                                     public void onClick(DialogInterface Dialog,
                                             int whichButton) {
                                     }
@@ -719,7 +461,7 @@ public class AccountSettings extends PreferenceActivity implements
      * This semaphore helps to avoid ripple effect: changes in MyAccount cause
      * changes in this activity ...
      */
-    private boolean mSomethingIsBeingProcessed = false;
+    private boolean somethingIsBeingProcessed = false;
 
     /*
      * (non-Javadoc)
@@ -746,17 +488,17 @@ public class AccountSettings extends PreferenceActivity implements
 
         @Override
         protected void onPreExecute() {
-            dlg = ProgressDialog.show(AccountSettings.this,
+            dlg = ProgressDialog.show(AccountSettingsActivity.this,
                     getText(R.string.dialog_title_checking_credentials),
                     getText(R.string.dialog_summary_checking_credentials), true, // indeterminate
                     // duration
                     false); // not cancel-able
 
-            synchronized (AccountSettings.this) {
-                if (AccountSettings.this.mSomethingIsBeingProcessed) {
+            synchronized (AccountSettingsActivity.this) {
+                if (AccountSettingsActivity.this.somethingIsBeingProcessed) {
                     skip = true;
                 } else {
-                    AccountSettings.this.mSomethingIsBeingProcessed = true;
+                    AccountSettingsActivity.this.somethingIsBeingProcessed = true;
                 }
             }
         }
@@ -803,6 +545,7 @@ public class AccountSettings extends PreferenceActivity implements
          * Credentials were verified just now!
          * This is in the UI thread, so we can mess with the UI
          */
+        @Override
         protected void onPostExecute(JSONObject jso) {
             try {
                 dlg.dismiss();
@@ -817,7 +560,7 @@ public class AccountSettings extends PreferenceActivity implements
 
                     switch (what) {
                         case MSG_ACCOUNT_VALID:
-                            Toast.makeText(AccountSettings.this, R.string.authentication_successful,
+                            Toast.makeText(AccountSettingsActivity.this, R.string.authentication_successful,
                                     Toast.LENGTH_SHORT).show();
                             succeeded = true;
                             break;
@@ -841,7 +584,7 @@ public class AccountSettings extends PreferenceActivity implements
                                     mId = R.string.error_connection_error;
                                     break;
                             }
-                            Toast.makeText(AccountSettings.this, mId, Toast.LENGTH_LONG).show();
+                            Toast.makeText(AccountSettingsActivity.this, mId, Toast.LENGTH_LONG).show();
                             break;
 
                     }
@@ -852,7 +595,7 @@ public class AccountSettings extends PreferenceActivity implements
                 }
             }
             if (!skip) {
-                StateClass state = AccountSettings.this.state;
+                StateOfAccountChangeProcess state = AccountSettingsActivity.this.state;
                 // Note: MyAccount was already saved inside MyAccount.verifyCredentials
                 // Now we only have to deal with the state
                
@@ -864,7 +607,7 @@ public class AccountSettings extends PreferenceActivity implements
                     }
                 }
 
-                AccountSettings.this.mSomethingIsBeingProcessed = false;
+                AccountSettingsActivity.this.somethingIsBeingProcessed = false;
             }
             showUserPreferences();
         }
@@ -897,7 +640,7 @@ public class AccountSettings extends PreferenceActivity implements
 
         @Override
         protected void onPreExecute() {
-            dlg = ProgressDialog.show(AccountSettings.this,
+            dlg = ProgressDialog.show(AccountSettingsActivity.this,
                     getText(R.string.dialog_title_acquiring_a_request_token),
                     getText(R.string.dialog_summary_acquiring_a_request_token), true, // indeterminate
                     // duration
@@ -932,7 +675,7 @@ public class AccountSettings extends PreferenceActivity implements
                 Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
                 // Trying to skip Browser activities on Back button press
                 i.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                AccountSettings.this.startActivity(i);
+                AccountSettingsActivity.this.startActivity(i);
 
                 requestSucceeded = true;
             } catch (OAuthMessageSignerException e) {
@@ -953,7 +696,7 @@ public class AccountSettings extends PreferenceActivity implements
                 // mSp.edit().putBoolean(ConnectionOAuth.REQUEST_SUCCEEDED,
                 // requestSucceeded).commit();
                 if (!requestSucceeded) {
-                    message2 = AccountSettings.this
+                    message2 = AccountSettingsActivity.this
                             .getString(R.string.dialog_title_authentication_failed);
                     if (message != null && message.length() > 0) {
                         message2 = message2 + ": " + message;
@@ -977,6 +720,7 @@ public class AccountSettings extends PreferenceActivity implements
         }
 
         // This is in the UI thread, so we can mess with the UI
+        @Override
         protected void onPostExecute(JSONObject jso) {
             try {
                 dlg.dismiss();
@@ -993,9 +737,9 @@ public class AccountSettings extends PreferenceActivity implements
                         // after redirection from Twitter
                         // Because of initializations in onCreate...
                         // TODO: ???
-                        // AccountSettings.this.finish();
+                        // AccountSettingsActivity.this.finish();
                     } else {
-                        Toast.makeText(AccountSettings.this, message, Toast.LENGTH_LONG).show();
+                        Toast.makeText(AccountSettingsActivity.this, message, Toast.LENGTH_LONG).show();
 
                         state.builder.setCredentialsVerified(CredentialsVerified.FAILED);
                         showUserPreferences();
@@ -1027,7 +771,7 @@ public class AccountSettings extends PreferenceActivity implements
 
         @Override
         protected void onPreExecute() {
-            dlg = ProgressDialog.show(AccountSettings.this,
+            dlg = ProgressDialog.show(AccountSettingsActivity.this,
                     getText(R.string.dialog_title_acquiring_an_access_token),
                     getText(R.string.dialog_summary_acquiring_an_access_token), true, // indeterminate
                     // duration
@@ -1122,6 +866,7 @@ public class AccountSettings extends PreferenceActivity implements
         }
 
         // This is in the UI thread, so we can mess with the UI
+        @Override
         protected void onPostExecute(JSONObject jso) {
             try {
                 dlg.dismiss();
@@ -1142,21 +887,21 @@ public class AccountSettings extends PreferenceActivity implements
                         new VerifyCredentialsTask().execute();
 
                     } else {
-                        String message2 = AccountSettings.this
+                        String message2 = AccountSettingsActivity.this
                         .getString(R.string.dialog_title_authentication_failed);
                         if (message != null && message.length() > 0) {
                             message2 = message2 + ": " + message;
                             Log.d(TAG, message);
                         }
-                        Toast.makeText(AccountSettings.this, message2, Toast.LENGTH_LONG).show();
+                        Toast.makeText(AccountSettingsActivity.this, message2, Toast.LENGTH_LONG).show();
 
                         state.builder.setCredentialsVerified(CredentialsVerified.FAILED);
                         showUserPreferences();
                     }
                     
-                    // Now we can return to the AccountSettings
+                    // Now we can return to the AccountSettingsActivity
                     // We need new Intent in order to forget that URI from OAuth Service Provider
-                    //Intent intent = new Intent(AccountSettings.this, AccountSettings.class);
+                    //Intent intent = new Intent(AccountSettingsActivity.this, AccountSettingsActivity.class);
                     //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     //startActivity(intent);
                     
@@ -1202,21 +947,21 @@ public class AccountSettings extends PreferenceActivity implements
         boolean doFinish = false;
         String message = "";
         state.actionCompleted = true;
-        if (state.response != null) {
+        if (state.authenticatiorResponse != null) {
             // We should return result back to AccountManager
             if (state.actionSucceeded) {
-                if (state.getMyAccount().isPersistent()) {
+                if (state.builder.isPersistent()) {
                     doFinish = true;
                     // Pass the new/edited account back to the account manager
                     Bundle result = new Bundle();
-                    result.putString(AccountManager.KEY_ACCOUNT_NAME, state.getMyAccount().getAccountGuid());
+                    result.putString(AccountManager.KEY_ACCOUNT_NAME, state.getMyAccount().getAccountName());
                     result.putString(AccountManager.KEY_ACCOUNT_TYPE,
                             AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-                    state.response.onResult(result);
-                    message += "response; account.name=" + state.getMyAccount().getAccount().name + "; ";
+                    state.authenticatiorResponse.onResult(result);
+                    message += "authenticatiorResponse; account.name=" + state.getMyAccount().getAccount().name + "; ";
                 }
             } else {
-                state.response.onError(AccountManager.ERROR_CODE_CANCELED, "canceled");
+                state.authenticatiorResponse.onError(AccountManager.ERROR_CODE_CANCELED, "canceled");
             }
         }
         // Forget old state
@@ -1239,6 +984,7 @@ public class AccountSettings extends PreferenceActivity implements
         return mIsFinishing;
     }
 
+    @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onPreferenceChange: " + preference.toString() + " -> " + (newValue == null ? "null" : newValue.toString()));

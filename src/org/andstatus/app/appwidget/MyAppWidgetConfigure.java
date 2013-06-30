@@ -85,7 +85,8 @@ public class MyAppWidgetConfigure extends Activity {
 	}
 
 	View.OnClickListener mOnClickListener = new View.OnClickListener() {
-		public void onClick(View v) {
+		@Override
+        public void onClick(View v) {
 			// When the button is clicked, save configuration settings in our prefs
 			// and return that they clicked OK.
 			appWidgetData.nothingPref = mAppWidgetTitle.getText().toString();

@@ -35,7 +35,6 @@ import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.andstatus.app.MyService.CommandData;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
@@ -123,7 +122,7 @@ public class ConversationActivity extends Activity {
         Uri uri = intent.getData();
 
         mCurrentId = MyProvider.uriToMessageId(uri);
-        ma = MyAccount.getMyAccountLinkedToThisMessage(mCurrentId, 0, MyProvider.uriToAccountUserId(uri));
+        ma = MyAccount.getAccountLinkedToThisMessage(mCurrentId, 0, MyProvider.uriToAccountUserId(uri));
         if (ma != null) {
             showConversation();
         }
@@ -263,7 +262,7 @@ public class ConversationActivity extends Activity {
                     if (row.createdDate == 0) {
                         MyLog.v(TAG, "Message " + msgId + " should be retrieved from the Internet");
                         serviceConnector.sendCommand(new CommandData(CommandEnum.GET_STATUS, ma
-                                .getAccountGuid(), msgId));
+                                .getAccountName(), msgId));
                     } else {
                         if (row.prevId != 0) {
                             findMessage(row.prevId);

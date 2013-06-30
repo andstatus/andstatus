@@ -14,7 +14,7 @@
      limitations under the License.
 -->
 
-<!-- NOTE: The string in android:action must match the one in AccountSettings.java -->
+<!-- NOTE: The string in android:action must match the one in AccountSettingsActivity.java -->
 <!-- yvolk: According to Android documentation, the file should contain list of SCREENS only, 
 not any "account preferences" themselves :-) 
 see http://developer.android.com/reference/android/accounts/AbstractAccountAuthenticator.html  

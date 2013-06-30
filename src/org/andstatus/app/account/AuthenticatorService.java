@@ -54,7 +54,7 @@ public class AuthenticatorService extends Service {
         }
 
         /** 
-         * We add account launching {@link AccountSettings} activity
+         * We add account launching {@link AccountSettingsActivity} activity
          */
         @Override
         public Bundle addAccount(AccountAuthenticatorResponse response, String accountType,
@@ -92,8 +92,8 @@ public class AuthenticatorService extends Service {
             //    account information...
             } else {
                 Bundle b = new Bundle();
-                Intent intent = new Intent(AuthenticatorService.this, AccountSettings.class);
-                //  This is how we define what to do in {@link AccountSettings} activity
+                Intent intent = new Intent(AuthenticatorService.this, AccountSettingsActivity.class);
+                //  This is how we define what to do in {@link AccountSettingsActivity} activity
                 intent.setAction(Intent.ACTION_INSERT);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); 
                 intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
@@ -141,7 +141,7 @@ public class AuthenticatorService extends Service {
         public Bundle getAccountRemovalAllowed(AccountAuthenticatorResponse response,
                 Account account) throws NetworkErrorException {
             
-            MyAccount ma = MyAccount.getMyAccount(account.name);
+            MyAccount ma = MyAccount.fromAccountName(account.name);
             boolean deleted = MyAccount.removeMyAccount(ma);
             
             final Bundle result = new Bundle();
