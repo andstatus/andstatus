@@ -341,7 +341,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     }
 
     /**
-     * Only preferences with android:persistent="true" trigger this event! 
+     * Only preferences with android:persistent="true" trigger this event!
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -369,12 +369,16 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             MyLog.d(TAG, "onSharedPreferenceChanged: " + key + "='" + value + "'");
 
             // Here and below:
-            // Check if there are changes to avoid "ripples": don't set new value if no changes
-            
+            // Check if there are changes to avoid "ripples": don't set new
+            // value if no changes
+
             if (key.equals(MyAccount.Builder.KEY_ORIGIN_NAME)) {
                 if (state.getAccount().getOriginName().compareToIgnoreCase(mOriginName.getValue()) != 0) {
-                    // If we have changed the System, we should recreate the Account
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(mOriginName.getValue() + "/" + state.getAccount().getUsername());
+                    // If we have changed the System, we should recreate the
+                    // Account
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                            AccountName.fromOriginAndUserNames(mOriginName.getValue(),
+                                    state.getAccount().getUsername()).toString());
                     showUserPreferences();
                 }
             }
@@ -390,7 +394,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     boolean oauth = state.getAccount().isOAuth();
                     String originName = state.getAccount().getOriginName();
                     // TODO: maybe this is not enough...
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(originName + "/" + usernameNew);
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                            AccountName.fromOriginAndUserNames(originName, usernameNew).toString());
                     state.builder.setOAuth(oauth);
                     showUserPreferences();
                 }
