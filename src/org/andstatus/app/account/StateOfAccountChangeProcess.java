@@ -214,8 +214,8 @@ class StateOfAccountChangeProcess {
         return accountAction;
     }
 
-    MyAccount getMyAccount() {
-        return builder.getMyAccount();
+    MyAccount getAccount() {
+        return builder.getAccount();
     }
     
     void setAccountAction(String accountAction) {

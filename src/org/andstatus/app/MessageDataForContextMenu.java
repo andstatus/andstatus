@@ -80,7 +80,7 @@ class MessageDataForContextMenu {
                 if ( timelineType != TimelineTypeEnum.FOLLOWING_USER) {
                     if (!isDirect && !favorited && !reblogged && !isSender && !senderFollowed && !authorFollowed
                             && ma.getUserId() != currentMyAccountUserId) {
-                        MyAccount ma2 = MyAccount.fromAccountId(currentMyAccountUserId);
+                        MyAccount ma2 = MyAccount.fromUserId(currentMyAccountUserId);
                         if (ma2 != null && ma.getOriginId() == ma2.getOriginId()) {
                             // Yes, use current Account!
                             canUseCurrentAccountInsteadOfLinked = true;

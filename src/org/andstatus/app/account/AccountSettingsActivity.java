@@ -218,7 +218,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      * Some "preferences" may be changed in MyAccount object
      */
     private void showUserPreferences() {
-        MyAccount ma = state.getMyAccount();
+        MyAccount ma = state.getAccount();
         
         mOriginName.setValue(ma.getOriginName());
         SharedPreferencesUtil.showListPreference(this, MyAccount.Builder.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
@@ -313,7 +313,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      * @param reVerify true - Verify only if we didn't do this yet
      */
     private void verifyCredentials(boolean reVerify) {
-        MyAccount ma = state.getMyAccount();
+        MyAccount ma = state.getAccount();
         if (reVerify || ma.getCredentialsVerified() == CredentialsVerified.NEVER) {
             if (ma.getCredentialsPresent()) {
                 // Credentials are present, so we may verify them
@@ -372,23 +372,23 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             // Check if there are changes to avoid "ripples": don't set new value if no changes
             
             if (key.equals(MyAccount.Builder.KEY_ORIGIN_NAME)) {
-                if (state.getMyAccount().getOriginName().compareToIgnoreCase(mOriginName.getValue()) != 0) {
+                if (state.getAccount().getOriginName().compareToIgnoreCase(mOriginName.getValue()) != 0) {
                     // If we have changed the System, we should recreate the Account
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(mOriginName.getValue() + "/" + state.getMyAccount().getUsername());
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(mOriginName.getValue() + "/" + state.getAccount().getUsername());
                     showUserPreferences();
                 }
             }
             if (key.equals(MyAccount.Builder.KEY_OAUTH)) {
-                if (state.getMyAccount().isOAuth() != mOAuth.isChecked()) {
+                if (state.getAccount().isOAuth() != mOAuth.isChecked()) {
                     state.builder.setOAuth(mOAuth.isChecked());
                     showUserPreferences();
                 }
             }
             if (key.equals(MyAccount.Builder.KEY_USERNAME_NEW)) {
                 String usernameNew = mEditTextUsername.getText();
-                if (usernameNew.compareTo(state.getMyAccount().getUsername()) != 0) {
-                    boolean oauth = state.getMyAccount().isOAuth();
-                    String originName = state.getMyAccount().getOriginName();
+                if (usernameNew.compareTo(state.getAccount().getUsername()) != 0) {
+                    boolean oauth = state.getAccount().isOAuth();
+                    String originName = state.getAccount().getOriginName();
                     // TODO: maybe this is not enough...
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(originName + "/" + usernameNew);
                     state.builder.setOAuth(oauth);
@@ -396,7 +396,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 }
             }
             if (key.equals(ConnectionBasicAuth.KEY_PASSWORD)) {
-                if (state.getMyAccount().getPassword().compareTo(mEditTextPassword.getText()) != 0) {
+                if (state.getAccount().getPassword().compareTo(mEditTextPassword.getText()) != 0) {
                     state.builder.setPassword(mEditTextPassword.getText());
                     showUserPreferences();
                 }
@@ -655,7 +655,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             String message = "";
             String message2 = "";
             try {
-                MyAccount ma = state.getMyAccount();
+                MyAccount ma = state.getAccount();
                 MyOAuth oa = ma.getOAuth();
 
                 // This is really important. If you were able to register your
@@ -785,7 +785,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             String message = "";
             
             boolean authenticated = false;
-            MyAccount ma = state.getMyAccount();
+            MyAccount ma = state.getAccount();
             // We don't need to worry about any saved states: we can reconstruct
             // the state
             MyOAuth oa = ma.getOAuth();
@@ -954,11 +954,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     doFinish = true;
                     // Pass the new/edited account back to the account manager
                     Bundle result = new Bundle();
-                    result.putString(AccountManager.KEY_ACCOUNT_NAME, state.getMyAccount().getAccountName());
+                    result.putString(AccountManager.KEY_ACCOUNT_NAME, state.getAccount().getAccountName());
                     result.putString(AccountManager.KEY_ACCOUNT_TYPE,
                             AuthenticatorService.ANDROID_ACCOUNT_TYPE);
                     state.authenticatiorResponse.onResult(result);
-                    message += "authenticatiorResponse; account.name=" + state.getMyAccount().getAccount().name + "; ";
+                    message += "authenticatiorResponse; account.name=" + state.getAccount().getAccountName() + "; ";
                 }
             } else {
                 state.authenticatiorResponse.onError(AccountManager.ERROR_CODE_CANCELED, "canceled");

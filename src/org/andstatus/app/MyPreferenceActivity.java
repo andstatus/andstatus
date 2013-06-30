@@ -249,7 +249,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             }
             MyLog.d(TAG, "onSharedPreferenceChanged: " + key + "='" + value + "'");
 
-            MyPreferences.setPreferencesChangedNow();
+            MyPreferences.onPreferencesChanged();
             
             if (key.equals(MyPreferences.KEY_FETCH_PERIOD)) {
                 showFrequency();

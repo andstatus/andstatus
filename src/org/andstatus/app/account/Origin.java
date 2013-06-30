@@ -107,6 +107,14 @@ public class Origin {
     public static Origin getOrigin(long id) {
         return new Origin(id);
     }
+
+    public static Origin toExistingOrigin(String originName_in) {
+        Origin origin = getOrigin(UserNameUtil.fixUsername(originName_in));
+        if (origin.getId() == 0) {
+            origin = getOrigin(Origin.ORIGIN_ID_DEFAULT);
+        }
+        return origin;
+    }
     
     /**
      * @return the Origin name, unique in the application
@@ -274,7 +282,7 @@ public class Origin {
      * @param resId
      * @return Id of alternative (proprietary) term/phrase
      */
-    public int alternativeTermResourceId(int resId) {
+    public int alternativeTermForResourceId(int resId) {
         int resId_out = resId;
         if (getId() == ORIGIN_ID_TWITTER) {
             switch (resId) {

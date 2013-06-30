@@ -345,7 +345,7 @@ public class ConversationActivity extends Activity {
                         messageDetails += ";";
                     }
                     messageDetails += " "
-                            + String.format(Locale.getDefault(), getText(ma.alternativeTermResourceId(R.string.reblogged_by))
+                            + String.format(Locale.getDefault(), getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
                                     .toString(), row.rebloggersString);
                 }
             }

@@ -142,7 +142,7 @@ public class AuthenticatorService extends Service {
                 Account account) throws NetworkErrorException {
             
             MyAccount ma = MyAccount.fromAccountName(account.name);
-            boolean deleted = MyAccount.removeMyAccount(ma);
+            boolean deleted = MyAccount.delete(ma);
             
             final Bundle result = new Bundle();
             result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, deleted);

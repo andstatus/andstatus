@@ -162,7 +162,7 @@ public class MyPreferences {
                         initialized = true;
                         preferencesChangeTime = getPreferencesChangeTime();
 
-                        MyAccount.initialize();
+                        MyAccount.initialize(context);
                     }
                     justInitialized = initialized;
                     if (initialized) {
@@ -251,9 +251,10 @@ public class MyPreferences {
     }
 
     /**
+     *  Event: Preferences have changed right now
      *  Remember when last changes to the preferences were made
      */
-    public static void setPreferencesChangedNow() {
+    public static void onPreferencesChanged() {
         if (initialized) {
             getDefaultSharedPreferences()
             .edit()

@@ -132,7 +132,7 @@ public class TimelineDownloader {
         TimelineMsg timelineMsg = new TimelineMsg(mTimelineType, mUserId);
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-            String strLog = "Loading timeline " + mTimelineType.save() + "; account=" + ma.getUsername();
+            String strLog = "Loading timeline " + mTimelineType.save() + "; account=" + ma.getAccountName();
             if (mUserId != 0) {
                 strLog += "; user=" + MyProvider.userIdToName(mUserId);
             }
@@ -186,7 +186,7 @@ public class TimelineDownloader {
         TimelineMsg timelineMsg = new TimelineMsg(mTimelineType, mUserId);
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-            String strLog = "Loading timeline " + mTimelineType.save() + "; account=" + ma.getUsername();
+            String strLog = "Loading timeline " + mTimelineType.save() + "; account=" + ma.getAccountName();
             strLog += "; user=" + MyProvider.userIdToName(mUserId);
             if (timelineMsg.getTimelineDate() > 0) {
                 strLog += "; last time downloaded at=" +  (new Date(timelineMsg.getTimelineDate()).toString());

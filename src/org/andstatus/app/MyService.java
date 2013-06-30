@@ -757,7 +757,7 @@ public class MyService extends Service {
                             + ((commandData.getAccount() != null ) ? " account='" + commandData.getAccount().getAccountName() + "'" : " global"));
                     SharedPreferences sp = null;
                     if (commandData.getAccount() != null) {
-                        sp = commandData.getAccount().getMyAccountPreferences();
+                        sp = commandData.getAccount().getAccountPreferences();
                     } else {
                         sp = getSp();
                     }
@@ -775,7 +775,7 @@ public class MyService extends Service {
                     MyLog.v(TAG, "Put long Preference '" + key + "'=" + longValue
                             + ((commandData.getAccount() != null) ? " account='" + commandData.getAccount().getAccountName() + "'" : " global"));
                     if (commandData.getAccount() != null) {
-                        sp = commandData.getAccount().getMyAccountPreferences();
+                        sp = commandData.getAccount().getAccountPreferences();
                     } else {
                         sp = getSp();
                     }
@@ -793,7 +793,7 @@ public class MyService extends Service {
                     MyLog.v(TAG, "Put String Preference '" + key + "'=" + stringValue
                             + ((commandData.getAccount() != null) ? " account='" + commandData.getAccount().getAccountName() + "'" : " global"));
                     if (commandData.getAccount() != null) {
-                        sp = commandData.getAccount().getMyAccountPreferences();
+                        sp = commandData.getAccount().getAccountPreferences();
                     } else {
                         sp = getSp();
                     }

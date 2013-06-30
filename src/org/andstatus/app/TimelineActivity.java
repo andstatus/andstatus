@@ -504,7 +504,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             return;
         }
 
-        mCurrentMyAccountUserId = MyAccount.getCurrentMyAccountUserId();
+        mCurrentMyAccountUserId = MyAccount.getCurrentAccountUserId();
         serviceConnector = new MyServiceConnector(instanceId);
         
         MyPreferences.loadTheme(TAG, this);
@@ -1181,7 +1181,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
         if (mTimelineType != TimelineTypeEnum.DIRECT) {
-            createMessageButton.setText(getString(MyAccount.getCurrentAccount().alternativeTermResourceId(R.string.button_create_message)));
+            createMessageButton.setText(getString(MyAccount.getCurrentAccount().alternativeTermForResourceId(R.string.button_create_message)));
             createMessageButton.setVisibility(View.VISIBLE);
         } else {
             createMessageButton.setVisibility(View.GONE);
@@ -1276,7 +1276,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             mQueryString = "";
             mSelectedUserId = 0;
         }
-        mCurrentMyAccountUserId = MyAccount.getCurrentMyAccountUserId();
+        mCurrentMyAccountUserId = MyAccount.getCurrentAccountUserId();
         if (mSelectedUserId == 0 && mTimelineType == TimelineTypeEnum.USER) {
             mSelectedUserId = mCurrentMyAccountUserId;
         }
@@ -1626,7 +1626,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
         }
 
-        String accountGuid = MyAccount.fromAccountId(mCurrentMyAccountUserId).getAccountName();
+        String accountGuid = MyAccount.fromUserId(mCurrentMyAccountUserId).getAccountName();
         CommandData cd = new CommandData(CommandEnum.FETCH_TIMELINE,
                     mIsTimelineCombined ? "" : accountGuid, timelineType, userId);
         serviceConnector.sendCommand(cd);
@@ -1707,7 +1707,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                          */
                         timelineTypeNew = TimelineTypeEnum.HOME;
                     }
-                    switchTimelineActivity(timelineTypeNew, mIsTimelineCombined, MyAccount.getCurrentMyAccountUserId());
+                    switchTimelineActivity(timelineTypeNew, mIsTimelineCombined, MyAccount.getCurrentAccountUserId());
                 }
                 break;
             default:
@@ -1777,12 +1777,12 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 }
                 if (md.reblogged) {
                     menu.add(0, CONTEXT_MENU_ITEM_DESTROY_REBLOG, menuItemId++,
-                            md.ma.alternativeTermResourceId(R.string.menu_item_destroy_reblog));
+                            md.ma.alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
                 } else {
                     // Don't allow a User to reblog himself
                     if (mMyAccountUserIdForCurrentMessage != md.senderId) {
                         menu.add(0, CONTEXT_MENU_ITEM_REBLOG, menuItemId++,
-                                md.ma.alternativeTermResourceId(R.string.menu_item_reblog));
+                                md.ma.alternativeTermForResourceId(R.string.menu_item_reblog));
                     }
                 }
             }
@@ -1864,7 +1864,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
 
         mCurrentMsgId = info.id;
-        MyAccount ma = MyAccount.fromAccountId(mMyAccountUserIdForCurrentMessage);
+        MyAccount ma = MyAccount.fromUserId(mMyAccountUserIdForCurrentMessage);
         if (ma != null) {
             long authorId;
             long senderId;
@@ -1915,7 +1915,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                             StringBuilder text = new StringBuilder();
                             String msgBody = c.getString(c.getColumnIndex(MyDatabase.Msg.BODY));
         
-                            subject.append(getText(ma.alternativeTermResourceId(R.string.message)));
+                            subject.append(getText(ma.alternativeTermForResourceId(R.string.message)));
                             subject.append(" - " + msgBody);
                             int maxlength = 80;
                             if (subject.length() > maxlength) {
@@ -2051,9 +2051,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         
         public PositionStorage() {
             if ((mTimelineType != TimelineTypeEnum.USER) && !mIsTimelineCombined) {
-                MyAccount ma = MyAccount.fromAccountId(mCurrentMyAccountUserId);
+                MyAccount ma = MyAccount.fromUserId(mCurrentMyAccountUserId);
                 if (ma != null) {
-                    sp = ma.getMyAccountPreferences();
+                    sp = ma.getAccountPreferences();
                     accountGuid = ma.getAccountName();
                 } else {
                     Log.e(TAG, "No accoount for IserId=" + mCurrentMyAccountUserId);
