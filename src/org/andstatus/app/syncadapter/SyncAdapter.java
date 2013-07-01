@@ -52,15 +52,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority,
             ContentProviderClient provider, SyncResult syncResult) {
         try {
-            boolean ignoreAlarms = MyServiceManager.isIgnoreAlarms();
-            MyLog.d(TAG, "onPerformSync started, account=" + account.name
-                    + (ignoreAlarms ? "; ignoring" : ""));
+            synchronized (MyServiceManager.class) {
+                boolean ignoreAlarms = MyServiceManager.isIgnoreAlarms();
+                MyLog.d(TAG, "onPerformSync started, account=" + account.name
+                        + (ignoreAlarms ? "; ignoring" : ""));
 
-            if (!ignoreAlarms) {
-                /** Send the command to {@link MyService} */
-                CommandData element = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
-                        TimelineTypeEnum.ALL, 0);
-                mContext.sendBroadcast(element.toIntent());
+                if (!ignoreAlarms) {
+                    CommandData commandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
+                            TimelineTypeEnum.ALL, 0);
+                    MyServiceManager.startMyService(commandData);
+                }
             }
 
             // TODO: Wait till the actual completion in order to give

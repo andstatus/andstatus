@@ -84,6 +84,8 @@ public class MyServiceManager extends BroadcastReceiver {
             MyLog.d(TAG, "Stopping service on Shutdown");
             stopMyService(true);
         } else if (action.equals(MyService.ACTION_ALARM)) {
+            MyLog.d(TAG, "Repeating Alarm: Ignore");
+            /* TODO: delete
             if (ignoreAlarms) {
                 MyLog.d(TAG, "Repeating Alarm: Ignore");
             } else {
@@ -91,6 +93,7 @@ public class MyServiceManager extends BroadcastReceiver {
                 startMyService(new CommandData(
                         CommandEnum.AUTOMATIC_UPDATE, "", TimelineTypeEnum.ALL, 0));
             }
+            */
         } else if (action.equals(MyService.ACTION_SERVICE_STATE)) {
             synchronized(mServiceState) {
                 stateQueuedTime = System.nanoTime();
@@ -124,7 +127,7 @@ public class MyServiceManager extends BroadcastReceiver {
      * @param context
      * @param ignoreAlarms - if true repeating alarms will be ignored also after this call
      */
-    public static void stopMyService(boolean ignoreAlarms_in) {
+    public static synchronized void stopMyService(boolean ignoreAlarms_in) {
         ignoreAlarms = ignoreAlarms_in;
         // Don't do this, because we may loose some information and (or) get Force Close
         // context.stopService(new Intent(IMyService.class.getName()));
