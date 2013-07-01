@@ -191,7 +191,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     }
 
     protected void showFrequency() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_FETCH_PERIOD, R.array.fetch_frequency_keys, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_FETCH_FREQUENCY, R.array.fetch_frequency_keys, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
     }
 
     protected void showMinLogLevel() {
@@ -251,7 +251,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 
             MyPreferences.onPreferencesChanged();
             
-            if (key.equals(MyPreferences.KEY_FETCH_PERIOD)) {
+            if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY)) {
+                MyAccount.updateFetchFrequency();
                 showFrequency();
             }
             if (key.equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {

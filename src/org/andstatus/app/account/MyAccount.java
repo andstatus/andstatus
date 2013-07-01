@@ -323,11 +323,21 @@ public class MyAccount implements AccountDataReader {
                         myAccount.androidAccount = new android.accounts.Account(myAccount.getAccountName(), AuthenticatorService.ANDROID_ACCOUNT_TYPE);
                         accountManager.addAccountExplicitly(myAccount.androidAccount, myAccount.getPassword(), null);
                         
-                        // TODO: This is not enough, we need a "sync adapter":
+                        ContentResolver.setIsSyncable(myAccount.androidAccount, MyProvider.AUTHORITY, 1);
+                        
+                        // This is not needed because we don't use the "network tickles"... yet.
+                        // See http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
+                        // ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
+
+                        // See
+                        // http://developer.android.com/reference/android/content/ContentResolver.html#addPeriodicSync(android.accounts.Account, java.lang.String, android.os.Bundle, long)
+                        // and
+                        // http://stackoverflow.com/questions/11090604/android-syncadapter-automatically-initialize-syncing
+                        ContentResolver.addPeriodicSync(myAccount.androidAccount, MyProvider.AUTHORITY, new Bundle(), MyPreferences.getSyncFrequencySeconds());
+
+                        // Without SyncAdapter we got the error:
                         // SyncManager(865): can't find a sync adapter for SyncAdapterType Key 
                         // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, removing settings for it
-                        ContentResolver.setIsSyncable(myAccount.androidAccount, MyProvider.AUTHORITY, 1);
-                        ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
                         
                         MyLog.v(TAG, "Persisted " + myAccount.getAccountName());
                     } catch (Exception e) {
@@ -1005,6 +1015,16 @@ public class MyAccount implements AccountDataReader {
         }
         MyPreferences.getDefaultSharedPreferences().edit()
                 .putString(KEY_DEFAULT_ACCOUNT_NAME, defaultAccountName).commit();
+    }
+    
+    /**
+     * TODO: Set different period for each account
+     */
+    public static void updateFetchFrequency() {
+        long frequencySeconds = MyPreferences.getSyncFrequencySeconds();
+        for (MyAccount persistentAccount : persistentAccounts) {
+            ContentResolver.addPeriodicSync(persistentAccount.androidAccount, MyProvider.AUTHORITY, new Bundle(), frequencySeconds);
+        }
     }
     
     private MyAccount() {};

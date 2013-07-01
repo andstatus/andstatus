@@ -57,9 +57,12 @@ public class MyServiceManager extends BroadcastReceiver {
     /**
      * If true repeating alarms will be ignored
      */
-    private static boolean ignoreAlarms = false;
+    private static volatile boolean ignoreAlarms = false;
     
-    
+    public static boolean isIgnoreAlarms() {
+        return ignoreAlarms;
+    }
+
     private int instanceId;
     
     public MyServiceManager() {

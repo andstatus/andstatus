@@ -178,9 +178,9 @@ public class TimelineMsg {
             // Automatic updates are disabled
             return false;
         }
-        long intervalMs = Integer.parseInt(MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_FETCH_PERIOD, "180")) * MyService.MILLISECONDS;
+        long frequencyMs = MyPreferences.getSyncFrequencyMs();
         long passedMs = System.currentTimeMillis() - getTimelineDate(); 
-        blnOut = (passedMs > intervalMs);
+        blnOut = (passedMs > frequencyMs);
         
         if (blnOut && MyLog.isLoggable(TAG, Log.VERBOSE)) {
             MyLog.v(TAG, "It's time to auto update " + timelineType.save() 

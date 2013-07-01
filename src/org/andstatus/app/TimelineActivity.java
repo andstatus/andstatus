@@ -24,6 +24,8 @@ import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.ComponentName;
+import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -1604,6 +1606,8 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * Ask a service to load data from the Internet for the selected TimelineType
      * Only newer messages (newer than last loaded) are being loaded from the
      * Internet, older ones are not being reloaded.
+     * TODO: Implement using {@link ContentResolver#requestSync(android.accounts.Account, String, Bundle)},
+     * see <a href="http://developer.android.com/reference/android/content/ContentResolver.html#requestSync(android.accounts.Account, java.lang.String, android.os.Bundle)">requestSync</a>
      */
     protected void manualReload(boolean allTimelineTypes) {
 

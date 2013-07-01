@@ -376,8 +376,6 @@ public class MyService extends Service {
      */
     final RemoteCallbackList<IMyServiceCallback> mCallbacks = new RemoteCallbackList<IMyServiceCallback>();
 
-    public static final int MILLISECONDS = 1000;
-
     /**
      * Send broadcast to Widgets even if there are no new tweets
      */
@@ -581,14 +579,14 @@ public class MyService extends Service {
             getMyServicePreferences().edit().putLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, preferencesExamineTime).commit();
 
             // Stop existing alarm in any case
-            cancelRepeatingAlarm();
+            //TODO delete: cancelRepeatingAlarm();
 
             SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
             if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
                 /**
                  * Schedule Automatic updates according to the preferences.
                  */
-                scheduleRepeatingAlarm();
+              //TODO delete: scheduleRepeatingAlarm();
             }
         }
     }
@@ -727,25 +725,13 @@ public class MyService extends Service {
         if (!processed) {
             processed = true;
             switch (commandData.command) {
-
-                // TODO: Do we really need these three commands?
-                case START_ALARM:
-                    ok = scheduleRepeatingAlarm();
-                    break;
-                case STOP_ALARM:
-                    ok = cancelRepeatingAlarm();
-                    break;
-                case RESTART_ALARM:
-                    ok = cancelRepeatingAlarm();
-                    ok = scheduleRepeatingAlarm();
-                    break;
-
                 case UNKNOWN:
                 case EMPTY:
                 case BOOT_COMPLETED:
                     // Nothing to do
                     break;
 
+                // TODO: Do we really need these three commands?
                 case PUT_BOOLEAN_PREFERENCE:
                     if (!putPreferences) {
                         skipped = true;
@@ -801,6 +787,7 @@ public class MyService extends Service {
                         sp.edit().putString(key, stringValue).commit();
                     }
                     break;
+                    
                 default:
                     processed = false;
                     break;
@@ -1923,25 +1910,15 @@ public class MyService extends Service {
     }
 
     /**
-     * Returns the number of milliseconds between two fetch actions.
-     * 
-     * @return the number of milliseconds
-     */
-    private int getFetchPeriodMs() {
-        int periodSeconds = Integer.parseInt(getSp().getString(MyPreferences.KEY_FETCH_PERIOD, "180"));
-        return (periodSeconds * MILLISECONDS);
-    }
-
-    /**
      * Starts the repeating Alarm that sends the fetch Intent.
      */
     private boolean scheduleRepeatingAlarm() {
         AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         PendingIntent pIntent = newRepeatingIntent();
-        int periodMs = getFetchPeriodMs();
-        long firstTime = SystemClock.elapsedRealtime() + periodMs;
-        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, periodMs, pIntent);
-        MyLog.d(TAG, "Started repeating alarm in a " + periodMs + " ms rhythm.");
+        int frequencyMs = MyPreferences.getSyncFrequencyMs();
+        long firstTime = SystemClock.elapsedRealtime() + frequencyMs;
+        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, frequencyMs, pIntent);
+        MyLog.d(TAG, "Started repeating alarm in a " + frequencyMs + " ms rhythm.");
         return true;
     }
 

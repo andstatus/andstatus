@@ -65,7 +65,7 @@ public class MyPreferences {
     /**
      * Period of automatic updates in seconds
      */
-    public static final String KEY_FETCH_PERIOD = "fetch_frequency";
+    public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
     public static final String KEY_AUTOMATIC_UPDATES = "automatic_updates";
     public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
     public static final String KEY_CONTACT_DEVELOPER = "contact_developer";
@@ -250,6 +250,31 @@ public class MyPreferences {
         }
     }
 
+    public static final int MILLISECONDS = 1000;
+    public static final int SYNC_FREQUENCY_DEFAULT_SECONDS = 180;
+    /**
+     * @return the number of seconds between two sync ("fetch"...) actions.
+     */
+    public static int getSyncFrequencySeconds() {
+        int frequencySeconds = SYNC_FREQUENCY_DEFAULT_SECONDS;
+        if (context == null) {
+            Log.e(TAG, "getSyncFrequency - Was not initialized yet");
+        } else {
+            int frequencySecondsStored = Integer.parseInt(getDefaultSharedPreferences().getString(MyPreferences.KEY_FETCH_FREQUENCY, "0"));
+            if (frequencySecondsStored > 0) { 
+                frequencySeconds = frequencySecondsStored;
+            }
+        }
+        return frequencySeconds;
+    }
+
+    /**
+     * @return the number of milliseconds between two sync ("fetch"...) actions.
+     */
+    public static int getSyncFrequencyMs() {
+        return (getSyncFrequencySeconds() * MILLISECONDS);
+    }
+    
     /**
      *  Event: Preferences have changed right now
      *  Remember when last changes to the preferences were made
