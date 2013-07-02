@@ -78,7 +78,7 @@ public class MyServiceConnector {
     /**
      * Initialize service and bind to it.
      */
-    public void bindToService(Activity activity, Handler handler) {
+    public void connectToService(Activity activity, Handler handler) {
         if (!mIsBound) {
             mIsBound = true;
             mActivity = activity;
@@ -86,7 +86,7 @@ public class MyServiceConnector {
             Intent serviceIntent = new Intent(IMyService.class.getName());
             if (MyServiceManager.getServiceState() != MyService.ServiceState.RUNNING) {
                 // Ensure that MyService is running
-                MyServiceManager.startMyService(new CommandData(CommandEnum.EMPTY, ""));
+                MyServiceManager.sendCommand(CommandData.EMPTY_COMMAND);
             }
             // startService(serviceIntent);
             mActivity.bindService(serviceIntent, mServiceConnection, 0);
@@ -96,7 +96,7 @@ public class MyServiceConnector {
     /**
      * Disconnect and unregister the service.
      */
-    protected void disconnectService() {
+    protected void disconnectFromService() {
         if (mIsBound) {
             if (mService != null) {
                 try {

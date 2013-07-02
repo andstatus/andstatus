@@ -676,37 +676,30 @@ public class MyService extends Service {
             }
         }
 
-        if (commandData != null) {
-            if (commandData.command == CommandEnum.UNKNOWN) {
-                // Ignore unknown commands
-
-                // Maybe this command may be processed synchronously without
-                // Internet connection?
-            } else if (processCommandImmediately(commandData)) {
-                // Don't add to the queue
-            } else if (mCommands.contains(commandData)) {
-                MyLog.d(TAG, "Duplicated " + commandData);
-                // Reset retries counter on receiving duplicated command
-                for (CommandData cd:mCommands) {
-                    if (cd.equals(commandData)) {
-                        cd.retriesLeft = 0;
-                        break;
-                    }
+        if (processCommandImmediately(commandData)) {
+            // Don't add to the queue
+        } else if (mCommands.contains(commandData)) {
+            MyLog.d(TAG, "Duplicated " + commandData);
+            // Reset retries counter on receiving duplicated command
+            for (CommandData cd:mCommands) {
+                if (cd.equals(commandData)) {
+                    cd.retriesLeft = 0;
+                    break;
                 }
-            } else {
-                MyLog.d(TAG, "Adding to the queue " + commandData);
-                if (!mCommands.offer(commandData)) {
-                    Log.e(TAG, "mCommands is full?");
-                }
+            }
+        } else {
+            MyLog.d(TAG, "Adding to the queue " + commandData);
+            if (!mCommands.offer(commandData)) {
+                Log.e(TAG, "mCommands is full?");
             }
         }
 
         // Start Executor if necessary
-        startEndExecutor(true, null);
+        startOrStopExecutor(true, null);
     }
 
     /**
-     * @param commandData
+     * @param commandData may be null
      * @return true if the command was processed (either successfully or not...)
      */
     private boolean processCommandImmediately(CommandData commandData) {
@@ -739,8 +732,12 @@ public class MyService extends Service {
                     }
                     String key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     boolean boolValue = commandData.bundle.getBoolean(EXTRA_PREFERENCE_VALUE);
-                    MyLog.v(TAG, "Put boolean Preference '" + key + "'=" + boolValue
-                            + ((commandData.getAccount() != null ) ? " account='" + commandData.getAccount().getAccountName() + "'" : " global"));
+                    MyLog.v(TAG, "Put boolean Preference '"
+                            + key
+                            + "'="
+                            + boolValue
+                            + ((commandData.getAccount() != null) ? " account='"
+                                    + commandData.getAccount().getAccountName() + "'" : " global"));
                     SharedPreferences sp = null;
                     if (commandData.getAccount() != null) {
                         sp = commandData.getAccount().getAccountPreferences();
@@ -758,8 +755,12 @@ public class MyService extends Service {
                     }
                     key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     long longValue = commandData.bundle.getLong(EXTRA_PREFERENCE_VALUE);
-                    MyLog.v(TAG, "Put long Preference '" + key + "'=" + longValue
-                            + ((commandData.getAccount() != null) ? " account='" + commandData.getAccount().getAccountName() + "'" : " global"));
+                    MyLog.v(TAG, "Put long Preference '"
+                            + key
+                            + "'="
+                            + longValue
+                            + ((commandData.getAccount() != null) ? " account='"
+                                    + commandData.getAccount().getAccountName() + "'" : " global"));
                     if (commandData.getAccount() != null) {
                         sp = commandData.getAccount().getAccountPreferences();
                     } else {
@@ -776,8 +777,12 @@ public class MyService extends Service {
                     }
                     key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
                     String stringValue = commandData.bundle.getString(EXTRA_PREFERENCE_VALUE);
-                    MyLog.v(TAG, "Put String Preference '" + key + "'=" + stringValue
-                            + ((commandData.getAccount() != null) ? " account='" + commandData.getAccount().getAccountName() + "'" : " global"));
+                    MyLog.v(TAG, "Put String Preference '"
+                            + key
+                            + "'="
+                            + stringValue
+                            + ((commandData.getAccount() != null) ? " account='"
+                                    + commandData.getAccount().getAccountName() + "'" : " global"));
                     if (commandData.getAccount() != null) {
                         sp = commandData.getAccount().getAccountPreferences();
                     } else {
@@ -787,13 +792,14 @@ public class MyService extends Service {
                         sp.edit().putString(key, stringValue).commit();
                     }
                     break;
-                    
+
                 default:
                     processed = false;
                     break;
             }
             if (processed) {
-                MyLog.d(TAG, (skipped ? "Skipped" : (ok ? "Succeeded" : "Failed")) + " " + commandData);
+                MyLog.d(TAG, (skipped ? "Skipped" : (ok ? "Succeeded" : "Failed")) + " "
+                        + commandData);
             }
         }
         return processed;
@@ -806,7 +812,7 @@ public class MyService extends Service {
      * @param executor - existing executor or null (if starting new executor)
      * @param logMsg a log message to include for debugging
      */
-    private synchronized void startEndExecutor(boolean start, CommandExecutor executorIn) {
+    private synchronized void startOrStopExecutor(boolean start, CommandExecutor executorIn) {
         if (start) {
             start = !mIsStopping;
         }
@@ -897,9 +903,7 @@ public class MyService extends Service {
              * Kick the commands queue by sending empty command
              * This Intent will be sent upon a User tapping the notification 
              */
-            PendingIntent pi = PendingIntent.getBroadcast(this, 0, new CommandData(
-                    CommandEnum.EMPTY, "").toIntent(), 0);
-
+            PendingIntent pi = PendingIntent.getBroadcast(this, 0, CommandData.EMPTY_COMMAND.toIntent(), 0);
             notification.setLatestEventInfo(this, getText(messageTitle), aMessage, pi);
             nM.notify(CommandEnum.NOTIFY_QUEUE.ordinal(), notification);
         }
@@ -1028,7 +1032,7 @@ public class MyService extends Service {
          */
         @Override
         protected void onPostExecute(Boolean notUsed) {
-            startEndExecutor(false, this);
+            startOrStopExecutor(false, this);
         }
 
         /**

@@ -139,9 +139,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     protected void onResume() {
         super.onResume();
 
-        // Stop service to force preferences reload on the next start
-        // Plus disable repeating alarms for awhile (till next start service...)
-        MyServiceManager.stopMyService(true);
+        MyServiceManager.setServiceUnavailable();
+        MyServiceManager.stopService();
 
         // Ensure MyPreferences are initialized
         MyPreferences.initialize(this, this);
@@ -309,10 +308,11 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                     .setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int id) {
+                            MyServiceManager.setServiceUnavailable();
                             if (MyServiceManager.getServiceState() == MyService.ServiceState.STOPPED) {
                                 new MoveDataBetweenStoragesTask().execute();
                             } else {
-                                MyServiceManager.stopMyService(true);
+                                MyServiceManager.stopService();
                                 dialog.cancel();
                                 Toast.makeText(MyPreferenceActivity.this, getText(R.string.system_is_busy_try_later), Toast.LENGTH_LONG).show();
                             }
@@ -628,6 +628,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             if (MyAccount.numberOfPersistentAccounts() > 0) {
                 MyLog.v(TAG, "Going back to the Timeline");
                 finish();
+                MyServiceManager.setServiceAvailable();
                 // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
                 Intent i = new Intent(this, TimelineActivity.class);
                 i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);

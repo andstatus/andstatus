@@ -20,7 +20,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.andstatus.app.MyService;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
@@ -32,8 +31,8 @@ import java.util.Date;
 /**
  * Retrieve and save information about the latest downloaded message from this timeline
  */
-public class TimelineMsg {
-    private static final String TAG = TimelineMsg.class.getSimpleName();
+public class LatestMessageOfTimeline {
+    private static final String TAG = LatestMessageOfTimeline.class.getSimpleName();
 
     private TimelineTypeEnum timelineType;
     /**
@@ -66,7 +65,7 @@ public class TimelineMsg {
      * Retrieve information about the last downloaded message from this timeline
      * @param userId_in Should always be Id of the User of this timeline
      */
-    public TimelineMsg(TimelineTypeEnum timelineType_in, long userId_in) {
+    public LatestMessageOfTimeline(TimelineTypeEnum timelineType_in, long userId_in) {
         timelineType = timelineType_in;
         userId = userId_in;
         if (userId == 0) {

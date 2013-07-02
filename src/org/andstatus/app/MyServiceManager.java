@@ -19,9 +19,11 @@ package org.andstatus.app;
 
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.MyService.ServiceState;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -53,14 +55,38 @@ public class MyServiceManager extends BroadcastReceiver {
      * How long are we waiting for {@link MyService} response before deciding that the service is stopped
      */
     private static final int STATE_QUERY_TIMEOUT_SECONDS = 3;
-
-    /**
-     * If true repeating alarms will be ignored
-     */
-    private static volatile boolean ignoreAlarms = false;
     
-    public static boolean isIgnoreAlarms() {
-        return ignoreAlarms;
+        /**
+     * If false input commands/alarms will be ignored
+     */
+    private static volatile boolean serviceAvailable = true;
+    private static volatile java.util.Timer timerToMakeServiceAvailable;
+    
+    public static boolean isServiceAvailable() {
+        return serviceAvailable;
+    }
+    public static synchronized void setServiceAvailable() {
+        serviceAvailable = true;
+        if (timerToMakeServiceAvailable != null) {
+            timerToMakeServiceAvailable.cancel();           
+        } 
+    }
+    public static synchronized void setServiceUnavailable() {
+        serviceAvailable = false;
+        if (timerToMakeServiceAvailable != null) {
+            timerToMakeServiceAvailable.cancel();           
+        } 
+        timerToMakeServiceAvailable = new Timer();
+        timerToMakeServiceAvailable.schedule(
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        Log.i(TAG, "MyService is made available by a timer");
+                        setServiceAvailable();
+                    }
+                }
+                , 1800 * MyPreferences.MILLISECONDS);
+        
     }
 
     private int instanceId;
@@ -76,24 +102,15 @@ public class MyServiceManager extends BroadcastReceiver {
         String action = intent.getAction(); 
         if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
             MyLog.d(TAG, "Starting service on boot.");
-            startMyService(new CommandData(
-                    CommandEnum.BOOT_COMPLETED, ""));
+            sendCommand(CommandData.BOOT_COMPLETED_COMMAND);
         } else if (action.equals("android.intent.action.ACTION_SHUTDOWN")) {
             // This system broadcast is Since: API Level 4
             // We need this to persist unsaved data
             MyLog.d(TAG, "Stopping service on Shutdown");
-            stopMyService(true);
+            setServiceUnavailable();
+            stopService();
         } else if (action.equals(MyService.ACTION_ALARM)) {
-            MyLog.d(TAG, "Repeating Alarm: Ignore");
-            /* TODO: delete
-            if (ignoreAlarms) {
-                MyLog.d(TAG, "Repeating Alarm: Ignore");
-            } else {
-                MyLog.d(TAG, "Repeating Alarm: Automatic update");
-                startMyService(new CommandData(
-                        CommandEnum.AUTOMATIC_UPDATE, "", TimelineTypeEnum.ALL, 0));
-            }
-            */
+            MyLog.d(TAG, "Repeating Alarm: Ignoring");
         } else if (action.equals(MyService.ACTION_SERVICE_STATE)) {
             synchronized(mServiceState) {
                 stateQueuedTime = System.nanoTime();
@@ -108,13 +125,13 @@ public class MyServiceManager extends BroadcastReceiver {
 
     /**
      * Starts MyService  asynchronously if it is not already started
-     * and schedule Automatic updates according to the preferences.
+     * and send command to it.
      * 
-     * @param context 
      * @param commandData to the service or null 
      */
-    public static void startMyService(CommandData commandData) {
-        ignoreAlarms = false;
+    public static void sendCommand(CommandData commandData) {
+        if (!isServiceAvailable()) throw new RuntimeException("MyService is unavailable");
+        
         Intent serviceIntent = new Intent(IMyService.class.getName());
         if (commandData != null) {
             serviceIntent = commandData.toIntent(serviceIntent);
@@ -124,11 +141,8 @@ public class MyServiceManager extends BroadcastReceiver {
 
     /**
      * Stop  {@link MyService} asynchronously
-     * @param context
-     * @param ignoreAlarms - if true repeating alarms will be ignored also after this call
      */
-    public static synchronized void stopMyService(boolean ignoreAlarms_in) {
-        ignoreAlarms = ignoreAlarms_in;
+    public static synchronized void stopService() {
         // Don't do this, because we may loose some information and (or) get Force Close
         // context.stopService(new Intent(IMyService.class.getName()));
         

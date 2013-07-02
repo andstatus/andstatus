@@ -25,7 +25,7 @@ import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.FollowingUserValues;
 import org.andstatus.app.data.LatestUserMessages;
-import org.andstatus.app.data.TimelineMsg;
+import org.andstatus.app.data.LatestMessageOfTimeline;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -129,7 +129,7 @@ public class TimelineDownloader {
             userOid =  MyProvider.idToOid(OidEnum.USER_OID, mUserId, 0);
         }
         
-        TimelineMsg timelineMsg = new TimelineMsg(mTimelineType, mUserId);
+        LatestMessageOfTimeline timelineMsg = new LatestMessageOfTimeline(mTimelineType, mUserId);
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
             String strLog = "Loading timeline " + mTimelineType.save() + "; account=" + ma.getAccountName();
@@ -183,7 +183,7 @@ public class TimelineDownloader {
         boolean ok = false;
         
         String userOid =  MyProvider.idToOid(OidEnum.USER_OID, mUserId, 0);
-        TimelineMsg timelineMsg = new TimelineMsg(mTimelineType, mUserId);
+        LatestMessageOfTimeline timelineMsg = new LatestMessageOfTimeline(mTimelineType, mUserId);
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
             String strLog = "Loading timeline " + mTimelineType.save() + "; account=" + ma.getAccountName();

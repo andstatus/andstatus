@@ -53,14 +53,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             ContentProviderClient provider, SyncResult syncResult) {
         try {
             synchronized (MyServiceManager.class) {
-                boolean ignoreAlarms = MyServiceManager.isIgnoreAlarms();
                 MyLog.d(TAG, "onPerformSync started, account=" + account.name
-                        + (ignoreAlarms ? "; ignoring" : ""));
+                        + (MyServiceManager.isServiceAvailable() ? "" : "; ignoring"));
 
-                if (!ignoreAlarms) {
+                if (MyServiceManager.isServiceAvailable()) {
                     CommandData commandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
                             TimelineTypeEnum.ALL, 0);
-                    MyServiceManager.startMyService(commandData);
+                    MyServiceManager.sendCommand(commandData);
+                } else {
+                    syncResult = SyncResult.ALREADY_IN_PROGRESS;
                 }
             }
 

@@ -24,7 +24,6 @@ import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.ComponentName;
-import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -66,7 +65,7 @@ import android.widget.ToggleButton;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.TimelineMsg;
+import org.andstatus.app.data.LatestMessageOfTimeline;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyProvider;
@@ -79,7 +78,6 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
-import org.json.JSONObject;
 
 import java.util.Locale;
 
@@ -90,39 +88,15 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     private static final String TAG = TimelineActivity.class.getSimpleName();
 
-    // Handler message codes
-    /**
-     * My tweet ("What's happening?"...) is being sending
-     */
-    private static final int MSG_UPDATE_STATUS = 3;
-
-    private static final int MSG_AUTHENTICATION_ERROR = 5;
-
-    private static final int MSG_SERVICE_UNAVAILABLE_ERROR = 8;
-
-    private static final int MSG_CONNECTION_TIMEOUT_EXCEPTION = 11;
-
-    private static final int MSG_STATUS_DESTROY = 12;
-
-    private static final int MSG_FAVORITE_CREATE = 13;
-
-    private static final int MSG_FAVORITE_DESTROY = 14;
-
-    private static final int MSG_CONNECTION_EXCEPTION = 15;
-
     // Handler message status codes
     public static final int STATUS_LOAD_ITEMS_FAILURE = 0;
 
     public static final int STATUS_LOAD_ITEMS_SUCCESS = 1;
 
     // Dialog identifier codes
-    public static final int DIALOG_AUTHENTICATION_FAILED = 1;
-
     public static final int DIALOG_SERVICE_UNAVAILABLE = 3;
 
     public static final int DIALOG_CONNECTION_TIMEOUT = 7;
-
-    public static final int DIALOG_EXECUTING_COMMAND = 8;
 
     public static final int DIALOG_TIMELINE_TYPE = 9;
     
@@ -178,10 +152,11 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     public static final int MILLISECONDS = 1000;
 
     /**
-     * List footer, appears at the bottom of the list of messages 
+     * Visibility of the layout indicates whether Messages are being loaded into the list (asynchronously...)
+     * The layout appears at the bottom of the list of messages 
      * when new items are being loaded into the list 
      */
-    protected LinearLayout mListFooter;
+    protected LinearLayout loadingLayout;
 
     protected Cursor mCursor;
 
@@ -210,11 +185,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * The is no more items in the query, so don't try to load more pages
      */
     protected boolean noMoreItems = false;
-    
-    /**
-     * Items are being loaded into the list (asynchronously...)
-     */
-    private boolean mIsLoading = false;
     
     /**
      * For testing purposes
@@ -301,7 +271,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         @Override
         public void handleMessage(android.os.Message msg) {
             MyLog.v(TAG, "handleMessage, what=" + msg.what + ", instanceId=" + instanceId);
-            JSONObject result = null;
             switch (msg.what) {
                 case MyServiceConnector.MSG_TWEETS_CHANGED:
                     int numTweets = msg.arg1;
@@ -313,39 +282,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 case MyServiceConnector.MSG_DATA_LOADING:
                     boolean isLoadingNew = (msg.arg2 == 1) ? true : false;
                     if (!isLoadingNew) {
-                        MyLog.v(TAG, "Timeline has been loaded " + (TimelineActivity.this.isLoading() ? " (loading) " : " (not loading) ") + ", visibility=" + mListFooter.getVisibility());
-                        mListFooter.setVisibility(View.INVISIBLE);
+                        MyLog.v(TAG, "Timeline has been loaded " + (TimelineActivity.this.isLoading() ? " (loading) " : " (not loading) "));
                         if (isLoading()) {
                             Toast.makeText(TimelineActivity.this, R.string.timeline_reloaded,
                                     Toast.LENGTH_SHORT).show();
-                            setIsLoading(false);
                         }
                     }
-                    break;
-
-                case MSG_UPDATE_STATUS:
-                    result = (JSONObject) msg.obj;
-                    if (result == null) {
-                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
-                                Toast.LENGTH_LONG).show();
-                    } else if (result.optString("error").length() > 0) {
-                        Toast.makeText(TimelineActivity.this,
-                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
-                    } else {
-                        // The tweet was sent successfully
-                        Toast.makeText(TimelineActivity.this, R.string.message_sent,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                    break;
-
-                case MSG_AUTHENTICATION_ERROR:
-                    mListFooter.setVisibility(View.INVISIBLE);
-                    showDialog(DIALOG_AUTHENTICATION_FAILED);
-                    break;
-
-                case MSG_SERVICE_UNAVAILABLE_ERROR:
-                    mListFooter.setVisibility(View.INVISIBLE);
-                    showDialog(DIALOG_SERVICE_UNAVAILABLE);
+                    setIsLoading(false);
                     break;
 
                 case MyServiceConnector.MSG_UPDATED_TITLE:
@@ -354,92 +297,25 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     }
                     break;
 
-                case MSG_CONNECTION_TIMEOUT_EXCEPTION:
-                    mListFooter.setVisibility(View.INVISIBLE);
-                    showDialog(DIALOG_CONNECTION_TIMEOUT);
-                    break;
-
-                case MSG_STATUS_DESTROY:
-                    result = (JSONObject) msg.obj;
-                    if (result == null) {
-                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
-                                Toast.LENGTH_LONG).show();
-                    } else if (result.optString("error").length() > 0) {
-                        Toast.makeText(TimelineActivity.this,
-                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(TimelineActivity.this, R.string.status_destroyed,
-                                Toast.LENGTH_SHORT).show();
-                        mCurrentMsgId = 0;
-                    }
-                    break;
-
-                case MSG_FAVORITE_CREATE:
-                    result = (JSONObject) msg.obj;
-                    if (result == null) {
-                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
-                                Toast.LENGTH_LONG).show();
-                    } else if (result.optString("error").length() > 0) {
-                        Toast.makeText(TimelineActivity.this,
-                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(TimelineActivity.this, R.string.favorite_created,
-                                Toast.LENGTH_SHORT).show();
-                        mCurrentMsgId = 0;
-                    }
-                    break;
-
-                case MSG_FAVORITE_DESTROY:
-                    result = (JSONObject) msg.obj;
-                    if (result == null) {
-                        Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
-                                Toast.LENGTH_LONG).show();
-                    } else if (result.optString("error").length() > 0) {
-                        Toast.makeText(TimelineActivity.this,
-                                (CharSequence) result.optString("error"), Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(TimelineActivity.this, R.string.favorite_destroyed,
-                                Toast.LENGTH_SHORT).show();
-                        mCurrentMsgId = 0;
-                    }
-                    break;
-
-                case MSG_CONNECTION_EXCEPTION:
-                    switch (msg.arg1) {
-                        case MSG_FAVORITE_CREATE:
-                        case MSG_FAVORITE_DESTROY:
-                        case MSG_STATUS_DESTROY:
-                            try {
-                                dismissDialog(DIALOG_EXECUTING_COMMAND);
-                            } catch (IllegalArgumentException e) {
-                                MyLog.d(TAG, "", e);
-                            }
-                            break;
-                    }
-                    Toast.makeText(TimelineActivity.this, R.string.error_connection_error,
-                            Toast.LENGTH_SHORT).show();
-                    break;
-
                 default:
                     super.handleMessage(msg);
             }
         }
     }
 
-    /**
-     * @return the mIsLoading
-     */
     boolean isLoading() {
         //MyLog.v(TAG, "isLoading checked " + mIsLoading + ", instance " + instanceId);
-        return mIsLoading;
+        return (loadingLayout.getVisibility() == View.VISIBLE);
     }
-
-    /**
-     * @param isLoading Is loading now?
-     */
-    void setIsLoading(boolean isLoading) {
-        MyLog.v(TAG, "isLoading set from " + mIsLoading + " to " + isLoading + ", instanceId=" + instanceId );
-        mIsLoading = isLoading;
+    void setIsLoading(boolean isLoadingNew) {
+        if (isLoading() != isLoadingNew) {
+            MyLog.v(TAG, "isLoading set to " + isLoadingNew + ", instanceId=" + instanceId );
+            if (isLoadingNew) {
+                loadingLayout.setVisibility(View.VISIBLE);
+            } else {
+                loadingLayout.setVisibility(View.INVISIBLE);
+            }
+        }
     }
     
     /**
@@ -522,6 +398,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         mTweetEditor.hide();
 
         boolean isInstanceStateRestored = false;
+        boolean isLoadingNew = false;
         if (savedInstanceState != null) {
             TimelineTypeEnum timelineType_new = TimelineTypeEnum.load(savedInstanceState
                     .getString(MyService.EXTRA_TIMELINE_TYPE));
@@ -530,7 +407,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 mTimelineType = timelineType_new;
                 mTweetEditor.loadState(savedInstanceState);
                 if (savedInstanceState.containsKey(BUNDLE_KEY_IS_LOADING)) {
-                    setIsLoading(savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING));
+                    isLoadingNew = savedInstanceState.getBoolean(BUNDLE_KEY_IS_LOADING);
                 }
                 if (savedInstanceState.containsKey(MyService.EXTRA_ITEMID)) {
                     mCurrentMsgId = savedInstanceState.getLong(MyService.EXTRA_ITEMID);
@@ -552,12 +429,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         
         // Create list footer to show the progress of message loading
         // We use "this" as a context, otherwise custom styles are not recognized...
-        
         LayoutInflater inflater = LayoutInflater.from(this);
-
-        mListFooter = (LinearLayout) inflater.inflate(R.layout.item_loading, null);;
-        getListView().addFooterView(mListFooter);
-        mListFooter.setVisibility(View.INVISIBLE);
+        loadingLayout = (LinearLayout) inflater.inflate(R.layout.item_loading, null);;
+        getListView().addFooterView(loadingLayout);
+        setIsLoading(isLoadingNew);
 
         /* This also works (after we've added R.layout.item_loading to the view)
            but is not needed here:
@@ -643,7 +518,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
         }
         if (!mIsFinishing) {
-            serviceConnector.bindToService(this, mHandler);
+            serviceConnector.connectToService(this, mHandler);
             updateTitle();
             if (!isLoading()) {
                 restorePosition();
@@ -703,39 +578,17 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
         }
 
-        // Variant 2 is overkill... but let's try...
-        // I have a feeling that saving preferences while finishing activity
-        // sometimes doesn't work...
-        // - Maybe this was fixed introducing MyPreferences class?!
-        boolean saveSync = true;
-        boolean saveAsync = false;
-        if (saveSync) {
-            // 1. Synchronous saving
-            if (save) {
-                ps.sp.edit().putLong(ps.keyFirst, firstItemId)
-                        .putLong(ps.keyLast, lastItemId).commit();
-                if (mIsSearchMode) {
-                    // Remember query string for which the position was saved
-                    ps.sp.edit().putString(ps.keyQueryString, mQueryString)
-                            .commit();
-                }
-            } else {
-                ps.sp.edit().remove(ps.keyFirst).remove(ps.keyLast)
-                        .remove(ps.keyQueryString).commit();
-            }
-        }
-        if (saveAsync) {
-            // 2. Asynchronous saving of user's preferences
-            // TODO: it's not used and should be tested when we will need it...
-            serviceConnector.sendCommand(new CommandData(ps.accountGuid, ps.keyFirst,
-                    firstItemId));
-            serviceConnector
-                    .sendCommand(new CommandData(ps.accountGuid, ps.keyLast, lastItemId));
+        if (save) {
+            ps.sp.edit().putLong(ps.keyFirst, firstItemId)
+                    .putLong(ps.keyLast, lastItemId).commit();
             if (mIsSearchMode) {
                 // Remember query string for which the position was saved
-                serviceConnector.sendCommand(new CommandData(ps.keyQueryString,
-                        mQueryString, ps.accountGuid));
+                ps.sp.edit().putString(ps.keyQueryString, mQueryString)
+                        .commit();
             }
+        } else {
+            ps.sp.edit().remove(ps.keyFirst).remove(ps.keyLast)
+                    .remove(ps.keyQueryString).commit();
         }
 
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
@@ -866,7 +719,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
         }        
         positionRestored = false;
-        serviceConnector.disconnectService();
+        serviceConnector.disconnectFromService();
     }
    
     /**
@@ -900,7 +753,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             mCursor.close();
         }
         if (serviceConnector != null) {
-            serviceConnector.disconnectService();
+            serviceConnector.disconnectFromService();
         }
     }
 
@@ -921,45 +774,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     @Override
     protected Dialog onCreateDialog(int id) {
         switch (id) {
-            case DIALOG_AUTHENTICATION_FAILED:
-                return new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle(R.string.dialog_title_authentication_failed).setMessage(
-                                R.string.dialog_summary_authentication_failed).setPositiveButton(
-                                android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface Dialog, int whichButton) {
-                                        startActivity(new Intent(TimelineActivity.this,
-                                                MyPreferenceActivity.class));
-                                    }
-                                }).create();
-
-            case DIALOG_SERVICE_UNAVAILABLE:
-                return new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle(R.string.dialog_title_service_unavailable).setMessage(
-                                R.string.dialog_summary_service_unavailable).setPositiveButton(
-                                android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface Dialog, int whichButton) {
-                                    }
-                                }).create();
-
-            case DIALOG_CONNECTION_TIMEOUT:
-                return new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle(R.string.dialog_title_connection_timeout).setMessage(
-                                R.string.dialog_summary_connection_timeout).setPositiveButton(
-                                android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface Dialog, int whichButton) {
-                                    }
-                                }).create();
-
-            case DIALOG_EXECUTING_COMMAND:
-                mProgressDialog = new ProgressDialog(this);
-                mProgressDialog.setIcon(android.R.drawable.ic_dialog_info);
-                mProgressDialog.setTitle(R.string.dialog_title_executing_command);
-                mProgressDialog.setMessage(getText(R.string.dialog_summary_executing_command));
-                return mProgressDialog;
-
             case DIALOG_TIMELINE_TYPE:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle(R.string.dialog_title_select_timeline);
@@ -1129,15 +943,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         mTotalItemCount = totalItemCount;
 
         if (!noMoreItems && positionRestored && !isLoading()) {
-            // Idea from
-            // http://stackoverflow.com/questions/1080811/android-endless-list
+            // Idea from http://stackoverflow.com/questions/1080811/android-endless-list
             boolean loadMore = (visibleItemCount > 0) && (firstVisibleItem > 0)
                     && (firstVisibleItem + visibleItemCount >= totalItemCount);
             if (loadMore) {
                 MyLog.d(TAG, "Start Loading more items, rows=" + totalItemCount);
                 saveOrForgetPosition(true);
-                // setProgressBarIndeterminateVisibility(true);
-                mListFooter.setVisibility(View.VISIBLE);
+                setIsLoading(true);
                 queryListData(true);
             }
         }
@@ -1309,6 +1121,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
     }
 
     private void updateThisOnChangedParameters() {
+        MyServiceManager.setServiceAvailable();
         mIsSearchMode = !TextUtils.isEmpty(mQueryString);
         if (mIsSearchMode) {
             // Let's check if last time we saved position for the same query
@@ -1356,8 +1169,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      */
     private void queryListDataEnded(boolean doRestorePosition) {
         if (!mIsFinishing) {
-            mListFooter.setVisibility(View.INVISIBLE);
-            // setProgressBarIndeterminateVisibility(false);
             if (doRestorePosition) {
                 restorePosition();
             }
@@ -1518,15 +1329,28 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
             @Override
             protected Void doInBackground(Void... params) {
-                cursor = getContentResolver().query(contentUri, PROJECTION, sa.selection,
-                        sa.selectionArgs, sortOrder);
+                for (int attempt=0; attempt<3; attempt++) {
+                    try {
+                        cursor = getContentResolver().query(contentUri, PROJECTION, sa.selection,
+                                sa.selectionArgs, sortOrder);
+                        break;
+                    } catch (IllegalStateException e) {
+                        Log.d(TAG, "Attempt " + attempt + " to prepare cursor: " + e.getMessage());
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e1) {
+                            Log.d(TAG, "Attempt " + attempt + " to prepare cursor was interrupted");
+                            break;
+                        }
+                    }
+                }
                 return null;
             }
 
             @Override
             protected void onPostExecute(Void result) {
                 boolean doRestorePosition = true;
-                if (!mIsFinishing) {
+                if (cursor != null && !mIsFinishing) {
                     boolean cursorSet = false;
                     if (positionRestored && (getListAdapter() != null)) {
                         if (loadOneMorePage) {
@@ -1555,7 +1379,9 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 
                 if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                     String cursorInfo = "cursor - ??";
-                    if (mCursor == null) {
+                    if (cursor == null) {
+                        cursorInfo = "new cursor is null";
+                    } else if (mCursor == null) {
                         cursorInfo = "cursor is null";
                     } else if (mCursor.isClosed()) {
                         cursorInfo = "cursor is Closed";
@@ -1572,7 +1398,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                         case USER:
                         case FOLLOWING_USER:
                             // This timeline doesn't update automatically so let's do it now if necessary
-                            TimelineMsg lmi = new TimelineMsg(mTimelineType, mSelectedUserId);
+                            LatestMessageOfTimeline lmi = new LatestMessageOfTimeline(mTimelineType, mSelectedUserId);
                             if (lmi.isTimeToAutoUpdate()) {
                                 manualReload(false);
                             }
@@ -1613,8 +1439,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
         // Show something to the user...
         setIsLoading(true);
-        mListFooter.setVisibility(View.VISIBLE);
-        //TimelineActivity.this.findViewById(R.id.item_loading).setVisibility(View.VISIBLE);
 
         MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.HOME;
         long userId = 0;
@@ -1630,13 +1454,13 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                 break;
         }
 
-        String accountGuid = MyAccount.fromUserId(mCurrentMyAccountUserId).getAccountName();
+        String accountName = MyAccount.fromUserId(mCurrentMyAccountUserId).getAccountName();
         CommandData cd = new CommandData(CommandEnum.FETCH_TIMELINE,
-                    mIsTimelineCombined ? "" : accountGuid, timelineType, userId);
+                    mIsTimelineCombined ? "" : accountName, timelineType, userId);
         serviceConnector.sendCommand(cd);
 
         if (allTimelineTypes) {
-            serviceConnector.sendCommand(new CommandData(CommandEnum.FETCH_TIMELINE, accountGuid, TimelineTypeEnum.ALL, 0));
+            serviceConnector.sendCommand(new CommandData(CommandEnum.FETCH_TIMELINE, accountName, TimelineTypeEnum.ALL, 0));
         }
     }
     

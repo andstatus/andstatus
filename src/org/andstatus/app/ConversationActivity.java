@@ -363,12 +363,12 @@ public class ConversationActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        serviceConnector.bindToService(this, mHandler);
+        serviceConnector.connectToService(this, mHandler);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        serviceConnector.disconnectService();
+        serviceConnector.disconnectFromService();
     }
 }

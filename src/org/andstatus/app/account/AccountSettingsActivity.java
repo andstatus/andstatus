@@ -49,6 +49,7 @@ import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 
 import org.andstatus.app.MyPreferenceActivity;
+import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.data.MyPreferences;
@@ -128,6 +129,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        MyServiceManager.setServiceUnavailable();
+        MyServiceManager.stopService();
+        
         MyPreferences.initialize(this, this);
         
         addPreferencesFromResource(R.xml.account_settings);
@@ -985,6 +989,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             Intent i = new Intent(this, MyPreferenceActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
+        }
+        if (doFinish) {
+            MyServiceManager.setServiceAvailable();
         }
         return mIsFinishing;
     }

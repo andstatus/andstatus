@@ -51,6 +51,9 @@ public class CommandData {
      */
     public int retriesLeft = 0;
 
+    public static final CommandData EMPTY_COMMAND = new CommandData(CommandEnum.EMPTY, "");
+    public static final CommandData BOOT_COMPLETED_COMMAND = new CommandData(CommandEnum.BOOT_COMPLETED, "");
+    
     public CommandData(CommandEnum commandIn, String accountNameIn) {
         command = commandIn;
         if (!TextUtils.isEmpty(accountNameIn)) {
