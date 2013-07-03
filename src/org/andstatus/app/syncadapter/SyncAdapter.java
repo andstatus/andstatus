@@ -67,6 +67,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             // TODO: Wait till the actual completion in order to give
             // feedback to the user about a duration and a result of the sync
+            Thread.sleep(1000);
+            
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         } finally {
 
         }

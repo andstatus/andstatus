@@ -265,7 +265,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
     /**
      * Message handler for messages from threads and from the remote {@link MyService}.
-     * TODO: Remove codes (of msg.what ) which are not used
      */
     private class MyHandler extends Handler {
         @Override

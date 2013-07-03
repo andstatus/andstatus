@@ -127,7 +127,7 @@ public class MyPreferences {
 
         }
         if (initialized) {
-            synchronized(TAG) {
+            synchronized(MyPreferences.class) {
                 if (initialized) {
                     long preferencesChangeTime_last = getPreferencesChangeTime();
                     if (preferencesChangeTime != preferencesChangeTime_last) {
@@ -138,7 +138,7 @@ public class MyPreferences {
             }
         }
         if (!initialized) {
-            synchronized(TAG) {
+            synchronized(MyPreferences.class) {
                 if (!initialized) {
                     initializedBy = initializerName;
                     Log.v(TAG, "Starting initialization by " + initializedBy);
@@ -179,7 +179,7 @@ public class MyPreferences {
         return preferencesChangeTime;
     }
 
-    public static Context initializeAndGetContext(Context context_in, java.lang.Object object ) {
+    public static synchronized Context initializeAndGetContext(Context context_in, java.lang.Object object ) {
         initialize(context_in, object);
         return getContext();
     }
@@ -195,7 +195,7 @@ public class MyPreferences {
      * Forget everything in order to reread from the sources if it will be needed
      * e.g. after configuration changes
      */
-    public static void forget() {
+    public static synchronized void forget() {
         initialized = false;
         MyAccount.forget();
         if (db != null) {
@@ -219,8 +219,8 @@ public class MyPreferences {
     /**
      * @return DefaultSharedPreferences for this application
      */
-    public static SharedPreferences getDefaultSharedPreferences() {
-        if (context == null) {
+    public static synchronized SharedPreferences getDefaultSharedPreferences() {
+        if (!isInitialized()) {
             Log.e(TAG, "getDefaultSharedPreferences - Was not initialized yet");
             /* TODO: */
             StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
@@ -233,7 +233,7 @@ public class MyPreferences {
         }
     }
 
-    public static void setDefaultValues(int resId, boolean readAgain) {
+    public static synchronized void setDefaultValues(int resId, boolean readAgain) {
         if (context == null) {
             Log.e(TAG, "setDefaultValues - Was not initialized yet");
         } else {
@@ -241,8 +241,8 @@ public class MyPreferences {
         }
     }
     
-    public static SharedPreferences getSharedPreferences(String name, int mode) {
-        if (context == null) {
+    public static synchronized SharedPreferences getSharedPreferences(String name, int mode) {
+        if (!isInitialized()) {
             Log.e(TAG, "getSharedPreferences - Was not initialized yet");
             return null;
         } else {
@@ -255,9 +255,9 @@ public class MyPreferences {
     /**
      * @return the number of seconds between two sync ("fetch"...) actions.
      */
-    public static int getSyncFrequencySeconds() {
+    public static synchronized int getSyncFrequencySeconds() {
         int frequencySeconds = SYNC_FREQUENCY_DEFAULT_SECONDS;
-        if (context == null) {
+        if (!isInitialized()) {
             Log.e(TAG, "getSyncFrequency - Was not initialized yet");
         } else {
             int frequencySecondsStored = Integer.parseInt(getDefaultSharedPreferences().getString(MyPreferences.KEY_FETCH_FREQUENCY, "0"));
@@ -279,7 +279,7 @@ public class MyPreferences {
      *  Event: Preferences have changed right now
      *  Remember when last changes to the preferences were made
      */
-    public static void onPreferencesChanged() {
+    public static synchronized void onPreferencesChanged() {
         if (initialized) {
             getDefaultSharedPreferences()
             .edit()
@@ -292,9 +292,9 @@ public class MyPreferences {
      * @return System time when AndStatus preferences were last time changed. 
      * We take into account here time when accounts were added/removed...
      */
-    public static long getPreferencesChangeTime() {
+    public static synchronized long getPreferencesChangeTime() {
         long preferencesChangeTime = 0;
-        if (initialized) {
+        if (isInitialized()) {
             preferencesChangeTime = getDefaultSharedPreferences().getLong(KEY_PREFERENCES_CHANGE_TIME, 0);            
         }
         return preferencesChangeTime;
@@ -304,12 +304,12 @@ public class MyPreferences {
         return context;
     }
 
-    public static MyDatabase getDatabase() {
+    public static synchronized MyDatabase getDatabase() {
         if (db == null) {
-            if (context == null) {
-                Log.e(TAG, "getDatabase - Was not initialized yet");
-            } else {
+            if (isInitialized()) {
                 db = new MyDatabase(context);
+            } else {
+                Log.e(TAG, "getDatabase - Was not initialized yet");
             }
         }
         return db;
@@ -335,7 +335,7 @@ public class MyPreferences {
      * @return directory, already created for you OR null in case of error
      * @see <a href="http://developer.android.com/guide/topics/data/data-storage.html#filesExternal">filesExternal</a>
      */
-    public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage) {
+    public static synchronized File getDataFilesDir(String type, Boolean forcedUseExternalStorage) {
         File baseDir = null;
         String pathToAppend = "";
         File dir = null;
@@ -395,8 +395,8 @@ public class MyPreferences {
      * @param forcedUseExternalStorage if not null, use this value instead of stored in preferences as {@link #KEY_USE_EXTERNAL_STORAGE}
      * @return
      */
-    public static File getDatabasePath(String name, Boolean forcedUseExternalStorage) {
-        File dbDir = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, forcedUseExternalStorage);
+    public static synchronized File getDatabasePath(String name, Boolean forcedUseExternalStorage) {
+        File dbDir = getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, forcedUseExternalStorage);
         File dbAbsolutePath = null;
         if (dbDir != null) {
             dbAbsolutePath = new File(dbDir.getPath() + "/" + name);
