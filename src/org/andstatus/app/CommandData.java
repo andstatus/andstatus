@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2010-2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app;
 
 import android.content.Intent;
@@ -51,6 +67,8 @@ public class CommandData {
      */
     public int retriesLeft = 0;
 
+    public CommandResult commandResult = new CommandResult();
+    
     public static final CommandData EMPTY_COMMAND = new CommandData(CommandEnum.EMPTY, "");
     public static final CommandData BOOT_COMPLETED_COMMAND = new CommandData(CommandEnum.BOOT_COMPLETED, "");
     
@@ -126,6 +144,7 @@ public class CommandData {
             setAccountName(bundle.getString(MyService.EXTRA_ACCOUNT_NAME));
             timelineType = TimelineTypeEnum.load(bundle.getString(MyService.EXTRA_TIMELINE_TYPE));
             itemId = bundle.getLong(MyService.EXTRA_ITEMID);
+            commandResult = bundle.getParcelable(MyService.EXTRA_COMMAND_RESULT);
         }
         command = CommandEnum.load(strCommand);
     }
@@ -234,6 +253,7 @@ public class CommandData {
         if (itemId != 0) {
             bundle.putLong(MyService.EXTRA_ITEMID, itemId);
         }
+        bundle.putParcelable(MyService.EXTRA_COMMAND_RESULT, commandResult);        
         intent.putExtras(bundle);
         return intent;
     }

@@ -93,7 +93,7 @@ public class MyServiceManager extends BroadcastReceiver {
     
     public MyServiceManager() {
         instanceId = MyPreferences.nextInstanceId();
-        MyLog.v(TAG, TAG + " created, instanceId=" + instanceId);
+        MyLog.v(TAG, TAG + " created, instanceId=" + instanceId );
     }
     
     @Override
@@ -109,8 +109,6 @@ public class MyServiceManager extends BroadcastReceiver {
             MyLog.d(TAG, "Stopping service on Shutdown");
             setServiceUnavailable();
             stopService();
-        } else if (action.equals(MyService.ACTION_ALARM)) {
-            MyLog.d(TAG, "Repeating Alarm: Ignoring");
         } else if (action.equals(MyService.ACTION_SERVICE_STATE)) {
             synchronized(mServiceState) {
                 stateQueuedTime = System.nanoTime();
@@ -118,8 +116,6 @@ public class MyServiceManager extends BroadcastReceiver {
                 mServiceState = MyService.ServiceState.load(intent.getStringExtra(MyService.EXTRA_SERVICE_STATE));
             }
             MyLog.d(TAG, "Notification received: Service state=" + mServiceState);
-        } else {
-            Log.e(TAG, "Received unexpected intent: " + intent.toString());
         }
     }
 

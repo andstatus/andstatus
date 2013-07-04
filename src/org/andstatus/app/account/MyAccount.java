@@ -122,11 +122,11 @@ public class MyAccount implements AccountDataReader {
             return mab;
         }
         
-        
         /**
          * The whole data is here
          */
         private MyAccount myAccount;
+        private volatile boolean somethingIsBeingChanging = false;
         
         private Builder(Parcel source) {
             myAccount = new MyAccount();
@@ -167,6 +167,7 @@ public class MyAccount implements AccountDataReader {
          * @param account should not be null
          */
         Builder(android.accounts.Account account) {
+            boolean changed = false;
             myAccount = new MyAccount();
             if (account == null) {
                 throw new IllegalArgumentException(TAG + " null account is not allowed in the constructor");
@@ -179,13 +180,26 @@ public class MyAccount implements AccountDataReader {
             myAccount.credentialsVerified = CredentialsVerified.load(myAccount);
             myAccount.oAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuth());
             myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
+            myAccount.syncFrequencySeconds = myAccount.getDataInt(MyPreferences.KEY_FETCH_FREQUENCY, 0);
             
+            // Fix inconsistencies with changed environment...
             if (myAccount.userId==0) {
+                changed = true;
                 assignUserId();
                 Log.e(TAG, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
             }
+            if (myAccount.syncFrequencySeconds==0) {
+                myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
+                changed = true;
+            }
+            
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "Loaded " + this.toString());
+            }
+            if (changed) {
+                somethingIsBeingChanging = true;
+                save();
+                somethingIsBeingChanging = false;
             }
         }
         
@@ -252,6 +266,7 @@ public class MyAccount implements AccountDataReader {
             myAccount.credentialsVerified = CredentialsVerified.load(myAccount);
             myAccount.oAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuth());
             myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
+            myAccount.syncFrequencySeconds = myAccount.getDataInt(MyPreferences.KEY_FETCH_FREQUENCY, 0);
             
             if (isPersistent() && myAccount.userId==0) {
                 assignUserId();
@@ -329,12 +344,6 @@ public class MyAccount implements AccountDataReader {
                         // See http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
                         // ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
 
-                        // See
-                        // http://developer.android.com/reference/android/content/ContentResolver.html#addPeriodicSync(android.accounts.Account, java.lang.String, android.os.Bundle, long)
-                        // and
-                        // http://stackoverflow.com/questions/11090604/android-syncadapter-automatically-initialize-syncing
-                        ContentResolver.addPeriodicSync(myAccount.androidAccount, MyProvider.AUTHORITY, new Bundle(), MyPreferences.getSyncFrequencySeconds());
-
                         // Without SyncAdapter we got the error:
                         // SyncManager(865): can't find a sync adapter for SyncAdapterType Key 
                         // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, removing settings for it
@@ -373,8 +382,17 @@ public class MyAccount implements AccountDataReader {
                     setDataBoolean(KEY_PERSISTENT, isPersistent());
                     changed = true;
                 }
+                if (myAccount.syncFrequencySeconds != myAccount.getDataInt(MyPreferences.KEY_FETCH_FREQUENCY, 0)) {
+                    setDataInt(MyPreferences.KEY_FETCH_FREQUENCY, myAccount.syncFrequencySeconds); 
+                    // See
+                    // http://developer.android.com/reference/android/content/ContentResolver.html#addPeriodicSync(android.accounts.Account, java.lang.String, android.os.Bundle, long)
+                    // and
+                    // http://stackoverflow.com/questions/11090604/android-syncadapter-automatically-initialize-syncing
+                    ContentResolver.addPeriodicSync(myAccount.androidAccount, MyProvider.AUTHORITY, new Bundle(), myAccount.syncFrequencySeconds);
+                    changed = true;
+                }
 
-                if (changed && isPersistent()) {
+                if (!somethingIsBeingChanging && changed && isPersistent()) {
                     MyPreferences.onPreferencesChanged();
                 }
 
@@ -622,6 +640,7 @@ public class MyAccount implements AccountDataReader {
      * Id in the database, see {@link MyDatabase.User#_ID}
      */
     private long userId = 0;
+    
 
     /**
      * Was this user authenticated last time _current_ credentials were verified?
@@ -634,6 +653,8 @@ public class MyAccount implements AccountDataReader {
      */
     private boolean oAuth = true;
 
+    private int syncFrequencySeconds = 0;
+    
     /**
      * NEVER - means that User was never successfully authenticated with current credentials,
      *      this is why we reset to state to NEVER every time credentials were changed.
@@ -1018,9 +1039,9 @@ public class MyAccount implements AccountDataReader {
     }
     
     /**
-     * TODO: Set different period for each account
+     * 
      */
-    public static void updateFetchFrequency() {
+    public static void onMyPreferencesChanged() {
         long frequencySeconds = MyPreferences.getSyncFrequencySeconds();
         for (MyAccount persistentAccount : persistentAccounts) {
             ContentResolver.addPeriodicSync(persistentAccount.androidAccount, MyProvider.AUTHORITY, new Bundle(), frequencySeconds);

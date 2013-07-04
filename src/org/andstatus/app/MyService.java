@@ -138,6 +138,8 @@ public class MyService extends Service {
      */
     public static final String EXTRA_ITEMID = packageName + ".ITEMID";
 
+    public static final String EXTRA_COMMAND_RESULT = packageName + ".COMMAND_RESULT";
+    
     /**
      * ({@link ServiceState}
      */
@@ -476,7 +478,7 @@ public class MyService extends Service {
         mIsStopping = true;
         boolean doStop = (mExecutors.size() == 0);
         if (!doStop) {
-            broadcastState();
+            broadcastState(null);
             return;
         }
 
@@ -500,14 +502,17 @@ public class MyService extends Service {
         mInitialized = false;
         mIsStopping = false;
         
-        broadcastState();
+        broadcastState(null);
     }
 
     /**
      * Send broadcast informing of the current state of this service
      */
-    private void broadcastState() {
+    private void broadcastState(CommandData commandData) {
         Intent intent = new Intent(ACTION_SERVICE_STATE);
+        if (commandData != null) {
+            intent = commandData.toIntent(intent);
+        }
         ServiceState state = getServiceState();
         intent.putExtra(EXTRA_SERVICE_STATE, state.save());
         sendBroadcast(intent);
@@ -558,7 +563,7 @@ public class MyService extends Service {
             registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
             
             mInitialized = true;
-            broadcastState();
+            broadcastState(null);
         }
         
         if (preferencesChangeTime != preferencesChangeTimeNew
@@ -654,7 +659,7 @@ public class MyService extends Service {
                     stopDelayed();
                     return;
                 case BROADCAST_SERVICE_STATE:
-                    broadcastState();
+                    broadcastState(commandData);
                     return;
                 case BOOT_COMPLETED:
                     // Force reexamining preferences
@@ -941,6 +946,11 @@ public class MyService extends Service {
                     case AUTOMATIC_UPDATE:
                     case FETCH_TIMELINE:
                         ok = loadTimeline(commandData.getAccount(), commandData.timelineType, commandData.itemId);
+                        // TODO: Extend diagnostics and stats
+                        if (!ok) {
+                            commandData.commandResult.numIoExceptions++;
+                        }
+                        broadcastState(commandData);
                         break;
                     case CREATE_FAVORITE:
                     case DESTROY_FAVORITE:

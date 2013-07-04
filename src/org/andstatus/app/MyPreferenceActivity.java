@@ -225,7 +225,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (mSomethingIsBeingProcessed) {
+        if (somethingIsBeingChanging) {
             return;
         }
         if (onSharedPreferenceChanged_busy || !MyPreferences.isInitialized()) {
@@ -251,7 +251,6 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             MyPreferences.onPreferencesChanged();
             
             if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY)) {
-                MyAccount.updateFetchFrequency();
                 showFrequency();
             }
             if (key.equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {
@@ -372,7 +371,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
      * This semaphore helps to avoid ripple effect: changes in MyAccount cause
      * changes in this activity ...
      */
-    private volatile boolean mSomethingIsBeingProcessed = false;
+    private volatile boolean somethingIsBeingChanging = false;
      
     /**
      * Move Data to/from External Storage
@@ -426,11 +425,11 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 
                 if (!done) {
                     synchronized (MyPreferenceActivity.this) {
-                        if (mSomethingIsBeingProcessed) {
+                        if (somethingIsBeingChanging) {
                             done = true;
                             message = "skipped";
                         } else {
-                            mSomethingIsBeingProcessed = true;
+                            somethingIsBeingChanging = true;
                             locked = true;
                         }
                     }
@@ -527,7 +526,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                 }
                 
                 if (locked) {
-                    mSomethingIsBeingProcessed = false;
+                    somethingIsBeingChanging = false;
                 }
             }
             MyLog.v(TAG, "Move: " + message);
