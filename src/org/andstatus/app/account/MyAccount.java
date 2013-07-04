@@ -656,12 +656,17 @@ public class MyAccount implements AccountDataReader {
     private int syncFrequencySeconds = 0;
     
     /**
-     * NEVER - means that User was never successfully authenticated with current credentials,
-     *      this is why we reset to state to NEVER every time credentials were changed.
-     *      TODO: Use instance fields instead of ordinals (see [EffectiveJava] Item 31)
+     *  TODO: Use instance fields instead of ordinals (see [EffectiveJava] Item 31)
      */
     public enum CredentialsVerified {
-        NEVER, FAILED, SUCCEEDED;
+        /** 
+         * NEVER - means that User was never successfully authenticated with current credentials.
+         *  This is why we reset the state to NEVER every time credentials have been changed.
+         */
+        NEVER, 
+        FAILED,
+        /** The User was successfully authenticated */
+        SUCCEEDED;
 
         /*
          * Methods to persist in SharedPreferences

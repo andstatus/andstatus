@@ -53,7 +53,7 @@
 
 		<service android:process=":remote" android:name=".MyService">
 			<intent-filter>
-				<action android:name="org.andstatus.app.IMyService"/>
+				<action android:name="org.andstatus.app.MyService"/>
 				<action android:name="org.andstatus.app.SERVICE"/>
 			</intent-filter>
 		</service>

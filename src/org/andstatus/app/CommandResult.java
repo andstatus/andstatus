@@ -28,16 +28,28 @@ public class CommandResult implements Parcelable {
     
     public long numAuthExceptions = 0;
     public long numIoExceptions = 0;
+    public long numParseExceptions = 0;
+    
+    // 0 means these values were not set
+    public int hourly_limit = 0;
+    public int remaining_hits = 0;
 
     public CommandResult() {}
     
     public CommandResult(Parcel parcel) {
         numAuthExceptions = parcel.readLong();
         numIoExceptions = parcel.readLong();
+        numParseExceptions = parcel.readLong();
+        hourly_limit = parcel.readInt();
+        remaining_hits = parcel.readInt();
     }
 
+    public boolean hasError() {
+        return hasSoftError() || hasHardError();
+    }
+    
     public boolean hasHardError() {
-        return numAuthExceptions > 0;
+        return numAuthExceptions > 0 || numParseExceptions > 0;
     }
 
     public boolean hasSoftError() {
@@ -53,6 +65,9 @@ public class CommandResult implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(numAuthExceptions);
         dest.writeLong(numIoExceptions);
+        dest.writeLong(numParseExceptions);
+        dest.writeInt(hourly_limit);
+        dest.writeInt(remaining_hits);
     }
 
     public static final Creator<CommandResult> CREATOR = new Creator<CommandResult>() {

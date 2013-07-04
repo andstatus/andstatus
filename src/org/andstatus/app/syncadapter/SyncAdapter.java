@@ -20,17 +20,15 @@ package org.andstatus.app.syncadapter;
 
 import android.accounts.Account;
 import android.content.AbstractThreadedSyncAdapter;
-import android.content.BroadcastReceiver;
 import android.content.ContentProviderClient;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SyncResult;
 import android.os.Bundle;
 
 import org.andstatus.app.CommandData;
 import org.andstatus.app.MyService;
 import org.andstatus.app.MyServiceListener;
+import org.andstatus.app.MyServiceReceiver;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.data.MyPreferences;
@@ -45,30 +43,9 @@ import java.util.TimerTask;
  */
 public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServiceListener {
 
-    private static final class MyServiceReceiver extends BroadcastReceiver {
-        static final String TAG = MyServiceReceiver.class.getSimpleName();
-        private int instanceId;
-        private MyServiceListener listener;
-
-        public MyServiceReceiver(MyServiceListener listener) {
-            super();
-            this.listener = listener;
-            instanceId = MyPreferences.nextInstanceId();
-            MyLog.v(TAG, "Created, instanceId=" + instanceId + (listener != null ? "; listener='" + listener.toString() + "'" : ""));
-        }
-
-        @Override
-        public void onReceive(Context arg0, Intent intent) {
-            MyLog.v(TAG, "onReceive " + intent.toString());
-            if (listener != null) {
-                listener.onReceive(new CommandData(intent));
-            }
-        }
-    }
-
     static final String TAG = SyncAdapter.class.getSimpleName();
 
-    private final Context mContext;
+    private final Context context;
     private volatile CommandData commandData;
     private volatile boolean syncCompleted = false;
     private volatile SyncResult syncResult;
@@ -77,16 +54,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
     
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
-        mContext = context;
-        MyPreferences.initialize(mContext, this);
+        this.context = context;
+        MyPreferences.initialize(context, this);
         MyLog.d(TAG, "created, context=" + context.getClass().getCanonicalName());
-        intentReceiver = new MyServiceReceiver(this);
     }
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
             ContentProviderClient provider, SyncResult syncResult) {
         Timer timer = new Timer();
+        intentReceiver = new MyServiceReceiver(this);
         syncCompleted = false;
         try {
             this.syncResult = syncResult;
@@ -95,10 +72,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
                         + (MyServiceManager.isServiceAvailable() ? "" : "; ignoring"));
 
                 if (MyServiceManager.isServiceAvailable()) {
+                    intentReceiver.registerReceiver(context);
                     commandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
                             TimelineTypeEnum.ALL, 0);
-                    intentReceiver = new MyServiceReceiver(this);
-                    mContext.registerReceiver(intentReceiver, new IntentFilter(MyService.ACTION_SERVICE_STATE));
                     MyServiceManager.sendCommand(commandData);
                     synchronized (syncResult) {
                         if (!syncCompleted) {
@@ -125,7 +101,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
             MyLog.d(TAG, "onPerformSync interrupted");
         } finally {
             timer.cancel();
-            mContext.unregisterReceiver(intentReceiver);            
+            intentReceiver.unregisterReceiver(context);            
         }
     }
 
@@ -137,6 +113,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
                 syncCompleted = true;
                 syncResult.stats.numAuthExceptions += commandData.commandResult.numAuthExceptions;
                 syncResult.stats.numIoExceptions += commandData.commandResult.numIoExceptions;
+                syncResult.stats.numParseExceptions += commandData.commandResult.numParseExceptions;
                 syncResult.notifyAll();
             }
         }

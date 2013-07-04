@@ -240,7 +240,7 @@ class TweetEditor {
         
         if (mAccount.getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
             // Start asynchronous task that will show Rate limit status
-            mActivity.serviceConnector.sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccount.getAccountName()));
+            MyServiceManager.sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccount.getAccountName()));
         }
         
         show();
@@ -271,7 +271,7 @@ class TweetEditor {
             if (mRecipientId != 0) {
                 commandData.bundle.putLong(MyService.EXTRA_RECIPIENTID, mRecipientId);
             }
-            mActivity.serviceConnector.sendCommand(commandData);
+            MyServiceManager.sendCommand(commandData);
             closeSoftKeyboard();
 
             // Let's assume that everything will be Ok

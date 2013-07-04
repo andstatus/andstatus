@@ -128,7 +128,7 @@ public class MyServiceManager extends BroadcastReceiver {
     public static void sendCommand(CommandData commandData) {
         if (!isServiceAvailable()) throw new RuntimeException("MyService is unavailable");
         
-        Intent serviceIntent = new Intent(IMyService.class.getName());
+        Intent serviceIntent = new Intent(MyService.class.getName());
         if (commandData != null) {
             serviceIntent = commandData.toIntent(serviceIntent);
         }

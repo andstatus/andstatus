@@ -27,7 +27,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.Html;
 import android.text.TextUtils;
 import android.text.util.Linkify;
@@ -52,7 +51,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  * 
  * @author yvolk
  */
-public class ConversationActivity extends Activity {
+public class ConversationActivity extends Activity implements MyServiceListener {
 
     private static final String TAG = ConversationActivity.class.getSimpleName();
 
@@ -82,27 +81,7 @@ public class ConversationActivity extends Activity {
     protected MyAccount ma;
 
     protected int instanceId;
-    Handler mHandler = new MyHandler();
-    MyServiceConnector serviceConnector;
-
-    /**
-     * Message handler for messages from threads and from the remote
-     * {@link MyService}.
-     */
-    private class MyHandler extends Handler {
-        @Override
-        public void handleMessage(android.os.Message msg) {
-            MyLog.v(TAG, "handleMessage, what=" + msg.what + ", instance " + instanceId);
-            switch (msg.what) {
-                case MyServiceConnector.MSG_DATA_LOADING:
-                    showConversation();
-                    break;
-
-                default:
-                    super.handleMessage(msg);
-            }
-        }
-    }
+    MyServiceReceiver myServiceReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +93,8 @@ public class ConversationActivity extends Activity {
         } else {
             MyLog.v(TAG, "onCreate reuse the same instanceId=" + instanceId);
         }
-        serviceConnector = new MyServiceConnector(instanceId);
+        MyServiceManager.setServiceAvailable();
+        myServiceReceiver = new MyServiceReceiver(this);
 
         MyPreferences.loadTheme(TAG, this);
 
@@ -261,7 +241,7 @@ public class ConversationActivity extends Activity {
                 if (!skip) {
                     if (row.createdDate == 0) {
                         MyLog.v(TAG, "Message " + msgId + " should be retrieved from the Internet");
-                        serviceConnector.sendCommand(new CommandData(CommandEnum.GET_STATUS, ma
+                        MyServiceManager.sendCommand(new CommandData(CommandEnum.GET_STATUS, ma
                                 .getAccountName(), msgId));
                     } else {
                         if (row.prevId != 0) {
@@ -363,12 +343,21 @@ public class ConversationActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        serviceConnector.connectToService(this, mHandler);
+        myServiceReceiver.registerReceiver(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        serviceConnector.disconnectFromService();
+        myServiceReceiver.unregisterReceiver(this);
+    }
+
+    @Override
+    public void onReceive(CommandData commandData) {
+        switch(commandData.command) {
+            case GET_STATUS:
+                showConversation();
+        }
+        
     }
 }

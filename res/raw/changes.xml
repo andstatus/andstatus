@@ -36,6 +36,17 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     <header>
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
+    <release android:versionName="1.16.0" android:versionCode="77"
+        versionDate="2013-07-06"
+        versionTitle="Timeline synchronization is managed by Android core">
+        <changes><change>Timeline synchronization is greatly improved because now Android core does this.
+            A user can separately control synchronization of each account
+            with Android built-in tools (in Settings-&gt;Accounts). E.g. a user may turn sync on and off for
+            any selected account. 
+             <a href="https://github.com/andstatus/andstatus/issues/29" >Issue #29</a>.
+             </change>
+        </changes>
+    </release>
     <release android:versionName="1.15.1" android:versionCode="75"
         versionDate="2013-06-02"
         versionTitle="Follow and Stop following a User">

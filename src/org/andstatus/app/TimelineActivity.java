@@ -36,7 +36,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.SearchRecentSuggestions;
 import android.text.TextUtils;
@@ -84,7 +83,7 @@ import java.util.Locale;
 /**
  * @author yvolk, torgny.bjers
  */
-public class TimelineActivity extends ListActivity implements ITimelineActivity {
+public class TimelineActivity extends ListActivity implements MyServiceListener, ITimelineActivity {
 
     private static final String TAG = TimelineActivity.class.getSimpleName();
 
@@ -190,8 +189,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
      * For testing purposes
      */
     private int instanceId = 0;
-    protected MyHandler mHandler = new MyHandler();
-    MyServiceConnector serviceConnector;
+    MyServiceReceiver serviceConnector;
 
     /**
      * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
@@ -262,45 +260,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             MsgOfUser.FAVORITED, Msg.CREATED_DATE,
             User.LINKED_USER_ID
     };
-
-    /**
-     * Message handler for messages from threads and from the remote {@link MyService}.
-     */
-    private class MyHandler extends Handler {
-        @Override
-        public void handleMessage(android.os.Message msg) {
-            MyLog.v(TAG, "handleMessage, what=" + msg.what + ", instanceId=" + instanceId);
-            switch (msg.what) {
-                case MyServiceConnector.MSG_TWEETS_CHANGED:
-                    int numTweets = msg.arg1;
-                    if (numTweets > 0) {
-                        mNM.cancelAll();
-                    }
-                    break;
-
-                case MyServiceConnector.MSG_DATA_LOADING:
-                    boolean isLoadingNew = (msg.arg2 == 1) ? true : false;
-                    if (!isLoadingNew) {
-                        MyLog.v(TAG, "Timeline has been loaded " + (TimelineActivity.this.isLoading() ? " (loading) " : " (not loading) "));
-                        if (isLoading()) {
-                            Toast.makeText(TimelineActivity.this, R.string.timeline_reloaded,
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    setIsLoading(false);
-                    break;
-
-                case MyServiceConnector.MSG_UPDATED_TITLE:
-                    if (msg.arg1 > 0) {
-                        updateTitle(msg.arg1 + "/" + msg.arg2);
-                    }
-                    break;
-
-                default:
-                    super.handleMessage(msg);
-            }
-        }
-    }
 
     boolean isLoading() {
         //MyLog.v(TAG, "isLoading checked " + mIsLoading + ", instance " + instanceId);
@@ -382,7 +341,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         }
 
         mCurrentMyAccountUserId = MyAccount.getCurrentAccountUserId();
-        serviceConnector = new MyServiceConnector(instanceId);
+        serviceConnector = new MyServiceReceiver(this);
         
         MyPreferences.loadTheme(TAG, this);
 
@@ -517,7 +476,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
         }
         if (!mIsFinishing) {
-            serviceConnector.connectToService(this, mHandler);
+            serviceConnector.registerReceiver(this);
             updateTitle();
             if (!isLoading()) {
                 restorePosition();
@@ -705,9 +664,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onPause, instanceId=" + instanceId);
         }
-        // The activity just lost its focus,
-        // so we have to start notifying the User about new events after his
-        // moment.
+        serviceConnector.unregisterReceiver(this);
 
         if (positionRestored) {
             // Get rid of the "fast scroll thumb"
@@ -718,7 +675,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             }
         }        
         positionRestored = false;
-        serviceConnector.disconnectFromService();
     }
    
     /**
@@ -752,7 +708,7 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             mCursor.close();
         }
         if (serviceConnector != null) {
-            serviceConnector.disconnectFromService();
+            serviceConnector.unregisterReceiver(this);
         }
     }
 
@@ -761,10 +717,6 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         MyLog.v(TAG,"Finish requested" + (mIsFinishing ? ", already finishing" : "") + ", instanceId=" + instanceId);
         if (!mIsFinishing) {
             mIsFinishing = true;
-            if (mHandler == null) {
-                Log.e(TAG,"Finishing. mHandler is already null, instanceId=" + instanceId);
-            }
-            mHandler = null;
         }
         // TODO Auto-generated method stub
         super.finish();
@@ -1456,10 +1408,10 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
         String accountName = MyAccount.fromUserId(mCurrentMyAccountUserId).getAccountName();
         CommandData cd = new CommandData(CommandEnum.FETCH_TIMELINE,
                     mIsTimelineCombined ? "" : accountName, timelineType, userId);
-        serviceConnector.sendCommand(cd);
+        MyServiceManager.sendCommand(cd);
 
         if (allTimelineTypes) {
-            serviceConnector.sendCommand(new CommandData(CommandEnum.FETCH_TIMELINE, accountName, TimelineTypeEnum.ALL, 0));
+            MyServiceManager.sendCommand(new CommandData(CommandEnum.FETCH_TIMELINE, accountName, TimelineTypeEnum.ALL, 0));
         }
     }
     
@@ -1709,23 +1661,23 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
                     break;
 
                 case CONTEXT_MENU_ITEM_REBLOG:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.REBLOG, ma.getAccountName(), mCurrentMsgId));
+                    MyServiceManager.sendCommand( new CommandData(CommandEnum.REBLOG, ma.getAccountName(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_DESTROY_REBLOG:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_REBLOG, ma.getAccountName(), mCurrentMsgId));
+                    MyServiceManager.sendCommand( new CommandData(CommandEnum.DESTROY_REBLOG, ma.getAccountName(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_DESTROY_STATUS:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, ma.getAccountName(), mCurrentMsgId));
+                    MyServiceManager.sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, ma.getAccountName(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_FAVORITE:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, ma.getAccountName(), mCurrentMsgId));
+                    MyServiceManager.sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, ma.getAccountName(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_DESTROY_FAVORITE:
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, ma.getAccountName(), mCurrentMsgId));
+                    MyServiceManager.sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, ma.getAccountName(), mCurrentMsgId));
                     return true;
 
                 case CONTEXT_MENU_ITEM_SHARE:
@@ -1804,19 +1756,19 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
 
                 case CONTEXT_MENU_ITEM_FOLLOW_SENDER:
                     senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), senderId));
+                    MyServiceManager.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), senderId));
                     return true;
                 case CONTEXT_MENU_ITEM_STOP_FOLLOWING_SENDER:
                     senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), senderId));
+                    MyServiceManager.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), senderId));
                     return true;
                 case CONTEXT_MENU_ITEM_FOLLOW_AUTHOR:
                     authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), authorId));
+                    MyServiceManager.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), authorId));
                     return true;
                 case CONTEXT_MENU_ITEM_STOP_FOLLOWING_AUTHOR:
                     authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    serviceConnector.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), authorId));
+                    MyServiceManager.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), authorId));
                     return true;
                     
                 case CONTEXT_MENU_ITEM_BLOCK:
@@ -1919,5 +1871,21 @@ public class TimelineActivity extends ListActivity implements ITimelineActivity 
             return savedItemId;
         }
         
+    }
+
+    @Override
+    public void onReceive(CommandData commandData) {
+        switch (commandData.command) {
+            case FETCH_TIMELINE:
+                if (commandData.timelineType == mTimelineType) {
+                    setIsLoading(false);
+                }
+                break;
+            case RATE_LIMIT_STATUS:
+                if (commandData.commandResult.hourly_limit > 0) {
+                    updateTitle(commandData.commandResult.remaining_hits + "/"
+                            + commandData.commandResult.hourly_limit);
+                }
+        }
     }
 }

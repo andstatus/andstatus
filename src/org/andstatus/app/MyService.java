@@ -41,7 +41,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -60,9 +59,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.os.RemoteCallbackList;
-import android.os.RemoteException;
-import android.os.SystemClock;
 import android.util.Log;
 
 /**
@@ -253,30 +249,13 @@ public class MyService extends Service {
          */
         EMPTY("empty"),
         /**
-         * The action is being sent by recurring alarm to fetch the tweets,
-         * replies and other information in the background.
-         * TODO: Plus for all Accounts 
+         * The action to fetch all usual timelines in the background.
          */
         AUTOMATIC_UPDATE("automatic-update"),
         /**
          * Fetch timeline(s) of the specified type for the specified MyAccount. 
          */
         FETCH_TIMELINE("fetch-timeline"),
-        /**
-         * The recurring alarm that is used to implement recurring tweet
-         * downloads should be started.
-         */
-        START_ALARM("start-alarm"),
-        /**
-         * The recurring alarm that is used to implement recurring tweet
-         * downloads should be stopped.
-         */
-        STOP_ALARM("stop-alarm"),
-        /**
-         * The recurring alarm that is used to implement recurring tweet
-         * downloads should be restarted.
-         */
-        RESTART_ALARM("restart-alarm"),
 
         CREATE_FAVORITE("create-favorite"), DESTROY_FAVORITE("destroy-favorite"),
 
@@ -372,11 +351,6 @@ public class MyService extends Service {
         }
 
     }
-
-    /**
-     * This is a list of callbacks that have been registered with the service.
-     */
-    final RemoteCallbackList<IMyServiceCallback> mCallbacks = new RemoteCallbackList<IMyServiceCallback>();
 
     /**
      * Send broadcast to Widgets even if there are no new tweets
@@ -481,9 +455,6 @@ public class MyService extends Service {
             broadcastState(null);
             return;
         }
-
-        // Unregister all callbacks.
-        mCallbacks.kill();
 
         unregisterReceiver(intentReceiver);
 
@@ -625,12 +596,6 @@ public class MyService extends Service {
     
     @Override
     public IBinder onBind(Intent intent) {
-        // Select the interface to return. If your service only implements
-        // a single interface, you can just return it here without checking
-        // the Intent.
-        if (IMyService.class.getName().equals(intent.getAction())) {
-            return mBinder;
-        }
         return null;
     }
 
@@ -945,12 +910,7 @@ public class MyService extends Service {
                 switch (commandData.command) {
                     case AUTOMATIC_UPDATE:
                     case FETCH_TIMELINE:
-                        ok = loadTimeline(commandData.getAccount(), commandData.timelineType, commandData.itemId);
-                        // TODO: Extend diagnostics and stats
-                        if (!ok) {
-                            commandData.commandResult.numIoExceptions++;
-                        }
-                        broadcastState(commandData);
+                        ok = loadTimeline(commandData);
                         break;
                     case CREATE_FAVORITE:
                     case DESTROY_FAVORITE:
@@ -986,21 +946,22 @@ public class MyService extends Service {
                         retry = !ok;
                         break;
                     case GET_STATUS:
-                        ok = getStatus(commandData.getAccount(), commandData.itemId);
-                        // Retry in a case of an error
-                        retry = !ok;
+                        ok = getStatus(commandData);
+                        retry = (commandData.commandResult.hasError() &&
+                                !commandData.commandResult.hasHardError());
                         break;
                     case REBLOG:
                         ok = reblog(commandData.getAccount(), commandData.itemId);
                         retry = !ok;
                         break;
                     case RATE_LIMIT_STATUS:
-                        ok = rateLimitStatus(commandData.getAccount());
+                        ok = rateLimitStatus(commandData);
                         break;
                     default:
                         Log.e(TAG, "Unexpected command here " + commandData);
                 }
                 MyLog.d(TAG, (ok ? "Succeeded" : "Failed") + " " + commandData);
+                broadcastState(commandData);
                 
                 if (retry) {
                     boolean ok2 = true;
@@ -1308,22 +1269,21 @@ public class MyService extends Service {
             return ok;
         }
 
-        /**
-         * @param statusId
-         * @return boolean ok
-         */
-        private boolean getStatus(MyAccount ma, long msgId) {
-            if (ma == null) {
+        private boolean getStatus(CommandData commandData) {
+            if (commandData.getAccount() == null
+                    || commandData.getAccount().getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
+                commandData.commandResult.numAuthExceptions++;
                 return false;
             }
             boolean ok = false;
-            String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
+            String oid = MyProvider.idToOid(OidEnum.MSG_OID, commandData.itemId, 0);
             JSONObject result = new JSONObject();
             try {
-                result = ma.getConnection().getStatus(oid);
+                result = commandData.getAccount().getConnection().getStatus(oid);
                 ok = (result != null);
             } catch (ConnectionException e) {
                 if (e.getStatusCode() == 404) {
+                    commandData.commandResult.numParseExceptions++;
                     // This means that there is no such "Status"
                     // TODO: so we don't need to retry this command
                 }
@@ -1333,16 +1293,18 @@ public class MyService extends Service {
             if (ok) {
                 // And add the message to the local storage
                 try {
-                    new DataInserter(ma,
+                    new DataInserter(commandData.getAccount(),
                             MyService.this.getApplicationContext(),
                             TimelineTypeEnum.ALL).insertMsgFromJSONObject(result);
                 } catch (Exception e) {
                     Log.e(TAG, "Error inserting status: " + e.toString());
                 }
             }
-            MyLog.d(TAG, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + msgId);
-
-            notifyOfDataLoadingCompletion();
+            if (!ok) {
+                commandData.commandResult.numIoExceptions++;
+            }
+            
+            MyLog.d(TAG, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + commandData.itemId);
             return ok;
         }
         
@@ -1423,36 +1385,36 @@ public class MyService extends Service {
          * @param userId - Required for the User timeline
          * @return True if everything Succeeded
          */
-        private boolean loadTimeline(MyAccount myAccount_in,
-                MyDatabase.TimelineTypeEnum timelineType_in, long userId) {
+        private boolean loadTimeline(CommandData commandData) {
             boolean okAllAccounts = true;
             
-            if (myAccount_in == null) {
+            if (commandData.getAccount() == null) {
                 // Cycle for all accounts
                 for (int ind=0; ind < MyAccount.list().length; ind++) {
                     MyAccount acc = MyAccount.list()[ind];
                     if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
                         // Only if User was authenticated already
-                        boolean ok = loadTimelineAccount(acc, timelineType_in, userId);
+                        boolean ok = loadTimelineAccount(commandData, acc);
                         if (!ok) {
                             okAllAccounts = false;
                         }
+                    } else {
+                        commandData.commandResult.numAuthExceptions++;
                     }
                 }
             } else {
-                if (myAccount_in.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+                if (commandData.getAccount().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
                     // Only if User was authenticated already
-                    boolean ok = loadTimelineAccount(myAccount_in, timelineType_in, userId);
+                    boolean ok = loadTimelineAccount(commandData, commandData.getAccount());
                     if (!ok) {
                         okAllAccounts = false;
                     }
+                } else {
+                    commandData.commandResult.numAuthExceptions++;
                 }
-                // Notify only when data was loaded for one account
-                // (presumably "Manual reload" from the Timeline)
-                notifyOfDataLoadingCompletion();
             } // for one MyAccount
             
-            if (okAllAccounts && timelineType_in == TimelineTypeEnum.ALL && !mIsStopping) {
+            if (okAllAccounts && commandData.timelineType == TimelineTypeEnum.ALL && !mIsStopping) {
                 new DataPruner(MyService.this.getApplicationContext()).prune();
             }
             
@@ -1460,6 +1422,9 @@ public class MyService extends Service {
                 // Notify all timelines, 
                 // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
                 MyPreferences.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
+            } else {
+                // TODO: Extend diagnostics and stats
+                commandData.commandResult.numIoExceptions++;
             }
 
             return okAllAccounts;
@@ -1467,169 +1432,169 @@ public class MyService extends Service {
 
         /**
          * Load Timeline(s) for one MyAccount
-         * @param acc MyAccount, should be not null
-         * @param timelineType_in
-         * @param userId - Required for the User timeline
+         * 
          * @return True if everything Succeeded
          */
-        private boolean loadTimelineAccount(MyAccount acc,
-                MyDatabase.TimelineTypeEnum timelineType_in, long userId) {
-                boolean okAllTimelines = true;
-                if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-                    // Only if the User was authenticated already
+        private boolean loadTimelineAccount(CommandData commandData, MyAccount acc) {
+            if (acc.getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
+                commandData.commandResult.numAuthExceptions++;
+                return false;
+            }
 
-                    boolean ok = false;
-                    int downloadedCount = 0;
-                    int msgAdded = 0;
-                    int mentionsAdded = 0;
-                    int directedAdded = 0;
-                    String descr = "(starting)";
-                    
-                    if (userId == 0) {
-                        userId = acc.getUserId();
+            boolean okAllTimelines = true;
+            boolean ok = false;
+            int downloadedCount = 0;
+            int msgAdded = 0;
+            int mentionsAdded = 0;
+            int directedAdded = 0;
+            String descr = "(starting)";
+
+            long userId = commandData.itemId;
+            if (userId == 0) {
+                userId = acc.getUserId();
+            }
+
+            TimelineTypeEnum[] atl;
+            if (commandData.timelineType == TimelineTypeEnum.ALL) {
+                atl = new TimelineTypeEnum[] {
+                        TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
+                        TimelineTypeEnum.DIRECT,
+                        TimelineTypeEnum.FOLLOWING_USER
+                };
+            } else {
+                atl = new TimelineTypeEnum[] {
+                        commandData.timelineType
+                };
+            }
+
+            int pass = 1;
+            boolean okSomething = false;
+            boolean notOkSomething = false;
+            boolean oKs[] = new boolean[atl.length];
+            try {
+                for (int ind = 0; ind <= atl.length; ind++) {
+                    if (mIsStopping) {
+                        okAllTimelines = false;
+                        break;
                     }
 
-                    TimelineTypeEnum[] atl;
-                    if (timelineType_in == TimelineTypeEnum.ALL) {
-                        atl = new TimelineTypeEnum[] {
-                                TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
-                                TimelineTypeEnum.DIRECT,
-                                TimelineTypeEnum.FOLLOWING_USER
-                        };
-                    } else {
-                        atl = new TimelineTypeEnum[] {
-                                timelineType_in 
-                                };
+                    if (ind == atl.length) {
+                        // This is some trick for the cases
+                        // when we load more than one timeline at once
+                        // and there was an error on some timeline only
+                        if (pass > 1 || !okSomething || !notOkSomething) {
+                            break;
+                        }
+                        pass++;
+                        ind = 0; // Start from beginning
+                        MyLog.d(TAG, "Second pass of loading timeline");
                     }
-
-                    int pass = 1;
-                    boolean okSomething = false;
-                    boolean notOkSomething = false;
-                    boolean oKs[] = new boolean[atl.length];
-                    try {
-                        for (int ind = 0; ind <= atl.length; ind++) {
-                            if (mIsStopping) {
-                                okAllTimelines = false;
+                    if (pass > 1) {
+                        // Find next error index
+                        for (int ind2 = ind; ind2 < atl.length; ind2++) {
+                            if (!oKs[ind2]) {
+                                ind = ind2;
                                 break;
                             }
-
-                            if (ind == atl.length) {
-                                // This is some trick for the cases
-                                // when we load more than one timeline at once
-                                // and there was an error on some timeline only
-                                if (pass > 1 || !okSomething || !notOkSomething) {
-                                    break;
-                                }
-                                pass++;
-                                ind = 0; // Start from beginning
-                                MyLog.d(TAG, "Second pass of loading timeline");
-                            }
-                            if (pass > 1) {
-                                // Find next error index
-                                for (int ind2 = ind; ind2 < atl.length; ind2++) {
-                                    if (!oKs[ind2]) {
-                                        ind = ind2;
-                                        break;
-                                    }
-                                }
-                                if (oKs[ind]) {
-                                    // No more errors on the second pass
-                                    break;
-                                }
-                            }
-                            ok = false;
-
-                            TimelineTypeEnum timelineType = atl[ind];
-                            MyLog.d(TAG, "Getting " + timelineType.save() + " for "
-                                    + acc.getAccountName());
-
-                            TimelineDownloader fl = null;
-                            descr = "loading " + timelineType.save();
-                            fl = new TimelineDownloader(acc,
-                                    MyService.this.getApplicationContext(),
-                                    timelineType, userId);
-                            ok = fl.loadTimeline();
-                            downloadedCount += fl.downloadedCount();
-                            switch (timelineType) {
-                                case MENTIONS:
-                                    mentionsAdded += fl.mentionsCount();
-                                    break;
-                                case HOME:
-                                    msgAdded += fl.messagesCount();
-                                    mentionsAdded += fl.mentionsCount();
-                                    break;
-                                case DIRECT:
-                                    directedAdded += fl.messagesCount();
-                                    break;
-                                case FOLLOWING_USER:
-                                case USER:
-                                    // Don't count anything for now...
-                                    break;
-                                default:
-                                    ok = false;
-                                    Log.e(TAG, descr + " - not implemented");
-                            }
-
-                            if (ok) {
-                                okSomething = true;
-                            } else {
-                                notOkSomething = true;
-                            }
-                            oKs[ind] = ok;
                         }
-                    } catch (ConnectionException e) {
-                        Log.e(TAG, descr + ", Connection Exception: " + e.toString());
-                        ok = false;
-                    } catch (SQLiteConstraintException e) {
-                        Log.e(TAG, descr + ", SQLite Exception: " + e.toString());
-                        ok = false;
+                        if (oKs[ind]) {
+                            // No more errors on the second pass
+                            break;
+                        }
+                    }
+                    ok = false;
+
+                    TimelineTypeEnum timelineType = atl[ind];
+                    MyLog.d(TAG, "Getting " + timelineType.save() + " for "
+                            + acc.getAccountName());
+
+                    TimelineDownloader fl = null;
+                    descr = "loading " + timelineType.save();
+                    fl = new TimelineDownloader(acc,
+                            MyService.this.getApplicationContext(),
+                            timelineType, userId);
+                    ok = fl.loadTimeline();
+                    downloadedCount += fl.downloadedCount();
+                    switch (timelineType) {
+                        case MENTIONS:
+                            mentionsAdded += fl.mentionsCount();
+                            break;
+                        case HOME:
+                            msgAdded += fl.messagesCount();
+                            mentionsAdded += fl.mentionsCount();
+                            break;
+                        case DIRECT:
+                            directedAdded += fl.messagesCount();
+                            break;
+                        case FOLLOWING_USER:
+                        case USER:
+                            // Don't count anything for now...
+                            break;
+                        default:
+                            ok = false;
+                            Log.e(TAG, descr + " - not implemented");
                     }
 
                     if (ok) {
-                        descr = "notifying";
-                        notifyOfUpdatedTimeline(msgAdded, mentionsAdded, directedAdded);
-                    }
-
-                    String message = "";
-                    if (oKs.length <= 1) {
-                        message += (ok ? "Succeeded" : "Failed");
-                        okAllTimelines = ok;
+                        okSomething = true;
                     } else {
-                        int nOks = 0;
-                        for (int ind = 0; ind < oKs.length; ind++) {
-                            if (oKs[ind]) {
-                                nOks += 1;
-                            }
-                        }
-                        if (nOks > 0) {
-                            message += "Succeded " + nOks;
-                            if (nOks < oKs.length) {
-                                message += " of " + oKs.length;
-                                okAllTimelines = false;
-                            }
-                        } else {
-                            message += "Failed " + oKs.length;
-                            okAllTimelines = false;
-                        }
-                        message += " times";
+                        notOkSomething = true;
                     }
-
-                    message += " getting " + timelineType_in.save()
-                            + " for " + acc.getAccountName();
-                    if (downloadedCount > 0) {
-                        message += ", " + downloadedCount + " downloaded";
-                    }
-                    if (msgAdded > 0) {
-                        message += ", " + msgAdded + " messages";
-                    }
-                    if (mentionsAdded > 0) {
-                        message += ", " + mentionsAdded + " mentions";
-                    }
-                    if (directedAdded > 0) {
-                        message += ", " + directedAdded + " directs";
-                    }
-                    MyLog.d(TAG, message);
+                    oKs[ind] = ok;
                 }
+            } catch (ConnectionException e) {
+                Log.e(TAG, descr + ", Connection Exception: " + e.toString());
+                ok = false;
+            } catch (SQLiteConstraintException e) {
+                Log.e(TAG, descr + ", SQLite Exception: " + e.toString());
+                ok = false;
+            }
+
+            if (ok) {
+                descr = "notifying";
+                notifyOfUpdatedTimeline(msgAdded, mentionsAdded, directedAdded);
+            }
+
+            String message = "";
+            if (oKs.length <= 1) {
+                message += (ok ? "Succeeded" : "Failed");
+                okAllTimelines = ok;
+            } else {
+                int nOks = 0;
+                for (int ind = 0; ind < oKs.length; ind++) {
+                    if (oKs[ind]) {
+                        nOks += 1;
+                    }
+                }
+                if (nOks > 0) {
+                    message += "Succeded " + nOks;
+                    if (nOks < oKs.length) {
+                        message += " of " + oKs.length;
+                        okAllTimelines = false;
+                    }
+                } else {
+                    message += "Failed " + oKs.length;
+                    okAllTimelines = false;
+                }
+                message += " times";
+            }
+
+            message += " getting " + commandData.timelineType.save()
+                    + " for " + acc.getAccountName();
+            if (downloadedCount > 0) {
+                message += ", " + downloadedCount + " downloaded";
+            }
+            if (msgAdded > 0) {
+                message += ", " + msgAdded + " messages";
+            }
+            if (mentionsAdded > 0) {
+                message += ", " + mentionsAdded + " mentions";
+            }
+            if (directedAdded > 0) {
+                message += ", " + directedAdded + " directs";
+            }
+            MyLog.d(TAG, message);
+
             return okAllTimelines;
         }
         
@@ -1639,32 +1604,7 @@ public class MyService extends Service {
          * @param mentionsAdded
          * @param directedAdded
          */
-        private void notifyOfUpdatedTimeline(int msgAdded, int mentionsAdded,
-                int directedAdded) {
-            int N = mCallbacks.beginBroadcast();
-
-            for (int i = 0; i < N; i++) {
-                try {
-                    MyLog.d(TAG, "finishUpdateTimeline, Notifying callback no. " + i);
-                    IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
-                    if (cb != null) {
-                        if (msgAdded > 0) {
-                            cb.tweetsChanged(msgAdded);
-                        }
-                        if (mentionsAdded > 0) {
-                            cb.repliesChanged(mentionsAdded);
-                        }
-                        if (directedAdded > 0) {
-                            cb.messagesChanged(directedAdded);
-                        }
-                    }
-                } catch (RemoteException e) {
-                    Log.e(TAG, e.toString());
-                }
-            }
-
-            mCallbacks.finishBroadcast();
-
+        private void notifyOfUpdatedTimeline(int msgAdded, int mentionsAdded, int directedAdded) {
             boolean notified = false;
             if (mentionsAdded > 0) {
                 notifyOfNewTweets(mentionsAdded, CommandEnum.NOTIFY_MENTIONS);
@@ -1678,28 +1618,6 @@ public class MyService extends Service {
                 notifyOfNewTweets(msgAdded, CommandEnum.NOTIFY_HOME_TIMELINE);
                 notified = true;
             }
-        }
-
-        /**
-         * Currently the notification is not targeted 
-         * to any particular receiver waiting for the data...
-         */
-        private void notifyOfDataLoadingCompletion() {
-            int N = mCallbacks.beginBroadcast();
-
-            for (int i = 0; i < N; i++) {
-                try {
-                    MyLog.v(TAG,
-                            "Notifying of data loading completion, Notifying callback no. " + i);
-                    IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
-                    if (cb != null) {
-                        cb.dataLoading(0);
-                    }
-                } catch (RemoteException e) {
-                    Log.e(TAG, e.toString());
-                }
-            }
-            mCallbacks.finishBroadcast();
         }
         
         /**
@@ -1856,8 +1774,8 @@ public class MyService extends Service {
          * 
          * @return ok
          */
-        private boolean rateLimitStatus(MyAccount myAccount_in) {
-            if (myAccount_in == null) {
+        private boolean rateLimitStatus(CommandData commandData) {
+            if (commandData.getAccount() == null) {
                 return false;
             }
             boolean ok = false;
@@ -1865,7 +1783,7 @@ public class MyService extends Service {
             int remaining = 0;
             int limit = 0;
             try {
-                Connection conn = myAccount_in.getConnection();
+                Connection conn = commandData.getAccount().getConnection();
                 result = conn.rateLimitStatus();
                 ok = (result != null);
                 if (ok) {
@@ -1889,18 +1807,10 @@ public class MyService extends Service {
             }
 
             if (ok) {
-                int N = mCallbacks.beginBroadcast();
-                for (int i = 0; i < N; i++) {
-                    try {
-                        IMyServiceCallback cb = mCallbacks.getBroadcastItem(i);
-                        if (cb != null) {
-                            cb.rateLimitStatus(remaining, limit);
-                        }
-                    } catch (RemoteException e) {
-                        MyLog.d(TAG, e.toString());
-                    }
-                }
-                mCallbacks.finishBroadcast();
+               commandData.commandResult.remaining_hits = remaining; 
+               commandData.commandResult.hourly_limit = limit;
+            } else {
+                commandData.commandResult.numIoExceptions++;
             }
             return ok;
         }
@@ -1922,59 +1832,6 @@ public class MyService extends Service {
             mWakeLock = null;
         }
     }
-
-    /**
-     * Starts the repeating Alarm that sends the fetch Intent.
-     */
-    private boolean scheduleRepeatingAlarm() {
-        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pIntent = newRepeatingIntent();
-        int frequencyMs = MyPreferences.getSyncFrequencyMs();
-        long firstTime = SystemClock.elapsedRealtime() + frequencyMs;
-        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, frequencyMs, pIntent);
-        MyLog.d(TAG, "Started repeating alarm in a " + frequencyMs + " ms rhythm.");
-        return true;
-    }
-
-    /**
-     * Cancels the repeating Alarm that sends the fetch Intent.
-     */
-    private boolean cancelRepeatingAlarm() {
-        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pIntent = newRepeatingIntent();
-        am.cancel(pIntent);
-        MyLog.d(TAG, "Cancelled repeating alarm.");
-        return true;
-    }
-
-    /**
-     * Returns Intent to be send with Repeating Alarm.
-     * This alarm will be received by {@link MyServiceManager}
-     * @return the Intent
-     */
-    private PendingIntent newRepeatingIntent() {
-        Intent intent = new Intent(ACTION_ALARM);
-        intent.putExtra(MyService.EXTRA_MSGTYPE, CommandEnum.AUTOMATIC_UPDATE.save());
-        PendingIntent pIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-        return pIntent;
-    }
-
-    /**
-     * The IMyService is defined through IDL
-     */
-    private final IMyService.Stub mBinder = new IMyService.Stub() {
-        @Override
-        public void registerCallback(IMyServiceCallback cb) {
-            if (cb != null)
-                mCallbacks.register(cb);
-        }
-
-        @Override
-        public void unregisterCallback(IMyServiceCallback cb) {
-            if (cb != null)
-                mCallbacks.unregister(cb);
-        }
-    };
 
     /**
      * We use this function before actual requests of Internet services Based on
