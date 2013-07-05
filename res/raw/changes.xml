@@ -39,11 +39,13 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     <release android:versionName="1.16.0" android:versionCode="77"
         versionDate="2013-07-06"
         versionTitle="Timeline synchronization is managed by Android core">
-        <changes><change>Timeline synchronization is greatly improved because now Android core does this.
-            A user can separately control synchronization of each account
-            with Android built-in tools (in Settings-&gt;Accounts). E.g. a user may turn sync on and off for
-            any selected account. 
-             <a href="https://github.com/andstatus/andstatus/issues/29" >Issue #29</a>.
+        <changes><change>Timeline synchronization is greatly improved because now Android itself does 
+            this smartly for us (and not an our ad-hoc solution that AndStatus used before).
+            A user can <a href="https://support.google.com/android/answer/1663705?hl=en" >Configure 
+            account sync options</a> individually for each account
+            with Android built-in tools (in Settings-&gt; Personal -&gt; Accounts &amp; Sync). 
+            E.g. a user may turn Auto-sync on and off for an account.
+            <a href="https://github.com/andstatus/andstatus/issues/29" >Issue #29</a>.
              </change>
         </changes>
     </release>

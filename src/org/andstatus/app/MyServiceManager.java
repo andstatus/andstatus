@@ -126,7 +126,12 @@ public class MyServiceManager extends BroadcastReceiver {
      * @param commandData to the service or null 
      */
     public static void sendCommand(CommandData commandData) {
-        if (!isServiceAvailable()) throw new RuntimeException("MyService is unavailable");
+        if (!isServiceAvailable()) {
+            // Imitate soft service error
+            commandData.commandResult.numIoExceptions++;
+            MyService.broadcastState(MyPreferences.getContext(), MyService.ServiceState.STOPPED, commandData);
+            return;
+        }
         
         Intent serviceIntent = new Intent(MyService.class.getName());
         if (commandData != null) {

@@ -49,6 +49,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -95,12 +96,6 @@ public class MyService extends Service {
      *      context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
      */
     public static final String ACTION_APPWIDGET_UPDATE = ACTIONPREFIX + "APPWIDGET_UPDATE";
-    
-    /**
-     * Repeating alarm was triggered.
-     * @see MyService#scheduleRepeatingAlarm()
-     */
-    public static final String ACTION_ALARM = ACTIONPREFIX + "ALARM";
 
     /**
      * Broadcast with this action is being sent by {@link MyService} to notify of its state.
@@ -480,13 +475,19 @@ public class MyService extends Service {
      * Send broadcast informing of the current state of this service
      */
     private void broadcastState(CommandData commandData) {
+        broadcastState(this, getServiceState(), commandData);
+    }
+
+    /**
+     * Send broadcast informing of the current state of this service
+     */
+    public static void broadcastState(Context context, ServiceState state, CommandData commandData) {
         Intent intent = new Intent(ACTION_SERVICE_STATE);
         if (commandData != null) {
             intent = commandData.toIntent(intent);
         }
-        ServiceState state = getServiceState();
         intent.putExtra(EXTRA_SERVICE_STATE, state.save());
-        sendBroadcast(intent);
+        context.sendBroadcast(intent);
         MyLog.v(TAG, "state: " + state);
     }
     

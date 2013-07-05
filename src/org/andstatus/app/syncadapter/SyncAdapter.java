@@ -67,36 +67,29 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
         syncCompleted = false;
         try {
             this.syncResult = syncResult;
-            synchronized (MyServiceManager.class) {
-                MyLog.d(TAG, "onPerformSync started, account=" + account.name
-                        + (MyServiceManager.isServiceAvailable() ? "" : "; ignoring"));
-
-                if (MyServiceManager.isServiceAvailable()) {
-                    intentReceiver.registerReceiver(context);
-                    commandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
-                            TimelineTypeEnum.ALL, 0);
-                    MyServiceManager.sendCommand(commandData);
-                    synchronized (syncResult) {
-                        if (!syncCompleted) {
-                            timer.schedule(
-                                new TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        synchronized (SyncAdapter.this.syncResult) {
-                                            SyncAdapter.this.syncResult.stats.numIoExceptions++;
-                                            MyLog.d(TAG, "onPerformSync timeout");
-                                            SyncAdapter.this.syncResult.notifyAll();
-                                        }
-                                    }
-                                }, 180 * MyPreferences.MILLISECONDS);
-                            syncResult.wait();
-                        }
-                    }
-                    MyLog.d(TAG, "onPerformSync ended, " + (syncResult.hasError() ? "has error" : "ok"));
-                } else {
-                    syncResult.stats.numIoExceptions++;
+            MyLog.d(TAG, "onPerformSync started, account=" + account.name
+                    + (MyServiceManager.isServiceAvailable() ? "" : "; ignoring"));
+            intentReceiver.registerReceiver(context);
+            commandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
+                    TimelineTypeEnum.ALL, 0);
+            MyServiceManager.sendCommand(commandData);
+            synchronized (syncResult) {
+                if (!syncCompleted) {
+                    timer.schedule(
+                        new TimerTask() {
+                            @Override
+                            public void run() {
+                                synchronized (SyncAdapter.this.syncResult) {
+                                    SyncAdapter.this.syncResult.stats.numIoExceptions++;
+                                    MyLog.d(TAG, "onPerformSync timeout");
+                                    SyncAdapter.this.syncResult.notifyAll();
+                                }
+                            }
+                        }, 180 * MyPreferences.MILLISECONDS);
+                    syncResult.wait();
                 }
             }
+            MyLog.d(TAG, "onPerformSync ended, " + (syncResult.hasError() ? "has error" : "ok"));
         } catch (InterruptedException e) {
             MyLog.d(TAG, "onPerformSync interrupted");
         } finally {
