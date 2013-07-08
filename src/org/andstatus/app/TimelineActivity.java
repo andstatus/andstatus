@@ -24,7 +24,6 @@ import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -266,6 +265,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         //MyLog.v(TAG, "isLoading checked " + mIsLoading + ", instance " + instanceId);
         return (loadingLayout.getVisibility() == View.VISIBLE);
     }
+    
     void setIsLoading(boolean isLoadingNew) {
         if (isLoading() != isLoadingNew) {
             MyLog.v(TAG, "isLoading set to " + isLoadingNew + ", instanceId=" + instanceId );
@@ -1384,14 +1384,13 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * Ask a service to load data from the Internet for the selected TimelineType
      * Only newer messages (newer than last loaded) are being loaded from the
      * Internet, older ones are not being reloaded.
-     * TODO: Implement using {@link ContentResolver#requestSync(android.accounts.Account, String, Bundle)},
-     * see <a href="http://developer.android.com/reference/android/content/ContentResolver.html#requestSync(android.accounts.Account, java.lang.String, android.os.Bundle)">requestSync</a>
      */
     protected void manualReload(boolean allTimelineTypes) {
-
-        // Show something to the user...
+        MyAccount ma = MyAccount.fromUserId(mCurrentMyAccountUserId);
+        if (ma == null) {
+            return;
+        }
         setIsLoading(true);
-
         MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.HOME;
         long userId = 0;
         switch (mTimelineType) {
@@ -1406,13 +1405,13 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 break;
         }
 
-        String accountName = MyAccount.fromUserId(mCurrentMyAccountUserId).getAccountName();
-        CommandData cd = new CommandData(CommandEnum.FETCH_TIMELINE,
-                    mIsTimelineCombined ? "" : accountName, timelineType, userId);
-        MyServiceManager.sendCommand(cd);
+        MyServiceManager.sendCommand(
+                new CommandData(CommandEnum.FETCH_TIMELINE,
+                        mIsTimelineCombined ? "" : ma.getAccountName(), timelineType, userId)
+                );
 
         if (allTimelineTypes) {
-            MyServiceManager.sendCommand(new CommandData(CommandEnum.FETCH_TIMELINE, accountName, TimelineTypeEnum.ALL, 0));
+            ma.requestSync();
         }
     }
     

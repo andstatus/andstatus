@@ -340,9 +340,9 @@ public class MyAccount implements AccountDataReader {
                         
                         ContentResolver.setIsSyncable(myAccount.androidAccount, MyProvider.AUTHORITY, 1);
                         
-                        // This is not needed because we don't use the "network tickles"... yet.
+                        // This is not needed because we don't use the "network tickles"... yet?!
                         // See http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
-                        // ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
+                        ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
 
                         // Without SyncAdapter we got the error:
                         // SyncManager(865): can't find a sync adapter for SyncAdapterType Key 
@@ -1181,6 +1181,12 @@ public class MyAccount implements AccountDataReader {
      */
     public boolean canSetUsername() {
         return oAccountName.getOrigin().canSetUsername(isOAuth());
+    }
+    
+    public void requestSync() {
+        if (isPersistent()) {
+           ContentResolver.requestSync(androidAccount, MyProvider.AUTHORITY, new Bundle()); 
+        }
     }
 
     /**

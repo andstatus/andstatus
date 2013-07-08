@@ -37,15 +37,16 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
     <release android:versionName="1.16.0" android:versionCode="77"
-        versionDate="2013-07-06"
+        versionDate="2013-07-08"
         versionTitle="Timeline synchronization is managed by Android core">
         <changes><change>Timeline synchronization is greatly improved because now Android itself does 
-            this smartly for us (and not an our ad-hoc solution that AndStatus used before).
+            this smartly for us.
             A user can <a href="https://support.google.com/android/answer/1663705?hl=en" >Configure 
             account sync options</a> individually for each account
             with Android built-in tools (in Settings-&gt; Personal -&gt; Accounts &amp; Sync). 
             E.g. a user may turn Auto-sync on and off for an account.
             <a href="https://github.com/andstatus/andstatus/issues/29" >Issue #29</a>.
+            As a result of this change, &quot;Automatic updates&quot; setting was removed from preferences.
              </change>
         </changes>
     </release>

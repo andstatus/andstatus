@@ -222,7 +222,9 @@ public class CommandData {
         return "CommandData [" + "command=" + command.save()
                 + (TextUtils.isEmpty(getAccountName()) ? "" : "; account=" + getAccountName())
                 + (timelineType == TimelineTypeEnum.UNKNOWN ? "" : "; timeline=" + timelineType.save())
-                + (itemId == 0 ? "" : "; id=" + itemId) + ", hashCode=" + hashCode() + "]";
+                + (itemId == 0 ? "" : "; id=" + itemId) + ", hashCode=" + hashCode()
+                + (commandResult.hasError() ? (commandResult.hasHardError() ? "; Hard Error" : "; Soft Error") : "")
+                + "]";
     }
 
     /**

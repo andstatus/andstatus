@@ -882,13 +882,23 @@ public class MyService extends Service {
                 // The queue is Blocking, so we can do this
                 CommandData commandData = mCommands.poll();
                 if (commandData == null) {
-                    // All work is done
                     break;
                 }
-
                 executeOneCommand(commandData);
+                if (shouldWeRetry(commandData)) {
+                    synchronized(MyService.this) {
+                        // Put the command to the retry queue
+                        if (!mRetryQueue.contains(commandData)) {
+                            if (!mRetryQueue.offer(commandData)) {
+                                Log.e(TAG, "mRetryQueue is full?");
+                            }
+                        }
+                    }        
+                }
+                MyLog.d(TAG, (commandData.commandResult.hasError() ?
+                        (commandData.commandResult.willRetry ? "Will retry" : "Failed") : "Succeeded") 
+                        + " " + commandData);
                 broadcastState(commandData);
-                
                 if (commandData.commandResult.hasError() && !isOnline()) {
                     // Don't bother with other commands if we're not Online :-)
                     break;
@@ -940,21 +950,6 @@ public class MyService extends Service {
                 default:
                     Log.e(TAG, "Unexpected command here " + commandData);
             }
-
-            if (shouldWeRetry(commandData)) {
-                synchronized(MyService.this) {
-                    // Put the command to the retry queue
-                    if (!mRetryQueue.contains(commandData)) {
-                        if (!mRetryQueue.offer(commandData)) {
-                            Log.e(TAG, "mRetryQueue is full?");
-                        }
-                    }
-                }        
-            }
-
-            MyLog.d(TAG, (commandData.commandResult.hasError() ?
-                    (commandData.commandResult.willRetry ? "Will retry" : "Failed") : "Succeeded") 
-                    + " " + commandData);
         }
 
         private boolean shouldWeRetry(CommandData commandData) {
@@ -997,11 +992,10 @@ public class MyService extends Service {
 
         /**
          * @param create true - create, false - destroy
-         * @return true - success
          */
-        private boolean createOrDestroyFavorite(CommandData commandData, long msgId, boolean create) {
+        private void createOrDestroyFavorite(CommandData commandData, long msgId, boolean create) {
             if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-                return false;
+                return;
             }
             MyAccount ma = commandData.getAccount();
             boolean ok = false;
@@ -1081,20 +1075,18 @@ public class MyService extends Service {
                     }
                 }
             }
+            setSoftErrorIfNotOk(commandData, ok);
             MyLog.d(TAG, (create ? "Creating" : "Destroying") + " favorite "
                     + (ok ? "succeded" : "failed") + ", id=" + msgId);
-            return ok;
         }
-
 
         /**
          * @param userId
          * @param follow true - Follow, false - Stop following
-         * @return ok
          */
-        private boolean followOrStopFollowingUser(CommandData commandData, long userId, boolean follow) {
+        private void followOrStopFollowingUser(CommandData commandData, long userId, boolean follow) {
             if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-                return false;
+                return;
             }
             MyAccount ma = commandData.getAccount();
             boolean ok = false;
@@ -1152,22 +1144,17 @@ public class MyService extends Service {
                     }
                 }
             }
-
-            // TODO: Maybe we need to notify the caller about the result?!
-
+            setSoftErrorIfNotOk(commandData, ok);
             MyLog.d(TAG, (follow ? "Follow" : "Stop following") + " User "
                     + (ok ? "succeded" : "failed") + ", id=" + userId);
-            return ok;
         }
         
         /**
-         * @param accountNameIn Account whose message (status) to destroy
          * @param msgId ID of the message to destroy
-         * @return boolean ok
          */
-        private boolean destroyStatus(CommandData commandData, long msgId) {
+        private void destroyStatus(CommandData commandData, long msgId) {
             if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-                return false;
+                return;
             }
             MyAccount ma = commandData.getAccount();
             boolean ok = false;
@@ -1202,22 +1189,17 @@ public class MyService extends Service {
                     Log.e(TAG, "Error destroying status locally: " + e.toString());
                 }
             }
-
-            // TODO: Maybe we need to notify the caller about the result?!
-
+            setSoftErrorIfNotOk(commandData, ok);
             MyLog.d(TAG, "Destroying status " + (ok ? "succeded" : "failed") + ", id=" + msgId);
-            return ok;
         }
 
 
         /**
-         * @param accountNameIn Account whose reblog to destroy ("undo reblog")
          * @param msgId ID of the message to destroy
-         * @return boolean ok
          */
-        private boolean destroyReblog(CommandData commandData, long msgId) {
+        private void destroyReblog(CommandData commandData, long msgId) {
             if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-                return false;
+                return;
             }
             MyAccount ma = commandData.getAccount();
             boolean ok = false;
@@ -1253,14 +1235,13 @@ public class MyService extends Service {
                     Log.e(TAG, "Error destroying reblog locally: " + e.toString());
                 }
             }
-
+            setSoftErrorIfNotOk(commandData, ok);
             MyLog.d(TAG, "Destroying reblog " + (ok ? "succeded" : "failed") + ", id=" + msgId);
-            return ok;
         }
 
-        private boolean getStatus(CommandData commandData) {
+        private void getStatus(CommandData commandData) {
             if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-                return false;
+                return;
             }
             boolean ok = false;
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, commandData.itemId, 0);
@@ -1287,23 +1268,18 @@ public class MyService extends Service {
                     Log.e(TAG, "Error inserting status: " + e.toString());
                 }
             }
-            if (!ok) {
-                commandData.commandResult.numIoExceptions++;
-            }
-            
+            setSoftErrorIfNotOk(commandData, ok);
             MyLog.d(TAG, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + commandData.itemId);
-            return ok;
         }
         
         /**
          * @param status
          * @param replyToMsgId - Message Id
          * @param recipientUserId !=0 for Direct messages - User Id
-         * @return ok
          */
-        private boolean updateStatus(CommandData commandData, String status, long replyToMsgId, long recipientUserId) {
+        private void updateStatus(CommandData commandData, String status, long replyToMsgId, long recipientUserId) {
             if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-                return false;
+                return;
             }
             MyAccount ma = commandData.getAccount();
             boolean ok = false;
@@ -1335,12 +1311,12 @@ public class MyService extends Service {
                     Log.e(TAG, "updateStatus JSONException: " + e.toString());
                 }
             }
-            return ok;
+            setSoftErrorIfNotOk(commandData, ok);
         }
 
-        private boolean reblog(CommandData commandData, long rebloggedId) {
+        private void reblog(CommandData commandData, long rebloggedId) {
             if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-                return false;
+                return;
             }
             MyAccount ma = commandData.getAccount();
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, rebloggedId, 0);
@@ -1364,46 +1340,42 @@ public class MyService extends Service {
                     Log.e(TAG, "reblog JSONException: " + e.toString());
                 }
             }
-            return ok;
+            setSoftErrorIfNotOk(commandData, ok);
         }
         
         /**
          * Load one or all timeline(s) for one or all accounts
          * @return True if everything Succeeded
          */
-        private boolean loadTimeline(CommandData commandData) {
-            boolean okAllAccounts = true;
-            
+        private void loadTimeline(CommandData commandData) {
             if (commandData.getAccount() == null) {
                 for (MyAccount acc : MyAccount.list()) {
-                    if (!loadTimelineAccount(commandData, acc)) {
-                        okAllAccounts = false;
+                    loadTimelineAccount(commandData, acc);
+                    if (mIsStopping) {
+                        setSoftErrorIfNotOk(commandData, false);
+                        break;
                     }
                 }
             } else {
-                okAllAccounts = loadTimelineAccount(commandData, commandData.getAccount());
+                loadTimelineAccount(commandData, commandData.getAccount());
             }
-            
-            if (okAllAccounts && commandData.timelineType == TimelineTypeEnum.ALL && !mIsStopping) {
+            if (!commandData.commandResult.hasError() && commandData.timelineType == TimelineTypeEnum.ALL && !mIsStopping) {
                 new DataPruner(MyService.this.getApplicationContext()).prune();
             }
-            
-            if (okAllAccounts) {
+            if (!commandData.commandResult.hasError()) {
                 // Notify all timelines, 
                 // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
                 MyPreferences.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
             }
-
-            return okAllAccounts;
         }
 
         /**
          * Load Timeline(s) for one MyAccount
          * @return True if everything Succeeded
          */
-        private boolean loadTimelineAccount(CommandData commandData, MyAccount acc) {
+        private void loadTimelineAccount(CommandData commandData, MyAccount acc) {
             if (setErrorIfCredentialsNotVerified(commandData, acc)) {
-                return false;
+                return;
             }
             boolean okAllTimelines = true;
             boolean ok = false;
@@ -1542,10 +1514,7 @@ public class MyService extends Service {
                 }
                 message += " times";
             }
-
-            if (!okAllTimelines) {
-                commandData.commandResult.numIoExceptions++;
-            }
+            setSoftErrorIfNotOk(commandData, okAllTimelines);
             
             message += " getting " + commandData.timelineType.save()
                     + " for " + acc.getAccountName();
@@ -1562,8 +1531,6 @@ public class MyService extends Service {
                 message += ", " + directedAdded + " directs";
             }
             MyLog.d(TAG, message);
-
-            return okAllTimelines;
         }
         
         /**
@@ -1742,9 +1709,9 @@ public class MyService extends Service {
          * 
          * @return ok
          */
-        private boolean rateLimitStatus(CommandData commandData) {
+        private void rateLimitStatus(CommandData commandData) {
             if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-                return false;
+                return;
             }
             boolean ok = false;
             JSONObject result = new JSONObject();
@@ -1777,23 +1744,23 @@ public class MyService extends Service {
             if (ok) {
                commandData.commandResult.remaining_hits = remaining; 
                commandData.commandResult.hourly_limit = limit;
-            } else {
-                commandData.commandResult.numIoExceptions++;
             }
-            return ok;
+            setSoftErrorIfNotOk(commandData, ok);
         }
         
-        /**
-         * @return true if Error occurred
-         */
+        private void setSoftErrorIfNotOk(CommandData commandData, boolean ok) {
+            if (!ok) {
+                commandData.commandResult.numIoExceptions++;
+            }
+        }
+
         private boolean setErrorIfCredentialsNotVerified(CommandData commandData, MyAccount myAccount) {
-            boolean isError = true;
-            if (myAccount != null && myAccount.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-                isError = false;
-            } else {
+            boolean errorOccured = false;
+            if (myAccount == null || myAccount.getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
+                errorOccured = true;
                 commandData.commandResult.numAuthExceptions++;
             }
-            return isError;
+            return errorOccured;
         }
     }
 
