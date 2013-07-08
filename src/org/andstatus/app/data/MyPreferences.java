@@ -66,7 +66,6 @@ public class MyPreferences {
      * Period of automatic updates in seconds
      */
     public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
-    public static final String KEY_AUTOMATIC_UPDATES = "automatic_updates";
     public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
     public static final String KEY_CONTACT_DEVELOPER = "contact_developer";
     public static final String KEY_REPORT_BUG = "report_bug";

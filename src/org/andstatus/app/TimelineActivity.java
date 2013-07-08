@@ -59,6 +59,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ToggleButton;
 
 import org.andstatus.app.MyService.CommandEnum;
@@ -83,7 +84,7 @@ import java.util.Locale;
 /**
  * @author yvolk, torgny.bjers
  */
-public class TimelineActivity extends ListActivity implements MyServiceListener, ITimelineActivity {
+public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener {
 
     private static final String TAG = TimelineActivity.class.getSimpleName();
 

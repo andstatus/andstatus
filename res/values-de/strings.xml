@@ -33,11 +33,9 @@
 	<string name="button_send">Senden</string>
 	<string name="cannot_send_empty_message">Kann keine leere Nachricht senden.</string>
 	<string name="category_title_preference_appearance">Design</string>
-	<string name="category_title_preference_automatic_updates">Aktualisierungen</string>
 	<string name="category_title_preference_credentials">Anmeldedaten</string>
 	<string name="category_title_preference_notifications">Benachrichtigungen</string>
 	<string name="category_title_preference_settings">Einstellungen</string>
-	<string name="category_title_preference_updates">Aktualisierungen</string>
 	<string name="dialog_summary_authentication_failed">Bitte überprüfe Benutzername und Passwort.</string>
 	<string name="dialog_summary_checking_credentials">Bitte warten, während die Zugangsdaten überprüft werden.</string>
 	<string name="dialog_summary_connection_timeout">Zeitüberschreitung der Verbindung. Bitte versuche es später noch einmal.</string>
@@ -132,9 +130,6 @@
 	<string name="search_direct_messages_hint">Name oder Wort suchen</string>
 	<string name="status_destroyed">Der Tweet wurde entfernt.</string>
 	<string name="summary_preference_appearance">Ändere das Aussehen von AndStatus</string>
-	<string name="summary_preference_automatic_updates">Einstellungen zur automatischen Aktualisierung ändern</string>
-	<string name="summary_preference_automatic_updates_off">automatische Aktualisierung ist deaktiviert</string>
-	<string name="summary_preference_automatic_updates_on">automatische Aktualisierung ist aktiviert</string>
 	<string name="summary_preference_frequency">Aktualisierungen werden {0} abgerufen.</string>
 	<string name="summary_preference_light_theme_off">Standard Design wird benutzt.</string>
 	<string name="summary_preference_light_theme_on">Das helle Design wird benutzt.</string>
@@ -165,7 +160,6 @@
 	<string name="summary_preference_vibration_on">Vibration bei neuen Nachrichten</string>
 	<string name="timeline_reloaded">Chronik wurde aktualisiert.</string>
 	<string name="title_preference_appearance">Design</string>
-	<string name="title_preference_automatic_updates">autom. Aktualisierungen</string>
 	<string name="title_preference_frequency">Aktualisierungsfrequenz</string>
 	<string name="title_preference_light_theme">Helles Design</string>
 	<string name="title_preference_notification_sound">Benachrichtigung mit Ton</string>

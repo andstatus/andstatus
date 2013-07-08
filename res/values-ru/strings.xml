@@ -49,12 +49,10 @@
     <string name="button_create_message_twitter">Блог</string>
     <string name="cannot_send_empty_message">Невозможно отправить пустое сообщение.</string>
 	<string name="category_title_preference_appearance">Внешний вид</string>
-	<string name="category_title_preference_automatic_updates">Обновления</string>
 	<string name="category_title_preference_credentials">Имя пользователя и пароль</string>
 	<string name="category_title_preference_information">Информация</string>
 	<string name="category_title_preference_notifications">Уведомления</string>
 	<string name="category_title_preference_settings">Настройки</string>
-	<string name="category_title_preference_updates">Обновления</string>
     <string name="combined_timeline_on">вместе</string>
     <string name="combined_timeline_off">для</string>
 	<string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>
@@ -76,7 +74,7 @@
 	<string name="dialog_title_executing_command">Исполнение комманды…</string>
 	<string name="dialog_title_external_storage">Внешняя память доступна</string>
 	<string name="dialog_title_external_storage_missing">Внешняя память отсутствует</string>
-	<string name="dialog_title_preference_frequency">Частота обновлений</string>
+	<string name="dialog_title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="dialog_title_preference_history_size">Количество сообщений в истории</string>
 	<string name="dialog_title_preference_history_time">Время хранения истории</string>
     <string name="dialog_title_preference_min_log_level">Минимальный уровень журналирования</string>
@@ -224,10 +222,7 @@
 	<string name="summary_preference_add_account_oauth">Щёлкните здесь для открытия сайта Системы в браузере.</string>
     <string name="summary_preference_add_account_basic">Щёлкните здесь для аутентификации пользователя и добавления учётной записи (аккаунта).</string>
     <string name="summary_preference_appearance">Изменить внешний вид программы AndStatus</string>
-	<string name="summary_preference_automatic_updates">Изменить параметры автоматических обновлений</string>
-	<string name="summary_preference_automatic_updates_off">Автоматические обновления отключены</string>
-	<string name="summary_preference_automatic_updates_on">Автоматические обновления включены</string>
-	<string name="summary_preference_frequency">Обновления происходят {0}.</string>
+	<string name="summary_preference_frequency">Обновления происходят каждые {0}.</string>
 	<string name="summary_preference_history_size">Сохранять историю до {0}.</string>
 	<string name="summary_preference_history_time">Хранить историю за {0}.</string>
 	<string name="summary_preference_light_theme_off">Будет использована стандартная тема.</string>
@@ -268,10 +263,9 @@
 	<string name="title_preference_about_application">О программе AndStatus</string>
     <string name="title_preference_add_account">Добавить учётную запись</string>
     <string name="title_preference_appearance">Внешний вид</string>
-	<string name="title_preference_automatic_updates">Автоматические обновления</string>
 	<string name="title_preference_change_log">Журнал изменений</string>
 	<string name="title_preference_contact_developer">Свяжитесь с разработчиками</string>
-	<string name="title_preference_frequency">Частота обновлений</string>
+	<string name="title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="title_preference_history_size">Размер истории</string>
 	<string name="title_preference_history_time">Длительность хранения истории</string>
 	<string name="title_preference_light_theme">Светлая тема</string>

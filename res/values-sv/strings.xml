@@ -31,11 +31,9 @@
 	<string name="button_send">Skicka</string>
 	<string name="cannot_send_empty_message">Kan inte skicka ett tomt meddelande.</string>
 	<string name="category_title_preference_appearance">Utseende</string>
-	<string name="category_title_preference_automatic_updates">Uppdateringar</string>
 	<string name="category_title_preference_credentials">Användarinformation</string>
 	<string name="category_title_preference_notifications">Notifications</string>
 	<string name="category_title_preference_settings">Inställningar</string>
-	<string name="category_title_preference_updates">Uppdateringar</string>
 	<string name="dialog_summary_authentication_failed">Verifiera ditt användarnamn och lösenord.</string>
 	<string name="dialog_summary_checking_credentials">Var god vänta medan ditt konto verifieras.</string>
 	<string name="dialog_summary_connection_timeout">Anslutningen har avbrutits. Försök igen senare.</string>
@@ -111,9 +109,6 @@
 	<string name="search_direct_messages_hint">Enter a username or phrase</string>
 	<string name="status_destroyed">The tweet has been removed.</string>
 	<string name="summary_preference_appearance">Change the AndStatus look and feel</string>
-	<string name="summary_preference_automatic_updates">Change automatic update settings</string>
-	<string name="summary_preference_automatic_updates_off">Automatic updates are disabled</string>
-	<string name="summary_preference_automatic_updates_on">Automatic updates are enabled</string>
 	<string name="summary_preference_frequency">Updates are fetched every {0}.</string>
 	<string name="summary_preference_history_size">Remember tweet history up to {0}.</string>
 	<string name="summary_preference_history_time">Remember tweet history up to {0}.</string>
@@ -146,7 +141,6 @@
 	<string name="summary_preference_vibration_on">Vibrating on incoming message</string>
 	<string name="timeline_reloaded">Timeline has been reloaded.</string>
 	<string name="title_preference_appearance">Appearance</string>
-	<string name="title_preference_automatic_updates">Automatic Updates</string>
 	<string name="title_preference_frequency">Update Frequency</string>
 	<string name="title_preference_history_size">History Size</string>
 	<string name="title_preference_history_time">History Time</string>

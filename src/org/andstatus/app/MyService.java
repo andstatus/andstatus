@@ -49,7 +49,6 @@ import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -554,17 +553,6 @@ public class MyService extends Service {
             preferencesChangeTime = preferencesChangeTimeNew;
             preferencesExamineTime = preferencesExamineTimeNew;
             getMyServicePreferences().edit().putLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, preferencesExamineTime).commit();
-
-            // Stop existing alarm in any case
-            //TODO delete: cancelRepeatingAlarm();
-
-            SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
-            if (sp.contains("automatic_updates") && sp.getBoolean("automatic_updates", false)) {
-                /**
-                 * Schedule Automatic updates according to the preferences.
-                 */
-              //TODO delete: scheduleRepeatingAlarm();
-            }
         }
     }
 
@@ -881,11 +869,6 @@ public class MyService extends Service {
         return count;
     }
 
-    /**
-     * Command executor
-     * 
-     * @author yvolk
-     */
     private class CommandExecutor extends AsyncTask<Void, Void, Boolean> {
 
         @Override
@@ -893,7 +876,6 @@ public class MyService extends Service {
             MyLog.d(TAG, "CommandExecutor, " + mCommands.size() + " commands to process");
 
             do {
-                boolean ok = false;
                 if (mIsStopping) break;
                 
                 // Get commands from the Queue one by one and execute them
@@ -904,94 +886,10 @@ public class MyService extends Service {
                     break;
                 }
 
-                commandData.retriesLeft -= 1;
-                boolean retry = false;
-                MyLog.d(TAG, "Executing " + commandData);
-
-                switch (commandData.command) {
-                    case AUTOMATIC_UPDATE:
-                    case FETCH_TIMELINE:
-                        ok = loadTimeline(commandData);
-                        break;
-                    case CREATE_FAVORITE:
-                    case DESTROY_FAVORITE:
-                        ok = createOrDestroyFavorite(commandData.getAccount(),
-                                commandData.itemId, 
-                                commandData.command == CommandEnum.CREATE_FAVORITE);
-                        // Retry in a case of an error
-                        retry = !ok;
-                        break;
-                    case FOLLOW_USER:
-                    case STOP_FOLLOWING_USER:
-                        ok = followOrStopFollowingUser(commandData.getAccount(),
-                                commandData.itemId, 
-                                commandData.command == CommandEnum.FOLLOW_USER);
-                        // Retry in a case of an error
-                        retry = !ok;
-                        break;
-                    case UPDATE_STATUS:
-                        String status = commandData.bundle.getString(EXTRA_STATUS).trim();
-                        long replyToId = commandData.bundle.getLong(EXTRA_INREPLYTOID);
-                        long recipientId = commandData.bundle.getLong(EXTRA_RECIPIENTID);
-                        ok = updateStatus(commandData.getAccount(), status, replyToId, recipientId);
-                        retry = !ok;
-                        break;
-                    case DESTROY_STATUS:
-                        ok = destroyStatus(commandData.getAccount(), commandData.itemId);
-                        // Retry in a case of an error
-                        retry = !ok;
-                        break;
-                    case DESTROY_REBLOG:
-                        ok = destroyReblog(commandData.getAccount(), commandData.itemId);
-                        // Retry in a case of an error
-                        retry = !ok;
-                        break;
-                    case GET_STATUS:
-                        ok = getStatus(commandData);
-                        retry = (commandData.commandResult.hasError() &&
-                                !commandData.commandResult.hasHardError());
-                        break;
-                    case REBLOG:
-                        ok = reblog(commandData.getAccount(), commandData.itemId);
-                        retry = !ok;
-                        break;
-                    case RATE_LIMIT_STATUS:
-                        ok = rateLimitStatus(commandData);
-                        break;
-                    default:
-                        Log.e(TAG, "Unexpected command here " + commandData);
-                }
-                MyLog.d(TAG, (ok ? "Succeeded" : "Failed") + " " + commandData);
+                executeOneCommand(commandData);
                 broadcastState(commandData);
                 
-                if (retry) {
-                    boolean ok2 = true;
-                    if (commandData.retriesLeft < 0) {
-                        // This means that retriesLeft was not set yet,
-                        // so let's set it to some default value, the same for
-                        // any command
-                        // that needs to be retried...
-                        commandData.retriesLeft = 9;
-                    }
-                    // Check if any retries left (actually 0 means this was the
-                    // last retry)
-                    if (commandData.retriesLeft > 0) {
-                        synchronized(MyService.this) {
-                            // Put the command to the retry queue
-                            if (!mRetryQueue.contains(commandData)) {
-                                if (!mRetryQueue.offer(commandData)) {
-                                    Log.e(TAG, "mRetryQueue is full?");
-                                }
-                            }
-                        }        
-                    } else {
-                        ok2 = false;
-                    }
-                    if (!ok2) {
-                        Log.e(TAG, "Couldn't execute " + commandData);
-                    }
-                }
-                if (!ok && !isOnline()) {
+                if (commandData.commandResult.hasError() && !isOnline()) {
                     // Don't bother with other commands if we're not Online :-)
                     break;
                 }
@@ -999,6 +897,96 @@ public class MyService extends Service {
             return true;
         }
 
+        private void executeOneCommand(CommandData commandData) {
+            MyLog.d(TAG, "Executing " + commandData);
+            switch (commandData.command) {
+                case AUTOMATIC_UPDATE:
+                case FETCH_TIMELINE:
+                    loadTimeline(commandData);
+                    break;
+                case CREATE_FAVORITE:
+                case DESTROY_FAVORITE:
+                    createOrDestroyFavorite(commandData,
+                            commandData.itemId, 
+                            commandData.command == CommandEnum.CREATE_FAVORITE);
+                    break;
+                case FOLLOW_USER:
+                case STOP_FOLLOWING_USER:
+                    followOrStopFollowingUser(commandData,
+                            commandData.itemId, 
+                            commandData.command == CommandEnum.FOLLOW_USER);
+                    break;
+                case UPDATE_STATUS:
+                    String status = commandData.bundle.getString(EXTRA_STATUS).trim();
+                    long replyToId = commandData.bundle.getLong(EXTRA_INREPLYTOID);
+                    long recipientId = commandData.bundle.getLong(EXTRA_RECIPIENTID);
+                    updateStatus(commandData, status, replyToId, recipientId);
+                    break;
+                case DESTROY_STATUS:
+                    destroyStatus(commandData, commandData.itemId);
+                    break;
+                case DESTROY_REBLOG:
+                    destroyReblog(commandData, commandData.itemId);
+                    break;
+                case GET_STATUS:
+                    getStatus(commandData);
+                    break;
+                case REBLOG:
+                    reblog(commandData, commandData.itemId);
+                    break;
+                case RATE_LIMIT_STATUS:
+                    rateLimitStatus(commandData);
+                    break;
+                default:
+                    Log.e(TAG, "Unexpected command here " + commandData);
+            }
+
+            if (shouldWeRetry(commandData)) {
+                synchronized(MyService.this) {
+                    // Put the command to the retry queue
+                    if (!mRetryQueue.contains(commandData)) {
+                        if (!mRetryQueue.offer(commandData)) {
+                            Log.e(TAG, "mRetryQueue is full?");
+                        }
+                    }
+                }        
+            }
+
+            MyLog.d(TAG, (commandData.commandResult.hasError() ?
+                    (commandData.commandResult.willRetry ? "Will retry" : "Failed") : "Succeeded") 
+                    + " " + commandData);
+        }
+
+        private boolean shouldWeRetry(CommandData commandData) {
+            commandData.commandResult.willRetry = false;
+            if (commandData.commandResult.hasError()) {
+                switch (commandData.command) {
+                    case AUTOMATIC_UPDATE:
+                    case FETCH_TIMELINE:
+                    case RATE_LIMIT_STATUS:
+                        break;
+                    default:
+                        if (!commandData.commandResult.hasHardError()) {
+                            commandData.commandResult.willRetry = true;
+                        }
+                }
+            }
+            if (commandData.commandResult.willRetry) {
+                if (commandData.retriesLeft == 0) {
+                    // This means that retriesLeft was not set yet,
+                    // so let's set it to some default value, the same for
+                    // any command that needs to be retried...
+                    commandData.retriesLeft = 10;
+                }
+                commandData.retriesLeft -= 1;
+                if (commandData.retriesLeft == 0) {
+                    commandData.commandResult.willRetry = false;
+                }
+                
+            }
+            return commandData.commandResult.willRetry;
+        }
+        
         /**
          * This is in the UI thread, so we can mess with the UI
          */
@@ -1009,13 +997,13 @@ public class MyService extends Service {
 
         /**
          * @param create true - create, false - destroy
-         * @param msgId
-         * @return ok
+         * @return true - success
          */
-        private boolean createOrDestroyFavorite(MyAccount ma, long msgId, boolean create) {
-            if (ma == null) {
+        private boolean createOrDestroyFavorite(CommandData commandData, long msgId, boolean create) {
+            if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
                 return false;
             }
+            MyAccount ma = commandData.getAccount();
             boolean ok = false;
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
             JSONObject result = new JSONObject();
@@ -1082,7 +1070,7 @@ public class MyService extends Service {
 
                 if (ok) {
                     try {
-                        // Please note that a Favorited message may be NOT in the User's Home timeline!
+                        // Please note that the Favorited message may be NOT in the User's Home timeline!
                         new DataInserter(ma,
                                 MyService.this.getApplicationContext(),
                                 TimelineTypeEnum.ALL).insertMsgFromJSONObject(result);
@@ -1093,9 +1081,6 @@ public class MyService extends Service {
                     }
                 }
             }
-
-            // TODO: Maybe we need to notify the caller about the result?!
-
             MyLog.d(TAG, (create ? "Creating" : "Destroying") + " favorite "
                     + (ok ? "succeded" : "failed") + ", id=" + msgId);
             return ok;
@@ -1107,10 +1092,11 @@ public class MyService extends Service {
          * @param follow true - Follow, false - Stop following
          * @return ok
          */
-        private boolean followOrStopFollowingUser(MyAccount ma, long userId, boolean follow) {
-            if (ma == null) {
+        private boolean followOrStopFollowingUser(CommandData commandData, long userId, boolean follow) {
+            if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
                 return false;
             }
+            MyAccount ma = commandData.getAccount();
             boolean ok = false;
             String oid = MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
             JSONObject result = new JSONObject();
@@ -1179,10 +1165,11 @@ public class MyService extends Service {
          * @param msgId ID of the message to destroy
          * @return boolean ok
          */
-        private boolean destroyStatus(MyAccount ma, long msgId) {
-            if (ma == null) {
+        private boolean destroyStatus(CommandData commandData, long msgId) {
+            if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
                 return false;
             }
+            MyAccount ma = commandData.getAccount();
             boolean ok = false;
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
             JSONObject result = new JSONObject();
@@ -1228,10 +1215,11 @@ public class MyService extends Service {
          * @param msgId ID of the message to destroy
          * @return boolean ok
          */
-        private boolean destroyReblog(MyAccount ma, long msgId) {
-            if (ma == null) {
+        private boolean destroyReblog(CommandData commandData, long msgId) {
+            if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
                 return false;
             }
+            MyAccount ma = commandData.getAccount();
             boolean ok = false;
             String oid = MyProvider.idToOid(OidEnum.REBLOG_OID, msgId, ma.getUserId());
             JSONObject result = new JSONObject();
@@ -1271,9 +1259,7 @@ public class MyService extends Service {
         }
 
         private boolean getStatus(CommandData commandData) {
-            if (commandData.getAccount() == null
-                    || commandData.getAccount().getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
-                commandData.commandResult.numAuthExceptions++;
+            if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
                 return false;
             }
             boolean ok = false;
@@ -1315,10 +1301,11 @@ public class MyService extends Service {
          * @param recipientUserId !=0 for Direct messages - User Id
          * @return ok
          */
-        private boolean updateStatus(MyAccount ma, String status, long replyToMsgId, long recipientUserId) {
-            if (ma == null) {
+        private boolean updateStatus(CommandData commandData, String status, long replyToMsgId, long recipientUserId) {
+            if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
                 return false;
             }
+            MyAccount ma = commandData.getAccount();
             boolean ok = false;
             JSONObject result = new JSONObject();
             try {
@@ -1351,10 +1338,11 @@ public class MyService extends Service {
             return ok;
         }
 
-        private boolean reblog(MyAccount ma, long rebloggedId) {
-            if (ma == null) {
+        private boolean reblog(CommandData commandData, long rebloggedId) {
+            if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
                 return false;
             }
+            MyAccount ma = commandData.getAccount();
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, rebloggedId, 0);
             boolean ok = false;
             JSONObject result = new JSONObject();
@@ -1381,39 +1369,20 @@ public class MyService extends Service {
         
         /**
          * Load one or all timeline(s) for one or all accounts
-         * @param accountNameIn If empty load Timeline(s) for all MyAccounts
-         * @param timelineType_in - May mean one or "all" timelines (for {@link TimelineTypeEnum#ALL} )
-         * @param userId - Required for the User timeline
          * @return True if everything Succeeded
          */
         private boolean loadTimeline(CommandData commandData) {
             boolean okAllAccounts = true;
             
             if (commandData.getAccount() == null) {
-                // Cycle for all accounts
-                for (int ind=0; ind < MyAccount.list().length; ind++) {
-                    MyAccount acc = MyAccount.list()[ind];
-                    if (acc.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-                        // Only if User was authenticated already
-                        boolean ok = loadTimelineAccount(commandData, acc);
-                        if (!ok) {
-                            okAllAccounts = false;
-                        }
-                    } else {
-                        commandData.commandResult.numAuthExceptions++;
+                for (MyAccount acc : MyAccount.list()) {
+                    if (!loadTimelineAccount(commandData, acc)) {
+                        okAllAccounts = false;
                     }
                 }
             } else {
-                if (commandData.getAccount().getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
-                    // Only if User was authenticated already
-                    boolean ok = loadTimelineAccount(commandData, commandData.getAccount());
-                    if (!ok) {
-                        okAllAccounts = false;
-                    }
-                } else {
-                    commandData.commandResult.numAuthExceptions++;
-                }
-            } // for one MyAccount
+                okAllAccounts = loadTimelineAccount(commandData, commandData.getAccount());
+            }
             
             if (okAllAccounts && commandData.timelineType == TimelineTypeEnum.ALL && !mIsStopping) {
                 new DataPruner(MyService.this.getApplicationContext()).prune();
@@ -1423,9 +1392,6 @@ public class MyService extends Service {
                 // Notify all timelines, 
                 // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
                 MyPreferences.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
-            } else {
-                // TODO: Extend diagnostics and stats
-                commandData.commandResult.numIoExceptions++;
             }
 
             return okAllAccounts;
@@ -1433,15 +1399,12 @@ public class MyService extends Service {
 
         /**
          * Load Timeline(s) for one MyAccount
-         * 
          * @return True if everything Succeeded
          */
         private boolean loadTimelineAccount(CommandData commandData, MyAccount acc) {
-            if (acc.getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
-                commandData.commandResult.numAuthExceptions++;
+            if (setErrorIfCredentialsNotVerified(commandData, acc)) {
                 return false;
             }
-
             boolean okAllTimelines = true;
             boolean ok = false;
             int downloadedCount = 0;
@@ -1580,6 +1543,10 @@ public class MyService extends Service {
                 message += " times";
             }
 
+            if (!okAllTimelines) {
+                commandData.commandResult.numIoExceptions++;
+            }
+            
             message += " getting " + commandData.timelineType.save()
                     + " for " + acc.getAccountName();
             if (downloadedCount > 0) {
@@ -1776,7 +1743,7 @@ public class MyService extends Service {
          * @return ok
          */
         private boolean rateLimitStatus(CommandData commandData) {
-            if (commandData.getAccount() == null) {
+            if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
                 return false;
             }
             boolean ok = false;
@@ -1814,6 +1781,19 @@ public class MyService extends Service {
                 commandData.commandResult.numIoExceptions++;
             }
             return ok;
+        }
+        
+        /**
+         * @return true if Error occurred
+         */
+        private boolean setErrorIfCredentialsNotVerified(CommandData commandData, MyAccount myAccount) {
+            boolean isError = true;
+            if (myAccount != null && myAccount.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+                isError = false;
+            } else {
+                commandData.commandResult.numAuthExceptions++;
+            }
+            return isError;
         }
     }
 

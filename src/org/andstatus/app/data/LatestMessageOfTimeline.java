@@ -172,14 +172,9 @@ public class LatestMessageOfTimeline {
      * @return true if it's time to auto update this timeline
      */
     public boolean isTimeToAutoUpdate() {
-        boolean blnOut = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_AUTOMATIC_UPDATES, false);
-        if (!blnOut) {
-            // Automatic updates are disabled
-            return false;
-        }
         long frequencyMs = MyPreferences.getSyncFrequencyMs();
         long passedMs = System.currentTimeMillis() - getTimelineDate(); 
-        blnOut = (passedMs > frequencyMs);
+        boolean blnOut = (passedMs > frequencyMs);
         
         if (blnOut && MyLog.isLoggable(TAG, Log.VERBOSE)) {
             MyLog.v(TAG, "It's time to auto update " + timelineType.save() 

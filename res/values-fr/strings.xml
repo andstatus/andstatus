@@ -46,12 +46,10 @@
     <string name="button_create_message_twitter">Tweeter</string>
     <string name="cannot_send_empty_message">Envoi d\'un message vide impossible.</string>
 	<string name="category_title_preference_appearance">Apparence</string>
-	<string name="category_title_preference_automatic_updates">Rafraîchissement</string>
 	<string name="category_title_preference_credentials">Identifiants</string>
 	<string name="category_title_preference_information">Information</string>
 	<string name="category_title_preference_notifications">Notifications</string>
 	<string name="category_title_preference_settings">Réglages</string>
-	<string name="category_title_preference_updates">Rafraîchissement</string>
     <string name="combined_timeline_on">combinée</string>
     <string name="combined_timeline_off">pour</string>
 	<string name="dialog_summary_acquiring_an_access_token">Merci de patienter pendant qu\'AndStatus échange le jeton de requête OAuth contre un jeton d\'accès</string>
@@ -177,9 +175,6 @@
     <string name="summary_preference_add_account_oauth">Appuyez ici pour ouvrir le site du système de microblogage dans votre navigateur.</string>
     <string name="summary_preference_add_account_basic">Appuyez pour vérifier les identifiants et ajouter le compte.</string>
     <string name="summary_preference_appearance">Changer l\'apparence d\'AndStatus</string>
-	<string name="summary_preference_automatic_updates">Changer les paramètre de rafraîchissement</string>
-	<string name="summary_preference_automatic_updates_off">Le rafraîchissement automatique est désactivé</string>
-	<string name="summary_preference_automatic_updates_on">Le rafraîchissement automatique est activé</string>
 	<string name="summary_preference_frequency">Rafraîchissement toutes les {0}.</string>
 	<string name="summary_preference_history_size">Conserver {0}.</string>
 	<string name="summary_preference_history_time">Conserver les messages pendant {0}.</string>
@@ -220,7 +215,6 @@
 	<string name="title_preference_about_application">À propos d\'AndStatus</string>
     <string name="title_preference_add_account">Ajouter un compte</string>
     <string name="title_preference_appearance">Apparence</string>
-	<string name="title_preference_automatic_updates">Rafraîchissement automatique</string>
 	<string name="title_preference_change_log">Journal des changements</string>
 	<string name="title_preference_contact_developer">Contacter le développeur</string>
 	<string name="title_preference_frequency">Fréquence des rafraîchissements</string>

@@ -29,6 +29,7 @@ public class CommandResult implements Parcelable {
     public long numAuthExceptions = 0;
     public long numIoExceptions = 0;
     public long numParseExceptions = 0;
+    public boolean willRetry = false;
     
     // 0 means these values were not set
     public int hourly_limit = 0;
@@ -40,6 +41,7 @@ public class CommandResult implements Parcelable {
         numAuthExceptions = parcel.readLong();
         numIoExceptions = parcel.readLong();
         numParseExceptions = parcel.readLong();
+        willRetry = (parcel.readInt() != 0);
         hourly_limit = parcel.readInt();
         remaining_hits = parcel.readInt();
     }
@@ -66,6 +68,7 @@ public class CommandResult implements Parcelable {
         dest.writeLong(numAuthExceptions);
         dest.writeLong(numIoExceptions);
         dest.writeLong(numParseExceptions);
+        dest.writeInt(willRetry ? 1 : 0);
         dest.writeInt(hourly_limit);
         dest.writeInt(remaining_hits);
     }
