@@ -58,7 +58,7 @@ import org.json.JSONObject;
  * @author Yuri Volkov
  */
 public class MyAccount implements AccountDataReader {
-    static final String TAG = MyAccount.class.getSimpleName();
+    private static final String TAG = MyAccount.class.getSimpleName();
 
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
     public static class Builder implements Parcelable, AccountDataWriter {
@@ -122,11 +122,8 @@ public class MyAccount implements AccountDataReader {
             return mab;
         }
         
-        /**
-         * The whole data is here
-         */
         private MyAccount myAccount;
-        private volatile boolean somethingIsBeingChanging = false;
+        private volatile boolean saveChangesSilently = false;
         
         private Builder(Parcel source) {
             myAccount = new MyAccount();
@@ -153,6 +150,7 @@ public class MyAccount implements AccountDataReader {
             myAccount = new MyAccount();
             myAccount.oAccountName = AccountName.fromAccountName(accountName);
             myAccount.oAuth = myAccount.oAccountName.getOrigin().isOAuth();
+            setConnection();
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "New temporary account created: " + this.toString());
             }
@@ -181,6 +179,7 @@ public class MyAccount implements AccountDataReader {
             myAccount.oAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuth());
             myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
             myAccount.syncFrequencySeconds = myAccount.getDataInt(MyPreferences.KEY_FETCH_FREQUENCY, 0);
+            setConnection();
             
             // Fix inconsistencies with changed environment...
             if (myAccount.userId==0) {
@@ -197,9 +196,9 @@ public class MyAccount implements AccountDataReader {
                 Log.v(TAG, "Loaded " + this.toString());
             }
             if (changed) {
-                somethingIsBeingChanging = true;
+                saveChangesSilently = true;
                 save();
-                somethingIsBeingChanging = false;
+                saveChangesSilently = false;
             }
         }
         
@@ -221,7 +220,7 @@ public class MyAccount implements AccountDataReader {
          */
         public void clearAuthInformation() {
             setCredentialsVerified(CredentialsVerified.NEVER);
-            myAccount.getConnection().clearAuthInformation();
+            myAccount.connection.clearAuthInformation();
         }
 
         /**
@@ -267,6 +266,7 @@ public class MyAccount implements AccountDataReader {
             myAccount.oAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuth());
             myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
             myAccount.syncFrequencySeconds = myAccount.getDataInt(MyPreferences.KEY_FETCH_FREQUENCY, 0);
+            setConnection();
             
             if (isPersistent() && myAccount.userId==0) {
                 assignUserId();
@@ -326,6 +326,7 @@ public class MyAccount implements AccountDataReader {
             try {
                 if (!isPersistent() && (myAccount.getCredentialsVerified() == CredentialsVerified.SUCCEEDED)) {
                     try {
+                        changed = true;
                         // Now add this account to the Account Manager
                         // See {@link com.android.email.provider.EmailProvider.createAccountManagerAccount(Context, String, String)}
                         AccountManager accountManager = AccountManager.get(MyPreferences.getContext());
@@ -375,7 +376,7 @@ public class MyAccount implements AccountDataReader {
                     setDataLong(KEY_USER_ID, myAccount.userId);
                     changed = true;
                 }
-                if (myAccount.getConnection().save(this)) {
+                if (myAccount.connection.save(this)) {
                     changed = true;
                 }
                 if (isPersistent() != myAccount.getDataBoolean(KEY_PERSISTENT, false)) {
@@ -392,7 +393,7 @@ public class MyAccount implements AccountDataReader {
                     changed = true;
                 }
 
-                if (!somethingIsBeingChanging && changed && isPersistent()) {
+                if (!saveChangesSilently && changed && isPersistent()) {
                     MyPreferences.onPreferencesChanged();
                 }
 
@@ -472,7 +473,6 @@ public class MyAccount implements AccountDataReader {
                         clearAuthInformation();
                         setCredentialsVerified(CredentialsVerified.FAILED);
                     }
-                    // Save the account here
                     save();
 
                     if (credentialsOfOtherUser) {
@@ -516,7 +516,12 @@ public class MyAccount implements AccountDataReader {
             if (myAccount.oAuth != oAuth) {
                 setCredentialsVerified(CredentialsVerified.NEVER);
                 myAccount.oAuth = oAuth;
+                setConnection();
             }
+        }
+        
+        private void setConnection() {
+            myAccount.connection = myAccount.oAccountName.getOrigin().getConnection(myAccount, myAccount.oAuth);
         }
 
         /**
@@ -623,10 +628,10 @@ public class MyAccount implements AccountDataReader {
     private static String currentAccountName = "";
     
     private AccountName oAccountName = AccountName.fromAccountName("");
+    private Connection connection = null;
     
     /**
      * Android Account associated with this MyAccount
-     * Null for NOT Persisted MyAccount
      */
     private android.accounts.Account androidAccount;
     
@@ -1118,7 +1123,7 @@ public class MyAccount implements AccountDataReader {
      * @return instance of Connection subtype for the User
      */
     public Connection getConnection() {
-        return oAccountName.getOrigin().getConnection(this, oAuth);
+        return connection;
     }
     
     /**

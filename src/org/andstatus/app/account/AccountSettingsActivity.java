@@ -612,7 +612,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 if (succeeded) {
                     state.actionCompleted = true;
                     if (state.getAccountAction().compareTo(Intent.ACTION_INSERT) == 0) {
-                        closeAndGoBack();
+                        state.setAccountAction(Intent.ACTION_EDIT);
+                        showUserPreferences();
+                        // TODO: Decide on this...
+                        // closeAndGoBack();
                     }
                 }
 

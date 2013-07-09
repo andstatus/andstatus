@@ -238,7 +238,7 @@ public class Origin {
             mId = ORIGIN_ID_IDENTICA;
             mApi = ApiEnum.STATUSNET_TWITTER;
             mOAuth = false;   // TODO: Set this to true once OAuth in identi.ca will work
-            mCanChangeOAuth = true;
+            mCanChangeOAuth = false;
             mCanSetUsername = true;
             mOauthBaseUrl = "https://identi.ca/api";
             mBaseUrl = mOauthBaseUrl;
