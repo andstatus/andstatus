@@ -389,7 +389,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         // Create list footer to show the progress of message loading
         // We use "this" as a context, otherwise custom styles are not recognized...
         LayoutInflater inflater = LayoutInflater.from(this);
-        loadingLayout = (LinearLayout) inflater.inflate(R.layout.item_loading, null);;
+        loadingLayout = (LinearLayout) inflater.inflate(R.layout.item_loading, null);
         getListView().addFooterView(loadingLayout);
         setIsLoading(isLoadingNew);
 
@@ -480,91 +480,85 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             serviceConnector.registerReceiver(this);
             updateTitle();
             if (!isLoading()) {
-                restorePosition();
+                restoreListPosition();
             }
         }
     }
 
     /**
-     * Save or forget current position per User and per TimeleneType. if save ==
-     * true, the position is NOT saved (i.e. the stored position remains the
-     * same) if there are no items in the list. Actually we save two Item IDs:
-     * 1. firstItemId - the first visible Tweet. 2. lastItemId - the last tweet
-     * we should retrieve before restoring position
+     * Save current position per User and per TimeleneType. 
+     * The position is NOT saved (i.e. the stored position remains the same),
+     * if there are no items in the list. Actually we save two Item IDs.
+     * 1. The first visible item. 
+     * 2. The last item we should retrieve before restoring the position.
      */
-    private void saveOrForgetPosition(boolean save) {
-        long firstItemId = 0;
-        long lastItemId = 0;
+    private void saveListPosition() {
+        long firstVisibleItemId = 0;
+        long lastRetrievedItemId = 0;
         int firstScrollPos = 0;
         int lastScrollPos = -1;
         PositionStorage ps = new PositionStorage();
 
-        if (save) {
-            firstScrollPos = getListView().getFirstVisiblePosition();
-            android.widget.ListAdapter la = getListView().getAdapter();
-            if (la == null) {
-                MyLog.v(TAG, "Position wasn't saved - no adapters yet");
-                return;
-            }
-            if (firstScrollPos >= la.getCount() - 1) {
-                // Skip footer
-                firstScrollPos = la.getCount() - 2;
-            }
-            if (firstScrollPos >= 0) {
-                // for (int ind =0; ind < la.getCount(); ind++) {
-                // Log.v(TAG, "itemId[" + ind + "]=" + la.getItemId(ind));
-                // }
-                firstItemId = la.getItemId(firstScrollPos);
-                // We will load one more "page of tweets" below (older) current
-                // top
-                // item
-                lastScrollPos = firstScrollPos + PAGE_SIZE;
-                if (lastScrollPos >= la.getCount() - 1) {
-                    // Skip footer
+        firstScrollPos = getListView().getFirstVisiblePosition();
+        android.widget.ListAdapter la = getListView().getAdapter();
+        if (la == null) {
+            MyLog.v(TAG, "Position wasn't saved - no adapters yet");
+            return;
+        }
+        if (firstScrollPos > la.getCount() - 2) {
+            // Skip footer
+            firstScrollPos = la.getCount() - 2;
+        }
+        if (firstScrollPos >= 0) {
+            firstVisibleItemId = la.getItemId(firstScrollPos);
+            // We will load one more "page of tweets" below (older) current top item
+            lastScrollPos = firstScrollPos + PAGE_SIZE;
+            if (lastScrollPos > la.getCount() - 2) {
+                if (firstScrollPos > PAGE_SIZE - 2) {
                     lastScrollPos = la.getCount() - 2;
-                }
-                // Log.v(TAG, "lastScrollPos=" + lastScrollPos);
-                if (lastScrollPos >= 0) {
-                    lastItemId = la.getItemId(lastScrollPos);
                 } else {
-                    lastItemId = firstItemId;
+                    lastScrollPos = -1;
                 }
             }
-
-            if (firstItemId <= 0) {
-                MyLog.v(TAG, "Position wasn't saved \"" + ps.accountGuid + "\"; " + ps.keyFirst);
-                return;
+            // Log.v(TAG, "lastScrollPos=" + lastScrollPos);
+            if (lastScrollPos >= 0) {
+                lastRetrievedItemId = la.getItemId(lastScrollPos);
             }
         }
 
-        if (save) {
-            ps.sp.edit().putLong(ps.keyFirst, firstItemId)
-                    .putLong(ps.keyLast, lastItemId).commit();
-            if (mIsSearchMode) {
-                // Remember query string for which the position was saved
-                ps.sp.edit().putString(ps.keyQueryString, mQueryString)
-                        .commit();
-            }
-        } else {
-            ps.sp.edit().remove(ps.keyFirst).remove(ps.keyLast)
-                    .remove(ps.keyQueryString).commit();
+        if (firstVisibleItemId <= 0) {
+            MyLog.v(TAG, "Position wasn't saved \"" + ps.accountGuid + "\"; " + ps.keyFirst);
+            return;
+        }
+
+        ps.sp.edit().putLong(ps.keyFirst, firstVisibleItemId)
+                .putLong(ps.keyLast, lastRetrievedItemId).commit();
+        if (mIsSearchMode) {
+            // Remember query string for which the position was saved
+            ps.sp.edit().putString(ps.keyQueryString, mQueryString)
+                    .commit();
         }
 
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            if (save) {
-                Log.v(TAG, "Position saved    \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
-                        + firstItemId + "; index=" + firstScrollPos + "; lastId="
-                        + lastItemId + "; index=" + lastScrollPos);
-            } else {
-                Log.v(TAG, "Position forgot   \"" + ps.accountGuid + "\"; " + ps.keyFirst);
-            }
+            Log.v(TAG, "Position saved    \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+                    + firstVisibleItemId + "; index=" + firstScrollPos + "; lastId="
+                    + lastRetrievedItemId + "; index=" + lastScrollPos);
+        }
+    }
+
+    private void forgetListPosition() {
+        PositionStorage ps = new PositionStorage();
+        ps.sp.edit().remove(ps.keyFirst).remove(ps.keyLast)
+                .remove(ps.keyQueryString).commit();
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            Log.v(TAG, "Position forgot   \"" + ps.accountGuid + "\"; " + ps.keyFirst);
         }
     }
     
     /**
      * Restore (First visible item) position saved for this user and for this type of timeline
      */
-    private void restorePosition() {
+    private void restoreListPosition() {
         PositionStorage ps = new PositionStorage();
         boolean loaded = false;
         long firstItemId = -3;
@@ -602,8 +596,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 Log.v(TAG, "Didn't restore position \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
                         + firstItemId);
             }
-            // So forget current position
-            saveOrForgetPosition(false);
+            forgetListPosition();
         }
         positionRestored = true;
     }
@@ -672,7 +665,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             ((ListView) findViewById(android.R.id.list)).setFastScrollEnabled(false);
             clearNotifications();
             if (!isLoading()) {
-                saveOrForgetPosition(true);
+                saveListPosition();
             }
         }        
         positionRestored = false;
@@ -900,7 +893,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     && (firstVisibleItem + visibleItemCount >= totalItemCount);
             if (loadMore) {
                 MyLog.d(TAG, "Start Loading more items, rows=" + totalItemCount);
-                saveOrForgetPosition(true);
+                saveListPosition();
                 setIsLoading(true);
                 queryListData(true);
             }
@@ -1122,7 +1115,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private void queryListDataEnded(boolean doRestorePosition) {
         if (!mIsFinishing) {
             if (doRestorePosition) {
-                restorePosition();
+                restoreListPosition();
             }
             // Do this after restoring position to avoid repeated loading from onScroll event
             setIsLoading(false);

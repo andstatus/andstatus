@@ -104,7 +104,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     /**
      * We are going to finish/restart this Activity
      */
-    protected boolean mIsFinishing = false;
+    private boolean mIsFinishing = false;
+    private boolean startPreferencesActivity = false;
     
     private StateOfAccountChangeProcess state = null;
 
@@ -129,10 +130,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        MyPreferences.initialize(this, this);
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
-        
-        MyPreferences.initialize(this, this);
         
         addPreferencesFromResource(R.xml.account_settings);
         
@@ -342,6 +342,16 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         state.save();
         MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(
                 this);
+        if (mIsFinishing) {
+            MyPreferences.forgetIfPreferencesChanged();
+            if (startPreferencesActivity) {
+                MyLog.v(TAG, "Returning to our Preferences Activity");
+                // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+                Intent i = new Intent(this, MyPreferenceActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(i);
+            }
+        }
     }
 
     /**
@@ -987,14 +997,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             finish();
         }
         if (overrideBackButton) {
-            MyLog.v(TAG, "Returning to our Preferences Activity");
-            // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-            Intent i = new Intent(this, MyPreferenceActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(i);
-        }
-        if (doFinish) {
-            MyServiceManager.setServiceAvailable();
+            startPreferencesActivity = true;
         }
         return mIsFinishing;
     }

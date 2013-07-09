@@ -123,6 +123,7 @@ public class MyLog {
         if (initialized) return;
         synchronized (APPTAG) {
             if (initialized) return;
+            if (!MyPreferences.isInitialized()) return;
             // The class was not initialized yet.
             String val = "(not set)";
             try {

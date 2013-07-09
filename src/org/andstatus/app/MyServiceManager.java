@@ -98,6 +98,10 @@ public class MyServiceManager extends BroadcastReceiver {
     
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (!MyServiceManager.isServiceAvailable()) {
+            MyLog.d(TAG, "onReceive: Service is unavailable");
+            return;
+        }
         MyPreferences.initialize(context, this);
         String action = intent.getAction(); 
         if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {

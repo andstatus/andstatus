@@ -125,7 +125,7 @@ public class MyPreferences {
             initializerName = object.getClass().getSimpleName();
 
         }
-        if (initialized) {
+        if (initialized && arePreferencesChanged()) {
             synchronized(MyPreferences.class) {
                 if (initialized) {
                     long preferencesChangeTime_last = getPreferencesChangeTime();
@@ -188,6 +188,16 @@ public class MyPreferences {
      */
     public static int nextInstanceId() {
         return prevInstanceId.incrementAndGet();
+    }
+    
+    public static void forgetIfPreferencesChanged() {
+        if (arePreferencesChanged()) {
+            synchronized(MyPreferences.class) {
+                if (arePreferencesChanged()) {
+                    forget();
+                }
+            }
+        }
     }
     
     /**
@@ -285,6 +295,10 @@ public class MyPreferences {
             .putLong(KEY_PREFERENCES_CHANGE_TIME,
                     java.lang.System.currentTimeMillis()).commit();
         }
+    }
+    
+    public static boolean arePreferencesChanged() {
+        return (preferencesChangeTime != getPreferencesChangeTime());
     }
 
     /**

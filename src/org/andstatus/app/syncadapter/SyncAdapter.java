@@ -55,20 +55,26 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
         this.context = context;
-        MyPreferences.initialize(context, this);
         MyLog.d(TAG, "created, context=" + context.getClass().getCanonicalName());
     }
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
             ContentProviderClient provider, SyncResult syncResult) {
+        if (!MyServiceManager.isServiceAvailable()) {
+            syncResult.stats.numIoExceptions++;
+            MyLog.d(TAG, "onPerformSync skipped, account=" + account.name);
+            return;
+        }
+        if (!MyPreferences.isInitialized()) {
+            MyPreferences.initialize(context, this);
+        }
         Timer timer = new Timer();
         intentReceiver = new MyServiceReceiver(this);
         syncCompleted = false;
         try {
             this.syncResult = syncResult;
-            MyLog.d(TAG, "onPerformSync started, account=" + account.name
-                    + (MyServiceManager.isServiceAvailable() ? "" : "; ignoring"));
+            MyLog.d(TAG, "onPerformSync started, account=" + account.name);
             intentReceiver.registerReceiver(context);
             commandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
                     TimelineTypeEnum.ALL, 0);

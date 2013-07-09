@@ -85,10 +85,13 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 
     private boolean onSharedPreferenceChanged_busy = false;
 
+    private boolean startTimelineActivity = false;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        MyPreferences.initialize(this, this);
         addPreferencesFromResource(R.xml.preferences);
         // Default values for the preferences will be set only once
         // and in one place: here
@@ -139,12 +142,11 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     protected void onResume() {
         super.onResume();
 
+        MyPreferences.initialize(this, this);
+        
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
 
-        // Ensure MyPreferences are initialized
-        MyPreferences.initialize(this, this);
-        
         showAllPreferences();
         MyPreferences.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
@@ -153,6 +155,15 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     protected void onPause() {
         super.onPause();
         MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+
+        if (startTimelineActivity) {
+            MyPreferences.forgetIfPreferencesChanged();
+            MyServiceManager.setServiceAvailable();
+            // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+            Intent i = new Intent(this, TimelineActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
+        }
     }
 
     /**
@@ -627,11 +638,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             if (MyAccount.numberOfPersistentAccounts() > 0) {
                 MyLog.v(TAG, "Going back to the Timeline");
                 finish();
-                MyServiceManager.setServiceAvailable();
-                // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-                Intent i = new Intent(this, TimelineActivity.class);
-                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(i);
+                startTimelineActivity = true;
                 return true;    
             }
         }        

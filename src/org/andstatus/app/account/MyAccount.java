@@ -123,7 +123,6 @@ public class MyAccount implements AccountDataReader {
         }
         
         private MyAccount myAccount;
-        private volatile boolean saveChangesSilently = false;
         
         private Builder(Parcel source) {
             myAccount = new MyAccount();
@@ -196,9 +195,7 @@ public class MyAccount implements AccountDataReader {
                 Log.v(TAG, "Loaded " + this.toString());
             }
             if (changed) {
-                saveChangesSilently = true;
-                save();
-                saveChangesSilently = false;
+                save(true);
             }
         }
         
@@ -310,6 +307,10 @@ public class MyAccount implements AccountDataReader {
                 setDataString(key, Boolean.toString(value));
             } catch (Exception e) {}
         }
+
+        public void save() {
+            save(false);
+        }
         
 
         /**
@@ -317,10 +318,8 @@ public class MyAccount implements AccountDataReader {
          * 1) to internal Bundle (userData). 
          * 2) If it is not Persistent yet and may be added to AccountManager, do it (i.e. Persist it). 
          * 3) If it isPersitent, save everything to AccountManager also. 
-         * @return true if completed successfully
          */
-        public boolean save() {
-            boolean ok = false;
+        public void save(boolean saveChangesSilently) {
             boolean changed = false;
             
             try {
@@ -398,13 +397,10 @@ public class MyAccount implements AccountDataReader {
                 }
 
                 MyLog.v(TAG, "Saved " + (changed ? " changed " : " no changes " ) + this);
-                ok = true;
             } catch (Exception e) {
                 Log.e(TAG, "saving " + myAccount.getAccountName() + ": " + e.toString());
                 e.printStackTrace();
-                ok = false;
             }
-            return ok;
         }
         
         
@@ -557,7 +553,6 @@ public class MyAccount implements AccountDataReader {
         
         @Override
         public int describeContents() {
-            // TODO Auto-generated method stub
             return 0;
         }
 
