@@ -37,7 +37,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
     <release android:versionName="1.16.0" android:versionCode="77"
-        versionDate="2013-07-08"
+        versionDate="2013-07-10"
         versionTitle="Timeline synchronization is managed by Android core">
         <changes><change>Timeline synchronization is greatly improved because now Android itself does 
             this smartly for us.
@@ -48,6 +48,9 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             <a href="https://github.com/andstatus/andstatus/issues/29" >Issue #29</a>.
             As a result of this change, &quot;Automatic updates&quot; setting was removed from preferences.
              </change>
+             <change>New preference added: Notification of &quot;Commands in the queue&quot; to be sent. Off by default.
+                 <a href="https://github.com/andstatus/andstatus/issues/23" >Issue #23</a>. 
+                 </change>
         </changes>
     </release>
     <release android:versionName="1.15.1" android:versionCode="75"

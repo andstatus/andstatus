@@ -157,7 +157,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
 
         if (startTimelineActivity) {
-            MyPreferences.forgetIfPreferencesChanged();
+            MyPreferences.forgetPreferencesIfTheyChanged();
             MyServiceManager.setServiceAvailable();
             // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
             Intent i = new Intent(this, TimelineActivity.class);
@@ -262,6 +262,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             MyPreferences.onPreferencesChanged();
             
             if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY)) {
+                MyAccount.onMyPreferencesChanged();
                 showFrequency();
             }
             if (key.equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {

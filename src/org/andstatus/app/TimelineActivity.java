@@ -789,27 +789,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             case R.id.preferences_menu_id:
                 startMyPreferenceActivity();
                 break;
-/**
-            case R.id.favorites_timeline_menu_id:
-                switchTimelineActivity(MyDatabase.TimelineTypeEnum.FAVORITES, mIsTimelineCombined);
-                break;
-
-            case R.id.home_timeline_menu_id:
-                switchTimelineActivity(MyDatabase.TimelineTypeEnum.HOME, mIsTimelineCombined);
-                break;
-
-            case R.id.direct_messages_menu_id:
-                switchTimelineActivity(MyDatabase.TimelineTypeEnum.DIRECT, mIsTimelineCombined);
-                break;
-
-            case R.id.mentions_menu_id:
-                switchTimelineActivity(MyDatabase.TimelineTypeEnum.MENTIONS, mIsTimelineCombined);
-                break;
-**/
             case R.id.search_menu_id:
                 onSearchRequested();
                 break;
-                
             case R.id.reload_menu_item:
                 manualReload(false);
                 break;
@@ -876,10 +858,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             }
         } catch (Exception e) {}
         return (userId);
-    }
-    
-    public boolean onKey(View v, int keyCode, KeyEvent event) {
-        return false;
     }
 
     @Override
@@ -992,6 +970,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        MyPreferences.initialize(this, this);
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onNewIntent, instanceId=" + instanceId);
         }
@@ -1409,10 +1388,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
     
     protected void startMyPreferenceActivity() {
-        // We need to restart this Activity after exiting MyPreferenceActivity
-        // So let's set the flag:
-        //MyPreferences.getDefaultSharedPreferences().edit()
-        //        .putBoolean(MyPreferenceActivity.KEY_PREFERENCES_CHANGE_TIME, true).commit();
+        finish();
         startActivity(new Intent(this, MyPreferenceActivity.class));
     }
 

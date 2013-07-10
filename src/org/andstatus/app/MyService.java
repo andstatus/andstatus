@@ -828,7 +828,7 @@ public class MyService extends Service {
         if (count == 0 || clearNotification) {
             // Clear notification
             nM.cancel(CommandEnum.NOTIFY_QUEUE.ordinal());
-        } else if (mNotificationsEnabled) {
+        } else if (mNotificationsEnabled && getSp().getBoolean(MyPreferences.KEY_NOTIFICATIONS_QUEUE, false)) {
             if (mRetryQueue.size() > 0) {
                 MyLog.d(TAG, mRetryQueue.size() + " commands in Retry Queue.");
             }

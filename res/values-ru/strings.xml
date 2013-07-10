@@ -230,16 +230,14 @@
     <string name="summary_preference_min_log_level">Уровень равен {0}.</string>
 	<string name="summary_preference_no_ringtone">Тишина</string>
 	<string name="summary_preference_notifications">Изменить параметры уведомлений</string>
-	<string name="summary_preference_notifications_enabled">Включить уведомления?</string>
 	<string name="summary_preference_notifications_enabled_off">Уведомления отключены</string>
 	<string name="summary_preference_notifications_enabled_on">Уведомления включены</string>
-	<string name="summary_preference_notifications_messages">Сообщать о новых личных сообщениях?</string>
 	<string name="summary_preference_notifications_messages_off">Нет уведомлений для личных сообщений</string>
 	<string name="summary_preference_notifications_messages_on">Вы будете уведомлены о новых личных сообщениях</string>
-	<string name="summary_preference_notifications_mentions">Сообщать о новых упоминаниях?</string>
 	<string name="summary_preference_notifications_mentions_off">Уведомления об упоминаниях отключены</string>
 	<string name="summary_preference_notifications_mentions_on">Вы будете уведомлены о новых упоминаниях</string>
-	<string name="summary_preference_notifications_timeline">Сообщать о новых сообщениях?</string>
+    <string name="summary_preference_notifications_queue_off">Нет уведомлений об очереди команд</string>
+    <string name="summary_preference_notifications_queue_on">Вы будете уведомлены о командах в очереди</string>
 	<string name="summary_preference_notifications_timeline_off">Уведомления о новых сообщениях отключены</string>
 	<string name="summary_preference_notifications_timeline_on">Вы будете уведомлены о новых сообщениях</string>
 	<string name="summary_preference_oauth_off">Базовая аутентификация</string>
@@ -255,7 +253,6 @@
 	<string name="summary_preference_username">Ваше имя пользователя в Системе микроблогов</string>
 	<string name="summary_preference_verify_credentials">Данная учётная запись пользователя успешно аутентифицирована (проверена) и включёна. Щёлкните здесь для повторной проверки</string>
     <string name="summary_preference_verify_credentials_failed">Проверка завершилась неудачно. Щёлкните здесь для аутентификации пользователя и включения данной учётной записи</string>
-	<string name="summary_preference_vibration">Виброзвонок при входящем сообщении</string>
 	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>
 	<string name="summary_preference_vibration_on">Виброзвонок при входящем сообщении включён</string>
     <string name="system_is_busy_try_later">Система сейчас занята. Пожалуйста, попробуйте попозже.</string>
@@ -275,6 +272,7 @@
 	<string name="title_preference_notifications_enabled">Разрешить уведомления</string>
 	<string name="title_preference_notifications_messages">Новые личные сообщения</string>
 	<string name="title_preference_notifications_mentions">Новые упоминания</string>
+    <string name="title_preference_notifications_queue">Очередь команд к отправке</string>
 	<string name="title_preference_notifications_timeline">Новые сообщения</string>
 	<string name="title_preference_oauth">OAuth</string>
     <string name="title_preference_origin_system">Система микроблогов</string>

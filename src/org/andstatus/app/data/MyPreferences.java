@@ -105,6 +105,11 @@ public class MyPreferences {
      */
     public static final String KEY_PREFERENCES_EXAMINE_TIME = "preferences_examine_time";
 
+    /**
+     * Notify of commands in the queue
+     */
+    public static final String KEY_NOTIFICATIONS_QUEUE = "notifications_queue";
+    
     private MyPreferences(){
         throw new AssertionError();
     }
@@ -190,7 +195,7 @@ public class MyPreferences {
         return prevInstanceId.incrementAndGet();
     }
     
-    public static void forgetIfPreferencesChanged() {
+    public static void forgetPreferencesIfTheyChanged() {
         if (arePreferencesChanged()) {
             synchronized(MyPreferences.class) {
                 if (arePreferencesChanged()) {
@@ -264,12 +269,12 @@ public class MyPreferences {
     /**
      * @return the number of seconds between two sync ("fetch"...) actions.
      */
-    public static synchronized int getSyncFrequencySeconds() {
-        int frequencySeconds = SYNC_FREQUENCY_DEFAULT_SECONDS;
+    public static synchronized long getSyncFrequencySeconds() {
+        long frequencySeconds = SYNC_FREQUENCY_DEFAULT_SECONDS;
         if (!isInitialized()) {
             Log.e(TAG, "getSyncFrequency - Was not initialized yet");
         } else {
-            int frequencySecondsStored = Integer.parseInt(getDefaultSharedPreferences().getString(MyPreferences.KEY_FETCH_FREQUENCY, "0"));
+            long frequencySecondsStored = Long.parseLong(getDefaultSharedPreferences().getString(MyPreferences.KEY_FETCH_FREQUENCY, "0"));
             if (frequencySecondsStored > 0) { 
                 frequencySeconds = frequencySecondsStored;
             }
@@ -280,7 +285,7 @@ public class MyPreferences {
     /**
      * @return the number of milliseconds between two sync ("fetch"...) actions.
      */
-    public static int getSyncFrequencyMs() {
+    public static long getSyncFrequencyMs() {
         return (getSyncFrequencySeconds() * MILLISECONDS);
     }
     

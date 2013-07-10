@@ -343,7 +343,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(
                 this);
         if (mIsFinishing) {
-            MyPreferences.forgetIfPreferencesChanged();
+            MyPreferences.forgetPreferencesIfTheyChanged();
             if (startPreferencesActivity) {
                 MyLog.v(TAG, "Returning to our Preferences Activity");
                 // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android

@@ -21,6 +21,7 @@ import static android.content.Context.MODE_PRIVATE;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.PeriodicSync;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -149,6 +150,7 @@ public class MyAccount implements AccountDataReader {
             myAccount = new MyAccount();
             myAccount.oAccountName = AccountName.fromAccountName(accountName);
             myAccount.oAuth = myAccount.oAccountName.getOrigin().isOAuth();
+            myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
             setConnection();
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "New temporary account created: " + this.toString());
@@ -177,7 +179,7 @@ public class MyAccount implements AccountDataReader {
             myAccount.credentialsVerified = CredentialsVerified.load(myAccount);
             myAccount.oAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuth());
             myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
-            myAccount.syncFrequencySeconds = myAccount.getDataInt(MyPreferences.KEY_FETCH_FREQUENCY, 0);
+            myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0);
             setConnection();
             
             // Fix inconsistencies with changed environment...
@@ -262,7 +264,7 @@ public class MyAccount implements AccountDataReader {
             myAccount.credentialsVerified = CredentialsVerified.load(myAccount);
             myAccount.oAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuth());
             myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
-            myAccount.syncFrequencySeconds = myAccount.getDataInt(MyPreferences.KEY_FETCH_FREQUENCY, 0);
+            myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0L);
             setConnection();
             
             if (isPersistent() && myAccount.userId==0) {
@@ -277,14 +279,15 @@ public class MyAccount implements AccountDataReader {
         @Override
         public void setDataString(String key, String value) {
             try {
-                if (TextUtils.isEmpty(value)) {
-                    myAccount.userData.remove(key);
-                } else {
-                    myAccount.userData.putString(key, value);
-                }
                 if (isPersistent()) {
                     android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
                     am.setUserData(myAccount.androidAccount, key, value);
+                } else {
+                    if (TextUtils.isEmpty(value)) {
+                        myAccount.userData.remove(key);
+                    } else {
+                        myAccount.userData.putString(key, value);
+                    }
                 }
             } catch (Exception e) {}
         }
@@ -298,7 +301,14 @@ public class MyAccount implements AccountDataReader {
 
         public void setDataLong(String key, long value) {
             try {
-                setDataString(key, Long.toString(value));
+                if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY) && isPersistent()) {
+                    ContentResolver.removePeriodicSync(myAccount.androidAccount, MyProvider.AUTHORITY, new Bundle());
+                    if (value > 0) {
+                        ContentResolver.addPeriodicSync(myAccount.androidAccount, MyProvider.AUTHORITY, new Bundle(), value);
+                    }
+                } else {
+                    setDataString(key, Long.toString(value));
+                }
             } catch (Exception e) {}
         }
         
@@ -383,7 +393,7 @@ public class MyAccount implements AccountDataReader {
                     changed = true;
                 }
                 if (myAccount.syncFrequencySeconds != myAccount.getDataInt(MyPreferences.KEY_FETCH_FREQUENCY, 0)) {
-                    setDataInt(MyPreferences.KEY_FETCH_FREQUENCY, myAccount.syncFrequencySeconds); 
+                    setDataLong(MyPreferences.KEY_FETCH_FREQUENCY, myAccount.syncFrequencySeconds); 
                     // See
                     // http://developer.android.com/reference/android/content/ContentResolver.html#addPeriodicSync(android.accounts.Account, java.lang.String, android.os.Bundle, long)
                     // and
@@ -653,7 +663,7 @@ public class MyAccount implements AccountDataReader {
      */
     private boolean oAuth = true;
 
-    private int syncFrequencySeconds = 0;
+    private long syncFrequencySeconds = 0;
     
     /**
      *  TODO: Use instance fields instead of ordinals (see [EffectiveJava] Item 31)
@@ -705,9 +715,17 @@ public class MyAccount implements AccountDataReader {
     private long getDataLong(String key, long defValue) {
         long value = defValue;
         try {
-            String str = getDataString(key, "null");
-            if (str.compareTo("null") != 0) {
-                value = Long.parseLong(str);
+            if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY) && isPersistent()) {
+                List<PeriodicSync> syncs = ContentResolver.getPeriodicSyncs(androidAccount, MyProvider.AUTHORITY);
+                // Take care of the first in the list
+                if (syncs.size() > 0) {
+                    value = syncs.get(0).period;
+                }
+            } else {
+                String str = getDataString(key, "null");
+                if (str.compareTo("null") != 0) {
+                    value = Long.parseLong(str);
+                }
             }
         } catch (Exception e) {}
         return value;
@@ -1043,14 +1061,16 @@ public class MyAccount implements AccountDataReader {
                 .putString(KEY_DEFAULT_ACCOUNT_NAME, defaultAccountName).commit();
     }
     
-    /**
-     * 
-     */
     public static void onMyPreferencesChanged() {
+        List<MyAccount> updatedAccounts = new Vector<MyAccount>();
         long frequencySeconds = MyPreferences.getSyncFrequencySeconds();
         for (MyAccount persistentAccount : persistentAccounts) {
-            ContentResolver.addPeriodicSync(persistentAccount.androidAccount, MyProvider.AUTHORITY, new Bundle(), frequencySeconds);
+            Builder builder = new Builder(persistentAccount);
+            builder.setDataLong(MyPreferences.KEY_FETCH_FREQUENCY, frequencySeconds);
+            builder.save();
+            updatedAccounts.add(builder.getAccount());
         }
+        persistentAccounts = updatedAccounts;
     }
     
     private MyAccount() {};
