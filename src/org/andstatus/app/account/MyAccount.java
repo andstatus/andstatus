@@ -190,6 +190,8 @@ public class MyAccount implements AccountDataReader {
             }
             if (myAccount.syncFrequencySeconds==0) {
                 myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
+                ContentResolver.setIsSyncable(myAccount.androidAccount, MyProvider.AUTHORITY, 1);
+                ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
                 changed = true;
             }
             
