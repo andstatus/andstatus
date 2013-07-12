@@ -47,6 +47,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             E.g. a user may turn Auto-sync on and off for an account.
             <a href="https://github.com/andstatus/andstatus/issues/29" >Issue #29</a>.
             As a result of this change, &quot;Automatic updates&quot; setting was removed from preferences.
+            Please enable Sync in Settings for your old accounts after installing this version of the application!
              </change>
              <change>New preference added: Notification of &quot;Commands in the queue&quot; to be sent. Off by default.
                  <a href="https://github.com/andstatus/andstatus/issues/23" >Issue #23</a>. 
