@@ -37,7 +37,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
     <release android:versionName="1.16.0" android:versionCode="77"
-        versionDate="2013-07-10"
+        versionDate="2013-07-12"
         versionTitle="Timeline synchronization is managed by Android core">
         <changes><change>Timeline synchronization is greatly improved because now Android itself does 
             this smartly for us.
@@ -51,6 +51,9 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
              <change>New preference added: Notification of &quot;Commands in the queue&quot; to be sent. Off by default.
                  <a href="https://github.com/andstatus/andstatus/issues/23" >Issue #23</a>. 
                  </change>
+             <change>Creation of new identi.ca accounts disabled, sync for identi.ca accounts doesn't work. 
+                 This is because the identi.ca service changed its underlying API from Twitter-compatible (StatusNet)
+                 to PumpIo. Hope to add support for the new API in a reasonable time...</change>
         </changes>
     </release>
     <release android:versionName="1.15.1" android:versionCode="75"

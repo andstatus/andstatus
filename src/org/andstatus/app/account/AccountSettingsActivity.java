@@ -226,7 +226,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         
         mOriginName.setValue(ma.getOriginName());
         SharedPreferencesUtil.showListPreference(this, MyAccount.Builder.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
-        mOriginName.setEnabled(!state.builder.isPersistent());
+
+        // TODO: Enable once identi.ca API is created
+        //mOriginName.setEnabled(!state.builder.isPersistent());
+        mOriginName.setEnabled(false);
         
         if (mEditTextUsername.getText() == null
                 || ma.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
