@@ -456,6 +456,11 @@ public class MyProvider extends ContentProvider {
                 }
                 break;
 
+            case MSG:
+                qb.setTables(MyDatabase.MSG_TABLE_NAME);
+                qb.setProjectionMap(msgProjectionMap);
+                break;
+
             case USERS:
                 qb.setTables(MyDatabase.USER_TABLE_NAME);
                 qb.setProjectionMap(userProjectionMap);
