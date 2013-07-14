@@ -94,7 +94,7 @@ public class DataPruner {
                     // Find INS_DATE of the most recent tweet to delete
                     cursor = mContentResolver.query(MyDatabase.Msg.CONTENT_URI, new String[] {
                             MyDatabase.Msg.INS_DATE
-                    }, null, null, MyDatabase.Msg.SENT_DATE + " ASC LIMIT 0," + nToDeleteSize);
+                    }, null, null, MyDatabase.Msg.INS_DATE + " ASC LIMIT 0," + nToDeleteSize);
                     if (cursor.moveToLast()) {
                         sinceTimestampSize = cursor.getLong(0);
                     }
