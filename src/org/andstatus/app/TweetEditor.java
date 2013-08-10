@@ -102,7 +102,7 @@ class TweetEditor {
             @Override
             public void afterTextChanged(Editable s) {
                 if (mAccount != null) {
-                    mCharsLeftText.setText(String.valueOf(mAccount.messageCharactersLeft(s.toString())));
+                    mCharsLeftText.setText(String.valueOf(mAccount.charactersLeftForMessage(s.toString())));
                 }
             }
 
@@ -130,7 +130,7 @@ class TweetEditor {
                             }
                         default:
                             mCharsLeftText.setText(String.valueOf(mAccount
-                                    .messageCharactersLeft(mEditText.getText().toString())));
+                                    .charactersLeftForMessage(mEditText.getText().toString())));
                             break;
                     }
                 }
@@ -168,7 +168,7 @@ class TweetEditor {
 
     public void show() {
         mCharsLeftText.setText(String.valueOf(mAccount
-                .messageCharactersLeft(mEditText.getText().toString())));
+                .charactersLeftForMessage(mEditText.getText().toString())));
 
         mEditor.setVisibility(View.VISIBLE);
         
@@ -257,7 +257,7 @@ class TweetEditor {
         if (TextUtils.isEmpty(status.trim())) {
             Toast.makeText(mActivity, R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
-        } else if (mAccount.messageCharactersLeft(status) < 0) {
+        } else if (mAccount.charactersLeftForMessage(status) < 0) {
             Toast.makeText(mActivity, R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {

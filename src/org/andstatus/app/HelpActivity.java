@@ -101,7 +101,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
         // Show the Change log
 		Xslt.toWebView(this, R.id.help_changelog, R.raw.changes, R.raw.changesxsl);
 		
-		View splashContainer = (View) findViewById(R.id.splash_container);
+		View splashContainer = findViewById(R.id.splash_container);
         splashContainer.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

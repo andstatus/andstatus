@@ -13,23 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.account;
+package org.andstatus.app.origin;
 
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
-import android.util.Log;
 
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.Connection.ApiEnum;
-import org.andstatus.app.net.ConnectionBasicAuth;
-import org.andstatus.app.net.ConnectionBasicAuthStatusNet;
 
 /**
- *  Originating (source) Microblogging system (twitter.com, identi.ca, ... ) where messages are being created. 
+ *  Microblogging system (twitter.com, identi.ca, ... ) where messages are being created
+ *  (it's the "Origin" of the messages). 
  *  TODO: Currently the class is almost a stub and serves for TWO predefined origins only :-)
  * @author yvolk
  *
@@ -50,7 +48,9 @@ public class Origin {
     public static long ORIGIN_ID_DEFAULT = ORIGIN_ID_TWITTER;
     /**
      * Predefined ID for default Status.net system 
-     * <a href="http://status.net/wiki/Twitter-compatible_API">identi.ca API</a>
+     * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
+     * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
+     * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
      */
     public static long ORIGIN_ID_IDENTICA = 2;
     /**
@@ -70,48 +70,39 @@ public class Origin {
      */
     private static int LINK_LENGTH = 23;
     
-    private String mName = "";
-    private long mId = 0;
-    private ApiEnum mApi = ApiEnum.UNKNOWN_API;
+    private String name = "";
+    private long id = 0;
 
     /**
      * Default OAuth setting
      */
-    private boolean mOAuth = true;
+    private boolean isOAuthDefault = true;
     /**
      * Can OAuth connection setting can be turned on/off from the default setting
-     * Starting from 2010-09 twitter.com allows OAuth only
      */
-    private boolean mCanChangeOAuth = false;
+    private boolean canChangeOAuth = false;
     /**
      * Can user set username for the new user manually?
      * This is only for no OAuth
      */
-    private boolean mCanSetUsername = false;
+    private boolean canSetUsername = false;
     
-    /**
-     * Base URL for connection to the System
-     */
-    private String mBaseUrl = "";
-    /**
-     * Base URL for OAuth related requests to the System
-     */
-    private String mOauthBaseUrl = "";
+    private OriginConnectionData connectionData = new OriginConnectionData();
     
-    private Connection mConnection = null;
+    private Connection connection = null;
 
-    public static Origin getOrigin(String name) {
+    public static Origin fromOriginName(String name) {
         return new Origin(name);
     }
     
-    public static Origin getOrigin(long id) {
+    public static Origin fromOriginId(long id) {
         return new Origin(id);
     }
 
     public static Origin toExistingOrigin(String originName_in) {
-        Origin origin = getOrigin(UserNameUtil.fixUsername(originName_in));
+        Origin origin = fromOriginName(originName_in);
         if (origin.getId() == 0) {
-            origin = getOrigin(Origin.ORIGIN_ID_DEFAULT);
+            origin = fromOriginId(Origin.ORIGIN_ID_DEFAULT);
         }
         return origin;
     }
@@ -120,32 +111,18 @@ public class Origin {
      * @return the Origin name, unique in the application
      */
     public String getName() {
-        return mName;
+        return name;
     }
 
     /**
      * @return the OriginId in MyDatabase. 0 means that this system doesn't exist
      */
     public long getId() {
-        return mId;
+        return id;
     }
 
     public ApiEnum getApi() {
-        return mApi;
-    }
-
-    /**
-     * @return Base URL for connection to the System
-     */
-    public String getBaseUrl() {
-        return mBaseUrl;
-    }
-
-    /**
-     * @return Base URL for OAuth related requests to the System
-     */
-    public String getOauthBaseUrl() {
-        return mOauthBaseUrl;
+        return connectionData.api;
     }
 
     /**
@@ -155,18 +132,15 @@ public class Origin {
         return (getId() != 0);
     }
     
-    /**
-     * @return Default OAuth setting
-     */
-    public boolean isOAuth() {
-        return mOAuth;
+    public boolean isOAuthDefault() {
+        return isOAuthDefault;
     }
 
     /**
      * @return the Can OAuth connection setting can be turned on/off from the default setting
      */
     public boolean canChangeOAuth() {
-        return mCanChangeOAuth;
+        return canChangeOAuth;
     }
 
     /**
@@ -174,7 +148,7 @@ public class Origin {
      */
     public boolean canSetUsername(boolean isOauthUser) {
         boolean can = false;
-        if (mCanSetUsername) {
+        if (canSetUsername) {
             if (!isOauthUser) {
                 can = true;
             }
@@ -182,66 +156,50 @@ public class Origin {
         return can;
     }
 
-    /**
-     * Connection is per User
-     */
-     public Connection getConnection(MyAccount ma, boolean oauth) {
-        if (mConnection != null) {
-            if (mConnection.isOAuth() != oauth) {
-                mConnection = null;
-            }
+    public Connection getConnection(boolean isOAuth) {
+        if (isOAuth != isOAuthDefault && !canChangeOAuth) {
+            throw(new IllegalArgumentException("isOAuth cannot be set to " + Boolean.toString(isOAuth)));
         }
-        if (mConnection == null) {
-            if (ma == null) {
-                Log.e(TAG, "MyAccount is null ??" );
-            } else {
-                if (oauth) {
-                    switch (mApi) {
-                        case TWITTER1P0:
-                            mConnection = new org.andstatus.app.net.ConnectionOAuth1p0(ma, mApi, getBaseUrl(), getOauthBaseUrl());
-                            break;
-                        default:
-                            mConnection = new org.andstatus.app.net.ConnectionOAuth1p1(ma, mApi, getBaseUrl(), getOauthBaseUrl());
-                    }
-                } else {
-                    switch (mApi) {
-                        case STATUSNET_TWITTER:
-                            mConnection = new ConnectionBasicAuthStatusNet(ma, mApi, getBaseUrl());
-                            break;
-                        default:
-                            mConnection = new ConnectionBasicAuth(ma, mApi, getBaseUrl());
-                    }
-                }
-            }
+        if (connection != null && connection.isOAuth() != isOAuth) {
+            connection = null;
         }
-        return mConnection;
+        if (connection == null) {
+            connectionData.isOauth = isOAuth;
+            if (connectionData.isOauth) {
+                OAuthClientKeys clientKeys = new OAuthClientKeys(id);
+                connectionData.consumerKey = clientKeys.getConsumerKey();
+                connectionData.consumerSecret = clientKeys.getConsumerSecret();
+            }
+            connection = Connection.fromConnectionData(connectionData);
+        }
+        return connection;
     }
 
-    private Origin(String name) {
-        mName = name;
+    private Origin(String name_in) {
+        name = name_in;
         // TODO: Persistence for Origins
-        if (this.mName.compareToIgnoreCase(ORIGIN_NAME_TWITTER) == 0) {
-            mId = ORIGIN_ID_TWITTER;
-            mApi = ApiEnum.TWITTER1P1;
-            mOAuth = true;
-            mCanChangeOAuth = false;
-            mCanSetUsername = false;
-            mOauthBaseUrl = "http://api.twitter.com";
-            switch (mApi) {
-                case TWITTER1P0:
-                    mBaseUrl = mOauthBaseUrl + "/1";
-                    break;
-                default:
-                    mBaseUrl = mOauthBaseUrl + "/1.1";
-            }
-        } else if (this.mName.compareToIgnoreCase(ORIGIN_NAME_IDENTICA) == 0) {
-            mId = ORIGIN_ID_IDENTICA;
-            mApi = ApiEnum.STATUSNET_TWITTER;
-            mOAuth = false;   // TODO: Set this to true once OAuth in identi.ca will work
-            mCanChangeOAuth = false;
-            mCanSetUsername = true;
-            mOauthBaseUrl = "https://identi.ca/api";
-            mBaseUrl = mOauthBaseUrl;
+        if (name.compareToIgnoreCase(ORIGIN_NAME_TWITTER) == 0) {
+            id = ORIGIN_ID_TWITTER;
+            isOAuthDefault = true;
+            canChangeOAuth = false;  // Starting from 2010-09 twitter.com allows OAuth only
+            canSetUsername = false;
+
+            connectionData.api = ApiEnum.TWITTER1P1;
+            connectionData.isHttps = false;
+            connectionData.host = "api.twitter.com";
+            connectionData.basicPath = "1.1";
+            connectionData.oauthPath = "oauth";
+        } else if (name.compareToIgnoreCase(ORIGIN_NAME_IDENTICA) == 0) {
+            id = ORIGIN_ID_IDENTICA;
+            isOAuthDefault = true;  
+            canChangeOAuth = false;
+            canSetUsername = false;
+
+            connectionData.api = ApiEnum.PUMPIO;
+            connectionData.isHttps = true;
+            connectionData.host = "identi.ca";
+            connectionData.basicPath = "api";
+            connectionData.oauthPath = "oauth";
         }
     }
     
@@ -256,7 +214,7 @@ public class Origin {
      * taking shortened URL's length into account.
      * @author yvolk
      */
-    public int messageCharactersLeft(String message) {
+    public int charactersLeftForMessage(String message) {
         int messageLength = 0;
         if (!TextUtils.isEmpty(message)) {
             messageLength = message.length();

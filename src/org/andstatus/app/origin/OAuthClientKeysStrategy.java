@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.net;
-
-import oauth.signpost.OAuthConsumer;
-import oauth.signpost.OAuthProvider;
+package org.andstatus.app.origin;
 
 /**
+ * Default keys for OAuth {@link org.andstatus.app.origin.Origin} 
  * @author yvolk
  */
-public interface MyOAuth {
+public interface OAuthClientKeysStrategy {
     /**
-     * @return OAuth Consumer for this connection
+     * @return not null, empty if no pre-registered key exist
      */
-    public OAuthConsumer getConsumer();
+    String getConsumerKey(long originId); 
     /**
-     * @return OAuth Provider for this connection
+     * @return not null, empty if no pre-registered key exist
      */
-    public OAuthProvider getProvider();
+    String getConsumerSecret(long originId); 
 }

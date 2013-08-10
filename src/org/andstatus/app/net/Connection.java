@@ -22,21 +22,15 @@ import android.util.Log;
 
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.account.Origin;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.Connection;
+import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
@@ -47,21 +41,14 @@ import java.util.List;
  * @author yvolk, torgny.bjers
  */
 public abstract class Connection {
-    private static final String TAG = Connection.class.getSimpleName();
-    
-    /**
-     * Base URL for connection to the System
-     */
-    private String mBaseUrl = "";
+
+    public static final String KEY_PASSWORD = "password";
     
     /**
      * Constants independent of the system
      */
     protected static final String EXTENSION = ".json";
     
-    protected static final Integer DEFAULT_GET_REQUEST_TIMEOUT = 15000;
-    protected static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 20000;
-
     /**
      * Connection APIs known
      */
@@ -72,13 +59,10 @@ public abstract class Connection {
         /** Twitter API v.1.1 https://dev.twitter.com/docs/api/1.1 */
         TWITTER1P1,
         /** Status Net Twitter compatible API http://status.net/wiki/Twitter-compatible_API  */
-        STATUSNET_TWITTER
+        STATUSNET_TWITTER,
+        /** https://github.com/e14n/pump.io/blob/master/API.md */
+        PUMPIO
     }
-
-    /**
-     * API of this Connection
-     */
-    private ApiEnum mApi;
     
     /**
      * API routines (functions, "resources" in terms of Twitter)  enumerated
@@ -123,6 +107,9 @@ public abstract class Connection {
         OAUTH_ACCESS_TOKEN,
         OAUTH_AUTHORIZE,
         OAUTH_REQUEST_TOKEN,
+        /** For the "OAuth Dynamic Client Registration", 
+         * is the link proper?: http://hdknr.github.io/docs/identity/oauth_reg.html  */
+        OAUTH_REGISTER_CLIENT,
         
         /**
          * Simply ignore this API call
@@ -130,47 +117,39 @@ public abstract class Connection {
         DUMMY
     }
 
-    public Connection() {}
+    protected HttpConnection httpConnection;
     
-    protected Connection(AccountDataReader dr, ApiEnum api, String apiBaseUrl) {
-        mApi = api;
-        mBaseUrl = apiBaseUrl;
+    public Connection(OriginConnectionData connectionData) {
+        httpConnection = HttpConnection.fromConnectionData(connectionData);
     }
 
     /**
      * @return API of this Connection
      */
     public ApiEnum getApi() {
-        return mApi;
-    }
-    
-    /**
-     * @return Base URL for connection to the System
-     */
-    public String getBaseUrl() {
-        return mBaseUrl;
+        return httpConnection.connectionData.api;
     }
 
     /**
-     * URL of the API. Not logged
-     * @param routine
-     * @return URL or an empty string in case the API routine is not supported
+     * @return an empty string in case the API routine is not supported
      */
-    protected abstract String getApiUrl1(ApiRoutineEnum routine);
+    protected abstract String getApiPath1(ApiRoutineEnum routine);
 
     /**
-     * URL of the API. Logged
+     * Full path of the API. Logged
      * @param routine
      * @return URL or an empty string in case the API routine is not supported
      */
-    protected final String getApiUrl(ApiRoutineEnum routine) {
-        String url = this.getApiUrl1(routine);
-        if (TextUtils.isEmpty(url)) {
+    protected final String getApiPath(ApiRoutineEnum routine) {
+        String path = this.getApiPath1(routine);
+        if (TextUtils.isEmpty(path)) {
             Log.e(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");
-        } else if (MyLog.isLoggable(null, Log.VERBOSE )) {
-            Log.v(this.getClass().getSimpleName(), "API '" + routine + "' URL=" + url);  
+        } else {
+            if (MyLog.isLoggable(null, Log.VERBOSE )) {
+                Log.v(this.getClass().getSimpleName(), "API '" + routine + "' Path=" + path);  
+            }
         }
-        return url;
+        return path;
     }
     
     /**
@@ -180,7 +159,7 @@ public abstract class Connection {
      * @return true if supported
      */
     public boolean isApiSupported(ApiRoutineEnum routine) {
-        boolean is = !TextUtils.isEmpty(this.getApiUrl1(routine));
+        boolean is = !TextUtils.isEmpty(this.getApiPath1(routine));
         if (!is && MyLog.isLoggable(null, Log.VERBOSE )) {
           Log.v(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");  
         }
@@ -191,14 +170,12 @@ public abstract class Connection {
      * @return Does this connection use OAuth?
      */
     public boolean isOAuth() {
-        return false;
+        return httpConnection.isOAuth();
     }
     
     public static String getScreenName(JSONObject credentials) {
         return credentials.optString("screen_name");
     }
-
-    public abstract void clearAuthInformation();
     
     /**
      * Check API requests status.
@@ -210,18 +187,19 @@ public abstract class Connection {
      * Do we need password to be set?
      * By default password is not needed and is ignored
      */
-    public boolean isPasswordNeeded() {
-        return false;
+    public final boolean isPasswordNeeded() {
+        return httpConnection.isPasswordNeeded();
     }
     
     /**
      * Set User's password if the Connection object needs it
      */
-    public void setPassword(String password) { }
+    public final void setPassword(String password) { 
+        httpConnection.setPassword(password);
+    }
 
-    
-    public String getPassword() {
-        return "";
+    public final String getPassword() {
+        return httpConnection.getPassword();
     }
     
     /**
@@ -229,18 +207,16 @@ public abstract class Connection {
      * @return true if something changed (so it needs to be rewritten to persistence...)
      */
     public boolean save(AccountDataWriter dw) {
-        boolean changed = false;
-
-        // Nothing to save
-        
-        return changed;
+        return httpConnection.save(dw);
     }
     
     /**
      * Do we have enough credentials to verify them?
      * @return true == yes
      */
-    public abstract boolean getCredentialsPresent(AccountDataReader dr);  
+    public final boolean getCredentialsPresent(AccountDataReader dr) {
+        return httpConnection.getCredentialsPresent(dr);
+    }
     
     /**
      * Verify the user's credentials.
@@ -375,78 +351,9 @@ public abstract class Connection {
      */
     public abstract JSONObject getUser(String userId) throws ConnectionException;
     
-    /**
-     * Execute a POST request against the API url
-     * 
-     * @throws ConnectionException 
-     */
-    protected JSONObject postRequest(String url) throws ConnectionException {
-        HttpPost post = new HttpPost(url);
-        return postRequest(post);
-    }
-
-    
-    /**
-     * Execute a POST request against enumerated API.
-     * 
-     * @param ApiRoutineEnum apiRoutine
-     * @param List<NameValuePair> - Post form parameters
-     * @throws ConnectionException
-     */
     protected final JSONObject postRequest(ApiRoutineEnum apiRoutine, List<NameValuePair> formParams) throws ConnectionException {
-        JSONObject jso = null;
-        String url = getApiUrl(apiRoutine);
-        HttpPost postMethod = new HttpPost(url);
-        try {
-            if (formParams != null) {
-                UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams, HTTP.UTF_8);
-                postMethod.setEntity(formEntity);
-            }
-            jso = postRequest(postMethod);
-        } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, e.toString());
-        }
-        return jso;
+        return httpConnection.postRequest(getApiPath(apiRoutine), formParams);
     }
-    
-    protected abstract JSONObject postRequest(HttpPost post) throws ConnectionException;
-
-    protected final JSONObject getRequest(String url) throws ConnectionException {
-        HttpGet get = new HttpGet(url);
-        return getRequestAsObject(get);
-    }
-
-    protected final JSONArray getRequestAsArray(HttpGet get) throws ConnectionException {
-        JSONArray jsa = null;
-        JSONTokener jst = getRequest(get);
-        try {
-            jsa = (JSONArray) jst.nextValue();
-        } catch (JSONException e) {
-            Log.w(TAG, "getRequestAsArray, JSONException response=" + (jst == null ? "(null)" : jst.toString()));
-            throw new ConnectionException(e.getLocalizedMessage());
-        } catch (ClassCastException e) {
-            Log.w(TAG, "getRequestAsArray, ClassCastException response=" + (jst == null ? "(null)" : jst.toString()));
-            throw new ConnectionException(e.getLocalizedMessage());
-        }
-        return jsa;
-    }
-
-    protected final JSONObject getRequestAsObject(HttpGet get) throws ConnectionException {
-        JSONObject jso = null;
-        JSONTokener jst = getRequest(get);
-        try {
-            jso = (JSONObject) jst.nextValue();
-        } catch (JSONException e) {
-            Log.w(TAG, "getRequestAsObject, JSONException response=" + (jst == null ? "(null)" : jst.toString()));
-            throw new ConnectionException(e.getLocalizedMessage());
-        } catch (ClassCastException e) {
-            Log.w(TAG, "getRequestAsObject, ClassCastException response=" + (jst == null ? "(null)" : jst.toString()));
-            throw new ConnectionException(e.getLocalizedMessage());
-        }
-        return jso;
-    }
-    
-    protected abstract JSONTokener getRequest(HttpGet get) throws ConnectionException;
     
     protected final String fixSinceId(String sinceId) {
         String out = "";
@@ -459,10 +366,8 @@ public abstract class Connection {
 
     /**
      * Restrict the limit to 1 - 200
-     * @param limit
-     * @return
      */
-    protected final int fixLimit(int limit) {
+    protected final int fixedLimit(int limit) {
         int out = 200;
         if (limit > 0 && limit < 200) {
             out = limit;
@@ -470,4 +375,36 @@ public abstract class Connection {
         return out;
     }
 
+    public static Connection fromConnectionData(OriginConnectionData connectionData) {
+        Connection connection;
+        switch (connectionData.api) {
+            case PUMPIO:
+                connection = ConnectionPumpio.fromConnectionDataProtected(connectionData);
+                break;
+            default:
+                connection = ConnectionTwitter.fromConnectionDataProtected(connectionData);
+        }
+        return connection;
+    }
+
+    public void setAccountData(AccountDataReader dr) {
+        httpConnection.setAccountData(dr);
+    }
+
+    public void clearAuthInformation() {
+        httpConnection.clearAuthInformation();
+    }
+
+    public void setUserTokenWithSecret(String token, String secret) {
+        httpConnection.setUserTokenAndSecret(token, secret);
+    }
+
+    public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {
+        OAuthConsumerAndProvider oa = null;
+        if (isOAuth()) {
+            oa = (OAuthConsumerAndProvider) httpConnection;
+        }
+        return oa;
+    }
+    
 }

@@ -17,6 +17,7 @@
 package org.andstatus.app.data;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.provider.BaseColumns;
 import android.util.Log;
 
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -143,7 +144,7 @@ public class UserMsg {
             sql += ", " + User.USER_MSG_DATE + "=" + lastMsgDate;
 
             sql = "UPDATE " + MyDatabase.USER_TABLE_NAME + " SET " + sql 
-                    + " WHERE " + User._ID + "=" + userId;
+                    + " WHERE " + BaseColumns._ID + "=" + userId;
 
             SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
             db.execSQL(sql);

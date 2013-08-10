@@ -34,6 +34,7 @@ import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -173,7 +174,7 @@ public class MyProvider extends ContentProvider {
                     // Delete all related records from MyDatabase.MsgOfUser for these messages
                     String selectionG = " EXISTS ("
                             + "SELECT * FROM " + MyDatabase.MSG_TABLE_NAME + " WHERE ("
-                            + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
+                            + MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
                             + ") AND ("
                             + selection
                             + "))";
@@ -209,7 +210,7 @@ public class MyProvider extends ContentProvider {
             case USER_ID:
                 // TODO: Delete related records also... 
                 long userId = uriToUserId(uri);
-                count = db.delete(MyDatabase.USER_TABLE_NAME, User._ID + "=" + userId
+                count = db.delete(MyDatabase.USER_TABLE_NAME, BaseColumns._ID + "=" + userId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
                 break;
@@ -331,8 +332,8 @@ public class MyProvider extends ContentProvider {
         if (userId != 0) {
             // Add MsgOfUser link to Current User MyAccount
             msgOfUserValues = new ContentValues();
-            if (values.containsKey(Msg._ID) ) {
-                msgOfUserValues.put(MsgOfUser.MSG_ID, values.getAsString(Msg._ID));
+            if (values.containsKey(BaseColumns._ID) ) {
+                msgOfUserValues.put(MsgOfUser.MSG_ID, values.getAsString(BaseColumns._ID));
             }
             msgOfUserValues.put(MsgOfUser.USER_ID, userId);
             moveBooleanKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
@@ -422,7 +423,7 @@ public class MyProvider extends ContentProvider {
             case TIMELINE_MSG_ID:
                 qb.setTables(tablesForTimeline(uri, projection));
                 qb.setProjectionMap(msgProjectionMap);
-                qb.appendWhere(MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + uriToMessageId(uri));
+                qb.appendWhere(MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + "=" + uriToMessageId(uri));
                 break;
 
             case TIMELINE_SEARCH:
@@ -469,7 +470,7 @@ public class MyProvider extends ContentProvider {
             case USER_ID:
                 qb.setTables(MyDatabase.USER_TABLE_NAME);
                 qb.setProjectionMap(userProjectionMap);
-                qb.appendWhere(User._ID + "=" + uriToUserId(uri));
+                qb.appendWhere(BaseColumns._ID + "=" + uriToUserId(uri));
                 break;
 
             default:
@@ -607,8 +608,8 @@ public class MyProvider extends ContentProvider {
                                 + " AND fuser." + MyDatabase.FollowingUser.USER_FOLLOWED + "=1 )";
                 tables = "(" + tables + ")"
                         + " INNER JOIN " + MyDatabase.USER_TABLE_NAME + " as u1"
-                        + " ON (msg." + MyDatabase.Msg.SENDER_ID + "=u1." + MyDatabase.User._ID
-                        + " AND msg." + MyDatabase.Msg._ID + "=u1."
+                        + " ON (msg." + MyDatabase.Msg.SENDER_ID + "=u1." + BaseColumns._ID
+                        + " AND msg." + BaseColumns._ID + "=u1."
                         + MyDatabase.User.USER_MSG_ID + ")";
                 linkedUserDefined = true;
         }
@@ -619,7 +620,7 @@ public class MyProvider extends ContentProvider {
                     + (linkedUserDefined ? "" : ", " + MyDatabase.MsgOfUser.USER_ID + " AS " 
                     + MyDatabase.User.LINKED_USER_ID)   
                     + " FROM " +  MyDatabase.MSGOFUSER_TABLE_NAME + ") AS mou ON "
-                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "="
+                    + MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + "="
                     + "mou." + MyDatabase.MsgOfUser.MSG_ID;
             if (tt == TimelineTypeEnum.FOLLOWING_USER) {
                 tbl += " AND mou." + MyDatabase.MsgOfUser.USER_ID 
@@ -637,32 +638,32 @@ public class MyProvider extends ContentProvider {
 
         if (columns.contains(MyDatabase.User.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + MyDatabase.User._ID + ", " + MyDatabase.User.USERNAME + " AS "
+                    + BaseColumns._ID + ", " + MyDatabase.User.USERNAME + " AS "
                     + MyDatabase.User.AUTHOR_NAME
                     + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS author ON "
                     + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
-                    + MyDatabase.User._ID;
+                    + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.SENDER_NAME)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", "
+            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.SENDER_NAME
                     + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS sender ON "
                     + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID + "=sender."
-                    + MyDatabase.User._ID;
+                    + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.IN_REPLY_TO_NAME)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", "
+            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
                     + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS prevauthor ON "
                     + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
-                    + "=prevauthor." + MyDatabase.User._ID;
+                    + "=prevauthor." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.RECIPIENT_NAME)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + MyDatabase.User._ID + ", "
+            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.RECIPIENT_NAME
                     + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS recipient ON "
                     + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
-                    + MyDatabase.User._ID;
+                    + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
@@ -731,7 +732,7 @@ public class MyProvider extends ContentProvider {
                 long rowId = uriToMessageId(uri);
                 ContentValues msgOfUserValues = prepareMsgOfUserValues(accountUserId, timelineType, isCombined, values);
                 if (values.size() > 0) {
-                    count = db.update(MyDatabase.MSG_TABLE_NAME, values, Msg._ID + "=" + rowId
+                    count = db.update(MyDatabase.MSG_TABLE_NAME, values, BaseColumns._ID + "=" + rowId
                             + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
@@ -763,7 +764,7 @@ public class MyProvider extends ContentProvider {
                 accountUserId = uriToAccountUserId(uri);
                 long selectedUserId = uriToUserId(uri);
                 FollowingUserValues followingUserValues = FollowingUserValues.valueOf(accountUserId, selectedUserId, values);
-                count = db.update(MyDatabase.USER_TABLE_NAME, values, User._ID + "=" + selectedUserId
+                count = db.update(MyDatabase.USER_TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
                 followingUserValues.update(db);
@@ -806,8 +807,8 @@ public class MyProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#", USERS);
 
         msgProjectionMap = new HashMap<String, String>();
-        msgProjectionMap.put(Msg._ID, MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + " AS " + Msg._ID);
-        msgProjectionMap.put(Msg.MSG_ID, MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + " AS " + Msg.MSG_ID);
+        msgProjectionMap.put(BaseColumns._ID, MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        msgProjectionMap.put(Msg.MSG_ID, MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + " AS " + Msg.MSG_ID);
         msgProjectionMap.put(Msg.ORIGIN_ID, Msg.ORIGIN_ID);
         msgProjectionMap.put(Msg.MSG_OID, Msg.MSG_OID);
         msgProjectionMap.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
@@ -832,8 +833,8 @@ public class MyProvider extends ContentProvider {
         msgProjectionMap.put(FollowingUser.SENDER_FOLLOWED, FollowingUser.SENDER_FOLLOWED);
 
         userProjectionMap = new HashMap<String, String>();
-        userProjectionMap.put(User._ID, MyDatabase.USER_TABLE_NAME + "." + User._ID + " AS " + User._ID);
-        userProjectionMap.put(User.USER_ID, MyDatabase.USER_TABLE_NAME + "." + User._ID + " AS " + User.USER_ID);
+        userProjectionMap.put(BaseColumns._ID, MyDatabase.USER_TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        userProjectionMap.put(User.USER_ID, MyDatabase.USER_TABLE_NAME + "." + BaseColumns._ID + " AS " + User.USER_ID);
         userProjectionMap.put(User.USER_OID, User.USER_OID);
         userProjectionMap.put(User.ORIGIN_ID, User.ORIGIN_ID);
         userProjectionMap.put(User.USERNAME, User.USERNAME);
@@ -872,13 +873,13 @@ public class MyProvider extends ContentProvider {
         try {
             switch (oidEnum) {
                 case MSG_OID:
-                    sql = "SELECT " + MyDatabase.Msg._ID + " FROM " + MyDatabase.MSG_TABLE_NAME
+                    sql = "SELECT " + BaseColumns._ID + " FROM " + MyDatabase.MSG_TABLE_NAME
                             + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
                             + "=" + oid;
                     break;
 
                 case USER_OID:
-                    sql = "SELECT " + MyDatabase.User._ID + " FROM " + MyDatabase.USER_TABLE_NAME
+                    sql = "SELECT " + BaseColumns._ID + " FROM " + MyDatabase.USER_TABLE_NAME
                             + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USER_OID
                             + "=" + oid;
                     break;
@@ -920,12 +921,12 @@ public class MyProvider extends ContentProvider {
                 switch (oe) {
                     case MSG_OID:
                         sql = "SELECT " + MyDatabase.Msg.MSG_OID + " FROM "
-                                + MyDatabase.MSG_TABLE_NAME + " WHERE " + Msg._ID + "=" + msgId;
+                                + MyDatabase.MSG_TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + msgId;
                         break;
 
                     case USER_OID:
                         sql = "SELECT " + MyDatabase.User.USER_OID + " FROM "
-                                + MyDatabase.USER_TABLE_NAME + " WHERE " + User._ID + "="
+                                + MyDatabase.USER_TABLE_NAME + " WHERE " + BaseColumns._ID + "="
                                 + msgId;
                         break;
 
@@ -976,8 +977,8 @@ public class MyProvider extends ContentProvider {
                         msgUserColumnName.contentEquals(MyDatabase.Msg.RECIPIENT_ID)) {
                     sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + MyDatabase.USER_TABLE_NAME
                             + " INNER JOIN " + MyDatabase.MSG_TABLE_NAME + " ON "
-                            + MyDatabase.MSG_TABLE_NAME + "." + msgUserColumnName + "=" + MyDatabase.USER_TABLE_NAME + "." + MyDatabase.User._ID
-                            + " WHERE " + MyDatabase.MSG_TABLE_NAME + "." + Msg._ID + "=" + messageId;
+                            + MyDatabase.MSG_TABLE_NAME + "." + msgUserColumnName + "=" + MyDatabase.USER_TABLE_NAME + "." + BaseColumns._ID
+                            + " WHERE " + MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
                 } else {
                     throw new IllegalArgumentException("msgIdToUsername; Unknown name \"" + msgUserColumnName);
                 }
@@ -1005,7 +1006,7 @@ public class MyProvider extends ContentProvider {
             String sql = "";
             try {
                 sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + MyDatabase.USER_TABLE_NAME
-                        + " WHERE " + MyDatabase.USER_TABLE_NAME + "." + MyDatabase.User._ID + "=" + userId;
+                        + " WHERE " + MyDatabase.USER_TABLE_NAME + "." + BaseColumns._ID + "=" + userId;
                 SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
@@ -1109,7 +1110,7 @@ public class MyProvider extends ContentProvider {
         String sql = "";
 
         try {
-            sql = "SELECT " + MyDatabase.User._ID + " FROM " + MyDatabase.USER_TABLE_NAME
+            sql = "SELECT " + BaseColumns._ID + " FROM " + MyDatabase.USER_TABLE_NAME
                     + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USERNAME + "='"
                     + userName + "'";
             SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();

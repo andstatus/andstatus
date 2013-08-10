@@ -106,7 +106,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 
         mNotificationRingtone.setOnPreferenceChangeListener(this);
         
-        Preference myPref = (Preference) findPreference("manage_accounts");
+        Preference myPref = findPreference("manage_accounts");
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -115,7 +115,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             }
         });
         
-        myPref = (Preference) findPreference("about_application");
+        myPref = findPreference("about_application");
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -125,7 +125,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             }
         });
         
-        myPref = (Preference) findPreference("change_log");
+        myPref = findPreference("change_log");
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -181,7 +181,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         showMinLogLevel();
         showUseExternalStorage();
         
-        Preference myPref = (Preference) findPreference("manage_accounts");
+        Preference myPref = findPreference("manage_accounts");
         CharSequence summary;
         if (MyAccount.numberOfPersistentAccounts() > 0) {
             summary = getText(R.string.summary_preference_accounts_present) + ": " + MyAccount.numberOfPersistentAccounts();
@@ -572,11 +572,12 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                     if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
                         MyLog.d(TAG, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
                     } else {
-                        java.nio.channels.FileChannel inChannel = new java.io.FileInputStream(src)
-                                .getChannel();
-                        java.nio.channels.FileChannel outChannel = new java.io.FileOutputStream(dst)
-                                .getChannel();
+                        java.nio.channels.FileChannel inChannel = null;
+                        java.nio.channels.FileChannel outChannel = null;
                         try {
+                            inChannel = new java.io.FileInputStream(src).getChannel();
+                            outChannel = new java.io.FileOutputStream(dst)
+                            .getChannel();
                             sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
                             Ok = (sizeIn == sizeCopied);
                         } finally {

@@ -18,26 +18,24 @@ package org.andstatus.app.net;
 
 import android.net.Uri;
 
-import org.andstatus.app.account.AccountDataReader;
-import org.apache.http.client.methods.HttpGet;
+import org.andstatus.app.origin.OriginConnectionData;
 import org.json.JSONArray;
 
 /**
  * Specific implementation of the {@link ApiEnum.STATUSNET_TWITTER}
  * @author yvolk
  */
-public class ConnectionBasicAuthStatusNet extends ConnectionBasicAuth {
+public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
 
-    public ConnectionBasicAuthStatusNet(AccountDataReader dr, ApiEnum api, String apiBaseUrl) {
-        super(dr, api, apiBaseUrl);
+    protected ConnectionTwitterStatusNet(OriginConnectionData connectionData) {
+        super(connectionData);
     }
 
     @Override
     public JSONArray getFriendsIds(String userId) throws ConnectionException {
-        Uri sUri = Uri.parse(getApiUrl(ApiRoutineEnum.GET_FRIENDS_IDS));
+        Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
-        HttpGet get = new HttpGet(builder.build().toString());
-        return getRequestAsArray(get);
+        return httpConnection.getRequestAsArray(builder.build().toString());
     }
 }

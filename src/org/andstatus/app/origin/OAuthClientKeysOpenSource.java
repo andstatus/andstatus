@@ -13,13 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.net;
+package org.andstatus.app.origin;
+
 
 /**
- * Default keys for OAuth {@link org.andstatus.app.account.Origin} 
+ * Keys of the "AndStatus-OpenSource" application.
  * @author yvolk
  */
-public interface OAuthKeysStrategy {
-    String getConsumerKey(long originId); 
-    String getConsumerSecret(long originId); 
+public class OAuthClientKeysOpenSource implements OAuthClientKeysStrategy {
+    @Override
+    public String getConsumerKey(long originId) {
+        if(originId == Origin.ORIGIN_ID_TWITTER) {
+            return "XPHj81OgjphGlN6Jb55Kmg";
+        } else {
+            return "";
+        }
+    }
+    @Override
+    public String getConsumerSecret(long originId) {
+        if(originId == Origin.ORIGIN_ID_TWITTER) {  
+            return "o2E5AYoDQhZf9qT7ctHLGihpq2ibc5bC4iFAOHURxw";
+        } else {
+            return "";
+        }
+    }
 }

@@ -53,13 +53,12 @@ import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerified;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionAuthenticationException;
-import org.andstatus.app.net.ConnectionBasicAuth;
 import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
 import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.ConnectionOAuth;
 import org.andstatus.app.net.ConnectionUnavailableException;
-import org.andstatus.app.net.MyOAuth;
+import org.andstatus.app.net.OAuthConsumerAndProvider;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONException;
@@ -73,6 +72,9 @@ import org.json.JSONObject;
 public class AccountSettingsActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
     private static final String TAG = AccountSettingsActivity.class.getSimpleName();
+
+    public static final String REQUEST_TOKEN = "request_token";
+    public static final String REQUEST_SECRET = "request_secret";
     
     /** 
      * The URI is consistent with "scheme" and "host" in AndroidManifest
@@ -139,8 +141,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         mOriginName = (ListPreference) findPreference(MyAccount.Builder.KEY_ORIGIN_NAME);
         mOAuth = (CheckBoxPreference) findPreference(MyAccount.Builder.KEY_OAUTH);
         mEditTextUsername = (EditTextPreference) findPreference(MyAccount.Builder.KEY_USERNAME_NEW);
-        mEditTextPassword = (EditTextPreference) findPreference(ConnectionBasicAuth.KEY_PASSWORD);
-        mVerifyCredentials = (Preference) findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
+        mEditTextPassword = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
+        mVerifyCredentials = findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
 
         restoreState(getIntent(), "onCreate");
     }
@@ -224,12 +226,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     private void showUserPreferences() {
         MyAccount ma = state.getAccount();
         
-        mOriginName.setValue(ma.getOriginName());
+        mOriginName.setValue(ma.getName().getOriginName());
         SharedPreferencesUtil.showListPreference(this, MyAccount.Builder.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
 
-        // TODO: Enable once identi.ca API is created
-        //mOriginName.setEnabled(!state.builder.isPersistent());
-        mOriginName.setEnabled(false);
+        mOriginName.setEnabled(!state.builder.isPersistent());
         
         if (mEditTextUsername.getText() == null
                 || ma.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
@@ -294,6 +294,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     protected void onResume() {
         super.onResume();
 
+        MyPreferences.initialize(this, this);
+        MyServiceManager.setServiceUnavailable();
+        MyServiceManager.stopService();
+        
         showUserPreferences();
         MyPreferences.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         
@@ -390,7 +394,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             // value if no changes
 
             if (key.equals(MyAccount.Builder.KEY_ORIGIN_NAME)) {
-                if (state.getAccount().getOriginName().compareToIgnoreCase(mOriginName.getValue()) != 0) {
+                if (state.getAccount().getName().getOriginName().compareToIgnoreCase(mOriginName.getValue()) != 0) {
                     // If we have changed the System, we should recreate the
                     // Account
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
@@ -409,15 +413,14 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 String usernameNew = mEditTextUsername.getText();
                 if (usernameNew.compareTo(state.getAccount().getUsername()) != 0) {
                     boolean oauth = state.getAccount().isOAuth();
-                    String originName = state.getAccount().getOriginName();
-                    // TODO: maybe this is not enough...
+                    String originName = state.getAccount().getName().getOriginName();
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                             AccountName.fromOriginAndUserNames(originName, usernameNew).toString());
                     state.builder.setOAuth(oauth);
                     showUserPreferences();
                 }
             }
-            if (key.equals(ConnectionBasicAuth.KEY_PASSWORD)) {
+            if (key.equals(Connection.KEY_PASSWORD)) {
                 if (state.getAccount().getPassword().compareTo(mEditTextPassword.getText()) != 0) {
                     state.builder.setPassword(mEditTextPassword.getText());
                     showUserPreferences();
@@ -557,7 +560,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 jso.put("what", what);
                 jso.put("message", message);
             } catch (JSONException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             return jso;
@@ -681,7 +683,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             String message2 = "";
             try {
                 MyAccount ma = state.getAccount();
-                MyOAuth oa = ma.getOAuth();
+                OAuthConsumerAndProvider oa = ma.getOAuthConsumerAndProvider();
 
                 // This is really important. If you were able to register your
                 // real callback Uri with Twitter, and not some fake Uri
@@ -718,8 +720,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             }
 
             try {
-                // mSp.edit().putBoolean(ConnectionOAuth.REQUEST_SUCCEEDED,
-                // requestSucceeded).commit();
                 if (!requestSucceeded) {
                     message2 = AccountSettingsActivity.this
                             .getString(R.string.dialog_title_authentication_failed);
@@ -729,16 +729,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     MyLog.d(TAG, message2);
                 }
 
-                // This also works sometimes, but message2 may have quotes...
-                // String jss = "{\n\"succeeded\": \"" + requestSucceeded
-                // + "\",\n\"message\": \"" + message2 + "\"}";
-                // jso = new JSONObject(jss);
-
                 jso = new JSONObject();
                 jso.put("succeeded", requestSucceeded);
                 jso.put("message", message2);
             } catch (JSONException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             return jso;
@@ -770,7 +764,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                         showUserPreferences();
                     }
                 } catch (JSONException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -813,7 +806,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             MyAccount ma = state.getAccount();
             // We don't need to worry about any saved states: we can reconstruct
             // the state
-            MyOAuth oa = ma.getOAuth();
+            OAuthConsumerAndProvider oa = ma.getOAuthConsumerAndProvider();
 
             if (oa == null) {
                 message = "Connection is not OAuth";
@@ -822,8 +815,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             else {
                 Uri uri = uris[0];
                 if (uri != null && CALLBACK_URI.getScheme().equals(uri.getScheme())) {
-                    String token = ma.getDataString(ConnectionOAuth.REQUEST_TOKEN, null);
-                    String secret = ma.getDataString(ConnectionOAuth.REQUEST_SECRET, null);
+                    String token = ma.getDataString(REQUEST_TOKEN, null);
+                    String secret = ma.getDataString(REQUEST_SECRET, null);
 
                     state.builder.clearAuthInformation();
                     try {
@@ -873,7 +866,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                         e.printStackTrace();
                     } finally {
                         if (authenticated) {
-                            state.builder.setAuthInformation(token, secret);
+                            state.builder.setUserTokenWithSecret(token, secret);
                         }
                     }
                 }
@@ -884,7 +877,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 jso.put("succeeded", authenticated);
                 jso.put("message", message);
             } catch (JSONException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             return jso;
@@ -931,7 +923,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     //startActivity(intent);
                     
                 } catch (JSONException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -941,9 +932,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     public static void saveRequestInformation(MyAccount.Builder mab, String token,
             String secret) {
         // null means to clear the old values
-        mab.setDataString(ConnectionOAuth.REQUEST_TOKEN, token);
+        mab.setDataString(REQUEST_TOKEN, token);
         MyLog.d(TAG, TextUtils.isEmpty(token) ? "Clearing Request Token" : "Saving Request Token: " + token);
-        mab.setDataString(ConnectionOAuth.REQUEST_SECRET, token);
+        mab.setDataString(REQUEST_SECRET, token);
         MyLog.d(TAG, TextUtils.isEmpty(token) ? "Clearing Request Secret" : "Saving Request Secret: " + secret);
     }
 
@@ -1027,7 +1018,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             // intent.putExtra(android.provider.Settings.EXTRA_AUTHORITIES, new String[] {MyProvider.AUTHORITY});
         } else {
             intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
-            // TODO: Find out some more specific intent...
+            // TODO: Figure out some more specific intent...
         }
         context.startActivity(intent);
     }

@@ -4,10 +4,9 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.andstatus.app.account.AccountDataReader;
+import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,79 +21,100 @@ import java.util.List;
  * @author yvolk
  */
 public abstract class ConnectionTwitter extends Connection {
+
     private static final String TAG = Connection.class.getSimpleName();
 
-    public ConnectionTwitter(AccountDataReader dr, ApiEnum api, String apiBaseUrl) {
-        super(dr, api, apiBaseUrl);
+    protected static Connection fromConnectionDataProtected(OriginConnectionData connectionData) {
+        Connection connection;
+        switch (connectionData.api) {
+            case STATUSNET_TWITTER:
+                connection = new ConnectionTwitterStatusNet(connectionData);
+                break;
+            case TWITTER1P0:
+                connection = new ConnectionTwitter1p0(connectionData);
+                break;
+            default:
+                connection = new ConnectionTwitter1p1(connectionData);
+        }
+        return connection;
+    }
+
+    public ConnectionTwitter(OriginConnectionData connectionData) {
+        super(connectionData);
     }
 
     /**
      * URL of the API. Not logged
      * @param routine
-     * @return URL or an empty string in case the API routine is not supported
+     * @return URL or an empty string in a case the API routine is not supported
      */
     @Override
-    protected String getApiUrl1(ApiRoutineEnum routine) {
-        String url = "";
+    protected String getApiPath1(ApiRoutineEnum routine) {
+        String url;
         switch(routine) {
             case ACCOUNT_RATE_LIMIT_STATUS:
-                url = getBaseUrl() + "/account/rate_limit_status" + EXTENSION;
+                url = "account/rate_limit_status" + EXTENSION;
                 break;
             case ACCOUNT_VERIFY_CREDENTIALS:
-                url = getBaseUrl() + "/account/verify_credentials" + EXTENSION;
+                url = "account/verify_credentials" + EXTENSION;
                 break;
             case DIRECT_MESSAGES:
-                url = getBaseUrl() + "/direct_messages" + EXTENSION;
+                url = "direct_messages" + EXTENSION;
                 break;
             case FAVORITES_CREATE_BASE:
-                url = getBaseUrl() + "/favorites/create/";
+                url = "favorites/create/";
                 break;
             case FAVORITES_DESTROY_BASE:
-                url = getBaseUrl() + "/favorites/destroy/";
+                url = "favorites/destroy/";
                 break;
             case FOLLOW_USER:
-                url = getBaseUrl() + "/friendships/create" + EXTENSION;
+                url = "friendships/create" + EXTENSION;
                 break;
             case GET_FRIENDS_IDS:
-                url = getBaseUrl() + "/friends/ids" + EXTENSION;
+                url = "friends/ids" + EXTENSION;
                 break;
             case GET_USER:
-                url = getBaseUrl() + "/users/show" + EXTENSION;
+                url = "users/show" + EXTENSION;
                 break;
             case POST_DIRECT_MESSAGE:
-                url = getBaseUrl() + "/direct_messages/new" + EXTENSION;
+                url = "direct_messages/new" + EXTENSION;
                 break;
             case POST_REBLOG:
-                url = getBaseUrl() + "/statuses/retweet/";
+                url = "statuses/retweet/";
                 break;
             case STATUSES_DESTROY:
-                url = getBaseUrl() + "/statuses/destroy/";
+                url = "statuses/destroy/";
                 break;
             case STATUSES_HOME_TIMELINE:
-                url = getBaseUrl() + "/statuses/home_timeline" + EXTENSION;
+                url = "statuses/home_timeline" + EXTENSION;
                 break;
             case STATUSES_MENTIONS_TIMELINE:
-                url = getBaseUrl()  + "/statuses/mentions" + EXTENSION;
+                url = "statuses/mentions" + EXTENSION;
                 break;
             case STATUSES_USER_TIMELINE:
-                url = getBaseUrl() + "/statuses/user_timeline" + EXTENSION;
+                url = "statuses/user_timeline" + EXTENSION;
                 break;
             case STATUSES_SHOW:
-                url = getBaseUrl() + "/statuses/show" + EXTENSION;
+                url = "statuses/show" + EXTENSION;
                 break;
             case STATUSES_UPDATE:
-                url = getBaseUrl() + "/statuses/update" + EXTENSION;
+                url = "statuses/update" + EXTENSION;
                 break;
             case STOP_FOLLOWING_USER:
-                url = getBaseUrl() + "/friendships/destroy" + EXTENSION;
+                url = "friendships/destroy" + EXTENSION;
                 break;
+            default:
+                url = "";
+        }
+        if (!TextUtils.isEmpty(url)) {
+            url = httpConnection.connectionData.basicPath + "/" + url;
         }
         return url;
     }
 
     @Override
     public JSONObject destroyStatus(String statusId) throws ConnectionException {
-        return postRequest(getApiUrl(ApiRoutineEnum.STATUSES_DESTROY) + statusId + EXTENSION);
+        return httpConnection.postRequest(getApiPath(ApiRoutineEnum.STATUSES_DESTROY) + statusId + EXTENSION);
     }
     
     /**
@@ -119,10 +139,10 @@ public abstract class ConnectionTwitter extends Connection {
      */
     @Override
     public JSONArray getFriendsIds(String userId) throws ConnectionException {
-        Uri sUri = Uri.parse(getApiUrl(ApiRoutineEnum.GET_FRIENDS_IDS));
+        Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
-        JSONObject jso = getRequest(builder.build().toString());
+        JSONObject jso = httpConnection.getRequest(builder.build().toString());
         JSONArray jArr = null;
         if (jso != null) {
             try {
@@ -146,30 +166,29 @@ public abstract class ConnectionTwitter extends Connection {
      */
     @Override
     public JSONObject getStatus(String statusId) throws ConnectionException {
-        Uri sUri = Uri.parse(getApiUrl(ApiRoutineEnum.STATUSES_SHOW));
+        Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.STATUSES_SHOW));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("id", statusId);
-        return getRequest(builder.build().toString());
+        return httpConnection.getRequest(builder.build().toString());
     }
 
     @Override
     public JSONArray getTimeline(ApiRoutineEnum apiRoutine, String sinceId, int limit, String userId)
             throws ConnectionException {
         boolean ok = false;
-        String url = this.getApiUrl(apiRoutine);
+        String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
         if (!TextUtils.isEmpty(fixSinceId(sinceId))) {
             builder.appendQueryParameter("since_id", fixSinceId(sinceId));
         }
-        if (fixLimit(limit) > 0) {
-            builder.appendQueryParameter("count", String.valueOf(fixLimit(limit)));
+        if (fixedLimit(limit) > 0) {
+            builder.appendQueryParameter("count", String.valueOf(fixedLimit(limit)));
         }
         if (!TextUtils.isEmpty(userId)) {
             builder.appendQueryParameter("user_id", userId);
         }
-        HttpGet get = new HttpGet(builder.build().toString());
-        JSONArray jArr = getRequestAsArray(get);
+        JSONArray jArr = httpConnection.getRequestAsArray(builder.build().toString());
         
         ok = (jArr != null);
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
@@ -186,10 +205,10 @@ public abstract class ConnectionTwitter extends Connection {
      */
     @Override
     public JSONObject getUser(String userId) throws ConnectionException {
-        Uri sUri = Uri.parse(getApiUrl(ApiRoutineEnum.GET_USER));
+        Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_USER));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
-        return getRequest(builder.build().toString());
+        return httpConnection.getRequest(builder.build().toString());
     }
     
     @Override
@@ -204,7 +223,7 @@ public abstract class ConnectionTwitter extends Connection {
     
     @Override
     public JSONObject postReblog(String rebloggedId) throws ConnectionException {
-        return postRequest(getApiUrl(ApiRoutineEnum.POST_REBLOG) + rebloggedId + EXTENSION);
+        return httpConnection.postRequest(getApiPath(ApiRoutineEnum.POST_REBLOG) + rebloggedId + EXTENSION);
     }
 
     /**
@@ -225,7 +244,7 @@ public abstract class ConnectionTwitter extends Connection {
      */
     @Override
     public JSONObject rateLimitStatus() throws ConnectionException {
-        return getRequest(getApiUrl(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
+        return httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
     }
     
     @Override
@@ -240,5 +259,10 @@ public abstract class ConnectionTwitter extends Connection {
             formParams.add(new BasicNameValuePair("in_reply_to_status_id", inReplyToId));
         }
         return postRequest(ApiRoutineEnum.STATUSES_UPDATE, formParams);
+    }
+
+    @Override
+    public JSONObject verifyCredentials() throws ConnectionException {
+        return httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
     }
 }

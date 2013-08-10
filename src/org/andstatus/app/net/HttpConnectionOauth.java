@@ -1,21 +1,7 @@
-/*
- * Copyright (C) 2010-2013 yvolk (Yuri Volkov), http://yurivolkov.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.andstatus.app.net;
 
+import android.text.TextUtils;
+import android.util.Log;
 
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
@@ -24,6 +10,9 @@ import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
 
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataWriter;
+import org.andstatus.app.net.HttpConnection;
+import org.andstatus.app.net.Connection.ApiRoutineEnum;
+import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
@@ -34,6 +23,7 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
@@ -46,30 +36,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import android.text.TextUtils;
-import android.util.Log;
-
-/**
- * Handles connection to the Twitter REST API using OAuth
- * Based on "BLOA" example, Copyright 2010 - Brion N. Emde
- * Common code for both 1 and 1.1 API
- * 
- * @see <a
- *      href="http://github.com/brione/Brion-Learns-OAuth">Brion-Learns-OAuth</a>
- */
-public abstract class ConnectionOAuth extends ConnectionTwitter implements MyOAuth {
-    private static final String TAG = ConnectionOAuth.class.getSimpleName();
-
+class HttpConnectionOauth extends HttpConnection implements OAuthConsumerAndProvider {
+    private static final String TAG = HttpConnectionOauth.class.getSimpleName();
+    
     public static final String USER_TOKEN = "user_token";
     public static final String USER_SECRET = "user_secret";
-    public static final String REQUEST_TOKEN = "request_token";
-    public static final String REQUEST_SECRET = "request_secret";
     public static final String REQUEST_SUCCEEDED = "request_succeeded";
-
-    private String mOauthBaseUrl = "";
     
     private OAuthConsumer mConsumer = null;
-    private OAuthProvider mProvider = null;
+    private CommonsHttpOAuthProvider mProvider = null;
 
     /**
      * Saved User token
@@ -82,70 +57,108 @@ public abstract class ConnectionOAuth extends ConnectionTwitter implements MyOAu
     private String mSecret;
 
     private HttpClient mClient;
+    
+    protected HttpConnectionOauth(OriginConnectionData connectionData_in) {
+        connectionData = connectionData_in;
 
-    public ConnectionOAuth(AccountDataReader dr, ApiEnum api, String apiBaseUrl, String apiOauthBaseUrl) {
-        super(dr, api, apiBaseUrl);
-        mOauthBaseUrl = apiOauthBaseUrl;
+        HttpParams parameters = getHttpParams();
 
-        HttpParams parameters = new BasicHttpParams();
-        HttpProtocolParams.setVersion(parameters, HttpVersion.HTTP_1_1);
-        HttpProtocolParams.setContentCharset(parameters, HTTP.DEFAULT_CONTENT_CHARSET);
-        HttpProtocolParams.setUseExpectContinue(parameters, false);
-        HttpConnectionParams.setTcpNoDelay(parameters, true);
-        HttpConnectionParams.setSocketBufferSize(parameters, 8192);
+        SchemeRegistry schemeRegistry = new SchemeRegistry();
+        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+        ClientConnectionManager clientConnectionManager = new ThreadSafeClientConnManager(parameters, schemeRegistry);
+        mClient = new DefaultHttpClient(clientConnectionManager, parameters);
 
-        SchemeRegistry schReg = new SchemeRegistry();
-        schReg.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        ClientConnectionManager tsccm = new ThreadSafeClientConnManager(parameters, schReg);
-        mClient = new DefaultHttpClient(tsccm, parameters);
-
-        OAuthKeys oak = new OAuthKeys(dr.getOriginId());
-        mConsumer = new CommonsHttpOAuthConsumer(oak.getConsumerKey(),
-                oak.getConsumerSecret());
+        mConsumer = new CommonsHttpOAuthConsumer(connectionData.consumerKey,
+                connectionData.consumerSecret);
 
         mProvider = new CommonsHttpOAuthProvider(getApiUrl(ApiRoutineEnum.OAUTH_REQUEST_TOKEN),
                 getApiUrl(ApiRoutineEnum.OAUTH_ACCESS_TOKEN), getApiUrl(ApiRoutineEnum.OAUTH_AUTHORIZE));
 
-        
+        mProvider.setHttpClient(mClient);
         // It turns out this was the missing thing to making standard
         // Activity launch mode work
+        // TODO: Decide if this is necessary
         mProvider.setOAuth10a(true);
+    }
+    
+    public void setAccountData(AccountDataReader dr) {
+
         
         // We look for saved user keys
-        if (dr.dataContains(ConnectionOAuth.USER_TOKEN) && dr.dataContains(ConnectionOAuth.USER_SECRET)) {
-            setAuthInformation(
-                    dr.getDataString(ConnectionOAuth.USER_TOKEN, null),
-                    dr.getDataString(ConnectionOAuth.USER_SECRET, null)
+        if (dr.dataContains(USER_TOKEN) && dr.dataContains(USER_SECRET)) {
+            setUserTokenAndSecret(
+                    dr.getDataString(USER_TOKEN, null),
+                    dr.getDataString(USER_SECRET, null)
                     );
         }
     }
-    
-    /**
-     * @return Base URL for OAuth related requests to the System
-     */
-    public String getOauthBaseUrl() {
-        return mOauthBaseUrl;
+
+    private HttpParams getHttpParams() {
+        HttpParams params = new BasicHttpParams();
+        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+        HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
+        HttpConnectionParams.setStaleCheckingEnabled(params, true);
+
+        HttpProtocolParams.setUseExpectContinue(params, false);
+        // HttpConnectionParams.setTcpNoDelay(parameters, true);
+        HttpConnectionParams.setSoTimeout(params, 30000);
+        HttpConnectionParams.setSocketBufferSize(params, 2*8192);
+        return params;
     }
     
     /**
-     * @see org.andstatus.app.net.Connection#getApiUrl1(org.andstatus.app.net.Connection.ApiRoutineEnum)
+     * @see org.andstatus.app.net.Connection#getCredentialsPresent()
      */
     @Override
-    protected String getApiUrl1(ApiRoutineEnum routine) {
-        String url = "";
+    public boolean getCredentialsPresent(AccountDataReader dr) {
+        boolean yes = false;
+        if (dr.dataContains(USER_TOKEN) && dr.dataContains(USER_SECRET)) {
+            mToken = dr.getDataString(USER_TOKEN, null);
+            mSecret = dr.getDataString(USER_SECRET, null);
+            if (!(TextUtils.isEmpty(mToken) || TextUtils.isEmpty(mSecret))) {
+                yes = true;
+            }
+        }
+        return yes;
+    }
+
+
+    @Override
+    public boolean isOAuth() {
+        return true;
+    }
+
+    @Override
+    public OAuthConsumer getConsumer() {
+        return mConsumer;
+    }
+
+    @Override
+    public OAuthProvider getProvider() {
+        return mProvider;
+    }
+    
+    protected String getApiUrl(ApiRoutineEnum routine) {
+        String url;
         switch(routine) {
             case OAUTH_ACCESS_TOKEN:
-                url = getOauthBaseUrl() + "/oauth/access_token";
+                url =  connectionData.oauthPath + "/access_token";
                 break;
             case OAUTH_AUTHORIZE:
-                url = getOauthBaseUrl() + "/oauth/authorize";
+                url = connectionData.oauthPath + "/authorize";
                 break;
             case OAUTH_REQUEST_TOKEN:
-                url = getOauthBaseUrl() + "/oauth/request_token";
+                url = connectionData.oauthPath + "/request_token";
+                break;
+            case OAUTH_REGISTER_CLIENT:
+                url = connectionData.basicPath + "/client/register";
                 break;
             default:
-                url = super.getApiUrl1(routine);
-                break;
+                url = "";
+        }
+        if (!TextUtils.isEmpty(url)) {
+            url = pathToUrl(url);
         }
         return url;
     }
@@ -154,7 +167,7 @@ public abstract class ConnectionOAuth extends ConnectionTwitter implements MyOAu
      * @param token null means to clear the old values
      * @param secret
      */
-    public void setAuthInformation(String token, String secret) {
+    public void setUserTokenAndSecret(String token, String secret) {
         synchronized (this) {
             mToken = token;
             mSecret = secret;
@@ -171,23 +184,23 @@ public abstract class ConnectionOAuth extends ConnectionTwitter implements MyOAu
     public boolean save(AccountDataWriter dw) {
         boolean changed = super.save(dw);
 
-        if ( !TextUtils.equals(mToken, dw.getDataString(ConnectionOAuth.USER_TOKEN, null)) ||
-                !TextUtils.equals(mSecret, dw.getDataString(ConnectionOAuth.USER_SECRET, null)) 
+        if ( !TextUtils.equals(mToken, dw.getDataString(USER_TOKEN, null)) ||
+                !TextUtils.equals(mSecret, dw.getDataString(USER_SECRET, null)) 
                 ) {
             changed = true;
 
             if (TextUtils.isEmpty(mToken)) {
-                dw.setDataString(ConnectionOAuth.USER_TOKEN, null);
+                dw.setDataString(USER_TOKEN, null);
                 MyLog.d(TAG, "Clearing OAuth Token");
             } else {
-                dw.setDataString(ConnectionOAuth.USER_TOKEN, mToken);
+                dw.setDataString(USER_TOKEN, mToken);
                 MyLog.d(TAG, "Saving OAuth Token: " + mToken);
             }
             if (TextUtils.isEmpty(mSecret)) {
-                dw.setDataString(ConnectionOAuth.USER_SECRET, null);
+                dw.setDataString(USER_SECRET, null);
                 MyLog.d(TAG, "Clearing OAuth Secret");
             } else {
-                dw.setDataString(ConnectionOAuth.USER_SECRET, mSecret);
+                dw.setDataString(USER_SECRET, mSecret);
                 MyLog.d(TAG, "Saving OAuth Secret: " + mSecret);
             }
         }
@@ -196,7 +209,7 @@ public abstract class ConnectionOAuth extends ConnectionTwitter implements MyOAu
 
     @Override
     public void clearAuthInformation() {
-        setAuthInformation(null, null);
+        setUserTokenAndSecret(null, null);
     }
 
     @Override
@@ -252,40 +265,5 @@ public abstract class ConnectionOAuth extends ConnectionTwitter implements MyOAu
         }
         return jso;
     }
-
-    /**
-     * @see org.andstatus.app.net.Connection#getCredentialsPresent()
-     */
-    @Override
-    public boolean getCredentialsPresent(AccountDataReader dr) {
-        boolean yes = false;
-        if (dr.dataContains(ConnectionOAuth.USER_TOKEN) && dr.dataContains(ConnectionOAuth.USER_SECRET)) {
-            mToken = dr.getDataString(ConnectionOAuth.USER_TOKEN, null);
-            mSecret = dr.getDataString(ConnectionOAuth.USER_SECRET, null);
-            if (!(TextUtils.isEmpty(mToken) || TextUtils.isEmpty(mSecret))) {
-                yes = true;
-            }
-        }
-        return yes;
-    }
-
-    @Override
-    public JSONObject verifyCredentials() throws ConnectionException {
-        return getRequest(getApiUrl(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
-    }
-
-    @Override
-    public boolean isOAuth() {
-        return true;
-    }
-
-    @Override
-    public OAuthConsumer getConsumer() {
-        return mConsumer;
-    }
-
-    @Override
-    public OAuthProvider getProvider() {
-        return mProvider;
-    }
+    
 }

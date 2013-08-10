@@ -3,6 +3,7 @@ package org.andstatus.app;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.BaseColumns;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
@@ -46,7 +47,7 @@ class MessageDataForContextMenu {
         // Get the record for the currently selected item
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), timelineType, false, msgId);
         Cursor c = context.getContentResolver().query(uri, new String[] {
-                MyDatabase.Msg._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
+                BaseColumns._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
                 MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED,
                 MyDatabase.Msg.RECIPIENT_ID,
                 MyDatabase.MsgOfUser.REBLOGGED,

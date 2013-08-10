@@ -13,62 +13,66 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.net;
+package org.andstatus.app.origin;
+
+import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
 
 /**
+ * These are the keys for the AndStatus application (a "Client" of the Microblogging system" service)
+ * Keys are per Microblogging System (the {@link Origin} )
+ * 
  * You may use this application:
- * 1. With application OAuth keys provided in the public repository and stored in the {@link OAuthKeysOpenSource} class
+ * 1. With application OAuth keys provided in the public repository and stored in the {@link OAuthClientKeysOpenSource} class
  * 2. With keys of your own (Twitter etc.) application.
  * 
  * Instructions:
  * 1. Leave everything as is.
  *    Please read this information about possible problems with Twitter: 
  *    <a href="http://blog.nelhage.com/2010/09/dear-twitter/">http://blog.nelhage.com/2010/09/dear-twitter/</a>.
- * 2. Create new class in this package with this name: {@link OAuthKeys#SECRET_CLASS_NAME}
- *    as a copy of existing {@link OAuthKeysOpenSource} class 
+ * 2. Create new class in this package with this name: {@link OAuthClientKeys#SECRET_CLASS_NAME}
+ *    as a copy of existing {@link OAuthClientKeysOpenSource} class 
  *    with Your application's  Consumer Key and Consumer Secret
  *    
  *    For more information please read 
  *    <a href="https://github.com/andstatus/andstatus/wiki/Developerfaq">Developer FAQ</a>.
  **/
-public class OAuthKeys {
-    private static final String TAG = OAuthKeys.class.getSimpleName();
+public class OAuthClientKeys {
+    private static final String TAG = OAuthClientKeys.class.getSimpleName();
 
     private long originId = 0;
     // Strategy pattern, see http://en.wikipedia.org/wiki/Strategy_pattern
-    private OAuthKeysStrategy strategy = null;
-    private final static String SECRET_CLASS_NAME = OAuthKeysOpenSource.class.getPackage().getName() + "." + "OAuthKeysSecret";
+    private OAuthClientKeysStrategy strategy = null;
+    private final static String SECRET_CLASS_NAME = OAuthClientKeysOpenSource.class.getPackage().getName() + "." + "OAuthClientKeysSecret";
     
-    public OAuthKeys(long originId) {
+    public OAuthClientKeys(long originId) {
         this.originId = originId;
         
         //Try to load my secret keys first
         try {
             @SuppressWarnings("rawtypes")
             Class cls = Class.forName(SECRET_CLASS_NAME);
-            strategy = (OAuthKeysStrategy) cls.newInstance();
+            strategy = (OAuthClientKeysStrategy) cls.newInstance();
         } catch (Exception e) {
             MyLog.d(TAG, "Class " + SECRET_CLASS_NAME + " was not loaded:" + e.getMessage());
         }
         
         if (strategy == null) {
             // Load keys published in the public repository
-            strategy = new OAuthKeysOpenSource();
+            strategy = new OAuthClientKeysOpenSource();
         }
         MyLog.d(TAG, "Class " + strategy.getClass().getCanonicalName() + " was loaded");
     }
     
-    /**
-     * Consumer key
-     */
+    public boolean areKeysPresent() {
+        return (!TextUtils.isEmpty(getConsumerKey()));
+    }
+    
     public String getConsumerKey() {
         return strategy.getConsumerKey(originId);
     }
-    /**
-     * Consumer secret
-     */
+
     public String getConsumerSecret() {
         return strategy.getConsumerSecret(originId);
     }

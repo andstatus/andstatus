@@ -3,8 +3,8 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="lib" path="libs/signpost-commonshttp4-1.2.1.1.jar"/>
-	<classpathentry kind="lib" path="libs/signpost-core-1.2.1.1.jar"/>
+	<classpathentry kind="lib" path="W:/Android/AndStatus/Repository/libs/signpost-commonshttp4-1.2.1.2.jar"/>
+	<classpathentry kind="lib" path="W:/Android/AndStatus/Repository/libs/signpost-core-1.2.1.2.jar"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="output" path="bin/classes"/>

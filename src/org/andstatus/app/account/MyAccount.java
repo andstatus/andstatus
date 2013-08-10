@@ -44,9 +44,9 @@ import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionAuthenticationException;
 import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
 import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.ConnectionOAuth;
 import org.andstatus.app.net.ConnectionUnavailableException;
-import org.andstatus.app.net.MyOAuth;
+import org.andstatus.app.net.OAuthConsumerAndProvider;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONObject;
@@ -149,7 +149,7 @@ public class MyAccount implements AccountDataReader {
         private Builder (String accountName) {
             myAccount = new MyAccount();
             myAccount.oAccountName = AccountName.fromAccountName(accountName);
-            myAccount.oAuth = myAccount.oAccountName.getOrigin().isOAuth();
+            myAccount.isOAuth = myAccount.oAccountName.getOrigin().isOAuthDefault();
             myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
             setConnection();
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
@@ -166,7 +166,6 @@ public class MyAccount implements AccountDataReader {
          * @param account should not be null
          */
         Builder(android.accounts.Account account) {
-            boolean changed = false;
             myAccount = new MyAccount();
             if (account == null) {
                 throw new IllegalArgumentException(TAG + " null account is not allowed in the constructor");
@@ -177,12 +176,22 @@ public class MyAccount implements AccountDataReader {
             
             // Load stored data for the User
             myAccount.credentialsVerified = CredentialsVerified.load(myAccount);
-            myAccount.oAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuth());
+            myAccount.isOAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuthDefault());
             myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
             myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0);
+            
+            fixMyAccount();
+
             setConnection();
             
-            // Fix inconsistencies with changed environment...
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                Log.v(TAG, "Loaded " + this.toString());
+            }
+        }
+
+        /** Fix inconsistencies with changed environment... */
+        private void fixMyAccount() {
+            boolean changed = false;
             if (myAccount.userId==0) {
                 changed = true;
                 assignUserId();
@@ -194,9 +203,11 @@ public class MyAccount implements AccountDataReader {
                 ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
                 changed = true;
             }
-            
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "Loaded " + this.toString());
+            if (myAccount.oAccountName.getOrigin().isOAuthDefault() != myAccount.isOAuth()) {
+                if (!myAccount.oAccountName.getOrigin().canChangeOAuth()) {
+                    setOAuth(myAccount.oAccountName.getOrigin().isOAuthDefault());
+                    changed = true;
+                }
             }
             if (changed) {
                 save(true);
@@ -264,7 +275,7 @@ public class MyAccount implements AccountDataReader {
             
             // Load stored data for the MyAccount
             myAccount.credentialsVerified = CredentialsVerified.load(myAccount);
-            myAccount.oAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuth());
+            myAccount.isOAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuthDefault());
             myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
             myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0L);
             setConnection();
@@ -375,16 +386,16 @@ public class MyAccount implements AccountDataReader {
                     setDataString(KEY_USERNAME, myAccount.oAccountName.getUsername());
                     changed = true;
                 }
-                if (myAccount.oAccountName.getOrigin().getName().compareTo(myAccount.getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER)) != 0) {
-                    setDataString(KEY_ORIGIN_NAME, myAccount.oAccountName.getOrigin().getName());
+                if (myAccount.oAccountName.getOriginName().compareTo(myAccount.getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER)) != 0) {
+                    setDataString(KEY_ORIGIN_NAME, myAccount.oAccountName.getOriginName());
                     changed = true;
                 }
                 if (myAccount.credentialsVerified != CredentialsVerified.load(myAccount)) {
                     myAccount.credentialsVerified.put(this);
                     changed = true;
                 }
-                if (myAccount.oAuth != myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuth())) {
-                    setDataBoolean(KEY_OAUTH, myAccount.oAuth);
+                if (myAccount.isOAuth != myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuthDefault())) {
+                    setDataBoolean(KEY_OAUTH, myAccount.isOAuth);
                     changed = true;
                 }
                 if (myAccount.userId != myAccount.getDataLong(KEY_USER_ID, 0L)) {
@@ -471,7 +482,7 @@ public class MyAccount implements AccountDataReader {
                     }
                     if (ok && !isPersistent()) {
                         // Now we know the name (or proper case of the name) of this User!
-                        myAccount.oAccountName = AccountName.fromOriginAndUserNames(myAccount.oAccountName.getOrigin().getName(), newName);
+                        myAccount.oAccountName = AccountName.fromOriginAndUserNames(myAccount.oAccountName.getOriginName(), newName);
                         if (myAccount.userId == 0) {
                             assignUserId();
                         }
@@ -497,13 +508,8 @@ public class MyAccount implements AccountDataReader {
             return ok;
         }
         
-        public void setAuthInformation(String token, String secret) {
-            if(myAccount.isOAuth()) {
-                ConnectionOAuth conn = ((ConnectionOAuth) myAccount.getConnection());
-                conn.setAuthInformation(token, secret);
-            } else {
-                Log.e(TAG, "saveAuthInformation is for OAuth only!");
-            }
+        public void setUserTokenWithSecret(String token, String secret) {
+            myAccount.getConnection().setUserTokenWithSecret(token, secret);
         }
 
         public void setCredentialsVerified(CredentialsVerified cv) {
@@ -513,22 +519,20 @@ public class MyAccount implements AccountDataReader {
             }
         }
 
-        /**
-         * @param oAuth to set
-         */
-        public void setOAuth(boolean oAuth) {
+        public void setOAuth(boolean isOAuth) {
             if (!myAccount.oAccountName.getOrigin().canChangeOAuth()) {
-                oAuth = myAccount.oAccountName.getOrigin().isOAuth();
+                isOAuth = myAccount.oAccountName.getOrigin().isOAuthDefault();
             }
-            if (myAccount.oAuth != oAuth) {
+            if (myAccount.isOAuth != isOAuth) {
                 setCredentialsVerified(CredentialsVerified.NEVER);
-                myAccount.oAuth = oAuth;
+                myAccount.isOAuth = isOAuth;
                 setConnection();
             }
         }
         
         private void setConnection() {
-            myAccount.connection = myAccount.oAccountName.getOrigin().getConnection(myAccount, myAccount.oAuth);
+            myAccount.connection = myAccount.oAccountName.getOrigin().getConnection(myAccount.isOAuth);
+            myAccount.connection.setAccountData(myAccount);
         }
 
         /**
@@ -662,7 +666,7 @@ public class MyAccount implements AccountDataReader {
     /**
      * Is this user authenticated with OAuth?
      */
-    private boolean oAuth = true;
+    private boolean isOAuth = true;
 
     private long syncFrequencySeconds = 0;
     
@@ -1081,6 +1085,10 @@ public class MyAccount implements AccountDataReader {
         return oAccountName.getUsername();
     }
 
+    public AccountName getName() {
+        return oAccountName;
+    }
+    
     /**
      * @return account name, unique for this application and suitable for android.accounts.AccountManager
      * The name is permanent and cannot be changed. This is why it may be used as Id 
@@ -1104,14 +1112,7 @@ public class MyAccount implements AccountDataReader {
     public long getOriginId() {
         return oAccountName.getOrigin().getId();
     }
-    
-    /**
-     * @return Name of the system in which the User is defined
-     */
-    public String getOriginName() {
-        return oAccountName.getOrigin().getName();
-    }
-    
+     
     /**
      * @return SharedPreferences of this MyAccount. Used to store preferences which are application specific
      *   i.e. excluding data specific to Account. 
@@ -1132,32 +1133,16 @@ public class MyAccount implements AccountDataReader {
         return sp;
     }
 
-    /**
-     * @return instance of Connection subtype for the User
-     */
     public Connection getConnection() {
         return connection;
     }
     
-    /**
-     * @return Implementation of the {@link MyOAuth} interface
-     */
-    public MyOAuth getOAuth() {
-        MyOAuth oa = null;
-        if (isOAuth()) {
-            oa = (MyOAuth) getConnection();
-        }
-        return oa;
+    public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {
+        return connection.getOAuthConsumerAndProvider();
     }
-    
 
-    /**
-     * Calculates number of Characters left for this message
-     * @param message
-     * @return
-     */
-    public int messageCharactersLeft(String message) {
-        return oAccountName.getOrigin().messageCharactersLeft(message);
+    public int charactersLeftForMessage(String message) {
+        return oAccountName.getOrigin().charactersLeftForMessage(message);
     }
 
     /**
@@ -1178,7 +1163,7 @@ public class MyAccount implements AccountDataReader {
      * @return the oAuth
      */
     public boolean isOAuth() {
-        return oAuth;
+        return isOAuth;
     }
 
     public String getPassword() {

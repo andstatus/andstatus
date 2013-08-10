@@ -18,9 +18,9 @@ package org.andstatus.app.data;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.Origin;
 import org.andstatus.app.appwidget.MyAppWidgetConfigure;
 import org.andstatus.app.net.Connection;
+import org.andstatus.app.origin.Origin;
 
 import java.util.Locale;
 
@@ -509,7 +509,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     public void onCreate(SQLiteDatabase db) {
         Log.i(TAG, "Creating tables");
         db.execSQL("CREATE TABLE " + MSG_TABLE_NAME + " (" 
-                + Msg._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
+                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + Msg.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ID_DEFAULT + " NOT NULL," 
                 + Msg.MSG_OID + " STRING," 
                 + Msg.AUTHOR_ID + " INTEGER," 
@@ -543,7 +543,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + ");");
         
         db.execSQL("CREATE TABLE " + USER_TABLE_NAME + " (" 
-                + User._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
+                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + User.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ID_DEFAULT + " NOT NULL," 
                 + User.USER_OID + " STRING," 
                 + User.USERNAME + " TEXT NOT NULL," 

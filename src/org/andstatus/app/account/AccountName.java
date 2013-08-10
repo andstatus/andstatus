@@ -15,6 +15,8 @@
  */
 package org.andstatus.app.account;
 
+import org.andstatus.app.origin.Origin;
+
 
 /**
  * Account name, unique for this application and suitable for {@link android.accounts.AccountManager}
@@ -42,7 +44,7 @@ class AccountName {
         if (indSlash >= 0) {
             originName = accountName.substring(0, indSlash);
         }
-        return originName;
+        return UserNameUtil.fixUsername(originName);
     }
 
     static String accountNameToUsername(String accountName) {
@@ -69,7 +71,7 @@ class AccountName {
 
     static AccountName fromOriginAndUserNames(String originName, String username) {
         AccountName accountName = new AccountName();
-        accountName.origin = Origin.toExistingOrigin(originName);
+        accountName.origin = Origin.toExistingOrigin(UserNameUtil.fixUsername(originName));
         accountName.username = UserNameUtil.fixUsername(username);
         return accountName;
     }
@@ -94,6 +96,10 @@ class AccountName {
 
     String getUsername() {
         return username;
+    }
+
+    String getOriginName() {
+        return origin.getName();
     }
 
     public int compareTo(String string) {

@@ -444,7 +444,7 @@ public class MyPreferences {
             themeName.append("Light.");
         }
         themeName.append(name);
-        int themeId = (int) context.getResources().getIdentifier(themeName.toString(), "style",
+        int themeId = context.getResources().getIdentifier(themeName.toString(), "style",
                 "org.andstatus.app");
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "loadTheme; theme=\"" + themeName.toString() + "\"; id=" + Integer.toHexString(themeId));

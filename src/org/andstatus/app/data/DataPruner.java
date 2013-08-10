@@ -20,6 +20,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.provider.BaseColumns;
 import android.util.Log;
 
 import org.andstatus.app.util.MyLog;
@@ -58,7 +59,7 @@ public class DataPruner {
         // Don't delete messages which are favorited by any user
         String sqlNotFavorited = "NOT EXISTS ("
                 + "SELECT * FROM " + MyDatabase.MSGOFUSER_TABLE_NAME + " AS gnf WHERE "
-                + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + "=gnf." + MyDatabase.MsgOfUser.MSG_ID
+                + MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + "=gnf." + MyDatabase.MsgOfUser.MSG_ID
                 + " AND gnf." + MyDatabase.MsgOfUser.FAVORITED + "=1" 
                 + ")";
         

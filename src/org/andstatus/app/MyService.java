@@ -59,6 +59,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.BaseColumns;
 import android.util.Log;
 
 /**
@@ -838,7 +839,7 @@ public class MyService extends Service {
 
             // Set up the notification to display to the user
             Notification notification = new Notification(R.drawable.notification_icon,
-                    (String) getText(R.string.notification_title), System.currentTimeMillis());
+                    getText(R.string.notification_title), System.currentTimeMillis());
 
             int messageTitle;
             String aMessage = "";
@@ -1183,7 +1184,7 @@ public class MyService extends Service {
                 try {
                     // TODO: Maybe we should use Timeline Uri...
                     MyService.this.getApplicationContext().getContentResolver()
-                            .delete(MyDatabase.Msg.CONTENT_URI, MyDatabase.Msg._ID + " = " + msgId, 
+                            .delete(MyDatabase.Msg.CONTENT_URI, BaseColumns._ID + " = " + msgId, 
                                     null);
                 } catch (Exception e) {
                     Log.e(TAG, "Error destroying status locally: " + e.toString());
@@ -1607,7 +1608,7 @@ public class MyService extends Service {
 
             // Set up the notification to display to the user
             Notification notification = new Notification(R.drawable.notification_icon,
-                    (String) getText(R.string.notification_title), System.currentTimeMillis());
+                    getText(R.string.notification_title), System.currentTimeMillis());
 
             notification.vibrate = null;
             if (mNotificationsVibrate) {
