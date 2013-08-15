@@ -18,7 +18,7 @@
     TODO: Add narrow enough intent filters to activities in order not to see these activities everywhere ("Open with...")
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="org.andstatus.app" android:versionName="1.16.0" android:versionCode="77">
+	package="org.andstatus.app" android:versionName="1.17.0" android:versionCode="77">
 
 	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="10" />
     
@@ -168,7 +168,7 @@
             android:name=".account.AccountSettingsActivity"
             android:label="@string/settings_activity_title"
             android:alwaysRetainTaskState="True"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             >
             <intent-filter>
                 <action
@@ -195,6 +195,10 @@
                 <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+        <activity 
+            android:name=".account.AccountSettingsWebActivity" 
+            android:noHistory="true">
         </activity>
         
 	</application>

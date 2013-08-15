@@ -647,15 +647,15 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      *  
      * During this task:
      * 1. AndStatus ("Consumer") Requests "Request Token" from Twitter ("Service provider"), 
-     * 2. Waits that Request Token
-     * 3. Consumer directs User to Service Provider: opens Twitter site in Internet Browser window
+     * 2. Waits for that Request Token
+     * 3. Consumer directs User to the Service Provider: opens Twitter site in Internet Browser window
      *    in order to Obtain User Authorization.
      * 4. This task ends.
      * 
      * What will occur later:
      * 5. After User Authorized AndStatus in the Internet Browser,
      *    Twitter site will redirect User back to
-     *    AndStatus and then the second OAuth task, , will start.
+     *    AndStatus and then the second OAuth task will start.
      *   
      * @author yvolk. This code is based on "BLOA" example,
      *         http://github.com/brione/Brion-Learns-OAuth yvolk: I had to move
@@ -698,10 +698,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 // from the Browser to the same activity.
                 state.actionCompleted = false;
                 
-                // Start Internet Browser
-                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
-                // Trying to skip Browser activities on Back button press
-                i.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                // Start Web view (looking just like Web Browser)
+                Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
+                i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
                 AccountSettingsActivity.this.startActivity(i);
 
                 requestSucceeded = true;
@@ -752,11 +751,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     String message = jso.getString("message");
 
                     if (succeeded) {
-                        // This may be necessary in order to start properly 
-                        // after redirection from Twitter
+                        // Finish this activity in order to start properly 
+                        // after redirection from Browser
                         // Because of initializations in onCreate...
-                        // TODO: ???
-                        // AccountSettingsActivity.this.finish();
+                        AccountSettingsActivity.this.finish();
                     } else {
                         Toast.makeText(AccountSettingsActivity.this, message, Toast.LENGTH_LONG).show();
 
