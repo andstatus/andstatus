@@ -21,20 +21,31 @@ package org.andstatus.app.origin;
  * @author yvolk
  */
 public class OAuthClientKeysOpenSource implements OAuthClientKeysStrategy {
+    private long originId = 0;
+
     @Override
-    public String getConsumerKey(long originId) {
+    public void setOrigin(long originId_in) {
+        originId = originId_in;
+    }
+
+    @Override
+    public String getConsumerKey() {
         if(originId == Origin.ORIGIN_ID_TWITTER) {
             return "XPHj81OgjphGlN6Jb55Kmg";
         } else {
             return "";
         }
     }
+    
     @Override
-    public String getConsumerSecret(long originId) {
+    public String getConsumerSecret() {
         if(originId == Origin.ORIGIN_ID_TWITTER) {  
             return "o2E5AYoDQhZf9qT7ctHLGihpq2ibc5bC4iFAOHURxw";
         } else {
             return "";
         }
     }
+
+    @Override
+    public void setConsumerKeyAndSecret(String ConsumerKey, String ConsumerSecret) {}
 }

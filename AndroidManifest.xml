@@ -180,7 +180,7 @@
 				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT" />
 				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="andstatus-oauth" android:host="andstatus.org" />
+				<data android:scheme="http" android:host="oauth-redirect.andstatus.org" />
 			</intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.EDIT" />

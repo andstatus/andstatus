@@ -63,6 +63,7 @@
 	<string name="dialog_summary_executing_command">Please wait while the command is executed on the server.</string>
 	<string name="dialog_summary_external_storage">External storage has been detected. Do you wish AndStatus to store data there? Old data cannot be moved, but will remain in your internal memory.</string>
 	<string name="dialog_summary_external_storage_missing">External storage not present or unmounted. Do you want to use the internal memory? Any data stored on the external storage will still be available.</string>
+	<string name="dialog_summary_registering_client">Please wait while AndStatus is registering itself as a client application</string>
 	<string name="dialog_summary_sending_message">Please wait while message is being sent.</string>
 	<string name="dialog_summary_service_unavailable">Twitter is currently over capacity. Please try again later.</string>
 	<string name="dialog_summary_timeline_loading">Please wait while the timeline is being refreshed. This may take several minutes depending on your connection.</string>
@@ -82,7 +83,8 @@
     <string name="dialog_title_preference_password">Password</string>
 	<string name="dialog_title_preference_theme">Select a Theme</string>
 	<string name="dialog_title_preference_username">Username</string>
-    <string name="dialog_title_select_timeline">Select a Timeline</string>
+	<string name="dialog_title_registering_client">Registering AndStatus</string>
+	<string name="dialog_title_select_timeline">Select a Timeline</string>
     <string name="dialog_title_sending_message">Sending a message…</string>
 	<string name="dialog_title_service_unavailable">Service Unavailable</string>
 	<string name="dialog_title_timeline_loading">Updating a Timeline…</string>

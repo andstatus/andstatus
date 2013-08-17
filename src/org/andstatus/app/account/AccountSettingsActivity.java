@@ -59,6 +59,7 @@ import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionUnavailableException;
 import org.andstatus.app.net.OAuthConsumerAndProvider;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONException;
@@ -78,8 +79,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     
     /** 
      * The URI is consistent with "scheme" and "host" in AndroidManifest
+     * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"
      */
-    public static final Uri CALLBACK_URI = Uri.parse("andstatus-oauth://andstatus.org");
+    public static final Uri CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org");
 
     // Request codes for called activities
     protected static final int REQUEST_SELECT_ACCOUNT = RESULT_FIRST_USER;
@@ -334,9 +336,15 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 if (ma.isOAuth() && reVerify) {
                     // Credentials are not present,
                     // so start asynchronous OAuth Authentication process 
-                    new OAuthAcquireRequestTokenTask().execute();
-                    // and return back to default screen
-                    overrideBackButton = true;
+                    Origin origin = Origin.fromOriginId(ma.getOriginId());
+                    origin.setOAuth(ma.isOAuth());
+                    if (!origin.areKeysPresent()) {
+                        new OAuthRegisterClientTask().execute();
+                    } else {
+                        new OAuthAcquireRequestTokenTask().execute();
+                        // and return back to default screen
+                        overrideBackButton = true;
+                    }
                 }
             }
 
@@ -412,11 +420,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             if (key.equals(MyAccount.Builder.KEY_USERNAME_NEW)) {
                 String usernameNew = mEditTextUsername.getText();
                 if (usernameNew.compareTo(state.getAccount().getUsername()) != 0) {
-                    boolean oauth = state.getAccount().isOAuth();
+                    boolean isOAuth = state.getAccount().isOAuth();
                     String originName = state.getAccount().getName().getOriginName();
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                             AccountName.fromOriginAndUserNames(originName, usernameNew).toString());
-                    state.builder.setOAuth(oauth);
+                    state.builder.setOAuth(isOAuth);
                     showUserPreferences();
                 }
             }
@@ -641,7 +649,93 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     }
     
     /**
-     * Task 1 of 2 required for OAuth Authentication.
+     * Task 1 of 3 required for OAuth Authentication.
+     */
+    private class OAuthRegisterClientTask extends AsyncTask<Void, Void, JSONObject> {
+        private ProgressDialog dlg;
+
+        @Override
+        protected void onPreExecute() {
+            dlg = ProgressDialog.show(AccountSettingsActivity.this,
+                    getText(R.string.dialog_title_registering_client),
+                    getText(R.string.dialog_summary_registering_client), true, // indeterminate
+                    // duration
+                    false); // not cancel-able
+        }
+
+        @Override
+        protected JSONObject doInBackground(Void... arg0) {
+            JSONObject jso = null;
+
+            boolean requestSucceeded = false;
+            String message = "";
+            String message2 = "";
+
+            MyAccount ma = state.getAccount();
+            Origin origin = Origin.fromOriginId(ma.getOriginId());
+            origin.setOAuth(ma.isOAuth());
+            if (!origin.areKeysPresent()) {
+                origin.registerClient();
+            } 
+            requestSucceeded = origin.areKeysPresent();
+
+            try {
+                if (!requestSucceeded) {
+                    message2 = AccountSettingsActivity.this
+                            .getString(R.string.dialog_title_authentication_failed);
+                    if (message != null && message.length() > 0) {
+                        message2 = message2 + ": " + message;
+                    }
+                    MyLog.d(TAG, message2);
+                }
+
+                jso = new JSONObject();
+                jso.put("succeeded", requestSucceeded);
+                jso.put("message", message2);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return jso;
+        }
+
+        // This is in the UI thread, so we can mess with the UI
+        @Override
+        protected void onPostExecute(JSONObject jso) {
+            try {
+                dlg.dismiss();
+            } catch (Exception e) { 
+                // Ignore this error  
+            }
+            if (jso != null) {
+                try {
+                    boolean succeeded = jso.getBoolean("succeeded");
+                    String message = jso.getString("message");
+
+                    if (succeeded) {
+                        String accountName = state.getAccount().getAccountName();
+                        MyAccount.initialize(MyPreferences.getContext());
+                        state.builder = MyAccount.Builder.newOrExistingFromAccountName(accountName);
+                        state.builder.setOAuth(true);
+                        showUserPreferences();
+                        new OAuthAcquireRequestTokenTask().execute();
+                        // and return back to default screen
+                        overrideBackButton = true;
+                    } else {
+                        Toast.makeText(AccountSettingsActivity.this, message, Toast.LENGTH_LONG).show();
+
+                        state.builder.setCredentialsVerified(CredentialsVerified.FAILED);
+                        showUserPreferences();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
+    
+    /**
+     * Task 2 of 3 required for OAuth Authentication.
      * See http://www.snipe.net/2009/07/writing-your-first-twitter-application-with-oauth/
      * for good OAuth Authentication flow explanation.
      *  
@@ -769,7 +863,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     }
     
     /**
-     * Task 2 of 2 required for OAuth Authentication.
+     * Task 3 of 3 required for OAuth Authentication.
      *  
      * During this task:
      * 1. AndStatus ("Consumer") exchanges "Request Token", 

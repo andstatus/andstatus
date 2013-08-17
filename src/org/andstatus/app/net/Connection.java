@@ -79,6 +79,7 @@ public abstract class Connection {
         GET_USER,
         POST_DIRECT_MESSAGE,
         POST_REBLOG,
+        REGISTER_CLIENT,
         STATUSES_DESTROY,
         /**
          * Get the Home timeline (whatever it is...).
@@ -406,5 +407,6 @@ public abstract class Connection {
         }
         return oa;
     }
-    
+
+    public void registerClient() {}
 }

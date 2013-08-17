@@ -26,10 +26,12 @@ abstract class HttpConnection {
     
     protected OriginConnectionData connectionData;
 
+    static final String USER_AGENT = "AndStatus";
+
     public static HttpConnection fromConnectionData(OriginConnectionData connectionData) {
         HttpConnection connection;
-        if (connectionData.isOauth) {
-            connection = new HttpConnectionOauth(connectionData);
+        if (connectionData.isOAuth) {
+            connection = new HttpConnectionOAuth(connectionData);
         } else {
             connection = new HttpConnectionBasic(connectionData);
         }
@@ -114,7 +116,7 @@ abstract class HttpConnection {
     public abstract void setAccountData(AccountDataReader dr);
     
     protected boolean isOAuth() {
-        return connectionData.isOauth;
+        return connectionData.isOAuth;
     }
     
 

@@ -24,6 +24,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.Connection.ApiEnum;
+import org.andstatus.app.util.MyLog;
 
 /**
  *  Microblogging system (twitter.com, identi.ca, ... ) where messages are being created
@@ -146,33 +147,55 @@ public class Origin {
     /**
      * @return Can app user set username for the new "Origin user" manually?
      */
-    public boolean canSetUsername(boolean isOauthUser) {
+    public boolean canSetUsername(boolean isOAuthUser) {
         boolean can = false;
         if (canSetUsername) {
-            if (!isOauthUser) {
+            if (!isOAuthUser) {
                 can = true;
             }
         }
         return can;
     }
 
-    public Connection getConnection(boolean isOAuth) {
+    public boolean areKeysPresent() {
+        return (connectionData.isOAuth ? connectionData.clientKeys.areKeysPresent() : false);
+    }
+
+    public boolean isOAuth() {
+        return connectionData.isOAuth;
+    }
+    
+    public void setOAuth(boolean isOAuth) {
         if (isOAuth != isOAuthDefault && !canChangeOAuth) {
-            throw(new IllegalArgumentException("isOAuth cannot be set to " + Boolean.toString(isOAuth)));
+            throw (new IllegalArgumentException("isOAuth cannot be set to "
+                    + Boolean.toString(isOAuth)));
         }
-        if (connection != null && connection.isOAuth() != isOAuth) {
+        if (isOAuth != connectionData.isOAuth) {
+            connection = null;
+        }
+        if (connection != null && connectionData.isOAuth && !areKeysPresent()) {
             connection = null;
         }
         if (connection == null) {
-            connectionData.isOauth = isOAuth;
-            if (connectionData.isOauth) {
-                OAuthClientKeys clientKeys = new OAuthClientKeys(id);
-                connectionData.consumerKey = clientKeys.getConsumerKey();
-                connectionData.consumerSecret = clientKeys.getConsumerSecret();
+            connectionData.clientKeys = null;
+            connectionData.isOAuth = isOAuth;
+            if (connectionData.isOAuth) {
+                connectionData.clientKeys = new OAuthClientKeys(id);
             }
+        }
+    }
+    
+    public Connection getConnection() {
+        if (connection == null) {
             connection = Connection.fromConnectionData(connectionData);
         }
         return connection;
+    }
+
+    public void registerClient() {
+        MyLog.v(TAG, "Registering client for " + name);
+        Connection connection = Connection.fromConnectionData(connectionData);
+        connection.registerClient();
     }
 
     private Origin(String name_in) {

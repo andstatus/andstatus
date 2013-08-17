@@ -63,6 +63,7 @@
 	<string name="dialog_summary_executing_command">Пожалуйста, подождите завершения обработки команды на сервере.</string>
 	<string name="dialog_summary_external_storage">Обнаружена внешняя память (SD-карта). Вы хотите, чтобы AndStatus сохранял данные на ней? Старые данные перенести туда нельзя, но они останутся во внутренней памяти Вашего устройства.</string>
 	<string name="dialog_summary_external_storage_missing">Внешняя память отсутствует или удалена (не смонтирована). Вы хотите использовать внутреннюю память? Все данные, которые были сохранены во внешней памяти, будут по-прежнему доступны.</string>
+	<string name="dialog_summary_registering_client">Пожалуйста подождите пока AndStatus зарегистрирует себя в качестве клиентского приложения</string>
 	<string name="dialog_summary_sending_message">Пожалуйста подождите завершения отправки сообщения.</string>
 	<string name="dialog_summary_service_unavailable">Сервис микроблогов сейчас перегружен. Пожалуйста, попробуйте обратиться позже.</string>
 	<string name="dialog_summary_timeline_loading">Подождите завершения обновления ленты времени. Эта процедура может занять несколько минут, в зависимости от качества соединения.</string>
@@ -82,7 +83,8 @@
     <string name="dialog_title_preference_password">Пароль</string>
 	<string name="dialog_title_preference_theme">Выберите тему</string>
 	<string name="dialog_title_preference_username">Имя пользователя</string>
-    <string name="dialog_title_select_timeline">Выберите ленту времени</string>
+	<string name="dialog_title_registering_client">Регистрируем AndStatus</string>
+	<string name="dialog_title_select_timeline">Выберите ленту времени</string>
     <string name="dialog_title_sending_message">Отправка сообщения…</string>
 	<string name="dialog_title_service_unavailable">Сервис недоступен</string>
 	<string name="dialog_title_timeline_loading">Обновление ленты времени…</string>

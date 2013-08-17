@@ -531,7 +531,8 @@ public class MyAccount implements AccountDataReader {
         }
         
         private void setConnection() {
-            myAccount.connection = myAccount.oAccountName.getOrigin().getConnection(myAccount.isOAuth);
+            myAccount.oAccountName.getOrigin().setOAuth(myAccount.isOAuth);
+            myAccount.connection = myAccount.oAccountName.getOrigin().getConnection();
             myAccount.connection.setAccountData(myAccount);
         }
 

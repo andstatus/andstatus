@@ -32,8 +32,10 @@ public class AccountSettingsWebActivity extends Activity {
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             Uri uri = Uri.parse(url);
             MyLog.d(TAG, "Redirecting to: " + uri);
-            if (uri != null && AccountSettingsActivity.CALLBACK_URI.getScheme().equals(uri.getScheme())) {
-                Intent i = new Intent(Intent.ACTION_VIEW, uri);
+            if (uri != null && AccountSettingsActivity.CALLBACK_URI.getHost().equals(uri.getHost())) {
+                //Intent i = new Intent(Intent.ACTION_VIEW, uri);
+                Intent i = new Intent(AccountSettingsWebActivity.this, AccountSettingsActivity.class);
+                i.setData(uri);
                 startActivity(i);                
                 finish();
                 return true;

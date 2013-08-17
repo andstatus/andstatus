@@ -20,8 +20,8 @@ import android.text.TextUtils;
 import org.andstatus.app.util.MyLog;
 
 /**
- * These are the keys for the AndStatus application (a "Client" of the Microblogging system" service)
- * Keys are per Microblogging System (the {@link Origin} )
+ * These are the keys for the AndStatus application (a "Client" of the Microblogging system)
+ * Keys are per Microblogging System (i.e. per the {@link Origin} )
  * 
  * You may use this application:
  * 1. With application OAuth keys provided in the public repository and stored in the {@link OAuthClientKeysOpenSource} class
@@ -41,28 +41,44 @@ import org.andstatus.app.util.MyLog;
 public class OAuthClientKeys {
     private static final String TAG = OAuthClientKeys.class.getSimpleName();
 
-    private long originId = 0;
+    String consumerKey = "";
+    String consumerSecret = "";
+    
     // Strategy pattern, see http://en.wikipedia.org/wiki/Strategy_pattern
     private OAuthClientKeysStrategy strategy = null;
     private final static String SECRET_CLASS_NAME = OAuthClientKeysOpenSource.class.getPackage().getName() + "." + "OAuthClientKeysSecret";
+    private static boolean noSecretClass = false;
     
     public OAuthClientKeys(long originId) {
-        this.originId = originId;
-        
-        //Try to load my secret keys first
-        try {
-            @SuppressWarnings("rawtypes")
-            Class cls = Class.forName(SECRET_CLASS_NAME);
-            strategy = (OAuthClientKeysStrategy) cls.newInstance();
-        } catch (Exception e) {
-            MyLog.d(TAG, "Class " + SECRET_CLASS_NAME + " was not loaded:" + e.getMessage());
+        if (!noSecretClass) {
+            // Try to load the application's secret keys first
+            try {
+                @SuppressWarnings("rawtypes")
+                Class cls = Class.forName(SECRET_CLASS_NAME);
+                strategy = (OAuthClientKeysStrategy) cls.newInstance();
+            } catch (Exception e) {
+                MyLog.v(TAG, "Class " + SECRET_CLASS_NAME + " was not loaded:" + e.getMessage());
+                noSecretClass = true;
+            }
         }
-        
         if (strategy == null) {
-            // Load keys published in the public repository
+            // Load keys published in the public source code repository
             strategy = new OAuthClientKeysOpenSource();
         }
-        MyLog.d(TAG, "Class " + strategy.getClass().getCanonicalName() + " was loaded");
+        strategy.setOrigin(originId);
+        if (TextUtils.isEmpty(strategy.getConsumerKey())) {
+            strategy = null;
+        }
+        if (strategy == null) {
+            strategy = new OAuthClientKeysDynamic();
+            strategy.setOrigin(originId);
+        }
+        consumerKey = strategy.getConsumerKey();
+        consumerSecret = strategy.getConsumerSecret();
+        MyLog.d(TAG, "Class " + strategy.getClass().getCanonicalName() 
+                + " was loaded for originId=" + originId + "; "
+                + ( areKeysPresent() ? "Keys present" : "No keys")
+                );
     }
     
     public boolean areKeysPresent() {
@@ -70,10 +86,16 @@ public class OAuthClientKeys {
     }
     
     public String getConsumerKey() {
-        return strategy.getConsumerKey(originId);
+        return consumerKey;
     }
 
     public String getConsumerSecret() {
-        return strategy.getConsumerSecret(originId);
+        return consumerSecret;
+    }
+    
+    public void setConsumerKeyAndSecret(String consumerKey_in, String consumerSecret_in) {
+        consumerKey = consumerKey_in;
+        consumerSecret = consumerSecret_in;
+        strategy.setConsumerKeyAndSecret(consumerKey, consumerSecret);
     }
 }

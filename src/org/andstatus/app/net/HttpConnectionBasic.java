@@ -26,11 +26,7 @@ import java.io.UnsupportedEncodingException;
 
 class HttpConnectionBasic extends HttpConnection {
     private static final String TAG = HttpConnectionBasic.class.getSimpleName();
-
-    private static final String USER_AGENT = "AndStatus/1.0";
-    
     protected String mUsername;
-
     protected String mPassword;
 
     public HttpConnectionBasic(OriginConnectionData connectionData) {
@@ -48,8 +44,10 @@ class HttpConnectionBasic extends HttpConnection {
         int statusCode = 0;
         try {
             HttpClient client = new DefaultHttpClient(new BasicHttpParams());
-            postMethod.setHeader("User-Agent", USER_AGENT);
-            postMethod.addHeader("Authorization", "Basic " + getCredentials());
+            postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
+            if (getCredentialsPresent(null)) {
+                postMethod.addHeader("Authorization", "Basic " + getCredentials());
+            }
             client.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, DEFAULT_POST_REQUEST_TIMEOUT);
             client.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, DEFAULT_POST_REQUEST_TIMEOUT);
             HttpResponse httpResponse = client.execute(postMethod);
@@ -91,7 +89,7 @@ class HttpConnectionBasic extends HttpConnection {
         int statusCode = 0;
         HttpClient client = new DefaultHttpClient(new BasicHttpParams());
         try {
-            getMethod.setHeader("User-Agent", USER_AGENT);
+            getMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
             getMethod.addHeader("Authorization", "Basic " + getCredentials());
             client.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, DEFAULT_GET_REQUEST_TIMEOUT);
             client.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, DEFAULT_GET_REQUEST_TIMEOUT);
@@ -116,8 +114,10 @@ class HttpConnectionBasic extends HttpConnection {
     @Override
     public boolean getCredentialsPresent(AccountDataReader dr) {
         boolean yes = false;
-        // This is not set for the new account
-        mUsername = dr.getUsername();
+        if (dr != null) {
+            // This is not set for the new account
+            mUsername = dr.getUsername();
+        }
         if (!TextUtils.isEmpty(mUsername) && !TextUtils.isEmpty(mPassword)) {
             yes = true;
         }

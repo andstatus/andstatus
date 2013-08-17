@@ -36,8 +36,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-class HttpConnectionOauth extends HttpConnection implements OAuthConsumerAndProvider {
-    private static final String TAG = HttpConnectionOauth.class.getSimpleName();
+class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProvider {
+    private static final String TAG = HttpConnectionOAuth.class.getSimpleName();
     
     public static final String USER_TOKEN = "user_token";
     public static final String USER_SECRET = "user_secret";
@@ -58,7 +58,7 @@ class HttpConnectionOauth extends HttpConnection implements OAuthConsumerAndProv
 
     private HttpClient mClient;
     
-    protected HttpConnectionOauth(OriginConnectionData connectionData_in) {
+    protected HttpConnectionOAuth(OriginConnectionData connectionData_in) {
         connectionData = connectionData_in;
 
         HttpParams parameters = getHttpParams();
@@ -69,8 +69,8 @@ class HttpConnectionOauth extends HttpConnection implements OAuthConsumerAndProv
         ClientConnectionManager clientConnectionManager = new ThreadSafeClientConnManager(parameters, schemeRegistry);
         mClient = new DefaultHttpClient(clientConnectionManager, parameters);
 
-        mConsumer = new CommonsHttpOAuthConsumer(connectionData.consumerKey,
-                connectionData.consumerSecret);
+        mConsumer = new CommonsHttpOAuthConsumer(connectionData.clientKeys.getConsumerKey(),
+                connectionData.clientKeys.getConsumerSecret());
 
         mProvider = new CommonsHttpOAuthProvider(getApiUrl(ApiRoutineEnum.OAUTH_REQUEST_TOKEN),
                 getApiUrl(ApiRoutineEnum.OAUTH_ACCESS_TOKEN), getApiUrl(ApiRoutineEnum.OAUTH_AUTHORIZE));
@@ -113,7 +113,7 @@ class HttpConnectionOauth extends HttpConnection implements OAuthConsumerAndProv
     @Override
     public boolean getCredentialsPresent(AccountDataReader dr) {
         boolean yes = false;
-        if (dr.dataContains(USER_TOKEN) && dr.dataContains(USER_SECRET)) {
+        if (connectionData.clientKeys.areKeysPresent() && dr.dataContains(USER_TOKEN) && dr.dataContains(USER_SECRET)) {
             mToken = dr.getDataString(USER_TOKEN, null);
             mSecret = dr.getDataString(USER_SECRET, null);
             if (!(TextUtils.isEmpty(mToken) || TextUtils.isEmpty(mSecret))) {
@@ -218,7 +218,9 @@ class HttpConnectionOauth extends HttpConnection implements OAuthConsumerAndProv
         String response = null;
         boolean ok = false;
         try {
-            getConsumer().sign(get);
+            if (connectionData.clientKeys.areKeysPresent()) {
+                getConsumer().sign(get);
+            }
             response = mClient.execute(get, new BasicResponseHandler());
             jso = new JSONTokener(response);
             ok = true;
@@ -242,8 +244,10 @@ class HttpConnectionOauth extends HttpConnection implements OAuthConsumerAndProv
             // Maybe we'll need this:
             // post.setParams(...);
 
-            // sign the request to authenticate
-            getConsumer().sign(post);
+            if (connectionData.clientKeys.areKeysPresent()) {
+                // sign the request to authenticate
+                getConsumer().sign(post);
+            }
             response = mClient.execute(post, new BasicResponseHandler());
             jso = new JSONObject(response);
             ok = true;

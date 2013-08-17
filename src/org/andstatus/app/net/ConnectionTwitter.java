@@ -21,8 +21,7 @@ import java.util.List;
  * @author yvolk
  */
 public abstract class ConnectionTwitter extends Connection {
-
-    private static final String TAG = Connection.class.getSimpleName();
+    private static final String TAG = ConnectionTwitter.class.getSimpleName();
 
     protected static Connection fromConnectionDataProtected(OriginConnectionData connectionData) {
         Connection connection;
