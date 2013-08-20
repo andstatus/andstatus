@@ -76,6 +76,9 @@ class StateOfAccountChangeProcess {
      * Whether in the current state Account should be selected
      */
     boolean accountShouldBeSelected = false;
+
+    private static final String REQUEST_SECRET = "request_secret";
+    private static final String REQUEST_TOKEN = "request_token";
     
     private StateOfAccountChangeProcess() {}
 
@@ -183,6 +186,23 @@ class StateOfAccountChangeProcess {
         }
         this.restored = restored;
         return restored;
+    }
+
+    public String getRequestToken() {
+        return builder.getAccount().getDataString(REQUEST_TOKEN, null);
+    }
+
+    public String getRequestSecret() {
+        return builder.getAccount().getDataString(REQUEST_SECRET, null);
+    }
+    
+    public void setRequestTokenWithSecret(String token,
+            String secret) {
+        // null means to clear the old values
+        builder.setDataString(REQUEST_TOKEN, token);
+        MyLog.d(TAG, TextUtils.isEmpty(token) ? "Clearing Request Token" : "Saving Request Token: " + token);
+        builder.setDataString(REQUEST_SECRET, secret);
+        MyLog.d(TAG, TextUtils.isEmpty(secret) ? "Clearing Request Secret" : "Saving Request Secret: " + secret);
     }
     
     /**

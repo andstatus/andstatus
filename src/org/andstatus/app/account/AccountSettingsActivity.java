@@ -51,7 +51,7 @@ import oauth.signpost.exception.OAuthNotAuthorizedException;
 import org.andstatus.app.MyPreferenceActivity;
 import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount.CredentialsVerified;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionAuthenticationException;
@@ -74,9 +74,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
     private static final String TAG = AccountSettingsActivity.class.getSimpleName();
 
-    public static final String REQUEST_TOKEN = "request_token";
-    public static final String REQUEST_SECRET = "request_secret";
-    
     /** 
      * The URI is consistent with "scheme" and "host" in AndroidManifest
      * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"
@@ -327,7 +324,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      */
     private void verifyCredentials(boolean reVerify) {
         MyAccount ma = state.getAccount();
-        if (reVerify || ma.getCredentialsVerified() == CredentialsVerified.NEVER) {
+        if (reVerify || ma.getCredentialsVerified() == CredentialsVerificationStatus.NEVER) {
             if (ma.getCredentialsPresent()) {
                 // Credentials are present, so we may verify them
                 // This is needed even for OAuth - to know Twitter Username
@@ -374,7 +371,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (AccountSettingsActivity.this.somethingIsBeingProcessed) {
+        if (somethingIsBeingProcessed) {
             return;
         }
         if (onSharedPreferenceChanged_busy || !MyPreferences.isInitialized()) {
@@ -509,11 +506,469 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         }
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     };
-   
+    
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            // Explicitly save MyAccount only on "Back key" 
+            state.builder.save();
+            closeAndGoBack();
+        }
+        if (mIsFinishing) {
+            return true;    
+        } else {
+            return super.onKeyDown(keyCode, event);
+        }
+    }
+
+    /** 
+     * Mark the action completed, close this activity and go back to the proper screen.
+     * Return result to the caller if necessary.
+     * See also {@link com.android.email.activity.setup.AccountSetupBasics.finish}
+     * 
+     * @return
+     */
+    private boolean closeAndGoBack() {
+        boolean doFinish = false;
+        String message = "";
+        state.actionCompleted = true;
+        if (state.authenticatiorResponse != null) {
+            // We should return result back to AccountManager
+            if (state.actionSucceeded) {
+                if (state.builder.isPersistent()) {
+                    doFinish = true;
+                    // Pass the new/edited account back to the account manager
+                    Bundle result = new Bundle();
+                    result.putString(AccountManager.KEY_ACCOUNT_NAME, state.getAccount().getAccountName());
+                    result.putString(AccountManager.KEY_ACCOUNT_TYPE,
+                            AuthenticatorService.ANDROID_ACCOUNT_TYPE);
+                    state.authenticatiorResponse.onResult(result);
+                    message += "authenticatiorResponse; account.name=" + state.getAccount().getAccountName() + "; ";
+                }
+            } else {
+                state.authenticatiorResponse.onError(AccountManager.ERROR_CODE_CANCELED, "canceled");
+            }
+        }
+        // Forget old state
+        state.forget();
+        if (overrideBackButton) {
+            doFinish = true;
+        }
+        if (doFinish) {
+            MyLog.v(TAG, "finish: action=" + state.getAccountAction() + "; " + message);
+            mIsFinishing = true;
+            finish();
+        }
+        if (overrideBackButton) {
+            startPreferencesActivity = true;
+        }
+        return mIsFinishing;
+    }
+
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            Log.v(TAG, "onPreferenceChange: " + preference.toString() + " -> " + (newValue == null ? "null" : newValue.toString()));
+        }
+        return true;
+    }
+    
+    /**
+     * Start system activity which allow to manage list of accounts
+     * See <a href="https://groups.google.com/forum/?fromgroups#!topic/android-developers/RfrIb5V_Bpo">per account settings in Jelly Beans</a>. 
+     * For versions prior to Jelly Bean see <a href="http://stackoverflow.com/questions/3010103/android-how-to-create-intent-to-open-the-activity-that-displays-the-accounts">
+     *  Android - How to Create Intent to open the activity that displays the “Accounts & Sync settings” screen</a>
+     */
+    public static void startManageAccountsActivity(android.content.Context context) {
+        Intent intent;
+        if (android.os.Build.VERSION.SDK_INT < 16 ) {  // before Jelly Bean
+            intent = new Intent(android.provider.Settings.ACTION_SYNC_SETTINGS);
+            // This gives some unstable results on v.4.0.x so I got rid of it:
+            // intent.putExtra(android.provider.Settings.EXTRA_AUTHORITIES, new String[] {MyProvider.AUTHORITY});
+        } else {
+            intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
+            // TODO: Figure out some more specific intent...
+        }
+        context.startActivity(intent);
+    }
+    
+    
+    /**
+     * Step 1 of 3 of the OAuth Authentication
+     * Needed in case we don't have the AndStatus Client keys for the Microblogging system
+     */
+    private class OAuthRegisterClientTask extends AsyncTask<Void, Void, JSONObject> {
+        private ProgressDialog dlg;
+
+        @Override
+        protected void onPreExecute() {
+            dlg = ProgressDialog.show(AccountSettingsActivity.this,
+                    getText(R.string.dialog_title_registering_client),
+                    getText(R.string.dialog_summary_registering_client), true, // indeterminate
+                    // duration
+                    false); // not cancel-able
+        }
+
+        @Override
+        protected JSONObject doInBackground(Void... arg0) {
+            JSONObject jso = null;
+
+            boolean requestSucceeded = false;
+            String message = "";
+            String message2 = "";
+
+            MyAccount ma = state.getAccount();
+            Origin origin = Origin.fromOriginId(ma.getOriginId());
+            origin.setOAuth(ma.isOAuth());
+            if (!origin.areKeysPresent()) {
+                origin.registerClient();
+            } 
+            requestSucceeded = origin.areKeysPresent();
+
+            try {
+                if (!requestSucceeded) {
+                    message2 = AccountSettingsActivity.this
+                            .getString(R.string.dialog_title_authentication_failed);
+                    if (message != null && message.length() > 0) {
+                        message2 = message2 + ": " + message;
+                    }
+                    MyLog.d(TAG, message2);
+                }
+
+                jso = new JSONObject();
+                jso.put("succeeded", requestSucceeded);
+                jso.put("message", message2);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return jso;
+        }
+
+        // This is in the UI thread, so we can mess with the UI
+        @Override
+        protected void onPostExecute(JSONObject jso) {
+            try {
+                dlg.dismiss();
+            } catch (Exception e) { 
+                // Ignore this error  
+            }
+            if (jso != null) {
+                try {
+                    boolean succeeded = jso.getBoolean("succeeded");
+                    String message = jso.getString("message");
+
+                    if (succeeded) {
+                        String accountName = state.getAccount().getAccountName();
+                        MyAccount.initialize(MyPreferences.getContext());
+                        state.builder = MyAccount.Builder.newOrExistingFromAccountName(accountName);
+                        state.builder.setOAuth(true);
+                        showUserPreferences();
+                        new OAuthAcquireRequestTokenTask().execute();
+                        // and return back to default screen
+                        overrideBackButton = true;
+                    } else {
+                        Toast.makeText(AccountSettingsActivity.this, message, Toast.LENGTH_LONG).show();
+
+                        state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
+                        showUserPreferences();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
+    
+    /**
+     * Task 2 of 3 required for OAuth Authentication.
+     * See http://www.snipe.net/2009/07/writing-your-first-twitter-application-with-oauth/
+     * for good OAuth Authentication flow explanation.
+     *  
+     * During this task:
+     * 1. AndStatus ("Consumer") Requests "Request Token" from Twitter ("Service provider"), 
+     * 2. Waits for that Request Token
+     * 3. Consumer directs User to the Service Provider: opens Twitter site in Internet Browser window
+     *    in order to Obtain User Authorization.
+     * 4. This task ends.
+     * 
+     * What will occur later:
+     * 5. After User Authorized AndStatus in the Internet Browser,
+     *    Twitter site will redirect User back to
+     *    AndStatus and then the second OAuth task will start.
+     *   
+     * @author yvolk. This code is based on "BLOA" example,
+     *         http://github.com/brione/Brion-Learns-OAuth yvolk: I had to move
+     *         this code from OAuthActivity here in order to be able to show
+     *         ProgressDialog and to get rid of any "Black blank screens"
+     */
+    private class OAuthAcquireRequestTokenTask extends AsyncTask<Void, Void, JSONObject> {
+        private ProgressDialog dlg;
+
+        @Override
+        protected void onPreExecute() {
+            dlg = ProgressDialog.show(AccountSettingsActivity.this,
+                    getText(R.string.dialog_title_acquiring_a_request_token),
+                    getText(R.string.dialog_summary_acquiring_a_request_token), true, // indeterminate
+                    // duration
+                    false); // not cancel-able
+        }
+
+        @Override
+        protected JSONObject doInBackground(Void... arg0) {
+            JSONObject jso = null;
+
+            boolean requestSucceeded = false;
+            String message = "";
+            String message2 = "";
+            try {
+                MyAccount ma = state.getAccount();
+                OAuthConsumerAndProvider oa = ma.getOAuthConsumerAndProvider();
+
+                // This is really important. If you were able to register your
+                // real callback Uri with Twitter, and not some fake Uri
+                // like I registered when I wrote this example, you need to send
+                // null as the callback Uri in this function call. Then
+                // Twitter will correctly process your callback redirection
+                String authUrl = oa.getProvider().retrieveRequestToken(oa.getConsumer(),
+                        CALLBACK_URI.toString());
+                state.setRequestTokenWithSecret(oa.getConsumer().getToken(), oa.getConsumer().getTokenSecret());
+
+                // This is needed in order to complete the process after redirect
+                // from the Browser to the same activity.
+                state.actionCompleted = false;
+                
+                // Start Web view (looking just like Web Browser)
+                Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
+                i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
+                AccountSettingsActivity.this.startActivity(i);
+
+                requestSucceeded = true;
+            } catch (OAuthMessageSignerException e) {
+                message = e.getMessage();
+                e.printStackTrace();
+            } catch (OAuthNotAuthorizedException e) {
+                message = e.getMessage();
+                e.printStackTrace();
+            } catch (OAuthExpectationFailedException e) {
+                message = e.getMessage();
+                e.printStackTrace();
+            } catch (OAuthCommunicationException e) {
+                message = e.getMessage();
+                e.printStackTrace();
+            }
+
+            try {
+                if (!requestSucceeded) {
+                    message2 = AccountSettingsActivity.this
+                            .getString(R.string.dialog_title_authentication_failed);
+                    if (message != null && message.length() > 0) {
+                        message2 = message2 + ": " + message;
+                    }
+                    MyLog.d(TAG, message2);
+                }
+
+                jso = new JSONObject();
+                jso.put("succeeded", requestSucceeded);
+                jso.put("message", message2);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return jso;
+        }
+
+        // This is in the UI thread, so we can mess with the UI
+        @Override
+        protected void onPostExecute(JSONObject jso) {
+            try {
+                dlg.dismiss();
+            } catch (Exception e1) { 
+                // Ignore this error  
+            }
+            if (jso != null) {
+                try {
+                    boolean succeeded = jso.getBoolean("succeeded");
+                    String message = jso.getString("message");
+
+                    if (succeeded) {
+                        // Finish this activity in order to start properly 
+                        // after redirection from Browser
+                        // Because of initializations in onCreate...
+                        AccountSettingsActivity.this.finish();
+                    } else {
+                        Toast.makeText(AccountSettingsActivity.this, message, Toast.LENGTH_LONG).show();
+
+                        state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
+                        showUserPreferences();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
+    /**
+     * Task 3 of 3 required for OAuth Authentication.
+     *  
+     * During this task:
+     * 1. AndStatus ("Consumer") exchanges "Request Token", 
+     *    obtained earlier from Twitter ("Service provider"),
+     *    for "Access Token". 
+     * 2. Stores the Access token for all future interactions with Twitter.
+     * 
+     * @author yvolk. This code is based on "BLOA" example,
+     *         http://github.com/brione/Brion-Learns-OAuth yvolk: I had to move
+     *         this code from OAuthActivity here in order to be able to show
+     *         ProgressDialog and to get rid of any "Black blank screens"
+     */
+    private class OAuthAcquireAccessTokenTask extends AsyncTask<Uri, Void, JSONObject> {
+        private ProgressDialog dlg;
+
+        @Override
+        protected void onPreExecute() {
+            dlg = ProgressDialog.show(AccountSettingsActivity.this,
+                    getText(R.string.dialog_title_acquiring_an_access_token),
+                    getText(R.string.dialog_summary_acquiring_an_access_token), true, // indeterminate
+                    // duration
+                    false); // not cancelable
+        }
+
+        @Override
+        protected JSONObject doInBackground(Uri... uris) {
+            JSONObject jso = null;
+
+            String message = "";
+            
+            boolean authenticated = false;
+            // We don't need to worry about any saved states: we can reconstruct
+            // the state
+            OAuthConsumerAndProvider oa = state.getAccount().getOAuthConsumerAndProvider();
+
+            if (oa == null) {
+                message = "Connection is not OAuth";
+                Log.e(TAG, message);
+            }
+            else {
+                Uri uri = uris[0];
+                if (uri != null && CALLBACK_URI.getHost().equals(uri.getHost())) {
+                    String token = state.getRequestToken();
+                    String secret = state.getRequestSecret();
+
+                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);;
+                    try {
+                        // Clear the request stuff, we've used it already
+                        state.setRequestTokenWithSecret(null, null);
+
+                        if (!(token == null || secret == null)) {
+                            oa.getConsumer().setTokenWithSecret(token, secret);
+                        }
+                        String otoken = uri.getQueryParameter(OAuth.OAUTH_TOKEN);
+                        String verifier = uri.getQueryParameter(OAuth.OAUTH_VERIFIER);
+
+                        /*
+                         * yvolk 2010-07-08: It appeared that this may be not true:
+                         * Assert.assertEquals(otoken, mConsumer.getToken()); (e.g.
+                         * if User denied access during OAuth...) hence this is not
+                         * Assert :-)
+                         */
+                        if (otoken != null || oa.getConsumer().getToken() != null) {
+                            // We send out and save the request token, but the
+                            // secret is not the same as the verifier
+                            // Apparently, the verifier is decoded to get the
+                            // secret, which is then compared - crafty
+                            // This is a sanity check which should never fail -
+                            // hence the assertion
+                            // Assert.assertEquals(otoken,
+                            // mConsumer.getToken());
+
+                            // This is the moment of truth - we could throw here
+                            oa.getProvider().retrieveAccessToken(oa.getConsumer(), verifier);
+                            // Now we can retrieve the goodies
+                            token = oa.getConsumer().getToken();
+                            secret = oa.getConsumer().getTokenSecret();
+                            authenticated = true;
+                        }
+                    } catch (OAuthMessageSignerException e) {
+                        message = e.getMessage();
+                        e.printStackTrace();
+                    } catch (OAuthNotAuthorizedException e) {
+                        message = e.getMessage();
+                        e.printStackTrace();
+                    } catch (OAuthExpectationFailedException e) {
+                        message = e.getMessage();
+                        e.printStackTrace();
+                    } catch (OAuthCommunicationException e) {
+                        message = e.getMessage();
+                        e.printStackTrace();
+                    } finally {
+                        if (authenticated) {
+                            state.builder.setUserTokenWithSecret(token, secret);
+                        }
+                    }
+                }
+            }
+
+            try {
+                jso = new JSONObject();
+                jso.put("succeeded", authenticated);
+                jso.put("message", message);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return jso;
+        }
+
+        // This is in the UI thread, so we can mess with the UI
+        @Override
+        protected void onPostExecute(JSONObject jso) {
+            try {
+                dlg.dismiss();
+            } catch (Exception e1) { 
+                // Ignore this error  
+            }
+            if (jso != null) {
+                try {
+                    boolean succeeded = jso.getBoolean("succeeded");
+                    String message = jso.getString("message");
+
+                    MyLog.d(TAG, this.getClass().getName() + " ended, "
+                            + (succeeded ? "authenticated" : "authentication failed"));
+                    
+                    if (succeeded) {
+                        // Credentials are present, so we may verify them
+                        // This is needed even for OAuth - to know Twitter Username
+                        new VerifyCredentialsTask().execute();
+
+                    } else {
+                        String message2 = AccountSettingsActivity.this
+                        .getString(R.string.dialog_title_authentication_failed);
+                        if (message != null && message.length() > 0) {
+                            message2 = message2 + ": " + message;
+                            Log.d(TAG, message);
+                        }
+                        Toast.makeText(AccountSettingsActivity.this, message2, Toast.LENGTH_LONG).show();
+
+                        state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
+                        showUserPreferences();
+                    }
+                    
+                    // Now we can return to the AccountSettingsActivity
+                    // We need new Intent in order to forget that URI from OAuth Service Provider
+                    //Intent intent = new Intent(AccountSettingsActivity.this, AccountSettingsActivity.class);
+                    //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    //startActivity(intent);
+                    
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     /**
      * Assuming we already have credentials to verify, verify them
      * @author yvolk
-     *
      */
     private class VerifyCredentialsTask extends AsyncTask<Void, Void, JSONObject> {
         private ProgressDialog dlg;
@@ -528,10 +983,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     false); // not cancel-able
 
             synchronized (AccountSettingsActivity.this) {
-                if (AccountSettingsActivity.this.somethingIsBeingProcessed) {
+                if (somethingIsBeingProcessed) {
                     skip = true;
                 } else {
-                    AccountSettingsActivity.this.somethingIsBeingProcessed = true;
+                    somethingIsBeingProcessed = true;
                 }
             }
         }
@@ -641,477 +1096,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                         // closeAndGoBack();
                     }
                 }
-
-                AccountSettingsActivity.this.somethingIsBeingProcessed = false;
+                somethingIsBeingProcessed = false;
             }
             showUserPreferences();
         }
-    }
-    
-    /**
-     * Task 1 of 3 required for OAuth Authentication.
-     */
-    private class OAuthRegisterClientTask extends AsyncTask<Void, Void, JSONObject> {
-        private ProgressDialog dlg;
-
-        @Override
-        protected void onPreExecute() {
-            dlg = ProgressDialog.show(AccountSettingsActivity.this,
-                    getText(R.string.dialog_title_registering_client),
-                    getText(R.string.dialog_summary_registering_client), true, // indeterminate
-                    // duration
-                    false); // not cancel-able
-        }
-
-        @Override
-        protected JSONObject doInBackground(Void... arg0) {
-            JSONObject jso = null;
-
-            boolean requestSucceeded = false;
-            String message = "";
-            String message2 = "";
-
-            MyAccount ma = state.getAccount();
-            Origin origin = Origin.fromOriginId(ma.getOriginId());
-            origin.setOAuth(ma.isOAuth());
-            if (!origin.areKeysPresent()) {
-                origin.registerClient();
-            } 
-            requestSucceeded = origin.areKeysPresent();
-
-            try {
-                if (!requestSucceeded) {
-                    message2 = AccountSettingsActivity.this
-                            .getString(R.string.dialog_title_authentication_failed);
-                    if (message != null && message.length() > 0) {
-                        message2 = message2 + ": " + message;
-                    }
-                    MyLog.d(TAG, message2);
-                }
-
-                jso = new JSONObject();
-                jso.put("succeeded", requestSucceeded);
-                jso.put("message", message2);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return jso;
-        }
-
-        // This is in the UI thread, so we can mess with the UI
-        @Override
-        protected void onPostExecute(JSONObject jso) {
-            try {
-                dlg.dismiss();
-            } catch (Exception e) { 
-                // Ignore this error  
-            }
-            if (jso != null) {
-                try {
-                    boolean succeeded = jso.getBoolean("succeeded");
-                    String message = jso.getString("message");
-
-                    if (succeeded) {
-                        String accountName = state.getAccount().getAccountName();
-                        MyAccount.initialize(MyPreferences.getContext());
-                        state.builder = MyAccount.Builder.newOrExistingFromAccountName(accountName);
-                        state.builder.setOAuth(true);
-                        showUserPreferences();
-                        new OAuthAcquireRequestTokenTask().execute();
-                        // and return back to default screen
-                        overrideBackButton = true;
-                    } else {
-                        Toast.makeText(AccountSettingsActivity.this, message, Toast.LENGTH_LONG).show();
-
-                        state.builder.setCredentialsVerified(CredentialsVerified.FAILED);
-                        showUserPreferences();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-    
-    
-    /**
-     * Task 2 of 3 required for OAuth Authentication.
-     * See http://www.snipe.net/2009/07/writing-your-first-twitter-application-with-oauth/
-     * for good OAuth Authentication flow explanation.
-     *  
-     * During this task:
-     * 1. AndStatus ("Consumer") Requests "Request Token" from Twitter ("Service provider"), 
-     * 2. Waits for that Request Token
-     * 3. Consumer directs User to the Service Provider: opens Twitter site in Internet Browser window
-     *    in order to Obtain User Authorization.
-     * 4. This task ends.
-     * 
-     * What will occur later:
-     * 5. After User Authorized AndStatus in the Internet Browser,
-     *    Twitter site will redirect User back to
-     *    AndStatus and then the second OAuth task will start.
-     *   
-     * @author yvolk. This code is based on "BLOA" example,
-     *         http://github.com/brione/Brion-Learns-OAuth yvolk: I had to move
-     *         this code from OAuthActivity here in order to be able to show
-     *         ProgressDialog and to get rid of any "Black blank screens"
-     */
-    private class OAuthAcquireRequestTokenTask extends AsyncTask<Void, Void, JSONObject> {
-        private ProgressDialog dlg;
-
-        @Override
-        protected void onPreExecute() {
-            dlg = ProgressDialog.show(AccountSettingsActivity.this,
-                    getText(R.string.dialog_title_acquiring_a_request_token),
-                    getText(R.string.dialog_summary_acquiring_a_request_token), true, // indeterminate
-                    // duration
-                    false); // not cancel-able
-        }
-
-        @Override
-        protected JSONObject doInBackground(Void... arg0) {
-            JSONObject jso = null;
-
-            boolean requestSucceeded = false;
-            String message = "";
-            String message2 = "";
-            try {
-                MyAccount ma = state.getAccount();
-                OAuthConsumerAndProvider oa = ma.getOAuthConsumerAndProvider();
-
-                // This is really important. If you were able to register your
-                // real callback Uri with Twitter, and not some fake Uri
-                // like I registered when I wrote this example, you need to send
-                // null as the callback Uri in this function call. Then
-                // Twitter will correctly process your callback redirection
-                String authUrl = oa.getProvider().retrieveRequestToken(oa.getConsumer(),
-                        CALLBACK_URI.toString());
-                saveRequestInformation(state.builder, oa.getConsumer().getToken(), oa.getConsumer().getTokenSecret());
-
-                // This is needed in order to complete the process after redirect
-                // from the Browser to the same activity.
-                state.actionCompleted = false;
-                
-                // Start Web view (looking just like Web Browser)
-                Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
-                i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
-                AccountSettingsActivity.this.startActivity(i);
-
-                requestSucceeded = true;
-            } catch (OAuthMessageSignerException e) {
-                message = e.getMessage();
-                e.printStackTrace();
-            } catch (OAuthNotAuthorizedException e) {
-                message = e.getMessage();
-                e.printStackTrace();
-            } catch (OAuthExpectationFailedException e) {
-                message = e.getMessage();
-                e.printStackTrace();
-            } catch (OAuthCommunicationException e) {
-                message = e.getMessage();
-                e.printStackTrace();
-            }
-
-            try {
-                if (!requestSucceeded) {
-                    message2 = AccountSettingsActivity.this
-                            .getString(R.string.dialog_title_authentication_failed);
-                    if (message != null && message.length() > 0) {
-                        message2 = message2 + ": " + message;
-                    }
-                    MyLog.d(TAG, message2);
-                }
-
-                jso = new JSONObject();
-                jso.put("succeeded", requestSucceeded);
-                jso.put("message", message2);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return jso;
-        }
-
-        // This is in the UI thread, so we can mess with the UI
-        @Override
-        protected void onPostExecute(JSONObject jso) {
-            try {
-                dlg.dismiss();
-            } catch (Exception e1) { 
-                // Ignore this error  
-            }
-            if (jso != null) {
-                try {
-                    boolean succeeded = jso.getBoolean("succeeded");
-                    String message = jso.getString("message");
-
-                    if (succeeded) {
-                        // Finish this activity in order to start properly 
-                        // after redirection from Browser
-                        // Because of initializations in onCreate...
-                        AccountSettingsActivity.this.finish();
-                    } else {
-                        Toast.makeText(AccountSettingsActivity.this, message, Toast.LENGTH_LONG).show();
-
-                        state.builder.setCredentialsVerified(CredentialsVerified.FAILED);
-                        showUserPreferences();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-    
-    /**
-     * Task 3 of 3 required for OAuth Authentication.
-     *  
-     * During this task:
-     * 1. AndStatus ("Consumer") exchanges "Request Token", 
-     *    obtained earlier from Twitter ("Service provider"),
-     *    for "Access Token". 
-     * 2. Stores the Access token for all future interactions with Twitter.
-     * 
-     * @author yvolk. This code is based on "BLOA" example,
-     *         http://github.com/brione/Brion-Learns-OAuth yvolk: I had to move
-     *         this code from OAuthActivity here in order to be able to show
-     *         ProgressDialog and to get rid of any "Black blank screens"
-     */
-    private class OAuthAcquireAccessTokenTask extends AsyncTask<Uri, Void, JSONObject> {
-        private ProgressDialog dlg;
-
-        @Override
-        protected void onPreExecute() {
-            dlg = ProgressDialog.show(AccountSettingsActivity.this,
-                    getText(R.string.dialog_title_acquiring_an_access_token),
-                    getText(R.string.dialog_summary_acquiring_an_access_token), true, // indeterminate
-                    // duration
-                    false); // not cancelable
-        }
-
-        @Override
-        protected JSONObject doInBackground(Uri... uris) {
-            JSONObject jso = null;
-
-            String message = "";
-            
-            boolean authenticated = false;
-            MyAccount ma = state.getAccount();
-            // We don't need to worry about any saved states: we can reconstruct
-            // the state
-            OAuthConsumerAndProvider oa = ma.getOAuthConsumerAndProvider();
-
-            if (oa == null) {
-                message = "Connection is not OAuth";
-                Log.e(TAG, message);
-            }
-            else {
-                Uri uri = uris[0];
-                if (uri != null && CALLBACK_URI.getScheme().equals(uri.getScheme())) {
-                    String token = ma.getDataString(REQUEST_TOKEN, null);
-                    String secret = ma.getDataString(REQUEST_SECRET, null);
-
-                    state.builder.clearAuthInformation();
-                    try {
-                        // Clear the request stuff, we've used it already
-                        saveRequestInformation(state.builder, null, null);
-
-                        if (!(token == null || secret == null)) {
-                            oa.getConsumer().setTokenWithSecret(token, secret);
-                        }
-                        String otoken = uri.getQueryParameter(OAuth.OAUTH_TOKEN);
-                        String verifier = uri.getQueryParameter(OAuth.OAUTH_VERIFIER);
-
-                        /*
-                         * yvolk 2010-07-08: It appeared that this may be not true:
-                         * Assert.assertEquals(otoken, mConsumer.getToken()); (e.g.
-                         * if User denied access during OAuth...) hence this is not
-                         * Assert :-)
-                         */
-                        if (otoken != null || oa.getConsumer().getToken() != null) {
-                            // We send out and save the request token, but the
-                            // secret is not the same as the verifier
-                            // Apparently, the verifier is decoded to get the
-                            // secret, which is then compared - crafty
-                            // This is a sanity check which should never fail -
-                            // hence the assertion
-                            // Assert.assertEquals(otoken,
-                            // mConsumer.getToken());
-
-                            // This is the moment of truth - we could throw here
-                            oa.getProvider().retrieveAccessToken(oa.getConsumer(), verifier);
-                            // Now we can retrieve the goodies
-                            token = oa.getConsumer().getToken();
-                            secret = oa.getConsumer().getTokenSecret();
-                            authenticated = true;
-                        }
-                    } catch (OAuthMessageSignerException e) {
-                        message = e.getMessage();
-                        e.printStackTrace();
-                    } catch (OAuthNotAuthorizedException e) {
-                        message = e.getMessage();
-                        e.printStackTrace();
-                    } catch (OAuthExpectationFailedException e) {
-                        message = e.getMessage();
-                        e.printStackTrace();
-                    } catch (OAuthCommunicationException e) {
-                        message = e.getMessage();
-                        e.printStackTrace();
-                    } finally {
-                        if (authenticated) {
-                            state.builder.setUserTokenWithSecret(token, secret);
-                        }
-                    }
-                }
-            }
-
-            try {
-                jso = new JSONObject();
-                jso.put("succeeded", authenticated);
-                jso.put("message", message);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return jso;
-        }
-
-        // This is in the UI thread, so we can mess with the UI
-        @Override
-        protected void onPostExecute(JSONObject jso) {
-            try {
-                dlg.dismiss();
-            } catch (Exception e1) { 
-                // Ignore this error  
-            }
-            if (jso != null) {
-                try {
-                    boolean succeeded = jso.getBoolean("succeeded");
-                    String message = jso.getString("message");
-
-                    MyLog.d(TAG, this.getClass().getName() + " ended, "
-                            + (succeeded ? "authenticated" : "authentication failed"));
-                    
-                    if (succeeded) {
-                        // Credentials are present, so we may verify them
-                        // This is needed even for OAuth - to know Twitter Username
-                        new VerifyCredentialsTask().execute();
-
-                    } else {
-                        String message2 = AccountSettingsActivity.this
-                        .getString(R.string.dialog_title_authentication_failed);
-                        if (message != null && message.length() > 0) {
-                            message2 = message2 + ": " + message;
-                            Log.d(TAG, message);
-                        }
-                        Toast.makeText(AccountSettingsActivity.this, message2, Toast.LENGTH_LONG).show();
-
-                        state.builder.setCredentialsVerified(CredentialsVerified.FAILED);
-                        showUserPreferences();
-                    }
-                    
-                    // Now we can return to the AccountSettingsActivity
-                    // We need new Intent in order to forget that URI from OAuth Service Provider
-                    //Intent intent = new Intent(AccountSettingsActivity.this, AccountSettingsActivity.class);
-                    //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    //startActivity(intent);
-                    
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-    
-    public static void saveRequestInformation(MyAccount.Builder mab, String token,
-            String secret) {
-        // null means to clear the old values
-        mab.setDataString(REQUEST_TOKEN, token);
-        MyLog.d(TAG, TextUtils.isEmpty(token) ? "Clearing Request Token" : "Saving Request Token: " + token);
-        mab.setDataString(REQUEST_SECRET, token);
-        MyLog.d(TAG, TextUtils.isEmpty(token) ? "Clearing Request Secret" : "Saving Request Secret: " + secret);
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            // Explicitly save MyAccount only on "Back key" 
-            state.builder.save();
-            closeAndGoBack();
-        }
-        if (mIsFinishing) {
-            return true;    
-        } else {
-            return super.onKeyDown(keyCode, event);
-        }
-    }
-
-    /** 
-     * Mark the action completed, close this activity and go back to the proper screen.
-     * Return result to the caller if necessary.
-     * See also {@link com.android.email.activity.setup.AccountSetupBasics.finish}
-     * 
-     * @return
-     */
-    private boolean closeAndGoBack() {
-        boolean doFinish = false;
-        String message = "";
-        state.actionCompleted = true;
-        if (state.authenticatiorResponse != null) {
-            // We should return result back to AccountManager
-            if (state.actionSucceeded) {
-                if (state.builder.isPersistent()) {
-                    doFinish = true;
-                    // Pass the new/edited account back to the account manager
-                    Bundle result = new Bundle();
-                    result.putString(AccountManager.KEY_ACCOUNT_NAME, state.getAccount().getAccountName());
-                    result.putString(AccountManager.KEY_ACCOUNT_TYPE,
-                            AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-                    state.authenticatiorResponse.onResult(result);
-                    message += "authenticatiorResponse; account.name=" + state.getAccount().getAccountName() + "; ";
-                }
-            } else {
-                state.authenticatiorResponse.onError(AccountManager.ERROR_CODE_CANCELED, "canceled");
-            }
-        }
-        // Forget old state
-        state.forget();
-        if (overrideBackButton) {
-            doFinish = true;
-        }
-        if (doFinish) {
-            MyLog.v(TAG, "finish: action=" + state.getAccountAction() + "; " + message);
-            mIsFinishing = true;
-            finish();
-        }
-        if (overrideBackButton) {
-            startPreferencesActivity = true;
-        }
-        return mIsFinishing;
-    }
-
-    @Override
-    public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onPreferenceChange: " + preference.toString() + " -> " + (newValue == null ? "null" : newValue.toString()));
-        }
-        return true;
-    }
-    
-    /**
-     * Start system activity which allow to manage list of accounts
-     * See <a href="https://groups.google.com/forum/?fromgroups#!topic/android-developers/RfrIb5V_Bpo">per account settings in Jelly Beans</a>. 
-     * For versions prior to Jelly Bean see <a href="http://stackoverflow.com/questions/3010103/android-how-to-create-intent-to-open-the-activity-that-displays-the-accounts">
-     *  Android - How to Create Intent to open the activity that displays the “Accounts & Sync settings” screen</a>
-     */
-    public static void startManageAccountsActivity(android.content.Context context) {
-        Intent intent;
-        if (android.os.Build.VERSION.SDK_INT < 16 ) {  // before Jelly Bean
-            intent = new Intent(android.provider.Settings.ACTION_SYNC_SETTINGS);
-            // This gives some unstable results on v.4.0.x so I got rid of it:
-            // intent.putExtra(android.provider.Settings.EXTRA_AUTHORITIES, new String[] {MyProvider.AUTHORITY});
-        } else {
-            intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
-            // TODO: Figure out some more specific intent...
-        }
-        context.startActivity(intent);
     }
 }

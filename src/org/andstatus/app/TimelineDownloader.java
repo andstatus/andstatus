@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.Set;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerified;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.FollowingUserValues;
 import org.andstatus.app.data.LatestUserMessages;
@@ -101,7 +101,7 @@ public class TimelineDownloader {
      */
     public boolean loadTimeline() throws ConnectionException {
         boolean ok = false;
-        if ((ma.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) && MyPreferences.isDataAvailable()) {
+        if ((ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) && MyPreferences.isDataAvailable()) {
             switch (mTimelineType) {
                 case FOLLOWING_USER:
                     ok = loadFollowingUserTimeline();

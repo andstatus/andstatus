@@ -397,7 +397,7 @@ public abstract class Connection {
     }
 
     public void setUserTokenWithSecret(String token, String secret) {
-        httpConnection.setUserTokenAndSecret(token, secret);
+        httpConnection.setUserTokenWithSecret(token, secret);
     }
 
     public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {

@@ -49,12 +49,12 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
     /**
      * Saved User token
      */
-    private String mToken;
+    private String userToken;
 
     /**
      * Saved User secret
      */
-    private String mSecret;
+    private String userSecret;
 
     private HttpClient mClient;
     
@@ -87,7 +87,7 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
         
         // We look for saved user keys
         if (dr.dataContains(USER_TOKEN) && dr.dataContains(USER_SECRET)) {
-            setUserTokenAndSecret(
+            setUserTokenWithSecret(
                     dr.getDataString(USER_TOKEN, null),
                     dr.getDataString(USER_SECRET, null)
                     );
@@ -113,10 +113,13 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
     @Override
     public boolean getCredentialsPresent(AccountDataReader dr) {
         boolean yes = false;
-        if (connectionData.clientKeys.areKeysPresent() && dr.dataContains(USER_TOKEN) && dr.dataContains(USER_SECRET)) {
-            mToken = dr.getDataString(USER_TOKEN, null);
-            mSecret = dr.getDataString(USER_SECRET, null);
-            if (!(TextUtils.isEmpty(mToken) || TextUtils.isEmpty(mSecret))) {
+        if (connectionData.clientKeys.areKeysPresent()) {
+            if (dr != null && dr.dataContains(USER_TOKEN) && dr.dataContains(USER_SECRET)) {
+                // TODO: Side effect! - refactor
+                userToken = dr.getDataString(USER_TOKEN, null);
+                userSecret = dr.getDataString(USER_SECRET, null);
+            }
+            if (!TextUtils.isEmpty(userToken) && !TextUtils.isEmpty(userSecret)) {
                 yes = true;
             }
         }
@@ -167,14 +170,24 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
      * @param token null means to clear the old values
      * @param secret
      */
-    public void setUserTokenAndSecret(String token, String secret) {
+    public void setUserTokenWithSecret(String token, String secret) {
         synchronized (this) {
-            mToken = token;
-            mSecret = secret;
-            if (!(mToken == null || mSecret == null)) {
-                getConsumer().setTokenWithSecret(mToken, mSecret);
+            userToken = token;
+            userSecret = secret;
+            if (!(userToken == null || userSecret == null)) {
+                getConsumer().setTokenWithSecret(userToken, userSecret);
             }
         }
+    }
+
+    @Override
+    String getUserToken() {
+        return userToken;
+    }
+
+    @Override
+    String getUserSecret() {
+        return userSecret;
     }
 
     /* (non-Javadoc)
@@ -184,24 +197,24 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
     public boolean save(AccountDataWriter dw) {
         boolean changed = super.save(dw);
 
-        if ( !TextUtils.equals(mToken, dw.getDataString(USER_TOKEN, null)) ||
-                !TextUtils.equals(mSecret, dw.getDataString(USER_SECRET, null)) 
+        if ( !TextUtils.equals(userToken, dw.getDataString(USER_TOKEN, null)) ||
+                !TextUtils.equals(userSecret, dw.getDataString(USER_SECRET, null)) 
                 ) {
             changed = true;
 
-            if (TextUtils.isEmpty(mToken)) {
+            if (TextUtils.isEmpty(userToken)) {
                 dw.setDataString(USER_TOKEN, null);
                 MyLog.d(TAG, "Clearing OAuth Token");
             } else {
-                dw.setDataString(USER_TOKEN, mToken);
-                MyLog.d(TAG, "Saving OAuth Token: " + mToken);
+                dw.setDataString(USER_TOKEN, userToken);
+                MyLog.d(TAG, "Saving OAuth Token: " + userToken);
             }
-            if (TextUtils.isEmpty(mSecret)) {
+            if (TextUtils.isEmpty(userSecret)) {
                 dw.setDataString(USER_SECRET, null);
                 MyLog.d(TAG, "Clearing OAuth Secret");
             } else {
-                dw.setDataString(USER_SECRET, mSecret);
-                MyLog.d(TAG, "Saving OAuth Secret: " + mSecret);
+                dw.setDataString(USER_SECRET, userSecret);
+                MyLog.d(TAG, "Saving OAuth Secret: " + userSecret);
             }
         }
         return changed;
@@ -209,7 +222,7 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
 
     @Override
     public void clearAuthInformation() {
-        setUserTokenAndSecret(null, null);
+        setUserTokenWithSecret(null, null);
     }
 
     @Override

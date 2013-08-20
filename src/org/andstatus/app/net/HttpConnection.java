@@ -156,8 +156,16 @@ abstract class HttpConnection {
      */
     public abstract boolean getCredentialsPresent(AccountDataReader dr);
 
-    public void setUserTokenAndSecret(String token, String secret) {
+    public void setUserTokenWithSecret(String token, String secret) {
         throw(new IllegalArgumentException("setUserTokenWithSecret is for OAuth only!"));
+    }
+
+    String getUserToken() {
+        return "";
+    }
+
+    String getUserSecret() {
+        return "";
     }  
     
 }

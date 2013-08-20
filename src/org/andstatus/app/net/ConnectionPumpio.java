@@ -3,6 +3,9 @@ package org.andstatus.app.net;
 import android.text.TextUtils;
 import android.util.Log;
 
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.basic.DefaultOAuthConsumer;
+
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
@@ -13,6 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -138,8 +142,12 @@ class ConnectionPumpio extends Connection {
             throw new RuntimeException(ex);
         }
     }
+
+    static private String readAll(InputStream s) throws IOException {
+        return readAll(new InputStreamReader(s, "UTF-8"));
+    }
     
-    static public String readAll(Reader r) throws IOException {
+    static private String readAll(Reader r) throws IOException {
         int nRead;
         char[] buf = new char[16 * 1024];
         StringBuilder bld = new StringBuilder();
@@ -157,6 +165,9 @@ class ConnectionPumpio extends Connection {
     protected String getApiPath1(ApiRoutineEnum routine) {
         String url;
         switch(routine) {
+            case ACCOUNT_VERIFY_CREDENTIALS:
+                url = "whoami";
+                break;
             case REGISTER_CLIENT:
                 url = "client/register";
                 break;
@@ -177,10 +188,57 @@ class ConnectionPumpio extends Connection {
 
     @Override
     public JSONObject verifyCredentials() throws ConnectionException {
-        // TODO Auto-generated method stub
-        return null;
+        //return httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
+        return verifyCredentialsAttempt2();
     }
 
+    /**
+     * From Impeller code...
+     * @return
+     */
+    private JSONObject verifyCredentialsAttempt2() {
+        JSONObject activity;
+        try {
+            OAuthConsumer consumer = new DefaultOAuthConsumer(
+                    httpConnection.connectionData.clientKeys.getConsumerKey(),
+                    httpConnection.connectionData.clientKeys.getConsumerSecret());
+            if (httpConnection.getCredentialsPresent(null)) {
+                consumer.setTokenWithSecret(httpConnection.getUserToken(), httpConnection.getUserSecret());
+            }
+            
+            URL url = new URL(httpConnection.pathToUrl(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)));
+            HttpURLConnection conn;
+            loop: while(true) {
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setInstanceFollowRedirects(false);
+                consumer.sign(conn);
+                conn.connect();
+                switch(conn.getResponseCode()) {
+                    case 200:
+                        break loop;  
+                        
+                    case 301:
+                    case 302:
+                    case 303:
+                    case 307:
+                        url = new URL(conn.getHeaderField("Location"));
+                        MyLog.v(TAG, "Following redirect to " + url);
+                        continue;
+                        
+                    default:
+                        String err = readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+                        throw new Exception(err);
+                }
+            }
+            
+            activity = new JSONObject(readAll(conn.getInputStream()));
+        } catch(Exception e) {
+            Log.e(TAG, "Error getting whoami", e);
+            return null;
+        }
+        return activity;
+    }
+    
     @Override
     public JSONObject destroyFavorite(String statusId) throws ConnectionException {
         // TODO Auto-generated method stub

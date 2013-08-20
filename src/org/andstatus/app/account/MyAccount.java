@@ -175,7 +175,7 @@ public class MyAccount implements AccountDataReader {
             myAccount.oAccountName = AccountName.fromAccountName(myAccount.androidAccount.name);
             
             // Load stored data for the User
-            myAccount.credentialsVerified = CredentialsVerified.load(myAccount);
+            myAccount.credentialsVerified = CredentialsVerificationStatus.load(myAccount);
             myAccount.isOAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuthDefault());
             myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
             myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0);
@@ -224,16 +224,6 @@ public class MyAccount implements AccountDataReader {
         public boolean isPersistent() {
             return myAccount.isPersistent();
         }
-        
-        /**
-         * Clear Authentication information
-         * 
-         * @param context
-         */
-        public void clearAuthInformation() {
-            setCredentialsVerified(CredentialsVerified.NEVER);
-            myAccount.connection.clearAuthInformation();
-        }
 
         /**
          * Delete all User's data
@@ -274,7 +264,7 @@ public class MyAccount implements AccountDataReader {
             myAccount.oAccountName = AccountName.fromOriginAndUserNames(originName, username);
             
             // Load stored data for the MyAccount
-            myAccount.credentialsVerified = CredentialsVerified.load(myAccount);
+            myAccount.credentialsVerified = CredentialsVerificationStatus.load(myAccount);
             myAccount.isOAuth = myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuthDefault());
             myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
             myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0L);
@@ -350,7 +340,7 @@ public class MyAccount implements AccountDataReader {
             boolean changed = false;
             
             try {
-                if (!isPersistent() && (myAccount.getCredentialsVerified() == CredentialsVerified.SUCCEEDED)) {
+                if (!isPersistent() && (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED)) {
                     try {
                         changed = true;
                         // Now add this account to the Account Manager
@@ -390,7 +380,7 @@ public class MyAccount implements AccountDataReader {
                     setDataString(KEY_ORIGIN_NAME, myAccount.oAccountName.getOriginName());
                     changed = true;
                 }
-                if (myAccount.credentialsVerified != CredentialsVerified.load(myAccount)) {
+                if (myAccount.credentialsVerified != CredentialsVerificationStatus.load(myAccount)) {
                     myAccount.credentialsVerified.put(this);
                     changed = true;
                 }
@@ -428,10 +418,11 @@ public class MyAccount implements AccountDataReader {
         
 
         /**
+         * TODO: Make compatible with Pump.io 
          * Verify the user's credentials. Returns true if authentication was
          * successful
          * 
-         * @see CredentialsVerified
+         * @see CredentialsVerificationStatus
          * @param reVerify Verify even if it was verified already
          * @return boolean
          * @throws ConnectionException
@@ -445,7 +436,7 @@ public class MyAccount implements AccountDataReader {
                 SocketTimeoutException, ConnectionCredentialsOfOtherUserException {
             boolean ok = false;
             if (!reVerify) {
-                if (myAccount.getCredentialsVerified() == CredentialsVerified.SUCCEEDED) {
+                if (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                     ok = true;
                 }
             }
@@ -455,7 +446,7 @@ public class MyAccount implements AccountDataReader {
                     jso = myAccount.getConnection().verifyCredentials();
                     ok = (jso != null);
                 } finally {
-                    String newName = null;
+                    String newName = "";
                     boolean credentialsOfOtherUser = false;
                     boolean errorSettingUsername = false;
                     if (ok) {
@@ -466,6 +457,7 @@ public class MyAccount implements AccountDataReader {
                     if (ok) {
                         newName = Connection.getScreenName(jso);
                         ok = UserNameUtil.isUsernameValid(newName);
+                        errorSettingUsername = !ok;
                     }
 
                     if (ok) {
@@ -478,7 +470,7 @@ public class MyAccount implements AccountDataReader {
                         }
                     }
                     if (ok) {
-                        setCredentialsVerified(CredentialsVerified.SUCCEEDED);
+                        setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
                     }
                     if (ok && !isPersistent()) {
                         // Now we know the name (or proper case of the name) of this User!
@@ -488,8 +480,7 @@ public class MyAccount implements AccountDataReader {
                         }
                     }
                     if (!ok) {
-                        clearAuthInformation();
-                        setCredentialsVerified(CredentialsVerified.FAILED);
+                        setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
                     }
                     save();
 
@@ -512,10 +503,10 @@ public class MyAccount implements AccountDataReader {
             myAccount.getConnection().setUserTokenWithSecret(token, secret);
         }
 
-        public void setCredentialsVerified(CredentialsVerified cv) {
+        public void setCredentialsVerificationStatus(CredentialsVerificationStatus cv) {
             myAccount.credentialsVerified = cv;
-            if (cv == CredentialsVerified.FAILED) {
-               clearAuthInformation(); 
+            if (cv != CredentialsVerificationStatus.SUCCEEDED) {
+                myAccount.connection.clearAuthInformation();
             }
         }
 
@@ -524,7 +515,7 @@ public class MyAccount implements AccountDataReader {
                 isOAuth = myAccount.oAccountName.getOrigin().isOAuthDefault();
             }
             if (myAccount.isOAuth != isOAuth) {
-                setCredentialsVerified(CredentialsVerified.NEVER);
+                setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
                 myAccount.isOAuth = isOAuth;
                 setConnection();
             }
@@ -543,7 +534,7 @@ public class MyAccount implements AccountDataReader {
          */
         public void setPassword(String password) {
             if (password.compareTo(myAccount.getConnection().getPassword()) != 0) {
-                setCredentialsVerified(CredentialsVerified.NEVER);
+                setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
                 myAccount.getConnection().setPassword(password);
             }
         }
@@ -662,7 +653,7 @@ public class MyAccount implements AccountDataReader {
      * Was this user authenticated last time _current_ credentials were verified?
      * CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
      */
-    private CredentialsVerified credentialsVerified = CredentialsVerified.NEVER;
+    private CredentialsVerificationStatus credentialsVerified = CredentialsVerificationStatus.NEVER;
 
     /**
      * Is this user authenticated with OAuth?
@@ -674,7 +665,7 @@ public class MyAccount implements AccountDataReader {
     /**
      *  TODO: Use instance fields instead of ordinals (see [EffectiveJava] Item 31)
      */
-    public enum CredentialsVerified {
+    public enum CredentialsVerificationStatus {
         /** 
          * NEVER - means that User was never successfully authenticated with current credentials.
          *  This is why we reset the state to NEVER every time credentials have been changed.
@@ -689,15 +680,15 @@ public class MyAccount implements AccountDataReader {
          */
         private static final String KEY = "credentials_verified";
 
-        public static CredentialsVerified load(SharedPreferences sp) {
+        public static CredentialsVerificationStatus load(SharedPreferences sp) {
             int ind = sp.getInt(KEY, NEVER.ordinal());
-            CredentialsVerified cv = CredentialsVerified.values()[ind];
+            CredentialsVerificationStatus cv = CredentialsVerificationStatus.values()[ind];
             return cv;
         }
         
-        public static CredentialsVerified load(AccountDataReader dr) {
+        public static CredentialsVerificationStatus load(AccountDataReader dr) {
             int ind = dr.getDataInt(KEY, NEVER.ordinal());
-            CredentialsVerified cv = CredentialsVerified.values()[ind];
+            CredentialsVerificationStatus cv = CredentialsVerificationStatus.values()[ind];
             return cv;
         }
         
@@ -792,7 +783,7 @@ public class MyAccount implements AccountDataReader {
         return getConnection().getCredentialsPresent(this);
     }    
     
-    public CredentialsVerified getCredentialsVerified() {
+    public CredentialsVerificationStatus getCredentialsVerified() {
         return credentialsVerified;
     }
     

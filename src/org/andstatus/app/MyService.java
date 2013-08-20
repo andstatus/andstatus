@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerified;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DataPruner;
@@ -1757,7 +1757,7 @@ public class MyService extends Service {
 
         private boolean setErrorIfCredentialsNotVerified(CommandData commandData, MyAccount myAccount) {
             boolean errorOccured = false;
-            if (myAccount == null || myAccount.getCredentialsVerified() != CredentialsVerified.SUCCEEDED) {
+            if (myAccount == null || myAccount.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
                 errorOccured = true;
                 commandData.commandResult.numAuthExceptions++;
             }
