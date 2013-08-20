@@ -6,6 +6,7 @@ import android.util.Log;
 
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
@@ -13,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -260,8 +262,47 @@ public abstract class ConnectionTwitter extends Connection {
         return postRequest(ApiRoutineEnum.STATUSES_UPDATE, formParams);
     }
 
+    /**
+     * @see <a
+     *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-account%C2%A0verify_credentials">Twitter
+     *      REST API Method: account verify_credentials</a>
+     */
     @Override
-    public JSONObject verifyCredentials() throws ConnectionException {
-        return httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
+    public MbUser verifyCredentials() throws ConnectionException {
+        JSONObject user = httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
+        MbUser mbUser = new MbUser();
+        if (user.has("screen_name")) {
+            mbUser.userName = user.optString("screen_name");
+            if (SharedPreferencesUtil.isEmpty(mbUser.userName)) {
+                mbUser.userName = "";
+            }
+        }
+        if (user.has("id_str")) {
+            mbUser.oid = user.optString("id_str");
+        } else if (user.has("id")) {
+            mbUser.oid = user.optString("id");
+        } 
+        if (SharedPreferencesUtil.isEmpty(mbUser.oid)) {
+            mbUser.oid = "";
+        }
+        mbUser.originId = httpConnection.connectionData.originId;
+        mbUser.realName = user.optString("name");
+        mbUser.avatarUrl = user.optString("profile_image_url");
+        mbUser.description = user.optString("description");
+        mbUser.homepage = user.optString("url");
+        if (user.has("created_at")) {
+            String createdAt = user.optString("created_at");
+            if (createdAt.length() > 0) {
+                mbUser.createdDate = Date.parse(createdAt);
+            }
+        }
+        if (!user.isNull("following")) {
+            try {
+                mbUser.isFollowed = user.getBoolean("following");
+            } catch (JSONException e) {
+                Log.e(TAG, "error; following='" + user.optString("following") +"'. " + e.toString());
+            }
+        }
+        return mbUser;
     }
 }

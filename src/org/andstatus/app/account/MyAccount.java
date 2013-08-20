@@ -45,6 +45,7 @@ import org.andstatus.app.net.ConnectionAuthenticationException;
 import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionUnavailableException;
+import org.andstatus.app.net.MbUser;
 import org.andstatus.app.net.OAuthConsumerAndProvider;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
@@ -441,21 +442,21 @@ public class MyAccount implements AccountDataReader {
                 }
             }
             if (!ok) {
-                JSONObject jso = null;
+                MbUser user = null;
                 try {
-                    jso = myAccount.getConnection().verifyCredentials();
-                    ok = (jso != null);
+                    user = myAccount.getConnection().verifyCredentials();
+                    ok = (user != null);
                 } finally {
                     String newName = "";
                     boolean credentialsOfOtherUser = false;
                     boolean errorSettingUsername = false;
                     if (ok) {
-                        if (jso.optInt("id") < 1) {
+                        if (TextUtils.isEmpty(user.oid)) {
                             ok = false;
                         }
                     }
                     if (ok) {
-                        newName = Connection.getScreenName(jso);
+                        newName = user.userName;
                         ok = UserNameUtil.isUsernameValid(newName);
                         errorSettingUsername = !ok;
                     }

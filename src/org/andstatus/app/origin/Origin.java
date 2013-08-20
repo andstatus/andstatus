@@ -224,6 +224,7 @@ public class Origin {
             connectionData.basicPath = "api";
             connectionData.oauthPath = "oauth";
         }
+        connectionData.originId = id;
     }
     
     private Origin(long id) {

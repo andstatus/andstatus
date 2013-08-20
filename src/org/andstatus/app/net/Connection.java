@@ -174,10 +174,6 @@ public abstract class Connection {
         return httpConnection.isOAuth();
     }
     
-    public static String getScreenName(JSONObject credentials) {
-        return credentials.optString("screen_name");
-    }
-    
     /**
      * Check API requests status.
      * TODO: Formalize this for different microblogging systems.
@@ -221,16 +217,8 @@ public abstract class Connection {
     
     /**
      * Verify the user's credentials.
-     * 
-     * Returns true if authentication was successful
-     * @see <a
-     *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-account%C2%A0verify_credentials">Twitter
-     *      REST API Method: account verify_credentials</a>
-     * 
-     * @return JSONObject - user
-     * @throws ConnectionException 
      */
-    public abstract JSONObject verifyCredentials() throws ConnectionException;
+    public abstract MbUser verifyCredentials() throws ConnectionException;
 
     /**
      * 

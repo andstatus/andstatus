@@ -25,10 +25,16 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Implementation of pump.io API: <a href="https://github.com/e14n/pump.io/blob/master/API.md">https://github.com/e14n/pump.io/blob/master/API.md</a>  
@@ -187,17 +193,51 @@ class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public JSONObject verifyCredentials() throws ConnectionException {
-        //return httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
-        return verifyCredentialsAttempt2();
+    public MbUser verifyCredentials() throws ConnectionException {
+        // TODO: This gives "Bad Request" error
+        // JSONObject user = httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
+        JSONObject user = verifyCredentialsAttempt2();
+        MbUser mbUser = new MbUser();
+        mbUser.originId = httpConnection.connectionData.originId;
+        mbUser.oid = user.optString("id");
+        mbUser.userName = user.optString("preferredUsername");
+        mbUser.realName = user.optString("displayName");
+        if (user.has("image")) {
+            JSONObject image = user.optJSONObject("image");
+            if (image != null) {
+                mbUser.avatarUrl = image.optString("url");
+            }
+        }
+        mbUser.description = user.optString("summary");
+        mbUser.homepage = user.optString("url");
+        if (user.has("updated")) {
+            // This is not exact match, but nothing else is closer...
+            String updated = user.optString("updated");
+            if (updated.length() > 0) {
+                mbUser.createdDate = parseDate(updated);
+            }
+        }
+        return mbUser;
     }
 
+    private static long parseDate(String date) {
+        if(date == null)
+            return new Date().getTime();
+
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        df.setTimeZone(TimeZone.getTimeZone("Zulu"));
+        try {
+            return df.parse(date).getTime();
+        } catch (ParseException e) {
+            return new Date().getTime();
+        }
+    }
+    
     /**
      * From Impeller code...
-     * @return
      */
-    private JSONObject verifyCredentialsAttempt2() {
-        JSONObject activity;
+    private JSONObject verifyCredentialsAttempt2() throws ConnectionException {
+        JSONObject user;
         try {
             OAuthConsumer consumer = new DefaultOAuthConsumer(
                     httpConnection.connectionData.clientKeys.getConsumerKey(),
@@ -230,13 +270,11 @@ class ConnectionPumpio extends Connection {
                         throw new Exception(err);
                 }
             }
-            
-            activity = new JSONObject(readAll(conn.getInputStream()));
+            user = new JSONObject(readAll(conn.getInputStream()));
         } catch(Exception e) {
-            Log.e(TAG, "Error getting whoami", e);
-            return null;
+            throw new ConnectionException("Error getting whoami, " + e.getMessage());
         }
-        return activity;
+        return user;
     }
     
     @Override
