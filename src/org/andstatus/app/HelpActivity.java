@@ -18,6 +18,7 @@
 package org.andstatus.app;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.Xslt;
@@ -116,7 +117,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
         getStarted.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (MyAccount.getCurrentAccount() == null) {
+                if (MyAccount.getCurrentAccount() == null || MyPreferences.shouldSetDefaultValues()) {
                     startActivity(new Intent(HelpActivity.this, MyPreferenceActivity.class));
                 } else {
                     startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
@@ -167,7 +168,9 @@ public class HelpActivity extends Activity implements SwipeInterface {
 	protected void onResume() {
 		super.onResume();
 		// We assume that user pressed back after adding first account
-        if ( mIsFirstActivity &&  MyAccount.getCurrentAccount() != null ) {
+        if ( mIsFirstActivity 
+                &&  MyAccount.getCurrentAccount() != null 
+                && !MyPreferences.shouldSetDefaultValues() ) {
 			Intent intent = new Intent(this, TimelineActivity.class);
 			startActivity(intent);
 			finish();

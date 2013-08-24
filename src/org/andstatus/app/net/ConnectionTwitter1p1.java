@@ -49,16 +49,18 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
     }
 
     @Override
-    public JSONObject createFavorite(String statusId) throws ConnectionException {
+    public MbMessage createFavorite(String statusId) throws ConnectionException {
         List<NameValuePair> out = new LinkedList<NameValuePair>();
         out.add(new BasicNameValuePair("id", statusId));
-        return postRequest(ApiRoutineEnum.FAVORITES_CREATE_BASE, out);
+        JSONObject jso = postRequest(ApiRoutineEnum.FAVORITES_CREATE_BASE, out);
+        return messageFromJson(jso);
     }
 
     @Override
-    public JSONObject destroyFavorite(String statusId) throws ConnectionException {
+    public MbMessage destroyFavorite(String statusId) throws ConnectionException {
         List<NameValuePair> out = new LinkedList<NameValuePair>();
         out.add(new BasicNameValuePair("id", statusId));
-        return postRequest(ApiRoutineEnum.FAVORITES_DESTROY_BASE, out);
+        JSONObject jso = postRequest(ApiRoutineEnum.FAVORITES_DESTROY_BASE, out);
+        return messageFromJson(jso);
     }
 }

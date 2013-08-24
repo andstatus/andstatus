@@ -20,22 +20,36 @@ import android.net.Uri;
 
 import org.andstatus.app.origin.OriginConnectionData;
 import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Specific implementation of the {@link ApiEnum.STATUSNET_TWITTER}
  * @author yvolk
  */
 public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
+    private static final String TAG = ConnectionTwitterStatusNet.class.getSimpleName();
 
     protected ConnectionTwitterStatusNet(OriginConnectionData connectionData) {
         super(connectionData);
     }
 
     @Override
-    public JSONArray getFriendsIds(String userId) throws ConnectionException {
+    public List<String> getFriendsIds(String userId) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
-        return httpConnection.getRequestAsArray(builder.build().toString());
+        List<String> list = new ArrayList<String>();
+        JSONArray jArr = httpConnection.getRequestAsArray(builder.build().toString());
+        try {
+            for (int index = 0; index < jArr.length(); index++) {
+                list.add(jArr.getString(index));
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(TAG, e, null, "Parsing friendsIds");
+        }
+        return list;
     }
 }

@@ -8,6 +8,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import org.andstatus.app.R;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
 public class AccountSettingsWebActivity extends Activity {
@@ -32,7 +33,7 @@ public class AccountSettingsWebActivity extends Activity {
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             Uri uri = Uri.parse(url);
             MyLog.d(TAG, "Redirecting to: " + uri);
-            if (uri != null && AccountSettingsActivity.CALLBACK_URI.getHost().equals(uri.getHost())) {
+            if (uri != null && Origin.CALLBACK_URI.getHost().equals(uri.getHost())) {
                 //Intent i = new Intent(Intent.ACTION_VIEW, uri);
                 Intent i = new Intent(AccountSettingsWebActivity.this, AccountSettingsActivity.class);
                 i.setData(uri);

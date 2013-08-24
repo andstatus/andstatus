@@ -34,12 +34,13 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.MbMessage;
+import org.andstatus.app.net.MbRateLimitStatus;
+import org.andstatus.app.net.MbUser;
 import org.andstatus.app.util.ForegroundCheckTask;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -619,6 +620,8 @@ public class MyService extends Service {
                 case BOOT_COMPLETED:
                     // Force reexamining preferences
                     preferencesExamineTime = 0;
+                default:
+                    break;
             }
         }
         
@@ -1001,15 +1004,15 @@ public class MyService extends Service {
             MyAccount ma = commandData.getAccount();
             boolean ok = false;
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
-            JSONObject result = new JSONObject();
+            MbMessage message = null;
             if (oid.length() > 0) {
                 try {
                     if (create) {
-                        result = ma.getConnection().createFavorite(oid);
+                        message = ma.getConnection().createFavorite(oid);
                     } else {
-                        result = ma.getConnection().destroyFavorite(oid);
+                        message = ma.getConnection().destroyFavorite(oid);
                     }
-                    ok = (result != null);
+                    ok = !message.isEmpty();
                 } catch (ConnectionException e) {
                     Log.e(TAG,
                             (create ? "create" : "destroy") + "Favorite Connection Exception: "
@@ -1020,60 +1023,46 @@ public class MyService extends Service {
                         (create ? "create" : "destroy") + "Favorite; msgId not found: " + msgId);
             }
             if (ok) {
-                try {
-                    boolean favorited = result.getBoolean("favorited");
-                    if (favorited != create) {
-                        /**
-                         * yvolk: 2011-09-27 Twitter docs state that
-                         * this may happen due to asynchronous nature of
-                         * the process, see
-                         * https://dev.twitter.com/docs/
-                         * api/1/post/favorites/create/%3Aid
-                         */
-                        if (create) {
-                            // For the case we created favorite, let's
-                            // change
-                            // the flag manually.
-                            result.put("favorited", create);
+                if (SharedPreferencesUtil.isTrue(message.favoritedByReader) != create) {
+                    /**
+                     * yvolk: 2011-09-27 Twitter docs state that
+                     * this may happen due to asynchronous nature of
+                     * the process, see
+                     * https://dev.twitter.com/docs/
+                     * api/1/post/favorites/create/%3Aid
+                     */
+                    if (create) {
+                        // For the case we created favorite, let's
+                        // change
+                        // the flag manually.
+                        message.favoritedByReader = create;
 
-                            MyLog.d(TAG,
-                                    (create ? "create" : "destroy")
-                                            + ". Favorited flag didn't change yet.");
+                        MyLog.d(TAG,
+                                (create ? "create" : "destroy")
+                                        + ". Favorited flag didn't change yet.");
 
-                            // Let's try to assume that everything was
-                            // Ok:
-                            ok = true;
-                        } else {
-                            // yvolk: 2011-09-27 Sometimes this
-                            // twitter.com 'async' process doesn't work
-                            // so let's try another time...
-                            // This is safe, because "delete favorite"
-                            // works even for the "Unfavorited" tweet :-)
-                            ok = false;
+                        // Let's try to assume that everything was
+                        // Ok:
+                        ok = true;
+                    } else {
+                        // yvolk: 2011-09-27 Sometimes this
+                        // twitter.com 'async' process doesn't work
+                        // so let's try another time...
+                        // This is safe, because "delete favorite"
+                        // works even for the "Unfavorited" tweet :-)
+                        ok = false;
 
-                            Log.e(TAG,
-                                    (create ? "create" : "destroy")
-                                            + ". Favorited flag didn't change yet.");
-                        }
+                        Log.e(TAG,
+                                (create ? "create" : "destroy")
+                                        + ". Favorited flag didn't change yet.");
                     }
-                } catch (JSONException e) {
-                    Log.e(TAG,
-                            (create ? "create" : "destroy")
-                                    + ". Checking resulted favorited flag: "
-                                    + e.toString());
                 }
 
                 if (ok) {
-                    try {
-                        // Please note that the Favorited message may be NOT in the User's Home timeline!
-                        new DataInserter(ma,
-                                MyService.this.getApplicationContext(),
-                                TimelineTypeEnum.ALL).insertMsgFromJSONObject(result);
-                    } catch (JSONException e) {
-                        Log.e(TAG,
-                                "Error marking as " + (create ? "" : "not ") + "favorite: "
-                                        + e.toString());
-                    }
+                    // Please note that the Favorited message may be NOT in the User's Home timeline!
+                    new DataInserter(ma,
+                            MyService.this.getApplicationContext(),
+                            TimelineTypeEnum.ALL).insertOrUpdateMsg(message);
                 }
             }
             setSoftErrorIfNotOk(commandData, ok);
@@ -1092,11 +1081,11 @@ public class MyService extends Service {
             MyAccount ma = commandData.getAccount();
             boolean ok = false;
             String oid = MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
-            JSONObject result = new JSONObject();
+            MbUser user = null;
             if (oid.length() > 0) {
                 try {
-                    result = ma.getConnection().followUser(oid, follow);
-                    ok = (result != null);
+                    user = ma.getConnection().followUser(oid, follow);
+                    ok = !user.isEmpty();
                 } catch (ConnectionException e) {
                     Log.e(TAG,
                             (follow ? "Follow" : "Stop following") + " User Connection Exception: "
@@ -1107,42 +1096,28 @@ public class MyService extends Service {
                         (follow ? "Follow" : "Stop following") + " User; userId not found: " + userId);
             }
             if (ok) {
-                try {
-                    boolean following = result.getBoolean("following");
-                    if (following != follow) {
-                        if (follow) {
-                            // Act just like for creating favorite...
-                            result.put("following", follow);
+                if (SharedPreferencesUtil.isTrue(user.followedByReader) != follow) {
+                    if (follow) {
+                        // Act just like for creating favorite...
+                        user.followedByReader = true;
 
-                            MyLog.d(TAG,
-                                    (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");
+                        MyLog.d(TAG,
+                                (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");
 
-                            // Let's try to assume that everything was
-                            // Ok:
-                            ok = true;
-                        } else {
-                            ok = false;
+                        // Let's try to assume that everything was
+                        // Ok:
+                        ok = true;
+                    } else {
+                        ok = false;
 
-                            Log.e(TAG,
-                                    (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");
-                        }
-                    }
-                } catch (JSONException e) {
-                    Log.e(TAG,
-                            (follow ? "Follow" : "Stop following") + " User. Checking resulted 'following' flag: "
-                                    + e.toString());
-                }
-
-                if (ok) {
-                    try {
-                        new DataInserter(ma,
-                                MyService.this.getApplicationContext(),
-                                TimelineTypeEnum.HOME).insertUserFromJSONObject(result);
-                    } catch (JSONException e) {
                         Log.e(TAG,
-                                "Error on " + (follow ? "Follow" : "Stop following") + " User: "
-                                        + e.toString());
+                                (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");
                     }
+                }
+                if (ok) {
+                    new DataInserter(ma,
+                            MyService.this.getApplicationContext(),
+                            TimelineTypeEnum.HOME).insertOrUpdateUser(user);
                 }
             }
             setSoftErrorIfNotOk(commandData, ok);
@@ -1160,13 +1135,8 @@ public class MyService extends Service {
             MyAccount ma = commandData.getAccount();
             boolean ok = false;
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
-            JSONObject result = new JSONObject();
             try {
-                result = ma.getConnection().destroyStatus(oid);
-                ok = (result != null);
-                if (ok && MyLog.isLoggable(null, Log.VERBOSE)) {
-                    Log.v(TAG, "destroyStatus response: " + result.toString(2));
-                }
+                ok = ma.getConnection().destroyStatus(oid);
             } catch (ConnectionException e) {
                 if (e.getStatusCode() == 404) {
                     // This means that there is no such "Status", so we may
@@ -1175,8 +1145,6 @@ public class MyService extends Service {
                 } else {
                     Log.e(TAG, "destroyStatus Connection Exception: " + e.toString());
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
 
             if (ok) {
@@ -1205,13 +1173,8 @@ public class MyService extends Service {
             MyAccount ma = commandData.getAccount();
             boolean ok = false;
             String oid = MyProvider.idToOid(OidEnum.REBLOG_OID, msgId, ma.getUserId());
-            JSONObject result = new JSONObject();
             try {
-                result = ma.getConnection().destroyStatus(oid);
-                ok = (result != null);
-                if (ok && MyLog.isLoggable(null, Log.VERBOSE)) {
-                    Log.v(TAG, "destroyStatus response: " + result.toString(2));
-                }
+                ok = ma.getConnection().destroyStatus(oid);
             } catch (ConnectionException e) {
                 if (e.getStatusCode() == 404) {
                     // This means that there is no such "Status", so we may
@@ -1220,8 +1183,6 @@ public class MyService extends Service {
                 } else {
                     Log.e(TAG, "destroyStatus Connection Exception: " + e.toString());
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
 
             if (ok) {
@@ -1246,10 +1207,19 @@ public class MyService extends Service {
             }
             boolean ok = false;
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, commandData.itemId, 0);
-            JSONObject result = new JSONObject();
             try {
-                result = commandData.getAccount().getConnection().getStatus(oid);
-                ok = (result != null);
+                MbMessage message = commandData.getAccount().getConnection().getStatus(oid);
+                if (!message.isEmpty()) {
+                    // And add the message to the local storage
+                    try {
+                        new DataInserter(commandData.getAccount(),
+                                MyService.this.getApplicationContext(),
+                                TimelineTypeEnum.ALL).insertOrUpdateMsg(message);
+                        ok = true;
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error inserting status: " + e.toString());
+                    }
+                }
             } catch (ConnectionException e) {
                 if (e.getStatusCode() == 404) {
                     commandData.commandResult.numParseExceptions++;
@@ -1257,17 +1227,6 @@ public class MyService extends Service {
                     // TODO: so we don't need to retry this command
                 }
                 Log.e(TAG, "getStatus Connection Exception: " + e.toString());
-            }
-
-            if (ok) {
-                // And add the message to the local storage
-                try {
-                    new DataInserter(commandData.getAccount(),
-                            MyService.this.getApplicationContext(),
-                            TimelineTypeEnum.ALL).insertMsgFromJSONObject(result);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error inserting status: " + e.toString());
-                }
             }
             setSoftErrorIfNotOk(commandData, ok);
             MyLog.d(TAG, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + commandData.itemId);
@@ -1284,33 +1243,29 @@ public class MyService extends Service {
             }
             MyAccount ma = commandData.getAccount();
             boolean ok = false;
-            JSONObject result = new JSONObject();
+            MbMessage message = null;
             try {
                 if (recipientUserId == 0) {
                     String replyToMsgOid = MyProvider.idToOid(OidEnum.MSG_OID, replyToMsgId, 0);
-                    result = ma.getConnection()
+                    message = ma.getConnection()
                             .updateStatus(status.trim(), replyToMsgOid);
                 } else {
                     String recipientOid = MyProvider.idToOid(OidEnum.USER_OID, recipientUserId, 0);
                     // Currently we don't use Screen Name, I guess id is enough.
-                    result = ma.getConnection()
+                    message = ma.getConnection()
                             .postDirectMessage(status.trim(), recipientOid);
                 }
-                ok = (result != null);
+                ok = (!message.isEmpty());
             } catch (ConnectionException e) {
                 Log.e(TAG, "updateStatus Exception: " + e.toString());
             }
             if (ok) {
-                try {
-                    // The tweet was sent successfully
-                    // New User's message should be put into the user's Home timeline.
-                    new DataInserter(ma, 
-                            MyService.this.getApplicationContext(),
-                            (recipientUserId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT)
-                    .insertMsgFromJSONObject(result);
-                } catch (JSONException e) {
-                    Log.e(TAG, "updateStatus JSONException: " + e.toString());
-                }
+                // The message was sent successfully
+                // New User's message should be put into the user's Home timeline.
+                new DataInserter(ma, 
+                        MyService.this.getApplicationContext(),
+                        (recipientUserId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT)
+                .insertOrUpdateMsg(message);
             }
             setSoftErrorIfNotOk(commandData, ok);
         }
@@ -1322,24 +1277,20 @@ public class MyService extends Service {
             MyAccount ma = commandData.getAccount();
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, rebloggedId, 0);
             boolean ok = false;
-            JSONObject result = new JSONObject();
+            MbMessage result = null;
             try {
                 result = ma.getConnection()
                         .postReblog(oid);
-                ok = (result != null);
+                ok = !result.isEmpty();
             } catch (ConnectionException e) {
                 Log.e(TAG, "reblog Exception: " + e.toString());
             }
             if (ok) {
-                try {
-                    // The tweet was sent successfully
-                    // Reblog should be put into the user's Home timeline!
-                    new DataInserter(ma, 
-                            MyService.this.getApplicationContext(),
-                            TimelineTypeEnum.HOME).insertMsgFromJSONObject(result);
-                } catch (JSONException e) {
-                    Log.e(TAG, "reblog JSONException: " + e.toString());
-                }
+                // The tweet was sent successfully
+                // Reblog should be put into the user's Home timeline!
+                new DataInserter(ma, 
+                        MyService.this.getApplicationContext(),
+                        TimelineTypeEnum.HOME).insertOrUpdateMsg(result);
             }
             setSoftErrorIfNotOk(commandData, ok);
         }
@@ -1604,6 +1555,8 @@ public class MyService extends Service {
                     if (!notificationsTimeline)
                         return;
                     break;
+                default:
+                    break;
             }
 
             // Set up the notification to display to the user
@@ -1704,47 +1657,21 @@ public class MyService extends Service {
             sendBroadcast(intent);
         }
 
-        /**
-         * Ask the the Microblogging system of how many more requests are allowed:
-         * number of remaining API calls.
-         * 
-         * @return ok
-         */
         private void rateLimitStatus(CommandData commandData) {
             if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
                 return;
             }
             boolean ok = false;
-            JSONObject result = new JSONObject();
-            int remaining = 0;
-            int limit = 0;
             try {
                 Connection conn = commandData.getAccount().getConnection();
-                result = conn.rateLimitStatus();
-                ok = (result != null);
+                MbRateLimitStatus rateLimitStatus = conn.rateLimitStatus();
+                ok = !rateLimitStatus.isEmpty();
                 if (ok) {
-                    switch (conn.getApi()) {
-                        case TWITTER1P0:
-                        case STATUSNET_TWITTER:
-                            remaining = result.getInt("remaining_hits");
-                            limit = result.getInt("hourly_limit");
-                            break;
-                        default:
-                            JSONObject resources = result.getJSONObject("resources");
-                            JSONObject limitObject = resources.getJSONObject("statuses").getJSONObject("/statuses/home_timeline");
-                            remaining = limitObject.getInt("remaining");
-                            limit = limitObject.getInt("limit");
-                    }
-                }
+                    commandData.commandResult.remaining_hits = rateLimitStatus.remaining; 
+                    commandData.commandResult.hourly_limit = rateLimitStatus.limit;
+                 }
             } catch (ConnectionException e) {
                 Log.e(TAG, "rateLimitStatus Exception: " + e.toString());
-            } catch (JSONException e) {
-                Log.e(TAG, e.toString());
-            }
-
-            if (ok) {
-               commandData.commandResult.remaining_hits = remaining; 
-               commandData.commandResult.hourly_limit = limit;
             }
             setSoftErrorIfNotOk(commandData, ok);
         }

@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.origin;
 
+import android.net.Uri;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
@@ -60,6 +61,12 @@ public class Origin {
     public static String ORIGIN_NAME_TWITTER = "Twitter";
     public static String ORIGIN_NAME_IDENTICA = "identi.ca";
 
+    /** 
+     * The URI is consistent with "scheme" and "host" in AndroidManifest
+     * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"
+     */
+    public static final Uri CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org");
+    
     /**
      * Maximum number of characters in the message
      */

@@ -1,16 +1,16 @@
 package org.andstatus.app.net;
 
+import android.net.Uri;
+import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.basic.DefaultOAuthConsumer;
 
-import org.andstatus.app.account.AccountSettingsActivity;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,7 +29,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -41,8 +40,43 @@ import java.util.TimeZone;
  * @author yvolk
  */
 class ConnectionPumpio extends Connection {
-    private static final String TAG = ConnectionPumpio.class.getSimpleName();
+    private enum PumpioObjectType {
+        ACTIVITY("activity") {
+            @Override
+            public boolean isMyType(JSONObject jso) {
+                boolean is = false;
+                if (jso != null) {
+                     is = jso.has("verb");
+                     // It may not have the "objectType" field as in the specification:
+                     //   http://activitystrea.ms/specs/json/1.0/
+                }
+                return is;
+            }
+        },
+        PERSON("person"),
+        COMMENT("comment"),
+        NOTE("note");
+        
+        private String fieldName;
+        PumpioObjectType(String fieldName) {
+            this.fieldName = fieldName;
+        }
+        
+        public String fieldName() {
+            return fieldName;
+        }
+        
+        public boolean isMyType(JSONObject jso) {
+            boolean is = false;
+            if (jso != null) {
+                is = fieldName().equalsIgnoreCase(jso.optString("objectType"));
+            }
+            return is;
+        }
+        
+    }
 
+    private static final String TAG = ConnectionPumpio.class.getSimpleName();
     public ConnectionPumpio(OriginConnectionData connectionData) {
         super(connectionData);
         // TODO Auto-generated constructor stub
@@ -50,37 +84,9 @@ class ConnectionPumpio extends Connection {
 
     @Override
     public void registerClient() {
-        registerClientAttempt1();
+        registerClientAttempt2();
         if (httpConnection.connectionData.clientKeys.areKeysPresent()) {
             MyLog.v(TAG, "Registered client for " + httpConnection.connectionData.host);
-        }
-    }
-
-    /**
-     * It works!
-     */
-    public void registerClientAttempt1() {
-        String consumerKey = "";
-        String consumerSecret = "";
-        httpConnection.connectionData.clientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-
-        List<NameValuePair> formParams = new ArrayList<NameValuePair>();
-        formParams.add(new BasicNameValuePair("type", "client_associate"));
-        formParams.add(new BasicNameValuePair("application_type", "native"));
-        formParams.add(new BasicNameValuePair("redirect_uris", AccountSettingsActivity.CALLBACK_URI.toString()));
-        formParams.add(new BasicNameValuePair("application_name", HttpConnection.USER_AGENT));
-        try {
-            JSONObject jso = postRequest(ApiRoutineEnum.REGISTER_CLIENT, formParams);
-            if (jso != null) {
-                consumerKey = jso.getString("client_id");
-                consumerSecret = jso.getString("client_secret");
-                httpConnection.connectionData.clientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-            }
-        } catch (ConnectionException e) {
-            Log.e(TAG, "registerClient Exception: " + e.toString());
-        } catch (JSONException e) {
-            Log.e(TAG, "registerClient Exception: " + e.toString());
-            e.printStackTrace();
         }
     }
     
@@ -99,7 +105,7 @@ class ConnectionPumpio extends Connection {
             HashMap<String, String> params = new HashMap<String, String>();
             params.put("type", "client_associate");
             params.put("application_type", "native");
-            params.put("redirect_uris", AccountSettingsActivity.CALLBACK_URI.toString());
+            params.put("redirect_uris", Origin.CALLBACK_URI.toString());
             params.put("client_name", HttpConnection.USER_AGENT);
             params.put("application_name", HttpConnection.USER_AGENT);
             String requestBody = encode(params);
@@ -177,6 +183,9 @@ class ConnectionPumpio extends Connection {
             case REGISTER_CLIENT:
                 url = "client/register";
                 break;
+            case STATUSES_HOME_TIMELINE:
+                url = "user/%nickname%/inbox";
+                break;
             default:
                 url = "";
         }
@@ -187,39 +196,52 @@ class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public JSONObject rateLimitStatus() throws ConnectionException {
+    public MbRateLimitStatus rateLimitStatus() throws ConnectionException {
+        MbRateLimitStatus status = new MbRateLimitStatus();
         // TODO Auto-generated method stub
-        return null;
+        return status;
     }
 
     @Override
     public MbUser verifyCredentials() throws ConnectionException {
         // TODO: This gives "Bad Request" error
         // JSONObject user = httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
-        JSONObject user = verifyCredentialsAttempt2();
-        MbUser mbUser = new MbUser();
-        mbUser.originId = httpConnection.connectionData.originId;
-        mbUser.oid = user.optString("id");
-        mbUser.userName = user.optString("preferredUsername");
-        mbUser.realName = user.optString("displayName");
-        if (user.has("image")) {
-            JSONObject image = user.optJSONObject("image");
-            if (image != null) {
-                mbUser.avatarUrl = image.optString("url");
-            }
-        }
-        mbUser.description = user.optString("summary");
-        mbUser.homepage = user.optString("url");
-        if (user.has("updated")) {
-            // This is not exact match, but nothing else is closer...
-            String updated = user.optString("updated");
-            if (updated.length() > 0) {
-                mbUser.createdDate = parseDate(updated);
-            }
-        }
-        return mbUser;
+        JSONObject user = getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
+        return userFromJson(user);
     }
 
+    private MbUser userFromJson(JSONObject jso) throws ConnectionException {
+        if (!PumpioObjectType.PERSON.isMyType(jso)) {
+            return MbUser.getEmpty();
+        }
+        String oid = jso.optString("id");
+        MbUser user = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, userOidToName(oid));
+        user.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
+        user.oid = oid;
+        user.realName = jso.optString("displayName");
+        if (jso.has("image")) {
+            JSONObject image = jso.optJSONObject("image");
+            if (image != null) {
+                user.avatarUrl = image.optString("url");
+            }
+        }
+        user.description = jso.optString("summary");
+        user.homepage = jso.optString("url");
+        user.updatedDate = dateFromJson(jso, "updated");
+        return user;
+    }
+    
+    private long dateFromJson(JSONObject jso, String fieldName) {
+        long date = 0;
+        if (jso != null && jso.has(fieldName)) {
+            String updated = jso.optString(fieldName);
+            if (updated.length() > 0) {
+                date = parseDate(updated);
+            }
+        }
+        return date;
+    }
+    
     private static long parseDate(String date) {
         if(date == null)
             return new Date().getTime();
@@ -232,21 +254,22 @@ class ConnectionPumpio extends Connection {
             return new Date().getTime();
         }
     }
-    
-    /**
-     * From Impeller code...
-     */
-    private JSONObject verifyCredentialsAttempt2() throws ConnectionException {
-        JSONObject user;
+
+    // TODO: Move to HttpConnection...
+    JSONObject getRequest(String path) throws ConnectionException {
+        if (TextUtils.isEmpty(path)) {
+            throw new IllegalArgumentException("path is empty");
+        }
+        JSONObject jso;
         try {
             OAuthConsumer consumer = new DefaultOAuthConsumer(
                     httpConnection.connectionData.clientKeys.getConsumerKey(),
                     httpConnection.connectionData.clientKeys.getConsumerSecret());
-            if (httpConnection.getCredentialsPresent(null)) {
+            if (httpConnection.getCredentialsPresent()) {
                 consumer.setTokenWithSecret(httpConnection.getUserToken(), httpConnection.getUserSecret());
             }
             
-            URL url = new URL(httpConnection.pathToUrl(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)));
+            URL url = new URL(httpConnection.pathToUrl(path));
             HttpURLConnection conn;
             loop: while(true) {
                 conn = (HttpURLConnection) url.openConnection();
@@ -270,76 +293,263 @@ class ConnectionPumpio extends Connection {
                         throw new Exception(err);
                 }
             }
-            user = new JSONObject(readAll(conn.getInputStream()));
+            jso = new JSONObject(readAll(conn.getInputStream()));
         } catch(Exception e) {
-            throw new ConnectionException("Error getting whoami, " + e.getMessage());
+            throw new ConnectionException("Error getting '" + path + "', " + e.getMessage());
         }
-        return user;
+        return jso;
+    }
+
+    /**
+     * @return not null
+     */
+    private JSONArray getRequestAsArray(String path) throws ConnectionException {
+        JSONObject jso = getRequest(path);
+        JSONArray jsa = null;
+        if (jso == null) {
+            // TODO: ensure not null
+            throw new ConnectionException("Response is null");
+        }
+        if (jso.has("items")) {
+            try {
+                jsa = jso.getJSONArray("items");
+            } catch (JSONException e) {
+                throw new ConnectionException("'items' is not an array?!");
+            }
+        } else {
+            try {
+                MyLog.d(TAG, "Response from server: " + jso.toString(4));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            throw new ConnectionException("No array was returned");
+        }
+        return jsa;
     }
     
     @Override
-    public JSONObject destroyFavorite(String statusId) throws ConnectionException {
+    public MbMessage destroyFavorite(String statusId) throws ConnectionException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public JSONObject createFavorite(String statusId) throws ConnectionException {
+    public MbMessage createFavorite(String statusId) throws ConnectionException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public JSONObject destroyStatus(String statusId) throws ConnectionException {
+    public boolean destroyStatus(String statusId) throws ConnectionException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public List<String> getFriendsIds(String userId) throws ConnectionException {
+        // TODO Auto-generated method stub
+        return new ArrayList<String>();
+    }
+
+    @Override
+    public MbMessage getStatus(String statusId) throws ConnectionException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public JSONArray getFriendsIds(String userId) throws ConnectionException {
+    public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public JSONObject getStatus(String statusId) throws ConnectionException {
+    public MbMessage postDirectMessage(String message, String userId) throws ConnectionException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public JSONObject updateStatus(String message, String inReplyToId) throws ConnectionException {
+    public MbMessage postReblog(String rebloggedId) throws ConnectionException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public JSONObject postDirectMessage(String message, String userId) throws ConnectionException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public JSONObject postReblog(String rebloggedId) throws ConnectionException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public JSONArray getTimeline(ApiRoutineEnum apiRoutine, String sinceId, int limit, String userId)
+    public List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, String sinceId, int limit, String userId)
             throws ConnectionException {
+        String url = this.getApiPath(apiRoutine);
+        String nickname;
+        if (TextUtils.isEmpty(userId)) {
+            if (TextUtils.isEmpty(httpConnection.accountUsername)) {
+                throw new IllegalArgumentException("accountUsername is empty");
+            }
+            nickname = httpConnection.accountUsername;
+        } else {
+            nickname = userOidToName(userId);
+        }
+        url = url.replace("%nickname%", nickname);
+        Uri sUri = Uri.parse(url);
+        Uri.Builder builder = sUri.buildUpon();
+        if (!TextUtils.isEmpty(fixSinceId(sinceId))) {
+            builder.appendQueryParameter("since",fixSinceId(sinceId));
+        }
+        if (fixedLimit(limit) > 0) {
+            builder.appendQueryParameter("count",String.valueOf(fixedLimit(limit)));
+        }
+        url = builder.build().toString();
+        JSONArray jArr = getRequestAsArray(url);
+        List<MbMessage> timeline = new ArrayList<MbMessage>();
+        if (jArr != null) {
+            for (int index = 0; index < jArr.length(); index++) {
+                try {
+                    JSONObject jso = jArr.getJSONObject(index);
+                    MbMessage mbMessage = messageFromJsonActivity(jso);
+                    if (!mbMessage.isEmpty()) {
+                        timeline.add(mbMessage);
+                    }
+                } catch (JSONException e) {
+                    throw ConnectionException.loggedJsonException(TAG, e, null, "Parsing timeline");
+                }
+            }
+        }
+        MyLog.d(TAG, "getTimeline '" + url + "' " + timeline.size() + " messages");
+        return timeline;
+    }
+
+    private MbMessage messageFromJsonActivity(JSONObject activity) throws ConnectionException {
+        if (!PumpioObjectType.ACTIVITY.isMyType(activity)) {
+            return MbMessage.getEmpty();
+        }
+        MbMessage message;
+        try {
+            String verb = activity.optString("verb");
+            String oid = activity.optString("id");
+            if (TextUtils.isEmpty(oid)) {
+                MyLog.d(TAG, "Pumpio activity has no id:" + activity.toString(2));
+                return MbMessage.getEmpty();
+            } 
+            message =  MbMessage.fromOriginAndOid(httpConnection.connectionData.originId, oid);
+            message.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
+            message.sentDate = dateFromJson(activity, "updated");
+
+            if (activity.has("actor")) {
+                message.sender = userFromJson(activity.getJSONObject("actor"));
+            }
+            if (activity.has("to")) {
+                message.recipient = userFromJson(activity.getJSONObject("to"));
+            }
+            if (activity.has("generator")) {
+                JSONObject generator = activity.getJSONObject("generator");
+                if (generator.has("displayName")) {
+                    message.via = generator.getString("displayName");
+                }
+            }
+            
+            JSONObject jso = activity.getJSONObject("object");
+            // Is this a reblog ("Share" in terms of Activity streams)?
+            if (verb.equalsIgnoreCase("share")) {
+                JSONObject rebloggedMessage = jso;
+                message.rebloggedMessage = messageFromJsonActivity(rebloggedMessage);
+                if (message.rebloggedMessage.isEmpty()) {
+                    MyLog.d(TAG, "No reblogged message " + jso.toString(2));
+                    return MbMessage.getEmpty();
+                }
+            } else {
+                if (PumpioObjectType.COMMENT.isMyType(jso) || PumpioObjectType.NOTE.isMyType(jso)) {
+                    parseComment(message, jso);
+                } else {
+                    return MbMessage.getEmpty();
+                }
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(TAG, e, activity, "Parsing item");
+        }
+        return message;
+    }
+
+    private void parseComment(MbMessage message, JSONObject jso) throws ConnectionException {
+        if (PumpioObjectType.COMMENT.isMyType(jso) || PumpioObjectType.NOTE.isMyType(jso)) {
+            return;
+        }
+        try {
+            String oid = jso.optString("id");
+            if (!TextUtils.isEmpty(oid)) {
+                if (!message.oid.equalsIgnoreCase(oid)) {
+                    message.oid = oid;
+                }
+            } 
+            if (jso.has("author")) {
+                MbUser author = userFromJson(jso.getJSONObject("author"));
+                if (!author.isEmpty()) {
+                    message.sender = author;
+                }
+            }
+            if (jso.has("content")) {
+                message.body = Html.fromHtml(jso.getString("content")).toString();
+            }
+            message.sentDate = dateFromJson(jso, "published");
+
+            if (jso.has("generator")) {
+                JSONObject generator = jso.getJSONObject("generator");
+                if (generator.has("displayName")) {
+                    message.via = generator.getString("displayName");
+                }
+            }
+
+            // TODO: Favorited
+
+            // If the Msg is a Reply to other message
+            if (jso.has("inReplyTo")) {
+                JSONObject inReplyToObject = jso.getJSONObject("inReplyTo");
+                message.inReplyToMessage = messageFromJsonComment(inReplyToObject);
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(TAG, e, jso, "Parsing comment/note");
+        }
+    }
+    
+    private MbMessage messageFromJsonComment(JSONObject jso) throws ConnectionException {
+        if (PumpioObjectType.COMMENT.isMyType(jso) || PumpioObjectType.NOTE.isMyType(jso)) {
+            return MbMessage.getEmpty();
+        }
+        MbMessage message;
+        try {
+            String oid = jso.optString("id");
+            if (TextUtils.isEmpty(oid)) {
+                MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
+                return MbMessage.getEmpty();
+            } 
+            message =  MbMessage.fromOriginAndOid(httpConnection.connectionData.originId, oid);
+            message.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
+
+            parseComment(message, jso);
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(TAG, e, jso, "Parsing comment");
+        }
+        return message;
+    }
+    
+    private String userOidToName(String userId) {
+        String nickname = "";
+        if (!TextUtils.isEmpty(userId)) {
+            int indexOfColon = userId.indexOf(":");
+            int indexOfAt = userId.indexOf("@");
+            if (indexOfColon > 0 && indexOfAt > indexOfColon) {
+                nickname = userId.substring(indexOfColon+1, indexOfAt);
+            }
+        }
+        return nickname;
+    }
+    
+    @Override
+    public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public JSONObject followUser(String userId, Boolean follow) throws ConnectionException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public JSONObject getUser(String userId) throws ConnectionException {
+    public MbUser getUser(String userId) throws ConnectionException {
         // TODO Auto-generated method stub
         return null;
     }

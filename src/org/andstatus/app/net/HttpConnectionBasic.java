@@ -26,7 +26,6 @@ import java.io.UnsupportedEncodingException;
 
 class HttpConnectionBasic extends HttpConnection {
     private static final String TAG = HttpConnectionBasic.class.getSimpleName();
-    protected String mUsername;
     protected String mPassword;
 
     public HttpConnectionBasic(OriginConnectionData connectionData) {
@@ -34,7 +33,7 @@ class HttpConnectionBasic extends HttpConnection {
     }
     
     public void setAccountData(AccountDataReader dr) {
-        mUsername = dr.getUsername();
+        super.setAccountData(dr);
         mPassword = dr.getDataString(Connection.KEY_PASSWORD, "");
     }
     
@@ -45,7 +44,7 @@ class HttpConnectionBasic extends HttpConnection {
         try {
             HttpClient client = new DefaultHttpClient(new BasicHttpParams());
             postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
-            if (getCredentialsPresent(null)) {
+            if (getCredentialsPresent()) {
                 postMethod.addHeader("Authorization", "Basic " + getCredentials());
             }
             client.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, DEFAULT_POST_REQUEST_TIMEOUT);
@@ -112,16 +111,9 @@ class HttpConnectionBasic extends HttpConnection {
     }
 
     @Override
-    public boolean getCredentialsPresent(AccountDataReader dr) {
-        boolean yes = false;
-        if (dr != null) {
-            // This is not set for the new account
-            mUsername = dr.getUsername();
-        }
-        if (!TextUtils.isEmpty(mUsername) && !TextUtils.isEmpty(mPassword)) {
-            yes = true;
-        }
-        return yes;
+    public boolean getCredentialsPresent() {
+        return (!TextUtils.isEmpty(accountUsername) 
+                && !TextUtils.isEmpty(mPassword));
     }
 
     @Override
@@ -187,7 +179,7 @@ class HttpConnectionBasic extends HttpConnection {
      * @return String
      */
     private String getCredentials() {
-        return new String(Base64.encodeBytes((mUsername + ":" + mPassword).getBytes()));
+        return new String(Base64.encodeBytes((accountUsername + ":" + mPassword).getBytes()));
     }
 
     @Override

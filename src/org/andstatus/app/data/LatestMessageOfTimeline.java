@@ -23,7 +23,6 @@ import android.util.Log;
 
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
-import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;

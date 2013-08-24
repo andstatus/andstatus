@@ -170,6 +170,8 @@ public class CommandData {
                 bundle.putLong(MyService.EXTRA_INREPLYTOID, sp.getLong(MyService.EXTRA_INREPLYTOID + si, 0));
                 bundle.putLong(MyService.EXTRA_RECIPIENTID, sp.getLong(MyService.EXTRA_RECIPIENTID + si, 0));
                 break;
+            default:
+                break;
         }
 
         MyLog.v(TAG, "Restored command " + (MyService.EXTRA_MSGTYPE + si) + " = " + strCommand);
@@ -207,6 +209,8 @@ public class CommandData {
                 case PUT_STRING_PREFERENCE:
                     text += bundle.getString(MyService.EXTRA_PREFERENCE_KEY)
                             + bundle.getString(MyService.EXTRA_PREFERENCE_VALUE);
+                    break;
+                default:
                     break;
             }
             hashcode = text.hashCode();
@@ -297,6 +301,8 @@ public class CommandData {
                 ed.putString(MyService.EXTRA_STATUS + si, bundle.getString(MyService.EXTRA_STATUS));
                 ed.putLong(MyService.EXTRA_INREPLYTOID + si, bundle.getLong(MyService.EXTRA_INREPLYTOID));
                 ed.putLong(MyService.EXTRA_RECIPIENTID + si, bundle.getLong(MyService.EXTRA_RECIPIENTID));
+                break;
+            default:
                 break;
         }
         ed.commit();

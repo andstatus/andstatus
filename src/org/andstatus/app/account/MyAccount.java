@@ -50,7 +50,6 @@ import org.andstatus.app.net.OAuthConsumerAndProvider;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.json.JSONObject;
 
 /**
  * Immutable class that holds MyAccount-specific information including: 
@@ -184,6 +183,14 @@ public class MyAccount implements AccountDataReader {
             fixMyAccount();
 
             setConnection();
+            
+            if (!myAccount.getCredentialsPresent()) {
+                if (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
+                    Log.e(TAG, "User's credentials were lost?! Fixing...");
+                    setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
+                    save();
+                }
+            }
             
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "Loaded " + this.toString());
@@ -474,11 +481,15 @@ public class MyAccount implements AccountDataReader {
                         setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
                     }
                     if (ok && !isPersistent()) {
+                        save();
                         // Now we know the name (or proper case of the name) of this User!
+                        // We don't recreate MyAccount object for the new name
+                        //   in order to preserve credentials.
                         myAccount.oAccountName = AccountName.fromOriginAndUserNames(myAccount.oAccountName.getOriginName(), newName);
                         if (myAccount.userId == 0) {
                             assignUserId();
                         }
+                        setConnection();
                     }
                     if (!ok) {
                         setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
@@ -547,11 +558,9 @@ public class MyAccount implements AccountDataReader {
                 try {
                     // Construct "User" from available account info
                     // We need this User in order to be able to link Messages to him
-                    JSONObject dbUser = new JSONObject();
-                    dbUser.put("screen_name", myAccount.getUsername());
-                    dbUser.put(MyDatabase.User.ORIGIN_ID, myAccount.getOriginId());
+                    MbUser mbUser = MbUser.fromOriginAndUserName(myAccount.getOriginId(), myAccount.getUsername());
                     LatestUserMessages lum = new LatestUserMessages();
-                    myAccount.userId = di.insertUserFromJSONObject(dbUser, lum);
+                    myAccount.userId = di.insertOrUpdateUser(mbUser, lum);
                     lum.save();
                 } catch (Exception e) {
                     Log.e(TAG, "Construct user: " + e.toString());
@@ -734,7 +743,7 @@ public class MyAccount implements AccountDataReader {
         try {
             String str = getDataString(key, "null");
             if (str.compareTo("null") != 0) {
-                value = (SharedPreferencesUtil.isTrue(str) != 0);
+                value = SharedPreferencesUtil.isTrue(str);
             }
         } catch (Exception e) {}
         return value;
@@ -781,7 +790,7 @@ public class MyAccount implements AccountDataReader {
     }
     
     public boolean getCredentialsPresent() {
-        return getConnection().getCredentialsPresent(this);
+        return getConnection().getCredentialsPresent();
     }    
     
     public CredentialsVerificationStatus getCredentialsVerified() {
@@ -1097,7 +1106,7 @@ public class MyAccount implements AccountDataReader {
     public long getUserId() {
         return userId;
     }
-
+    
     /**
      * @return id of the system in which the User is defined, see {@link MyDatabase.User#ORIGIN_ID}
      */

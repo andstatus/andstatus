@@ -299,7 +299,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!mIsFinishing) {
             boolean helpAsFirstActivity = false;
             boolean showChangeLog = false;
-            if (!MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
+            if (MyPreferences.shouldSetDefaultValues()) {
                 Log.i(TAG, "We are running the Application for the very first time?");
                 helpAsFirstActivity = true;
             } else if (MyAccount.getCurrentAccount() == null) {
@@ -1162,7 +1162,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     /* TODO: Other conditions... */
                     sa.clear();
 
-                    // TODO: Move this selections to the {@link MyProvider} ?!
+                    // TODO: Move these selections to the {@link MyProvider} ?!
                     switch (mTimelineType) {
                         case HOME:
                             // In the Home of the combined timeline we see ALL loaded
@@ -1205,6 +1205,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                                             Long.toString(mSelectedUserId), Long.toString(mSelectedUserId),
                                             Long.toString(mSelectedUserId)
                                     });
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -1373,6 +1375,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             case FOLLOWING_USER:
                 timelineType = mTimelineType;
                 userId = mSelectedUserId;
+                break;
+            default:
                 break;
         }
 
@@ -1854,6 +1858,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     updateTitle(commandData.commandResult.remaining_hits + "/"
                             + commandData.commandResult.hourly_limit);
                 }
+            default:
+                break;
         }
     }
 }

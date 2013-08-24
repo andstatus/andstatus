@@ -69,7 +69,7 @@ public class FollowingUserValues {
         if (userId != 0 && followingUserId != 0 && contentValues.containsKey(FollowingUser.USER_FOLLOWED)) {
             // This works for API 17 but not for API 10:
             // followed = contentValues.getAsBoolean(FollowingUser.USER_FOLLOWED);
-            followed = (SharedPreferencesUtil.isTrue(contentValues.get(FollowingUser.USER_FOLLOWED)) == 1);
+            followed = SharedPreferencesUtil.isTrue(contentValues.get(FollowingUser.USER_FOLLOWED));
         } else {
             // Don't change anything as there is no information
             return;

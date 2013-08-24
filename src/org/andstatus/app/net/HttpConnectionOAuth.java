@@ -82,15 +82,14 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
         mProvider.setOAuth10a(true);
     }
     
+    @Override
     public void setAccountData(AccountDataReader dr) {
-
-        
+        super.setAccountData(dr);
         // We look for saved user keys
         if (dr.dataContains(USER_TOKEN) && dr.dataContains(USER_SECRET)) {
-            setUserTokenWithSecret(
-                    dr.getDataString(USER_TOKEN, null),
-                    dr.getDataString(USER_SECRET, null)
-                    );
+            userToken = dr.getDataString(USER_TOKEN, null);
+            userSecret = dr.getDataString(USER_SECRET, null);
+            setUserTokenWithSecret(userToken, userSecret);
         }
     }
 
@@ -111,14 +110,9 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
      * @see org.andstatus.app.net.Connection#getCredentialsPresent()
      */
     @Override
-    public boolean getCredentialsPresent(AccountDataReader dr) {
+    public boolean getCredentialsPresent() {
         boolean yes = false;
         if (connectionData.clientKeys.areKeysPresent()) {
-            if (dr != null && dr.dataContains(USER_TOKEN) && dr.dataContains(USER_SECRET)) {
-                // TODO: Side effect! - refactor
-                userToken = dr.getDataString(USER_TOKEN, null);
-                userSecret = dr.getDataString(USER_SECRET, null);
-            }
             if (!TextUtils.isEmpty(userToken) && !TextUtils.isEmpty(userSecret)) {
                 yes = true;
             }

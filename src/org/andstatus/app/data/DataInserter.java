@@ -1,9 +1,7 @@
 package org.andstatus.app.data;
 
-
 /* 
  * Copyright (c) 2012-2013 yvolk (Yuri Volkov), http://yurivolkov.com
- * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,27 +24,24 @@ import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.net.MbMessage;
+import org.andstatus.app.net.MbUser;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
-import android.text.Html;
+import android.text.TextUtils;
 import android.util.Log;
 
 /**
- * Stores ("inserts" -  adds or updates) JSON-ed Tweets or Messages
- *  in the database.
- *  The Tweets/Messages come both from process "1" above and from other 
- *  processes ("update status", "favorite/unfavorite", ...).
- *  In also deletes Tweets/Messages from the database.
+ * Stores ("inserts" -  adds or updates) messages and users
+ *  from Microblogging system in the database.
  * 
- * @author yvolk, torgny.bjers
+ * @author Yuri Volkov
  */
 public class DataInserter {
     private static final String TAG = DataInserter.class.getSimpleName();
@@ -84,32 +79,11 @@ public class DataInserter {
         mTimelineType = timelineType;
     }
     
-    /**
-     * Insert a Timeline row from a JSONObject
-     * or update existing one.
-     * 
-     * @param msg - The row to insert
-     * @return Information on all messages that were added or updated. Empty Collection if none were added/updated.
-     * @throws JSONException
-     * @throws SQLiteConstraintException
-     */
-    public long insertMsgFromJSONObject(JSONObject msg, LatestUserMessages lum) throws JSONException, SQLiteConstraintException {
-        return insertMsgBySender(msg, lum, 0);
+    public long insertOrUpdateMsg(MbMessage message, LatestUserMessages lum) throws SQLiteConstraintException {
+        return insertOrUpdateMsgBySender(message, lum, 0);
     }
     
-    /**
-     * Insert a Timeline row from a JSONObject
-     * or update existing one.
-     * 
-     * @param msg - The row to insert
-     * @param senderId_in - senderId to use in case the message doesn't have the User object
-     * @return Information on all messages and their users that were added or updated. 
-     *      Empty Collection if none were added/updated. 
-     *      Each added message may give up to two entries: one for a Sender and one for an Author.
-     * @throws JSONException
-     * @throws SQLiteConstraintException
-     */
-    private long insertMsgBySender(JSONObject msg, LatestUserMessages lum, long senderId_in) throws JSONException, SQLiteConstraintException {
+    private long insertOrUpdateMsgBySender(MbMessage message, LatestUserMessages lum, long senderId_in) throws SQLiteConstraintException {
         /**
          * Id of the message in our system, see {@link MyDatabase.Msg#MSG_ID}
          */
@@ -124,60 +98,33 @@ public class DataInserter {
             // We use Created date from this message as "Sent date" even for reblogs in order to
             // get natural order of the tweets.
             // Otherwise reblogged message may appear as old
-            long sentDate = 0;
+            long sentDate = message.sentDate;
             long createdDate = 0;
-            if (msg.has("created_at")) {
-                Long created = 0L;
-                String createdAt = msg.getString("created_at");
-                if (createdAt.length() > 0) {
-                    created = Date.parse(createdAt);
-                }
-                if (created > 0) {
-                    sentDate = created;
-                    createdDate = created;
-                    mDownloaded += 1;
-                }
+            if (sentDate > 0) {
+                createdDate = sentDate;
+                mDownloaded += 1;
             }
             
             // Sender
             Long senderId = 0L;
-            JSONObject sender;
-            String senderObjectName;
-            switch (mTimelineType) {
-                case DIRECT:
-                    senderObjectName = "sender";
-                    break;
-                default:
-                    senderObjectName = "user";
-            }
-            if (msg.has(senderObjectName)) {
-                sender = msg.getJSONObject(senderObjectName);
-                senderId = insertUserFromJSONObject(sender, lum);
+            if (message.sender != null) {
+                senderId = insertOrUpdateUser(message.sender, lum);
             } else if (senderId_in != 0) {
                 senderId = senderId_in;
             } else {
-                Log.w(TAG, "insertMsgBySender: sender object (" + senderObjectName + ") is not present");
+                Log.w(TAG, "insertMsgBySender: sender is not present");
                 skipIt = true;
             }
 
-            String rowOid = "";
-            if (msg.has("id_str")) {
-                rowOid = msg.getString("id_str");
-            } else if (msg.has("id")) {
-                // This is for identi.ca
-                rowOid = msg.getString("id");
-            } 
+            String rowOid = message.oid;
             
             // Author
             long authorId = senderId;
             // Is this a reblog?
-            if (msg.has("retweeted_status")) {
-                JSONObject rebloggedMessage = msg.getJSONObject("retweeted_status");
-                if (rebloggedMessage.has("user")) {
+            if (message.rebloggedMessage != null) {
+                if (message.rebloggedMessage.sender != null) {
                     // Author of that message
-                    JSONObject author;
-                    author = rebloggedMessage.getJSONObject("user");
-                    authorId = insertUserFromJSONObject(author, lum);
+                    authorId = insertOrUpdateUser(message.rebloggedMessage.sender, lum);
                 }
 
                 if (ma.getUserId() == senderId) {
@@ -193,32 +140,20 @@ public class DataInserter {
 
                 // And replace reblog with original message!
                 // So we won't have lots of reblogs but rather one original message
-                msg = rebloggedMessage;
-
+                message = message.rebloggedMessage;
                 // Try to retrieve the message id again
-                if (msg.has("id_str")) {
-                    rowOid = msg.getString("id_str");
-                } else if (msg.has("id")) {
-                    // This is for identi.ca
-                    rowOid = msg.getString("id");
+                if (!TextUtils.isEmpty(message.oid)) {
+                    rowOid = message.oid;
                 } 
-                
                 // Created date is usually earlier for reblogs:
-                if (msg.has("created_at")) {
-                    Long created = 0L;
-                    String createdAt = msg.getString("created_at");
-                    if (createdAt.length() > 0) {
-                        created = Date.parse(createdAt);
-                    }
-                    if (created > 0) {
-                        createdDate = created;
-                    }
+                if (message.sentDate > 0 ) {
+                    createdDate = message.sentDate;
                 }
             }
             values.put(MyDatabase.Msg.AUTHOR_ID, authorId);
 
             if (SharedPreferencesUtil.isEmpty(rowOid)) {
-                Log.w(TAG, "insertMsgFromJSONObject - no message id");
+                Log.w(TAG, "insertMsg - no message id");
                 skipIt = true;
             }
             if (!skipIt) {
@@ -253,10 +188,7 @@ public class DataInserter {
                     countIt = true;
                 }
                 
-                String body = "";
-                if (msg.has("text")) {
-                    body = Html.fromHtml(msg.getString("text")).toString();
-                }
+                String body = message.body;
 
                 if (isNew) {
                     values.put(MyDatabase.Msg.CREATED_DATE, createdDate);
@@ -276,10 +208,7 @@ public class DataInserter {
                 }
                 
                 // If the Msg is a Reply to other message
-                String inReplyToUserOid = "";
-                String inReplyToUserName = "";
                 Long inReplyToUserId = 0L;
-                String inReplyToMessageOid = "";
                 Long inReplyToMessageId = 0L;
 
                 boolean mentioned = (mTimelineType == TimelineTypeEnum.MENTIONS);
@@ -287,11 +216,10 @@ public class DataInserter {
                 switch (mTimelineType) {
                     case DIRECT:
                         values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
-
-                        // Recipient
                         Long recipientId = 0L;
-                        JSONObject recipient = msg.getJSONObject("recipient");
-                        recipientId = insertUserFromJSONObject(recipient, lum);
+                        if (message.recipient != null) {
+                            recipientId = insertOrUpdateUser(message.recipient, lum);
+                        }
                         values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
                         break;
                         
@@ -299,35 +227,22 @@ public class DataInserter {
                         values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
                         
                     default:
-                        if (msg.has("source")) {
-                            values.put(MyDatabase.Msg.VIA, msg.getString("source"));
+                        if (!TextUtils.isEmpty(message.via)) {
+                            values.put(MyDatabase.Msg.VIA, message.via);
                         }
-                        if (msg.has("favorited")) {
-                            values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(msg.getString("favorited")));
+                        if (message.favoritedByReader != null) {
+                            values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(message.favoritedByReader));
                         }
 
-                        if (msg.has("in_reply_to_user_id_str")) {
-                            inReplyToUserOid = msg.getString("in_reply_to_user_id_str");
-                        } else if (msg.has("in_reply_to_user_id")) {
-                            // This is for identi.ca
-                            inReplyToUserOid = msg.getString("in_reply_to_user_id");
-                        }
-                        if (SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
-                            inReplyToUserOid = "";
-                        }
-                        if (!SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
-                            if (msg.has("in_reply_to_screen_name")) {
-                                inReplyToUserName = msg.getString("in_reply_to_screen_name");
+                        if (message.inReplyToMessage != null) {
+                            // Type of the timeline is ALL meaning that message does not belong to this timeline
+                            DataInserter di = new DataInserter(ma, mContext, MyDatabase.TimelineTypeEnum.ALL);
+                            inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
+                            if (message.inReplyToMessage.sender != null) {
+                                inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
                             }
-                            inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, ma.getOriginId(), inReplyToUserOid);
-                            
-                            // Construct "User" from available info
-                            JSONObject inReplyToUser = new JSONObject();
-                            inReplyToUser.put("id_str", inReplyToUserOid);
-                            inReplyToUser.put("screen_name", inReplyToUserName);
-                            if (inReplyToUserId == 0) {
-                                inReplyToUserId = insertUserFromJSONObject(inReplyToUser, lum);
-                            }
+                        }
+                        if (inReplyToUserId != 0) {
                             values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
                             
                             if (ma.getUserId() == inReplyToUserId) {
@@ -339,28 +254,7 @@ public class DataInserter {
                                 // ...Yes, at least as long as we don't have "Replies" timeline type 
                                 mentioned = true;
                             }
-
-                            if (msg.has("in_reply_to_status_id_str")) {
-                                inReplyToMessageOid = msg.getString("in_reply_to_status_id_str");
-                            } else if (msg.has("in_reply_to_status_id")) {
-                                // This is for identi.ca
-                                inReplyToMessageOid = msg.getString("in_reply_to_status_id");
-                            }
-                            if (SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
-                                inReplyToUserOid = "";
-                            }
-                            if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
-                                inReplyToMessageId = MyProvider.oidToId(OidEnum.MSG_OID, ma.getOriginId(), inReplyToMessageOid);
-                                if (inReplyToMessageId == 0) {
-                                    // Construct Related "Msg" from available info
-                                    // and add it recursively
-                                    JSONObject inReplyToMessage = new JSONObject();
-                                    inReplyToMessage.put("id_str", inReplyToMessageOid);
-                                    inReplyToMessage.put(senderObjectName, inReplyToUser);
-                                    // Type of the timeline is ALL meaning that message does not belong to this timeline
-                                    DataInserter di = new DataInserter(ma, mContext, MyDatabase.TimelineTypeEnum.ALL);
-                                    inReplyToMessageId = di.insertMsgFromJSONObject(inReplyToMessage, lum);
-                                }
+                            if (inReplyToMessageId != 0) {
                                 values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
                             }
                         }
@@ -407,13 +301,7 @@ public class DataInserter {
                 }
             }
             if (skipIt) {
-                Log.w(TAG, "insertMsgBySender, the message was skipped: " + msg.toString(2));
-            }
-        } catch (JSONException e) {
-            Log.e(TAG, "insertMsgBySender: " + e.toString());
-            e.printStackTrace();
-            if (msg != null) {
-                Log.w(TAG, "msg: " + msg.toString());
+                Log.w(TAG, "insertMsgBySender, the message was skipped: " + message.toString());
             }
         } catch (Exception e) {
             Log.e(TAG, "insertMsgBySender: " + e.toString());
@@ -423,61 +311,26 @@ public class DataInserter {
         return rowId;
     }
 
-    /**
-     * Insert a User row from a JSONObject. The same as {@link #insertUserFromJSONObject(JSONObject, LatestUserMessages)} 
-     * but it saves latest user message internally
-     */
-    public long insertUserFromJSONObject(JSONObject user) throws JSONException, SQLiteConstraintException {
+    public long insertOrUpdateUser(MbUser user) throws SQLiteConstraintException {
         LatestUserMessages lum = new LatestUserMessages();
-        long userId = insertUserFromJSONObject(user, lum);
+        long userId = insertOrUpdateUser(user, lum);
         lum.save();
         return userId;
     }
     
-    /**
-     * Insert a User row from a JSONObject.
-     * 
-     * @param user - The row to insert
-     * @param lum The method should add to this object information on all messages that were added or updated.
-     * @return id of the User added/updated. 0 in case of an error
-     * @throws JSONException
-     * @throws SQLiteConstraintException
-     */
-    public long insertUserFromJSONObject(JSONObject user, LatestUserMessages lum) throws JSONException, SQLiteConstraintException {
-        String userName = "";
-        if (user.has("screen_name")) {
-            userName = user.getString("screen_name");
-            if (SharedPreferencesUtil.isEmpty(userName)) {
-                userName = "";
-            }
-        }
-        String rowOid = "";
-        if (user.has("id_str")) {
-            rowOid = user.getString("id_str");
-        } else if (user.has("id")) {
-            rowOid = user.getString("id");
-        } 
-        Long originId = 0L;
+    public long insertOrUpdateUser(MbUser sender, LatestUserMessages lum) throws SQLiteConstraintException {
+        String userName = sender.userName;
+        String rowOid = sender.oid;
+        Long originId = sender.originId;
         Long rowId = 0L;
-        try {
-            originId = Long.parseLong(user.getString(MyDatabase.User.ORIGIN_ID));
-        } 
-        catch (Exception e) {}
-        finally {
-            if (originId == 0) {
-                originId = ma.getOriginId();
-            }
-        }
-        if (SharedPreferencesUtil.isEmpty(rowOid)) {
-            rowOid = "";
-        } else {
+        if (!SharedPreferencesUtil.isEmpty(rowOid)) {
             // Lookup the System's (AndStatus) id from the Originated system's id
             rowId = MyProvider.oidToId(OidEnum.USER_OID, originId, rowOid);
         }
         if (rowId == 0) {
             // Try to Lookup by Username
             if (SharedPreferencesUtil.isEmpty(userName)) {
-                Log.w(TAG, "insertUserFromJSONObject - no username: " + user.toString(2));
+                Log.w(TAG, "insertUserFromJSONObject - no username: " + sender.toString());
                 return rowId;
             } else {
                 rowId = MyProvider.userNameToId(originId, userName);
@@ -494,39 +347,27 @@ public class DataInserter {
             if (!SharedPreferencesUtil.isEmpty(userName)) {
                 values.put(MyDatabase.User.USERNAME, userName);
             }
-            if (user.has("name")) {
-                values.put(MyDatabase.User.REAL_NAME, user.getString("name"));
+            if (!TextUtils.isEmpty(sender.realName)) {
+                values.put(MyDatabase.User.REAL_NAME, sender.realName);
             }
-            if (user.has("profile_image_url")) {
-                values.put(MyDatabase.User.AVATAR_URL, user.getString("profile_image_url"));
+            if (!TextUtils.isEmpty(sender.avatarUrl)) {
+                values.put(MyDatabase.User.AVATAR_URL, sender.avatarUrl);
             }
-            if (user.has("description")) {
-                values.put(MyDatabase.User.DESCRIPTION, user.getString("description"));
+            if (!TextUtils.isEmpty(sender.description)) {
+                values.put(MyDatabase.User.DESCRIPTION, sender.description);
             }
-            if (user.has("url")) {
-                values.put(MyDatabase.User.HOMEPAGE, user.getString("url"));
+            if (!TextUtils.isEmpty(sender.homepage)) {
+                values.put(MyDatabase.User.HOMEPAGE, sender.homepage);
             }
-            
-            if (user.has("created_at")) {
-                Long created = 0L;
-                String createdAt = user.getString("created_at");
-                if (createdAt.length() > 0) {
-                    created = Date.parse(createdAt);
-                }
-                if (created > 0) {
-                    values.put(MyDatabase.User.CREATED_DATE, created);
+            if (sender.createdDate > 0) {
+                values.put(MyDatabase.User.CREATED_DATE, sender.createdDate);
+            } else if ( rowId == 0) {
+                if (sender.updatedDate > 0) {
+                    values.put(MyDatabase.User.CREATED_DATE, sender.updatedDate);
                 }
             }
-
-            if (!user.isNull("following")) {
-                boolean followed = false;
-                try {
-                    followed = user.getBoolean("following");
-                    values.put(MyDatabase.FollowingUser.USER_FOLLOWED, followed);
-                    MyLog.v(TAG, "insertUserFromJSONObject: '" + userName + "' is " + (followed ? "followed" : "not followed") );
-                } catch (JSONException e) {
-                    Log.e(TAG, "insertUserFromJSONObject error; following='" + user.getString("following") +"'. " + e.toString());
-                }
+            if (sender.followedByReader != null ) {
+                values.put(MyDatabase.FollowingUser.USER_FOLLOWED, sender.followedByReader);
             }
             
             // Construct the Uri to the User
@@ -538,11 +379,9 @@ public class DataInserter {
             } else {
               mContentResolver.update(userUri, values, null, null);
             }
-
-            if (user.has("status")) {
-                JSONObject latestMessage = user.getJSONObject("status");
+            if (sender.latestMessage != null) {
                 // This message doesn't have a sender!
-                insertMsgBySender(latestMessage, lum, rowId);
+                insertOrUpdateMsgBySender(sender.latestMessage, lum, rowId);
             }
             
         } catch (Exception e) {
@@ -551,54 +390,27 @@ public class DataInserter {
         return rowId;
     }
     
-    
-    /**
-     * Insert one message from a JSONObject. Notifies listeners of the change. 
-     * Saves latest User message information.
-     * 
-     * @param jo
-     * @return id of the inserted message
-     * @throws JSONException
-     * @throws SQLiteConstraintException
-     */
-    public long insertMsgFromJSONObject(JSONObject jo) throws JSONException,
-            SQLiteConstraintException {
+    public long insertOrUpdateMsg(MbMessage jo) throws SQLiteConstraintException {
         LatestUserMessages lum = new LatestUserMessages();
-        long rowId = insertMsgFromJSONObject(jo, lum);
+        long rowId = insertOrUpdateMsg(jo, lum);
         lum.save();
         mContentResolver.notifyChange(MyProvider.TIMELINE_URI, null);
         return rowId;
     }
 
-    /**
-     * Return the number of new messages, see {@link MyDatabase.Msg} .
-     * 
-     * @return integer
-     */
-    public int messagesCount() {
+    public int newMessagesCount() {
         return mMessages;
     }
 
-    /**
-     * Return the number of new Replies.
-     * @return integer
-     */
-    public int repliesCount() {
+    public int newRepliesCount() {
         return mReplies;
     }
 
-    /**
-     * Return the number of new Mentions.
-     * @return integer
-     */
-    public int mentionsCount() {
+    public int newMentionsCount() {
         return mMentions;
     }
 
-    /**
-     * Return total number of downloaded Messages
-     */
-    public int downloadedCount() {
+    public int totalMessagesDownloadedCount() {
         return mDownloaded;
     }
 }

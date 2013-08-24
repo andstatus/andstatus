@@ -26,6 +26,8 @@ abstract class HttpConnection {
     
     protected OriginConnectionData connectionData;
 
+    protected String accountUsername = "";
+
     static final String USER_AGENT = "AndStatus";
 
     public static HttpConnection fromConnectionData(OriginConnectionData connectionData) {
@@ -113,7 +115,9 @@ abstract class HttpConnection {
 
     public abstract void clearAuthInformation();
 
-    public abstract void setAccountData(AccountDataReader dr);
+    public void setAccountData(AccountDataReader dr) {
+        accountUsername = dr.getUsername();
+    }
     
     protected boolean isOAuth() {
         return connectionData.isOAuth;
@@ -154,7 +158,7 @@ abstract class HttpConnection {
      * Do we have enough credentials to verify them?
      * @return true == yes
      */
-    public abstract boolean getCredentialsPresent(AccountDataReader dr);
+    public abstract boolean getCredentialsPresent();
 
     public void setUserTokenWithSecret(String token, String secret) {
         throw(new IllegalArgumentException("setUserTokenWithSecret is for OAuth only!"));

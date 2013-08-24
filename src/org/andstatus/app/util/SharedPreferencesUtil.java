@@ -181,24 +181,32 @@ public class SharedPreferencesUtil {
             return false;
     }
 
+    public static int isTrueAsInt(Object o) {
+        return (isTrue(o) ? 1 : 0);
+    }
+    
     /**
-     * Returns true not only for boolean, but for "1" also
-     * @param o
-     * @return  1 = true, 0 - false or null
+     * Returns true not only for boolean true or String "true", but for "1" also
      */
-    public static int isTrue(Object o) {
+    public static boolean isTrue(Object o) {
         boolean is = false;
         try {
             if (o != null) {
-                String val = o.toString();
-                is = Boolean.parseBoolean(val);
-                if (!is) {
-                    if ( val.compareTo("1") == 0) {
-                        is = true;
+                if (o instanceof Boolean) {
+                    is = (Boolean) o;
+                } else {
+                    String string = o.toString();
+                    if (!isEmpty(string)) {
+                        is = Boolean.parseBoolean(string);
+                        if (!is) {
+                            if ( string.compareTo("1") == 0) {
+                                is = true;
+                            }
+                        }
                     }
                 }
             }
         } catch (Exception e) {}
-        return (is ? 1 : 0);
+        return is;
     }
 }

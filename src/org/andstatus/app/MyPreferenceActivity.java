@@ -92,13 +92,17 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         super.onCreate(savedInstanceState);
 
         MyPreferences.initialize(this, this);
-        addPreferencesFromResource(R.xml.preferences);
-        // Default values for the preferences will be set only once
-        // and in one place: here
-        MyPreferences.setDefaultValues(R.xml.preferences, false);
-        if (!MyPreferences.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, MODE_PRIVATE).getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false)) {
-          Log.e(TAG, "Default values were not set?!");   
+        if (MyPreferences.shouldSetDefaultValues()) {
+            // Default values for the preferences will be set only once
+            // and in one place: here
+            MyPreferences.setDefaultValues(R.xml.preferences, false);
+            if (MyPreferences.shouldSetDefaultValues()) {
+                Log.e(TAG, "Default values were not set?!");   
+            } else {
+                Log.i(TAG, "Default values has been set");   
+            }
         }
+        addPreferencesFromResource(R.xml.preferences);
         
         mNotificationRingtone = (RingtonePreference) findPreference(MyPreferences.KEY_RINGTONE_PREFERENCE);
         mUseExternalStorage = (CheckBoxPreference) getPreferenceScreen().findPreference(

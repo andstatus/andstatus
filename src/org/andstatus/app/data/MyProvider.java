@@ -359,7 +359,7 @@ public class MyProvider extends ContentProvider {
         int ret = 2;
         if (valuesIn != null) {
             if (valuesIn.containsKey(key) ) {
-                ret = SharedPreferencesUtil.isTrue(valuesIn.get(key));
+                ret = SharedPreferencesUtil.isTrueAsInt(valuesIn.get(key));
                 valuesIn.remove(key);
                 if (valuesOut != null) {
                     valuesOut.put(key, ret);
@@ -612,6 +612,8 @@ public class MyProvider extends ContentProvider {
                         + " AND msg." + BaseColumns._ID + "=u1."
                         + MyDatabase.User.USER_MSG_ID + ")";
                 linkedUserDefined = true;
+            default:
+                break;
         }
 
         if (columns.contains(MyDatabase.MsgOfUser.FAVORITED)

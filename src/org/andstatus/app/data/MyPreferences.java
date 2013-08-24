@@ -247,6 +247,18 @@ public class MyPreferences {
         }
     }
 
+    public static synchronized boolean shouldSetDefaultValues() {
+        if (context == null) {
+            Log.e(TAG, "areDefaultValuesSet - Was not initialized yet");
+            return false;
+        } else {
+            boolean areSetAlready = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES,
+                    android.content.Context.MODE_PRIVATE)
+                    .getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false);
+            return !areSetAlready;
+        }
+    }
+    
     public static synchronized void setDefaultValues(int resId, boolean readAgain) {
         if (context == null) {
             Log.e(TAG, "setDefaultValues - Was not initialized yet");

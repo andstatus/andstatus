@@ -27,9 +27,6 @@ import org.andstatus.app.net.Connection;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
-import org.apache.http.NameValuePair;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -119,7 +116,7 @@ public abstract class Connection {
     }
 
     protected HttpConnection httpConnection;
-    
+
     public Connection(OriginConnectionData connectionData) {
         httpConnection = HttpConnection.fromConnectionData(connectionData);
     }
@@ -176,9 +173,8 @@ public abstract class Connection {
     
     /**
      * Check API requests status.
-     * TODO: Formalize this for different microblogging systems.
      */
-    public abstract JSONObject rateLimitStatus() throws ConnectionException;
+    public abstract MbRateLimitStatus rateLimitStatus() throws ConnectionException;
 
     /**
      * Do we need password to be set?
@@ -211,8 +207,8 @@ public abstract class Connection {
      * Do we have enough credentials to verify them?
      * @return true == yes
      */
-    public final boolean getCredentialsPresent(AccountDataReader dr) {
-        return httpConnection.getCredentialsPresent(dr);
+    public final boolean getCredentialsPresent() {
+        return httpConnection.getCredentialsPresent();
     }
     
     /**
@@ -220,13 +216,7 @@ public abstract class Connection {
      */
     public abstract MbUser verifyCredentials() throws ConnectionException;
 
-    /**
-     * 
-     * @param statusId
-     * @return JSONObject
-     * @throws ConnectionException
-     */
-    public abstract JSONObject destroyFavorite(String statusId) throws ConnectionException;
+    public abstract MbMessage destroyFavorite(String statusId) throws ConnectionException;
 
     /**
      * Favorites the status specified in the ID parameter as the authenticating user.
@@ -234,12 +224,8 @@ public abstract class Connection {
      * @see <a
      *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-favorites%C2%A0create">Twitter
      *      REST API Method: favorites create</a>
-     * 
-     * @param statusId
-     * @return JSONObject
-     * @throws ConnectionException
      */
-    public abstract JSONObject createFavorite(String statusId) throws ConnectionException;
+    public abstract MbMessage createFavorite(String statusId) throws ConnectionException;
 
     /**
      * Destroys the status specified by the required ID parameter.
@@ -247,24 +233,20 @@ public abstract class Connection {
      * @see <a
      *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses%C2%A0destroy">Twitter
      *      REST API Method: statuses/destroy</a>
-     * 
-     * @param statusId
-     * @return JSONObject
-     * @throws ConnectionException
      */
-    public abstract JSONObject destroyStatus(String statusId) throws ConnectionException;
+    public abstract boolean destroyStatus(String statusId) throws ConnectionException;
 
     /**
      * Returns an array of numeric IDs for every user the specified user is following.
      * @throws ConnectionException
      */
-    public abstract JSONArray getFriendsIds(String userId) throws ConnectionException;
+    public abstract List<String> getFriendsIds(String userId) throws ConnectionException;
     
     /**
      * Returns a single status, specified by the id parameter below.
      * The status's author will be returned inline.
      */
-    public abstract JSONObject getStatus(String statusId) throws ConnectionException;
+    public abstract MbMessage getStatus(String statusId) throws ConnectionException;
     
     /**
      * Update user status by posting to the Twitter REST API.
@@ -280,7 +262,7 @@ public abstract class Connection {
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
      *      POST statuses/update</a>
      */
-    public abstract JSONObject updateStatus(String message, String inReplyToId)
+    public abstract MbMessage updateStatus(String message, String inReplyToId)
             throws ConnectionException;
 
     /**
@@ -290,10 +272,10 @@ public abstract class Connection {
      * 
      * @param message
      * @param userId {@link User#USER_OID} - The ID of the user who should receive the direct message
-     * @return The sent message in the requested format if successful.
+     * @return The sent message if successful (empty message if not)
      * @throws ConnectionException
      */
-    public abstract JSONObject postDirectMessage(String message, String userId)
+    public abstract MbMessage postDirectMessage(String message, String userId)
             throws ConnectionException;
 
     /**
@@ -302,23 +284,16 @@ public abstract class Connection {
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/retweet/%3Aid">POST statuses/retweet/:id</a>
      * 
      * @param rebloggedId id of the Reblogged message
-     * @return
      * @throws ConnectionException
      */
-    public abstract JSONObject postReblog(String rebloggedId)
+    public abstract MbMessage postReblog(String rebloggedId)
             throws ConnectionException;
 
     /**
      * Universal method for several Timeline Types...
-     * 
-     * @param apiRoutine - which timeline to retrieve
-     * @param sinceId
-     * @param limit
      * @param userId For the {@link ApiRoutineEnum#STATUSES_USER_TIMELINE}, null for the other timelines
-     * @return
-     * @throws ConnectionException
      */
-    public abstract JSONArray getTimeline(ApiRoutineEnum apiRoutine, String sinceId, int limit, String userId)
+    public abstract List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, String sinceId, int limit, String userId)
             throws ConnectionException;
 
     /**
@@ -329,8 +304,7 @@ public abstract class Connection {
      * @return User object with 'following' flag set/reset
      * @throws ConnectionException
      */
-    public abstract JSONObject followUser(String userId, Boolean follow) throws ConnectionException;
-
+    public abstract MbUser followUser(String userId, Boolean follow) throws ConnectionException;
 
     /**
      * Get information about the specified User
@@ -338,11 +312,7 @@ public abstract class Connection {
      * @return User object
      * @throws ConnectionException
      */
-    public abstract JSONObject getUser(String userId) throws ConnectionException;
-    
-    protected final JSONObject postRequest(ApiRoutineEnum apiRoutine, List<NameValuePair> formParams) throws ConnectionException {
-        return httpConnection.postRequest(getApiPath(apiRoutine), formParams);
-    }
+    public abstract MbUser getUser(String userId) throws ConnectionException;
     
     protected final String fixSinceId(String sinceId) {
         String out = "";

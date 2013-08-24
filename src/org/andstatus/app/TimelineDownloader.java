@@ -18,6 +18,7 @@
 package org.andstatus.app;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.andstatus.app.account.MyAccount;
@@ -33,10 +34,9 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.MbMessage;
+import org.andstatus.app.net.MbUser;
 import org.andstatus.app.util.MyLog;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -104,7 +104,8 @@ public class TimelineDownloader {
         if ((ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) && MyPreferences.isDataAvailable()) {
             switch (mTimelineType) {
                 case FOLLOWING_USER:
-                    ok = loadFollowingUserTimeline();
+                    loadFollowingUserTimeline();
+                    ok = true;
                     break;
                 case ALL:
                     Log.e(TAG, "Invalid TimelineType for loadTimeline: " + mTimelineType);
@@ -122,8 +123,6 @@ public class TimelineDownloader {
      * @throws ConnectionException
      */
     private boolean loadMsgTimeline() throws ConnectionException {
-        boolean ok = false;
-        
         String userOid =  null;
         if (mUserId != 0) {
             userOid =  MyProvider.idToOid(OidEnum.USER_OID, mUserId, 0);
@@ -146,42 +145,30 @@ public class TimelineDownloader {
         int limit = 200;
         String lastOid = MyProvider.idToOid(OidEnum.MSG_OID, timelineMsg.getLastMsgId(), 0);
         timelineMsg.onTimelineDownloaded();
-        JSONArray jArr = ma.getConnection().getTimeline(mTimelineType.getConnectionApiRoutine(), lastOid, limit, userOid);
-        if (jArr != null) {
-            ok = true;
-            try {
-                LatestUserMessages lum = new LatestUserMessages();
-                DataInserter di = new DataInserter(ma, mContext, mTimelineType);
-                for (int index = 0; index < jArr.length(); index++) {
-                    JSONObject msg = jArr.getJSONObject(index);
-                    long msgId = di.insertMsgFromJSONObject(msg, lum);
-                    timelineMsg.onNewMsg(msgId, 0);
-                }
-                mDownloaded += di.downloadedCount();
-                mMessages += di.messagesCount();
-                mMentions += di.mentionsCount();
-                mReplies += di.repliesCount();
-                lum.save();
-            } catch (JSONException e) {
-                ok = false;
-                e.printStackTrace();
+        List<MbMessage> messages = ma.getConnection().getTimeline(mTimelineType.getConnectionApiRoutine(), lastOid, limit, userOid);
+        if (messages.size()>0) {
+            LatestUserMessages lum = new LatestUserMessages();
+            DataInserter di = new DataInserter(ma, mContext, mTimelineType);
+            for (MbMessage message : messages) {
+                long msgId = di.insertOrUpdateMsg(message, lum);
+                timelineMsg.onNewMsg(msgId, 0);
             }
-        }
-        if (ok) {
+            mDownloaded += di.totalMessagesDownloadedCount();
+            mMessages += di.newMessagesCount();
+            mMentions += di.newMentionsCount();
+            mReplies += di.newRepliesCount();
+            lum.save();
             timelineMsg.save();
         }
-        return ok;
+        return true;
     }
 
     /**
-     * Load the User Ids from the Internet and store them in the local database.
+     * Load from the Internet the Ids of the Users who are following the authenticated user
+     *   and store them in the local database.
      * mUserId is required to be set
-     * 
-     * @throws ConnectionException
      */
-    private boolean loadFollowingUserTimeline() throws ConnectionException {
-        boolean ok = false;
-        
+    private void loadFollowingUserTimeline() throws ConnectionException {
         String userOid =  MyProvider.idToOid(OidEnum.USER_OID, mUserId, 0);
         LatestMessageOfTimeline timelineMsg = new LatestMessageOfTimeline(mTimelineType, mUserId);
         
@@ -195,65 +182,52 @@ public class TimelineDownloader {
         }
         
         timelineMsg.onTimelineDownloaded();
-        JSONArray jArr = ma.getConnection().getFriendsIds(userOid);
-        if (jArr != null) {
-            ok = true;
-            
-            try {
-                // Old list of followed users
-                Set<Long> friends_old = MyProvider.getFriendsIds(mUserId);
+        List<String> friendOids = ma.getConnection().getFriendsIds(userOid);
+        // Old list of followed users
+        Set<Long> friends_old = MyProvider.getFriendsIds(mUserId);
 
-                SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
 
-                LatestUserMessages lum = new LatestUserMessages();
-                // Retrieve new list of followed users
-                DataInserter di = new DataInserter(ma, mContext, mTimelineType);
-                for (int index = 0; index < jArr.length(); index++) {
-                    String friendOid = jArr.getString(index);
-                    long friendId = MyProvider.oidToId(MyDatabase.OidEnum.USER_OID, ma.getOriginId(), friendOid);
-                    boolean isNew = true;
-                    if (friendId != 0) {
-                        friends_old.remove(friendId);
-                        long msgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
-                        // The Friend doesn't have any messages sent, so let's download the latest
-                        isNew = (msgId == 0);
-                    }
-                    if (isNew) {
-                        try {
-                            // This User is new, let's download his info
-                            JSONObject dbUser = ma.getConnection().getUser(friendOid);
-                            di.insertUserFromJSONObject(dbUser, lum);
-                        } catch (ConnectionException e) {
-                            Log.w(TAG, "Failed to download a User object for oid=" + friendOid);
-                        }
-                    } else {
-                        FollowingUserValues fu = new FollowingUserValues(mUserId, friendId);
-                        fu.setFollowed(true);
-                        fu.update(db);
-                    }
+        LatestUserMessages lum = new LatestUserMessages();
+        // Retrieve new list of followed users
+        DataInserter di = new DataInserter(ma, mContext, mTimelineType);
+        for (String friendOid : friendOids) {
+            long friendId = MyProvider.oidToId(MyDatabase.OidEnum.USER_OID, ma.getOriginId(), friendOid);
+            boolean isNew = true;
+            if (friendId != 0) {
+                friends_old.remove(friendId);
+                long msgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
+                // The Friend doesn't have any messages sent, so let's download the latest
+                isNew = (msgId == 0);
+            }
+            if (isNew) {
+                try {
+                    // This User is new, let's download his info
+                    MbUser dbUser = ma.getConnection().getUser(friendOid);
+                    di.insertOrUpdateUser(dbUser, lum);
+                } catch (ConnectionException e) {
+                    Log.w(TAG, "Failed to download a User object for oid=" + friendOid);
                 }
-                
-                mDownloaded += di.downloadedCount();
-                mMessages += di.messagesCount();
-                mMentions += di.mentionsCount();
-                mReplies += di.repliesCount();
-                lum.save();
-                
-                // Now let's remove "following" information for all users left in the Set:
-                for (long notFollowingId : friends_old) {
-                    FollowingUserValues fu = new FollowingUserValues(mUserId, notFollowingId);
-                    fu.setFollowed(false);
-                    fu.update(db);
-                }
-                
-            } catch (JSONException e) {
-                e.printStackTrace();
+            } else {
+                FollowingUserValues fu = new FollowingUserValues(mUserId, friendId);
+                fu.setFollowed(true);
+                fu.update(db);
             }
         }
-        if (ok) {
-            timelineMsg.save();
+        
+        mDownloaded += di.totalMessagesDownloadedCount();
+        mMessages += di.newMessagesCount();
+        mMentions += di.newMentionsCount();
+        mReplies += di.newRepliesCount();
+        lum.save();
+        
+        // Now let's remove "following" information for all users left in the Set:
+        for (long notFollowingId : friends_old) {
+            FollowingUserValues fu = new FollowingUserValues(mUserId, notFollowingId);
+            fu.setFollowed(false);
+            fu.update(db);
         }
-        return ok;
+        timelineMsg.save();
     }
     
     /**

@@ -124,10 +124,6 @@ public class ConversationActivity extends Activity implements MyServiceListener 
             long prevId = 0;
             long createdDate = 0;
             String author = "";
-            /**
-             * Was this messaged reblogged by {@link ConversationActivity#ma}
-             */
-            boolean reblogged = false;
             
             /**
              * Comma separated list of the names of all known rebloggers of the message
@@ -222,7 +218,6 @@ public class ConversationActivity extends Activity implements MyServiceListener 
                         ind++;
                     } while (msg.moveToNext());
 
-                    row.reblogged = !rebloggers.isEmpty();
                     for (long rebloggerId : rebloggers) {
                         if (!TextUtils.isEmpty(row.rebloggersString)) {
                             row.rebloggersString += ", ";
@@ -357,6 +352,8 @@ public class ConversationActivity extends Activity implements MyServiceListener 
         switch(commandData.command) {
             case GET_STATUS:
                 showConversation();
+            default:
+                break;
         }
         
     }

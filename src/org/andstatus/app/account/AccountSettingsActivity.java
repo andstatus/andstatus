@@ -74,12 +74,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
     private static final String TAG = AccountSettingsActivity.class.getSimpleName();
 
-    /** 
-     * The URI is consistent with "scheme" and "host" in AndroidManifest
-     * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"
-     */
-    public static final Uri CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org");
-
     // Request codes for called activities
     protected static final int REQUEST_SELECT_ACCOUNT = RESULT_FIRST_USER;
     
@@ -305,7 +299,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             if (MyLog.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "uri=" + uri.toString());
             }
-            if (CALLBACK_URI.getScheme().equals(uri.getScheme())) {
+            if (Origin.CALLBACK_URI.getScheme().equals(uri.getScheme())) {
                 // To prevent repeating of this task
                 getIntent().setData(null);
                 // This activity was started by Twitter ("Service Provider")
@@ -731,7 +725,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 // null as the callback Uri in this function call. Then
                 // Twitter will correctly process your callback redirection
                 String authUrl = oa.getProvider().retrieveRequestToken(oa.getConsumer(),
-                        CALLBACK_URI.toString());
+                        Origin.CALLBACK_URI.toString());
                 state.setRequestTokenWithSecret(oa.getConsumer().getToken(), oa.getConsumer().getTokenSecret());
 
                 // This is needed in order to complete the process after redirect
@@ -851,7 +845,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             }
             else {
                 Uri uri = uris[0];
-                if (uri != null && CALLBACK_URI.getHost().equals(uri.getHost())) {
+                if (uri != null && Origin.CALLBACK_URI.getHost().equals(uri.getHost())) {
                     String token = state.getRequestToken();
                     String secret = state.getRequestSecret();
 

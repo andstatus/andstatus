@@ -1,6 +1,7 @@
 package org.andstatus.app.net;
 
 import android.net.Uri;
+import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -114,8 +115,17 @@ public abstract class ConnectionTwitter extends Connection {
     }
 
     @Override
-    public JSONObject destroyStatus(String statusId) throws ConnectionException {
-        return httpConnection.postRequest(getApiPath(ApiRoutineEnum.STATUSES_DESTROY) + statusId + EXTENSION);
+    public boolean destroyStatus(String statusId) throws ConnectionException {
+        JSONObject jso = httpConnection.postRequest(getApiPath(ApiRoutineEnum.STATUSES_DESTROY) + statusId + EXTENSION);
+        if (jso != null && MyLog.isLoggable(null, Log.VERBOSE)) {
+            try {
+                Log.v(TAG, "destroyStatus response: " + jso.toString(2));
+            } catch (JSONException e) {
+                e.printStackTrace();
+                jso = null;
+            }
+        }
+        return (jso != null);
     }
     
     /**
@@ -125,10 +135,11 @@ public abstract class ConnectionTwitter extends Connection {
      *      href="https://dev.twitter.com/docs/api/1.1/post/friendships/destroy">POST friendships/destroy</a>
      */
     @Override
-    public JSONObject followUser(String userId, Boolean follow) throws ConnectionException {
+    public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
         List<NameValuePair> out = new LinkedList<NameValuePair>();
         out.add(new BasicNameValuePair("user_id", userId));
-        return postRequest((follow ? ApiRoutineEnum.FOLLOW_USER : ApiRoutineEnum.STOP_FOLLOWING_USER), out);
+        JSONObject user = postRequest((follow ? ApiRoutineEnum.FOLLOW_USER : ApiRoutineEnum.STOP_FOLLOWING_USER), out);
+        return userFromJson(user);
     } 
 
     /**
@@ -139,21 +150,23 @@ public abstract class ConnectionTwitter extends Connection {
      * @throws ConnectionException
      */
     @Override
-    public JSONArray getFriendsIds(String userId) throws ConnectionException {
+    public List<String> getFriendsIds(String userId) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
         JSONObject jso = httpConnection.getRequest(builder.build().toString());
-        JSONArray jArr = null;
+        List<String> list = new ArrayList<String>();
         if (jso != null) {
             try {
-                jArr = jso.getJSONArray("ids");
+                JSONArray jArr = jso.getJSONArray("ids");
+                for (int index = 0; index < jArr.length(); index++) {
+                    list.add(jArr.getString(index));
+                }
             } catch (JSONException e) {
-                Log.w(TAG, "getFriendsIds, response=" + (jso == null ? "(null)" : jso.toString()));
-                throw new ConnectionException(e.getLocalizedMessage());
+                throw ConnectionException.loggedJsonException(TAG, e, jso, "Parsing friendsIds");
             }
         }
-        return jArr;
+        return list;
     }
     
     /**
@@ -166,17 +179,17 @@ public abstract class ConnectionTwitter extends Connection {
      * @throws ConnectionException
      */
     @Override
-    public JSONObject getStatus(String statusId) throws ConnectionException {
+    public MbMessage getStatus(String statusId) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.STATUSES_SHOW));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("id", statusId);
-        return httpConnection.getRequest(builder.build().toString());
+        JSONObject message = httpConnection.getRequest(builder.build().toString());
+        return messageFromJson(message);
     }
 
     @Override
-    public JSONArray getTimeline(ApiRoutineEnum apiRoutine, String sinceId, int limit, String userId)
+    public List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, String sinceId, int limit, String userId)
             throws ConnectionException {
-        boolean ok = false;
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
@@ -190,41 +203,200 @@ public abstract class ConnectionTwitter extends Connection {
             builder.appendQueryParameter("user_id", userId);
         }
         JSONArray jArr = httpConnection.getRequestAsArray(builder.build().toString());
-        
-        ok = (jArr != null);
-        if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "getTimeline '" + url + "' "
-                    + (ok ? "OK, " + jArr.length() + " statuses" : "FAILED"));
+        List<MbMessage> timeline = new ArrayList<MbMessage>();
+        if (jArr != null) {
+            for (int index = 0; index < jArr.length(); index++) {
+                try {
+                    JSONObject jso = jArr.getJSONObject(index);
+                    MbMessage mbMessage = messageFromJson(jso);
+                    if (!mbMessage.isEmpty()) {
+                        timeline.add(mbMessage);
+                    }
+                } catch (JSONException e) {
+                    throw ConnectionException.loggedJsonException(TAG, e, null, "Parsing timeline");
+                }
+            }
         }
-        return jArr;
+        MyLog.d(TAG, "getTimeline '" + url + "' " + timeline.size() + " messages");
+        return timeline;
     }
 
+    protected MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
+        if (jso == null) {
+            return MbMessage.getEmpty();
+        }
+        String oid = jso.optString("id_str");
+        if (TextUtils.isEmpty(oid)) {
+            // This is for the Status.net
+            oid = jso.optString("id");
+        } 
+        MbMessage message =  MbMessage.fromOriginAndOid(httpConnection.connectionData.originId, oid);
+        message.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
+        try {
+            if (jso.has("created_at")) {
+                Long created = 0L;
+                String createdAt = jso.getString("created_at");
+                if (createdAt.length() > 0) {
+                    created = Date.parse(createdAt);
+                }
+                if (created > 0) {
+                    message.sentDate = created;
+                }
+            }
 
+            JSONObject sender;
+            if (jso.has("sender")) {
+                sender = jso.getJSONObject("sender");
+                message.sender = userFromJson(sender);
+            } else if (jso.has("user")) {
+                sender = jso.getJSONObject("user");
+                message.sender = userFromJson(sender);
+            }
+            
+            // Is this a reblog?
+            if (jso.has("retweeted_status")) {
+                JSONObject rebloggedMessage = jso.getJSONObject("retweeted_status");
+                message.rebloggedMessage = messageFromJson(rebloggedMessage);
+            }
+            if (jso.has("text")) {
+                message.body = Html.fromHtml(jso.getString("text")).toString();
+            }
+
+            if (jso.has("recipient")) {
+                JSONObject recipient = jso.getJSONObject("recipient");
+                message.recipient = userFromJson(recipient);
+            }
+            if (jso.has("source")) {
+                message.via = jso.getString("source");
+            }
+            if (jso.has("favorited")) {
+                message.favoritedByReader = SharedPreferencesUtil.isTrue(jso.getString("favorited"));
+            }
+
+            // If the Msg is a Reply to other message
+            String inReplyToUserOid = "";
+            String inReplyToUserName = "";
+            String inReplyToMessageOid = "";
+            if (jso.has("in_reply_to_user_id_str")) {
+                inReplyToUserOid = jso.getString("in_reply_to_user_id_str");
+            } else if (jso.has("in_reply_to_user_id")) {
+                // This is for Status.net
+                inReplyToUserOid = jso.getString("in_reply_to_user_id");
+            }
+            if (SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
+                inReplyToUserOid = "";
+            }
+            if (!SharedPreferencesUtil.isEmpty(inReplyToUserOid)) {
+                if (jso.has("in_reply_to_screen_name")) {
+                    inReplyToUserName = jso.getString("in_reply_to_screen_name");
+                }
+                // Construct "User" from available info
+                JSONObject inReplyToUser = new JSONObject();
+                inReplyToUser.put("id_str", inReplyToUserOid);
+                inReplyToUser.put("screen_name", inReplyToUserName);
+                if (jso.has("in_reply_to_status_id_str")) {
+                    inReplyToMessageOid = jso.getString("in_reply_to_status_id_str");
+                } else if (jso.has("in_reply_to_status_id")) {
+                    // This is for identi.ca
+                    inReplyToMessageOid = jso.getString("in_reply_to_status_id");
+                }
+                if (SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
+                    inReplyToUserOid = "";
+                }
+                if (!SharedPreferencesUtil.isEmpty(inReplyToMessageOid)) {
+                    // Construct Related "Msg" from available info
+                    // and add it recursively
+                    JSONObject inReplyToMessage = new JSONObject();
+                    inReplyToMessage.put("id_str", inReplyToMessageOid);
+                    inReplyToMessage.put("user", inReplyToUser);
+                    message.inReplyToMessage = messageFromJson(inReplyToMessage);
+                }
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(TAG, e, jso, "Parsing message");
+        } catch (Exception e) {
+            Log.e(TAG, "messageFromJson: " + e.toString());
+            e.printStackTrace();
+            return MbMessage.getEmpty();
+        }
+        return message;
+    }
+
+    private MbUser userFromJson(JSONObject jso) throws ConnectionException {
+        if (jso == null) {
+            return MbUser.getEmpty();
+        }
+        String userName = "";
+        if (jso.has("screen_name")) {
+            userName = jso.optString("screen_name");
+            if (SharedPreferencesUtil.isEmpty(userName)) {
+                userName = "";
+            }
+        }
+        MbUser user = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, userName);
+        user.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
+        if (jso.has("id_str")) {
+            user.oid = jso.optString("id_str");
+        } else if (jso.has("id")) {
+            user.oid = jso.optString("id");
+        } 
+        if (SharedPreferencesUtil.isEmpty(user.oid)) {
+            user.oid = "";
+        }
+        user.realName = jso.optString("name");
+        user.avatarUrl = jso.optString("profile_image_url");
+        user.description = jso.optString("description");
+        user.homepage = jso.optString("url");
+        if (jso.has("created_at")) {
+            String createdAt = jso.optString("created_at");
+            if (createdAt.length() > 0) {
+                user.createdDate = Date.parse(createdAt);
+            }
+        }
+        if (!jso.isNull("following")) {
+            user.followedByReader = jso.optBoolean("following");
+        }
+        if (jso.has("status")) {
+            JSONObject latestMessage;
+            try {
+                latestMessage = jso.getJSONObject("status");
+                // This message doesn't have a sender!
+                user.latestMessage = messageFromJson(latestMessage);
+            } catch (JSONException e) {
+                throw ConnectionException.loggedJsonException(TAG, e, jso, "getting status from user");
+            }
+        }
+        return user;
+    }
+    
     /**
      * @see <a
      *      href="https://dev.twitter.com/docs/api/1.1/get/users/show">GET users/show</a>
      */
     @Override
-    public JSONObject getUser(String userId) throws ConnectionException {
+    public MbUser getUser(String userId) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_USER));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
-        return httpConnection.getRequest(builder.build().toString());
+        JSONObject jso = httpConnection.getRequest(builder.build().toString());
+        return userFromJson(jso);
     }
     
     @Override
-    public JSONObject postDirectMessage(String message, String userId) throws ConnectionException {
+    public MbMessage postDirectMessage(String message, String userId) throws ConnectionException {
         List<NameValuePair> formParams = new ArrayList<NameValuePair>();
         formParams.add(new BasicNameValuePair("text", message));
         if ( !TextUtils.isEmpty(userId)) {
             formParams.add(new BasicNameValuePair("user_id", userId));
         }
-        return postRequest(ApiRoutineEnum.POST_DIRECT_MESSAGE, formParams);
+        JSONObject jso = postRequest(ApiRoutineEnum.POST_DIRECT_MESSAGE, formParams);
+        return messageFromJson(jso);
     }
     
     @Override
-    public JSONObject postReblog(String rebloggedId) throws ConnectionException {
-        return httpConnection.postRequest(getApiPath(ApiRoutineEnum.POST_REBLOG) + rebloggedId + EXTENSION);
+    public MbMessage postReblog(String rebloggedId) throws ConnectionException {
+        JSONObject jso = httpConnection.postRequest(getApiPath(ApiRoutineEnum.POST_REBLOG) + rebloggedId + EXTENSION);
+        return messageFromJson(jso);
     }
 
     /**
@@ -244,12 +416,33 @@ public abstract class ConnectionTwitter extends Connection {
      * @throws ConnectionException
      */
     @Override
-    public JSONObject rateLimitStatus() throws ConnectionException {
-        return httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
+    public MbRateLimitStatus rateLimitStatus() throws ConnectionException {
+        JSONObject result = httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
+        MbRateLimitStatus status = new MbRateLimitStatus();
+        if (result != null) {
+            switch (getApi()) {
+                case TWITTER1P0:
+                case STATUSNET_TWITTER:
+                    status.remaining = result.optInt("remaining_hits");
+                    status.limit = result.optInt("hourly_limit");
+                    break;
+                default:
+                    JSONObject resources = null;
+                    try {
+                        resources = result.getJSONObject("resources");
+                        JSONObject limitObject = resources.getJSONObject("statuses").getJSONObject("/statuses/home_timeline");
+                        status.remaining = limitObject.optInt("remaining");
+                        status.limit = limitObject.optInt("limit");
+                    } catch (JSONException e) {
+                        throw ConnectionException.loggedJsonException(TAG, e, resources, "getting rate limits");
+                    }
+            }
+        }
+        return status;
     }
     
     @Override
-    public JSONObject updateStatus(String message, String inReplyToId) throws ConnectionException {
+    public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
         List<NameValuePair> formParams = new ArrayList<NameValuePair>();
         formParams.add(new BasicNameValuePair("status", message));
         
@@ -259,7 +452,8 @@ public abstract class ConnectionTwitter extends Connection {
         if ( !TextUtils.isEmpty(inReplyToId)) {
             formParams.add(new BasicNameValuePair("in_reply_to_status_id", inReplyToId));
         }
-        return postRequest(ApiRoutineEnum.STATUSES_UPDATE, formParams);
+        JSONObject jso = postRequest(ApiRoutineEnum.STATUSES_UPDATE, formParams);
+        return messageFromJson(jso);
     }
 
     /**
@@ -270,39 +464,10 @@ public abstract class ConnectionTwitter extends Connection {
     @Override
     public MbUser verifyCredentials() throws ConnectionException {
         JSONObject user = httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
-        MbUser mbUser = new MbUser();
-        if (user.has("screen_name")) {
-            mbUser.userName = user.optString("screen_name");
-            if (SharedPreferencesUtil.isEmpty(mbUser.userName)) {
-                mbUser.userName = "";
-            }
-        }
-        if (user.has("id_str")) {
-            mbUser.oid = user.optString("id_str");
-        } else if (user.has("id")) {
-            mbUser.oid = user.optString("id");
-        } 
-        if (SharedPreferencesUtil.isEmpty(mbUser.oid)) {
-            mbUser.oid = "";
-        }
-        mbUser.originId = httpConnection.connectionData.originId;
-        mbUser.realName = user.optString("name");
-        mbUser.avatarUrl = user.optString("profile_image_url");
-        mbUser.description = user.optString("description");
-        mbUser.homepage = user.optString("url");
-        if (user.has("created_at")) {
-            String createdAt = user.optString("created_at");
-            if (createdAt.length() > 0) {
-                mbUser.createdDate = Date.parse(createdAt);
-            }
-        }
-        if (!user.isNull("following")) {
-            try {
-                mbUser.isFollowed = user.getBoolean("following");
-            } catch (JSONException e) {
-                Log.e(TAG, "error; following='" + user.optString("following") +"'. " + e.toString());
-            }
-        }
-        return mbUser;
+        return userFromJson(user);
+    }
+
+    protected final JSONObject postRequest(ApiRoutineEnum apiRoutine, List<NameValuePair> formParams) throws ConnectionException {
+        return httpConnection.postRequest(getApiPath(apiRoutine), formParams);
     }
 }
