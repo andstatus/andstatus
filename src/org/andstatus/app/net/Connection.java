@@ -240,7 +240,7 @@ public abstract class Connection {
      * Returns an array of numeric IDs for every user the specified user is following.
      * @throws ConnectionException
      */
-    public abstract List<String> getFriendsIds(String userId) throws ConnectionException;
+    public abstract List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException;
     
     /**
      * Returns a single status, specified by the id parameter below.

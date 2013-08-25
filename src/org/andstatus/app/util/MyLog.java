@@ -17,7 +17,17 @@ package org.andstatus.app.util;
 
 import org.andstatus.app.data.MyPreferences;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+
 import android.content.SharedPreferences;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -158,6 +168,33 @@ public class MyLog {
      */
     public static void forget() {
         initialized = false;
+    }
+    
+    public static boolean writeStringToFile(String string, String FileName) {
+        boolean ok = false;
+        File dir1 = MyPreferences.getDataFilesDir("logs", false);
+        if (dir1 == null) { return false; }
+        File file = new File(dir1, FileName);
+        Writer out = null;
+        try {
+            out = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(file.getAbsolutePath()), "UTF-8"));
+            out.write(string);
+            ok = true;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (out != null ) {
+                    out.close();
+                }
+            } catch (IOException e) {}
+        }        
+        return ok;
     }
     
 }

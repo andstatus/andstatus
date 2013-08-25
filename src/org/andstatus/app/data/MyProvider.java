@@ -877,13 +877,13 @@ public class MyProvider extends ContentProvider {
                 case MSG_OID:
                     sql = "SELECT " + BaseColumns._ID + " FROM " + MyDatabase.MSG_TABLE_NAME
                             + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
-                            + "=" + oid;
+                            + "=" + quoteIfNotQuoted(oid);
                     break;
 
                 case USER_OID:
                     sql = "SELECT " + BaseColumns._ID + " FROM " + MyDatabase.USER_TABLE_NAME
                             + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USER_OID
-                            + "=" + oid;
+                            + "=" + quoteIfNotQuoted(oid);
                     break;
 
                 default:
@@ -902,6 +902,25 @@ public class MyProvider extends ContentProvider {
             MyLog.v(TAG, "oidToId:" + originId + "+" + oid + " -> " + id + " oidEnum=" + oidEnum );
         }
         return id;
+    }
+    
+    /**
+     * @return two double quotes for empty/null strings
+     */
+    public static String quoteIfNotQuoted(String original) {
+        String quoted = original;
+        if (TextUtils.isEmpty(quoted)) {
+            return (String.valueOf('\"') + String.valueOf('\"'));
+        }
+        int firstQuoteIndex = quoted.indexOf('"');
+        int lastQuoteIndex = quoted.lastIndexOf('"');
+        if (firstQuoteIndex > 0 || (lastQuoteIndex >= 0 && lastQuoteIndex < quoted.length()-1)) {
+            throw new IllegalArgumentException("The string to be quoted already has quotes inside: '" + quoted + "'");
+        }
+        if (firstQuoteIndex < 0) {
+            quoted = '\"' + quoted + '\"';
+        }
+        return quoted;
     }
     
     /**
@@ -1254,7 +1273,7 @@ public class MyProvider extends ContentProvider {
      * Following users' Id's (Friends of the specified User) stored in the database
      * @return IDs, the set is empty if no friends
      */
-    public static Set<Long> getFriendsIds(long userId) {
+    public static Set<Long> getIdsOfUsersFollowedBy(long userId) {
         Set<Long> friends = new HashSet<Long>();
         String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
                 + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";

@@ -104,7 +104,7 @@ public class TimelineDownloader {
         if ((ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) && MyPreferences.isDataAvailable()) {
             switch (mTimelineType) {
                 case FOLLOWING_USER:
-                    loadFollowingUserTimeline();
+                    loadFollowedByUserTimeline();
                     ok = true;
                     break;
                 case ALL:
@@ -168,7 +168,7 @@ public class TimelineDownloader {
      *   and store them in the local database.
      * mUserId is required to be set
      */
-    private void loadFollowingUserTimeline() throws ConnectionException {
+    private void loadFollowedByUserTimeline() throws ConnectionException {
         String userOid =  MyProvider.idToOid(OidEnum.USER_OID, mUserId, 0);
         LatestMessageOfTimeline timelineMsg = new LatestMessageOfTimeline(mTimelineType, mUserId);
         
@@ -182,20 +182,20 @@ public class TimelineDownloader {
         }
         
         timelineMsg.onTimelineDownloaded();
-        List<String> friendOids = ma.getConnection().getFriendsIds(userOid);
+        List<String> followedUsersOids = ma.getConnection().getIdsOfUsersFollowedBy(userOid);
         // Old list of followed users
-        Set<Long> friends_old = MyProvider.getFriendsIds(mUserId);
+        Set<Long> followedIds_old = MyProvider.getIdsOfUsersFollowedBy(mUserId);
 
         SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
 
         LatestUserMessages lum = new LatestUserMessages();
         // Retrieve new list of followed users
         DataInserter di = new DataInserter(ma, mContext, mTimelineType);
-        for (String friendOid : friendOids) {
-            long friendId = MyProvider.oidToId(MyDatabase.OidEnum.USER_OID, ma.getOriginId(), friendOid);
+        for (String followedUserOid : followedUsersOids) {
+            long friendId = MyProvider.oidToId(MyDatabase.OidEnum.USER_OID, ma.getOriginId(), followedUserOid);
             boolean isNew = true;
             if (friendId != 0) {
-                friends_old.remove(friendId);
+                followedIds_old.remove(friendId);
                 long msgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
                 // The Friend doesn't have any messages sent, so let's download the latest
                 isNew = (msgId == 0);
@@ -203,10 +203,10 @@ public class TimelineDownloader {
             if (isNew) {
                 try {
                     // This User is new, let's download his info
-                    MbUser dbUser = ma.getConnection().getUser(friendOid);
+                    MbUser dbUser = ma.getConnection().getUser(followedUserOid);
                     di.insertOrUpdateUser(dbUser, lum);
                 } catch (ConnectionException e) {
-                    Log.w(TAG, "Failed to download a User object for oid=" + friendOid);
+                    Log.w(TAG, "Failed to download a User object for oid=" + followedUserOid);
                 }
             } else {
                 FollowingUserValues fu = new FollowingUserValues(mUserId, friendId);
@@ -222,7 +222,7 @@ public class TimelineDownloader {
         lum.save();
         
         // Now let's remove "following" information for all users left in the Set:
-        for (long notFollowingId : friends_old) {
+        for (long notFollowingId : followedIds_old) {
             FollowingUserValues fu = new FollowingUserValues(mUserId, notFollowingId);
             fu.setFollowed(false);
             fu.update(db);

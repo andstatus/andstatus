@@ -37,7 +37,7 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
     }
 
     @Override
-    public List<String> getFriendsIds(String userId) throws ConnectionException {
+    public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);

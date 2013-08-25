@@ -330,13 +330,13 @@ class ConnectionPumpio extends Connection {
     @Override
     public MbMessage destroyFavorite(String statusId) throws ConnectionException {
         // TODO Auto-generated method stub
-        return null;
+        return MbMessage.getEmpty();
     }
 
     @Override
     public MbMessage createFavorite(String statusId) throws ConnectionException {
         // TODO Auto-generated method stub
-        return null;
+        return MbMessage.getEmpty();
     }
 
     @Override
@@ -346,7 +346,7 @@ class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public List<String> getFriendsIds(String userId) throws ConnectionException {
+    public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
         // TODO Auto-generated method stub
         return new ArrayList<String>();
     }
@@ -354,31 +354,34 @@ class ConnectionPumpio extends Connection {
     @Override
     public MbMessage getStatus(String statusId) throws ConnectionException {
         // TODO Auto-generated method stub
-        return null;
+        return MbMessage.getEmpty();
     }
 
     @Override
     public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
         // TODO Auto-generated method stub
-        return null;
+        return MbMessage.getEmpty();
     }
 
     @Override
     public MbMessage postDirectMessage(String message, String userId) throws ConnectionException {
         // TODO Auto-generated method stub
-        return null;
+        return MbMessage.getEmpty();
     }
 
     @Override
     public MbMessage postReblog(String rebloggedId) throws ConnectionException {
         // TODO Auto-generated method stub
-        return null;
+        return MbMessage.getEmpty();
     }
 
     @Override
     public List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, String sinceId, int limit, String userId)
             throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
+        if (TextUtils.isEmpty(url)) {
+            return new ArrayList<MbMessage>();
+        }
         String nickname;
         if (TextUtils.isEmpty(userId)) {
             if (TextUtils.isEmpty(httpConnection.accountUsername)) {
@@ -401,10 +404,11 @@ class ConnectionPumpio extends Connection {
         JSONArray jArr = getRequestAsArray(url);
         List<MbMessage> timeline = new ArrayList<MbMessage>();
         if (jArr != null) {
-            for (int index = 0; index < jArr.length(); index++) {
+            // Read the activities in chronological order
+            for (int index = jArr.length() - 1; index >= 0; index--) {
                 try {
                     JSONObject jso = jArr.getJSONObject(index);
-                    MbMessage mbMessage = messageFromJsonActivity(jso);
+                    MbMessage mbMessage = messageFromJson(jso);
                     if (!mbMessage.isEmpty()) {
                         timeline.add(mbMessage);
                     }
@@ -417,13 +421,20 @@ class ConnectionPumpio extends Connection {
         return timeline;
     }
 
-    private MbMessage messageFromJsonActivity(JSONObject activity) throws ConnectionException {
-        if (!PumpioObjectType.ACTIVITY.isMyType(activity)) {
+    private MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
+        if (PumpioObjectType.ACTIVITY.isMyType(jso)) {
+            return messageFromJsonActivity(jso);
+        } else if (PumpioObjectType.COMMENT.isMyType(jso) || PumpioObjectType.NOTE.isMyType(jso)) {
+            return messageFromJsonComment(jso);
+        } else {
             return MbMessage.getEmpty();
         }
+    }
+    
+    private MbMessage messageFromJsonActivity(JSONObject activity) throws ConnectionException {
         MbMessage message;
         try {
-            String verb = activity.optString("verb");
+            String verb = activity.getString("verb");
             String oid = activity.optString("id");
             if (TextUtils.isEmpty(oid)) {
                 MyLog.d(TAG, "Pumpio activity has no id:" + activity.toString(2));
@@ -459,13 +470,18 @@ class ConnectionPumpio extends Connection {
             JSONObject jso = activity.getJSONObject("object");
             // Is this a reblog ("Share" in terms of Activity streams)?
             if (verb.equalsIgnoreCase("share")) {
-                JSONObject rebloggedMessage = jso;
-                message.rebloggedMessage = messageFromJsonActivity(rebloggedMessage);
+                message.rebloggedMessage = messageFromJson(jso);
                 if (message.rebloggedMessage.isEmpty()) {
                     MyLog.d(TAG, "No reblogged message " + jso.toString(2));
                     return MbMessage.getEmpty();
                 }
             } else {
+                if (verb.equalsIgnoreCase("favorite")) {
+                    message.favoritedByReader = true;
+                } else if (verb.equalsIgnoreCase("unfavorite") || verb.equalsIgnoreCase("unlike")) {
+                    message.favoritedByReader = false;
+                }
+                
                 if (PumpioObjectType.COMMENT.isMyType(jso) || PumpioObjectType.NOTE.isMyType(jso)) {
                     parseComment(message, jso);
                 } else {
@@ -479,9 +495,6 @@ class ConnectionPumpio extends Connection {
     }
 
     private void parseComment(MbMessage message, JSONObject jso) throws ConnectionException {
-        if (PumpioObjectType.COMMENT.isMyType(jso) || PumpioObjectType.NOTE.isMyType(jso)) {
-            return;
-        }
         try {
             String oid = jso.optString("id");
             if (!TextUtils.isEmpty(oid)) {
@@ -507,12 +520,10 @@ class ConnectionPumpio extends Connection {
                 }
             }
 
-            // TODO: Favorited
-
             // If the Msg is a Reply to other message
             if (jso.has("inReplyTo")) {
                 JSONObject inReplyToObject = jso.getJSONObject("inReplyTo");
-                message.inReplyToMessage = messageFromJsonComment(inReplyToObject);
+                message.inReplyToMessage = messageFromJson(inReplyToObject);
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(TAG, e, jso, "Parsing comment/note");
@@ -520,9 +531,6 @@ class ConnectionPumpio extends Connection {
     }
     
     private MbMessage messageFromJsonComment(JSONObject jso) throws ConnectionException {
-        if (PumpioObjectType.COMMENT.isMyType(jso) || PumpioObjectType.NOTE.isMyType(jso)) {
-            return MbMessage.getEmpty();
-        }
         MbMessage message;
         try {
             String oid = jso.optString("id");
@@ -555,12 +563,12 @@ class ConnectionPumpio extends Connection {
     @Override
     public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
         // TODO Auto-generated method stub
-        return null;
+        return MbUser.getEmpty();
     }
 
     @Override
     public MbUser getUser(String userId) throws ConnectionException {
         // TODO Auto-generated method stub
-        return null;
+        return MbUser.getEmpty();
     }
 }
