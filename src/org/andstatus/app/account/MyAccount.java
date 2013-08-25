@@ -452,7 +452,7 @@ public class MyAccount implements AccountDataReader {
                 MbUser user = null;
                 try {
                     user = myAccount.getConnection().verifyCredentials();
-                    ok = (user != null);
+                    ok = (!user.isEmpty());
                 } finally {
                     String newName = "";
                     boolean credentialsOfOtherUser = false;
@@ -481,7 +481,6 @@ public class MyAccount implements AccountDataReader {
                         setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
                     }
                     if (ok && !isPersistent()) {
-                        save();
                         // Now we know the name (or proper case of the name) of this User!
                         // We don't recreate MyAccount object for the new name
                         //   in order to preserve credentials.
@@ -489,6 +488,7 @@ public class MyAccount implements AccountDataReader {
                         if (myAccount.userId == 0) {
                             assignUserId();
                         }
+                        save();
                         setConnection();
                     }
                     if (!ok) {

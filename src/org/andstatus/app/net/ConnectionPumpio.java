@@ -437,7 +437,17 @@ class ConnectionPumpio extends Connection {
                 message.sender = userFromJson(activity.getJSONObject("actor"));
             }
             if (activity.has("to")) {
-                message.recipient = userFromJson(activity.getJSONObject("to"));
+                JSONObject to = activity.optJSONObject("to");
+                if ( to != null) {
+                    message.recipient = userFromJson(to);
+                } else {
+                    JSONArray arrayOfTo = activity.optJSONArray("to");
+                    if (arrayOfTo != null && arrayOfTo.length() == 1) {
+                        // TODO: handle multiple recipients
+                        to = arrayOfTo.optJSONObject(0);
+                        message.recipient = userFromJson(to);
+                    }
+                }
             }
             if (activity.has("generator")) {
                 JSONObject generator = activity.getJSONObject("generator");
@@ -463,7 +473,7 @@ class ConnectionPumpio extends Connection {
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(TAG, e, activity, "Parsing item");
+            throw ConnectionException.loggedJsonException(TAG, e, activity, "Parsing activity");
         }
         return message;
     }

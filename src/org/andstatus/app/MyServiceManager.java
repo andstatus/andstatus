@@ -98,28 +98,32 @@ public class MyServiceManager extends BroadcastReceiver {
     
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (!MyServiceManager.isServiceAvailable()) {
-            MyLog.d(TAG, "onReceive: Service is unavailable");
-            return;
-        }
-        MyPreferences.initialize(context, this);
-        String action = intent.getAction(); 
-        if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-            MyLog.d(TAG, "Starting service on boot.");
-            sendCommand(CommandData.BOOT_COMPLETED_COMMAND);
-        } else if (action.equals("android.intent.action.ACTION_SHUTDOWN")) {
-            // This system broadcast is Since: API Level 4
-            // We need this to persist unsaved data in the service
-            MyLog.d(TAG, "Stopping service on Shutdown");
-            setServiceUnavailable();
-            stopService();
-        } else if (action.equals(MyService.ACTION_SERVICE_STATE)) {
-            synchronized(mServiceState) {
+        String action = intent.getAction();
+        if (action.equals(MyService.ACTION_SERVICE_STATE)) {
+            MyPreferences.initialize(context, this);
+            synchronized (mServiceState) {
                 stateQueuedTime = System.nanoTime();
                 waitingForServiceState = false;
-                mServiceState = MyService.ServiceState.load(intent.getStringExtra(MyService.EXTRA_SERVICE_STATE));
+                mServiceState = MyService.ServiceState.load(intent
+                        .getStringExtra(MyService.EXTRA_SERVICE_STATE));
             }
             MyLog.d(TAG, "Notification received: Service state=" + mServiceState);
+        } else {
+            if (!MyServiceManager.isServiceAvailable()) {
+                MyLog.d(TAG, "onReceive: Service is unavailable");
+                return;
+            }
+            MyPreferences.initialize(context, this);
+            if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
+                MyLog.d(TAG, "Starting service on boot.");
+                sendCommand(CommandData.BOOT_COMPLETED_COMMAND);
+            } else if (action.equals("android.intent.action.ACTION_SHUTDOWN")) {
+                // This system broadcast is Since: API Level 4
+                // We need this to persist unsaved data in the service
+                MyLog.d(TAG, "Stopping service on Shutdown");
+                setServiceUnavailable();
+                stopService();
+            }
         }
     }
 
