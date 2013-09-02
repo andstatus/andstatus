@@ -20,6 +20,7 @@ package org.andstatus.app;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.ActivitySwipeDetector;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.Xslt;
 
@@ -72,10 +73,12 @@ public class HelpActivity extends Activity implements SwipeInterface {
 	 * Stores state of {@link #EXTRA_IS_FIRST_ACTIVITY}
 	 */
 	private boolean mIsFirstActivity = false;
+	private boolean wasPaused = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        MyLog.d(TAG, "onCreate");
 		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -168,7 +171,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
 	protected void onResume() {
 		super.onResume();
 		// We assume that user pressed back after adding first account
-        if ( mIsFirstActivity 
+        if ( wasPaused && mIsFirstActivity 
                 &&  MyAccount.getCurrentAccount() != null 
                 && !MyPreferences.shouldSetDefaultValues() ) {
 			Intent intent = new Intent(this, TimelineActivity.class);
@@ -176,6 +179,12 @@ public class HelpActivity extends Activity implements SwipeInterface {
 			finish();
 		}
 	}
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        wasPaused = true;
+    }
 
     @Override
     public void onLeftToRight(View v) {

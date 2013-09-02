@@ -557,8 +557,7 @@ public class MyProvider extends ContentProvider {
      * @param uri the same as uri for
      *            {@link MyProvider#query(Uri, String[], String, String[], String)}
      * @param projection
-     * @return String for {@link SQLiteQueryBuilder#setTables(String)} TODO:
-     *         Different joins based on projection requested...
+     * @return String for {@link SQLiteQueryBuilder#setTables(String)}
      */
     private static String tablesForTimeline(Uri uri, String[] projection) {
         String tables = MyDatabase.MSG_TABLE_NAME;
@@ -844,15 +843,15 @@ public class MyProvider extends ContentProvider {
         userProjectionMap.put(User.CREATED_DATE, User.CREATED_DATE);
         userProjectionMap.put(User.INS_DATE, User.INS_DATE);
         
-        userProjectionMap.put(User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_MSG_ID);
+        userProjectionMap.put(User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_POSITION);
         userProjectionMap.put(User.HOME_TIMELINE_DATE, User.HOME_TIMELINE_DATE);
-        userProjectionMap.put(User.FAVORITES_TIMELINE_MSG_ID, User.FAVORITES_TIMELINE_MSG_ID);
+        userProjectionMap.put(User.FAVORITES_TIMELINE_POSITION, User.FAVORITES_TIMELINE_POSITION);
         userProjectionMap.put(User.FAVORITES_TIMELINE_DATE, User.FAVORITES_TIMELINE_DATE);
-        userProjectionMap.put(User.DIRECT_TIMELINE_MSG_ID, User.DIRECT_TIMELINE_MSG_ID);
+        userProjectionMap.put(User.DIRECT_TIMELINE_POSITION, User.DIRECT_TIMELINE_POSITION);
         userProjectionMap.put(User.DIRECT_TIMELINE_DATE, User.DIRECT_TIMELINE_DATE);
-        userProjectionMap.put(User.MENTIONS_TIMELINE_MSG_ID, User.MENTIONS_TIMELINE_MSG_ID);
+        userProjectionMap.put(User.MENTIONS_TIMELINE_POSITION, User.MENTIONS_TIMELINE_POSITION);
         userProjectionMap.put(User.MENTIONS_TIMELINE_DATE, User.MENTIONS_TIMELINE_DATE);
-        userProjectionMap.put(User.USER_TIMELINE_MSG_ID, User.USER_TIMELINE_MSG_ID);
+        userProjectionMap.put(User.USER_TIMELINE_POSITION, User.USER_TIMELINE_POSITION);
         userProjectionMap.put(User.USER_TIMELINE_DATE, User.USER_TIMELINE_DATE);
         userProjectionMap.put(User.USER_MSG_ID, User.USER_MSG_ID);
         userProjectionMap.put(User.USER_MSG_DATE, User.USER_MSG_DATE);
@@ -933,6 +932,26 @@ public class MyProvider extends ContentProvider {
      *         {@link MyDatabase.Msg#MSG_OID} empty string in case of an error
      */
     public static String idToOid(OidEnum oe, long msgId, long userId) {
+        MyDatabase myDb = MyPreferences.getDatabase();
+        if (myDb == null) {
+            return "";
+        } else {
+            SQLiteDatabase db = myDb.getReadableDatabase();
+            return idToOid(db, oe, msgId, userId);
+        }
+    }
+
+    
+    /**
+     * Lookup Originated system's id from the System's (AndStatus) id
+     * 
+     * @param oe what oid we need
+     * @param msgId - see {@link MyDatabase.Msg#_ID}
+     * @param userId Is needed to find reblog by this user
+     * @return - oid in Originated system (i.e. in the table, e.g.
+     *         {@link MyDatabase.Msg#MSG_OID} empty string in case of an error
+     */
+    public static String idToOid(SQLiteDatabase db, OidEnum oe, long msgId, long userId) {
         String oid = "";
         SQLiteStatement prog = null;
         String sql = "";
@@ -964,7 +983,6 @@ public class MyProvider extends ContentProvider {
                     default:
                         throw new IllegalArgumentException("idToOid; Unknown parameter: " + oe);
                 }
-                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 oid = prog.simpleQueryForString();
                 
@@ -985,7 +1003,7 @@ public class MyProvider extends ContentProvider {
         }
         return oid;
     }
-
+    
     public static String msgIdToUsername(String msgUserColumnName, long messageId) {
         String userName = "";
         if (messageId != 0) {
@@ -1054,34 +1072,6 @@ public class MyProvider extends ContentProvider {
         return idToLongColumnValue(MyDatabase.USER_TABLE_NAME, columnName, systemId);
     }
 
-    public static long msgIdToUserId(String msgUserColumnName, long systemId) {
-        long userId = 0;
-        try {
-            if (msgUserColumnName.contentEquals(MyDatabase.Msg.SENDER_ID) ||
-                    msgUserColumnName.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
-                    msgUserColumnName.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID) ||
-                    msgUserColumnName.contentEquals(MyDatabase.Msg.RECIPIENT_ID)) {
-                userId = msgIdToLongColumnValue(msgUserColumnName, systemId);
-            } else {
-                throw new IllegalArgumentException("msgIdToUserId; Unknown name \"" + msgUserColumnName);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "msgIdToUserId: " + e.toString());
-            return 0;
-        }
-        return userId;
-    }
-
-    /**
-     * Convenience method to get column value from {@link MyDatabase.Msg} table
-     * @param columnName without table name
-     * @param systemId  MyDatabase.MSG_TABLE_NAME + "." + Msg._ID
-     * @return 0 in case not found or error
-     */
-    public static long msgIdToLongColumnValue(String columnName, long systemId) {
-        return idToLongColumnValue(MyDatabase.MSG_TABLE_NAME, columnName, systemId);
-    }
-
     /**
      * Convenience method to get long column value from the 'tableName' table
      * @param tableName e.g. {@link MyDatabase#MSG_TABLE_NAME} 
@@ -1114,6 +1104,72 @@ public class MyProvider extends ContentProvider {
             }
         }
         return columnValue;
+    }
+    
+    public static String userIdToStringColumnValue(String columnName, long systemId) {
+        return idToStringColumnValue(MyDatabase.USER_TABLE_NAME, columnName, systemId);
+    }
+    
+    /**
+     * Convenience method to get String column value from the 'tableName' table
+     * @param tableName e.g. {@link MyDatabase#MSG_TABLE_NAME} 
+     * @param columnName without table name
+     * @param systemId tableName._id
+     * @return "" in case not found or error or systemId==0
+     */
+    private static String idToStringColumnValue(String tableName, String columnName, long systemId) {
+        String columnValue = "";
+        if (TextUtils.isEmpty(tableName) || TextUtils.isEmpty(columnName)) {
+            throw new IllegalArgumentException("idToLongColumnValue; tableName or columnName are empty");
+        } else if (systemId != 0) {
+            SQLiteStatement prog = null;
+            String sql = "";
+            try {
+                sql = "SELECT t." + columnName
+                        + " FROM " + tableName + " AS t"
+                        + " WHERE t._id=" + systemId;
+                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+                prog = db.compileStatement(sql);
+                columnValue = prog.simpleQueryForString();
+            } catch (SQLiteDoneException ed) {
+                columnValue = "";
+            } catch (Exception e) {
+                Log.e(TAG, "idToLongColumnValue table='" + tableName + "', column='" + columnName + "': " + e.toString());
+                return "";
+            }
+            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                MyLog.v(TAG, "idToLongColumnValue table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
+            }
+        }
+        return columnValue;
+    }
+    
+    public static long msgIdToUserId(String msgUserColumnName, long systemId) {
+        long userId = 0;
+        try {
+            if (msgUserColumnName.contentEquals(MyDatabase.Msg.SENDER_ID) ||
+                    msgUserColumnName.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
+                    msgUserColumnName.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID) ||
+                    msgUserColumnName.contentEquals(MyDatabase.Msg.RECIPIENT_ID)) {
+                userId = msgIdToLongColumnValue(msgUserColumnName, systemId);
+            } else {
+                throw new IllegalArgumentException("msgIdToUserId; Unknown name \"" + msgUserColumnName);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "msgIdToUserId: " + e.toString());
+            return 0;
+        }
+        return userId;
+    }
+
+    /**
+     * Convenience method to get column value from {@link MyDatabase.Msg} table
+     * @param columnName without table name
+     * @param systemId  MyDatabase.MSG_TABLE_NAME + "." + Msg._ID
+     * @return 0 in case not found or error
+     */
+    public static long msgIdToLongColumnValue(String columnName, long systemId) {
+        return idToLongColumnValue(MyDatabase.MSG_TABLE_NAME, columnName, systemId);
     }
     
     /**

@@ -26,7 +26,7 @@ import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.FollowingUserValues;
 import org.andstatus.app.data.LatestUserMessages;
-import org.andstatus.app.data.LatestMessageOfTimeline;
+import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -36,6 +36,8 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
+import org.andstatus.app.net.ConnectionException.StatusCode;
+import org.andstatus.app.net.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 
 import android.content.Context;
@@ -128,37 +130,48 @@ public class TimelineDownloader {
             userOid =  MyProvider.idToOid(OidEnum.USER_OID, mUserId, 0);
         }
         
-        LatestMessageOfTimeline timelineMsg = new LatestMessageOfTimeline(mTimelineType, mUserId);
+        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(mTimelineType, mUserId);
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
             String strLog = "Loading timeline " + mTimelineType.save() + "; account=" + ma.getAccountName();
             if (mUserId != 0) {
                 strLog += "; user=" + MyProvider.userIdToName(mUserId);
             }
-            if (timelineMsg.getLastMsgDate() > 0) {
-                strLog += "; last msg at=" + (new Date(timelineMsg.getLastMsgDate()).toString())
-                        + "; last time downloaded at=" +  (new Date(timelineMsg.getTimelineDate()).toString());
+            if (latestTimelineItem.getTimelineItemDate() > 0) {
+                strLog += "; last Timeline item at=" + (new Date(latestTimelineItem.getTimelineItemDate()).toString())
+                        + "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
             MyLog.d(TAG, strLog);
         }
         
         int limit = 200;
-        String lastOid = MyProvider.idToOid(OidEnum.MSG_OID, timelineMsg.getLastMsgId(), 0);
-        timelineMsg.onTimelineDownloaded();
-        List<MbMessage> messages = ma.getConnection().getTimeline(mTimelineType.getConnectionApiRoutine(), lastOid, limit, userOid);
-        if (messages.size()>0) {
-            LatestUserMessages lum = new LatestUserMessages();
-            DataInserter di = new DataInserter(ma, mContext, mTimelineType);
-            for (MbMessage message : messages) {
-                long msgId = di.insertOrUpdateMsg(message, lum);
-                timelineMsg.onNewMsg(msgId, 0);
+        TimelinePosition lastPosition = latestTimelineItem.getPosition();
+        latestTimelineItem.onTimelineDownloaded();
+        for (boolean done = false; !done; ) {
+            try {
+                List<MbMessage> messages = ma.getConnection().getTimeline(mTimelineType.getConnectionApiRoutine(), lastPosition, limit, userOid);
+                if (messages.size()>0) {
+                    LatestUserMessages lum = new LatestUserMessages();
+                    DataInserter di = new DataInserter(ma, mContext, mTimelineType);
+                    for (MbMessage message : messages) {
+                        di.insertOrUpdateMsg(message, lum);
+                        latestTimelineItem.onNewMsg(message.timelineItemPosition, message.timelineItemDate);
+                    }
+                    mDownloaded += di.totalMessagesDownloadedCount();
+                    mMessages += di.newMessagesCount();
+                    mMentions += di.newMentionsCount();
+                    mReplies += di.newRepliesCount();
+                    lum.save();
+                    latestTimelineItem.save();
+                }
+                done = true;
+            } catch (ConnectionException e) {
+                if (e.getStatusCode() != StatusCode.NOT_FOUND) {
+                    throw e;
+                }
+                Log.d(TAG, "The timeline was not found, last position='" + lastPosition +"'");
+                lastPosition = TimelinePosition.getEmpty();
             }
-            mDownloaded += di.totalMessagesDownloadedCount();
-            mMessages += di.newMessagesCount();
-            mMentions += di.newMentionsCount();
-            mReplies += di.newRepliesCount();
-            lum.save();
-            timelineMsg.save();
         }
         return true;
     }
@@ -170,18 +183,18 @@ public class TimelineDownloader {
      */
     private void loadFollowedByUserTimeline() throws ConnectionException {
         String userOid =  MyProvider.idToOid(OidEnum.USER_OID, mUserId, 0);
-        LatestMessageOfTimeline timelineMsg = new LatestMessageOfTimeline(mTimelineType, mUserId);
+        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(mTimelineType, mUserId);
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
             String strLog = "Loading timeline " + mTimelineType.save() + "; account=" + ma.getAccountName();
             strLog += "; user=" + MyProvider.userIdToName(mUserId);
-            if (timelineMsg.getTimelineDate() > 0) {
-                strLog += "; last time downloaded at=" +  (new Date(timelineMsg.getTimelineDate()).toString());
+            if (latestTimelineItem.getTimelineDownloadedDate() > 0) {
+                strLog += "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
             MyLog.d(TAG, strLog);
         }
         
-        timelineMsg.onTimelineDownloaded();
+        latestTimelineItem.onTimelineDownloaded();
         List<String> followedUsersOids = ma.getConnection().getIdsOfUsersFollowedBy(userOid);
         // Old list of followed users
         Set<Long> followedIds_old = MyProvider.getIdsOfUsersFollowedBy(mUserId);
@@ -227,7 +240,7 @@ public class TimelineDownloader {
             fu.setFollowed(false);
             fu.update(db);
         }
-        timelineMsg.save();
+        latestTimelineItem.save();
     }
     
     /**

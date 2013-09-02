@@ -20,12 +20,15 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
+import android.util.Log;
 
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.Connection.ApiEnum;
 import org.andstatus.app.util.MyLog;
+
+import java.util.regex.Pattern;
 
 /**
  *  Microblogging system (twitter.com, identi.ca, ... ) where messages are being created
@@ -49,17 +52,17 @@ public class Origin {
      */
     public static long ORIGIN_ID_DEFAULT = ORIGIN_ID_TWITTER;
     /**
-     * Predefined ID for default Status.net system 
+     * Predefined id for the pump.io system 
      * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
      * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
      * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
      */
-    public static long ORIGIN_ID_IDENTICA = 2;
+    public static long ORIGIN_ID_PUMPIO = 2;
     /**
      * Name of the default Originating system (it is unique and permanent as an ID).
      */
-    public static String ORIGIN_NAME_TWITTER = "Twitter";
-    public static String ORIGIN_NAME_IDENTICA = "identi.ca";
+    public static String ORIGIN_NAME_TWITTER = "twitter";
+    public static String ORIGIN_NAME_PUMPIO = "pump.io";
 
     /** 
      * The URI is consistent with "scheme" and "host" in AndroidManifest
@@ -94,6 +97,7 @@ public class Origin {
      * This is only for no OAuth
      */
     private boolean canSetUsername = false;
+    private String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     
     private OriginConnectionData connectionData = new OriginConnectionData();
     
@@ -151,6 +155,17 @@ public class Origin {
         return canChangeOAuth;
     }
 
+    public boolean isUsernameValid(String username) {
+        boolean ok = false;
+        if (username != null && (username.length() > 0)) {
+            ok = Pattern.matches(usernameRegEx, username);
+            if (!ok && MyLog.isLoggable(TAG, Log.INFO)) {
+                Log.i(TAG, "The Username is not valid: \"" + username + "\" in " + name);
+            }
+        }
+        return ok;
+    }
+    
     /**
      * @return Can app user set username for the new "Origin user" manually?
      */
@@ -213,21 +228,23 @@ public class Origin {
             isOAuthDefault = true;
             canChangeOAuth = false;  // Starting from 2010-09 twitter.com allows OAuth only
             canSetUsername = false;
+            usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
 
             connectionData.api = ApiEnum.TWITTER1P1;
             connectionData.isHttps = false;
             connectionData.host = "api.twitter.com";
             connectionData.basicPath = "1.1";
             connectionData.oauthPath = "oauth";
-        } else if (name.compareToIgnoreCase(ORIGIN_NAME_IDENTICA) == 0) {
-            id = ORIGIN_ID_IDENTICA;
+        } else if (name.compareToIgnoreCase(ORIGIN_NAME_PUMPIO) == 0) {
+            id = ORIGIN_ID_PUMPIO;
             isOAuthDefault = true;  
             canChangeOAuth = false;
             canSetUsername = false;
+            usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
 
             connectionData.api = ApiEnum.PUMPIO;
             connectionData.isHttps = true;
-            connectionData.host = "identi.ca";
+            connectionData.host = "identi.ca"; // TODO: support for different hosts
             connectionData.basicPath = "api";
             connectionData.oauthPath = "oauth";
         }
@@ -236,7 +253,7 @@ public class Origin {
     
     private Origin(long id) {
         this(id == ORIGIN_ID_TWITTER ? ORIGIN_NAME_TWITTER :
-                id == ORIGIN_ID_IDENTICA ? ORIGIN_NAME_IDENTICA :
+                id == ORIGIN_ID_PUMPIO ? ORIGIN_NAME_PUMPIO :
                         "");
     }
 
@@ -307,7 +324,7 @@ public class Origin {
                     + userName 
                     + "/status/"
                     + messageOid;
-        } else if (getId() == ORIGIN_ID_IDENTICA) {
+        } else if (getId() == ORIGIN_ID_PUMPIO) {
             url = "http://identi.ca/"
                     + userName; 
         } 

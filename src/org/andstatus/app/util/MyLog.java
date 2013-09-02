@@ -27,7 +27,6 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import android.content.SharedPreferences;
-import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 

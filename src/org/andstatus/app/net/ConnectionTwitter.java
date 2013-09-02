@@ -188,13 +188,13 @@ public abstract class ConnectionTwitter extends Connection {
     }
 
     @Override
-    public List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, String sinceId, int limit, String userId)
+    public List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
             throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
-        if (!TextUtils.isEmpty(fixSinceId(sinceId))) {
-            builder.appendQueryParameter("since_id", fixSinceId(sinceId));
+        if (!sinceId.isEmpty()) {
+            builder.appendQueryParameter("since_id", sinceId.getPosition());
         }
         if (fixedLimit(limit) > 0) {
             builder.appendQueryParameter("count", String.valueOf(fixedLimit(limit)));

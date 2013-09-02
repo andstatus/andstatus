@@ -1,6 +1,5 @@
 /* 
- * Copyright (C) 2008 Torgny Bjers
- * Copyright (c) 2011 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +21,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * @author torgny.bjers
  * @author Yuri Volkov
- *
  */
 public class ConnectionException extends Exception {
-
-	private static final long serialVersionUID = 3072410275455642785L;
-	/**
-	 * Holds status code of HTTP Responses...
-	 * 0 means "unknown"
-	 */
-    private final int statusCode;
+    public enum StatusCode {
+        UNKNOWN,
+        NOT_FOUND
+    }
+    private StatusCode statusCode = StatusCode.UNKNOWN;
 
     public static ConnectionException loggedJsonException(String TAG, JSONException e, JSONObject jso, String detailMessage) throws ConnectionException {
         MyLog.d(TAG, detailMessage + ": " + e.getMessage());
@@ -50,40 +45,37 @@ public class ConnectionException extends Exception {
 	 */
 	public ConnectionException(String detailMessage) {
 		super(detailMessage);
-        this.statusCode = 0;
 	}
 
-    public ConnectionException(int statusCode, final String detailMessage) {
+    public ConnectionException(int statusCodeHttp, final String detailMessage) {
+        super(detailMessage);
+        if (statusCodeHttp == 404) {
+            statusCode = StatusCode.NOT_FOUND;
+        }
+    }
+
+    public ConnectionException(StatusCode statusCode, final String detailMessage) {
         super(detailMessage);
         this.statusCode = statusCode;
     }
 
-    public int getStatusCode() {
+    public StatusCode getStatusCode() {
         return this.statusCode;
     }
 	
-	/**
-	 * @param throwable
-	 */
 	public ConnectionException(Throwable throwable) {
 		super(throwable);
-        this.statusCode = 0;
 	}
 
-	/**
-	 * @param detailMessage
-	 * @param throwable
-	 */
 	public ConnectionException(String detailMessage, Throwable throwable) {
 		super(detailMessage, throwable);
-        this.statusCode = 0;
 	}
 
     @Override
     public String toString() {
         String str = super.toString();
-        if (this.statusCode != 0) {
-            str = Integer.toString(this.statusCode) + " " + str;
+        if (this.statusCode.equals(StatusCode.UNKNOWN)) {
+            str = this.statusCode + " " + str;
         }
         return str;
     }

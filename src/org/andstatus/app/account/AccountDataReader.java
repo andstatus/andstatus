@@ -16,6 +16,10 @@ public interface AccountDataReader {
      * @return Username in the Microblogging system. Not null.
      */
     public String getUsername();
+    /**
+     * @return User Id in the Microblogging system. Not null.
+     */
+    public String getUserOid();
     
     public boolean dataContains(String key);
     

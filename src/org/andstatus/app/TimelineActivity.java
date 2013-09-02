@@ -35,7 +35,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.provider.SearchRecentSuggestions;
 import android.text.TextUtils;
 import android.util.Log;
@@ -63,7 +62,7 @@ import android.widget.ToggleButton;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.LatestMessageOfTimeline;
+import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyProvider;
@@ -71,6 +70,7 @@ import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
 import org.andstatus.app.data.TweetBinder;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
@@ -299,7 +299,14 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!mIsFinishing) {
             boolean helpAsFirstActivity = false;
             boolean showChangeLog = false;
-            if (MyPreferences.shouldSetDefaultValues()) {
+
+            MyProvider.idToOid(OidEnum.USER_OID, 1, 0);  // This may trigger database upgrade
+            long preferencesChangeTimeNew = MyPreferences.initialize(this, this);
+            if (preferencesChangeTimeNew != preferencesChangeTime) {
+                Log.i(TAG, "Preferences changed after opening the database");
+                helpAsFirstActivity = true;
+                showChangeLog = true;
+            } else if (MyPreferences.shouldSetDefaultValues()) {
                 Log.i(TAG, "We are running the Application for the very first time?");
                 helpAsFirstActivity = true;
             } else if (MyAccount.getCurrentAccount() == null) {
@@ -711,7 +718,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!mIsFinishing) {
             mIsFinishing = true;
         }
-        // TODO Auto-generated method stub
         super.finish();
     }
 
@@ -903,13 +909,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         timelineTypeButton.setText(timelinename + (mIsSearchMode ? " *" : ""));
         
         // Show current account info on the left button
-        String accountName = "";
-        if (MyAccount.moreThanOneOriginatingSystem()) {
-            accountName = MyAccount.getCurrentAccount().getAccountName();
-        } else {
-            accountName = MyAccount.getCurrentAccount().getUsername();
-        }
         Button selectAccountButton = (Button) findViewById(R.id.selectAccountButton);
+        String accountName = MyAccount.shortestUniqueAccountName(MyAccount.getCurrentAccount());
         selectAccountButton.setText(accountName);
         
         TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
@@ -1323,8 +1324,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                         case USER:
                         case FOLLOWING_USER:
                             // This timeline doesn't update automatically so let's do it now if necessary
-                            LatestMessageOfTimeline lmi = new LatestMessageOfTimeline(mTimelineType, mSelectedUserId);
-                            if (lmi.isTimeToAutoUpdate()) {
+                            LatestTimelineItem latestTimelineItem = new LatestTimelineItem(mTimelineType, mSelectedUserId);
+                            if (latestTimelineItem.isTimeToAutoUpdate()) {
                                 manualReload(false);
                             }
                             break;

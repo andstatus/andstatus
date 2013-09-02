@@ -30,35 +30,48 @@ class AccountName {
      * Prefix of the user's Preferences file
      */
     public static final String FILE_PREFIX = "user_";
+    public static final String ORIGIN_SEPARATOR = "/";
     
     /**
      * The system in which the username is defined, see {@link Origin}
      */
     private Origin origin;
+    /**
+     * The username is unique for the {@link Origin}
+     */
     private String username;
 
     static String accountNameToOriginName(String accountName) {
         accountName = AccountName.fixAccountName(accountName);
-        int indSlash = accountName.indexOf("/");
+        int indSeparator = accountName.lastIndexOf(ORIGIN_SEPARATOR);
         String originName = "";
-        if (indSlash >= 0) {
-            originName = accountName.substring(0, indSlash);
+        if (indSeparator >= 0) {
+            if (indSeparator < accountName.length()-1) {
+                originName = accountName.substring(indSeparator + 1);
+            }
         }
-        return UserNameUtil.fixUsername(originName);
+        return fixOriginName(originName);
     }
 
-    static String accountNameToUsername(String accountName) {
-        accountName = AccountName.fixAccountName(accountName);
-        int indSlash = accountName.indexOf("/");
+    private String fixUsername(String username_in) {
         String username = "";
-        if (indSlash >= 0) {
-            if (indSlash < accountName.length()-1) {
-                username = accountName.substring(indSlash + 1);
-            }
-        } else {
-            username = accountName;
+        if (username_in != null) {
+            username = username_in.trim();
         }
-        return UserNameUtil.fixUsername(username);
+        if (!origin.isUsernameValid(username)) {
+            username = "";
+        }
+        return username;
+    };
+    
+    String accountNameToUsername(String accountName) {
+        accountName = fixAccountName(accountName);
+        int indSeparator = accountName.indexOf(ORIGIN_SEPARATOR);
+        String username = "";
+        if (indSeparator > 0) {
+            username = accountName.substring(0, indSeparator);
+        }
+        return fixUsername(username);
     }
 
     static String fixAccountName(String accountName_in) {
@@ -71,15 +84,23 @@ class AccountName {
 
     static AccountName fromOriginAndUserNames(String originName, String username) {
         AccountName accountName = new AccountName();
-        accountName.origin = Origin.toExistingOrigin(UserNameUtil.fixUsername(originName));
-        accountName.username = UserNameUtil.fixUsername(username);
+        accountName.origin = Origin.fromOriginName(fixOriginName(originName));
+        accountName.username = accountName.fixUsername(username);
         return accountName;
     }
 
+    static String fixOriginName(String originName_in) {
+        String originName = "";
+        if (originName_in != null) {
+            originName = originName_in.trim();
+        }
+        return originName;
+    }
+    
     static AccountName fromAccountName(String accountNameString) {
         AccountName accountName = new AccountName();
-        accountName.origin = Origin.toExistingOrigin(accountNameToOriginName(accountNameString));
-        accountName.username = accountNameToUsername(accountNameString);
+        accountName.origin = Origin.fromOriginName(accountNameToOriginName(accountNameString));
+        accountName.username = accountName.accountNameToUsername(accountNameString);
         return accountName;
     }
     
@@ -87,13 +108,17 @@ class AccountName {
     
     @Override
     public String toString() {
-        return origin.getName() + "/" + username;
+        return username + ORIGIN_SEPARATOR + origin.getName();
     }
 
     Origin getOrigin() {
         return origin;
     }
 
+    boolean isValid() {
+        return origin.isUsernameValid(username) && origin.isPersistent();
+    }
+    
     String getUsername() {
         return username;
     }
@@ -111,7 +136,7 @@ class AccountName {
      * @return Name without path and extension
      */
     String prefsFileName() {
-        String fileName = FILE_PREFIX + toString().replace("/", "-");
+        String fileName = FILE_PREFIX + toString().replace("@", "-").replace(ORIGIN_SEPARATOR, "-");
         return fileName;
     }
     

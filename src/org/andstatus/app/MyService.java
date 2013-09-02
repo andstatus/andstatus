@@ -34,6 +34,7 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbRateLimitStatus;
 import org.andstatus.app.net.MbUser;
@@ -1138,7 +1139,7 @@ public class MyService extends Service {
             try {
                 ok = ma.getConnection().destroyStatus(oid);
             } catch (ConnectionException e) {
-                if (e.getStatusCode() == 404) {
+                if (e.getStatusCode() == StatusCode.NOT_FOUND) {
                     // This means that there is no such "Status", so we may
                     // assume that it's Ok!
                     ok = true;
@@ -1176,7 +1177,7 @@ public class MyService extends Service {
             try {
                 ok = ma.getConnection().destroyStatus(oid);
             } catch (ConnectionException e) {
-                if (e.getStatusCode() == 404) {
+                if (e.getStatusCode() == StatusCode.NOT_FOUND) {
                     // This means that there is no such "Status", so we may
                     // assume that it's Ok!
                     ok = true;
@@ -1221,7 +1222,7 @@ public class MyService extends Service {
                     }
                 }
             } catch (ConnectionException e) {
-                if (e.getStatusCode() == 404) {
+                if (e.getStatusCode() == StatusCode.NOT_FOUND) {
                     commandData.commandResult.numParseExceptions++;
                     // This means that there is no such "Status"
                     // TODO: so we don't need to retry this command

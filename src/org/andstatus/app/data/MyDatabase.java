@@ -18,7 +18,6 @@ package org.andstatus.app.data;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.appwidget.MyAppWidgetConfigure;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.origin.Origin;
 
@@ -43,6 +42,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
+     * v.12 2013-08-30 yvolk. Adapting for Pump.Io
      * v.11 2013-05-18 yvolk. FollowingUser table added. User table extended with a column
      *      to store the date the list of Following users was loaded.
      * v.10 2013-03-23 yvolk. User table extended with columns
@@ -51,12 +51,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    static final int DATABASE_VERSION = 11;
+    static final int DATABASE_VERSION = 12;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
-    /** TODO: Do we really need this? */
-	public static final String TWITTER_DATE_FORMAT = "EEE MMM dd HH:mm:ss Z yyyy";
-	
 	public static final String MSG_TABLE_NAME = Msg.class.getSimpleName().toLowerCase(Locale.US);
 	public static final String MSGOFUSER_TABLE_NAME = MsgOfUser.class.getSimpleName().toLowerCase(Locale.US);
 	public static final String USER_TABLE_NAME = User.class.getSimpleName().toLowerCase(Locale.US);
@@ -188,9 +185,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * The Msg is reblogged by this User
          * In some sense REBLOGGED is like FAVORITED. 
          * Main difference: visibility. REBLOGGED are shown for all followers in their Home timelines.
-         * TODO: Rename to "reblogged" on next database upgrade 
          */
-        public static final String REBLOGGED = "retweeted";
+        public static final String REBLOGGED = "reblogged";
         /**
          * ID in the originating system of the "reblog" message
          * null for the message that was not reblogged
@@ -276,15 +272,20 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * Columns holding information on timelines downloaded: 
          * last message id and last date-time the timeline was downloaded. 
          */
-        public static final String HOME_TIMELINE_MSG_ID = "home_timeline_msg_id";
+        public static final String HOME_TIMELINE_POSITION = "home_timeline_position";
+        public static final String HOME_TIMELINE_ITEM_DATE = "home_timeline_item_date";
         public static final String HOME_TIMELINE_DATE = "home_timeline_date";
-        public static final String FAVORITES_TIMELINE_MSG_ID = "favorites_timeline_msg_id";
+        public static final String FAVORITES_TIMELINE_POSITION = "favorites_timeline_position";
+        public static final String FAVORITES_TIMELINE_ITEM_DATE = "favorites_timeline_item_date";
         public static final String FAVORITES_TIMELINE_DATE = "favorites_timeline_date";
-        public static final String DIRECT_TIMELINE_MSG_ID = "direct_timeline_msg_id";
+        public static final String DIRECT_TIMELINE_POSITION = "direct_timeline_position";
+        public static final String DIRECT_TIMELINE_ITEM_DATE = "direct_timeline_item_date";
         public static final String DIRECT_TIMELINE_DATE = "direct_timeline_date";
-        public static final String MENTIONS_TIMELINE_MSG_ID = "mentions_timeline_msg_id";
+        public static final String MENTIONS_TIMELINE_POSITION = "mentions_timeline_position";
+        public static final String MENTIONS_TIMELINE_ITEM_DATE = "mentions_timeline_item_date";
         public static final String MENTIONS_TIMELINE_DATE = "mentions_timeline_date";
-        public static final String USER_TIMELINE_MSG_ID = "user_timeline_msg_id";
+        public static final String USER_TIMELINE_POSITION = "user_timeline_position";
+        public static final String USER_TIMELINE_ITEM_DATE = "user_timeline_item_date";
         public static final String USER_TIMELINE_DATE = "user_timeline_date";
         /**
          * For the list ("collection") of following users 
@@ -378,42 +379,42 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         /**
          * The Timeline type is unknown
          */
-        UNKNOWN("unknown", R.string.unimplemented, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
+        UNKNOWN("unknown", R.string.unimplemented, User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
         /**
          * The Home timeline and other information (replies...).
          */
-        HOME("home", R.string.timeline_title_home, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
+        HOME("home", R.string.timeline_title_home, User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
         /**
          * The Mentions timeline and other information (replies...).
          */
-        MENTIONS("mentions", R.string.timeline_title_mentions, User.MENTIONS_TIMELINE_MSG_ID, User.MENTIONS_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE),
+        MENTIONS("mentions", R.string.timeline_title_mentions, User.MENTIONS_TIMELINE_POSITION, User.MENTIONS_TIMELINE_ITEM_DATE, User.MENTIONS_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE),
         /**
          * Direct messages (direct dents...)
          */
-        DIRECT("direct", R.string.timeline_title_direct_messages, User.DIRECT_TIMELINE_MSG_ID, User.DIRECT_TIMELINE_DATE, Connection.ApiRoutineEnum.DIRECT_MESSAGES),
+        DIRECT("direct", R.string.timeline_title_direct_messages, User.DIRECT_TIMELINE_POSITION, User.DIRECT_TIMELINE_ITEM_DATE, User.DIRECT_TIMELINE_DATE, Connection.ApiRoutineEnum.DIRECT_MESSAGES),
         /**
          * Favorites (favorited messages)
          */
-        FAVORITES("favorites", R.string.timeline_title_favorites, User.FAVORITES_TIMELINE_MSG_ID, User.FAVORITES_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
+        FAVORITES("favorites", R.string.timeline_title_favorites, User.FAVORITES_TIMELINE_POSITION, User.FAVORITES_TIMELINE_ITEM_DATE, User.FAVORITES_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
         /**
          * Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet). 
          * This User may be not the same as a user of current account ( {@link MyAccount#currentAccountName}}.
          * Moreover, the User may not be "AndStatus account" at all.
          * Hence this timeline type requires the User parameter.
          */
-        USER("user", R.string.timeline_title_user, User.USER_TIMELINE_MSG_ID, User.USER_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE),
+        USER("user", R.string.timeline_title_user, User.USER_TIMELINE_POSITION, User.USER_TIMELINE_ITEM_DATE, User.USER_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE),
         /**
          * Latest messages of every Following User (Following by this User - AndStatus account). 
          * So this is essentially a list of "Following users". 
          * The timeline doesn't have Message ID because we download User IDs only 
          * See {@link FollowingUser}
          */
-        FOLLOWING_USER("following_user", R.string.timeline_title_following_user, "", User.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.GET_FRIENDS_IDS),
+        FOLLOWING_USER("following_user", R.string.timeline_title_following_user, "", "", User.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.GET_FRIENDS_IDS),
         /**
          * All timelines (e.g. for download of all timelines. 
          * This is generally done after addition of the new MyAccount).
          */
-        ALL("all", R.string.unimplemented, User.HOME_TIMELINE_MSG_ID, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY);
+        ALL("all", R.string.unimplemented, User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY);
         
         /**
          * code of the enum that is used in messages
@@ -422,41 +423,43 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         /**
          * The id of the string resource with the localized name of this Timeline to use in UI
          */
-        private int mResId;
+        private int resId;
         /**
-         * Name of the column with Id of the last message retrieved in the {@link User} table
+         * Name of the column in the {@link User} table. The column contains position
+         * of the latest downloaded timeline item 
+         * E.g. the "timeline item" is a "message" for Twitter and an "Activity" for Pump.Io.  
          */
-        private String mColumnNameLatestMsgId; 
+        private String columnNameLatestTimelinePosition;
+        private String columnNameLatestTimelineItemDate;
         /**
-         * Name of the column of the {@link User} table. The column contains the date when 
+         * Name of the column in the {@link User} table. The column contains the date when 
          * last time this timeline was retrieved.
          */
-        private String mColumnNameTimelineDate;
+        private String columnNameTimelineDate;
         /**
          * Api routine to download this timeline
          */
         private Connection.ApiRoutineEnum connectionApiRoutine;
         
-        /**
-         * @return the name of the column with date when the last message for 
-         * this timeline was retrieved in the {@link User} table
-         */
-        public String columnNameLatestMsgId() {
-            return mColumnNameLatestMsgId;
+        public String columnNameLatestTimelinePosition() {
+            return columnNameLatestTimelinePosition;
         }
-        /**
-         * @return the mColumnNameTimelineDate
-         */
-        public String columnNameTimelineDate() {
-            return mColumnNameTimelineDate;
+
+        public String columnNameLatestTimelineItemDate() {
+            return columnNameLatestTimelineItemDate;
         }
         
-        private TimelineTypeEnum(String codeIn, int resIdIn, String columnNameLatestMsgId_in, String columnNameTimelineDate_in, Connection.ApiRoutineEnum connectionApiRoutine_in) {
-            code = codeIn;
-            mResId = resIdIn;
-            mColumnNameLatestMsgId = columnNameLatestMsgId_in;
-            mColumnNameTimelineDate = columnNameTimelineDate_in;
-            connectionApiRoutine = connectionApiRoutine_in;
+        public String columnNameTimelineDate() {
+            return columnNameTimelineDate;
+        }
+        
+        private TimelineTypeEnum(String code, int resId, String columnNameLatestTimelinePosition, String columnNameLatestTimelineItemDate, String columnNameTimelineDate, Connection.ApiRoutineEnum connectionApiRoutine) {
+            this.code = code;
+            this.resId = resId;
+            this.columnNameLatestTimelinePosition = columnNameLatestTimelinePosition;
+            this.columnNameLatestTimelineItemDate = columnNameLatestTimelineItemDate;
+            this.columnNameTimelineDate = columnNameTimelineDate;
+            this.connectionApiRoutine = connectionApiRoutine;
         }
 
         /**
@@ -470,7 +473,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * The id of the string resource with the localized name to use in UI
          */
         public int resId() {
-            return mResId;
+            return resId;
         }
         
         public Connection.ApiRoutineEnum getConnectionApiRoutine() {
@@ -535,7 +538,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + MsgOfUser.SUBSCRIBED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.FAVORITED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.REBLOGGED + " BOOLEAN DEFAULT 0 NOT NULL," 
-                + MsgOfUser.REBLOG_OID + " STRING," 
+                + MsgOfUser.REBLOG_OID + " TEXT," 
                 + MsgOfUser.MENTIONED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.REPLIED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.DIRECTED + " BOOLEAN DEFAULT 0 NOT NULL," 
@@ -545,7 +548,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         db.execSQL("CREATE TABLE " + USER_TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + User.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ID_DEFAULT + " NOT NULL," 
-                + User.USER_OID + " STRING," 
+                + User.USER_OID + " TEXT," 
                 + User.USERNAME + " TEXT NOT NULL," 
                 + User.REAL_NAME + " TEXT," 
                 + User.AVATAR_URL + " TEXT," 
@@ -554,15 +557,20 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.HOMEPAGE + " TEXT," 
                 + User.CREATED_DATE + " INTEGER,"
                 + User.INS_DATE + " INTEGER NOT NULL,"
-                + User.HOME_TIMELINE_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
+                + User.HOME_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
+                + User.HOME_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.HOME_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.FAVORITES_TIMELINE_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
+                + User.FAVORITES_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
+                + User.FAVORITES_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.FAVORITES_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.DIRECT_TIMELINE_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
+                + User.DIRECT_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
+                + User.DIRECT_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.DIRECT_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.MENTIONS_TIMELINE_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
+                + User.MENTIONS_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
+                + User.MENTIONS_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.MENTIONS_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
-                + User.USER_TIMELINE_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
+                + User.USER_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
+                + User.USER_TIMELINE_ITEM_DATE + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.USER_TIMELINE_DATE + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.FOLLOWING_USER_DATE + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.USER_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
@@ -591,188 +599,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
-        int currentVersion = oldVersion; 
-        Log.i(TAG, "Upgrading database from version " + oldVersion + " to version " + newVersion);
-        if (oldVersion < 8) {
-            db.execSQL("DROP TABLE " + "tweets" + ";");
-            db.execSQL("DROP TABLE " + "directmessages" + ";");
-            db.execSQL("DROP TABLE " + "users" + ";");
-            Log.i(TAG, "Dropped old tables from version " + oldVersion
-                    + ". Starting from the empty database");
-            onCreate(db);
-            currentVersion = newVersion;
-        } 
-        if (currentVersion == 8) {
-            currentVersion = convert8to9(db, currentVersion);
-        }
-        if (currentVersion == 9) {
-            currentVersion = convert9to10(db, currentVersion);
-        }
-        if (currentVersion == 10) {
-            currentVersion = convert10to11(db, currentVersion);
-        }
-        if ( currentVersion == newVersion) {
-            Log.i(TAG, "Successfully upgraded database from version " + oldVersion + " to version "
-                    + newVersion + ".");
-        } else {
-            Log.e(TAG, "Error upgrading database from version " + oldVersion + " to version "
-                    + newVersion + ". Current database version=" + currentVersion);
-            // This throws an error
-            db.execSQL("Database upgrade failed. Current database version=" + currentVersion);
-        }
+        new MyDatabaseConverter().onUpgrade(db, oldVersion, newVersion);
+        MyAccount.onUpgrade(db, oldVersion, newVersion);
+        MyPreferences.onPreferencesChanged();
     }
-    
-    /**
-     * @return new db version, the same as old in a case of a failure
-     */
-    private int convert8to9(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 9;
-        boolean ok = false;
-        try {
-            Log.i(TAG, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
-            db.execSQL("DROP TABLE " + "users" + ";");
-            onCreate(db);
-
-            // Associate all currently loaded messages with one current
-            // User MyAccount (to be created...)
-            String username = MyPreferences.getDefaultSharedPreferences().getString(
-                    "username", "");
-            if (username.length() > 0) {
-                db.execSQL("INSERT INTO user(_id, origin_id, username, user_ins_date) VALUES(1, 1, '"
-                        + username + "'," + System.currentTimeMillis() + ")");
-                db.execSQL("INSERT INTO msg (msg_oid, origin_id, body, via, msg_created_date, msg_sent_date, msg_ins_date)"
-                        + " SELECT tweets._id, 1, tweets.message, tweets.source, tweets.sent, tweets.sent,"
-                        + System.currentTimeMillis() + " FROM tweets");
-                db.execSQL("INSERT INTO user (username, origin_id, user_ins_date) SELECT DISTINCT author_id, 1, "
-                        + System.currentTimeMillis()
-                        + " FROM tweets"
-                        + " WHERE (tweets.author_id <> 'null')"
-                        + " AND NOT EXISTS (SELECT * FROM user WHERE username = tweets.author_id)");
-                db.execSQL("INSERT INTO msgofuser (msg_id, user_id, favorited, subscribed, mentioned)"
-                        + " SELECT DISTINCT msg._id, 1, tweets.favorited, 1, CASE tweets.tweet_type WHEN 2 THEN 1 ELSE 0 END"
-                        + " FROM ((tweets INNER JOIN msg ON tweets._id = msg.msg_oid)"
-                        + " INNER JOIN user on tweets.author_id = user.username)");
-                db.execSQL("UPDATE msg SET author_id = (SELECT user._id FROM (tweets INNER JOIN user on tweets.author_id = user.username) WHERE tweets._id = msg.msg_oid)");
-                db.execSQL("UPDATE msg SET sender_id = author_id");
-
-                // Now add Users to whom replies were
-                db.execSQL("INSERT INTO user (username, origin_id, user_ins_date) SELECT DISTINCT in_reply_to_author_id, 1,"
-                        + System.currentTimeMillis()
-                        + " FROM tweets WHERE tweets.in_reply_to_author_id NOT NULL"
-                        + " AND (tweets.in_reply_to_author_id <> 'null')"
-                        + " AND NOT EXISTS (SELECT * FROM user WHERE username = tweets.in_reply_to_author_id)");
-                // Add messages (templates for messages) to which
-                // replies were
-                db.execSQL("INSERT INTO msg (msg_oid, origin_id, author_id, sender_id, msg_ins_date)"
-                        + " SELECT DISTINCT tweets.in_reply_to_status_id, 1, user._id, user._id,"
-                        + System.currentTimeMillis()
-                        + " FROM (tweets INNER JOIN user ON tweets.in_reply_to_author_id = user.username)"
-                        + " WHERE (tweets.in_reply_to_status_id IS NOT NULL)"
-                        + " AND (tweets.in_reply_to_status_id <> 'null')"
-                        + " AND NOT EXISTS (SELECT * FROM msg AS m2 WHERE m2.msg_oid = tweets.in_reply_to_status_id)");
-
-                // Add Direct Messages
-                db.execSQL("INSERT INTO msg (body, msg_oid, origin_id, author_id, sender_id, recipient_id, msg_created_date, msg_sent_date, msg_ins_date)"
-                        + " SELECT DISTINCT message, directmessages._id, 1, user._id, user._id, 1, directmessages.sent, directmessages.sent, "
-                        + System.currentTimeMillis()
-                        + " FROM (directmessages INNER JOIN user ON directmessages.author_id = user.username)");
-
-                db.execSQL("INSERT INTO msgofuser (msg_id, user_id, directed)"
-                        + " SELECT DISTINCT msg._id, 1, 1"
-                        + " FROM ((directmessages INNER JOIN msg ON directmessages._id = msg.msg_oid)"
-                        + " INNER JOIN user on directmessages.author_id = user.username)");
-
-            }
-            db.execSQL("DROP TABLE " + "tweets" + ";");
-            db.execSQL("DROP TABLE " + "directmessages" + ";");
-
-            ok = true;
-            
-            MyAppWidgetConfigure.deleteWidgets(MyPreferences.getContext(),
-                    "org.andstatus.app", "org.andstatus.app.appwidget.MyAppWidgetProvider");
-            
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-        if (ok) {
-            Log.i(TAG, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
-        } else {
-            Log.e(TAG, "Database upgrading step failed to upgrade database from " + oldVersion + " to version " + versionTo);
-        }
-        return (ok ? versionTo : oldVersion) ;
-    }
-
-    /**
-     * @return new db version, the same as old in a case of a failure
-     */
-    private int convert9to10(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 10;
-        boolean ok = false;
-        String sql = "";
-        try {
-            Log.i(TAG, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
-            String[] columns = {"home_timeline_msg_id", "home_timeline_date", 
-                    "favorites_timeline_msg_id", "favorites_timeline_date",
-                    "direct_timeline_msg_id", "direct_timeline_date", 
-                    "mentions_timeline_msg_id", "mentions_timeline_date", 
-                    "user_timeline_msg_id", "user_timeline_date"};
-            for ( String column: columns ) {
-                sql = "ALTER TABLE user ADD COLUMN " + column + " INTEGER DEFAULT 0 NOT NULL";
-                db.execSQL(sql);
-            }
-            
-            sql = "ALTER TABLE msgofuser ADD COLUMN reblog_oid STRING";
-            db.execSQL(sql);
-            ok = true;
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-        if (ok) {
-            Log.i(TAG, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
-        } else {
-            Log.e(TAG, "Database upgrading step failed to upgrade database from " + oldVersion 
-                    + " to version " + versionTo
-                    + " SQL='" + sql +"'");
-        }
-        return (ok ? versionTo : oldVersion) ;
-    }
-
-    /**
-     * @return new db version, the same as old in a case of a failure
-     */
-    private int convert10to11(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 11;
-        boolean ok = false;
-        String sql = "";
-        try {
-            Log.i(TAG, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
-
-            String[] columns = {"following_user_date",
-                    "user_msg_id", "user_msg_date"};
-            for ( String column: columns ) {
-                sql = "ALTER TABLE user ADD COLUMN " + column + " INTEGER DEFAULT 0 NOT NULL";
-                db.execSQL(sql);
-            }
-            
-            sql = "CREATE TABLE " + "followinguser" + " (" 
-                    + "user_id" + " INTEGER NOT NULL," 
-                    + "following_user_id" + " INTEGER NOT NULL," 
-                    + "user_followed" + " BOOLEAN DEFAULT 1 NOT NULL," 
-                    + " CONSTRAINT pk_followinguser PRIMARY KEY (" + "user_id" + " ASC, " + "following_user_id" + " ASC)"
-                    + ");";
-            db.execSQL(sql);
-            ok = true;
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-        if (ok) {
-            Log.i(TAG, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
-        } else {
-            Log.e(TAG, "Database upgrading step failed to upgrade database from " + oldVersion 
-                    + " to version " + versionTo
-                    + " SQL='" + sql +"'");
-        }
-        return (ok ? versionTo : oldVersion) ;
-    }
-    
 }

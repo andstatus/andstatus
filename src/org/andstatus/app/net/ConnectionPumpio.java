@@ -8,6 +8,7 @@ import android.util.Log;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.basic.DefaultOAuthConsumer;
 
+import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
@@ -32,8 +33,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * Implementation of pump.io API: <a href="https://github.com/e14n/pump.io/blob/master/API.md">https://github.com/e14n/pump.io/blob/master/API.md</a>  
@@ -242,25 +243,35 @@ class ConnectionPumpio extends Connection {
         return date;
     }
     
+    /**
+     * Simple solution based on:
+     * http://stackoverflow.com/questions/2201925/converting-iso8601-compliant-string-to-java-util-date
+     */
     private static long parseDate(String date) {
         if(date == null)
             return new Date().getTime();
-
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        df.setTimeZone(TimeZone.getTimeZone("Zulu"));
+        String datePrepared;        
+        if (date.lastIndexOf("Z") == date.length()-1) {
+            datePrepared = date.substring(0, date.length()-1) + "+0000";
+        } else {
+            datePrepared = date.replaceAll("\\+0([0-9]){1}\\:00", "+0$100");
+        }
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY);
         try {
-            return df.parse(date).getTime();
+            long unixTime = df.parse(datePrepared).getTime();
+            return unixTime;
         } catch (ParseException e) {
+            Log.e(TAG, "Failed to parse the date: '" + date +"'");
             return new Date().getTime();
         }
     }
-
+    
     // TODO: Move to HttpConnection...
     JSONObject getRequest(String path) throws ConnectionException {
         if (TextUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is empty");
         }
-        JSONObject jso;
+        JSONObject jso = null;
         try {
             OAuthConsumer consumer = new DefaultOAuthConsumer(
                     httpConnection.connectionData.clientKeys.getConsumerKey(),
@@ -271,29 +282,40 @@ class ConnectionPumpio extends Connection {
             
             URL url = new URL(httpConnection.pathToUrl(path));
             HttpURLConnection conn;
-            loop: while(true) {
+            for (boolean done=false; !done; ) {
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setInstanceFollowRedirects(false);
                 consumer.sign(conn);
                 conn.connect();
-                switch(conn.getResponseCode()) {
+                int responseCode = conn.getResponseCode();
+                switch(responseCode) {
                     case 200:
-                        break loop;  
-                        
+                        jso = new JSONObject(readAll(conn.getInputStream()));
+                        done = true;
+                        break;
                     case 301:
                     case 302:
                     case 303:
                     case 307:
                         url = new URL(conn.getHeaderField("Location"));
                         MyLog.v(TAG, "Following redirect to " + url);
-                        continue;
-                        
+                        break;                        
                     default:
-                        String err = readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
-                        throw new Exception(err);
+                        String responseString = readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+                        try {
+                            JSONObject jsonError = new JSONObject(responseString);
+                            String error = jsonError.optString("error");
+                            StatusCode statusCode = (error.indexOf("not found") < 0 ? StatusCode.UNKNOWN : StatusCode.NOT_FOUND);
+                            throw new ConnectionException(statusCode, "Error getting '" + path + "', status=" + responseCode + ", error='" + error + "'");
+                        } catch (JSONException e) {
+                            throw new ConnectionException("Error getting '" + path + "', status=" + responseCode + ", non-JSON response: '" + responseString + "'");
+                        }
                 }
             }
-            jso = new JSONObject(readAll(conn.getInputStream()));
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(TAG, e, jso, "Error getting '" + path + "'");
+        } catch (ConnectionException e) {
+            throw e;
         } catch(Exception e) {
             throw new ConnectionException("Error getting '" + path + "', " + e.getMessage());
         }
@@ -376,7 +398,7 @@ class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, String sinceId, int limit, String userId)
+    public List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
             throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         if (TextUtils.isEmpty(url)) {
@@ -384,18 +406,20 @@ class ConnectionPumpio extends Connection {
         }
         String nickname;
         if (TextUtils.isEmpty(userId)) {
-            if (TextUtils.isEmpty(httpConnection.accountUsername)) {
-                throw new IllegalArgumentException("accountUsername is empty");
-            }
-            nickname = httpConnection.accountUsername;
-        } else {
-            nickname = userOidToName(userId);
+            throw new IllegalArgumentException("getTimeline: userId is required");
+        }
+        nickname = userOidToName(userId);
+        if (TextUtils.isEmpty(nickname)) {
+            nickname = userId; // This is a hack for old identi.ca Ids
+            MyLog.d (TAG, "getTimeline: fix the userId=" + userId);
         }
         url = url.replace("%nickname%", nickname);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
-        if (!TextUtils.isEmpty(fixSinceId(sinceId))) {
-            builder.appendQueryParameter("since",fixSinceId(sinceId));
+        // TODO: the "sinceId" should point to the "Activity" on the timeline, not to the message
+        // Otherwise we will always get "not found"
+        if (!sinceId.isEmpty()) {
+            builder.appendQueryParameter("since", sinceId.getPosition());
         }
         if (fixedLimit(limit) > 0) {
             builder.appendQueryParameter("count",String.valueOf(fixedLimit(limit)));
@@ -552,9 +576,8 @@ class ConnectionPumpio extends Connection {
         String nickname = "";
         if (!TextUtils.isEmpty(userId)) {
             int indexOfColon = userId.indexOf(":");
-            int indexOfAt = userId.indexOf("@");
-            if (indexOfColon > 0 && indexOfAt > indexOfColon) {
-                nickname = userId.substring(indexOfColon+1, indexOfAt);
+            if (indexOfColon > 0) {
+                nickname = userId.substring(indexOfColon+1);
             }
         }
         return nickname;

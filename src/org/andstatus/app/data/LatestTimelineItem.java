@@ -21,18 +21,19 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
+import org.andstatus.app.net.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;
 
 
 /**
- * Retrieve and save information about the latest downloaded message from this timeline
+ * Retrieve and save information about position of the latest downloaded timeline item. 
+ * E.g. the "timeline item" is a "message" for Twitter and an "Activity" for Pump.Io.  
  */
-public class LatestMessageOfTimeline {
-    private static final String TAG = LatestMessageOfTimeline.class.getSimpleName();
+public class LatestTimelineItem {
+    private static final String TAG = LatestTimelineItem.class.getSimpleName();
 
     private TimelineTypeEnum timelineType;
     /**
@@ -40,44 +41,41 @@ public class LatestMessageOfTimeline {
      */
     private long userId = 0;
     
+    TimelinePosition position = TimelinePosition.getEmpty();
     /**
-     * The id of the latest Message, downloaded for this timeline
+     * 
      * 0 - none were downloaded
      */
-    long lastMsgId = 0;
-    /**
-     * 0 - none were downloaded
-     */
-    long lastMsgDate = 0;
+    long timelineItemDate = 0;
     /**
      * Last date when this timeline was successfully downloaded.
      * It is used to know when it will be time for the next automatic update
      */
-    long timelineDate = 0;
+    long timelineDownloadedDate = 0;
     
     /**
      * We will update only what really changed
      */
-    private boolean lastMsgChanged = false;
+    private boolean timelineItemChanged = false;
     private boolean timelineDateChanged = false;
     
     /**
      * Retrieve information about the last downloaded message from this timeline
      * @param userId_in Should always be Id of the User of this timeline
      */
-    public LatestMessageOfTimeline(TimelineTypeEnum timelineType_in, long userId_in) {
+    public LatestTimelineItem(TimelineTypeEnum timelineType_in, long userId_in) {
         timelineType = timelineType_in;
         userId = userId_in;
         if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }
         
-        timelineDate = MyProvider.userIdToLongColumnValue(timelineType.columnNameTimelineDate(), userId);
-        if (!TextUtils.isEmpty(timelineType.columnNameLatestMsgId())) {
-            lastMsgId = MyProvider.userIdToLongColumnValue(timelineType.columnNameLatestMsgId(), userId);
-            lastMsgDate = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, lastMsgId);
-            if (lastMsgDate == 0) {
-                lastMsgId = 0;
+        timelineDownloadedDate = MyProvider.userIdToLongColumnValue(timelineType.columnNameTimelineDate(), userId);
+        if (!TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition())) {
+            position = new TimelinePosition(MyProvider.userIdToStringColumnValue(timelineType.columnNameLatestTimelinePosition(), userId));
+            timelineItemDate = MyProvider.userIdToLongColumnValue(timelineType.columnNameLatestTimelineItemDate(), userId);
+            if (timelineItemDate == 0) {
+                position = TimelinePosition.getEmpty();
             }
         }
     }
@@ -85,43 +83,36 @@ public class LatestMessageOfTimeline {
     /**
      * @return Id of the last downloaded message from this timeline
      */
-    public long getLastMsgId() {
-        return lastMsgId;
+    public TimelinePosition getPosition() {
+        return position;
     }
 
     /**
      * @return Sent Date of the last downloaded message from this timeline
      */
-    public long getLastMsgDate() {
-        return lastMsgDate;
+    public long getTimelineItemDate() {
+        return timelineItemDate;
     }
 
     /**
      * @return Last date when this timeline was successfully downloaded
      */
-    public long getTimelineDate() {
-        return timelineDate;
+    public long getTimelineDownloadedDate() {
+        return timelineDownloadedDate;
     }
 
-    /** If this message is newer than any we got earlier, remember it
-     * @param msgId
-     * @param msgDate may be 0 (will be retrieved here) 
+    /** New Timeline Item was downloaded
      */
-    public void onNewMsg(long msgId, long msgDate) {
-        if (msgId != 0) {
-            if (msgDate == 0) {
-                msgDate = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, msgId);
-            }
-            if (msgDate > lastMsgDate) {
-                lastMsgDate = msgDate;
-                lastMsgId = msgId;
-                lastMsgChanged = true;
-            }
+    public void onNewMsg(TimelinePosition timelineItemPosition, long timelineItemDate) {
+        if (!timelineItemPosition.isEmpty() && (timelineItemDate > this.timelineItemDate)) {
+            this.timelineItemDate = timelineItemDate;
+            this.position = timelineItemPosition;
+            timelineItemChanged = true;
         }
     }
     
     public void onTimelineDownloaded() {
-        timelineDate = System.currentTimeMillis();
+        timelineDownloadedDate = System.currentTimeMillis();
         timelineDateChanged = true;
     }
     
@@ -130,11 +121,11 @@ public class LatestMessageOfTimeline {
      */
     public void save() {
         boolean changed = timelineDateChanged || 
-                (lastMsgChanged && !TextUtils.isEmpty(timelineType.columnNameLatestMsgId()));
+                (timelineItemChanged && !TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition()));
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             MyLog.v(TAG, "Timeline " + timelineType.save() 
                     + " for the user=" + MyProvider.userIdToName(userId) 
-                    + " downloaded at " + (new Date(getTimelineDate()).toString())
+                    + " downloaded at " + (new Date(getTimelineDownloadedDate()).toString())
                     + (changed ? "" : " not changed")                    
                     );
         }
@@ -145,13 +136,14 @@ public class LatestMessageOfTimeline {
         String sql = "";
         try {
             if (timelineDateChanged) {
-                sql += timelineType.columnNameTimelineDate() + "=" + timelineDate;
+                sql += timelineType.columnNameTimelineDate() + "=" + timelineDownloadedDate;
             }
-            if (lastMsgChanged && !TextUtils.isEmpty(timelineType.columnNameLatestMsgId())) {
+            if (timelineItemChanged && !TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition())) {
                 if (!TextUtils.isEmpty(sql)) {
                     sql += ", ";
                 }
-                sql += timelineType.columnNameLatestMsgId() + "=" + lastMsgId;
+                sql += timelineType.columnNameLatestTimelinePosition() + "=" 
+                + MyProvider.quoteIfNotQuoted(position.getPosition());
             }
 
             sql = "UPDATE " + MyDatabase.USER_TABLE_NAME + " SET " + sql 
@@ -161,7 +153,7 @@ public class LatestMessageOfTimeline {
             db.execSQL(sql);
             
             timelineDateChanged = false;
-            lastMsgChanged = false;
+            timelineItemChanged = false;
         } catch (Exception e) {
             Log.e(TAG, "save: sql=" + sql + "; error=" + e.toString());
         }
@@ -173,7 +165,7 @@ public class LatestMessageOfTimeline {
      */
     public boolean isTimeToAutoUpdate() {
         long frequencyMs = MyPreferences.getSyncFrequencyMs();
-        long passedMs = System.currentTimeMillis() - getTimelineDate(); 
+        long passedMs = System.currentTimeMillis() - getTimelineDownloadedDate(); 
         boolean blnOut = (passedMs > frequencyMs);
         
         if (blnOut && MyLog.isLoggable(TAG, Log.VERBOSE)) {
