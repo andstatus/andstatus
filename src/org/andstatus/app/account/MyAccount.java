@@ -499,15 +499,18 @@ public class MyAccount implements AccountDataReader {
                     if (ok) {
                         setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
                     }
+                    if (ok) {
+                        myAccount.userOid = user.oid;
+                        DataInserter di = new DataInserter(myAccount, MyPreferences.getContext(), TimelineTypeEnum.ALL);
+                        LatestUserMessages lum = new LatestUserMessages();
+                        myAccount.userId = di.insertOrUpdateUser(user, lum);
+                        lum.save();
+                    }
                     if (ok && !isPersistent()) {
                         // Now we know the name (or proper case of the name) of this User!
                         // We don't recreate MyAccount object for the new name
                         //   in order to preserve credentials.
                         myAccount.oAccountName = AccountName.fromOriginAndUserNames(myAccount.oAccountName.getOriginName(), newName);
-                        myAccount.userOid = user.oid;
-                        if (myAccount.userId == 0) {
-                            assignUserId();
-                        }
                         save();
                         setConnection();
                     }
@@ -581,6 +584,7 @@ public class MyAccount implements AccountDataReader {
                     // Construct "User" from available account info
                     // We need this User in order to be able to link Messages to him
                     MbUser mbUser = MbUser.fromOriginAndUserName(myAccount.getOriginId(), myAccount.getUsername());
+                    mbUser.oid = myAccount.getUserOid();
                     LatestUserMessages lum = new LatestUserMessages();
                     myAccount.userId = di.insertOrUpdateUser(mbUser, lum);
                     lum.save();

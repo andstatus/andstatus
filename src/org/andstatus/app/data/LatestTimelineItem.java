@@ -127,6 +127,7 @@ public class LatestTimelineItem {
                     + " for the user=" + MyProvider.userIdToName(userId) 
                     + " downloaded at " + (new Date(getTimelineDownloadedDate()).toString())
                     + (changed ? "" : " not changed")                    
+                    + " latest position=" + MyProvider.quoteIfNotQuoted(position.getPosition())
                     );
         }
         if (!changed) {
@@ -143,7 +144,10 @@ public class LatestTimelineItem {
                     sql += ", ";
                 }
                 sql += timelineType.columnNameLatestTimelinePosition() + "=" 
-                + MyProvider.quoteIfNotQuoted(position.getPosition());
+                + MyProvider.quoteIfNotQuoted(position.getPosition()) + ", "
+                + timelineType.columnNameLatestTimelineItemDate() + "="
+                + timelineItemDate;
+                ;
             }
 
             sql = "UPDATE " + MyDatabase.USER_TABLE_NAME + " SET " + sql 

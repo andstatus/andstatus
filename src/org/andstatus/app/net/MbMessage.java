@@ -7,6 +7,8 @@ import android.text.TextUtils;
  * @author Yuri Volkov
  */
 public class MbMessage {
+    private boolean isEmpty = false;
+    
     public String oid="";
     public long sentDate = 0;
     public MbUser sender = null;
@@ -43,9 +45,14 @@ public class MbMessage {
         return message;
     }
 
+    public MbMessage markAsEmpty() {
+        isEmpty = true;
+        return this;
+    }
+    
     private MbMessage() {}
     
     public boolean isEmpty() {
-        return (TextUtils.isEmpty(oid) || originId==0);
+        return (this.isEmpty || TextUtils.isEmpty(oid) || originId==0);
     }
 }

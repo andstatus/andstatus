@@ -216,7 +216,7 @@ class ConnectionPumpio extends Connection {
             return MbUser.getEmpty();
         }
         String oid = jso.optString("id");
-        MbUser user = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, userOidToName(oid));
+        MbUser user = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, userOidToUsername(oid));
         user.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
         user.oid = oid;
         user.realName = jso.optString("displayName");
@@ -317,7 +317,7 @@ class ConnectionPumpio extends Connection {
         } catch (ConnectionException e) {
             throw e;
         } catch(Exception e) {
-            throw new ConnectionException("Error getting '" + path + "', " + e.getMessage());
+            throw new ConnectionException("Error getting '" + path + "', " + e.toString());
         }
         return jso;
     }
@@ -404,25 +404,23 @@ class ConnectionPumpio extends Connection {
         if (TextUtils.isEmpty(url)) {
             return new ArrayList<MbMessage>();
         }
-        String nickname;
         if (TextUtils.isEmpty(userId)) {
             throw new IllegalArgumentException("getTimeline: userId is required");
         }
-        nickname = userOidToName(userId);
+        String nickname = userOidToNickname(userId);
         if (TextUtils.isEmpty(nickname)) {
-            nickname = userId; // This is a hack for old identi.ca Ids
-            MyLog.d (TAG, "getTimeline: fix the userId=" + userId);
+            throw new IllegalArgumentException("getTimeline: wrong userId=" + userId);
         }
         url = url.replace("%nickname%", nickname);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
-        // TODO: the "sinceId" should point to the "Activity" on the timeline, not to the message
-        // Otherwise we will always get "not found"
         if (!sinceId.isEmpty()) {
+            // The "since" should point to the "Activity" on the timeline, not to the message
+            // Otherwise we will always get "not found"
             builder.appendQueryParameter("since", sinceId.getPosition());
         }
-        if (fixedLimit(limit) > 0) {
-            builder.appendQueryParameter("count",String.valueOf(fixedLimit(limit)));
+        if (fixedDownloadLimit(limit) > 0) {
+            builder.appendQueryParameter("count",String.valueOf(fixedDownloadLimit(limit)));
         }
         url = builder.build().toString();
         JSONArray jArr = getRequestAsArray(url);
@@ -433,9 +431,7 @@ class ConnectionPumpio extends Connection {
                 try {
                     JSONObject jso = jArr.getJSONObject(index);
                     MbMessage mbMessage = messageFromJson(jso);
-                    if (!mbMessage.isEmpty()) {
-                        timeline.add(mbMessage);
-                    }
+                    timeline.add(mbMessage);
                 } catch (JSONException e) {
                     throw ConnectionException.loggedJsonException(TAG, e, null, "Parsing timeline");
                 }
@@ -445,6 +441,16 @@ class ConnectionPumpio extends Connection {
         return timeline;
     }
 
+    @Override
+    public int fixedDownloadLimit(int limit) {
+        final int maxLimit = 20;
+        int out = super.fixedDownloadLimit(limit);
+        if (out > maxLimit) {
+            out = maxLimit;
+        }
+        return out;
+    }
+    
     private MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
         if (PumpioObjectType.ACTIVITY.isMyType(jso)) {
             return messageFromJsonActivity(jso);
@@ -467,6 +473,7 @@ class ConnectionPumpio extends Connection {
             message =  MbMessage.fromOriginAndOid(httpConnection.connectionData.originId, oid);
             message.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
             message.sentDate = dateFromJson(activity, "updated");
+            message.timelineItemDate = message.sentDate; 
 
             if (activity.has("actor")) {
                 message.sender = userFromJson(activity.getJSONObject("actor"));
@@ -497,7 +504,7 @@ class ConnectionPumpio extends Connection {
                 message.rebloggedMessage = messageFromJson(jso);
                 if (message.rebloggedMessage.isEmpty()) {
                     MyLog.d(TAG, "No reblogged message " + jso.toString(2));
-                    return MbMessage.getEmpty();
+                    return message.markAsEmpty();
                 }
             } else {
                 if (verb.equalsIgnoreCase("favorite")) {
@@ -509,7 +516,7 @@ class ConnectionPumpio extends Connection {
                 if (PumpioObjectType.COMMENT.isMyType(jso) || PumpioObjectType.NOTE.isMyType(jso)) {
                     parseComment(message, jso);
                 } else {
-                    return MbMessage.getEmpty();
+                    return message.markAsEmpty();
                 }
             }
         } catch (JSONException e) {
@@ -572,12 +579,24 @@ class ConnectionPumpio extends Connection {
         return message;
     }
     
-    private String userOidToName(String userId) {
-        String nickname = "";
+    private String userOidToUsername(String userId) {
+        String username = "";
         if (!TextUtils.isEmpty(userId)) {
             int indexOfColon = userId.indexOf(":");
             if (indexOfColon > 0) {
-                nickname = userId.substring(indexOfColon+1);
+                username = userId.substring(indexOfColon+1);
+            }
+        }
+        return username;
+    }
+    
+    private String userOidToNickname(String userId) {
+        String nickname = "";
+        if (!TextUtils.isEmpty(userId)) {
+            int indexOfColon = userId.indexOf(":");
+            int indexOfAt = userId.indexOf("@");
+            if (indexOfColon > 0 && indexOfAt > indexOfColon) {
+                nickname = userId.substring(indexOfColon+1, indexOfAt);
             }
         }
         return nickname;

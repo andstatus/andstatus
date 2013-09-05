@@ -326,7 +326,7 @@ public abstract class Connection {
     /**
      * Restrict the limit to 1 - 200
      */
-    protected final int fixedLimit(int limit) {
+    public int fixedDownloadLimit(int limit) {
         int out = 200;
         if (limit > 0 && limit < 200) {
             out = limit;

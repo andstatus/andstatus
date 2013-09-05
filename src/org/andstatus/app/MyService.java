@@ -1403,17 +1403,17 @@ public class MyService extends Service {
                             MyService.this.getApplicationContext(),
                             timelineType, userId);
                     ok = fl.loadTimeline();
-                    downloadedCount += fl.downloadedCount();
+                    downloadedCount += fl.totalMessagesDownloadedCount();
                     switch (timelineType) {
                         case MENTIONS:
-                            mentionsAdded += fl.mentionsCount();
+                            mentionsAdded += fl.newMentionsCount();
                             break;
                         case HOME:
-                            msgAdded += fl.messagesCount();
-                            mentionsAdded += fl.mentionsCount();
+                            msgAdded += fl.newMessagesCount();
+                            mentionsAdded += fl.newMentionsCount();
                             break;
                         case DIRECT:
-                            directedAdded += fl.messagesCount();
+                            directedAdded += fl.newMessagesCount();
                             break;
                         case FOLLOWING_USER:
                         case USER:

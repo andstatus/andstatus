@@ -196,8 +196,8 @@ public abstract class ConnectionTwitter extends Connection {
         if (!sinceId.isEmpty()) {
             builder.appendQueryParameter("since_id", sinceId.getPosition());
         }
-        if (fixedLimit(limit) > 0) {
-            builder.appendQueryParameter("count", String.valueOf(fixedLimit(limit)));
+        if (fixedDownloadLimit(limit) > 0) {
+            builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimit(limit)));
         }
         if (!TextUtils.isEmpty(userId)) {
             builder.appendQueryParameter("user_id", userId);
@@ -243,6 +243,7 @@ public abstract class ConnectionTwitter extends Connection {
                     message.sentDate = created;
                 }
             }
+            message.timelineItemDate = message.sentDate; 
 
             JSONObject sender;
             if (jso.has("sender")) {

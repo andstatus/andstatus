@@ -42,6 +42,7 @@ import org.andstatus.app.util.MyLog;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 import android.util.Log;
 
 
@@ -56,41 +57,41 @@ import android.util.Log;
 public class TimelineDownloader {
     private static final String TAG = TimelineDownloader.class.getSimpleName();
 
-    private Context mContext;
+    private Context context;
 
     /**
      * New messages Counter. These may be "general" or Direct messages...
      */
-    private int mMessages;
+    private int newMessagesCount;
 
     /**
      * Number of new Mentions received 
      */
-    private int mMentions;
+    private int newMentionsCount;
     /**
      * Number of new Replies received 
      */
-    private int mReplies;
+    private int newRepliesCount;
     /**
      * Total number of messages downloaded
      */
-    private int mDownloaded;
+    private int totalMessagesDownloadedCount;
     
     private MyAccount ma;
 
-    private TimelineTypeEnum mTimelineType;
+    private TimelineTypeEnum timelineType;
     
     /**
      * The timeline is of this User, for all timeline types.
      */
-    private long mUserId = 0;
+    private long userId = 0;
     
     public TimelineDownloader(MyAccount ma_in, Context context, TimelineTypeEnum timelineType, long userId) {
-        mContext = context;
+        this.context = context;
         ma = ma_in;
-        mTimelineType = timelineType;
-        mUserId = userId;
-        if (mUserId == 0) {
+        this.timelineType = timelineType;
+        this.userId = userId;
+        if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }
     }
@@ -104,13 +105,13 @@ public class TimelineDownloader {
     public boolean loadTimeline() throws ConnectionException {
         boolean ok = false;
         if ((ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) && MyPreferences.isDataAvailable()) {
-            switch (mTimelineType) {
+            switch (timelineType) {
                 case FOLLOWING_USER:
                     loadFollowedByUserTimeline();
                     ok = true;
                     break;
                 case ALL:
-                    Log.e(TAG, "Invalid TimelineType for loadTimeline: " + mTimelineType);
+                    Log.e(TAG, "Invalid TimelineType for loadTimeline: " + timelineType);
                 default:
                     ok = loadMsgTimeline();
             }
@@ -125,44 +126,47 @@ public class TimelineDownloader {
      * @throws ConnectionException
      */
     private boolean loadMsgTimeline() throws ConnectionException {
-        String userOid =  null;
-        if (mUserId != 0) {
-            userOid =  MyProvider.idToOid(OidEnum.USER_OID, mUserId, 0);
-        }
-        
-        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(mTimelineType, mUserId);
+        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(timelineType, userId);
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-            String strLog = "Loading timeline " + mTimelineType.save() + "; account=" + ma.getAccountName();
-            if (mUserId != 0) {
-                strLog += "; user=" + MyProvider.userIdToName(mUserId);
-            }
+            String strLog = "Loading timeline " + timelineType.save() + "; account=" + ma.getAccountName()
+                    + "; user=" + MyProvider.userIdToName(userId);
             if (latestTimelineItem.getTimelineItemDate() > 0) {
                 strLog += "; last Timeline item at=" + (new Date(latestTimelineItem.getTimelineItemDate()).toString())
                         + "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
             MyLog.d(TAG, strLog);
         }
+        String userOid =  MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
+        if (TextUtils.isEmpty(userOid)) {
+            throw new ConnectionException("User oId is not found for id=" + userId);
+        }
         
-        int limit = 200;
+        int toDownload = 200;
         TimelinePosition lastPosition = latestTimelineItem.getPosition();
+        LatestUserMessages latestUserMessages = new LatestUserMessages();
         latestTimelineItem.onTimelineDownloaded();
-        for (boolean done = false; !done; ) {
+        for (boolean done = false; !done || toDownload > 0; ) {
             try {
-                List<MbMessage> messages = ma.getConnection().getTimeline(mTimelineType.getConnectionApiRoutine(), lastPosition, limit, userOid);
-                if (messages.size()>0) {
-                    LatestUserMessages lum = new LatestUserMessages();
-                    DataInserter di = new DataInserter(ma, mContext, mTimelineType);
+                int limit = ma.getConnection().fixedDownloadLimit(toDownload); 
+                List<MbMessage> messages = ma.getConnection().getTimeline(timelineType.getConnectionApiRoutine(), lastPosition, limit, userOid);
+                if (messages.size() < 2) {  // We may assume that we downloaded the same message...
+                    toDownload = 0;
+                }
+                if (messages.size() > 0) {
+                    toDownload -= messages.size();
+                    DataInserter di = new DataInserter(ma, context, timelineType);
                     for (MbMessage message : messages) {
-                        di.insertOrUpdateMsg(message, lum);
                         latestTimelineItem.onNewMsg(message.timelineItemPosition, message.timelineItemDate);
+                        if (!message.isEmpty()) {
+                            di.insertOrUpdateMsg(message, latestUserMessages);
+                        }
                     }
-                    mDownloaded += di.totalMessagesDownloadedCount();
-                    mMessages += di.newMessagesCount();
-                    mMentions += di.newMentionsCount();
-                    mReplies += di.newRepliesCount();
-                    lum.save();
-                    latestTimelineItem.save();
+                    totalMessagesDownloadedCount += di.totalMessagesDownloadedCount();
+                    newMessagesCount += di.newMessagesCount();
+                    newMentionsCount += di.newMentionsCount();
+                    newRepliesCount += di.newRepliesCount();
+                    lastPosition = latestTimelineItem.getPosition();
                 }
                 done = true;
             } catch (ConnectionException e) {
@@ -173,6 +177,8 @@ public class TimelineDownloader {
                 lastPosition = TimelinePosition.getEmpty();
             }
         }
+        latestUserMessages.save();
+        latestTimelineItem.save();
         return true;
     }
 
@@ -182,12 +188,12 @@ public class TimelineDownloader {
      * mUserId is required to be set
      */
     private void loadFollowedByUserTimeline() throws ConnectionException {
-        String userOid =  MyProvider.idToOid(OidEnum.USER_OID, mUserId, 0);
-        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(mTimelineType, mUserId);
+        String userOid =  MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
+        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(timelineType, userId);
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-            String strLog = "Loading timeline " + mTimelineType.save() + "; account=" + ma.getAccountName();
-            strLog += "; user=" + MyProvider.userIdToName(mUserId);
+            String strLog = "Loading timeline " + timelineType.save() + "; account=" + ma.getAccountName();
+            strLog += "; user=" + MyProvider.userIdToName(userId);
             if (latestTimelineItem.getTimelineDownloadedDate() > 0) {
                 strLog += "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
@@ -197,13 +203,13 @@ public class TimelineDownloader {
         latestTimelineItem.onTimelineDownloaded();
         List<String> followedUsersOids = ma.getConnection().getIdsOfUsersFollowedBy(userOid);
         // Old list of followed users
-        Set<Long> followedIds_old = MyProvider.getIdsOfUsersFollowedBy(mUserId);
+        Set<Long> followedIds_old = MyProvider.getIdsOfUsersFollowedBy(userId);
 
         SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
 
         LatestUserMessages lum = new LatestUserMessages();
         // Retrieve new list of followed users
-        DataInserter di = new DataInserter(ma, mContext, mTimelineType);
+        DataInserter di = new DataInserter(ma, context, timelineType);
         for (String followedUserOid : followedUsersOids) {
             long friendId = MyProvider.oidToId(MyDatabase.OidEnum.USER_OID, ma.getOriginId(), followedUserOid);
             boolean isNew = true;
@@ -222,52 +228,40 @@ public class TimelineDownloader {
                     Log.w(TAG, "Failed to download a User object for oid=" + followedUserOid);
                 }
             } else {
-                FollowingUserValues fu = new FollowingUserValues(mUserId, friendId);
+                FollowingUserValues fu = new FollowingUserValues(userId, friendId);
                 fu.setFollowed(true);
                 fu.update(db);
             }
         }
         
-        mDownloaded += di.totalMessagesDownloadedCount();
-        mMessages += di.newMessagesCount();
-        mMentions += di.newMentionsCount();
-        mReplies += di.newRepliesCount();
+        totalMessagesDownloadedCount += di.totalMessagesDownloadedCount();
+        newMessagesCount += di.newMessagesCount();
+        newMentionsCount += di.newMentionsCount();
+        newRepliesCount += di.newRepliesCount();
         lum.save();
         
         // Now let's remove "following" information for all users left in the Set:
         for (long notFollowingId : followedIds_old) {
-            FollowingUserValues fu = new FollowingUserValues(mUserId, notFollowingId);
+            FollowingUserValues fu = new FollowingUserValues(userId, notFollowingId);
             fu.setFollowed(false);
             fu.update(db);
         }
         latestTimelineItem.save();
     }
     
-    /**
-     * Return the number of new messages, see {@link MyDatabase.Msg} .
-     */
-    public int messagesCount() {
-        return mMessages;
+    public int newMessagesCount() {
+        return newMessagesCount;
     }
 
-    /**
-     * Return the number of new Replies.
-     */
-    public int repliesCount() {
-        return mReplies;
+    public int newRepliesCount() {
+        return newRepliesCount;
     }
 
-    /**
-     * Return the number of new Mentions.
-     */
-    public int mentionsCount() {
-        return mMentions;
+    public int newMentionsCount() {
+        return newMentionsCount;
     }
 
-    /**
-     * Return total number of downloaded Messages
-     */
-    public int downloadedCount() {
-        return mDownloaded;
+    public int totalMessagesDownloadedCount() {
+        return totalMessagesDownloadedCount;
     }
 }
