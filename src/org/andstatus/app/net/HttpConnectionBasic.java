@@ -32,6 +32,7 @@ class HttpConnectionBasic extends HttpConnection {
         this.connectionData = connectionData;
     }
     
+    @Override
     public void setAccountData(AccountDataReader dr) {
         super.setAccountData(dr);
         mPassword = dr.getDataString(Connection.KEY_PASSWORD, "");
@@ -112,7 +113,7 @@ class HttpConnectionBasic extends HttpConnection {
 
     @Override
     public boolean getCredentialsPresent() {
-        return (!TextUtils.isEmpty(accountUsername) 
+        return (!TextUtils.isEmpty(connectionData.accountUsername) 
                 && !TextUtils.isEmpty(mPassword));
     }
 
@@ -179,7 +180,7 @@ class HttpConnectionBasic extends HttpConnection {
      * @return String
      */
     private String getCredentials() {
-        return new String(Base64.encodeBytes((accountUsername + ":" + mPassword).getBytes()));
+        return new String(Base64.encodeBytes((connectionData.accountUsername + ":" + mPassword).getBytes()));
     }
 
     @Override

@@ -34,7 +34,6 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbRateLimitStatus;
@@ -415,7 +414,7 @@ public class MyService extends Service {
      * @return Single instance of SharedPreferences, specific to the class
      */
     private SharedPreferences getMyServicePreferences() {
-        return MyPreferences.getSharedPreferences(TAG, MODE_PRIVATE);
+        return MyPreferences.getSharedPreferences(TAG);
     }
 
     /**
@@ -506,7 +505,7 @@ public class MyService extends Service {
         // Delete any existing saved queue
         SharedPreferencesUtil.delete(context, prefsFileName);
         if (q.size() > 0) {
-            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName, MODE_PRIVATE);
+            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
             while (q.size() > 0) {
                 CommandData cd = q.poll();
                 cd.save(sp, count);
@@ -565,7 +564,7 @@ public class MyService extends Service {
         int count = 0;
         if (SharedPreferencesUtil.exists(context, prefsFileName)) {
             boolean done = false;
-            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName, MODE_PRIVATE);
+            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
             do {
                 CommandData cd = new CommandData(sp, count);
                 if (cd.command == CommandEnum.UNKNOWN) {

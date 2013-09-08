@@ -24,11 +24,8 @@ import android.util.Log;
 
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.Connection.ApiEnum;
 import org.andstatus.app.util.MyLog;
-
-import java.util.regex.Pattern;
 
 /**
  *  Microblogging system (twitter.com, identi.ca, ... ) where messages are being created
@@ -92,18 +89,17 @@ public class Origin {
      * Can OAuth connection setting can be turned on/off from the default setting
      */
     private boolean canChangeOAuth = false;
-    
-    private int maxCharactersInMessage = CHARS_MAX_DEFAULT;
+    private boolean shouldSetNewUsernameManuallyIfOAuth = false;
     /**
      * Can user set username for the new user manually?
      * This is only for no OAuth
      */
-    private boolean canSetUsername = false;
+    private boolean shouldSetNewUsernameManuallyNoOAuth = false;
+    
+    private int maxCharactersInMessage = CHARS_MAX_DEFAULT;
     private String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     
     private OriginConnectionData connectionData = new OriginConnectionData();
-    
-    private Connection connection = null;
 
     public static Origin fromOriginName(String name) {
         return new Origin(name);
@@ -160,7 +156,7 @@ public class Origin {
     public boolean isUsernameValid(String username) {
         boolean ok = false;
         if (username != null && (username.length() > 0)) {
-            ok = Pattern.matches(usernameRegEx, username);
+            ok = username.matches(usernameRegEx);
             if (!ok && MyLog.isLoggable(TAG, Log.INFO)) {
                 Log.i(TAG, "The Username is not valid: \"" + username + "\" in " + name);
             }
@@ -171,55 +167,12 @@ public class Origin {
     /**
      * @return Can app user set username for the new "Origin user" manually?
      */
-    public boolean canSetUsername(boolean isOAuthUser) {
-        boolean can = false;
-        if (canSetUsername) {
-            if (!isOAuthUser) {
-                can = true;
-            }
+    public boolean shouldSetNewUsernameManually(boolean isOAuthUser) {
+        if (isOAuthUser) {
+            return shouldSetNewUsernameManuallyNoOAuth;
+        } else {
+            return shouldSetNewUsernameManuallyIfOAuth;
         }
-        return can;
-    }
-
-    public boolean areKeysPresent() {
-        return (connectionData.isOAuth ? connectionData.clientKeys.areKeysPresent() : false);
-    }
-
-    public boolean isOAuth() {
-        return connectionData.isOAuth;
-    }
-    
-    public void setOAuth(boolean isOAuth) {
-        if (isOAuth != isOAuthDefault && !canChangeOAuth) {
-            throw (new IllegalArgumentException("isOAuth cannot be set to "
-                    + Boolean.toString(isOAuth)));
-        }
-        if (isOAuth != connectionData.isOAuth) {
-            connection = null;
-        }
-        if (connection != null && connectionData.isOAuth && !areKeysPresent()) {
-            connection = null;
-        }
-        if (connection == null) {
-            connectionData.clientKeys = null;
-            connectionData.isOAuth = isOAuth;
-            if (connectionData.isOAuth) {
-                connectionData.clientKeys = new OAuthClientKeys(id);
-            }
-        }
-    }
-    
-    public Connection getConnection() {
-        if (connection == null) {
-            connection = Connection.fromConnectionData(connectionData);
-        }
-        return connection;
-    }
-
-    public void registerClient() {
-        MyLog.v(TAG, "Registering client for " + name);
-        Connection connection = Connection.fromConnectionData(connectionData);
-        connection.registerClient();
     }
 
     private Origin(String name_in) {
@@ -229,7 +182,8 @@ public class Origin {
             id = ORIGIN_ID_TWITTER;
             isOAuthDefault = true;
             canChangeOAuth = false;  // Starting from 2010-09 twitter.com allows OAuth only
-            canSetUsername = false;
+            shouldSetNewUsernameManuallyIfOAuth = false;
+            shouldSetNewUsernameManuallyNoOAuth = false;
             usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
             maxCharactersInMessage = CHARS_MAX_DEFAULT;
 
@@ -242,13 +196,14 @@ public class Origin {
             id = ORIGIN_ID_PUMPIO;
             isOAuthDefault = true;  
             canChangeOAuth = false;
-            canSetUsername = false;
+            shouldSetNewUsernameManuallyIfOAuth = true;
+            shouldSetNewUsernameManuallyNoOAuth = false;
             usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
             maxCharactersInMessage = 5000; // This is not a hard limit, just for convenience.
 
             connectionData.api = ApiEnum.PUMPIO;
             connectionData.isHttps = true;
-            connectionData.host = "identi.ca"; // TODO: support for different hosts
+            connectionData.host = "identi.ca";  // Default host
             connectionData.basicPath = "api";
             connectionData.oauthPath = "oauth";
         }
@@ -333,5 +288,9 @@ public class Origin {
         } 
         
         return url;
+    }
+
+    public OriginConnectionData getConnectionData() {
+        return connectionData;
     }
 }

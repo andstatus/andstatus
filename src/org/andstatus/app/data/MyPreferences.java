@@ -252,8 +252,7 @@ public class MyPreferences {
             Log.e(TAG, "areDefaultValuesSet - Was not initialized yet");
             return false;
         } else {
-            boolean areSetAlready = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES,
-                    android.content.Context.MODE_PRIVATE)
+            boolean areSetAlready = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES)
                     .getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false);
             return !areSetAlready;
         }
@@ -267,12 +266,12 @@ public class MyPreferences {
         }
     }
     
-    public static synchronized SharedPreferences getSharedPreferences(String name, int mode) {
+    public static synchronized SharedPreferences getSharedPreferences(String name) {
         if (!isInitialized()) {
             Log.e(TAG, "getSharedPreferences - Was not initialized yet");
             return null;
         } else {
-            return context.getSharedPreferences(name, mode);
+            return context.getSharedPreferences(name, android.content.Context.MODE_PRIVATE);
         }
     }
 

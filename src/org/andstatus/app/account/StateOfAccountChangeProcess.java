@@ -22,7 +22,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 /** State of the Account add/change process that we store between activity execution steps
 *   It's not proper to persist a Bundle, 
@@ -123,7 +125,7 @@ class StateOfAccountChangeProcess {
                 // Maybe we received MyAccount name as as parameter?!
                 String accountName = extras.getString(EXTRA_MYACCOUNT_GUID);
                 if (!TextUtils.isEmpty(accountName)) {
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(accountName);
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(accountName, TriState.UNKNOWN);
                     state.useThisState = state.builder.isPersistent();
                 }
             }
@@ -140,9 +142,9 @@ class StateOfAccountChangeProcess {
         
         if (state.builder == null) {
             if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName("");
+                state.builder = MyAccount.Builder.newOrExistingFromAccountName(AccountName.ORIGIN_SEPARATOR + Origin.ORIGIN_NAME_TWITTER, TriState.UNKNOWN);
             } else {
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyAccount.getCurrentAccountName());
+                state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyAccount.getCurrentAccountName(), TriState.UNKNOWN);
             }
             if (!state.builder.isPersistent()) {
                 state.setAccountAction(Intent.ACTION_INSERT);

@@ -8,19 +8,6 @@ import org.andstatus.app.data.MyDatabase;
  */
 public interface AccountDataReader {
 
-    /**
-     * @return id of the Microblogging system, in which the User is defined. See {@link MyDatabase.User#ORIGIN_ID}
-     */
-    public long getOriginId();
-    /**
-     * @return Username in the Microblogging system. Not null.
-     */
-    public String getUsername();
-    /**
-     * @return User Id in the Microblogging system. Not null.
-     */
-    public String getUserOid();
-    
     public boolean dataContains(String key);
     
     /**

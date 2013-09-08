@@ -69,8 +69,8 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
         ClientConnectionManager clientConnectionManager = new ThreadSafeClientConnManager(parameters, schemeRegistry);
         mClient = new DefaultHttpClient(clientConnectionManager, parameters);
 
-        mConsumer = new CommonsHttpOAuthConsumer(connectionData.clientKeys.getConsumerKey(),
-                connectionData.clientKeys.getConsumerSecret());
+        mConsumer = new CommonsHttpOAuthConsumer(connectionData.oauthClientKeys.getConsumerKey(),
+                connectionData.oauthClientKeys.getConsumerSecret());
 
         mProvider = new CommonsHttpOAuthProvider(getApiUrl(ApiRoutineEnum.OAUTH_REQUEST_TOKEN),
                 getApiUrl(ApiRoutineEnum.OAUTH_ACCESS_TOKEN), getApiUrl(ApiRoutineEnum.OAUTH_AUTHORIZE));
@@ -112,7 +112,7 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
     @Override
     public boolean getCredentialsPresent() {
         boolean yes = false;
-        if (connectionData.clientKeys.areKeysPresent()) {
+        if (connectionData.oauthClientKeys.areKeysPresent()) {
             if (!TextUtils.isEmpty(userToken) && !TextUtils.isEmpty(userSecret)) {
                 yes = true;
             }
@@ -225,7 +225,7 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
         String response = null;
         boolean ok = false;
         try {
-            if (connectionData.clientKeys.areKeysPresent()) {
+            if (connectionData.oauthClientKeys.areKeysPresent()) {
                 getConsumer().sign(get);
             }
             response = mClient.execute(get, new BasicResponseHandler());
@@ -251,7 +251,7 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
             // Maybe we'll need this:
             // post.setParams(...);
 
-            if (connectionData.clientKeys.areKeysPresent()) {
+            if (connectionData.oauthClientKeys.areKeysPresent()) {
                 // sign the request to authenticate
                 getConsumer().sign(post);
             }

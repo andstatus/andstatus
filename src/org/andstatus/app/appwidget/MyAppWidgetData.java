@@ -18,7 +18,6 @@ package org.andstatus.app.appwidget;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
-import static android.content.Context.MODE_PRIVATE;
 
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyPreferences;
@@ -130,8 +129,7 @@ public class MyAppWidgetData {
 	
 	public boolean load() {
 		boolean Ok = false;
-		SharedPreferences prefs = MyPreferences.getSharedPreferences(prefsFileName,
-				MODE_PRIVATE);
+		SharedPreferences prefs = MyPreferences.getSharedPreferences(prefsFileName);
 		if (prefs == null) {
 			Log.e(TAG, "The prefs file '" + prefsFileName + "' was not loaded");
 		} else {
@@ -170,7 +168,7 @@ public class MyAppWidgetData {
 			Log.e(TAG, "Save without load is not possible");
 		} else {
 			SharedPreferences.Editor prefs = MyPreferences.getSharedPreferences(
-					prefsFileName, MODE_PRIVATE).edit();
+					prefsFileName).edit();
 			if (prefs == null) {
 				Log.e(TAG, "Prefs Editor was not loaded");
 			} else {

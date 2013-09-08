@@ -230,8 +230,8 @@ public abstract class ConnectionTwitter extends Connection {
             // This is for the Status.net
             oid = jso.optString("id");
         } 
-        MbMessage message =  MbMessage.fromOriginAndOid(httpConnection.connectionData.originId, oid);
-        message.reader = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, accountUserOid);
+        MbMessage message =  MbMessage.fromOriginAndOid(getOriginId(), oid);
+        message.reader = MbUser.fromOriginAndUserOid(getOriginId(), getAccountUserOid());
         try {
             if (jso.has("created_at")) {
                 Long created = 0L;
@@ -343,8 +343,8 @@ public abstract class ConnectionTwitter extends Connection {
                 userName = "";
             }
         }
-        MbUser user = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, oid);
-        user.reader = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, accountUserOid);
+        MbUser user = MbUser.fromOriginAndUserOid(getOriginId(), oid);
+        user.reader = MbUser.fromOriginAndUserOid(getOriginId(), getAccountUserOid());
         user.userName = userName;
         user.realName = jso.optString("name");
         user.avatarUrl = jso.optString("profile_image_url");

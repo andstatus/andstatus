@@ -62,6 +62,7 @@ import org.andstatus.app.net.OAuthConsumerAndProvider;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -186,7 +187,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         switch (requestCode) {
             case REQUEST_SELECT_ACCOUNT:
                 if (resultCode == RESULT_OK) {
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyAccount.getCurrentAccountName());
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyAccount.getCurrentAccountName(), TriState.UNKNOWN);
                     if (!state.builder.isPersistent()) {
                         mIsFinishing = true;
                     }
@@ -219,7 +220,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     private void showUserPreferences() {
         MyAccount ma = state.getAccount();
         
-        mOriginName.setValue(ma.getName().getOriginName());
+        mOriginName.setValue(ma.getOriginName());
         SharedPreferencesUtil.showListPreference(this, MyAccount.Builder.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
 
         mOriginName.setEnabled(!state.builder.isPersistent());
@@ -235,7 +236,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             summary.append(": (" + this.getText(R.string.not_set) + ")");
         }
         mEditTextUsername.setSummary(summary);
-        mEditTextUsername.setEnabled(ma.canSetUsername());
+        mEditTextUsername.setEnabled(ma.shouldSetNewUsernameManually());
 
         if (ma.isOAuth() != mOAuth.isChecked()) {
             mOAuth.setChecked(ma.isOAuth());
@@ -327,9 +328,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 if (ma.isOAuth() && reVerify) {
                     // Credentials are not present,
                     // so start asynchronous OAuth Authentication process 
-                    Origin origin = Origin.fromOriginId(ma.getOriginId());
-                    origin.setOAuth(ma.isOAuth());
-                    if (!origin.areKeysPresent()) {
+                    if (!ma.areClientKeysPresent()) {
                         new OAuthRegisterClientTask().execute();
                     } else {
                         new OAuthAcquireRequestTokenTask().execute();
@@ -393,18 +392,22 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             // value if no changes
 
             if (key.equals(MyAccount.Builder.KEY_ORIGIN_NAME)) {
-                if (state.getAccount().getName().getOriginName().compareToIgnoreCase(mOriginName.getValue()) != 0) {
+                if (state.getAccount().getOriginName().compareToIgnoreCase(mOriginName.getValue()) != 0) {
                     // If we have changed the System, we should recreate the
                     // Account
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                             AccountName.fromOriginAndUserNames(mOriginName.getValue(),
-                                    state.getAccount().getUsername()).toString());
+                                    state.getAccount().getUsername()).toString(),
+                                    TriState.fromBoolean(state.getAccount().isOAuth()));
                     showUserPreferences();
                 }
             }
             if (key.equals(MyAccount.Builder.KEY_OAUTH)) {
                 if (state.getAccount().isOAuth() != mOAuth.isChecked()) {
-                    state.builder.setOAuth(mOAuth.isChecked());
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                            AccountName.fromOriginAndUserNames(mOriginName.getValue(),
+                                    state.getAccount().getUsername()).toString(),
+                                    TriState.fromBoolean(mOAuth.isChecked()));
                     showUserPreferences();
                 }
             }
@@ -412,10 +415,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 String usernameNew = mEditTextUsername.getText();
                 if (usernameNew.compareTo(state.getAccount().getUsername()) != 0) {
                     boolean isOAuth = state.getAccount().isOAuth();
-                    String originName = state.getAccount().getName().getOriginName();
+                    String originName = state.getAccount().getOriginName();
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                            AccountName.fromOriginAndUserNames(originName, usernameNew).toString());
-                    state.builder.setOAuth(isOAuth);
+                            AccountName.fromOriginAndUserNames(originName, usernameNew).toString(),
+                            TriState.fromBoolean(isOAuth));
                     showUserPreferences();
                 }
             }
@@ -611,13 +614,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             String message = "";
             String message2 = "";
 
-            MyAccount ma = state.getAccount();
-            Origin origin = Origin.fromOriginId(ma.getOriginId());
-            origin.setOAuth(ma.isOAuth());
-            if (!origin.areKeysPresent()) {
-                origin.registerClient();
+            if (!state.getAccount().areClientKeysPresent()) {
+                state.builder.registerClient();
             } 
-            requestSucceeded = origin.areKeysPresent();
+            requestSucceeded = state.getAccount().areClientKeysPresent();
 
             try {
                 if (!requestSucceeded) {
@@ -654,8 +654,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     if (succeeded) {
                         String accountName = state.getAccount().getAccountName();
                         MyAccount.initialize(MyPreferences.getContext());
-                        state.builder = MyAccount.Builder.newOrExistingFromAccountName(accountName);
-                        state.builder.setOAuth(true);
+                        state.builder = MyAccount.Builder.newOrExistingFromAccountName(accountName, TriState.TRUE);
                         showUserPreferences();
                         new OAuthAcquireRequestTokenTask().execute();
                         // and return back to default screen
@@ -733,6 +732,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 // from the Browser to the same activity.
                 state.actionCompleted = false;
                 
+                android.webkit.CookieSyncManager.createInstance(AccountSettingsActivity.this);
+                android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
+                cookieManager.removeAllCookie();                
+
                 // Start Web view (looking just like Web Browser)
                 Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
                 i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);

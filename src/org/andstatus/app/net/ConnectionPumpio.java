@@ -81,13 +81,15 @@ class ConnectionPumpio extends Connection {
     private static final String TAG = ConnectionPumpio.class.getSimpleName();
     public ConnectionPumpio(OriginConnectionData connectionData) {
         super(connectionData);
-        // TODO Auto-generated constructor stub
+        if (!TextUtils.isEmpty(connectionData.accountUsername)) {
+            connectionData.host = usernameToHost(connectionData.accountUsername);
+        }
     }
 
     @Override
     public void registerClient() {
         registerClientAttempt2();
-        if (httpConnection.connectionData.clientKeys.areKeysPresent()) {
+        if (httpConnection.connectionData.oauthClientKeys.areKeysPresent()) {
             MyLog.v(TAG, "Registered client for " + httpConnection.connectionData.host);
         }
     }
@@ -98,7 +100,7 @@ class ConnectionPumpio extends Connection {
     public void registerClientAttempt2() {
         String consumerKey = "";
         String consumerSecret = "";
-        httpConnection.connectionData.clientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+        httpConnection.connectionData.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
 
         try {
             URL endpoint = new URL(httpConnection.pathToUrl(getApiPath(ApiRoutineEnum.REGISTER_CLIENT)));
@@ -128,7 +130,7 @@ class ConnectionPumpio extends Connection {
                 if (jso != null) {
                     consumerKey = jso.getString("client_id");
                     consumerSecret = jso.getString("client_secret");
-                    httpConnection.connectionData.clientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+                    httpConnection.connectionData.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
                 }
             }
         } catch (IOException e) {
@@ -222,8 +224,8 @@ class ConnectionPumpio extends Connection {
             return MbUser.getEmpty();
         }
         String oid = jso.optString("id");
-        MbUser user = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, oid);
-        user.reader = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, accountUserOid);
+        MbUser user = MbUser.fromOriginAndUserOid(getOriginId(), oid);
+        user.reader = MbUser.fromOriginAndUserOid(getOriginId(), getAccountUserOid());
         user.userName = userOidToUsername(oid);
         user.oid = oid;
         user.realName = jso.optString("displayName");
@@ -326,8 +328,8 @@ class ConnectionPumpio extends Connection {
 
     private OAuthConsumer getConsumer() {
         OAuthConsumer consumer = new DefaultOAuthConsumer(
-                httpConnection.connectionData.clientKeys.getConsumerKey(),
-                httpConnection.connectionData.clientKeys.getConsumerSecret());
+                httpConnection.connectionData.oauthClientKeys.getConsumerKey(),
+                httpConnection.connectionData.oauthClientKeys.getConsumerSecret());
         if (httpConnection.getCredentialsPresent()) {
             consumer.setTokenWithSecret(httpConnection.getUserToken(), httpConnection.getUserSecret());
         }
@@ -423,7 +425,7 @@ class ConnectionPumpio extends Connection {
             
             JSONObject author = new JSONObject();
             author.put("objectType", "person");
-            author.put("id", accountUserOid);
+            author.put("id", getAccountUserOid());
             comment.put("author", author);
 
             activity.put("object", comment);
@@ -467,7 +469,7 @@ class ConnectionPumpio extends Connection {
     
     private String getApiPathForThisAccount(ApiRoutineEnum apiRoutine) throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
-        url = url.replace("%nickname%",  userOidToNickname(accountUserOid));
+        url = url.replace("%nickname%",  userOidToNickname(getAccountUserOid()));
         return url;
     }
 
@@ -609,8 +611,8 @@ class ConnectionPumpio extends Connection {
                 MyLog.d(TAG, "Pumpio activity has no id:" + activity.toString(2));
                 return MbMessage.getEmpty();
             } 
-            message =  MbMessage.fromOriginAndOid(httpConnection.connectionData.originId, oid);
-            message.reader = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, accountUserOid);
+            message =  MbMessage.fromOriginAndOid(getOriginId(), oid);
+            message.reader = MbUser.fromOriginAndUserOid(getOriginId(), getAccountUserOid());
             message.sentDate = dateFromJson(activity, "updated");
             message.timelineItemDate = message.sentDate; 
 
@@ -708,8 +710,8 @@ class ConnectionPumpio extends Connection {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
                 return MbMessage.getEmpty();
             } 
-            message =  MbMessage.fromOriginAndOid(httpConnection.connectionData.originId, oid);
-            message.reader = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, accountUserOid);
+            message =  MbMessage.fromOriginAndOid(getOriginId(), oid);
+            message.reader = MbUser.fromOriginAndUserOid(getOriginId(), getAccountUserOid());
 
             parseComment(message, jso);
         } catch (JSONException e) {
@@ -739,6 +741,17 @@ class ConnectionPumpio extends Connection {
             }
         }
         return nickname;
+    }
+
+    String usernameToHost(String username) {
+        String host = "";
+        if (!TextUtils.isEmpty(username)) {
+            int indexOfAt = username.indexOf("@");
+            if (indexOfAt >= 0) {
+                host = username.substring(indexOfAt + 1);
+            }
+        }
+        return host;
     }
     
     @Override

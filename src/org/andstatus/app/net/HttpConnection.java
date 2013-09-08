@@ -26,8 +26,6 @@ abstract class HttpConnection {
     
     protected OriginConnectionData connectionData;
 
-    protected String accountUsername = "";
-
     static final String USER_AGENT = "AndStatus";
 
     public static HttpConnection fromConnectionData(OriginConnectionData connectionData) {
@@ -115,9 +113,7 @@ abstract class HttpConnection {
 
     public abstract void clearAuthInformation();
 
-    public void setAccountData(AccountDataReader dr) {
-        accountUsername = dr.getUsername();
-    }
+    public void setAccountData(AccountDataReader dr) {}
     
     protected boolean isOAuth() {
         return connectionData.isOAuth;

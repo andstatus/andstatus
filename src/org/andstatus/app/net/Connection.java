@@ -118,7 +118,6 @@ public abstract class Connection {
     }
 
     protected HttpConnection httpConnection;
-    protected String accountUserOid = "";
     
     public Connection(OriginConnectionData connectionData) {
         httpConnection = HttpConnection.fromConnectionData(connectionData);
@@ -352,11 +351,18 @@ public abstract class Connection {
         return connection;
     }
 
-    public void setAccountData(AccountDataReader dr) {
+    public final void setAccountData(AccountDataReader dr) {
         httpConnection.setAccountData(dr);
-        accountUserOid = dr.getUserOid();
     }
 
+    protected long getOriginId() {
+        return httpConnection.connectionData.originId;
+    }
+
+    protected String getAccountUserOid() {
+        return httpConnection.connectionData.accountUserOid;
+    }
+    
     public void clearAuthInformation() {
         httpConnection.clearAuthInformation();
     }

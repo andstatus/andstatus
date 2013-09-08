@@ -10,5 +10,12 @@ public class OriginConnectionData {
     public String host = "";
     public String basicPath = "";
     public String oauthPath = "oauth";
-    public OAuthClientKeys clientKeys;
+    public OAuthClientKeys oauthClientKeys;
+    
+    public String accountUsername = "";
+    public String accountUserOid = "";
+
+    public boolean areOAuthClientKeysPresent() {
+        return (oauthClientKeys != null & oauthClientKeys.areKeysPresent());
+    }
 }

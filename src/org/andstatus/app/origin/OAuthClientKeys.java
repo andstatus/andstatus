@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.origin;
 
+import android.content.SharedPreferences;
 import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
@@ -49,40 +50,43 @@ public class OAuthClientKeys {
     private final static String SECRET_CLASS_NAME = OAuthClientKeysOpenSource.class.getPackage().getName() + "." + "OAuthClientKeysSecret";
     private static boolean noSecretClass = false;
     
-    public OAuthClientKeys(long originId) {
+    private OAuthClientKeys() {}
+
+    public static OAuthClientKeys fromOriginIdAndSharedPreferences(long originId, SharedPreferences sharedPreferences) {
+        OAuthClientKeys keys = new OAuthClientKeys();
         if (!noSecretClass) {
             // Try to load the application's secret keys first
             try {
                 @SuppressWarnings("rawtypes")
                 Class cls = Class.forName(SECRET_CLASS_NAME);
-                strategy = (OAuthClientKeysStrategy) cls.newInstance();
+                keys.strategy = (OAuthClientKeysStrategy) cls.newInstance();
             } catch (Exception e) {
                 MyLog.v(TAG, "Class " + SECRET_CLASS_NAME + " was not loaded:" + e.getMessage());
                 noSecretClass = true;
             }
         }
-        if (strategy == null) {
+        if (keys.strategy == null) {
             // Load keys published in the public source code repository
-            strategy = new OAuthClientKeysOpenSource();
+            keys.strategy = new OAuthClientKeysOpenSource();
         }
-        strategy.setOrigin(originId);
-        if (TextUtils.isEmpty(strategy.getConsumerKey())) {
-            strategy = null;
+        keys.strategy.setOrigin(originId);
+        if (TextUtils.isEmpty(keys.strategy.getConsumerKey())) {
+            keys.strategy = null;
         }
-        if (strategy == null) {
-            strategy = new OAuthClientKeysDynamic();
-            strategy.setOrigin(originId);
+        if (keys.strategy == null) {
+            keys.strategy = new OAuthClientKeysDynamic(sharedPreferences);
         }
-        consumerKey = strategy.getConsumerKey();
-        consumerSecret = strategy.getConsumerSecret();
-        MyLog.d(TAG, "Class " + strategy.getClass().getCanonicalName() 
+        keys.consumerKey = keys.strategy.getConsumerKey();
+        keys.consumerSecret = keys.strategy.getConsumerSecret();
+        MyLog.d(TAG, "Class " + keys.strategy.getClass().getCanonicalName() 
                 + " was loaded for originId=" + originId + "; "
-                + ( areKeysPresent() ? "Keys present" : "No keys")
+                + ( keys.areKeysPresent() ? "Keys present" : "No keys")
                 );
+        return keys;
     }
     
     public boolean areKeysPresent() {
-        return (!TextUtils.isEmpty(getConsumerKey()));
+        return (!TextUtils.isEmpty(getConsumerKey()) && !TextUtils.isEmpty(getConsumerSecret()));
     }
     
     public String getConsumerKey() {
