@@ -23,10 +23,10 @@ public class MbUser {
     // In our system
     public long originId = 0L;
     
-    public static MbUser fromOriginAndUserName(long originId, String userName) {
+    public static MbUser fromOriginAndUserOid(long originId, String userOid) {
         MbUser user = new MbUser();
         user.originId = originId;
-        user.userName = userName;
+        user.oid = userOid;
         return user;
     }
     
@@ -38,6 +38,6 @@ public class MbUser {
     private MbUser() {}
     
     public boolean isEmpty() {
-        return (TextUtils.isEmpty(userName) || originId==0);
+        return ((TextUtils.isEmpty(userName) && TextUtils.isEmpty(oid)) || originId==0);
     }
 }

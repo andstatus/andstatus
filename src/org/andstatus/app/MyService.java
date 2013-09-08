@@ -34,6 +34,7 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbRateLimitStatus;
@@ -799,13 +800,17 @@ public class MyService extends Service {
                             executor = new CommandExecutor();
                         }
                         mExecutors.add(executor);
+                        MyLog.v(TAG, "Adding new executor " + executor);
                         executor.execute();
+                    } else {
+                        MyLog.v(TAG, "There is an Executor already");
                     }
                 } else {
                     notifyOfQueue(false);
                 }
             }
         } else {
+            MyLog.v(TAG, "Removing the Executor " + executorIn);
             // Stop
             mExecutors.remove(executorIn);
             if (mExecutors.size() == 0) {
@@ -889,6 +894,7 @@ public class MyService extends Service {
                 if (commandData == null) {
                     break;
                 }
+                commandData.resetCommandResult();
                 executeOneCommand(commandData);
                 if (shouldWeRetry(commandData)) {
                     synchronized(MyService.this) {
@@ -1015,9 +1021,7 @@ public class MyService extends Service {
                     }
                     ok = !message.isEmpty();
                 } catch (ConnectionException e) {
-                    Log.e(TAG,
-                            (create ? "create" : "destroy") + "Favorite Connection Exception: "
-                                    + e.toString());
+                    logConnectionException(e, commandData, (create ? "create" : "destroy") + "Favorite Connection Exception");
                 }
             } else {
                 Log.e(TAG,
@@ -1088,9 +1092,7 @@ public class MyService extends Service {
                     user = ma.getConnection().followUser(oid, follow);
                     ok = !user.isEmpty();
                 } catch (ConnectionException e) {
-                    Log.e(TAG,
-                            (follow ? "Follow" : "Stop following") + " User Connection Exception: "
-                                    + e.toString());
+                    logConnectionException(e, commandData, (follow ? "Follow" : "Stop following") + " Exception");
                 }
             } else {
                 Log.e(TAG,
@@ -1144,7 +1146,7 @@ public class MyService extends Service {
                     // assume that it's Ok!
                     ok = true;
                 } else {
-                    Log.e(TAG, "destroyStatus Connection Exception: " + e.toString());
+                    logConnectionException(e, commandData, "destroyStatus Exception");
                 }
             }
 
@@ -1182,7 +1184,7 @@ public class MyService extends Service {
                     // assume that it's Ok!
                     ok = true;
                 } else {
-                    Log.e(TAG, "destroyStatus Connection Exception: " + e.toString());
+                    logConnectionException(e, commandData, "destroyReblog Exception");
                 }
             }
 
@@ -1209,7 +1211,7 @@ public class MyService extends Service {
             boolean ok = false;
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, commandData.itemId, 0);
             try {
-                MbMessage message = commandData.getAccount().getConnection().getStatus(oid);
+                MbMessage message = commandData.getAccount().getConnection().getMessage(oid);
                 if (!message.isEmpty()) {
                     // And add the message to the local storage
                     try {
@@ -1227,7 +1229,7 @@ public class MyService extends Service {
                     // This means that there is no such "Status"
                     // TODO: so we don't need to retry this command
                 }
-                Log.e(TAG, "getStatus Connection Exception: " + e.toString());
+                logConnectionException(e, commandData, "getStatus Exception");
             }
             setSoftErrorIfNotOk(commandData, ok);
             MyLog.d(TAG, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + commandData.itemId);
@@ -1258,7 +1260,7 @@ public class MyService extends Service {
                 }
                 ok = (!message.isEmpty());
             } catch (ConnectionException e) {
-                Log.e(TAG, "updateStatus Exception: " + e.toString());
+                logConnectionException(e, commandData, "updateStatus Exception");
             }
             if (ok) {
                 // The message was sent successfully
@@ -1270,30 +1272,38 @@ public class MyService extends Service {
             }
             setSoftErrorIfNotOk(commandData, ok);
         }
-
+        
         private void reblog(CommandData commandData, long rebloggedId) {
             if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
                 return;
             }
-            MyAccount ma = commandData.getAccount();
             String oid = MyProvider.idToOid(OidEnum.MSG_OID, rebloggedId, 0);
             boolean ok = false;
             MbMessage result = null;
             try {
-                result = ma.getConnection()
+                result = commandData.getAccount().getConnection()
                         .postReblog(oid);
                 ok = !result.isEmpty();
             } catch (ConnectionException e) {
-                Log.e(TAG, "reblog Exception: " + e.toString());
+                logConnectionException(e, commandData, "Reblog Exception");
             }
             if (ok) {
                 // The tweet was sent successfully
                 // Reblog should be put into the user's Home timeline!
-                new DataInserter(ma, 
+                new DataInserter(commandData.getAccount(), 
                         MyService.this.getApplicationContext(),
                         TimelineTypeEnum.HOME).insertOrUpdateMsg(result);
             }
             setSoftErrorIfNotOk(commandData, ok);
+        }
+        
+        private void logConnectionException(ConnectionException e, CommandData commandData, String detailedMessage) {
+            if (e.isHardError()) {
+                commandData.commandResult.numParseExceptions += 1;
+            } else {
+                commandData.commandResult.numIoExceptions += 1;
+            }
+            Log.e(TAG, detailedMessage + ": " + e.toString());
         }
         
         /**
@@ -1432,7 +1442,7 @@ public class MyService extends Service {
                     oKs[ind] = ok;
                 }
             } catch (ConnectionException e) {
-                Log.e(TAG, descr + ", Connection Exception: " + e.toString());
+                logConnectionException(e, commandData, descr +" Exception");
                 ok = false;
             } catch (SQLiteConstraintException e) {
                 Log.e(TAG, descr + ", SQLite Exception: " + e.toString());
@@ -1672,7 +1682,7 @@ public class MyService extends Service {
                     commandData.commandResult.hourly_limit = rateLimitStatus.limit;
                  }
             } catch (ConnectionException e) {
-                Log.e(TAG, "rateLimitStatus Exception: " + e.toString());
+                logConnectionException(e, commandData, "rateLimitStatus Exception");
             }
             setSoftErrorIfNotOk(commandData, ok);
         }

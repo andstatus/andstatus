@@ -73,7 +73,7 @@ public class Origin {
     /**
      * Maximum number of characters in the message
      */
-    private static int CHARS_MAX = 140;
+    private static int CHARS_MAX_DEFAULT = 140;
     /**
      * Length of the link after changing to the shortened link
      * -1 means that length doesn't change
@@ -92,6 +92,8 @@ public class Origin {
      * Can OAuth connection setting can be turned on/off from the default setting
      */
     private boolean canChangeOAuth = false;
+    
+    private int maxCharactersInMessage = CHARS_MAX_DEFAULT;
     /**
      * Can user set username for the new user manually?
      * This is only for no OAuth
@@ -229,6 +231,7 @@ public class Origin {
             canChangeOAuth = false;  // Starting from 2010-09 twitter.com allows OAuth only
             canSetUsername = false;
             usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
+            maxCharactersInMessage = CHARS_MAX_DEFAULT;
 
             connectionData.api = ApiEnum.TWITTER1P1;
             connectionData.isHttps = false;
@@ -241,6 +244,7 @@ public class Origin {
             canChangeOAuth = false;
             canSetUsername = false;
             usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
+            maxCharactersInMessage = 5000; // This is not a hard limit, just for convenience.
 
             connectionData.api = ApiEnum.PUMPIO;
             connectionData.isHttps = true;
@@ -279,7 +283,7 @@ public class Origin {
             }
             
         }
-        return (CHARS_MAX - messageLength);
+        return (maxCharactersInMessage - messageLength);
     }
     
     /**
@@ -325,8 +329,7 @@ public class Origin {
                     + "/status/"
                     + messageOid;
         } else if (getId() == ORIGIN_ID_PUMPIO) {
-            url = "http://identi.ca/"
-                    + userName; 
+            url = messageOid; 
         } 
         
         return url;

@@ -259,7 +259,7 @@ class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProv
             jso = new JSONObject(response);
             ok = true;
         } catch (HttpResponseException e) {
-            ConnectionException e2 = new ConnectionException(e.getStatusCode(), e.getLocalizedMessage());
+            ConnectionException e2 = ConnectionException.fromStatusCodeHttp(e.getStatusCode(), e.getLocalizedMessage());
             Log.w(TAG, e2.getLocalizedMessage());
             throw e2;
         } catch (JSONException e) {

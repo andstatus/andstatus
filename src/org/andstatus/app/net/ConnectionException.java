@@ -24,11 +24,15 @@ import org.json.JSONObject;
  * @author Yuri Volkov
  */
 public class ConnectionException extends Exception {
+    private static final long serialVersionUID = 1L;
+
     public enum StatusCode {
         UNKNOWN,
+        UNSUPPORTED_API,
         NOT_FOUND
     }
     private StatusCode statusCode = StatusCode.UNKNOWN;
+    protected boolean isHardError = false;
 
     public static ConnectionException loggedJsonException(String TAG, JSONException e, JSONObject jso, String detailMessage) throws ConnectionException {
         MyLog.d(TAG, detailMessage + ": " + e.getMessage());
@@ -39,6 +43,14 @@ public class ConnectionException extends Exception {
         }
         return new ConnectionException(detailMessage);
     }
+
+    public static ConnectionException fromStatusCodeHttp(int statusCodeHttp, final String detailMessage) {
+        if (statusCodeHttp == 404) {
+            return new ConnectionException(StatusCode.NOT_FOUND, detailMessage);
+        } else {
+            return new ConnectionException(detailMessage);
+        }
+    }
     
 	/**
 	 * @param detailMessage
@@ -46,13 +58,6 @@ public class ConnectionException extends Exception {
 	public ConnectionException(String detailMessage) {
 		super(detailMessage);
 	}
-
-    public ConnectionException(int statusCodeHttp, final String detailMessage) {
-        super(detailMessage);
-        if (statusCodeHttp == 404) {
-            statusCode = StatusCode.NOT_FOUND;
-        }
-    }
 
     public ConnectionException(StatusCode statusCode, final String detailMessage) {
         super(detailMessage);
@@ -73,11 +78,10 @@ public class ConnectionException extends Exception {
 
     @Override
     public String toString() {
-        String str = super.toString();
-        if (this.statusCode.equals(StatusCode.UNKNOWN)) {
-            str = this.statusCode + " " + str;
-        }
-        return str;
+        return this.statusCode + " " + super.toString();
     }
 
+    public boolean isHardError() {
+        return isHardError;
+    }
 }

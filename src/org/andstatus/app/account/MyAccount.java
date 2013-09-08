@@ -583,8 +583,8 @@ public class MyAccount implements AccountDataReader {
                 try {
                     // Construct "User" from available account info
                     // We need this User in order to be able to link Messages to him
-                    MbUser mbUser = MbUser.fromOriginAndUserName(myAccount.getOriginId(), myAccount.getUsername());
-                    mbUser.oid = myAccount.getUserOid();
+                    MbUser mbUser = MbUser.fromOriginAndUserOid(myAccount.getOriginId(), myAccount.getUserOid());
+                    mbUser.userName = myAccount.getUsername();
                     LatestUserMessages lum = new LatestUserMessages();
                     myAccount.userId = di.insertOrUpdateUser(mbUser, lum);
                     lum.save();

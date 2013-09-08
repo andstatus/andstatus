@@ -21,6 +21,7 @@ public class AccountSettingsWebActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.account_settings_web);
         String url = getIntent().getStringExtra(EXTRA_URLTOOPEN);
+        MyLog.d(TAG, "Loading the URL: " + url);
         WebView webView = (WebView) findViewById(R.id.accountSettingsWebView);
         webView.setWebViewClient(new WebViewListener()); // see http://stackoverflow.com/questions/5561709/opening-webview-not-in-new-browser
         

@@ -717,6 +717,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             String message2 = "";
             try {
                 MyAccount ma = state.getAccount();
+                MyLog.v(TAG, "Retrieving request token for " + ma);
                 OAuthConsumerAndProvider oa = ma.getOAuthConsumerAndProvider();
 
                 // This is really important. If you were able to register your

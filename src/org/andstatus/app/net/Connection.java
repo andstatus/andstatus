@@ -24,6 +24,7 @@ import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.Connection;
+import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
@@ -39,6 +40,7 @@ import java.util.List;
  */
 public abstract class Connection {
 
+    static final String  APPLICATION_ID = "http://andstatus.org/andstatus";
     public static final String KEY_PASSWORD = "password";
     
     /**
@@ -116,7 +118,8 @@ public abstract class Connection {
     }
 
     protected HttpConnection httpConnection;
-
+    protected String accountUserOid = "";
+    
     public Connection(OriginConnectionData connectionData) {
         httpConnection = HttpConnection.fromConnectionData(connectionData);
     }
@@ -135,13 +138,16 @@ public abstract class Connection {
 
     /**
      * Full path of the API. Logged
-     * @param routine
-     * @return URL or an empty string in case the API routine is not supported
+     * @return URL or throws a ConnectionException in case the API routine is not supported
      */
-    protected final String getApiPath(ApiRoutineEnum routine) {
+    protected final String getApiPath(ApiRoutineEnum routine) throws ConnectionException {
         String path = this.getApiPath1(routine);
         if (TextUtils.isEmpty(path)) {
-            Log.e(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");
+            String detailMessage = "The API is not supported: '" + routine + "'";
+            Log.e(this.getClass().getSimpleName(), detailMessage);
+            ConnectionException e = new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " + detailMessage);
+            e.isHardError = true;
+            throw e;
         } else {
             if (MyLog.isLoggable(null, Log.VERBOSE )) {
                 Log.v(this.getClass().getSimpleName(), "API '" + routine + "' Path=" + path);  
@@ -246,7 +252,7 @@ public abstract class Connection {
      * Returns a single status, specified by the id parameter below.
      * The status's author will be returned inline.
      */
-    public abstract MbMessage getStatus(String statusId) throws ConnectionException;
+    public abstract MbMessage getMessage(String statusId) throws ConnectionException;
     
     /**
      * Update user status by posting to the Twitter REST API.
@@ -348,6 +354,7 @@ public abstract class Connection {
 
     public void setAccountData(AccountDataReader dr) {
         httpConnection.setAccountData(dr);
+        accountUserOid = dr.getUserOid();
     }
 
     public void clearAuthInformation() {

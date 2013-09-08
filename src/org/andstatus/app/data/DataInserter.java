@@ -84,11 +84,17 @@ public class DataInserter {
     }
     
     private long insertOrUpdateMsgBySender(MbMessage message, LatestUserMessages lum, long senderId_in) throws SQLiteConstraintException {
+        final String funcName = "Inserting/updating msg";
         /**
          * Id of the message in our system, see {@link MyDatabase.Msg#MSG_ID}
          */
         Long rowId = 0L;
         try {
+            if (message.isEmpty()) {
+                Log.w(TAG, funcName +", the message is empty, skipping: " + message.toString());
+                return 0;
+            }
+            
             /**
              * Don't insert this message
              */
@@ -111,9 +117,6 @@ public class DataInserter {
                 senderId = insertOrUpdateUser(message.sender, lum);
             } else if (senderId_in != 0) {
                 senderId = senderId_in;
-            } else {
-                Log.w(TAG, "insertMsgBySender: sender is not present");
-                skipIt = true;
             }
 
             String rowOid = message.oid;
@@ -127,7 +130,7 @@ public class DataInserter {
                     authorId = insertOrUpdateUser(message.rebloggedMessage.sender, lum);
                 }
 
-                if (ma.getUserId() == senderId) {
+                if (senderId !=0 && ma.getUserId() == senderId) {
                     // Msg was reblogged by current User (he is the Sender)
                     values.put(MyDatabase.MsgOfUser.REBLOGGED, 1);
 
@@ -150,10 +153,12 @@ public class DataInserter {
                     createdDate = message.sentDate;
                 }
             }
-            values.put(MyDatabase.Msg.AUTHOR_ID, authorId);
+            if (authorId != 0) {
+                values.put(MyDatabase.Msg.AUTHOR_ID, authorId);
+            }
 
             if (SharedPreferencesUtil.isEmpty(rowOid)) {
-                Log.w(TAG, "insertMsg - no message id");
+                Log.w(TAG, funcName +": no message id");
                 skipIt = true;
             }
             if (!skipIt) {
@@ -181,6 +186,10 @@ public class DataInserter {
                 if (rowId != 0) {
                     sentDate_stored = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, rowId);
                     isNew = (sentDate_stored == 0);
+                    if (!isNew) {
+                      long senderId_stored = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, rowId);
+                      isNew = (senderId_stored == 0);
+                    }
                 }
                 if (sentDate > sentDate_stored) {
                     isNewer = true;
@@ -193,9 +202,11 @@ public class DataInserter {
                 if (isNew) {
                     values.put(MyDatabase.Msg.CREATED_DATE, createdDate);
                     
-                    // Store the Sender only for the first retrieved message.
-                    // Don't overwrite the original sender (especially the first reblogger) 
-                    values.put(MyDatabase.Msg.SENDER_ID, senderId);
+                    if (senderId != 0) {
+                        // Store the Sender only for the first retrieved message.
+                        // Don't overwrite the original sender (especially the first reblogger) 
+                        values.put(MyDatabase.Msg.SENDER_ID, senderId);
+                    }
 
                     values.put(MyDatabase.Msg.MSG_OID, rowOid);
                     values.put(MyDatabase.Msg.ORIGIN_ID, ma.getOriginId());
@@ -240,11 +251,13 @@ public class DataInserter {
                             inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
                             if (message.inReplyToMessage.sender != null) {
                                 inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
+                            } else if (rowId != 0) {
+                                inReplyToUserId = MyProvider.msgIdToLongColumnValue(Msg.IN_REPLY_TO_USER_ID, rowId);
                             }
                         }
                         if (inReplyToUserId != 0) {
                             values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
-                            
+
                             if (ma.getUserId() == inReplyToUserId) {
                                 values.put(MyDatabase.MsgOfUser.REPLIED, 1);
                                 if (countIt) { 
@@ -254,9 +267,9 @@ public class DataInserter {
                                 // ...Yes, at least as long as we don't have "Replies" timeline type 
                                 mentioned = true;
                             }
-                            if (inReplyToMessageId != 0) {
-                                values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
-                            }
+                        }
+                        if (inReplyToMessageId != 0) {
+                            values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
                         }
                 }
                 
@@ -294,17 +307,19 @@ public class DataInserter {
                   mContentResolver.update(msgUri, values, null, null);
                 }
                 
-                // Remember all messages that we added or updated
-                lum.onNewUserMsg(new UserMsg(senderId, rowId, sentDate));
-                if ( authorId != senderId ) {
+                if (senderId != 0) {
+                    // Remember all messages that we added or updated
+                    lum.onNewUserMsg(new UserMsg(senderId, rowId, sentDate));
+                }
+                if ( authorId != 0 && authorId != senderId ) {
                     lum.onNewUserMsg(new UserMsg(authorId, rowId, createdDate));
                 }
             }
             if (skipIt) {
-                Log.w(TAG, "insertMsgBySender, the message was skipped: " + message.toString());
+                Log.w(TAG, funcName +": the message was skipped: " + message.toString());
             }
         } catch (Exception e) {
-            Log.e(TAG, "insertMsgBySender: " + e.toString());
+            Log.e(TAG, funcName +": " + e.toString());
             e.printStackTrace();
         }
 

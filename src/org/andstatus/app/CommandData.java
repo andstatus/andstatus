@@ -322,4 +322,8 @@ public class CommandData {
     private void setAccountName(String accountName) {
         this.accountName = accountName;
     }
+    
+    public void resetCommandResult() {
+        commandResult = new CommandResult();
+    }
 }

@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
 import org.andstatus.app.R;
+import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.RelativeTime;
 
@@ -44,13 +45,21 @@ public class TweetBinder implements ViewBinder {
 		switch (view.getId()) {
 		case R.id.message_details:
 			String messageDetails = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
-			colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
-			if (colIndex > -1) {
-				String replyToName = cursor.getString(colIndex);
-				if (!TextUtils.isEmpty(replyToName)) {
-					messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.message_source_in_reply_to).toString(), replyToName);
-				}
-			}
+            colIndex = cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID);
+            if (colIndex > -1) {
+                long replyToMsgId = cursor.getLong(colIndex);
+                if (replyToMsgId != 0) {
+                    String replyToName = "";
+                    colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
+                    if (colIndex > -1) {
+                        replyToName = cursor.getString(colIndex);
+                    }
+                    if (TextUtils.isEmpty(replyToName)) {
+                        replyToName = "...";
+                    }
+                    messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.message_source_in_reply_to).toString(), replyToName);
+                }
+            }
             colIndex = cursor.getColumnIndex(User.RECIPIENT_NAME);
             if (colIndex > -1) {
                 String recipientName = cursor.getString(colIndex);

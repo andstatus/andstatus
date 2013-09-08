@@ -254,7 +254,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * Table columns to use for the messages content
      */
     private static final String[] PROJECTION = new String[] {
-            Msg._ID, User.AUTHOR_NAME, Msg.BODY, User.IN_REPLY_TO_NAME,
+            Msg._ID, User.AUTHOR_NAME, Msg.BODY, Msg.IN_REPLY_TO_MSG_ID, User.IN_REPLY_TO_NAME,
             User.RECIPIENT_NAME,
             MsgOfUser.FAVORITED, Msg.CREATED_DATE,
             User.LINKED_USER_ID

@@ -121,7 +121,7 @@ public class ConversationActivity extends Activity implements MyServiceListener 
          */
         private class OneRow {
             long id;
-            long prevId = 0;
+            long inReplyToMsgId = 0;
             long createdDate = 0;
             String author = "";
             
@@ -131,7 +131,7 @@ public class ConversationActivity extends Activity implements MyServiceListener 
             String rebloggersString = "";
             String body = "";
             String via = "";
-            String replyToName = "";
+            String inReplyToName = "";
             String recipientName = "";
 
             public OneRow(long id) {
@@ -191,14 +191,14 @@ public class ConversationActivity extends Activity implements MyServiceListener 
 
                         if (ind == 0) {
                             // This is the same for all retrieved rows
-                            row.prevId = msg.getLong(msg.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
+                            row.inReplyToMsgId = msg.getLong(msg.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
                             row.createdDate = msg.getLong(msg.getColumnIndex(Msg.CREATED_DATE));
                             row.author = msg.getString(msg.getColumnIndex(User.AUTHOR_NAME));
                             row.body = msg.getString(msg.getColumnIndex(Msg.BODY));
                             row.via = Html.fromHtml(msg.getString(msg.getColumnIndex(Msg.VIA))).toString();
                             int colIndex = msg.getColumnIndex(User.IN_REPLY_TO_NAME);
                             if (colIndex > -1) {
-                                row.replyToName = msg.getString(colIndex);
+                                row.inReplyToName = msg.getString(colIndex);
                             }
                             colIndex = msg.getColumnIndex(User.RECIPIENT_NAME);
                             if (colIndex > -1) {
@@ -239,16 +239,16 @@ public class ConversationActivity extends Activity implements MyServiceListener 
                         MyServiceManager.sendCommand(new CommandData(CommandEnum.GET_STATUS, ma
                                 .getAccountName(), msgId));
                     } else {
-                        if (row.prevId != 0) {
-                            findMessage(row.prevId);
-                        } else if (!SharedPreferencesUtil.isEmpty(row.replyToName)) {
+                        if (row.inReplyToMsgId != 0) {
+                            findMessage(row.inReplyToMsgId);
+                        } else if (!SharedPreferencesUtil.isEmpty(row.inReplyToName)) {
                             MyLog.v(TAG, "Message " + msgId + " has reply to name ("
-                                    + row.replyToName
+                                    + row.inReplyToName
                                     + ") but no reply to message id");
                             // Don't try to retrieve this message again. It
                             // looks like there really are such messages.
                             OneRow row2 = new OneRow(0);
-                            row2.author = row.replyToName;
+                            row2.author = row.inReplyToName;
                             row2.body = "("
                                     + ConversationActivity.this
                                             .getText(R.string.id_of_this_message_was_not_specified)
@@ -308,15 +308,19 @@ public class ConversationActivity extends Activity implements MyServiceListener 
                         getText(R.string.message_source_from).toString(),
                         row.via);
             }
-            if (!SharedPreferencesUtil.isEmpty(row.replyToName)) {
+            if (row.inReplyToMsgId !=0) {
+                String inReplyToName = row.inReplyToName;
+                if (SharedPreferencesUtil.isEmpty(inReplyToName)) {
+                    inReplyToName = "...";
+                }
                 messageDetails += " "
                         + String.format(Locale.getDefault(),
                                 getText(R.string.message_source_in_reply_to).toString(),
-                                row.replyToName);
+                                row.inReplyToName);
             }
             if (!SharedPreferencesUtil.isEmpty(row.rebloggersString)) {
                 if (!row.rebloggersString.equals(row.author)) {
-                    if (!SharedPreferencesUtil.isEmpty(row.replyToName)) {
+                    if (!SharedPreferencesUtil.isEmpty(row.inReplyToName)) {
                         messageDetails += ";";
                     }
                     messageDetails += " "

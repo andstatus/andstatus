@@ -179,10 +179,10 @@ public abstract class ConnectionTwitter extends Connection {
      * @throws ConnectionException
      */
     @Override
-    public MbMessage getStatus(String statusId) throws ConnectionException {
+    public MbMessage getMessage(String messageId) throws ConnectionException {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.STATUSES_SHOW));
         Uri.Builder builder = sUri.buildUpon();
-        builder.appendQueryParameter("id", statusId);
+        builder.appendQueryParameter("id", messageId);
         JSONObject message = httpConnection.getRequest(builder.build().toString());
         return messageFromJson(message);
     }
@@ -231,7 +231,7 @@ public abstract class ConnectionTwitter extends Connection {
             oid = jso.optString("id");
         } 
         MbMessage message =  MbMessage.fromOriginAndOid(httpConnection.connectionData.originId, oid);
-        message.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
+        message.reader = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, accountUserOid);
         try {
             if (jso.has("created_at")) {
                 Long created = 0L;
@@ -327,6 +327,15 @@ public abstract class ConnectionTwitter extends Connection {
         if (jso == null) {
             return MbUser.getEmpty();
         }
+        String oid = "";
+        if (jso.has("id_str")) {
+            oid = jso.optString("id_str");
+        } else if (jso.has("id")) {
+            oid = jso.optString("id");
+        } 
+        if (SharedPreferencesUtil.isEmpty(oid)) {
+            oid = "";
+        }
         String userName = "";
         if (jso.has("screen_name")) {
             userName = jso.optString("screen_name");
@@ -334,16 +343,9 @@ public abstract class ConnectionTwitter extends Connection {
                 userName = "";
             }
         }
-        MbUser user = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, userName);
-        user.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
-        if (jso.has("id_str")) {
-            user.oid = jso.optString("id_str");
-        } else if (jso.has("id")) {
-            user.oid = jso.optString("id");
-        } 
-        if (SharedPreferencesUtil.isEmpty(user.oid)) {
-            user.oid = "";
-        }
+        MbUser user = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, oid);
+        user.reader = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, accountUserOid);
+        user.userName = userName;
         user.realName = jso.optString("name");
         user.avatarUrl = jso.optString("profile_image_url");
         user.description = jso.optString("description");

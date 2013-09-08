@@ -19,6 +19,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
@@ -135,6 +136,8 @@ class ConnectionPumpio extends Connection {
         } catch (JSONException e) {
             Log.e(TAG, "registerClient Exception: " + e.toString());
             e.printStackTrace();
+        } catch (ConnectionException e) {
+            Log.e(TAG, "registerClient Exception: " + e.toString());
         }
     }
     
@@ -187,6 +190,9 @@ class ConnectionPumpio extends Connection {
             case STATUSES_HOME_TIMELINE:
                 url = "user/%nickname%/inbox";
                 break;
+            case STATUSES_UPDATE:
+                url = "user/%nickname%/feed";
+                break;
             default:
                 url = "";
         }
@@ -216,8 +222,9 @@ class ConnectionPumpio extends Connection {
             return MbUser.getEmpty();
         }
         String oid = jso.optString("id");
-        MbUser user = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, userOidToUsername(oid));
-        user.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
+        MbUser user = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, oid);
+        user.reader = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, accountUserOid);
+        user.userName = userOidToUsername(oid);
         user.oid = oid;
         user.realName = jso.optString("displayName");
         if (jso.has("image")) {
@@ -271,14 +278,9 @@ class ConnectionPumpio extends Connection {
         if (TextUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is empty");
         }
-        JSONObject jso = null;
+        JSONObject result = null;
         try {
-            OAuthConsumer consumer = new DefaultOAuthConsumer(
-                    httpConnection.connectionData.clientKeys.getConsumerKey(),
-                    httpConnection.connectionData.clientKeys.getConsumerSecret());
-            if (httpConnection.getCredentialsPresent()) {
-                consumer.setTokenWithSecret(httpConnection.getUserToken(), httpConnection.getUserSecret());
-            }
+            OAuthConsumer consumer = getConsumer();
             
             URL url = new URL(httpConnection.pathToUrl(path));
             HttpURLConnection conn;
@@ -290,7 +292,7 @@ class ConnectionPumpio extends Connection {
                 int responseCode = conn.getResponseCode();
                 switch(responseCode) {
                     case 200:
-                        jso = new JSONObject(readAll(conn.getInputStream()));
+                        result = new JSONObject(readAll(conn.getInputStream()));
                         done = true;
                         break;
                     case 301:
@@ -313,15 +315,25 @@ class ConnectionPumpio extends Connection {
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(TAG, e, jso, "Error getting '" + path + "'");
+            throw ConnectionException.loggedJsonException(TAG, e, result, "Error getting '" + path + "'");
         } catch (ConnectionException e) {
             throw e;
         } catch(Exception e) {
             throw new ConnectionException("Error getting '" + path + "', " + e.toString());
         }
-        return jso;
+        return result;
     }
 
+    private OAuthConsumer getConsumer() {
+        OAuthConsumer consumer = new DefaultOAuthConsumer(
+                httpConnection.connectionData.clientKeys.getConsumerKey(),
+                httpConnection.connectionData.clientKeys.getConsumerSecret());
+        if (httpConnection.getCredentialsPresent()) {
+            consumer.setTokenWithSecret(httpConnection.getUserToken(), httpConnection.getUserSecret());
+        }
+        return consumer;
+    }
+    
     /**
      * @return not null
      */
@@ -374,17 +386,137 @@ class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public MbMessage getStatus(String statusId) throws ConnectionException {
+    public MbMessage getMessage(String messageId) throws ConnectionException {
         // TODO Auto-generated method stub
         return MbMessage.getEmpty();
     }
 
     @Override
     public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
-        // TODO Auto-generated method stub
-        return MbMessage.getEmpty();
+        JSONObject activity = new JSONObject();
+        try {
+            activity.put("objectType", "activity");
+            activity.put("verb", "post");
+
+            JSONObject generator = new JSONObject();
+            generator.put("id", APPLICATION_ID);
+            generator.put("displayName", HttpConnection.USER_AGENT);
+            generator.put("objectType", "application");
+            activity.put("generator", generator);
+            
+            JSONObject thePublic = new JSONObject();
+            thePublic.put("id", "http://activityschema.org/collection/public");
+            thePublic.put("objectType", "collection");
+            JSONArray to = new JSONArray();
+            to.put(thePublic);
+            activity.put("to", to);
+            
+            JSONObject comment = new JSONObject();
+            comment.put("objectType", "comment");
+            comment.put("content", message);
+            if (!TextUtils.isEmpty(inReplyToId)) {
+                JSONObject inReplyToObject = new JSONObject();
+                inReplyToObject.put("id", inReplyToId);
+                inReplyToObject.put("objectType", oidToObjectType(inReplyToId));
+                comment.put("inReplyTo", inReplyToObject);
+            }
+            
+            JSONObject author = new JSONObject();
+            author.put("objectType", "person");
+            author.put("id", accountUserOid);
+            comment.put("author", author);
+
+            activity.put("object", comment);
+            activity.put("actor", author);
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(TAG, e, activity, "Error posting message '" + message + "'");
+        }
+        
+        JSONObject jso = postJSON(getApiPathForThisAccount(ApiRoutineEnum.STATUSES_UPDATE), activity);
+        return messageFromJson(jso);
+    }
+    
+    String oidToObjectType(String oid) {
+        String objectType = "";
+        if (oid.contains("/comment/")) {
+            objectType = "comment";
+        } else if (oid.contains("/note/")) {
+            objectType = "note";
+        } else if (oid.contains("/notice/")) {
+            objectType = "note";
+        } else if (oid.contains("/person/")) {
+            objectType = "person";
+        } else if (oid.contains("/user/")) {
+            objectType = "person";
+        } else {
+            String pattern = "/api/";
+            int indStart = oid.indexOf(pattern);
+            if (indStart >= 0) {
+                int indEnd = oid.indexOf("/", indStart+pattern.length());
+                if (indEnd > indStart) {
+                    objectType = oid.substring(indStart+pattern.length(), indEnd);
+                }
+            }
+        }
+        if (TextUtils.isEmpty(objectType)) {
+            objectType = "unknown object type: " + oid;
+            Log.e(TAG, objectType);
+        }
+        return objectType;
+    }
+    
+    private String getApiPathForThisAccount(ApiRoutineEnum apiRoutine) throws ConnectionException {
+        String url = this.getApiPath(apiRoutine);
+        url = url.replace("%nickname%",  userOidToNickname(accountUserOid));
+        return url;
     }
 
+    private JSONObject postJSON(String path, JSONObject activity) throws ConnectionException {
+        JSONObject result = null;
+        try {
+            MyLog.v(TAG, "Posting " + activity.toString(2));
+            OAuthConsumer cons = getConsumer();
+        
+            URL url = new URL(httpConnection.pathToUrl(path));
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            cons.sign(conn);
+            
+            OutputStream os = conn.getOutputStream();
+            OutputStreamWriter wr = new OutputStreamWriter(os);
+            String toWrite = activity.toString(); 
+            wr.write(toWrite);
+            wr.close();
+                        
+            int responseCode = conn.getResponseCode();
+            switch(responseCode) {
+                case 200:
+                    result = new JSONObject(readAll(conn.getInputStream()));
+                    break;
+                default:
+                    String responseString = readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+                    try {
+                        JSONObject jsonError = new JSONObject(responseString);
+                        String error = jsonError.optString("error");
+                        StatusCode statusCode = (error.indexOf("not found") < 0 ? StatusCode.UNKNOWN : StatusCode.NOT_FOUND);
+                        throw new ConnectionException(statusCode, "Error getting '" + path + "', status=" + responseCode + ", error='" + error + "'");
+                    } catch (JSONException e) {
+                        throw new ConnectionException("Error getting '" + path + "', status=" + responseCode + ", non-JSON response: '" + responseString + "'");
+                    }
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(TAG, e, result, "Error getting '" + path + "'");
+        } catch (ConnectionException e) {
+            throw e;
+        } catch(Exception e) {
+            throw new ConnectionException("Error getting '" + path + "', " + e.toString());
+        }
+        return result;
+    }
+    
     @Override
     public MbMessage postDirectMessage(String message, String userId) throws ConnectionException {
         // TODO Auto-generated method stub
@@ -452,6 +584,13 @@ class ConnectionPumpio extends Connection {
     }
     
     private MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            try {
+                MyLog.v(TAG, "messageFromJson: " + jso.toString(2));
+            } catch (JSONException e) {
+                ConnectionException.loggedJsonException(TAG, e, jso, "messageFromJson");
+            }
+        }
         if (PumpioObjectType.ACTIVITY.isMyType(jso)) {
             return messageFromJsonActivity(jso);
         } else if (PumpioObjectType.COMMENT.isMyType(jso) || PumpioObjectType.NOTE.isMyType(jso)) {
@@ -471,7 +610,7 @@ class ConnectionPumpio extends Connection {
                 return MbMessage.getEmpty();
             } 
             message =  MbMessage.fromOriginAndOid(httpConnection.connectionData.originId, oid);
-            message.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
+            message.reader = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, accountUserOid);
             message.sentDate = dateFromJson(activity, "updated");
             message.timelineItemDate = message.sentDate; 
 
@@ -570,7 +709,7 @@ class ConnectionPumpio extends Connection {
                 return MbMessage.getEmpty();
             } 
             message =  MbMessage.fromOriginAndOid(httpConnection.connectionData.originId, oid);
-            message.reader = MbUser.fromOriginAndUserName(httpConnection.connectionData.originId, httpConnection.accountUsername);
+            message.reader = MbUser.fromOriginAndUserOid(httpConnection.connectionData.originId, accountUserOid);
 
             parseComment(message, jso);
         } catch (JSONException e) {
