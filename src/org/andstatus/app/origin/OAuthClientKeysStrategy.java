@@ -21,7 +21,7 @@ package org.andstatus.app.origin;
  */
 public interface OAuthClientKeysStrategy {
     
-    void setOrigin(long originId);
+    void initialize(OriginConnectionData connectionData);
     /**
      * @return not null, empty if no pre-registered key exist
      */
@@ -31,5 +31,5 @@ public interface OAuthClientKeysStrategy {
      */
     String getConsumerSecret();
     
-    void setConsumerKeyAndSecret(String consumerKey, String consumerSecret); 
+    void setConsumerKeyAndSecret(String consumerKey, String consumerSecret);
 }

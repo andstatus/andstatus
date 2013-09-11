@@ -15,7 +15,7 @@
  */
 package org.andstatus.app.origin;
 
-import android.content.SharedPreferences;
+import android.hardware.Camera.Area;
 import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
@@ -42,9 +42,6 @@ import org.andstatus.app.util.MyLog;
 public class OAuthClientKeys {
     private static final String TAG = OAuthClientKeys.class.getSimpleName();
 
-    String consumerKey = "";
-    String consumerSecret = "";
-    
     // Strategy pattern, see http://en.wikipedia.org/wiki/Strategy_pattern
     private OAuthClientKeysStrategy strategy = null;
     private final static String SECRET_CLASS_NAME = OAuthClientKeysOpenSource.class.getPackage().getName() + "." + "OAuthClientKeysSecret";
@@ -52,7 +49,7 @@ public class OAuthClientKeys {
     
     private OAuthClientKeys() {}
 
-    public static OAuthClientKeys fromOriginIdAndSharedPreferences(long originId, SharedPreferences sharedPreferences) {
+    public static OAuthClientKeys fromConnectionData(OriginConnectionData connectionData) {
         OAuthClientKeys keys = new OAuthClientKeys();
         if (!noSecretClass) {
             // Try to load the application's secret keys first
@@ -69,17 +66,15 @@ public class OAuthClientKeys {
             // Load keys published in the public source code repository
             keys.strategy = new OAuthClientKeysOpenSource();
         }
-        keys.strategy.setOrigin(originId);
-        if (TextUtils.isEmpty(keys.strategy.getConsumerKey())) {
+        keys.strategy.initialize(connectionData);
+        if (!keys.areKeysPresent()) {
             keys.strategy = null;
         }
         if (keys.strategy == null) {
-            keys.strategy = new OAuthClientKeysDynamic(sharedPreferences);
+            keys.strategy = new OAuthClientKeysDynamic();
+            keys.strategy.initialize(connectionData);
         }
-        keys.consumerKey = keys.strategy.getConsumerKey();
-        keys.consumerSecret = keys.strategy.getConsumerSecret();
-        MyLog.d(TAG, "Class " + keys.strategy.getClass().getCanonicalName() 
-                + " was loaded for originId=" + originId + "; "
+        MyLog.d(TAG, "Loaded " + keys.strategy.toString() + "; "
                 + ( keys.areKeysPresent() ? "Keys present" : "No keys")
                 );
         return keys;
@@ -90,16 +85,21 @@ public class OAuthClientKeys {
     }
     
     public String getConsumerKey() {
-        return consumerKey;
+        return strategy.getConsumerKey();
     }
 
     public String getConsumerSecret() {
-        return consumerSecret;
+        return strategy.getConsumerSecret();
+    }
+
+    public void clear() {
+        setConsumerKeyAndSecret("", "");
     }
     
-    public void setConsumerKeyAndSecret(String consumerKey_in, String consumerSecret_in) {
-        consumerKey = consumerKey_in;
-        consumerSecret = consumerSecret_in;
+    public void setConsumerKeyAndSecret(String consumerKey, String consumerSecret) {
         strategy.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+        MyLog.d(TAG, "Saved " + strategy.toString() + "; "
+                + ( areKeysPresent() ? "Keys present" : "No keys")
+                );
     }
 }

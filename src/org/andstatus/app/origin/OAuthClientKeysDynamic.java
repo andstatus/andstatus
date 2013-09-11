@@ -15,30 +15,34 @@
  */
 package org.andstatus.app.origin;
 
-import android.content.SharedPreferences;
 import android.text.TextUtils;
 
+import org.andstatus.app.data.MyPreferences;
+
+
 /**
- * CLient Keys, obtained dynamically.
+ * CLient Keys, obtained dynamically for each host and Origin.
  * @author yvolk
  */
 public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
     private static String KEY_OAUTH_CLIENT_KEY = "oauth_client_key";
     private static String KEY_OAUTH_CLIENT_SECRET = "oauth_client_secret";
 
-    SharedPreferences sharedPreferences;
+    String keySuffix = ""; 
+    String keyConsumerKey = "";
+    String keyConsumerSecret = "";
     String consumerKey = "";
     String consumerSecret = "";
 
-    public OAuthClientKeysDynamic(SharedPreferences sharedPreferences) {
-        this.sharedPreferences = sharedPreferences;
-        consumerKey = sharedPreferences.getString(KEY_OAUTH_CLIENT_KEY, "");
-        consumerSecret = sharedPreferences.getString(KEY_OAUTH_CLIENT_SECRET, "");
-    }
-
     @Override
-    public void setOrigin(long originId_in) { }
-
+    public void initialize(OriginConnectionData connectionData) {
+        keySuffix = connectionData.originId + "-" + connectionData.host; 
+        keyConsumerKey = KEY_OAUTH_CLIENT_KEY + keySuffix;
+        keyConsumerSecret = KEY_OAUTH_CLIENT_SECRET + keySuffix;
+        consumerKey = MyPreferences.getDefaultSharedPreferences().getString(keyConsumerKey, "");
+        consumerSecret = MyPreferences.getDefaultSharedPreferences().getString(keyConsumerSecret, "");
+    }
+    
     @Override
     public String getConsumerKey() {
         return consumerKey;
@@ -53,17 +57,22 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
         if (TextUtils.isEmpty(consumerKey_in) || TextUtils.isEmpty(consumerSecret_in)) {
             consumerKey = "";
             consumerSecret = "";
-            sharedPreferences.edit()
-            .remove(KEY_OAUTH_CLIENT_KEY)
-            .remove(KEY_OAUTH_CLIENT_SECRET)
+            MyPreferences.getDefaultSharedPreferences().edit()
+            .remove(keyConsumerKey)
+            .remove(keyConsumerSecret)
             .commit();
         } else {
             consumerKey = consumerKey_in;
             consumerSecret = consumerSecret_in;
-            sharedPreferences.edit()
-            .putString(KEY_OAUTH_CLIENT_KEY, consumerKey_in)
-            .putString(KEY_OAUTH_CLIENT_SECRET, consumerSecret_in)
+            MyPreferences.getDefaultSharedPreferences().edit()
+            .putString(keyConsumerKey, consumerKey)
+            .putString(keyConsumerSecret, consumerSecret)
             .commit();
         }
+    }
+
+    @Override
+    public String toString() {
+        return OAuthClientKeysDynamic.class.getSimpleName() + "-" + keySuffix;
     }
 }

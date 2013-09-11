@@ -41,10 +41,8 @@ import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.net.Connection;
-import org.andstatus.app.net.ConnectionAuthenticationException;
-import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
 import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.ConnectionUnavailableException;
+import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.net.OAuthConsumerAndProvider;
 import org.andstatus.app.origin.OAuthClientKeys;
@@ -209,9 +207,6 @@ public class MyAccount implements AccountDataReader {
 
         private void setOAuth(boolean isOAuth) {
             Origin origin = myAccount.oAccountName.getOrigin();
-            if (origin.getId() == 0) {
-                throw (new IllegalArgumentException("setOAuth: origin is not defined"));
-            }
             if (isOAuth != origin.isOAuthDefault() && !origin.canChangeOAuth()) {
                 isOAuth = origin.isOAuthDefault();
             }
@@ -455,15 +450,8 @@ public class MyAccount implements AccountDataReader {
          * @see CredentialsVerificationStatus
          * @param reVerify Verify even if it was verified already
          * @return boolean
-         * @throws ConnectionException
-         * @throws ConnectionUnavailableException
-         * @throws ConnectionAuthenticationException
-         * @throws SocketTimeoutException
-         * @throws ConnectionCredentialsOfOtherUserException
          */
-        public boolean verifyCredentials(boolean reVerify) throws ConnectionException,
-                ConnectionUnavailableException, ConnectionAuthenticationException,
-                SocketTimeoutException, ConnectionCredentialsOfOtherUserException {
+        public boolean verifyCredentials(boolean reVerify) throws ConnectionException {
             boolean ok = false;
             if (!reVerify) {
                 if (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
@@ -515,8 +503,9 @@ public class MyAccount implements AccountDataReader {
                         // We don't recreate MyAccount object for the new name
                         //   in order to preserve credentials.
                         myAccount.oAccountName = AccountName.fromOriginAndUserNames(myAccount.oAccountName.getOriginName(), newName);
-                        save();
+                        myAccount.connection.save(this);
                         setConnection();
+                        save();
                     }
                     if (!ok) {
                         setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
@@ -526,12 +515,12 @@ public class MyAccount implements AccountDataReader {
                     if (credentialsOfOtherUser) {
                         Log.e(TAG, MyPreferences.getContext().getText(R.string.error_credentials_of_other_user) + ": "
                                 + newName);
-                        throw (new ConnectionCredentialsOfOtherUserException(newName));
+                        throw (new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, newName));
                     }
                     if (errorSettingUsername) {
                         String msg = MyPreferences.getContext().getText(R.string.error_set_username) + newName;
                         Log.e(TAG, msg);
-                        throw (new ConnectionAuthenticationException(msg));
+                        throw (new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg));
                     }
                 }
             }
@@ -559,17 +548,10 @@ public class MyAccount implements AccountDataReader {
         
         private void setConnection() {
             Origin origin = myAccount.oAccountName.getOrigin();
-            if (origin.getId() == 0) {
-                throw (new IllegalArgumentException("setOAuth: origin is not defined"));
-            }
             myAccount.connectionData = origin.getConnectionData();
             myAccount.connectionData.isOAuth = myAccount.isOAuth; 
-            if (myAccount.connectionData.isOAuth) {
-                myAccount.connectionData.oauthClientKeys = OAuthClientKeys.fromOriginIdAndSharedPreferences(origin.getId(), myAccount.getAccountPreferences());
-            }
             myAccount.connectionData.accountUserOid = myAccount.userOid;
             myAccount.connectionData.accountUsername = myAccount.getUsername();
-            
             myAccount.connection = Connection.fromConnectionData(myAccount.connectionData);
             myAccount.connection.setAccountData(myAccount);
         }
@@ -649,6 +631,12 @@ public class MyAccount implements AccountDataReader {
         @Override
         public String toString() {
             return myAccount.toString();
+        }
+
+        public void clearClientKeys() {
+            if (myAccount.connectionData.areOAuthClientKeysPresent()) {
+                myAccount.connectionData.oauthClientKeys.clear();
+            }
         }
     }
     
@@ -1339,8 +1327,8 @@ public class MyAccount implements AccountDataReader {
         return oAccountName.getOrigin().canChangeOAuth();
     }
     
-    public boolean shouldSetNewUsernameManually() {
-        return oAccountName.getOrigin().shouldSetNewUsernameManually(isOAuth());
+    public boolean isUsernameValidToStartAddingNewAccount() {
+        return oAccountName.getOrigin().isUsernameValidToStartAddingNewAccount(getUsername(), isOAuth());
     }
     
     public void requestSync() {

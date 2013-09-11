@@ -119,10 +119,8 @@ public abstract class Connection {
 
     protected HttpConnection httpConnection;
     
-    public Connection(OriginConnectionData connectionData) {
-        httpConnection = HttpConnection.fromConnectionData(connectionData);
-    }
-
+    protected Connection() {}
+    
     /**
      * @return API of this Connection
      */

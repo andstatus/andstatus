@@ -16,6 +16,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.protocol.HTTP;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -24,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
-class HttpConnectionBasic extends HttpConnection {
+class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
     private static final String TAG = HttpConnectionBasic.class.getSimpleName();
     protected String mPassword;
 
@@ -37,9 +38,19 @@ class HttpConnectionBasic extends HttpConnection {
         super.setAccountData(dr);
         mPassword = dr.getDataString(Connection.KEY_PASSWORD, "");
     }
+
+    @Override
+    protected JSONObject postRequest(String path) throws ConnectionException {
+        return new HttpApacheUtils(this).postRequest(path);
+    }
     
     @Override
-    protected JSONObject postRequest(HttpPost postMethod) throws ConnectionException {
+    protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
+        return new HttpApacheUtils(this).postRequest(path, jso);
+    }
+
+    @Override
+    public JSONObject postRequest(HttpPost postMethod) throws ConnectionException {
         JSONObject jObj = null;
         int statusCode = 0;
         try {
@@ -74,6 +85,18 @@ class HttpConnectionBasic extends HttpConnection {
         return jObj;
     }
 
+    @Override
+    protected final JSONObject getRequest(String path) throws ConnectionException {
+        HttpGet get = new HttpGet(pathToUrl(path));
+        return new HttpApacheUtils(this).getRequestAsObject(get);
+    }
+
+    @Override
+    protected final JSONArray getRequestAsArray(String path) throws ConnectionException {
+        HttpGet get = new HttpGet(pathToUrl(path));
+        return new HttpApacheUtils(this).getRequestAsArray(get);
+    }
+    
     /**
      * Execute a GET request against the Twitter REST API.
      * 
@@ -82,7 +105,7 @@ class HttpConnectionBasic extends HttpConnection {
      * @throws ConnectionException
      */
     @Override
-    protected JSONTokener getRequest(HttpGet getMethod) throws ConnectionException {
+    public JSONTokener getRequest(HttpGet getMethod) throws ConnectionException {
         JSONTokener jso = null;
         String response = null;
         boolean ok = false;
@@ -218,5 +241,4 @@ class HttpConnectionBasic extends HttpConnection {
             throw new ConnectionException(String.valueOf(code));
         }
     }
-    
 }

@@ -6,18 +6,17 @@ import android.util.Log;
 
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.origin.OAuthClientKeys;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 
 public class ConnectionPumpioTest extends InstrumentationTestCase {
     private static final String TAG = ConnectionPumpioTest.class.getSimpleName();
     ConnectionPumpio connection;
     OriginConnectionData connectionData;
-    boolean initialized = false;
     
-    private void initialize() {
-        if (initialized) { 
-            return;
-        }
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         Context targetContext = this.getInstrumentation().getTargetContext();
         if (targetContext == null) {
             Log.e(TAG, "targetContext is null.");
@@ -26,14 +25,12 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         MyPreferences.initialize(targetContext, this);
 
         connectionData = new OriginConnectionData();
-        connectionData.oauthClientKeys = OAuthClientKeys.fromOriginIdAndSharedPreferences(0, MyPreferences.getSharedPreferences("test"));
+        connectionData.originId = Origin.ORIGIN_ID_PUMPIO;
+        connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData);
         connection = new ConnectionPumpio(connectionData);
-        
-        initialized = true;
     }
     
     public void test_oidToObjectType() {
-        initialize();
         String oids[] = {"https://identi.ca/api/activity/L4v5OL93RrabouQc9_QGfg", 
                 "https://identi.ca/api/comment/ibpUqhU1TGCE2yHNbUv54g",
                 "https://identi.ca/api/note/nlF5jl1HQciIs_zP85EeYg",
@@ -54,7 +51,6 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     }
 
     public void test_usernameToHost() {
-        initialize();
         String usernames[] = {"t131t@identi.ca", 
                 "somebody@example.com",
                 "https://identi.ca/api/note/nlF5jl1HQciIs_zP85EeYg",

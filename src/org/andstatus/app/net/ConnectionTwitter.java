@@ -5,18 +5,16 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.andstatus.app.origin.OAuthClientKeys;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -42,7 +40,12 @@ public abstract class ConnectionTwitter extends Connection {
     }
 
     public ConnectionTwitter(OriginConnectionData connectionData) {
-        super(connectionData);
+        if (connectionData.isOAuth) {
+            connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData);
+            httpConnection = new HttpConnectionOAuthApache(connectionData);
+        } else {
+            httpConnection = new HttpConnectionBasic(connectionData);
+        }
     }
 
     /**
@@ -136,8 +139,12 @@ public abstract class ConnectionTwitter extends Connection {
      */
     @Override
     public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
-        List<NameValuePair> out = new LinkedList<NameValuePair>();
-        out.add(new BasicNameValuePair("user_id", userId));
+        JSONObject out = new JSONObject();
+        try {
+            out.put("user_id", userId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         JSONObject user = postRequest((follow ? ApiRoutineEnum.FOLLOW_USER : ApiRoutineEnum.STOP_FOLLOWING_USER), out);
         return userFromJson(user);
     } 
@@ -387,10 +394,14 @@ public abstract class ConnectionTwitter extends Connection {
     
     @Override
     public MbMessage postDirectMessage(String message, String userId) throws ConnectionException {
-        List<NameValuePair> formParams = new ArrayList<NameValuePair>();
-        formParams.add(new BasicNameValuePair("text", message));
-        if ( !TextUtils.isEmpty(userId)) {
-            formParams.add(new BasicNameValuePair("user_id", userId));
+        JSONObject formParams = new JSONObject();
+        try {
+            formParams.put("text", message);
+            if ( !TextUtils.isEmpty(userId)) {
+                formParams.put("user_id", userId);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         JSONObject jso = postRequest(ApiRoutineEnum.POST_DIRECT_MESSAGE, formParams);
         return messageFromJson(jso);
@@ -446,14 +457,18 @@ public abstract class ConnectionTwitter extends Connection {
     
     @Override
     public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
-        List<NameValuePair> formParams = new ArrayList<NameValuePair>();
-        formParams.add(new BasicNameValuePair("status", message));
-        
-        // This parameter was removed from API:
-        // formParams.add(new BasicNameValuePair("source", SOURCE_PARAMETER));
-        
-        if ( !TextUtils.isEmpty(inReplyToId)) {
-            formParams.add(new BasicNameValuePair("in_reply_to_status_id", inReplyToId));
+        JSONObject formParams = new JSONObject();
+        try {
+            formParams.put("status", message);
+            
+            // This parameter was removed from API:
+            // formParams.add(new BasicNameValuePair("source", SOURCE_PARAMETER));
+            
+            if ( !TextUtils.isEmpty(inReplyToId)) {
+                formParams.put("in_reply_to_status_id", inReplyToId);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         JSONObject jso = postRequest(ApiRoutineEnum.STATUSES_UPDATE, formParams);
         return messageFromJson(jso);
@@ -470,7 +485,7 @@ public abstract class ConnectionTwitter extends Connection {
         return userFromJson(user);
     }
 
-    protected final JSONObject postRequest(ApiRoutineEnum apiRoutine, List<NameValuePair> formParams) throws ConnectionException {
+    protected final JSONObject postRequest(ApiRoutineEnum apiRoutine, JSONObject formParams) throws ConnectionException {
         return httpConnection.postRequest(getApiPath(apiRoutine), formParams);
     }
 }

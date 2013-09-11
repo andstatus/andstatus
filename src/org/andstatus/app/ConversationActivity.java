@@ -158,6 +158,7 @@ public class ConversationActivity extends Activity implements MyServiceListener 
          * Rows of the conversation TODO: sort them and maybe format differently
          */
         ArrayList<OneRow> rows = new ArrayList<OneRow>();
+        ArrayList<Long> idsOfTheMessagesToFind = new ArrayList<Long>();
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -168,6 +169,11 @@ public class ConversationActivity extends Activity implements MyServiceListener 
         }
 
         private void findMessage(long msgId) {
+            if (idsOfTheMessagesToFind.contains(msgId)) {
+                MyLog.v(TAG, "findMessage cycled on the msgId=" + msgId);
+                return;
+            }
+            idsOfTheMessagesToFind.add(msgId);
             MyLog.v(TAG, "findMessage " + msgId);
             Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, true, msgId);
             boolean skip = true;
@@ -355,7 +361,9 @@ public class ConversationActivity extends Activity implements MyServiceListener 
     public void onReceive(CommandData commandData) {
         switch(commandData.command) {
             case GET_STATUS:
-                showConversation();
+                if (!commandData.commandResult.hasError()) {
+                    showConversation();
+                }
             default:
                 break;
         }

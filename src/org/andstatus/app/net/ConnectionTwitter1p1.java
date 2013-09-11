@@ -3,12 +3,8 @@ package org.andstatus.app.net;
 import android.text.TextUtils;
 
 import org.andstatus.app.origin.OriginConnectionData;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Twitter API v.1.1 https://dev.twitter.com/docs/api/1.1
@@ -50,16 +46,24 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
 
     @Override
     public MbMessage createFavorite(String statusId) throws ConnectionException {
-        List<NameValuePair> out = new LinkedList<NameValuePair>();
-        out.add(new BasicNameValuePair("id", statusId));
+        JSONObject out = new JSONObject();
+        try {
+            out.put("id", statusId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         JSONObject jso = postRequest(ApiRoutineEnum.FAVORITES_CREATE_BASE, out);
         return messageFromJson(jso);
     }
 
     @Override
     public MbMessage destroyFavorite(String statusId) throws ConnectionException {
-        List<NameValuePair> out = new LinkedList<NameValuePair>();
-        out.add(new BasicNameValuePair("id", statusId));
+        JSONObject out = new JSONObject();
+        try {
+            out.put("id", statusId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         JSONObject jso = postRequest(ApiRoutineEnum.FAVORITES_DESTROY_BASE, out);
         return messageFromJson(jso);
     }

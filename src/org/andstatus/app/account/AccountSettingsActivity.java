@@ -17,8 +17,6 @@
 
 package org.andstatus.app.account;
 
-import java.net.SocketTimeoutException;
-
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -43,6 +41,7 @@ import android.view.KeyEvent;
 import android.widget.Toast;
 
 import oauth.signpost.OAuth;
+import oauth.signpost.OAuthConsumer;
 import oauth.signpost.exception.OAuthCommunicationException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
@@ -54,11 +53,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection;
-import org.andstatus.app.net.ConnectionAuthenticationException;
-import org.andstatus.app.net.ConnectionCredentialsOfOtherUserException;
 import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.ConnectionUnavailableException;
-import org.andstatus.app.net.OAuthConsumerAndProvider;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -87,11 +82,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
 
     public static final int MSG_ACCOUNT_INVALID = 3;
 
-    public static final int MSG_SERVICE_UNAVAILABLE_ERROR = 4;
-
     public static final int MSG_CONNECTION_EXCEPTION = 5;
-
-    public static final int MSG_SOCKET_TIMEOUT_EXCEPTION = 6;
 
     public static final int MSG_CREDENTIALS_OF_OTHER_USER = 7;
 
@@ -113,7 +104,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     
     private ListPreference mOriginName;
 
-    private Preference mVerifyCredentials;
+    private Preference addAccountOrVerifyCredentials;
 
     private boolean onSharedPreferenceChanged_busy = false;
     
@@ -136,7 +127,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         mOAuth = (CheckBoxPreference) findPreference(MyAccount.Builder.KEY_OAUTH);
         mEditTextUsername = (EditTextPreference) findPreference(MyAccount.Builder.KEY_USERNAME_NEW);
         mEditTextPassword = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
-        mVerifyCredentials = findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
+        addAccountOrVerifyCredentials = findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
 
         restoreState(getIntent(), "onCreate");
     }
@@ -236,7 +227,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             summary.append(": (" + this.getText(R.string.not_set) + ")");
         }
         mEditTextUsername.setSummary(summary);
-        mEditTextUsername.setEnabled(ma.shouldSetNewUsernameManually());
+        mEditTextUsername.setEnabled(!state.builder.isPersistent() && !ma.isUsernameValidToStartAddingNewAccount());
 
         if (ma.isOAuth() != mOAuth.isChecked()) {
             mOAuth.setChecked(ma.isOAuth());
@@ -256,6 +247,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         mEditTextPassword.setEnabled(ma.getConnection().isPasswordNeeded());
 
         int titleResId;
+        boolean addAccountOrVerifyCredentialsEnabled = ma.isOAuth() || ma.getCredentialsPresent();
         switch (ma.getCredentialsVerified()) {
             case SUCCEEDED:
                 titleResId = R.string.title_preference_verify_credentials;
@@ -268,6 +260,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     summary = new StringBuilder(
                             this.getText(R.string.summary_preference_verify_credentials_failed));
                 } else {
+                    if (!ma.isUsernameValidToStartAddingNewAccount()) {
+                        addAccountOrVerifyCredentialsEnabled = false;
+                    }
                     titleResId = R.string.title_preference_add_account;
                     if (ma.isOAuth()) {
                         summary = new StringBuilder(
@@ -279,9 +274,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 }
                 break;
         }
-        mVerifyCredentials.setTitle(titleResId);
-        mVerifyCredentials.setSummary(summary);
-        mVerifyCredentials.setEnabled(ma.isOAuth() || ma.getCredentialsPresent());
+        addAccountOrVerifyCredentials.setTitle(titleResId);
+        addAccountOrVerifyCredentials.setSummary(summary);
+        addAccountOrVerifyCredentials.setEnabled(addAccountOrVerifyCredentialsEnabled);
     }
 
     @Override
@@ -444,16 +439,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 if (titleId == 0) {
                     titleId = R.string.dialog_title_authentication_failed;
                     summaryId = R.string.dialog_summary_authentication_failed;
-                }
-            case MSG_SERVICE_UNAVAILABLE_ERROR:
-                if (titleId == 0) {
-                    titleId = R.string.dialog_title_service_unavailable;
-                    summaryId = R.string.dialog_summary_service_unavailable;
-                }
-            case MSG_SOCKET_TIMEOUT_EXCEPTION:
-                if (titleId == 0) {
-                    titleId = R.string.dialog_title_connection_timeout;
-                    summaryId = R.string.dialog_summary_connection_timeout;
                 }
             case MSG_CREDENTIALS_OF_OTHER_USER:
                 if (titleId == 0) {
@@ -717,16 +702,16 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             try {
                 MyAccount ma = state.getAccount();
                 MyLog.v(TAG, "Retrieving request token for " + ma);
-                OAuthConsumerAndProvider oa = ma.getOAuthConsumerAndProvider();
+                OAuthConsumer consumer = state.getAccount().getOAuthConsumerAndProvider().getConsumer();
 
                 // This is really important. If you were able to register your
                 // real callback Uri with Twitter, and not some fake Uri
                 // like I registered when I wrote this example, you need to send
                 // null as the callback Uri in this function call. Then
                 // Twitter will correctly process your callback redirection
-                String authUrl = oa.getProvider().retrieveRequestToken(oa.getConsumer(),
-                        Origin.CALLBACK_URI.toString());
-                state.setRequestTokenWithSecret(oa.getConsumer().getToken(), oa.getConsumer().getTokenSecret());
+                String authUrl = state.getAccount().getOAuthConsumerAndProvider().getProvider()
+                        .retrieveRequestToken(consumer, Origin.CALLBACK_URI.toString());
+                state.setRequestTokenWithSecret(consumer.getToken(), consumer.getTokenSecret());
 
                 // This is needed in order to complete the process after redirect
                 // from the Browser to the same activity.
@@ -764,6 +749,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                         message2 = message2 + ": " + message;
                     }
                     MyLog.d(TAG, message2);
+                    
+                    state.builder.clearClientKeys();
                 }
 
                 jso = new JSONObject();
@@ -839,15 +826,15 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             String message = "";
             
             boolean authenticated = false;
-            // We don't need to worry about any saved states: we can reconstruct
-            // the state
-            OAuthConsumerAndProvider oa = state.getAccount().getOAuthConsumerAndProvider();
 
-            if (oa == null) {
+            if (state.getAccount().getOAuthConsumerAndProvider() == null) {
                 message = "Connection is not OAuth";
                 Log.e(TAG, message);
             }
             else {
+                // We don't need to worry about any saved states: we can reconstruct
+                // the state
+
                 Uri uri = uris[0];
                 if (uri != null && Origin.CALLBACK_URI.getHost().equals(uri.getHost())) {
                     String token = state.getRequestToken();
@@ -858,8 +845,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                         // Clear the request stuff, we've used it already
                         state.setRequestTokenWithSecret(null, null);
 
+                        OAuthConsumer consumer = state.getAccount().getOAuthConsumerAndProvider().getConsumer();
                         if (!(token == null || secret == null)) {
-                            oa.getConsumer().setTokenWithSecret(token, secret);
+                            consumer.setTokenWithSecret(token, secret);
                         }
                         String otoken = uri.getQueryParameter(OAuth.OAUTH_TOKEN);
                         String verifier = uri.getQueryParameter(OAuth.OAUTH_VERIFIER);
@@ -870,7 +858,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                          * if User denied access during OAuth...) hence this is not
                          * Assert :-)
                          */
-                        if (otoken != null || oa.getConsumer().getToken() != null) {
+                        if (otoken != null || consumer.getToken() != null) {
                             // We send out and save the request token, but the
                             // secret is not the same as the verifier
                             // Apparently, the verifier is decoded to get the
@@ -881,10 +869,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                             // mConsumer.getToken());
 
                             // This is the moment of truth - we could throw here
-                            oa.getProvider().retrieveAccessToken(oa.getConsumer(), verifier);
+                            state.getAccount().getOAuthConsumerAndProvider().getProvider()
+                                .retrieveAccessToken(consumer, verifier);
                             // Now we can retrieve the goodies
-                            token = oa.getConsumer().getToken();
-                            secret = oa.getConsumer().getTokenSecret();
+                            token = consumer.getToken();
+                            secret = consumer.getTokenSecret();
                             authenticated = true;
                         }
                     } catch (OAuthMessageSignerException e) {
@@ -1003,16 +992,17 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                         what = MSG_ACCOUNT_VALID;
                     }
                 } catch (ConnectionException e) {
-                    what = MSG_CONNECTION_EXCEPTION;
+                    switch (e.getStatusCode()) {
+                        case AUTHENTICATION_ERROR:
+                            what = MSG_ACCOUNT_INVALID;
+                            break;
+                        case CREDENTIALS_OF_OTHER_USER:
+                            what = MSG_CREDENTIALS_OF_OTHER_USER;
+                            break;
+                        default:
+                            what = MSG_CONNECTION_EXCEPTION;
+                    }
                     message = e.toString();
-                } catch (ConnectionAuthenticationException e) {
-                    what = MSG_ACCOUNT_INVALID;
-                } catch (ConnectionCredentialsOfOtherUserException e) {
-                    what = MSG_CREDENTIALS_OF_OTHER_USER;
-                } catch (ConnectionUnavailableException e) {
-                    what = MSG_SERVICE_UNAVAILABLE_ERROR;
-                } catch (SocketTimeoutException e) {
-                    what = MSG_SOCKET_TIMEOUT_EXCEPTION;
                 }
             }
 
@@ -1050,26 +1040,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                             succeeded = true;
                             break;
                         case MSG_ACCOUNT_INVALID:
-                        case MSG_SERVICE_UNAVAILABLE_ERROR:
-                        case MSG_SOCKET_TIMEOUT_EXCEPTION:
                         case MSG_CREDENTIALS_OF_OTHER_USER:
                             showDialog(what);
                             break;
                         case MSG_CONNECTION_EXCEPTION:
-                            int mId = 0;
-                            try {
-                                mId = Integer.parseInt(message);
-                            } catch (Exception e) {
-                            }
-                            switch (mId) {
-                                case 404:
-                                    mId = R.string.error_twitter_404;
-                                    break;
-                                default:
-                                    mId = R.string.error_connection_error;
-                                    break;
-                            }
-                            Toast.makeText(AccountSettingsActivity.this, mId, Toast.LENGTH_LONG).show();
+                            Toast.makeText(AccountSettingsActivity.this, R.string.error_connection_error + " " + message, Toast.LENGTH_LONG).show();
                             break;
 
                     }

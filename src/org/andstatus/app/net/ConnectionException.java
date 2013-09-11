@@ -29,7 +29,17 @@ public class ConnectionException extends Exception {
     public enum StatusCode {
         UNKNOWN,
         UNSUPPORTED_API,
-        NOT_FOUND
+        NOT_FOUND,
+        AUTHENTICATION_ERROR,
+        CREDENTIALS_OF_OTHER_USER;
+        
+        public static StatusCode fromResponseCode(int responseCode) {
+            if (responseCode==404) {
+                return NOT_FOUND;
+            } else {
+                return UNKNOWN;
+            }
+        }
     }
     private StatusCode statusCode = StatusCode.UNKNOWN;
     protected boolean isHardError = false;

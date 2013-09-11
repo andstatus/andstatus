@@ -5,10 +5,7 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 
-import oauth.signpost.OAuthConsumer;
-import oauth.signpost.basic.DefaultOAuthConsumer;
-
-import org.andstatus.app.net.ConnectionException.StatusCode;
+import org.andstatus.app.origin.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
@@ -17,16 +14,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -35,13 +27,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Implementation of pump.io API: <a href="https://github.com/e14n/pump.io/blob/master/API.md">https://github.com/e14n/pump.io/blob/master/API.md</a>  
  * @author yvolk
  */
 class ConnectionPumpio extends Connection {
+    private static final String TAG = ConnectionPumpio.class.getSimpleName();
+
     private enum PumpioObjectType {
         ACTIVITY("activity") {
             @Override
@@ -78,26 +71,23 @@ class ConnectionPumpio extends Connection {
         
     }
 
-    private static final String TAG = ConnectionPumpio.class.getSimpleName();
     public ConnectionPumpio(OriginConnectionData connectionData) {
-        super(connectionData);
         if (!TextUtils.isEmpty(connectionData.accountUsername)) {
             connectionData.host = usernameToHost(connectionData.accountUsername);
         }
-    }
-
-    @Override
-    public void registerClient() {
-        registerClientAttempt2();
-        if (httpConnection.connectionData.oauthClientKeys.areKeysPresent()) {
-            MyLog.v(TAG, "Registered client for " + httpConnection.connectionData.host);
+        if (connectionData.isOAuth) {
+            connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData);
+            httpConnection = new HttpConnectionOAuthJavaNet(connectionData);
+        } else {
+            throw new IllegalArgumentException(TAG + " basic OAuth is not supported");
         }
     }
-    
+
     /**
-     * It works also: partially borrowed from the "Impeller" code !
+     * Partially borrowed from the "Impeller" code !
      */
-    public void registerClientAttempt2() {
+    @Override
+    public void registerClient() {
         String consumerKey = "";
         String consumerSecret = "";
         httpConnection.connectionData.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
@@ -112,7 +102,7 @@ class ConnectionPumpio extends Connection {
             params.put("redirect_uris", Origin.CALLBACK_URI.toString());
             params.put("client_name", HttpConnection.USER_AGENT);
             params.put("application_name", HttpConnection.USER_AGENT);
-            String requestBody = encode(params);
+            String requestBody = HttpJavaNetUtils.encode(params);
             conn.setDoOutput(true);
             conn.setDoInput(true);
             
@@ -121,11 +111,11 @@ class ConnectionPumpio extends Connection {
             w.close();
             
             if(conn.getResponseCode() != 200) {
-                String msg = readAll(new InputStreamReader(conn.getErrorStream()));
+                String msg = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream()));
                 Log.e(TAG, "Server returned an error response: " + msg);
                 Log.e(TAG, "Server returned an error response: " + conn.getResponseMessage());
             } else {
-                String response = readAll(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                String response = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                 JSONObject jso = new JSONObject(response);
                 if (jso != null) {
                     consumerKey = jso.getString("client_id");
@@ -141,38 +131,9 @@ class ConnectionPumpio extends Connection {
         } catch (ConnectionException e) {
             Log.e(TAG, "registerClient Exception: " + e.toString());
         }
-    }
-    
-    static private String encode(Map<String, String> params) {
-        try {
-            StringBuilder sb = new StringBuilder();
-            for(Map.Entry<String, String> entry : params.entrySet()) {
-                if(sb.length() > 0) {
-                    sb.append('&');
-                }
-                sb.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-                sb.append('=');
-                sb.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-            }
-            
-            return sb.toString();
-        } catch(UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex);
+        if (httpConnection.connectionData.oauthClientKeys.areKeysPresent()) {
+            MyLog.v(TAG, "Registered client for " + httpConnection.connectionData.host);
         }
-    }
-
-    static private String readAll(InputStream s) throws IOException {
-        return readAll(new InputStreamReader(s, "UTF-8"));
-    }
-    
-    static private String readAll(Reader r) throws IOException {
-        int nRead;
-        char[] buf = new char[16 * 1024];
-        StringBuilder bld = new StringBuilder();
-        while((nRead = r.read(buf)) != -1) {
-            bld.append(buf, 0, nRead);
-        }
-        return bld.toString();
     }
     
     protected static Connection fromConnectionDataProtected(OriginConnectionData connectionData) {
@@ -206,16 +167,14 @@ class ConnectionPumpio extends Connection {
 
     @Override
     public MbRateLimitStatus rateLimitStatus() throws ConnectionException {
+        // TODO Method stub
         MbRateLimitStatus status = new MbRateLimitStatus();
-        // TODO Auto-generated method stub
         return status;
     }
 
     @Override
     public MbUser verifyCredentials() throws ConnectionException {
-        // TODO: This gives "Bad Request" error
-        // JSONObject user = httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
-        JSONObject user = getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
+        JSONObject user = httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
         return userFromJson(user);
     }
 
@@ -275,75 +234,13 @@ class ConnectionPumpio extends Connection {
         }
     }
     
-    // TODO: Move to HttpConnection...
-    JSONObject getRequest(String path) throws ConnectionException {
-        if (TextUtils.isEmpty(path)) {
-            throw new IllegalArgumentException("path is empty");
-        }
-        JSONObject result = null;
-        try {
-            OAuthConsumer consumer = getConsumer();
-            
-            URL url = new URL(httpConnection.pathToUrl(path));
-            HttpURLConnection conn;
-            for (boolean done=false; !done; ) {
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setInstanceFollowRedirects(false);
-                consumer.sign(conn);
-                conn.connect();
-                int responseCode = conn.getResponseCode();
-                switch(responseCode) {
-                    case 200:
-                        result = new JSONObject(readAll(conn.getInputStream()));
-                        done = true;
-                        break;
-                    case 301:
-                    case 302:
-                    case 303:
-                    case 307:
-                        url = new URL(conn.getHeaderField("Location"));
-                        MyLog.v(TAG, "Following redirect to " + url);
-                        break;                        
-                    default:
-                        String responseString = readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
-                        try {
-                            JSONObject jsonError = new JSONObject(responseString);
-                            String error = jsonError.optString("error");
-                            StatusCode statusCode = (error.indexOf("not found") < 0 ? StatusCode.UNKNOWN : StatusCode.NOT_FOUND);
-                            throw new ConnectionException(statusCode, "Error getting '" + path + "', status=" + responseCode + ", error='" + error + "'");
-                        } catch (JSONException e) {
-                            throw new ConnectionException("Error getting '" + path + "', status=" + responseCode + ", non-JSON response: '" + responseString + "'");
-                        }
-                }
-            }
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(TAG, e, result, "Error getting '" + path + "'");
-        } catch (ConnectionException e) {
-            throw e;
-        } catch(Exception e) {
-            throw new ConnectionException("Error getting '" + path + "', " + e.toString());
-        }
-        return result;
-    }
-
-    private OAuthConsumer getConsumer() {
-        OAuthConsumer consumer = new DefaultOAuthConsumer(
-                httpConnection.connectionData.oauthClientKeys.getConsumerKey(),
-                httpConnection.connectionData.oauthClientKeys.getConsumerSecret());
-        if (httpConnection.getCredentialsPresent()) {
-            consumer.setTokenWithSecret(httpConnection.getUserToken(), httpConnection.getUserSecret());
-        }
-        return consumer;
-    }
-    
     /**
      * @return not null
      */
     private JSONArray getRequestAsArray(String path) throws ConnectionException {
-        JSONObject jso = getRequest(path);
+        JSONObject jso = httpConnection.getRequest(path);
         JSONArray jsa = null;
         if (jso == null) {
-            // TODO: ensure not null
             throw new ConnectionException("Response is null");
         }
         if (jso.has("items")) {
@@ -365,32 +262,32 @@ class ConnectionPumpio extends Connection {
     
     @Override
     public MbMessage destroyFavorite(String statusId) throws ConnectionException {
-        // TODO Auto-generated method stub
+        // TODO Method stub
         return MbMessage.getEmpty();
     }
 
     @Override
     public MbMessage createFavorite(String statusId) throws ConnectionException {
-        // TODO Auto-generated method stub
+        // TODO Method stub
         return MbMessage.getEmpty();
     }
 
     @Override
     public boolean destroyStatus(String statusId) throws ConnectionException {
-        // TODO Auto-generated method stub
+        // TODO Method stub
         return false;
     }
 
     @Override
     public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
-        // TODO Auto-generated method stub
+        // TODO Method stub
         return new ArrayList<String>();
     }
 
     @Override
     public MbMessage getMessage(String messageId) throws ConnectionException {
-        // TODO Auto-generated method stub
-        return MbMessage.getEmpty();
+        JSONObject message = httpConnection.getRequest(messageId);
+        return messageFromJson(message);
     }
 
     @Override
@@ -434,7 +331,7 @@ class ConnectionPumpio extends Connection {
             throw ConnectionException.loggedJsonException(TAG, e, activity, "Error posting message '" + message + "'");
         }
         
-        JSONObject jso = postJSON(getApiPathForThisAccount(ApiRoutineEnum.STATUSES_UPDATE), activity);
+        JSONObject jso = httpConnection.postRequest(getApiPathForThisAccount(ApiRoutineEnum.STATUSES_UPDATE), activity);
         return messageFromJson(jso);
     }
     
@@ -472,62 +369,16 @@ class ConnectionPumpio extends Connection {
         url = url.replace("%nickname%",  userOidToNickname(getAccountUserOid()));
         return url;
     }
-
-    private JSONObject postJSON(String path, JSONObject activity) throws ConnectionException {
-        JSONObject result = null;
-        try {
-            MyLog.v(TAG, "Posting " + activity.toString(2));
-            OAuthConsumer cons = getConsumer();
-        
-            URL url = new URL(httpConnection.pathToUrl(path));
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setDoOutput(true);
-            conn.setDoInput(true);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            cons.sign(conn);
-            
-            OutputStream os = conn.getOutputStream();
-            OutputStreamWriter wr = new OutputStreamWriter(os);
-            String toWrite = activity.toString(); 
-            wr.write(toWrite);
-            wr.close();
-                        
-            int responseCode = conn.getResponseCode();
-            switch(responseCode) {
-                case 200:
-                    result = new JSONObject(readAll(conn.getInputStream()));
-                    break;
-                default:
-                    String responseString = readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
-                    try {
-                        JSONObject jsonError = new JSONObject(responseString);
-                        String error = jsonError.optString("error");
-                        StatusCode statusCode = (error.indexOf("not found") < 0 ? StatusCode.UNKNOWN : StatusCode.NOT_FOUND);
-                        throw new ConnectionException(statusCode, "Error getting '" + path + "', status=" + responseCode + ", error='" + error + "'");
-                    } catch (JSONException e) {
-                        throw new ConnectionException("Error getting '" + path + "', status=" + responseCode + ", non-JSON response: '" + responseString + "'");
-                    }
-            }
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(TAG, e, result, "Error getting '" + path + "'");
-        } catch (ConnectionException e) {
-            throw e;
-        } catch(Exception e) {
-            throw new ConnectionException("Error getting '" + path + "', " + e.toString());
-        }
-        return result;
-    }
     
     @Override
     public MbMessage postDirectMessage(String message, String userId) throws ConnectionException {
-        // TODO Auto-generated method stub
+        // TODO Method stub
         return MbMessage.getEmpty();
     }
 
     @Override
     public MbMessage postReblog(String rebloggedId) throws ConnectionException {
-        // TODO Auto-generated method stub
+        // TODO Method stub
         return MbMessage.getEmpty();
     }
 
@@ -756,13 +607,13 @@ class ConnectionPumpio extends Connection {
     
     @Override
     public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
-        // TODO Auto-generated method stub
+        // TODO Method stub
         return MbUser.getEmpty();
     }
 
     @Override
     public MbUser getUser(String userId) throws ConnectionException {
-        // TODO Auto-generated method stub
+        // TODO Method stub
         return MbUser.getEmpty();
     }
 }

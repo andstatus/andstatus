@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.origin;
 
-
 /**
  * Keys of the "AndStatus-OpenSource" application.
  * @author yvolk
@@ -24,8 +23,8 @@ public class OAuthClientKeysOpenSource implements OAuthClientKeysStrategy {
     private long originId = 0;
 
     @Override
-    public void setOrigin(long originId_in) {
-        originId = originId_in;
+    public void initialize(OriginConnectionData connectionData) {
+        originId = connectionData.originId;
     }
 
     @Override
@@ -48,4 +47,9 @@ public class OAuthClientKeysOpenSource implements OAuthClientKeysStrategy {
 
     @Override
     public void setConsumerKeyAndSecret(String ConsumerKey, String ConsumerSecret) {}
+
+    @Override
+    public String toString() {
+        return OAuthClientKeysOpenSource.class.getSimpleName();
+    }
 }

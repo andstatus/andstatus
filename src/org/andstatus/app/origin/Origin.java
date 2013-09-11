@@ -58,8 +58,9 @@ public class Origin {
     /**
      * Name of the default Originating system (it is unique and permanent as an ID).
      */
-    public static String ORIGIN_NAME_TWITTER = "twitter";
-    public static String ORIGIN_NAME_PUMPIO = "pump.io";
+    public static final String ORIGIN_NAME_TWITTER = "twitter";
+    public static final String ORIGIN_NAME_PUMPIO = "pump.io";
+    public static final String ORIGIN_NAME_UNKNOWN = "unknownMbSystem";
 
     /** 
      * The URI is consistent with "scheme" and "host" in AndroidManifest
@@ -70,7 +71,7 @@ public class Origin {
     /**
      * Maximum number of characters in the message
      */
-    private static int CHARS_MAX_DEFAULT = 140;
+    protected static int CHARS_MAX_DEFAULT = 140;
     /**
      * Length of the link after changing to the shortened link
      * -1 means that length doesn't change
@@ -78,36 +79,28 @@ public class Origin {
      */
     private static int LINK_LENGTH = 23;
     
-    private String name = "";
-    private long id = 0;
+    protected String name = ORIGIN_NAME_UNKNOWN;
+    protected long id = 0;
 
     /**
      * Default OAuth setting
      */
-    private boolean isOAuthDefault = true;
+    protected boolean isOAuthDefault = true;
     /**
      * Can OAuth connection setting can be turned on/off from the default setting
      */
-    private boolean canChangeOAuth = false;
-    private boolean shouldSetNewUsernameManuallyIfOAuth = false;
+    protected boolean canChangeOAuth = false;
+    protected boolean shouldSetNewUsernameManuallyIfOAuth = false;
     /**
      * Can user set username for the new user manually?
      * This is only for no OAuth
      */
-    private boolean shouldSetNewUsernameManuallyNoOAuth = false;
+    protected boolean shouldSetNewUsernameManuallyNoOAuth = false;
     
-    private int maxCharactersInMessage = CHARS_MAX_DEFAULT;
-    private String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
+    protected int maxCharactersInMessage = CHARS_MAX_DEFAULT;
+    protected String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     
-    private OriginConnectionData connectionData = new OriginConnectionData();
-
-    public static Origin fromOriginName(String name) {
-        return new Origin(name);
-    }
-    
-    public static Origin fromOriginId(long id) {
-        return new Origin(id);
-    }
+    protected OriginConnectionData connectionData = new OriginConnectionData();
 
     public static Origin toExistingOrigin(String originName_in) {
         Origin origin = fromOriginName(originName_in);
@@ -164,56 +157,28 @@ public class Origin {
         return ok;
     }
     
-    /**
-     * @return Can app user set username for the new "Origin user" manually?
-     */
-    public boolean shouldSetNewUsernameManually(boolean isOAuthUser) {
-        if (isOAuthUser) {
-            return shouldSetNewUsernameManuallyNoOAuth;
-        } else {
-            return shouldSetNewUsernameManuallyIfOAuth;
-        }
-    }
-
-    private Origin(String name_in) {
-        name = name_in;
-        // TODO: Persistence for Origins
-        if (name.compareToIgnoreCase(ORIGIN_NAME_TWITTER) == 0) {
-            id = ORIGIN_ID_TWITTER;
-            isOAuthDefault = true;
-            canChangeOAuth = false;  // Starting from 2010-09 twitter.com allows OAuth only
-            shouldSetNewUsernameManuallyIfOAuth = false;
-            shouldSetNewUsernameManuallyNoOAuth = false;
-            usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
-            maxCharactersInMessage = CHARS_MAX_DEFAULT;
-
-            connectionData.api = ApiEnum.TWITTER1P1;
-            connectionData.isHttps = false;
-            connectionData.host = "api.twitter.com";
-            connectionData.basicPath = "1.1";
-            connectionData.oauthPath = "oauth";
-        } else if (name.compareToIgnoreCase(ORIGIN_NAME_PUMPIO) == 0) {
-            id = ORIGIN_ID_PUMPIO;
-            isOAuthDefault = true;  
-            canChangeOAuth = false;
-            shouldSetNewUsernameManuallyIfOAuth = true;
-            shouldSetNewUsernameManuallyNoOAuth = false;
-            usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
-            maxCharactersInMessage = 5000; // This is not a hard limit, just for convenience.
-
-            connectionData.api = ApiEnum.PUMPIO;
-            connectionData.isHttps = true;
-            connectionData.host = "identi.ca";  // Default host
-            connectionData.basicPath = "api";
-            connectionData.oauthPath = "oauth";
-        }
-        connectionData.originId = id;
+    public boolean isUsernameValidToStartAddingNewAccount(String username, boolean isOAuthUser) {
+        return false;
     }
     
-    private Origin(long id) {
-        this(id == ORIGIN_ID_TWITTER ? ORIGIN_NAME_TWITTER :
+    public static Origin fromOriginId(long id) {
+        return fromOriginName(id == ORIGIN_ID_TWITTER ? ORIGIN_NAME_TWITTER :
                 id == ORIGIN_ID_PUMPIO ? ORIGIN_NAME_PUMPIO :
-                        "");
+                        ORIGIN_NAME_UNKNOWN);
+    }
+
+    public static Origin fromOriginName(String name) {
+        Origin origin = null;
+        // TODO: Persistence for Origins
+        if (name.compareToIgnoreCase(ORIGIN_NAME_TWITTER) == 0) {
+            origin = new OriginTwitter();
+        } else if (name.compareToIgnoreCase(ORIGIN_NAME_PUMPIO) == 0) {
+            origin = new OriginPumpio();
+        } else {
+            origin = new Origin();
+        }
+        origin.connectionData.originId = origin.id;
+        return origin;
     }
 
     /**

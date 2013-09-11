@@ -251,8 +251,8 @@ public class DataInserter {
                             inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
                             if (message.inReplyToMessage.sender != null) {
                                 inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
-                            } else if (rowId != 0) {
-                                inReplyToUserId = MyProvider.msgIdToLongColumnValue(Msg.IN_REPLY_TO_USER_ID, rowId);
+                            } else if (inReplyToMessageId != 0) {
+                                inReplyToUserId = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, inReplyToMessageId);
                             }
                         }
                         if (inReplyToUserId != 0) {
