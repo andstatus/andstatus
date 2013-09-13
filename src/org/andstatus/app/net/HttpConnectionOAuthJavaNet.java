@@ -166,7 +166,25 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
 
     @Override
     protected JSONArray getRequestAsArray(String path) throws ConnectionException {
-        // TODO Auto-generated method stub
-        return null;
+        JSONObject jso = getRequest(path);
+        JSONArray jsa = null;
+        if (jso == null) {
+            throw new ConnectionException("Response is null");
+        }
+        if (jso.has("items")) {
+            try {
+                jsa = jso.getJSONArray("items");
+            } catch (JSONException e) {
+                throw new ConnectionException("'items' is not an array?!");
+            }
+        } else {
+            try {
+                MyLog.d(TAG, "Response from server: " + jso.toString(4));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            throw new ConnectionException("No array was returned");
+        }
+        return jsa;
     }
 }

@@ -71,8 +71,8 @@ public abstract class Connection {
         ACCOUNT_VERIFY_CREDENTIALS,
         /** Returns most recent direct messages sent to the authenticating user */
         DIRECT_MESSAGES,
-        FAVORITES_CREATE_BASE,
-        FAVORITES_DESTROY_BASE,
+        CREATE_FAVORITE,
+        DESTROY_FAVORITE,
         FOLLOW_USER,
         GET_FRIENDS_IDS,
         GET_USER,
@@ -341,10 +341,10 @@ public abstract class Connection {
         Connection connection;
         switch (connectionData.api) {
             case PUMPIO:
-                connection = ConnectionPumpio.fromConnectionDataProtected(connectionData);
+                connection = ConnectionPumpio.fromConnectionData2(connectionData);
                 break;
             default:
-                connection = ConnectionTwitter.fromConnectionDataProtected(connectionData);
+                connection = ConnectionTwitter.fromConnectionData2(connectionData);
         }
         return connection;
     }

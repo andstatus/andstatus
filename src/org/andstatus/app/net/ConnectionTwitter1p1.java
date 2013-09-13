@@ -23,10 +23,10 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
             case ACCOUNT_RATE_LIMIT_STATUS:
                 url = "application/rate_limit_status" + EXTENSION;
                 break;
-            case FAVORITES_CREATE_BASE:
+            case CREATE_FAVORITE:
                 url = "favorites/create" + EXTENSION;
                 break;
-            case FAVORITES_DESTROY_BASE:
+            case DESTROY_FAVORITE:
                 url = "favorites/destroy" + EXTENSION;
                 break;
             /** https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline */
@@ -52,7 +52,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.FAVORITES_CREATE_BASE, out);
+        JSONObject jso = postRequest(ApiRoutineEnum.CREATE_FAVORITE, out);
         return messageFromJson(jso);
     }
 
@@ -64,7 +64,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.FAVORITES_DESTROY_BASE, out);
+        JSONObject jso = postRequest(ApiRoutineEnum.DESTROY_FAVORITE, out);
         return messageFromJson(jso);
     }
 }

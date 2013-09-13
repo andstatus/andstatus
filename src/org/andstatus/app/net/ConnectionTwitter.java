@@ -24,7 +24,7 @@ import java.util.List;
 public abstract class ConnectionTwitter extends Connection {
     private static final String TAG = ConnectionTwitter.class.getSimpleName();
 
-    protected static Connection fromConnectionDataProtected(OriginConnectionData connectionData) {
+    protected static Connection fromConnectionData2(OriginConnectionData connectionData) {
         Connection connection;
         switch (connectionData.api) {
             case STATUSNET_TWITTER:
@@ -66,10 +66,10 @@ public abstract class ConnectionTwitter extends Connection {
             case DIRECT_MESSAGES:
                 url = "direct_messages" + EXTENSION;
                 break;
-            case FAVORITES_CREATE_BASE:
+            case CREATE_FAVORITE:
                 url = "favorites/create/";
                 break;
-            case FAVORITES_DESTROY_BASE:
+            case DESTROY_FAVORITE:
                 url = "favorites/destroy/";
                 break;
             case FOLLOW_USER:

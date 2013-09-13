@@ -15,7 +15,7 @@ public class ConnectionTwitter1p0 extends ConnectionTwitter {
 
     @Override
     public MbMessage createFavorite(String statusId) throws ConnectionException {
-        StringBuilder path = new StringBuilder(getApiPath(ApiRoutineEnum.FAVORITES_CREATE_BASE));
+        StringBuilder path = new StringBuilder(getApiPath(ApiRoutineEnum.CREATE_FAVORITE));
         path.append(statusId);
         path.append(EXTENSION);
         JSONObject jso = httpConnection.postRequest(path.toString());
@@ -24,7 +24,7 @@ public class ConnectionTwitter1p0 extends ConnectionTwitter {
 
     @Override
     public MbMessage destroyFavorite(String statusId) throws ConnectionException {
-        StringBuilder path = new StringBuilder(getApiPath(ApiRoutineEnum.FAVORITES_DESTROY_BASE));
+        StringBuilder path = new StringBuilder(getApiPath(ApiRoutineEnum.DESTROY_FAVORITE));
         path.append(statusId);
         path.append(EXTENSION);
         JSONObject jso = httpConnection.postRequest(path.toString());

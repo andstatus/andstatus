@@ -136,7 +136,7 @@ class ConnectionPumpio extends Connection {
         }
     }
     
-    protected static Connection fromConnectionDataProtected(OriginConnectionData connectionData) {
+    protected static Connection fromConnectionData2(OriginConnectionData connectionData) {
         return new ConnectionPumpio(connectionData);
     }
 
@@ -153,7 +153,12 @@ class ConnectionPumpio extends Connection {
             case STATUSES_HOME_TIMELINE:
                 url = "user/%nickname%/inbox";
                 break;
+            case CREATE_FAVORITE:
+            case DESTROY_FAVORITE:
+            case FOLLOW_USER:
+            case STATUSES_DESTROY:
             case STATUSES_UPDATE:
+            case STATUSES_USER_TIMELINE:
                 url = "user/%nickname%/feed";
                 break;
             default:
@@ -234,50 +239,46 @@ class ConnectionPumpio extends Connection {
         }
     }
     
-    /**
-     * @return not null
-     */
-    private JSONArray getRequestAsArray(String path) throws ConnectionException {
-        JSONObject jso = httpConnection.getRequest(path);
-        JSONArray jsa = null;
-        if (jso == null) {
-            throw new ConnectionException("Response is null");
-        }
-        if (jso.has("items")) {
-            try {
-                jsa = jso.getJSONArray("items");
-            } catch (JSONException e) {
-                throw new ConnectionException("'items' is not an array?!");
-            }
-        } else {
-            try {
-                MyLog.d(TAG, "Response from server: " + jso.toString(4));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            throw new ConnectionException("No array was returned");
-        }
-        return jsa;
-    }
-    
     @Override
     public MbMessage destroyFavorite(String statusId) throws ConnectionException {
-        // TODO Method stub
-        return MbMessage.getEmpty();
+        return verbWithMessage("unfavorite", statusId);
     }
 
     @Override
     public MbMessage createFavorite(String statusId) throws ConnectionException {
-        // TODO Method stub
-        return MbMessage.getEmpty();
+        return verbWithMessage("favorite", statusId);
     }
 
     @Override
     public boolean destroyStatus(String statusId) throws ConnectionException {
-        // TODO Method stub
-        return false;
+        MbMessage message = verbWithMessage("delete", statusId);
+        return !message.isEmpty();
     }
 
+    private MbMessage verbWithMessage(String verb, String statusId) throws ConnectionException {
+        return messageFromJson(verbWithObject(verb, statusId));
+    }
+
+    private JSONObject verbWithObject(String verb, String objectId) throws ConnectionException {
+        JSONObject jso = null;
+        try {
+            JSONObject activity = newActivityOfThisAccount(verb);
+            
+            JSONObject obj = new JSONObject();
+            obj.put("id", objectId);
+            obj.put("objectType", oidToObjectType(objectId));
+            activity.put("object", obj);
+
+            jso = httpConnection.postRequest(getApiPathForThisAccount(ApiRoutineEnum.STATUSES_UPDATE), activity);
+            if (jso != null && MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                MyLog.v(TAG, "verb '" + verb + "' object id='" + objectId + "' " + jso.toString(2));
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(TAG, e, jso, "Error '" + verb + "' object id='" + objectId + "'");
+        }
+        return jso;
+    }
+    
     @Override
     public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
         // TODO Method stub
@@ -292,23 +293,9 @@ class ConnectionPumpio extends Connection {
 
     @Override
     public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
-        JSONObject activity = new JSONObject();
+        JSONObject activity = null;
         try {
-            activity.put("objectType", "activity");
-            activity.put("verb", "post");
-
-            JSONObject generator = new JSONObject();
-            generator.put("id", APPLICATION_ID);
-            generator.put("displayName", HttpConnection.USER_AGENT);
-            generator.put("objectType", "application");
-            activity.put("generator", generator);
-            
-            JSONObject thePublic = new JSONObject();
-            thePublic.put("id", "http://activityschema.org/collection/public");
-            thePublic.put("objectType", "collection");
-            JSONArray to = new JSONArray();
-            to.put(thePublic);
-            activity.put("to", to);
+            activity = newActivityOfThisAccount("post");
             
             JSONObject comment = new JSONObject();
             comment.put("objectType", "comment");
@@ -319,14 +306,9 @@ class ConnectionPumpio extends Connection {
                 inReplyToObject.put("objectType", oidToObjectType(inReplyToId));
                 comment.put("inReplyTo", inReplyToObject);
             }
-            
-            JSONObject author = new JSONObject();
-            author.put("objectType", "person");
-            author.put("id", getAccountUserOid());
-            comment.put("author", author);
+            comment.put("author", activity.getJSONObject("actor"));
 
             activity.put("object", comment);
-            activity.put("actor", author);
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(TAG, e, activity, "Error posting message '" + message + "'");
         }
@@ -334,11 +316,39 @@ class ConnectionPumpio extends Connection {
         JSONObject jso = httpConnection.postRequest(getApiPathForThisAccount(ApiRoutineEnum.STATUSES_UPDATE), activity);
         return messageFromJson(jso);
     }
+
+    private JSONObject newActivityOfThisAccount(String verb) throws JSONException {
+        JSONObject activity = new JSONObject();
+        activity.put("objectType", "activity");
+        activity.put("verb", verb);
+
+        JSONObject generator = new JSONObject();
+        generator.put("id", APPLICATION_ID);
+        generator.put("displayName", HttpConnection.USER_AGENT);
+        generator.put("objectType", "application");
+        activity.put("generator", generator);
+        
+        JSONObject thePublic = new JSONObject();
+        thePublic.put("id", "http://activityschema.org/collection/public");
+        thePublic.put("objectType", "collection");
+        JSONArray to = new JSONArray();
+        to.put(thePublic);
+        activity.put("to", to);
+        
+        JSONObject author = new JSONObject();
+        author.put("objectType", "person");
+        author.put("id", getAccountUserOid());
+
+        activity.put("actor", author);
+        return activity;
+    }
     
     String oidToObjectType(String oid) {
         String objectType = "";
         if (oid.contains("/comment/")) {
             objectType = "comment";
+        } else if (oid.startsWith("acct:")) {
+            objectType = "person";
         } else if (oid.contains("/note/")) {
             objectType = "note";
         } else if (oid.contains("/notice/")) {
@@ -408,7 +418,7 @@ class ConnectionPumpio extends Connection {
             builder.appendQueryParameter("count",String.valueOf(fixedDownloadLimit(limit)));
         }
         url = builder.build().toString();
-        JSONArray jArr = getRequestAsArray(url);
+        JSONArray jArr = httpConnection.getRequestAsArray(url);
         List<MbMessage> timeline = new ArrayList<MbMessage>();
         if (jArr != null) {
             // Read the activities in chronological order
@@ -607,10 +617,13 @@ class ConnectionPumpio extends Connection {
     
     @Override
     public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
-        // TODO Method stub
-        return MbUser.getEmpty();
+        return verbWithUser(follow ? "follow" : "unfollow", userId);
     }
 
+    private MbUser verbWithUser(String verb, String userId) throws ConnectionException {
+        return userFromJson(verbWithObject(verb, userId));
+    }
+    
     @Override
     public MbUser getUser(String userId) throws ConnectionException {
         // TODO Method stub

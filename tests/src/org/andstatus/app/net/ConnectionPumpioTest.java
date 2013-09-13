@@ -30,18 +30,20 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         connection = new ConnectionPumpio(connectionData);
     }
     
-    public void test_oidToObjectType() {
+    public void testOidToObjectType() {
         String oids[] = {"https://identi.ca/api/activity/L4v5OL93RrabouQc9_QGfg", 
                 "https://identi.ca/api/comment/ibpUqhU1TGCE2yHNbUv54g",
                 "https://identi.ca/api/note/nlF5jl1HQciIs_zP85EeYg",
                 "https://identi.ca/obj/ibpcomment",
                 "http://identi.ca/notice/95772390",
+                "acct:t131t@identi.ca",
                 "http://identi.ca/user/46155"};
         String objectTypes[] = {"activity", 
                 "comment", 
                 "note",
                 "unknown object type: https://identi.ca/obj/ibpcomment",
                 "note",
+                "person",
                 "person"};
         for (int ind=0; ind < oids.length; ind++) {
             String oid = oids[ind];
@@ -50,7 +52,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         }
     }
 
-    public void test_usernameToHost() {
+    public void testUsernameToHost() {
         String usernames[] = {"t131t@identi.ca", 
                 "somebody@example.com",
                 "https://identi.ca/api/note/nlF5jl1HQciIs_zP85EeYg",
