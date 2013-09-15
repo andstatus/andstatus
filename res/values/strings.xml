@@ -241,7 +241,8 @@
 	<string name="summary_preference_use_avatars_off">User avatars will not be displayed</string>
 	<string name="summary_preference_use_avatars_on">User avatars will be displayed</string>
 	<string name="summary_preference_username">Your username in the Microblogging system</string>
-    <string name="summary_preference_verify_credentials">This User account is verified and enabled. Tap here to verify the user\'s credentials again.</string>
+	<string name="summary_preference_username_pumpio">Your username in the Microblogging system, including  \"@host\" e.g. andstatus@identi.ca</string>
+	<string name="summary_preference_verify_credentials">This User account is verified and enabled. Tap here to verify the user\'s credentials again.</string>
     <string name="summary_preference_verify_credentials_failed">Verification failed. Tap here to verify credentials and enable this User Account</string>
 	<string name="summary_preference_vibration_off">Vibration is turned off</string>
 	<string name="summary_preference_vibration_on">Vibrate on incoming message</string>

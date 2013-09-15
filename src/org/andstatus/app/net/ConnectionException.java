@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net;
 
+import android.text.TextUtils;
+
 import org.andstatus.app.util.MyLog;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +33,8 @@ public class ConnectionException extends Exception {
         UNSUPPORTED_API,
         NOT_FOUND,
         AUTHENTICATION_ERROR,
-        CREDENTIALS_OF_OTHER_USER;
+        CREDENTIALS_OF_OTHER_USER,
+        NO_CLIENT_KEYS_FOR_HOST;
         
         public static StatusCode fromResponseCode(int responseCode) {
             if (responseCode==404) {
@@ -42,7 +45,8 @@ public class ConnectionException extends Exception {
         }
     }
     private StatusCode statusCode = StatusCode.UNKNOWN;
-    protected boolean isHardError = false;
+    private boolean isHardError = false;
+    private String host = "";
 
     public static ConnectionException loggedJsonException(String TAG, JSONException e, JSONObject jso, String detailMessage) throws ConnectionException {
         MyLog.d(TAG, detailMessage + ": " + e.getMessage());
@@ -61,10 +65,13 @@ public class ConnectionException extends Exception {
             return new ConnectionException(detailMessage);
         }
     }
+
+    public static ConnectionException fromStatusCodeAndHost(StatusCode statusCode, String host, final String detailMessage) {
+        ConnectionException e = new ConnectionException(statusCode, detailMessage);
+        e.host = host;
+        return e;
+    }
     
-	/**
-	 * @param detailMessage
-	 */
 	public ConnectionException(String detailMessage) {
 		super(detailMessage);
 	}
@@ -72,6 +79,14 @@ public class ConnectionException extends Exception {
     public ConnectionException(StatusCode statusCode, final String detailMessage) {
         super(detailMessage);
         this.statusCode = statusCode;
+        switch (statusCode) {
+            case UNKNOWN:
+            case NOT_FOUND:
+                break;
+            default:
+                isHardError = true;
+                break;
+        }
     }
 
     public StatusCode getStatusCode() {
@@ -88,10 +103,18 @@ public class ConnectionException extends Exception {
 
     @Override
     public String toString() {
-        return this.statusCode + " " + super.toString();
+        return this.statusCode + (isHardError ? "; hard" : "; soft") + (TextUtils.isEmpty(host) ? "" : "; host=" + host) + "; " + super.toString();
+    }
+
+    public void setHardError(boolean isHardError) {
+        this.isHardError = isHardError;
     }
 
     public boolean isHardError() {
         return isHardError;
+    }
+    
+    public String getHost() {
+        return host;
     }
 }

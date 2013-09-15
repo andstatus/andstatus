@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.origin;
+
+package org.andstatus.app.net;
 
 /**
  * Default keys for OAuth {@link org.andstatus.app.origin.Origin} 
@@ -21,7 +22,7 @@ package org.andstatus.app.origin;
  */
 public interface OAuthClientKeysStrategy {
     
-    void initialize(OriginConnectionData connectionData);
+    void initialize(HttpConnectionData connectionData);
     /**
      * @return not null, empty if no pre-registered key exist
      */

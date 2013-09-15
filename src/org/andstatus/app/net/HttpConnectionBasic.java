@@ -1,11 +1,26 @@
+/*
+ * Copyright (C) 2011-2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2008 Torgny Bjers
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.net;
 
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -29,16 +44,12 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
     private static final String TAG = HttpConnectionBasic.class.getSimpleName();
     protected String mPassword;
 
-    public HttpConnectionBasic(OriginConnectionData connectionData) {
-        this.connectionData = connectionData;
-    }
-    
     @Override
-    public void setAccountData(AccountDataReader dr) {
-        super.setAccountData(dr);
-        mPassword = dr.getDataString(Connection.KEY_PASSWORD, "");
-    }
-
+    protected void setConnectionData(HttpConnectionData connectionData) {
+        super.setConnectionData(connectionData);
+        mPassword = connectionData.dataReader.getDataString(Connection.KEY_PASSWORD, "");
+    }  
+    
     @Override
     protected JSONObject postRequest(String path) throws ConnectionException {
         return new HttpApacheUtils(this).postRequest(path);

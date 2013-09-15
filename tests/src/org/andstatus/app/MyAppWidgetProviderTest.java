@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.andstatus.app;
 
 import android.app.AlarmManager;
@@ -195,9 +196,9 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	msgType = CommandEnum.NOTIFY_HOME_TIMELINE;
     	updateWidgets(numTweets, msgType);
     	
-    	// 15 seconds to complete updates
+    	// Some seconds to complete updates
     	// Shorter period sometimes doesn't work (processes are being closed...)
-    	Thread.sleep(25000);
+    	Thread.sleep(1000);
     }
     
 	/** 
@@ -288,7 +289,8 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 			this.msgType = msgType;
 		}
 		
-		public void run() {
+		@Override
+        public void run() {
 	    	Context context = getInstrumentation().getContext();
 
 	    	Log.i(TAG,"Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);

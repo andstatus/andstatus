@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.net;
 
 import android.net.Uri;
@@ -5,7 +21,7 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.andstatus.app.origin.OAuthClientKeys;
+import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
@@ -32,7 +48,7 @@ import java.util.Locale;
  * Implementation of pump.io API: <a href="https://github.com/e14n/pump.io/blob/master/API.md">https://github.com/e14n/pump.io/blob/master/API.md</a>  
  * @author yvolk
  */
-class ConnectionPumpio extends Connection {
+public class ConnectionPumpio extends Connection {
     private static final String TAG = ConnectionPumpio.class.getSimpleName();
 
     private enum PumpioObjectType {
@@ -71,18 +87,19 @@ class ConnectionPumpio extends Connection {
         
     }
 
-    public ConnectionPumpio(OriginConnectionData connectionData) {
+    @Override
+    public void enrichConnectionData(OriginConnectionData connectionData) {
+        super.enrichConnectionData(connectionData);
         if (!TextUtils.isEmpty(connectionData.accountUsername)) {
             connectionData.host = usernameToHost(connectionData.accountUsername);
         }
         if (connectionData.isOAuth) {
-            connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData);
-            httpConnection = new HttpConnectionOAuthJavaNet(connectionData);
+            connectionData.httpConnectionClass = HttpConnectionOAuthJavaNet.class;
         } else {
             throw new IllegalArgumentException(TAG + " basic OAuth is not supported");
         }
     }
-
+    
     /**
      * Partially borrowed from the "Impeller" code !
      */
@@ -134,10 +151,6 @@ class ConnectionPumpio extends Connection {
         if (httpConnection.connectionData.oauthClientKeys.areKeysPresent()) {
             MyLog.v(TAG, "Registered client for " + httpConnection.connectionData.host);
         }
-    }
-    
-    protected static Connection fromConnectionData2(OriginConnectionData connectionData) {
-        return new ConnectionPumpio(connectionData);
     }
 
     @Override
@@ -406,6 +419,29 @@ class ConnectionPumpio extends Connection {
         if (TextUtils.isEmpty(nickname)) {
             throw new IllegalArgumentException("getTimeline: wrong userId=" + userId);
         }
+        String host = usernameToHost(userOidToUsername(userId));
+        HttpConnection httpConnection1 = httpConnection;
+        if (TextUtils.isEmpty(host)) {
+            throw new IllegalArgumentException("getTimeline: host is empty for the userId=" + userId);
+        } else if (host.compareToIgnoreCase(httpConnection.connectionData.host) != 0) {
+            MyLog.v(TAG, "Requesting data from the host: " + host);
+            HttpConnectionData connectionData1 = httpConnection.connectionData.newCopy();
+            connectionData1.host = host;
+            try {
+                httpConnection1 = httpConnection.getClass().newInstance();
+                httpConnection1.setConnectionData(connectionData1);
+            } catch (InstantiationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        if (!httpConnection1.connectionData.areOAuthClientKeysPresent()) {
+            throw new ConnectionException(StatusCode.UNSUPPORTED_API, "No client keys for the host yet: " + host);
+        }
+        
         url = url.replace("%nickname%", nickname);
         Uri sUri = Uri.parse(url);
         Uri.Builder builder = sUri.buildUpon();
@@ -418,7 +454,7 @@ class ConnectionPumpio extends Connection {
             builder.appendQueryParameter("count",String.valueOf(fixedDownloadLimit(limit)));
         }
         url = builder.build().toString();
-        JSONArray jArr = httpConnection.getRequestAsArray(url);
+        JSONArray jArr = httpConnection1.getRequestAsArray(url);
         List<MbMessage> timeline = new ArrayList<MbMessage>();
         if (jArr != null) {
             // Read the activities in chronological order

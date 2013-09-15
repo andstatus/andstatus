@@ -1,20 +1,38 @@
+/*
+ * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.net;
 
-import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-abstract class HttpConnection {
+public abstract class HttpConnection {
     protected static final Integer DEFAULT_GET_REQUEST_TIMEOUT = 15000;
     protected static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 20000;
     
-    protected OriginConnectionData connectionData;
+    protected HttpConnectionData connectionData;
 
     static final String USER_AGENT = "AndStatus";
  
     protected abstract JSONObject postRequest(String path, JSONObject jso) throws ConnectionException;
+
+    protected void setConnectionData(HttpConnectionData connectionData) {
+        this.connectionData = connectionData;
+    }  
     
     public String pathToUrl(String path) {
         if (path.contains("://")) {
@@ -33,13 +51,12 @@ abstract class HttpConnection {
     
     public abstract void clearAuthInformation();
 
-    public void setAccountData(AccountDataReader dr) {}
-    
-    protected boolean isOAuth() {
-        return connectionData.isOAuth;
+    public void clearClientKeys() {
+        if (connectionData.areOAuthClientKeysPresent()) {
+            connectionData.oauthClientKeys.clear();
+        }
     }
     
-
     /**
      * Do we need password to be set?
      * By default password is not needed and is ignored
@@ -86,6 +103,5 @@ abstract class HttpConnection {
 
     String getUserSecret() {
         return "";
-    }  
-    
+    }
 }

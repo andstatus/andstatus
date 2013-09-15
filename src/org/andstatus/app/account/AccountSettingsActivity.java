@@ -220,11 +220,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 || ma.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
             mEditTextUsername.setText(ma.getUsername());
         }
-        StringBuilder summary = new StringBuilder(this.getText(R.string.summary_preference_username));
+        StringBuilder summary = new StringBuilder(this.getText(ma.alternativeTermForResourceId(R.string.summary_preference_username)));
         if (ma.getUsername().length() > 0) {
             summary.append(": " + ma.getUsername());
         } else {
-            summary.append(": (" + this.getText(R.string.not_set) + ")");
+            summary.append(" (" + this.getText(R.string.not_set) + ")");
         }
         mEditTextUsername.setSummary(summary);
         mEditTextUsername.setEnabled(!state.builder.isPersistent() && !ma.isUsernameValidToStartAddingNewAccount());
@@ -461,12 +461,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 dlg = super.onCreateDialog(id);
         }
         return dlg;
-    }
-
-    @Override
-    protected void onPrepareDialog(int id, Dialog dialog) {
-        super.onPrepareDialog(id, dialog);
-        // TODO:
     }
 
     /**

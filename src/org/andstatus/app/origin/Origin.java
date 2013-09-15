@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.andstatus.app.origin;
 
 import android.net.Uri;
@@ -22,45 +23,108 @@ import android.text.style.URLSpan;
 import android.text.util.Linkify;
 import android.util.Log;
 
-import org.andstatus.app.R;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.net.Connection.ApiEnum;
+import org.andstatus.app.net.ConnectionEmpty;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 /**
  *  Microblogging system (twitter.com, identi.ca, ... ) where messages are being created
  *  (it's the "Origin" of the messages). 
- *  TODO: Currently the class is almost a stub and serves for TWO predefined origins only :-)
+ *  TODO: Currently the class is almost a stub and serves for several predefined origins only :-)
  * @author yvolk
  *
  */
 public class Origin {
     private static final String TAG = Origin.class.getSimpleName();
 
-    /**
-     * Predefined ID for Twitter system 
-     * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
-     */
-    public static long ORIGIN_ID_TWITTER = 1;
+    public enum OriginEnum {
+        /**
+         * Predefined Origin for Twitter system 
+         * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
+         */
+        TWITTER(1, "twitter", ApiEnum.TWITTER1P1, OriginTwitter.class),
+        /**
+         * Predefined Origin for the pump.io system 
+         * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
+         * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
+         * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
+         */
+        PUMPIO(2, "pump.io", ApiEnum.PUMPIO, OriginPumpio.class),
+        STATUSNET(3, "status.nat", ApiEnum.STATUSNET_TWITTER, OriginStatusNet.class),
+        UNKNOWN(0,"unknownMbSystem", ApiEnum.UNKNOWN_API, Origin.class);
+        
+        private long id;
+        private String name;
+        private ApiEnum api;
+        private Class<? extends Origin> originClass;
+        
+        private OriginEnum(long id, String name, ApiEnum api, Class<? extends Origin> originClass) {
+            this.id = id;
+            this.name = name;
+            this.api = api;
+            this.originClass = originClass;
+        }
+
+        public long getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public ApiEnum getApi() {
+            return api;
+        }
+
+        public Origin newOrigin() {
+            Origin origin = null;
+            try {
+                origin = originClass.newInstance();
+                origin.id = getId();
+                origin.name = getName();
+                origin.api = getApi();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return origin;        
+        }
+        
+        @Override
+        public String toString() {
+            return id + "-" + name;
+        }
+        
+        public static OriginEnum fromId( long id) {
+            OriginEnum originEnum = UNKNOWN;
+            for(OriginEnum oe : values()) {
+                if (oe.id == id) {
+                    originEnum = oe;
+                    break;
+                }
+            }
+            return originEnum;
+        }
+
+        public static OriginEnum fromName( String name) {
+            OriginEnum originEnum = UNKNOWN;
+            for(OriginEnum oe : values()) {
+                if (oe.name.equalsIgnoreCase(name)) {
+                    originEnum = oe;
+                    break;
+                }
+            }
+            return originEnum;
+        }
+    }
     
     /**
-     * Default value for the Originating system mId.
+     * Default Originating system
      * TODO: Create a table of these "Origins" ?!
      */
-    public static long ORIGIN_ID_DEFAULT = ORIGIN_ID_TWITTER;
-    /**
-     * Predefined id for the pump.io system 
-     * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
-     * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
-     * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
-     */
-    public static long ORIGIN_ID_PUMPIO = 2;
-    /**
-     * Name of the default Originating system (it is unique and permanent as an ID).
-     */
-    public static final String ORIGIN_NAME_TWITTER = "twitter";
-    public static final String ORIGIN_NAME_PUMPIO = "pump.io";
-    public static final String ORIGIN_NAME_UNKNOWN = "unknownMbSystem";
+    public static OriginEnum ORIGIN_ENUM_DEFAULT = OriginEnum.TWITTER;
 
     /** 
      * The URI is consistent with "scheme" and "host" in AndroidManifest
@@ -79,8 +143,9 @@ public class Origin {
      */
     private static int LINK_LENGTH = 23;
     
-    protected String name = ORIGIN_NAME_UNKNOWN;
+    protected String name = OriginEnum.UNKNOWN.getName();
     protected long id = 0;
+    protected ApiEnum api = ApiEnum.UNKNOWN_API;
 
     /**
      * Default OAuth setting
@@ -100,12 +165,10 @@ public class Origin {
     protected int maxCharactersInMessage = CHARS_MAX_DEFAULT;
     protected String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     
-    protected OriginConnectionData connectionData = new OriginConnectionData();
-
     public static Origin toExistingOrigin(String originName_in) {
         Origin origin = fromOriginName(originName_in);
         if (origin.getId() == 0) {
-            origin = fromOriginId(Origin.ORIGIN_ID_DEFAULT);
+            origin = fromOriginId(ORIGIN_ENUM_DEFAULT.getId());
         }
         return origin;
     }
@@ -125,7 +188,7 @@ public class Origin {
     }
 
     public ApiEnum getApi() {
-        return connectionData.api;
+        return api;
     }
 
     /**
@@ -162,23 +225,11 @@ public class Origin {
     }
     
     public static Origin fromOriginId(long id) {
-        return fromOriginName(id == ORIGIN_ID_TWITTER ? ORIGIN_NAME_TWITTER :
-                id == ORIGIN_ID_PUMPIO ? ORIGIN_NAME_PUMPIO :
-                        ORIGIN_NAME_UNKNOWN);
+        return OriginEnum.fromId(id).newOrigin();
     }
 
     public static Origin fromOriginName(String name) {
-        Origin origin = null;
-        // TODO: Persistence for Origins
-        if (name.compareToIgnoreCase(ORIGIN_NAME_TWITTER) == 0) {
-            origin = new OriginTwitter();
-        } else if (name.compareToIgnoreCase(ORIGIN_NAME_PUMPIO) == 0) {
-            origin = new OriginPumpio();
-        } else {
-            origin = new Origin();
-        }
-        origin.connectionData.originId = origin.id;
-        return origin;
+        return OriginEnum.fromName(name).newOrigin();
     }
 
     /**
@@ -206,34 +257,8 @@ public class Origin {
         return (maxCharactersInMessage - messageLength);
     }
     
-    /**
-     * In order to comply with Twitter's "Developer Display Requirements" 
-     *   https://dev.twitter.com/terms/display-requirements
-     * @param resId
-     * @return Id of alternative (proprietary) term/phrase
-     */
     public int alternativeTermForResourceId(int resId) {
-        int resId_out = resId;
-        if (getId() == ORIGIN_ID_TWITTER) {
-            switch (resId) {
-                case R.string.button_create_message:
-                    resId_out = R.string.button_create_message_twitter;
-                    break;
-                case R.string.menu_item_destroy_reblog:
-                    resId_out = R.string.menu_item_destroy_reblog_twitter;
-                    break;
-                case R.string.menu_item_reblog:
-                    resId_out = R.string.menu_item_reblog_twitter;
-                    break;
-                case R.string.message:
-                    resId_out = R.string.message_twitter;
-                    break;
-                case R.string.reblogged_by:
-                    resId_out = R.string.reblogged_by_twitter;
-                    break;
-            }
-        }
-        return resId_out;
+        return resId;
     }
     
     /**
@@ -242,20 +267,19 @@ public class Origin {
      * @return URL
      */
     public String messagePermalink(String userName, String messageOid) {
-        String url = "";
-        if (getId() == ORIGIN_ID_TWITTER) {
-            url = "https://twitter.com/"
-                    + userName 
-                    + "/status/"
-                    + messageOid;
-        } else if (getId() == ORIGIN_ID_PUMPIO) {
-            url = messageOid; 
-        } 
-        
-        return url;
+        return "";
     }
 
-    public OriginConnectionData getConnectionData() {
+    public OriginConnectionData getConnectionData(TriState triState) {
+        OriginConnectionData connectionData = new OriginConnectionData();
+        connectionData.api = api;
+        connectionData.originId = id;
+        connectionData.isOAuth = triState.toBoolean(isOAuthDefault);
+        if (connectionData.isOAuth != isOAuthDefault) {
+            if (!canChangeOAuth) {
+                connectionData.isOAuth = isOAuthDefault;
+            }
+        }
         return connectionData;
     }
 }

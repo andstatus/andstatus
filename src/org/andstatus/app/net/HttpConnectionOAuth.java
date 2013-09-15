@@ -1,12 +1,26 @@
+/*
+ * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.net;
 
 import android.text.TextUtils;
 
-import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 
 abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProvider {
@@ -26,20 +40,17 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
      */
     private String userSecret;
 
-    protected HttpConnectionOAuth(OriginConnectionData connectionData_in) {
-        connectionData = connectionData_in;
-    }
-    
     @Override
-    public void setAccountData(AccountDataReader dr) {
-        super.setAccountData(dr);
+    protected void setConnectionData(HttpConnectionData connectionData) {
+        super.setConnectionData(connectionData);
+        connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData);
         // We look for saved user keys
-        if (dr.dataContains(USER_TOKEN) && dr.dataContains(USER_SECRET)) {
-            userToken = dr.getDataString(USER_TOKEN, null);
-            userSecret = dr.getDataString(USER_SECRET, null);
+        if (connectionData.dataReader.dataContains(USER_TOKEN) && connectionData.dataReader.dataContains(USER_SECRET)) {
+            userToken = connectionData.dataReader.getDataString(USER_TOKEN, null);
+            userSecret = connectionData.dataReader.getDataString(USER_SECRET, null);
             setUserTokenWithSecret(userToken, userSecret);
         }
-    }
+    }  
     
     /**
      * @see org.andstatus.app.net.Connection#getCredentialsPresent()
@@ -55,11 +66,6 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
         return yes;
     }
 
-    @Override
-    public boolean isOAuth() {
-        return true;
-    }
-    
     protected String getApiUrl(ApiRoutineEnum routine) {
         String url;
         switch(routine) {

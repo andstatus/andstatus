@@ -513,7 +513,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         Log.i(TAG, "Creating tables");
         db.execSQL("CREATE TABLE " + MSG_TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                + Msg.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ID_DEFAULT + " NOT NULL," 
+                + Msg.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ENUM_DEFAULT + " NOT NULL," 
                 + Msg.MSG_OID + " STRING," 
                 + Msg.AUTHOR_ID + " INTEGER," 
                 + Msg.SENDER_ID + " INTEGER," 
@@ -547,7 +547,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         
         db.execSQL("CREATE TABLE " + USER_TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                + User.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ID_DEFAULT + " NOT NULL," 
+                + User.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ENUM_DEFAULT + " NOT NULL," 
                 + User.USER_OID + " TEXT," 
                 + User.USERNAME + " TEXT NOT NULL," 
                 + User.REAL_NAME + " TEXT," 

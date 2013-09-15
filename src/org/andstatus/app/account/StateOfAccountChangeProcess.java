@@ -142,7 +142,7 @@ class StateOfAccountChangeProcess {
         
         if (state.builder == null) {
             if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName(AccountName.ORIGIN_SEPARATOR + Origin.ORIGIN_NAME_TWITTER, TriState.UNKNOWN);
+                state.builder = MyAccount.Builder.newOrExistingFromAccountName(AccountName.ORIGIN_SEPARATOR + Origin.ORIGIN_ENUM_DEFAULT.getName(), TriState.UNKNOWN);
             } else {
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyAccount.getCurrentAccountName(), TriState.UNKNOWN);
             }

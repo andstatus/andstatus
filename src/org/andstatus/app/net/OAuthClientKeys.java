@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.origin;
 
-import android.hardware.Camera.Area;
+package org.andstatus.app.net;
+
 import android.text.TextUtils;
 
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -49,7 +50,7 @@ public class OAuthClientKeys {
     
     private OAuthClientKeys() {}
 
-    public static OAuthClientKeys fromConnectionData(OriginConnectionData connectionData) {
+    public static OAuthClientKeys fromConnectionData(HttpConnectionData connectionData) {
         OAuthClientKeys keys = new OAuthClientKeys();
         if (!noSecretClass) {
             // Try to load the application's secret keys first

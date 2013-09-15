@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.origin;
+
+package org.andstatus.app.net;
 
 import android.text.TextUtils;
 
 import org.andstatus.app.data.MyPreferences;
-
 
 /**
  * CLient Keys, obtained dynamically for each host and Origin.
@@ -35,7 +35,7 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
     String consumerSecret = "";
 
     @Override
-    public void initialize(OriginConnectionData connectionData) {
+    public void initialize(HttpConnectionData connectionData) {
         keySuffix = connectionData.originId + "-" + connectionData.host; 
         keyConsumerKey = KEY_OAUTH_CLIENT_KEY + keySuffix;
         keyConsumerSecret = KEY_OAUTH_CLIENT_SECRET + keySuffix;

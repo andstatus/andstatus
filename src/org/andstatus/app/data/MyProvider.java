@@ -266,7 +266,9 @@ public class MyProvider extends ContentProvider {
                      * Add default values for missed required fields
                      */
                     if (!values.containsKey(Msg.AUTHOR_ID))
-                        values.put(Msg.AUTHOR_ID, values.get(Msg.SENDER_ID).toString());
+                        if (values.containsKey(Msg.SENDER_ID)) {
+                            values.put(Msg.AUTHOR_ID, values.get(Msg.SENDER_ID).toString());
+                        }
                     if (!values.containsKey(Msg.BODY))
                         values.put(Msg.BODY, "");
                     if (!values.containsKey(Msg.VIA))

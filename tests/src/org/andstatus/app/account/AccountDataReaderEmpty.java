@@ -16,19 +16,24 @@
 
 package org.andstatus.app.account;
 
-/**
- * Interface that allows to read the {@link MyAccount}'s persistent data (including account's connection data) 
- */
-public interface AccountDataReader {
+public class AccountDataReaderEmpty implements AccountDataReader {
 
-    public boolean dataContains(String key);
-    
-    /**
-     * @param key Key Name
-     * @param defValue Default value
-     * @return Returns null only in case defValue is null
-     */
-    public String getDataString(String key, String defValue);
+    @Override
+    public boolean dataContains(String key) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-    public int getDataInt(String key, int defValue);    
+    @Override
+    public String getDataString(String key, String defValue) {
+        // TODO Auto-generated method stub
+        return "";
+    }
+
+    @Override
+    public int getDataInt(String key, int defValue) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
 }

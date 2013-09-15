@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.origin;
+
+package org.andstatus.app.net;
+
+import org.andstatus.app.origin.Origin.OriginEnum;
 
 /**
  * Keys of the "AndStatus-OpenSource" application.
@@ -23,13 +26,13 @@ public class OAuthClientKeysOpenSource implements OAuthClientKeysStrategy {
     private long originId = 0;
 
     @Override
-    public void initialize(OriginConnectionData connectionData) {
+    public void initialize(HttpConnectionData connectionData) {
         originId = connectionData.originId;
     }
 
     @Override
     public String getConsumerKey() {
-        if(originId == Origin.ORIGIN_ID_TWITTER) {
+        if(originId == OriginEnum.TWITTER.getId()) {
             return "XPHj81OgjphGlN6Jb55Kmg";
         } else {
             return "";
@@ -38,7 +41,7 @@ public class OAuthClientKeysOpenSource implements OAuthClientKeysStrategy {
     
     @Override
     public String getConsumerSecret() {
-        if(originId == Origin.ORIGIN_ID_TWITTER) {  
+        if(originId == OriginEnum.TWITTER.getId()) {  
             return "o2E5AYoDQhZf9qT7ctHLGihpq2ibc5bC4iFAOHURxw";
         } else {
             return "";

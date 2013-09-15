@@ -1,5 +1,3 @@
-package org.andstatus.app.data;
-
 /* 
  * Copyright (c) 2012-2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
@@ -15,6 +13,8 @@ package org.andstatus.app.data;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.andstatus.app.data;
 
 import java.util.Date;
 

@@ -28,7 +28,6 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
 
-import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Vector;
 
@@ -45,7 +44,6 @@ import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.net.OAuthConsumerAndProvider;
-import org.andstatus.app.origin.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
@@ -270,12 +268,12 @@ public class MyAccount implements AccountDataReader {
          * Loads account from userData 
          */
         private void loadFromUserData() {
-            String originName = Origin.ORIGIN_NAME_TWITTER;
+            String originName = Origin.ORIGIN_ENUM_DEFAULT.getName();
             String username = "";
             if (isPersistent()) {
                 myAccount.oAccountName = AccountName.fromAccountName(myAccount.androidAccount.name);
             } else {
-                originName = myAccount.getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER);
+                originName = myAccount.getDataString(KEY_ORIGIN_NAME, originName);
                 username = myAccount.getDataString(KEY_USERNAME, "");
                 myAccount.oAccountName = AccountName.fromOriginAndUserNames(originName, username);
             }
@@ -406,7 +404,7 @@ public class MyAccount implements AccountDataReader {
                     setDataString(KEY_USER_OID, myAccount.userOid);
                     changed = true;
                 }
-                if (myAccount.oAccountName.getOriginName().compareTo(myAccount.getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_NAME_TWITTER)) != 0) {
+                if (myAccount.oAccountName.getOriginName().compareTo(myAccount.getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_ENUM_DEFAULT.getName())) != 0) {
                     setDataString(KEY_ORIGIN_NAME, myAccount.oAccountName.getOriginName());
                     changed = true;
                 }
@@ -548,12 +546,19 @@ public class MyAccount implements AccountDataReader {
         
         private void setConnection() {
             Origin origin = myAccount.oAccountName.getOrigin();
-            myAccount.connectionData = origin.getConnectionData();
-            myAccount.connectionData.isOAuth = myAccount.isOAuth; 
-            myAccount.connectionData.accountUserOid = myAccount.userOid;
-            myAccount.connectionData.accountUsername = myAccount.getUsername();
-            myAccount.connection = Connection.fromConnectionData(myAccount.connectionData);
-            myAccount.connection.setAccountData(myAccount);
+            OriginConnectionData connectionData = origin.getConnectionData(TriState.fromBoolean(myAccount.isOAuth));
+            connectionData.accountUserOid = myAccount.userOid;
+            connectionData.accountUsername = myAccount.getUsername();
+            connectionData.dataReader = myAccount;
+            try {
+                myAccount.connection = connectionData.connectionClass.newInstance();
+                myAccount.connection.enrichConnectionData(connectionData);
+                myAccount.connection.setAccountData(connectionData);
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
 
         /**
@@ -634,9 +639,7 @@ public class MyAccount implements AccountDataReader {
         }
 
         public void clearClientKeys() {
-            if (myAccount.connectionData.areOAuthClientKeysPresent()) {
-                myAccount.connectionData.oauthClientKeys.clear();
-            }
+            myAccount.connection.clearClientKeys();
         }
     }
     
@@ -655,7 +658,6 @@ public class MyAccount implements AccountDataReader {
     
     private AccountName oAccountName = AccountName.fromAccountName("");
     private String userOid = "";
-    private OriginConnectionData connectionData = null;    
     private Connection connection = null;
     
     /**
@@ -687,38 +689,50 @@ public class MyAccount implements AccountDataReader {
 
     private long syncFrequencySeconds = 0;
     
-    /**
-     *  TODO: Use instance fields instead of ordinals (see [EffectiveJava] Item 31)
-     */
     public enum CredentialsVerificationStatus {
         /** 
          * NEVER - means that User was never successfully authenticated with current credentials.
          *  This is why we reset the state to NEVER every time credentials have been changed.
          */
-        NEVER, 
-        FAILED,
+        NEVER(1), 
+        FAILED(2),
         /** The User was successfully authenticated */
-        SUCCEEDED;
+        SUCCEEDED(3);
 
+        private int id;
+        
         /*
          * Methods to persist in SharedPreferences
          */
         private static final String KEY = "credentials_verified";
-
-        public static CredentialsVerificationStatus load(SharedPreferences sp) {
-            int ind = sp.getInt(KEY, NEVER.ordinal());
-            CredentialsVerificationStatus cv = CredentialsVerificationStatus.values()[ind];
-            return cv;
-        }
         
-        public static CredentialsVerificationStatus load(AccountDataReader dr) {
-            int ind = dr.getDataInt(KEY, NEVER.ordinal());
-            CredentialsVerificationStatus cv = CredentialsVerificationStatus.values()[ind];
-            return cv;
+        private CredentialsVerificationStatus(int id) {
+            this.id = id;
         }
         
         public void put(AccountDataWriter dw) {
-            dw.setDataInt(KEY, ordinal());
+            dw.setDataInt(KEY, id);
+        }
+        
+        public static CredentialsVerificationStatus load(SharedPreferences sp) {
+            int id = sp.getInt(KEY, NEVER.id);
+            return fromId(id);
+        }
+
+        public static CredentialsVerificationStatus fromId( long id) {
+            CredentialsVerificationStatus status = NEVER;
+            for(CredentialsVerificationStatus status1 : values()) {
+                if (status1.id == id) {
+                    status = status1;
+                    break;
+                }
+            }
+            return status;
+        }
+        
+        public static CredentialsVerificationStatus load(AccountDataReader dr) {
+            int id = dr.getDataInt(KEY, NEVER.id);
+            return fromId(id);
         }
     }
 
@@ -970,7 +984,7 @@ public class MyAccount implements AccountDataReader {
     }
 
     private boolean isValid() {
-        return (oAccountName.isValid());
+        return (oAccountName.isValid() && connection != null);
     }
 
     public static void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
@@ -1283,7 +1297,7 @@ public class MyAccount implements AccountDataReader {
     }
     
     public boolean areClientKeysPresent() {
-        return (connectionData.areOAuthClientKeysPresent());
+        return (connection.areOAuthClientKeysPresent());
     }
     
     public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {

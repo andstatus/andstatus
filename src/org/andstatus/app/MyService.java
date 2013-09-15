@@ -1401,36 +1401,40 @@ public class MyService extends Service {
                         }
                     }
                     ok = false;
-
                     TimelineTypeEnum timelineType = atl[ind];
-                    MyLog.d(TAG, "Getting " + timelineType.save() + " for "
-                            + acc.getAccountName());
-
-                    TimelineDownloader fl = null;
-                    descr = "loading " + timelineType.save();
-                    fl = new TimelineDownloader(acc,
-                            MyService.this.getApplicationContext(),
-                            timelineType, userId);
-                    ok = fl.loadTimeline();
-                    downloadedCount += fl.totalMessagesDownloadedCount();
-                    switch (timelineType) {
-                        case MENTIONS:
-                            mentionsAdded += fl.newMentionsCount();
-                            break;
-                        case HOME:
-                            msgAdded += fl.newMessagesCount();
-                            mentionsAdded += fl.newMentionsCount();
-                            break;
-                        case DIRECT:
-                            directedAdded += fl.newMessagesCount();
-                            break;
-                        case FOLLOWING_USER:
-                        case USER:
-                            // Don't count anything for now...
-                            break;
-                        default:
-                            ok = false;
-                            Log.e(TAG, descr + " - not implemented");
+                    if (acc.getConnection().isApiSupported(timelineType.getConnectionApiRoutine())) {
+                        MyLog.d(TAG, "Getting " + timelineType.save() + " for "
+                                + acc.getAccountName());
+                        TimelineDownloader fl = null;
+                        descr = "loading " + timelineType.save();
+                        fl = new TimelineDownloader(acc,
+                                MyService.this.getApplicationContext(),
+                                timelineType, userId);
+                        ok = fl.loadTimeline();
+                        downloadedCount += fl.totalMessagesDownloadedCount();
+                        switch (timelineType) {
+                            case MENTIONS:
+                                mentionsAdded += fl.newMentionsCount();
+                                break;
+                            case HOME:
+                                msgAdded += fl.newMessagesCount();
+                                mentionsAdded += fl.newMentionsCount();
+                                break;
+                            case DIRECT:
+                                directedAdded += fl.newMessagesCount();
+                                break;
+                            case FOLLOWING_USER:
+                            case USER:
+                                // Don't count anything for now...
+                                break;
+                            default:
+                                ok = false;
+                                Log.e(TAG, descr + " - not implemented");
+                        }
+                    } else {
+                        MyLog.v(TAG, "Not supported " + timelineType.save() + " for "
+                                + acc.getAccountName());
+                        ok = true;
                     }
 
                     if (ok) {

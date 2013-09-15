@@ -18,7 +18,6 @@ package org.andstatus.app.net;
 
 import android.net.Uri;
 
-import org.andstatus.app.origin.OriginConnectionData;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -31,10 +30,6 @@ import java.util.List;
  */
 public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
     private static final String TAG = ConnectionTwitterStatusNet.class.getSimpleName();
-
-    protected ConnectionTwitterStatusNet(OriginConnectionData connectionData) {
-        super(connectionData);
-    }
 
     @Override
     public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {

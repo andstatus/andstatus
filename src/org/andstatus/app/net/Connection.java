@@ -20,7 +20,6 @@ package org.andstatus.app.net;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.Connection;
@@ -118,6 +117,7 @@ public abstract class Connection {
     }
 
     protected HttpConnection httpConnection;
+    private OriginConnectionData connectionData;
     
     protected Connection() {}
     
@@ -125,7 +125,7 @@ public abstract class Connection {
      * @return API of this Connection
      */
     public ApiEnum getApi() {
-        return httpConnection.connectionData.api;
+        return connectionData.api;
     }
 
     /**
@@ -143,7 +143,6 @@ public abstract class Connection {
             String detailMessage = "The API is not supported: '" + routine + "'";
             Log.e(this.getClass().getSimpleName(), detailMessage);
             ConnectionException e = new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " + detailMessage);
-            e.isHardError = true;
             throw e;
         } else {
             if (MyLog.isLoggable(null, Log.VERBOSE )) {
@@ -171,7 +170,7 @@ public abstract class Connection {
      * @return Does this connection use OAuth?
      */
     public boolean isOAuth() {
-        return httpConnection.isOAuth();
+        return connectionData.isOAuth;
     }
     
     /**
@@ -337,28 +336,18 @@ public abstract class Connection {
         return out;
     }
 
-    public static Connection fromConnectionData(OriginConnectionData connectionData) {
-        Connection connection;
-        switch (connectionData.api) {
-            case PUMPIO:
-                connection = ConnectionPumpio.fromConnectionData2(connectionData);
-                break;
-            default:
-                connection = ConnectionTwitter.fromConnectionData2(connectionData);
-        }
-        return connection;
-    }
-
-    public final void setAccountData(AccountDataReader dr) {
-        httpConnection.setAccountData(dr);
+    public final void setAccountData(OriginConnectionData connectionData) throws InstantiationException, IllegalAccessException {
+        this.connectionData = connectionData;
+        httpConnection = connectionData.httpConnectionClass.newInstance();
+        httpConnection.setConnectionData(HttpConnectionData.fromConnectionData(connectionData));
     }
 
     protected long getOriginId() {
-        return httpConnection.connectionData.originId;
+        return connectionData.originId;
     }
 
     protected String getAccountUserOid() {
-        return httpConnection.connectionData.accountUserOid;
+        return connectionData.accountUserOid;
     }
     
     public void clearAuthInformation() {
@@ -378,4 +367,14 @@ public abstract class Connection {
     }
 
     public void registerClient() {}
+
+    public void clearClientKeys() {
+        httpConnection.clearClientKeys();
+    }
+
+    public boolean areOAuthClientKeysPresent() {
+        return httpConnection.connectionData.areOAuthClientKeysPresent();
+    }
+
+    public void enrichConnectionData(OriginConnectionData connectionData2) { }
 }

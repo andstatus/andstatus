@@ -173,6 +173,10 @@ public class TimelineDownloader {
                 if (e.getStatusCode() != StatusCode.NOT_FOUND) {
                     throw e;
                 }
+                if (lastPosition.isEmpty()) {
+                    e.setHardError(true);
+                    throw e;
+                }
                 Log.d(TAG, "The timeline was not found, last position='" + lastPosition +"'");
                 lastPosition = TimelinePosition.getEmpty();
             }
