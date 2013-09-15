@@ -32,7 +32,7 @@ class HttpConnectionData {
     public OAuthClientKeys oauthClientKeys;
 
     public boolean areOAuthClientKeysPresent() {
-        return (oauthClientKeys != null & oauthClientKeys.areKeysPresent());
+        return (oauthClientKeys != null && oauthClientKeys.areKeysPresent());
     }
     
     static HttpConnectionData fromConnectionData(OriginConnectionData oConnectionData) {

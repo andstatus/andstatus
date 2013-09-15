@@ -295,7 +295,7 @@ public abstract class Connection {
      * Universal method for several Timeline Types...
      * @param userId For the {@link ApiRoutineEnum#STATUSES_USER_TIMELINE}, null for the other timelines
      */
-    public abstract List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
+    public abstract List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
             throws ConnectionException;
 
     /**

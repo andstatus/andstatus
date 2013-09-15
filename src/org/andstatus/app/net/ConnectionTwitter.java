@@ -196,7 +196,7 @@ public abstract class ConnectionTwitter extends Connection {
     }
 
     @Override
-    public List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
+    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
             throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         Uri sUri = Uri.parse(url);
@@ -211,14 +211,14 @@ public abstract class ConnectionTwitter extends Connection {
             builder.appendQueryParameter("user_id", userId);
         }
         JSONArray jArr = httpConnection.getRequestAsArray(builder.build().toString());
-        List<MbMessage> timeline = new ArrayList<MbMessage>();
+        List<MbTimelineItem> timeline = new ArrayList<MbTimelineItem>();
         if (jArr != null) {
             for (int index = 0; index < jArr.length(); index++) {
                 try {
                     JSONObject jso = jArr.getJSONObject(index);
-                    MbMessage mbMessage = messageFromJson(jso);
-                    if (!mbMessage.isEmpty()) {
-                        timeline.add(mbMessage);
+                    MbTimelineItem item = timelineItemFromJson(jso);
+                    if (!item.isEmpty()) {
+                        timeline.add(item);
                     }
                 } catch (JSONException e) {
                     throw ConnectionException.loggedJsonException(TAG, e, null, "Parsing timeline");
@@ -227,6 +227,14 @@ public abstract class ConnectionTwitter extends Connection {
         }
         MyLog.d(TAG, "getTimeline '" + url + "' " + timeline.size() + " messages");
         return timeline;
+    }
+
+    private MbTimelineItem timelineItemFromJson(JSONObject jso) throws ConnectionException {
+        MbTimelineItem item = new MbTimelineItem();
+        item.mbMessage = messageFromJson(jso);
+        item.timelineItemDate = item.mbMessage.sentDate; 
+        item.timelineItemPosition = new TimelinePosition(item.mbMessage.oid);
+        return item;
     }
 
     protected MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
@@ -251,7 +259,6 @@ public abstract class ConnectionTwitter extends Connection {
                     message.sentDate = created;
                 }
             }
-            message.timelineItemDate = message.sentDate; 
 
             JSONObject sender;
             if (jso.has("sender")) {

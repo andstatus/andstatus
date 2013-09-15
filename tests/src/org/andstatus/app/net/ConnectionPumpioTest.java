@@ -18,38 +18,64 @@ package org.andstatus.app.net;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.Origin.OriginEnum;
 import org.andstatus.app.util.TriState;
+import org.json.JSONObject;
+
+import java.util.List;
 
 public class ConnectionPumpioTest extends InstrumentationTestCase {
     private static final String TAG = ConnectionPumpioTest.class.getSimpleName();
+    Context context;
     ConnectionPumpio connection;
+    String host = "identi.ca";
+    HttpConnectionMock httpConnection;
     OriginConnectionData connectionData;
+
+    String keyStored;
+    String secretStored;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Context targetContext = this.getInstrumentation().getTargetContext();
-        if (targetContext == null) {
+        context = this.getInstrumentation().getTargetContext();
+        if (context == null) {
             Log.e(TAG, "targetContext is null.");
             throw new IllegalArgumentException("this.getInstrumentation().getTargetContext() returned null");
         }
-        MyPreferences.initialize(targetContext, this);
+        MyPreferences.initialize(context, this);
 
         Origin origin = OriginEnum.PUMPIO.newOrigin();
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
         connectionData.dataReader = new AccountDataReaderEmpty();
         connection = (ConnectionPumpio) connectionData.connectionClass.newInstance();
         connection.enrichConnectionData(connectionData);
+        connectionData.httpConnectionClass = HttpConnectionMock.class;
         connection.setAccountData(connectionData);
+        httpConnection = (HttpConnectionMock) connection.httpConnection;
+
+        httpConnection.connectionData.host = host;
+        httpConnection.connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.connectionData);
+        keyStored = httpConnection.connectionData.oauthClientKeys.getConsumerKey();
+        secretStored = httpConnection.connectionData.oauthClientKeys.getConsumerSecret();
     }
     
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        if (!TextUtils.isEmpty(keyStored)) {
+            httpConnection.connectionData.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
+        }
+    }
+
     public void testOidToObjectType() {
         String oids[] = {"https://identi.ca/api/activity/L4v5OL93RrabouQc9_QGfg", 
                 "https://identi.ca/api/comment/ibpUqhU1TGCE2yHNbUv54g",
@@ -88,7 +114,27 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         }
     }
     
-    public void testGetTimeline() {
+    public void testGetTimeline() throws ConnectionException {
+        httpConnection.connectionData.oauthClientKeys.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341");
+        String sinceId = "http://" + host + "/activity/frefq3232sf";
+
+        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.user_t131t_inbox);
+        httpConnection.setResponse(jso);
         
+        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
+                new TimelinePosition(sinceId) , 20, "acct:t131t@" + host);
+        assertNotNull("timeline returned", timeline);
+        int size = 20;
+        assertEquals("Response for t131t", size, timeline.size());
+
+        assertEquals("1 -User", MbTimelineItem.ItemType.USER, timeline.get(size-1).getType());
+        assertEquals("1 following", new Boolean(true), timeline.get(size-1).mbUser.followedByReader);
+
+        assertEquals("2 -Other User", MbTimelineItem.ItemType.USER, timeline.get(size-2).getType());
+        assertEquals("2 other actor", "acct:jpope@io.jpope.org", timeline.get(size-2).mbUser.reader.oid);
+        assertEquals("2 following", new Boolean(true), timeline.get(size-2).mbUser.followedByReader);
+
+        assertEquals("3 Posting image", MbTimelineItem.ItemType.EMPTY, timeline.get(size-3).getType());
     }
 }

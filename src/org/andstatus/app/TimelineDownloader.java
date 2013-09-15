@@ -34,7 +34,7 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.MbMessage;
+import org.andstatus.app.net.MbTimelineItem;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.net.TimelinePosition;
@@ -149,17 +149,23 @@ public class TimelineDownloader {
         for (boolean done = false; !done || toDownload > 0; ) {
             try {
                 int limit = ma.getConnection().fixedDownloadLimit(toDownload); 
-                List<MbMessage> messages = ma.getConnection().getTimeline(timelineType.getConnectionApiRoutine(), lastPosition, limit, userOid);
+                List<MbTimelineItem> messages = ma.getConnection().getTimeline(timelineType.getConnectionApiRoutine(), lastPosition, limit, userOid);
                 if (messages.size() < 2) {  // We may assume that we downloaded the same message...
                     toDownload = 0;
                 }
                 if (messages.size() > 0) {
                     toDownload -= messages.size();
                     DataInserter di = new DataInserter(ma, context, timelineType);
-                    for (MbMessage message : messages) {
-                        latestTimelineItem.onNewMsg(message.timelineItemPosition, message.timelineItemDate);
-                        if (!message.isEmpty()) {
-                            di.insertOrUpdateMsg(message, latestUserMessages);
+                    for (MbTimelineItem item : messages) {
+                        latestTimelineItem.onNewMsg(item.timelineItemPosition, item.timelineItemDate);
+                        switch (item.getType()) {
+                            case MESSAGE:
+                                di.insertOrUpdateMsg(item.mbMessage, latestUserMessages);
+                                break;
+                            case USER:
+                                di.insertOrUpdateUser(item.mbUser);
+                                break;
+                            default:
                         }
                     }
                     totalMessagesDownloadedCount += di.totalMessagesDownloadedCount();

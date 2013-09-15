@@ -41,9 +41,6 @@ public class MbMessage {
     public MbUser reader = null;
     public Boolean favoritedByReader = null;
     
-    public TimelinePosition timelineItemPosition = null;
-    public long timelineItemDate = 0;
-    
     // In our system
     public long originId = 0L;
 
@@ -52,7 +49,6 @@ public class MbMessage {
         MbMessage message = new MbMessage();
         message.originId = originId;
         message.oid = oid;
-        message.timelineItemPosition = new TimelinePosition(oid);
         return message;
     }
     

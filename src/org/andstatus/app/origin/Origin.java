@@ -25,7 +25,6 @@ import android.util.Log;
 
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.net.Connection.ApiEnum;
-import org.andstatus.app.net.ConnectionEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 

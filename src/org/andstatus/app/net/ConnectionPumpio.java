@@ -406,11 +406,11 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
+    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
             throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         if (TextUtils.isEmpty(url)) {
-            return new ArrayList<MbMessage>();
+            return new ArrayList<MbTimelineItem>();
         }
         if (TextUtils.isEmpty(userId)) {
             throw new IllegalArgumentException("getTimeline: userId is required");
@@ -455,14 +455,14 @@ public class ConnectionPumpio extends Connection {
         }
         url = builder.build().toString();
         JSONArray jArr = httpConnection1.getRequestAsArray(url);
-        List<MbMessage> timeline = new ArrayList<MbMessage>();
+        List<MbTimelineItem> timeline = new ArrayList<MbTimelineItem>();
         if (jArr != null) {
             // Read the activities in chronological order
             for (int index = jArr.length() - 1; index >= 0; index--) {
                 try {
                     JSONObject jso = jArr.getJSONObject(index);
-                    MbMessage mbMessage = messageFromJson(jso);
-                    timeline.add(mbMessage);
+                    MbTimelineItem item = timelineItemFromJson(jso);
+                    timeline.add(item);
                 } catch (JSONException e) {
                     throw ConnectionException.loggedJsonException(TAG, e, null, "Parsing timeline");
                 }
@@ -481,7 +481,54 @@ public class ConnectionPumpio extends Connection {
         }
         return out;
     }
+
+    private MbTimelineItem timelineItemFromJson(JSONObject activity) throws ConnectionException {
+        MbTimelineItem item = new MbTimelineItem();
+        if (PumpioObjectType.ACTIVITY.isMyType(activity)) {
+            try {
+                item.timelineItemPosition = new TimelinePosition(activity.optString("id"));
+                item.timelineItemDate = dateFromJson(activity, "updated");
+                
+                if (PumpioObjectType.PERSON.isMyType(activity.getJSONObject("object"))) {
+                    item.mbUser = userFromJsonActivity(activity);
+                } else {
+                    item.mbMessage = messageFromJsonActivity(activity);
+                }
+            } catch (JSONException e) {
+                throw ConnectionException.loggedJsonException(TAG, e, activity, "Parsing timeline item");
+            }
+        } else {
+            Log.e(TAG, "Not an Activity in the timeline:" + activity.toString() );
+            item.mbMessage = messageFromJson(activity);
+        }
+        return item;
+    }
     
+    private MbUser userFromJsonActivity(JSONObject activity) throws ConnectionException {
+        MbUser mbUser;
+        try {
+            String verb = activity.getString("verb");
+            String oid = activity.optString("id");
+            if (TextUtils.isEmpty(oid)) {
+                MyLog.d(TAG, "Pumpio activity has no id:" + activity.toString(2));
+                return MbUser.getEmpty();
+            }
+            mbUser = userFromJson(activity.getJSONObject("object"));
+            if (activity.has("actor")) {
+                mbUser.reader = userFromJson(activity.getJSONObject("actor"));
+            }
+            
+            if (verb.equalsIgnoreCase("follow")) {
+                mbUser.followedByReader = true;
+            } else if (verb.equalsIgnoreCase("stop-following")) {
+                mbUser.followedByReader = false;
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(TAG, e, activity, "Parsing activity");
+        }
+        return mbUser;
+    }
+
     private MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             try {
@@ -511,10 +558,12 @@ public class ConnectionPumpio extends Connection {
             message =  MbMessage.fromOriginAndOid(getOriginId(), oid);
             message.reader = MbUser.fromOriginAndUserOid(getOriginId(), getAccountUserOid());
             message.sentDate = dateFromJson(activity, "updated");
-            message.timelineItemDate = message.sentDate; 
 
             if (activity.has("actor")) {
                 message.sender = userFromJson(activity.getJSONObject("actor"));
+                if (!message.sender.isEmpty()) {
+                    message.reader = message.sender;
+                }
             }
             if (activity.has("to")) {
                 JSONObject to = activity.optJSONObject("to");

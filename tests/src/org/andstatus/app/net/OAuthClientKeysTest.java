@@ -45,7 +45,7 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
     public void testKeysSave() {
        Origin origin = OriginEnum.PUMPIO.newOrigin();
        HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(origin.getConnectionData(TriState.UNKNOWN));
-       connectionData.host = "identi.ca";
+       connectionData.host = "example.com";
        connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData);
        connectionData.oauthClientKeys.clear();
        assertEquals("Keys are cleared", false, connectionData.oauthClientKeys.areKeysPresent());

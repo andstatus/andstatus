@@ -88,10 +88,10 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public List<MbMessage> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId,
+    public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId,
             int limit, String userId) throws ConnectionException {
         // TODO Auto-generated method stub
-        return new ArrayList<MbMessage>();
+        return new ArrayList<MbTimelineItem>();
     }
 
     @Override
