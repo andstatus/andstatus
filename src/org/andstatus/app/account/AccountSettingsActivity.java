@@ -220,12 +220,14 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 || ma.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
             mEditTextUsername.setText(ma.getUsername());
         }
-        StringBuilder summary = new StringBuilder(this.getText(ma.alternativeTermForResourceId(R.string.summary_preference_username)));
+        StringBuilder summary;
         if (ma.getUsername().length() > 0) {
-            summary.append(": " + ma.getUsername());
+            summary = new StringBuilder(ma.getUsername());
         } else {
-            summary.append(" (" + this.getText(R.string.not_set) + ")");
+            summary = new StringBuilder(this.getText(ma.alternativeTermForResourceId(R.string.summary_preference_username)));
         }
+        mEditTextUsername.setDialogTitle(this.getText(ma.alternativeTermForResourceId(R.string.dialog_title_preference_username)));
+        mEditTextUsername.setTitle(this.getText(ma.alternativeTermForResourceId(R.string.title_preference_username)));
         mEditTextUsername.setSummary(summary);
         mEditTextUsername.setEnabled(!state.builder.isPersistent() && !ma.isUsernameValidToStartAddingNewAccount());
 

@@ -25,6 +25,7 @@ import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -410,7 +411,7 @@ public class ConnectionPumpio extends Connection {
             throws ConnectionException {
         String url = this.getApiPath(apiRoutine);
         if (TextUtils.isEmpty(url)) {
-            return new ArrayList<MbTimelineItem>();
+            throw new ConnectionException(StatusCode.UNSUPPORTED_API, "The API is not supported yet: " + apiRoutine);
         }
         if (TextUtils.isEmpty(userId)) {
             throw new IllegalArgumentException("getTimeline: userId is required");
@@ -519,9 +520,9 @@ public class ConnectionPumpio extends Connection {
             }
             
             if (verb.equalsIgnoreCase("follow")) {
-                mbUser.followedByReader = true;
+                mbUser.followedByReader = TriState.TRUE;
             } else if (verb.equalsIgnoreCase("stop-following")) {
-                mbUser.followedByReader = false;
+                mbUser.followedByReader = TriState.FALSE;
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(TAG, e, activity, "Parsing activity");

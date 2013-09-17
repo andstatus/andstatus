@@ -148,7 +148,8 @@ public class MyLog {
                         val = sp.getString(MyPreferences.KEY_MIN_LOG_LEVEL, String.valueOf(Log.ASSERT));  
                         minLogLevel = Integer.parseInt(val);  
                     } catch (java.lang.ClassCastException e) {
-                        val = sp.getString(MyPreferences.KEY_MIN_LOG_LEVEL,"(empty)");  
+                        minLogLevel = sp.getInt(MyPreferences.KEY_MIN_LOG_LEVEL,Log.ASSERT);
+                        val = Integer.toString(minLogLevel);
                         Log.e(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
                     }
                 }

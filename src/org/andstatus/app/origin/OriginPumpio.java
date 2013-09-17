@@ -34,6 +34,12 @@ class OriginPumpio extends Origin {
     public int alternativeTermForResourceId(int resId) {
         int resId_out;
         switch (resId) {
+            case R.string.dialog_title_preference_username:
+                resId_out = R.string.dialog_title_preference_username_pumpio;
+                break;
+            case R.string.title_preference_username:
+                resId_out = R.string.title_preference_username_pumpio;
+                break;
             case R.string.summary_preference_username:
                 resId_out = R.string.summary_preference_username_pumpio;
                 break;

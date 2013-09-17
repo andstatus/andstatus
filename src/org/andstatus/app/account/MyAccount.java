@@ -458,69 +458,77 @@ public class MyAccount implements AccountDataReader {
             }
             if (!ok) {
                 MbUser user = null;
+                ConnectionException ce = null;
                 try {
                     user = myAccount.getConnection().verifyCredentials();
                     ok = (!user.isEmpty());
-                } finally {
-                    String newName = "";
-                    boolean credentialsOfOtherUser = false;
-                    boolean errorSettingUsername = false;
-                    if (ok) {
-                        if (TextUtils.isEmpty(user.oid)) {
-                            ok = false;
-                        }
-                    }
-                    if (ok) {
-                        newName = user.userName;
-                        Origin origin = Origin.fromOriginId(user.originId);
-                        ok = origin.isUsernameValid(newName);
-                        errorSettingUsername = !ok;
-                    }
-
-                    if (ok) {
-                        // We are comparing user names ignoring case, but we fix correct case
-                        // as the Originating system tells us. 
-                        if (!TextUtils.isEmpty(myAccount.getUsername()) && myAccount.getUsername().compareToIgnoreCase(newName) != 0) {
-                            // Credentials belong to other User ??
-                            ok = false;
-                            credentialsOfOtherUser = true;
-                        }
-                    }
-                    if (ok) {
-                        setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
-                    }
-                    if (ok) {
-                        myAccount.userOid = user.oid;
-                        DataInserter di = new DataInserter(myAccount, MyPreferences.getContext(), TimelineTypeEnum.ALL);
-                        LatestUserMessages lum = new LatestUserMessages();
-                        myAccount.userId = di.insertOrUpdateUser(user, lum);
-                        lum.save();
-                    }
-                    if (ok && !isPersistent()) {
-                        // Now we know the name (or proper case of the name) of this User!
-                        // We don't recreate MyAccount object for the new name
-                        //   in order to preserve credentials.
-                        myAccount.oAccountName = AccountName.fromOriginAndUserNames(myAccount.oAccountName.getOriginName(), newName);
-                        myAccount.connection.save(this);
-                        setConnection();
-                        save();
-                    }
-                    if (!ok) {
-                        setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
-                    }
-                    save();
-
-                    if (credentialsOfOtherUser) {
-                        Log.e(TAG, MyPreferences.getContext().getText(R.string.error_credentials_of_other_user) + ": "
-                                + newName);
-                        throw (new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, newName));
-                    }
-                    if (errorSettingUsername) {
-                        String msg = MyPreferences.getContext().getText(R.string.error_set_username) + newName;
-                        Log.e(TAG, msg);
-                        throw (new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg));
-                    }
+                } catch (ConnectionException e) {
+                    ce = e;
                 }
+                ok = onVerifiedCredentials(user, ce);
+            }
+            return ok;
+        }
+        
+        public boolean onVerifiedCredentials(MbUser user, ConnectionException ce) throws ConnectionException {
+            boolean ok = (ce == null) && user != null && !user.isEmpty();
+            if (ok && TextUtils.isEmpty(user.oid)) {
+                ok = false;
+            }
+            String newName = "";
+            boolean errorSettingUsername = false;
+            if (ok) {
+                newName = user.userName;
+                Origin origin = Origin.fromOriginId(user.originId);
+                ok = origin.isUsernameValid(newName);
+                errorSettingUsername = !ok;
+            }
+            boolean credentialsOfOtherUser = false;
+            if (ok) {
+                // We are comparing user names ignoring case, but we fix correct case
+                // as the Originating system tells us. 
+                if (!TextUtils.isEmpty(myAccount.getUsername()) && myAccount.getUsername().compareToIgnoreCase(newName) != 0) {
+                    // Credentials belong to other User ??
+                    ok = false;
+                    credentialsOfOtherUser = true;
+                }
+            }
+            if (ok) {
+                setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
+            }
+            if (ok) {
+                myAccount.userOid = user.oid;
+                DataInserter di = new DataInserter(myAccount, MyPreferences.getContext(), TimelineTypeEnum.ALL);
+                LatestUserMessages lum = new LatestUserMessages();
+                myAccount.userId = di.insertOrUpdateUser(user, lum);
+                lum.save();
+            }
+            if (ok && !isPersistent()) {
+                // Now we know the name (or proper case of the name) of this User!
+                // We don't recreate MyAccount object for the new name
+                //   in order to preserve credentials.
+                myAccount.oAccountName = AccountName.fromOriginAndUserNames(myAccount.oAccountName.getOriginName(), newName);
+                myAccount.connection.save(this);
+                setConnection();
+                save();
+            }
+            if (!ok) {
+                setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
+            }
+            save();
+
+            if (ce != null) {
+                throw ce;
+            }
+            if (credentialsOfOtherUser) {
+                Log.e(TAG, MyPreferences.getContext().getText(R.string.error_credentials_of_other_user) + ": "
+                        + newName);
+                throw (new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, newName));
+            }
+            if (errorSettingUsername) {
+                String msg = MyPreferences.getContext().getText(R.string.error_set_username) + newName;
+                Log.e(TAG, msg);
+                throw (new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg));
             }
             return ok;
         }
@@ -984,7 +992,7 @@ public class MyAccount implements AccountDataReader {
     }
 
     private boolean isValid() {
-        return (oAccountName.isValid() && connection != null);
+        return (oAccountName.isValid() && !TextUtils.isEmpty(userOid) && connection != null);
     }
 
     public static void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
@@ -1259,6 +1267,10 @@ public class MyAccount implements AccountDataReader {
      */
     public long getUserId() {
         return userId;
+    }
+
+    public String getUserOid() {
+        return userOid;
     }
     
     /**

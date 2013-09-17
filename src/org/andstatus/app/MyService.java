@@ -42,6 +42,7 @@ import org.andstatus.app.util.ForegroundCheckTask;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -1098,10 +1099,10 @@ public class MyService extends Service {
                         (follow ? "Follow" : "Stop following") + " User; userId not found: " + userId);
             }
             if (ok) {
-                if (SharedPreferencesUtil.isTrue(user.followedByReader) != follow) {
+                if (user.followedByReader != TriState.UNKNOWN &&  user.followedByReader.toBoolean(follow) != follow) {
                     if (follow) {
                         // Act just like for creating favorite...
-                        user.followedByReader = true;
+                        user.followedByReader = TriState.fromBoolean(follow);
 
                         MyLog.d(TAG,
                                 (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");

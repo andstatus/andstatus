@@ -28,6 +28,7 @@ import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -333,76 +334,80 @@ public class DataInserter {
         return userId;
     }
     
-    public long insertOrUpdateUser(MbUser sender, LatestUserMessages lum) throws SQLiteConstraintException {
-        String userName = sender.userName;
-        String rowOid = sender.oid;
-        Long originId = sender.originId;
-        Long rowId = 0L;
-        if (!SharedPreferencesUtil.isEmpty(rowOid)) {
+    public long insertOrUpdateUser(MbUser mbUser, LatestUserMessages lum) throws SQLiteConstraintException {
+        String userName = mbUser.userName;
+        String userOid = mbUser.oid;
+        long originId = mbUser.originId;
+        long userId = 0L;
+        if (!SharedPreferencesUtil.isEmpty(userOid)) {
             // Lookup the System's (AndStatus) id from the Originated system's id
-            rowId = MyProvider.oidToId(OidEnum.USER_OID, originId, rowOid);
+            userId = MyProvider.oidToId(OidEnum.USER_OID, originId, userOid);
         }
-        if (rowId == 0) {
+        if (userId == 0) {
             // Try to Lookup by Username
             if (SharedPreferencesUtil.isEmpty(userName)) {
-                Log.w(TAG, "insertUserFromJSONObject - no username: " + sender.toString());
-                return rowId;
+                Log.w(TAG, "insertUser - no username: " + mbUser.toString());
+                return userId;
             } else {
-                rowId = MyProvider.userNameToId(originId, userName);
+                userId = MyProvider.userNameToId(originId, userName);
             }
         }
         
         try {
             ContentValues values = new ContentValues();
 
-            if (rowOid.length()>0) {
-                values.put(MyDatabase.User.USER_OID, rowOid);
+            if (!TextUtils.isEmpty(userOid)) {
+                values.put(MyDatabase.User.USER_OID, userOid);
             }
             values.put(MyDatabase.User.ORIGIN_ID, originId);
             if (!SharedPreferencesUtil.isEmpty(userName)) {
                 values.put(MyDatabase.User.USERNAME, userName);
             }
-            if (!TextUtils.isEmpty(sender.realName)) {
-                values.put(MyDatabase.User.REAL_NAME, sender.realName);
+            if (!TextUtils.isEmpty(mbUser.realName)) {
+                values.put(MyDatabase.User.REAL_NAME, mbUser.realName);
             }
-            if (!TextUtils.isEmpty(sender.avatarUrl)) {
-                values.put(MyDatabase.User.AVATAR_URL, sender.avatarUrl);
+            if (!TextUtils.isEmpty(mbUser.avatarUrl)) {
+                values.put(MyDatabase.User.AVATAR_URL, mbUser.avatarUrl);
             }
-            if (!TextUtils.isEmpty(sender.description)) {
-                values.put(MyDatabase.User.DESCRIPTION, sender.description);
+            if (!TextUtils.isEmpty(mbUser.description)) {
+                values.put(MyDatabase.User.DESCRIPTION, mbUser.description);
             }
-            if (!TextUtils.isEmpty(sender.homepage)) {
-                values.put(MyDatabase.User.HOMEPAGE, sender.homepage);
+            if (!TextUtils.isEmpty(mbUser.homepage)) {
+                values.put(MyDatabase.User.HOMEPAGE, mbUser.homepage);
             }
-            if (sender.createdDate > 0) {
-                values.put(MyDatabase.User.CREATED_DATE, sender.createdDate);
-            } else if ( rowId == 0) {
-                if (sender.updatedDate > 0) {
-                    values.put(MyDatabase.User.CREATED_DATE, sender.updatedDate);
+            if (mbUser.createdDate > 0) {
+                values.put(MyDatabase.User.CREATED_DATE, mbUser.createdDate);
+            } else if ( userId == 0) {
+                if (mbUser.updatedDate > 0) {
+                    values.put(MyDatabase.User.CREATED_DATE, mbUser.updatedDate);
                 }
             }
-            if (sender.followedByReader != null ) {
-                values.put(MyDatabase.FollowingUser.USER_FOLLOWED, sender.followedByReader);
+            if (mbUser.followedByReader != TriState.UNKNOWN ) {
+                if (mbUser.reader.oid.equalsIgnoreCase(ma.getUserOid())) {
+                    values.put(MyDatabase.FollowingUser.USER_FOLLOWED, mbUser.followedByReader.toBoolean(false));
+                    MyLog.v(TAG, "User '" + userName + "' is " + (mbUser.followedByReader.toBoolean(false) ? "" : "not ") 
+                            + "followed by " + ma.getAccountName() );
+                }
             }
             
             // Construct the Uri to the User
-            Uri userUri = MyProvider.getUserUri(ma.getUserId(), rowId);
-            if (rowId == 0) {
+            Uri userUri = MyProvider.getUserUri(ma.getUserId(), userId);
+            if (userId == 0) {
                 // There was no such row so add new one
                 userUri = mContentResolver.insert(userUri, values);
-                rowId = MyProvider.uriToUserId(userUri);
+                userId = MyProvider.uriToUserId(userUri);
             } else {
               mContentResolver.update(userUri, values, null, null);
             }
-            if (sender.latestMessage != null) {
+            if (mbUser.latestMessage != null) {
                 // This message doesn't have a sender!
-                insertOrUpdateMsgBySender(sender.latestMessage, lum, rowId);
+                insertOrUpdateMsgBySender(mbUser.latestMessage, lum, userId);
             }
             
         } catch (Exception e) {
             Log.e(TAG, "insertUserFromJSONObject: " + e.toString());
         }
-        return rowId;
+        return userId;
     }
     
     public long insertOrUpdateMsg(MbMessage jo) throws SQLiteConstraintException {

@@ -51,7 +51,7 @@ public class Origin {
          * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
          */
         PUMPIO(2, "pump.io", ApiEnum.PUMPIO, OriginPumpio.class),
-        STATUSNET(3, "status.nat", ApiEnum.STATUSNET_TWITTER, OriginStatusNet.class),
+        STATUSNET(3, "status.net", ApiEnum.STATUSNET_TWITTER, OriginStatusNet.class),
         UNKNOWN(0,"unknownMbSystem", ApiEnum.UNKNOWN_API, Origin.class);
         
         private long id;

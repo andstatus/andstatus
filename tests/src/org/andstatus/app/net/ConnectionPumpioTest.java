@@ -66,6 +66,10 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         httpConnection.connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.connectionData);
         keyStored = httpConnection.connectionData.oauthClientKeys.getConsumerKey();
         secretStored = httpConnection.connectionData.oauthClientKeys.getConsumerSecret();
+
+        if (!httpConnection.connectionData.oauthClientKeys.areKeysPresent()) {
+            httpConnection.connectionData.oauthClientKeys.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341");
+        }
     }
     
     @Override
@@ -115,7 +119,6 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     }
     
     public void testGetTimeline() throws ConnectionException {
-        httpConnection.connectionData.oauthClientKeys.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341");
         String sinceId = "http://" + host + "/activity/frefq3232sf";
 
         JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
@@ -129,11 +132,12 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Response for t131t", size, timeline.size());
 
         assertEquals("1 -User", MbTimelineItem.ItemType.USER, timeline.get(size-1).getType());
-        assertEquals("1 following", new Boolean(true), timeline.get(size-1).mbUser.followedByReader);
+        MbUser mbUser = timeline.get(size-1).mbUser;
+        assertEquals("1 following", TriState.TRUE, mbUser.followedByReader);
 
         assertEquals("2 -Other User", MbTimelineItem.ItemType.USER, timeline.get(size-2).getType());
         assertEquals("2 other actor", "acct:jpope@io.jpope.org", timeline.get(size-2).mbUser.reader.oid);
-        assertEquals("2 following", new Boolean(true), timeline.get(size-2).mbUser.followedByReader);
+        assertEquals("2 following", TriState.TRUE, timeline.get(size-2).mbUser.followedByReader);
 
         assertEquals("3 Posting image", MbTimelineItem.ItemType.EMPTY, timeline.get(size-3).getType());
     }

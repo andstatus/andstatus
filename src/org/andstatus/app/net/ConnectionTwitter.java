@@ -24,6 +24,7 @@ import android.util.Log;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -372,7 +373,7 @@ public abstract class ConnectionTwitter extends Connection {
             }
         }
         if (!jso.isNull("following")) {
-            user.followedByReader = jso.optBoolean("following");
+            user.followedByReader = TriState.fromBoolean(jso.optBoolean("following"));
         }
         if (jso.has("status")) {
             JSONObject latestMessage;
