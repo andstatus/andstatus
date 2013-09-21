@@ -101,15 +101,12 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
         public Time date1;
         public Time date2;
         public int flags;
-        // Is not used yet...
-        public String expectedOutput;
         
         public DateTest(long startMillis, long endMillis) {
         	date1 = new Time();
         	date1.set(startMillis);
         	date2 = new Time();
         	date2.set(endMillis);
-        	expectedOutput = "";
         	flags = DateUtils.FORMAT_24HOUR | DateUtils.FORMAT_SHOW_DATE 
         	| DateUtils.FORMAT_SHOW_TIME;
         }

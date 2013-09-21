@@ -29,7 +29,7 @@ public class ConnectionTwitter1p0 extends ConnectionTwitter {
         StringBuilder path = new StringBuilder(getApiPath(ApiRoutineEnum.CREATE_FAVORITE));
         path.append(statusId);
         path.append(EXTENSION);
-        JSONObject jso = httpConnection.postRequest(path.toString());
+        JSONObject jso = http.postRequest(path.toString());
         return messageFromJson(jso);
     }
 
@@ -38,7 +38,7 @@ public class ConnectionTwitter1p0 extends ConnectionTwitter {
         StringBuilder path = new StringBuilder(getApiPath(ApiRoutineEnum.DESTROY_FAVORITE));
         path.append(statusId);
         path.append(EXTENSION);
-        JSONObject jso = httpConnection.postRequest(path.toString());
+        JSONObject jso = http.postRequest(path.toString());
         return messageFromJson(jso);
     }
 }

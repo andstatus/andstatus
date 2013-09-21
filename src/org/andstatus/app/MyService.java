@@ -1342,10 +1342,7 @@ public class MyService extends Service {
             }
             boolean okAllTimelines = true;
             boolean ok = false;
-            int downloadedCount = 0;
-            int msgAdded = 0;
-            int mentionsAdded = 0;
-            int directedAdded = 0;
+            MessageCounters counters = new MessageCounters(acc, MyService.this.getApplicationContext(), TimelineTypeEnum.ALL);
             String descr = "(starting)";
 
             long userId = commandData.itemId;
@@ -1401,41 +1398,20 @@ public class MyService extends Service {
                             break;
                         }
                     }
-                    ok = false;
+                    ok = true;
                     TimelineTypeEnum timelineType = atl[ind];
                     if (acc.getConnection().isApiSupported(timelineType.getConnectionApiRoutine())) {
                         MyLog.d(TAG, "Getting " + timelineType.save() + " for "
                                 + acc.getAccountName());
                         TimelineDownloader fl = null;
                         descr = "loading " + timelineType.save();
-                        fl = new TimelineDownloader(acc,
-                                MyService.this.getApplicationContext(),
-                                timelineType, userId);
-                        ok = fl.loadTimeline();
-                        downloadedCount += fl.totalMessagesDownloadedCount();
-                        switch (timelineType) {
-                            case MENTIONS:
-                                mentionsAdded += fl.newMentionsCount();
-                                break;
-                            case HOME:
-                                msgAdded += fl.newMessagesCount();
-                                mentionsAdded += fl.newMentionsCount();
-                                break;
-                            case DIRECT:
-                                directedAdded += fl.newMessagesCount();
-                                break;
-                            case FOLLOWING_USER:
-                            case USER:
-                                // Don't count anything for now...
-                                break;
-                            default:
-                                ok = false;
-                                Log.e(TAG, descr + " - not implemented");
-                        }
+                        counters.timelineType = timelineType;
+                        fl = TimelineDownloader.newInstance(counters, userId);
+                        fl.download();
+                        counters.accumulate();
                     } else {
                         MyLog.v(TAG, "Not supported " + timelineType.save() + " for "
                                 + acc.getAccountName());
-                        ok = true;
                     }
 
                     if (ok) {
@@ -1455,7 +1431,7 @@ public class MyService extends Service {
 
             if (ok) {
                 descr = "notifying";
-                notifyOfUpdatedTimeline(msgAdded, mentionsAdded, directedAdded);
+                notifyOfUpdatedTimeline(counters.msgAdded, counters.mentionsAdded, counters.directedAdded);
             }
 
             String message = "";
@@ -1484,19 +1460,7 @@ public class MyService extends Service {
             setSoftErrorIfNotOk(commandData, okAllTimelines);
             
             message += " getting " + commandData.timelineType.save()
-                    + " for " + acc.getAccountName();
-            if (downloadedCount > 0) {
-                message += ", " + downloadedCount + " downloaded";
-            }
-            if (msgAdded > 0) {
-                message += ", " + msgAdded + " messages";
-            }
-            if (mentionsAdded > 0) {
-                message += ", " + mentionsAdded + " mentions";
-            }
-            if (directedAdded > 0) {
-                message += ", " + directedAdded + " directs";
-            }
+                    + " for " + acc.getAccountName() + counters.accumulatedToString();
             MyLog.d(TAG, message);
         }
         

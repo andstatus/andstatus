@@ -60,15 +60,15 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         connection.enrichConnectionData(connectionData);
         connectionData.httpConnectionClass = HttpConnectionMock.class;
         connection.setAccountData(connectionData);
-        httpConnection = (HttpConnectionMock) connection.httpConnection;
+        httpConnection = (HttpConnectionMock) connection.http;
 
-        httpConnection.connectionData.host = host;
-        httpConnection.connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.connectionData);
-        keyStored = httpConnection.connectionData.oauthClientKeys.getConsumerKey();
-        secretStored = httpConnection.connectionData.oauthClientKeys.getConsumerSecret();
+        httpConnection.data.host = host;
+        httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
+        keyStored = httpConnection.data.oauthClientKeys.getConsumerKey();
+        secretStored = httpConnection.data.oauthClientKeys.getConsumerSecret();
 
-        if (!httpConnection.connectionData.oauthClientKeys.areKeysPresent()) {
-            httpConnection.connectionData.oauthClientKeys.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341");
+        if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {
+            httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341");
         }
     }
     
@@ -76,7 +76,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         if (!TextUtils.isEmpty(keyStored)) {
-            httpConnection.connectionData.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
+            httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
         }
     }
 
@@ -128,17 +128,44 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
                 new TimelinePosition(sinceId) , 20, "acct:t131t@" + host);
         assertNotNull("timeline returned", timeline);
-        int size = 20;
+        int size = 4;
         assertEquals("Response for t131t", size, timeline.size());
 
-        assertEquals("1 -User", MbTimelineItem.ItemType.USER, timeline.get(size-1).getType());
-        MbUser mbUser = timeline.get(size-1).mbUser;
-        assertEquals("1 following", TriState.TRUE, mbUser.followedByReader);
+        int ind = 0;
+        assertEquals("Posting image", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
+        assertTrue("trailing linebreaks trimmed: '" + timeline.get(ind).mbMessage.body + "'", timeline.get(ind).mbMessage.body.endsWith("Link"));
 
-        assertEquals("2 -Other User", MbTimelineItem.ItemType.USER, timeline.get(size-2).getType());
-        assertEquals("2 other actor", "acct:jpope@io.jpope.org", timeline.get(size-2).mbUser.reader.oid);
-        assertEquals("2 following", TriState.TRUE, timeline.get(size-2).mbUser.followedByReader);
+        ind++;
+        assertEquals("Other User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
+        assertEquals("Other actor", "acct:jpope@io.jpope.org", timeline.get(ind).mbUser.reader.oid);
+        assertEquals("Following", TriState.TRUE, timeline.get(ind).mbUser.followedByReader);
 
-        assertEquals("3 Posting image", MbTimelineItem.ItemType.EMPTY, timeline.get(size-3).getType());
+        ind++;
+        assertEquals("User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
+        MbUser mbUser = timeline.get(ind).mbUser;
+        assertEquals("Following", TriState.TRUE, mbUser.followedByReader);
+
+        ind++;
+        assertTrue("Favorited by someone else", timeline.get(ind).mbMessage.favoritedByReader);
+        assertEquals("Reader -someone else", "acct:jpope@io.jpope.org" , timeline.get(ind).mbMessage.reader.oid);
+    }
+
+    public void testGetUsersFollowedBy() throws ConnectionException {
+        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.user_t131t_following);
+        httpConnection.setResponse(jso);
+        
+        assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS));        
+        assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS_IDS));        
+        
+        List<MbUser> users = connection.getUsersFollowedBy("acct:t131t@" + host);
+        assertNotNull("List of users returned", users);
+        int size = 5;
+        assertEquals("Response for t131t", size, users.size());
+
+        assertEquals("Does the Pope shit in the woods?", users.get(1).description);
+        assertEquals("gitorious@identi.ca", users.get(2).userName);
+        assertEquals("acct:ken@coding.example", users.get(3).oid);
+        assertEquals("Yuri Volkov", users.get(4).realName);
     }
 }

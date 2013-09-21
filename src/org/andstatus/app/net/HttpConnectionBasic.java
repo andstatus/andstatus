@@ -147,7 +147,7 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
 
     @Override
     public boolean getCredentialsPresent() {
-        return (!TextUtils.isEmpty(connectionData.accountUsername) 
+        return (!TextUtils.isEmpty(data.accountUsername) 
                 && !TextUtils.isEmpty(mPassword));
     }
 
@@ -214,7 +214,7 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
      * @return String
      */
     private String getCredentials() {
-        return new String(Base64.encodeBytes((connectionData.accountUsername + ":" + mPassword).getBytes()));
+        return new String(Base64.encodeBytes((data.accountUsername + ":" + mPassword).getBytes()));
     }
 
     @Override

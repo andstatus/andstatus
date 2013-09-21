@@ -114,14 +114,14 @@ public abstract class ConnectionTwitter extends Connection {
                 url = "";
         }
         if (!TextUtils.isEmpty(url)) {
-            url = httpConnection.connectionData.basicPath + "/" + url;
+            url = http.data.basicPath + "/" + url;
         }
         return url;
     }
 
     @Override
     public boolean destroyStatus(String statusId) throws ConnectionException {
-        JSONObject jso = httpConnection.postRequest(getApiPath(ApiRoutineEnum.STATUSES_DESTROY) + statusId + EXTENSION);
+        JSONObject jso = http.postRequest(getApiPath(ApiRoutineEnum.STATUSES_DESTROY) + statusId + EXTENSION);
         if (jso != null && MyLog.isLoggable(null, Log.VERBOSE)) {
             try {
                 Log.v(TAG, "destroyStatus response: " + jso.toString(2));
@@ -163,7 +163,7 @@ public abstract class ConnectionTwitter extends Connection {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
-        JSONObject jso = httpConnection.getRequest(builder.build().toString());
+        JSONObject jso = http.getRequest(builder.build().toString());
         List<String> list = new ArrayList<String>();
         if (jso != null) {
             try {
@@ -192,7 +192,7 @@ public abstract class ConnectionTwitter extends Connection {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.STATUSES_SHOW));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("id", messageId);
-        JSONObject message = httpConnection.getRequest(builder.build().toString());
+        JSONObject message = http.getRequest(builder.build().toString());
         return messageFromJson(message);
     }
 
@@ -205,13 +205,13 @@ public abstract class ConnectionTwitter extends Connection {
         if (!sinceId.isEmpty()) {
             builder.appendQueryParameter("since_id", sinceId.getPosition());
         }
-        if (fixedDownloadLimit(limit) > 0) {
-            builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimit(limit)));
+        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
+            builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
         }
         if (!TextUtils.isEmpty(userId)) {
             builder.appendQueryParameter("user_id", userId);
         }
-        JSONArray jArr = httpConnection.getRequestAsArray(builder.build().toString());
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         List<MbTimelineItem> timeline = new ArrayList<MbTimelineItem>();
         if (jArr != null) {
             for (int index = 0; index < jArr.length(); index++) {
@@ -247,8 +247,8 @@ public abstract class ConnectionTwitter extends Connection {
             // This is for the Status.net
             oid = jso.optString("id");
         } 
-        MbMessage message =  MbMessage.fromOriginAndOid(getOriginId(), oid);
-        message.reader = MbUser.fromOriginAndUserOid(getOriginId(), getAccountUserOid());
+        MbMessage message =  MbMessage.fromOriginAndOid(data.originId, oid);
+        message.reader = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
         try {
             if (jso.has("created_at")) {
                 Long created = 0L;
@@ -276,7 +276,7 @@ public abstract class ConnectionTwitter extends Connection {
                 message.rebloggedMessage = messageFromJson(rebloggedMessage);
             }
             if (jso.has("text")) {
-                message.body = Html.fromHtml(jso.getString("text")).toString();
+                message.body = Html.fromHtml(jso.getString("text")).toString().trim();
             }
 
             if (jso.has("recipient")) {
@@ -359,8 +359,8 @@ public abstract class ConnectionTwitter extends Connection {
                 userName = "";
             }
         }
-        MbUser user = MbUser.fromOriginAndUserOid(getOriginId(), oid);
-        user.reader = MbUser.fromOriginAndUserOid(getOriginId(), getAccountUserOid());
+        MbUser user = MbUser.fromOriginAndUserOid(data.originId, oid);
+        user.reader = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
         user.userName = userName;
         user.realName = jso.optString("name");
         user.avatarUrl = jso.optString("profile_image_url");
@@ -397,7 +397,7 @@ public abstract class ConnectionTwitter extends Connection {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_USER));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
-        JSONObject jso = httpConnection.getRequest(builder.build().toString());
+        JSONObject jso = http.getRequest(builder.build().toString());
         return userFromJson(jso);
     }
     
@@ -418,7 +418,7 @@ public abstract class ConnectionTwitter extends Connection {
     
     @Override
     public MbMessage postReblog(String rebloggedId) throws ConnectionException {
-        JSONObject jso = httpConnection.postRequest(getApiPath(ApiRoutineEnum.POST_REBLOG) + rebloggedId + EXTENSION);
+        JSONObject jso = http.postRequest(getApiPath(ApiRoutineEnum.POST_REBLOG) + rebloggedId + EXTENSION);
         return messageFromJson(jso);
     }
 
@@ -440,10 +440,10 @@ public abstract class ConnectionTwitter extends Connection {
      */
     @Override
     public MbRateLimitStatus rateLimitStatus() throws ConnectionException {
-        JSONObject result = httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
+        JSONObject result = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
         MbRateLimitStatus status = new MbRateLimitStatus();
         if (result != null) {
-            switch (getApi()) {
+            switch (data.api) {
                 case TWITTER1P0:
                 case STATUSNET_TWITTER:
                     status.remaining = result.optInt("remaining_hits");
@@ -490,11 +490,16 @@ public abstract class ConnectionTwitter extends Connection {
      */
     @Override
     public MbUser verifyCredentials() throws ConnectionException {
-        JSONObject user = httpConnection.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
+        JSONObject user = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
         return userFromJson(user);
     }
 
     protected final JSONObject postRequest(ApiRoutineEnum apiRoutine, JSONObject formParams) throws ConnectionException {
-        return httpConnection.postRequest(getApiPath(apiRoutine), formParams);
+        return http.postRequest(getApiPath(apiRoutine), formParams);
+    }
+    
+    @Override
+    public boolean userObjectHasMessage() {
+        return true;
     }
 }

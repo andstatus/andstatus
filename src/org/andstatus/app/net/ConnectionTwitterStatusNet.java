@@ -37,7 +37,7 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
         List<String> list = new ArrayList<String>();
-        JSONArray jArr = httpConnection.getRequestAsArray(builder.build().toString());
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         try {
             for (int index = 0; index < jArr.length(); index++) {
                 list.add(jArr.getString(index));

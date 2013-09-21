@@ -41,10 +41,6 @@ public abstract class Connection {
 
     static final String  APPLICATION_ID = "http://andstatus.org/andstatus";
     public static final String KEY_PASSWORD = "password";
-    
-    /**
-     * Constants independent of the system
-     */
     protected static final String EXTENSION = ".json";
     
     /**
@@ -73,7 +69,8 @@ public abstract class Connection {
         CREATE_FAVORITE,
         DESTROY_FAVORITE,
         FOLLOW_USER,
-        GET_FRIENDS_IDS,
+        GET_FRIENDS, // List of users
+        GET_FRIENDS_IDS, // List of Users' IDs
         GET_USER,
         POST_DIRECT_MESSAGE,
         POST_REBLOG,
@@ -116,17 +113,10 @@ public abstract class Connection {
         DUMMY
     }
 
-    protected HttpConnection httpConnection;
-    private OriginConnectionData connectionData;
+    protected HttpConnection http;
+    protected OriginConnectionData data;
     
     protected Connection() {}
-    
-    /**
-     * @return API of this Connection
-     */
-    public ApiEnum getApi() {
-        return connectionData.api;
-    }
 
     /**
      * @return an empty string in case the API routine is not supported
@@ -167,13 +157,6 @@ public abstract class Connection {
     }
     
     /**
-     * @return Does this connection use OAuth?
-     */
-    public boolean isOAuth() {
-        return connectionData.isOAuth;
-    }
-    
-    /**
      * Check API requests status.
      */
     public abstract MbRateLimitStatus rateLimitStatus() throws ConnectionException;
@@ -183,18 +166,18 @@ public abstract class Connection {
      * By default password is not needed and is ignored
      */
     public final boolean isPasswordNeeded() {
-        return httpConnection.isPasswordNeeded();
+        return http.isPasswordNeeded();
     }
     
     /**
      * Set User's password if the Connection object needs it
      */
     public final void setPassword(String password) { 
-        httpConnection.setPassword(password);
+        http.setPassword(password);
     }
 
     public final String getPassword() {
-        return httpConnection.getPassword();
+        return http.getPassword();
     }
     
     /**
@@ -202,7 +185,7 @@ public abstract class Connection {
      * @return true if something changed (so it needs to be rewritten to persistence...)
      */
     public boolean save(AccountDataWriter dw) {
-        return httpConnection.save(dw);
+        return http.save(dw);
     }
     
     /**
@@ -210,7 +193,7 @@ public abstract class Connection {
      * @return true == yes
      */
     public final boolean getCredentialsPresent() {
-        return httpConnection.getCredentialsPresent();
+        return http.getCredentialsPresent();
     }
     
     /**
@@ -239,10 +222,18 @@ public abstract class Connection {
     public abstract boolean destroyStatus(String statusId) throws ConnectionException;
 
     /**
-     * Returns an array of numeric IDs for every user the specified user is following.
-     * @throws ConnectionException
+     * Returns a list of users the specified user is following.
      */
-    public abstract List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException;
+    public List<MbUser> getUsersFollowedBy(String userId) throws ConnectionException {
+        throw ConnectionException.fromStatusCodeAndHost(StatusCode.UNSUPPORTED_API, "(any host)", "getUsersFollowedBy for userOid=" + userId);
+    }
+    
+    /**
+     * Returns a list of IDs for every user the specified user is following.
+     */
+    public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
+        throw ConnectionException.fromStatusCodeAndHost(StatusCode.UNSUPPORTED_API, "(any host)", "getIdsOfUsersFollowedBy for userOid=" + userId);
+    }
     
     /**
      * Returns a single status, specified by the id parameter below.
@@ -327,8 +318,9 @@ public abstract class Connection {
 
     /**
      * Restrict the limit to 1 - 200
+     * @param apiRoutine 
      */
-    public int fixedDownloadLimit(int limit) {
+    public int fixedDownloadLimitForApiRoutine(int limit, ApiRoutineEnum apiRoutine) {
         int out = 200;
         if (limit > 0 && limit < 200) {
             out = limit;
@@ -337,31 +329,23 @@ public abstract class Connection {
     }
 
     public final void setAccountData(OriginConnectionData connectionData) throws InstantiationException, IllegalAccessException {
-        this.connectionData = connectionData;
-        httpConnection = connectionData.httpConnectionClass.newInstance();
-        httpConnection.setConnectionData(HttpConnectionData.fromConnectionData(connectionData));
+        this.data = connectionData;
+        http = connectionData.httpConnectionClass.newInstance();
+        http.setConnectionData(HttpConnectionData.fromConnectionData(connectionData));
     }
 
-    protected long getOriginId() {
-        return connectionData.originId;
-    }
-
-    protected String getAccountUserOid() {
-        return connectionData.accountUserOid;
-    }
-    
     public void clearAuthInformation() {
-        httpConnection.clearAuthInformation();
+        http.clearAuthInformation();
     }
 
     public void setUserTokenWithSecret(String token, String secret) {
-        httpConnection.setUserTokenWithSecret(token, secret);
+        http.setUserTokenWithSecret(token, secret);
     }
 
     public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {
         OAuthConsumerAndProvider oa = null;
-        if (isOAuth()) {
-            oa = (OAuthConsumerAndProvider) httpConnection;
+        if (data.isOAuth) {
+            oa = (OAuthConsumerAndProvider) http;
         }
         return oa;
     }
@@ -369,12 +353,16 @@ public abstract class Connection {
     public void registerClient() {}
 
     public void clearClientKeys() {
-        httpConnection.clearClientKeys();
+        http.clearClientKeys();
     }
 
     public boolean areOAuthClientKeysPresent() {
-        return httpConnection.connectionData.areOAuthClientKeysPresent();
+        return http.data.areOAuthClientKeysPresent();
     }
 
     public void enrichConnectionData(OriginConnectionData connectionData2) { }
+
+    public boolean userObjectHasMessage() {
+        return false;
+    }
 }

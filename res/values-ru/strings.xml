@@ -254,7 +254,7 @@
 	<string name="summary_preference_use_avatars_off">Аватары пользователей не будут показаны</string>
 	<string name="summary_preference_use_avatars_on">Аватары пользователей будут показаны</string>
 	<string name="summary_preference_username">Ваше имя пользователя в Системе микроблогов</string>
-	<string name="summary_preference_username_pumpio">Введите Ваш ID на Вашем pump.io сайте. Он выглядит как email: имя пользователя, а потом \"@\" и имя сервера</string>
+	<string name="summary_preference_username_pumpio">Введите Ваш ID на Вашем pump.io сайте. Он выглядит как email: имя пользователя, а потом \"@\" и имя сервера; например: andstatus@identi.ca</string>
 	<string name="summary_preference_verify_credentials">Данная учётная запись пользователя успешно аутентифицирована (проверена) и включёна. Щёлкните здесь для повторной проверки</string>
     <string name="summary_preference_verify_credentials_failed">Проверка завершилась неудачно. Щёлкните здесь для аутентификации пользователя и включения данной учётной записи</string>
 	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>

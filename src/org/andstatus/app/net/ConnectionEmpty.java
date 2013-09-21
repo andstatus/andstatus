@@ -58,12 +58,6 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
-        // TODO Auto-generated method stub
-        return new ArrayList<String>();
-    }
-
-    @Override
     public MbMessage getMessage(String statusId) throws ConnectionException {
         // TODO Auto-generated method stub
         return MbMessage.getEmpty();

@@ -31,6 +31,7 @@ import android.util.Log;
 import java.util.List;
 import java.util.Vector;
 
+import org.andstatus.app.MessageCounters;
 import org.andstatus.app.R;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestUserMessages;

@@ -201,14 +201,20 @@ public class ConversationActivity extends Activity implements MyServiceListener 
                             row.createdDate = msg.getLong(msg.getColumnIndex(Msg.CREATED_DATE));
                             row.author = msg.getString(msg.getColumnIndex(User.AUTHOR_NAME));
                             row.body = msg.getString(msg.getColumnIndex(Msg.BODY));
-                            row.via = Html.fromHtml(msg.getString(msg.getColumnIndex(Msg.VIA))).toString();
+                            row.via = Html.fromHtml(msg.getString(msg.getColumnIndex(Msg.VIA))).toString().trim();
                             int colIndex = msg.getColumnIndex(User.IN_REPLY_TO_NAME);
                             if (colIndex > -1) {
                                 row.inReplyToName = msg.getString(colIndex);
+                                if (TextUtils.isEmpty(row.inReplyToName)) {
+                                    row.inReplyToName = "";
+                                }
                             }
                             colIndex = msg.getColumnIndex(User.RECIPIENT_NAME);
                             if (colIndex > -1) {
                                 row.recipientName = msg.getString(colIndex);
+                                if (TextUtils.isEmpty(row.recipientName)) {
+                                    row.recipientName = "";
+                                }
                             }
                         }
 

@@ -24,52 +24,45 @@ public abstract class HttpConnection {
     protected static final Integer DEFAULT_GET_REQUEST_TIMEOUT = 15000;
     protected static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 20000;
     
-    protected HttpConnectionData connectionData;
+    protected HttpConnectionData data;
 
     static final String USER_AGENT = "AndStatus";
  
     protected abstract JSONObject postRequest(String path, JSONObject jso) throws ConnectionException;
 
-    protected void setConnectionData(HttpConnectionData connectionData) {
-        this.connectionData = connectionData;
+    protected void setConnectionData(HttpConnectionData data) {
+        this.data = data;
     }  
     
     public String pathToUrl(String path) {
         if (path.contains("://")) {
             return path;
         } else {
-            return "http" + (connectionData.isHttps ? "s" : "")
-                    + "://" + connectionData.host
+            return "http" + (data.isHttps ? "s" : "")
+                    + "://" + data.host
                     + "/" + path;
         }
     }
     
     protected abstract JSONObject postRequest(String path) throws ConnectionException;
-    
+
     protected abstract JSONObject getRequest(String path) throws ConnectionException;
-    protected abstract JSONArray getRequestAsArray(String path) throws ConnectionException;
     
+    protected abstract JSONArray getRequestAsArray(String path) throws ConnectionException;
+
     public abstract void clearAuthInformation();
 
     public void clearClientKeys() {
-        if (connectionData.areOAuthClientKeysPresent()) {
-            connectionData.oauthClientKeys.clear();
+        if (data.areOAuthClientKeysPresent()) {
+            data.oauthClientKeys.clear();
         }
     }
     
-    /**
-     * Do we need password to be set?
-     * By default password is not needed and is ignored
-     */
     public boolean isPasswordNeeded() {
         return false;
     }
     
-    /**
-     * Set User's password if the Connection object needs it
-     */
     public void setPassword(String password) { }
-
     
     public String getPassword() {
         return "";
@@ -81,9 +74,7 @@ public abstract class HttpConnection {
      */
     public boolean save(AccountDataWriter dw) {
         boolean changed = false;
-
-        // Nothing to save
-        
+        // Nothing to save in this implementation
         return changed;
     }
     

@@ -58,7 +58,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
     @Override
     public boolean getCredentialsPresent() {
         boolean yes = false;
-        if (connectionData.oauthClientKeys.areKeysPresent()) {
+        if (data.oauthClientKeys.areKeysPresent()) {
             if (!TextUtils.isEmpty(userToken) && !TextUtils.isEmpty(userSecret)) {
                 yes = true;
             }
@@ -70,16 +70,16 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
         String url;
         switch(routine) {
             case OAUTH_ACCESS_TOKEN:
-                url =  connectionData.oauthPath + "/access_token";
+                url =  data.oauthPath + "/access_token";
                 break;
             case OAUTH_AUTHORIZE:
-                url = connectionData.oauthPath + "/authorize";
+                url = data.oauthPath + "/authorize";
                 break;
             case OAUTH_REQUEST_TOKEN:
-                url = connectionData.oauthPath + "/request_token";
+                url = data.oauthPath + "/request_token";
                 break;
             case OAUTH_REGISTER_CLIENT:
-                url = connectionData.basicPath + "/client/register";
+                url = data.basicPath + "/client/register";
                 break;
             default:
                 url = "";

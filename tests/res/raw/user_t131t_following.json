@@ -1,0 +1,507 @@
+{
+
+    "displayName": "Following for Some tester 131",
+    "url": "https://identi.ca/api/user/t131t/following",
+    "objectTypes": [
+        "person"
+    ],
+    "items": [
+        {
+            "preferredUsername": "grdryn",
+            "url": "https://fmrl.me/grdryn",
+            "displayName": "Gerard Ryan",
+            "links": {
+                "self": {
+                    "href": "https://fmrl.me/api/user/grdryn/profile"
+                },
+                "activity-inbox": {
+                    "href": "https://fmrl.me/api/user/grdryn/inbox"
+                },
+                "activity-outbox": {
+                    "href": "https://fmrl.me/api/user/grdryn/feed"
+                }
+            },
+            "objectType": "person",
+            "updated": "2013-09-10T22:31:31Z",
+            "published": "2013-03-16T16:27:47Z",
+            "followers": {
+                "url": "https://fmrl.me/api/user/grdryn/followers"
+            },
+            "following": {
+                "url": "https://fmrl.me/api/user/grdryn/following",
+                "links": {
+                    "self": {
+                        "href": "https://fmrl.me/api/user/grdryn/following?offset=0&count=8"
+                    },
+                    "current": {
+                        "href": "https://fmrl.me/api/user/grdryn/following"
+                    },
+                    "prev": {
+                        "href": "https://fmrl.me/api/user/grdryn/following?since=acct%3Amarch%40microca.st"
+                    },
+                    "next": {
+                        "href": "https://fmrl.me/api/user/grdryn/following?before=acct%3Aevan%40e14n.com"
+                    }
+                }
+            },
+            "favorites": {
+                "url": "https://fmrl.me/api/user/grdryn/favorites"
+            },
+            "lists": {
+                "url": "https://fmrl.me/api/user/grdryn/lists/person",
+                "displayName": "Collections of persons for Gerard Ryan",
+                "objectTypes": [
+                    "collection"
+                ],
+                "links": {
+                    "first": {
+                        "href": "https://fmrl.me/api/user/grdryn/lists/person"
+                    },
+                    "self": {
+                        "href": "https://fmrl.me/api/user/grdryn/lists/person"
+                    },
+                    "prev": {
+                        "href": "https://fmrl.me/api/user/grdryn/lists/person?since=https%3A%2F%2Ffmrl.me%2Fapi%2Fcollection%2Fg39Xx7CTTEy1Xw6I2hFdng"
+                    }
+                },
+                "author": {
+                    "id": "acct:grdryn@fmrl.me",
+                    "objectType": "person"
+                }
+            },
+            "pump_io": {
+                "followed": true,
+                "shared": false
+            },
+            "location": {
+                "objectType": "place",
+                "displayName": "Ireland"
+            },
+            "summary": "Nobody in particular.",
+            "image": {
+                "url": "https://fmrl.me/uploads/grdryn/2013/3/16/eT12XQ_thumb.jpg",
+                "width": 96,
+                "height": 96
+            },
+            "liked": false,
+            "id": "acct:grdryn@fmrl.me"
+        },
+        {
+            "preferredUsername": "jpope",
+            "url": "https://io.jpope.org/jpope",
+            "displayName": "jpope",
+            "links": {
+                "self": {
+                    "href": "https://io.jpope.org/api/user/jpope/profile"
+                },
+                "activity-inbox": {
+                    "href": "https://io.jpope.org/api/user/jpope/inbox"
+                },
+                "activity-outbox": {
+                    "href": "https://io.jpope.org/api/user/jpope/feed"
+                }
+            },
+            "objectType": "person",
+            "followers": {
+                "url": "https://io.jpope.org/api/user/jpope/followers",
+                "displayName": "Followers for jpope",
+                "objectTypes": [
+                    "person"
+                ],
+                "author": {
+                    "id": "acct:jpope@io.jpope.org",
+                    "objectType": "person"
+                },
+                "links": {
+                    "self": {
+                        "href": "https://io.jpope.org/api/user/jpope/followers?offset=0&count=20"
+                    },
+                    "current": {
+                        "href": "https://io.jpope.org/api/user/jpope/followers"
+                    },
+                    "prev": {
+                        "href": "https://io.jpope.org/api/user/jpope/followers?since=acct%3Ajpope%40microca.st"
+                    }
+                }
+            },
+            "following": {
+                "url": "https://io.jpope.org/api/user/jpope/following",
+                "displayName": "Following for jpope",
+                "objectTypes": [
+                    "person"
+                ],
+                "author": {
+                    "id": "acct:jpope@io.jpope.org",
+                    "objectType": "person"
+                },
+                "links": {
+                    "self": {
+                        "href": "https://io.jpope.org/api/user/jpope/following?offset=0&count="
+                    },
+                    "current": {
+                        "href": "https://io.jpope.org/api/user/jpope/following"
+                    },
+                    "prev": {
+                        "href": "https://io.jpope.org/api/user/jpope/following?since=acct%3Amarjan%40pump.libertopia.cc"
+                    }
+                }
+            },
+            "favorites": {
+                "url": "https://io.jpope.org/api/user/jpope/favorites"
+            },
+            "lists": {
+                "url": "https://io.jpope.org/api/user/jpope/lists/person",
+                "displayName": "Collections of persons for jpope",
+                "objectTypes": [
+                    "collection"
+                ],
+                "links": {
+                    "first": {
+                        "href": "https://io.jpope.org/api/user/jpope/lists/person"
+                    },
+                    "self": {
+                        "href": "https://io.jpope.org/api/user/jpope/lists/person"
+                    },
+                    "prev": {
+                        "href": "https://io.jpope.org/api/user/jpope/lists/person?since=https%3A%2F%2Fio.jpope.org%2Fapi%2Fcollection%2FY0a_lHn6Roe4oWZg9OSxMQ"
+                    }
+                },
+                "author": {
+                    "id": "acct:jpope@io.jpope.org",
+                    "objectType": "person"
+                }
+            },
+            "location": {
+                "objectType": "place",
+                "displayName": "/dev/null"
+            },
+            "summary": "Does the Pope shit in the woods?",
+            "image": {
+                "url": "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png",
+                "width": 96,
+                "height": 96
+            },
+            "pump_io": {
+                "followed": true,
+                "shared": false
+            },
+            "updated": "2013-09-16T14:49:34Z",
+            "liked": false,
+            "shares": {
+                "url": "https://pumpio.com.ar/api/person/UUxjAciGRRmspqyVyj-QBA/shares"
+            },
+            "likes": {
+                "url": "https://pumpio.com.ar/api/person/UUxjAciGRRmspqyVyj-QBA/likes"
+            },
+            "replies": {
+                "url": "https://pumpio.com.ar/api/person/UUxjAciGRRmspqyVyj-QBA/replies"
+            },
+            "id": "acct:jpope@io.jpope.org"
+        },
+        {
+            "preferredUsername": "gitorious",
+            "url": "https://identi.ca/gitorious",
+            "displayName": "Gitorious.org",
+            "links": {
+                "self": {
+                    "href": "https://identi.ca/api/user/gitorious/profile"
+                },
+                "activity-inbox": {
+                    "href": "https://identi.ca/api/user/gitorious/inbox"
+                },
+                "activity-outbox": {
+                    "href": "https://identi.ca/api/user/gitorious/feed"
+                }
+            },
+            "objectType": "person",
+            "followers": {
+                "url": "https://identi.ca/api/user/gitorious/followers"
+            },
+            "following": {
+                "url": "https://identi.ca/api/user/gitorious/following"
+            },
+            "favorites": {
+                "url": "https://identi.ca/api/user/gitorious/favorites"
+            },
+            "lists": {
+                "url": "https://identi.ca/api/user/gitorious/lists/person"
+            },
+            "status_net": {
+                "avatarLinks": [
+                    {
+                        "url": "http://avatar3.status.net/i/identica/57486-95-20090528125600.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 95,
+                        "height": 95
+                    },
+                    {
+                        "url": "http://avatar3.status.net/i/identica/57486-96-20090528125600.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 96,
+                        "height": 96
+                    },
+                    {
+                        "url": "http://avatar3.status.net/i/identica/57486-48-20090528125600.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 48,
+                        "height": 48
+                    },
+                    {
+                        "url": "http://avatar3.status.net/i/identica/57486-24-20090528125600.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 24,
+                        "height": 24
+                    }
+                ],
+                "profile_info": {
+                    "local_id": "57486"
+                }
+            },
+            "image": {
+                "url": "http://avatar3.status.net/i/identica/57486-96-20090528125600.png",
+                "rel": "avatar",
+                "type": "image/png",
+                "width": 96,
+                "height": 96
+            },
+            "portablecontacts_net": {
+                "preferredUsername": "gitorious",
+                "displayName": "Gitorious.org",
+                "note": "Gitorious provides open source infrastructure for hosting open source projects that use Git.",
+                "addresses": {
+                    "formatted": "The Internets"
+                },
+                "urls": [
+                    {
+                        "type": "homepage",
+                        "value": "http://gitorious.org",
+                        "primary": "true"
+                    }
+                ]
+            },
+            "upstreamDuplicates": [
+                "http://identi.ca/user/57486"
+            ],
+            "summary": "Gitorious provides open source infrastructure for hosting open source projects that use Git.",
+            "updated": "2013-08-05T20:40:49Z",
+            "id": "acct:gitorious@identi.ca",
+            "pump_io": {
+                "followed": true
+            }
+        },
+        {
+            "objectType": "person",
+            "published": "2013-09-08T05:17:29Z",
+            "updated": "2013-09-16T18:44:14Z",
+            "links": {
+                "self": {
+                    "href": "https://identi.ca/api/person/UaPr5IvtTweLBw9EX_Fzhg"
+                }
+            },
+            "likes": {
+                "url": "https://identi.ca/api/person/UaPr5IvtTweLBw9EX_Fzhg/likes"
+            },
+            "replies": {
+                "url": "https://identi.ca/api/person/UaPr5IvtTweLBw9EX_Fzhg/replies"
+            },
+            "shares": {
+                "url": "https://identi.ca/api/person/UaPr5IvtTweLBw9EX_Fzhg/shares"
+            },
+            "id": "acct:ken@coding.example",
+            "pump_io": {
+                "followed": true
+            }
+        },
+        {
+            "preferredUsername": "yvolk",
+            "url": "https://identi.ca/yvolk",
+            "displayName": "Yuri Volkov",
+            "links": {
+                "self": {
+                    "href": "https://identi.ca/api/user/yvolk/profile"
+                },
+                "activity-inbox": {
+                    "href": "https://identi.ca/api/user/yvolk/inbox"
+                },
+                "activity-outbox": {
+                    "href": "https://identi.ca/api/user/yvolk/feed"
+                }
+            },
+            "objectType": "person",
+            "followers": {
+                "url": "https://identi.ca/api/user/yvolk/followers"
+            },
+            "following": {
+                "url": "https://identi.ca/api/user/yvolk/following"
+            },
+            "favorites": {
+                "url": "https://identi.ca/api/user/yvolk/favorites"
+            },
+            "lists": {
+                "url": "https://identi.ca/api/user/yvolk/lists/person"
+            },
+            "status_net": {
+                "avatarLinks": [
+                    {
+                        "url": "http://avatar3.status.net/i/identica/925450-80-20120729183726.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 80,
+                        "height": 80
+                    },
+                    {
+                        "url": "http://avatar3.status.net/i/identica/925450-96-20120729183726.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 96,
+                        "height": 96
+                    },
+                    {
+                        "url": "http://avatar3.status.net/i/identica/925450-48-20120729183726.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 48,
+                        "height": 48
+                    },
+                    {
+                        "url": "http://avatar3.status.net/i/identica/925450-24-20120729183726.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 24,
+                        "height": 24
+                    }
+                ],
+                "profile_info": {
+                    "local_id": "925450"
+                }
+            },
+            "image": {
+                "url": "http://avatar3.status.net/i/identica/925450-96-20120729183726.png",
+                "rel": "avatar",
+                "type": "image/png",
+                "width": 96,
+                "height": 96
+            },
+            "location": {
+                "objectType": "place",
+                "position": "+55.75222+37.61556/",
+                "lat": "55.75222",
+                "lon": "37.61556",
+                "displayName": "Moscow, Russia",
+                "url": "http://www.geonames.org/524901"
+            },
+            "portablecontacts_net": {
+                "preferredUsername": "yvolk",
+                "displayName": "Yuri Volkov",
+                "note": "I'm a Business Applications Architect, seeing identi.ca as a door to the new Universe... or at least to new communication scenarios :-)",
+                "addresses": {
+                    "formatted": "Moscow, Russia"
+                },
+                "urls": [
+                    {
+                        "type": "homepage",
+                        "value": "http://yurivolkov.com/Android/index_en.html",
+                        "primary": "true"
+                    }
+                ]
+            },
+            "upstreamDuplicates": [
+                "http://identi.ca/user/925450"
+            ],
+            "summary": "I'm a Business Applications Architect, seeing identi.ca as a door to the new Universe... or at least to new communication scenarios :-)",
+            "updated": "2013-08-06T03:19:52Z",
+            "id": "acct:yvolk@identi.ca",
+            "pump_io": {
+                "followed": true
+            }
+        }
+    ],
+    "totalItems": 5,
+    "author": {
+        "preferredUsername": "t131t",
+        "url": "https://identi.ca/t131t",
+        "displayName": "Some tester 131",
+        "links": {
+            "self": {
+                "href": "https://identi.ca/api/user/t131t/profile"
+            },
+            "activity-inbox": {
+                "href": "https://identi.ca/api/user/t131t/inbox"
+            },
+            "activity-outbox": {
+                "href": "https://identi.ca/api/user/t131t/feed"
+            }
+        },
+        "objectType": "person",
+        "followers": {
+            "url": "https://identi.ca/api/user/t131t/followers"
+        },
+        "following": {
+            "url": "https://identi.ca/api/user/t131t/following"
+        },
+        "favorites": {
+            "url": "https://identi.ca/api/user/t131t/favorites"
+        },
+        "lists": {
+            "url": "https://identi.ca/api/user/t131t/lists/person"
+        },
+        "status_net": {
+            "avatarLinks": [
+                {
+                    "url": "https://secure.gravatar.com/avatar.php?gravatar_id=229fd3c98db5663b52d2f92f0cbf9eb1&default=http%3A%2F%2Ftheme2.status.net%2Fneo%2Fdefault-avatar-profile.png&size=96",
+                    "rel": "avatar",
+                    "width": 96,
+                    "height": 96
+                },
+                {
+                    "url": "https://secure.gravatar.com/avatar.php?gravatar_id=229fd3c98db5663b52d2f92f0cbf9eb1&default=http%3A%2F%2Ftheme2.status.net%2Fneo%2Fdefault-avatar-stream.png&size=48",
+                    "rel": "avatar",
+                    "width": 48,
+                    "height": 48
+                },
+                {
+                    "url": "https://secure.gravatar.com/avatar.php?gravatar_id=229fd3c98db5663b52d2f92f0cbf9eb1&default=http%3A%2F%2Ftheme2.status.net%2Fneo%2Fdefault-avatar-mini.png&size=24",
+                    "rel": "avatar",
+                    "width": 24,
+                    "height": 24
+                }
+            ],
+            "profile_info": {
+                "local_id": "929605"
+            }
+        },
+        "image": {
+            "url": "https://secure.gravatar.com/avatar.php?gravatar_id=229fd3c98db5663b52d2f92f0cbf9eb1&default=http%3A%2F%2Ftheme2.status.net%2Fneo%2Fdefault-avatar-profile.png&size=96",
+            "rel": "avatar",
+            "width": 96,
+            "height": 96
+        },
+        "portablecontacts_net": {
+            "preferredUsername": "t131t",
+            "displayName": "Some tester 131",
+            "note": "Testing account, please ignore"
+        },
+        "upstreamDuplicates": [
+            "http://identi.ca/user/929605"
+        ],
+        "summary": "Testing account, please ignore",
+        "updated": "2013-08-05T21:47:28Z",
+        "id": "acct:t131t@identi.ca"
+    },
+    "links": {
+        "self": {
+            "href": "https://identi.ca/api/user/t131t/following?offset=0&count=20"
+        },
+        "current": {
+            "href": "https://identi.ca/api/user/t131t/following"
+        },
+        "prev": {
+            "href": "https://identi.ca/api/user/t131t/following?since=acct%3Agrdryn%40fmrl.me"
+        }
+    }
+
+}

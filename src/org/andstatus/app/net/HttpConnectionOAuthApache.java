@@ -107,7 +107,7 @@ class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApach
         String response = null;
         boolean ok = false;
         try {
-            if (connectionData.oauthClientKeys.areKeysPresent()) {
+            if (data.oauthClientKeys.areKeysPresent()) {
                 getConsumer().sign(get);
             }
             response = mClient.execute(get, new BasicResponseHandler());
@@ -126,8 +126,8 @@ class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApach
 
     @Override
     public OAuthConsumer getConsumer() {
-        OAuthConsumer consumer = new CommonsHttpOAuthConsumer(connectionData.oauthClientKeys.getConsumerKey(),
-                connectionData.oauthClientKeys.getConsumerSecret());
+        OAuthConsumer consumer = new CommonsHttpOAuthConsumer(data.oauthClientKeys.getConsumerKey(),
+                data.oauthClientKeys.getConsumerSecret());
         if (getCredentialsPresent()) {
             consumer.setTokenWithSecret(getUserToken(), getUserSecret());
         }
@@ -153,7 +153,7 @@ class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApach
             // Maybe we'll need this:
             // post.setParams(...);
 
-            if (connectionData.oauthClientKeys.areKeysPresent()) {
+            if (data.oauthClientKeys.areKeysPresent()) {
                 // sign the request to authenticate
                 getConsumer().sign(post);
             }

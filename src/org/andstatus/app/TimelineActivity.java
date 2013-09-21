@@ -62,6 +62,7 @@ import android.widget.ToggleButton;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -783,7 +784,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
         menu.addIntentOptions(Menu.CATEGORY_ALTERNATIVE, 0, 0, new ComponentName(this,
                 TimelineActivity.class), null, intent, 0, null);
-
+        MyAccount ma = MyAccount.getCurrentAccount();
+        if (ma != null && ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
+            MenuItem item = menu.findItem(R.id.reload_menu_item);
+            item.setEnabled(false);
+            item.setVisible(false);
+        }
         return true;
     }
 
@@ -910,7 +916,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         
         // Show current account info on the left button
         Button selectAccountButton = (Button) findViewById(R.id.selectAccountButton);
-        String accountName = MyAccount.shortestUniqueAccountName(MyAccount.getCurrentAccount());
+        MyAccount ma = MyAccount.getCurrentAccount();
+        String accountName = MyAccount.shortestUniqueAccountName(ma);
+        if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
+            accountName = "(" + accountName + ")";
+        }
         selectAccountButton.setText(accountName);
         
         TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
@@ -1064,13 +1074,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             selecteUserText.setVisibility(View.VISIBLE);
         } else {
             selecteUserText.setVisibility(View.GONE);
-            // Show the "Combined" toggle only if we have more than one account
-            if (MyAccount.numberOfPersistentAccounts() > 1) {
-                combinedTimelineToggle.setVisibility(View.VISIBLE);
-            } else {
-                combinedTimelineToggle.setVisibility(View.GONE);
-                mIsTimelineCombined = false;
-            }
+            // Show the "Combined" toggle even for one account to see messages, 
+            // which are not on the timeline.
+            // E.g. messages by users, downloaded on demand.
+            combinedTimelineToggle.setVisibility(View.VISIBLE);
         }
         noMoreItems = false;
 

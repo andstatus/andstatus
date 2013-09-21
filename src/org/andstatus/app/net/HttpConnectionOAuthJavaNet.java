@@ -104,8 +104,8 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
 
     @Override public OAuthConsumer getConsumer() {
         OAuthConsumer consumer = new DefaultOAuthConsumer(
-                connectionData.oauthClientKeys.getConsumerKey(),
-                connectionData.oauthClientKeys.getConsumerSecret());
+                data.oauthClientKeys.getConsumerKey(),
+                data.oauthClientKeys.getConsumerSecret());
         if (getCredentialsPresent()) {
             consumer.setTokenWithSecret(getUserToken(), getUserSecret());
         }

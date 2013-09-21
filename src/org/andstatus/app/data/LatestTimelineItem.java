@@ -104,7 +104,9 @@ public class LatestTimelineItem {
     /** New Timeline Item was downloaded
      */
     public void onNewMsg(TimelinePosition timelineItemPosition, long timelineItemDate) {
-        if (!timelineItemPosition.isEmpty() && (timelineItemDate > this.timelineItemDate)) {
+        if (timelineItemPosition != null 
+                && !timelineItemPosition.isEmpty() 
+                && (timelineItemDate > this.timelineItemDate)) {
             this.timelineItemDate = timelineItemDate;
             this.position = timelineItemPosition;
             timelineItemChanged = true;

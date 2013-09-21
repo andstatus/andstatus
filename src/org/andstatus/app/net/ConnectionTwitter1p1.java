@@ -50,7 +50,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         if (TextUtils.isEmpty(url)) {
             url = super.getApiPath1(routine);
         } else {
-            url = httpConnection.connectionData.basicPath + "/" + url;
+            url = http.data.basicPath + "/" + url;
         }
         return url;
     }

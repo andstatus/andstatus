@@ -18,6 +18,7 @@ package org.andstatus.app.data;
 
 import java.util.Date;
 
+import org.andstatus.app.MessageCounters;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -48,36 +49,15 @@ public class DataInserter {
     private static final String TAG = DataInserter.class.getSimpleName();
 
     private ContentResolver mContentResolver;
+    private MessageCounters counters;
 
-    private Context mContext;
-
-    /**
-     *  New messages counter. These may be "general" or Direct messages...
-     */
-    private int mMessages;
-
-    /**
-     * Number of new Mentions received 
-     */
-    private int mMentions;
-    /**
-     * Number of new Replies received 
-     */
-    private int mReplies;
-    /**
-     * Total number of messages downloaded
-     */
-    private int mDownloaded;
-
-    private MyAccount ma;
-
-    private TimelineTypeEnum mTimelineType;
+    public DataInserter(MyAccount ma, Context context, TimelineTypeEnum timelineType) {
+        this(new MessageCounters(ma, context, timelineType));
+    }
     
-    public DataInserter(MyAccount ma_in, Context context, TimelineTypeEnum timelineType) {
-        mContext = context;
-        mContentResolver = mContext.getContentResolver();
-        ma = ma_in;
-        mTimelineType = timelineType;
+    public DataInserter(MessageCounters counters) {
+        this.counters = counters;
+        mContentResolver = counters.context.getContentResolver();
     }
     
     public long insertOrUpdateMsg(MbMessage message, LatestUserMessages lum) throws SQLiteConstraintException {
@@ -109,11 +89,18 @@ public class DataInserter {
             long createdDate = 0;
             if (sentDate > 0) {
                 createdDate = sentDate;
-                mDownloaded += 1;
+                counters.totalMessagesDownloaded += 1;
+            }
+            
+            long readerId = 0L;
+            if (message.reader != null) {
+                readerId = insertOrUpdateUser(message.reader, lum);
+            } else {
+                readerId = counters.ma.getUserId();
             }
             
             // Sender
-            Long senderId = 0L;
+            long senderId = 0L;
             if (message.sender != null) {
                 senderId = insertOrUpdateUser(message.sender, lum);
             } else if (senderId_in != 0) {
@@ -131,7 +118,7 @@ public class DataInserter {
                     authorId = insertOrUpdateUser(message.rebloggedMessage.sender, lum);
                 }
 
-                if (senderId !=0 && ma.getUserId() == senderId) {
+                if (senderId !=0 && counters.ma.getUserId() == senderId) {
                     // Msg was reblogged by current User (he is the Sender)
                     values.put(MyDatabase.MsgOfUser.REBLOGGED, 1);
 
@@ -179,9 +166,9 @@ public class DataInserter {
                 boolean countIt = false;
 
                 // Lookup the System's (AndStatus) id from the Originated system's id
-                rowId = MyProvider.oidToId(OidEnum.MSG_OID, ma.getOriginId(), rowOid);
+                rowId = MyProvider.oidToId(OidEnum.MSG_OID, counters.ma.getOriginId(), rowOid);
                 // Construct the Uri to the Msg
-                Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), mTimelineType, false, rowId);
+                Uri msgUri = MyProvider.getTimelineMsgUri(counters.ma.getUserId(), counters.timelineType, false, rowId);
 
                 long sentDate_stored = 0;
                 if (rowId != 0) {
@@ -210,7 +197,7 @@ public class DataInserter {
                     }
 
                     values.put(MyDatabase.Msg.MSG_OID, rowOid);
-                    values.put(MyDatabase.Msg.ORIGIN_ID, ma.getOriginId());
+                    values.put(MyDatabase.Msg.ORIGIN_ID, counters.ma.getOriginId());
                     values.put(MyDatabase.Msg.BODY, body);
                 }
                 if (isNewer) {
@@ -223,9 +210,9 @@ public class DataInserter {
                 Long inReplyToUserId = 0L;
                 Long inReplyToMessageId = 0L;
 
-                boolean mentioned = (mTimelineType == TimelineTypeEnum.MENTIONS);
+                boolean mentioned = (counters.timelineType == TimelineTypeEnum.MENTIONS);
                 
-                switch (mTimelineType) {
+                switch (counters.timelineType) {
                     case DIRECT:
                         values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
                         Long recipientId = 0L;
@@ -243,12 +230,16 @@ public class DataInserter {
                             values.put(MyDatabase.Msg.VIA, message.via);
                         }
                         if (message.favoritedByReader != null) {
-                            values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(message.favoritedByReader));
+                            if (readerId == counters.ma.getUserId()) {
+                                values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(message.favoritedByReader));
+                                MyLog.v(TAG, "Message '" + message.oid + "' " + (message.favoritedByReader ? "favorited" : "unfavorited") 
+                                        + " by " + counters.ma.getAccountName() );
+                            }
                         }
 
                         if (message.inReplyToMessage != null) {
                             // Type of the timeline is ALL meaning that message does not belong to this timeline
-                            DataInserter di = new DataInserter(ma, mContext, MyDatabase.TimelineTypeEnum.ALL);
+                            DataInserter di = new DataInserter(counters);
                             inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
                             if (message.inReplyToMessage.sender != null) {
                                 inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
@@ -259,10 +250,10 @@ public class DataInserter {
                         if (inReplyToUserId != 0) {
                             values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
 
-                            if (ma.getUserId() == inReplyToUserId) {
+                            if (counters.ma.getUserId() == inReplyToUserId) {
                                 values.put(MyDatabase.MsgOfUser.REPLIED, 1);
                                 if (countIt) { 
-                                    mReplies++; 
+                                    counters.newRepliesCount++; 
                                     }
                                 // We consider a Reply to be a Mention also?! 
                                 // ...Yes, at least as long as we don't have "Replies" timeline type 
@@ -275,13 +266,13 @@ public class DataInserter {
                 }
                 
                 if (countIt) { 
-                    mMessages++;
+                    counters.newMessagesCount++;
                     }
                 if (body.length() > 0) {
                     if (!mentioned) {
                         // Check if current user was mentioned in the text of the message
                         if (body.length() > 0) {
-                            if (body.contains("@" + ma.getUsername())) {
+                            if (body.contains("@" + counters.ma.getUsername())) {
                                 mentioned = true;
                             }
                         }
@@ -289,7 +280,7 @@ public class DataInserter {
                 }
                 if (mentioned) {
                     if (countIt) { 
-                        mMentions++;
+                        counters.newMentionsCount++;
                         }
                   values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
                 }
@@ -302,7 +293,7 @@ public class DataInserter {
                 }
                 if (rowId == 0) {
                     // There was no such row so add the new one
-                    msgUri = mContentResolver.insert(MyProvider.getTimelineUri(ma.getUserId(), MyDatabase.TimelineTypeEnum.HOME, false), values);
+                    msgUri = mContentResolver.insert(MyProvider.getTimelineUri(counters.ma.getUserId(), MyDatabase.TimelineTypeEnum.HOME, false), values);
                     rowId = MyProvider.uriToMessageId(msgUri);
                 } else {
                   mContentResolver.update(msgUri, values, null, null);
@@ -338,6 +329,14 @@ public class DataInserter {
         String userName = mbUser.userName;
         String userOid = mbUser.oid;
         long originId = mbUser.originId;
+        
+        long readerId = 0L;
+        if (mbUser.reader != null) {
+            readerId = insertOrUpdateUser(mbUser.reader, lum);
+        } else {
+            readerId = counters.ma.getUserId();
+        }
+        
         long userId = 0L;
         if (!SharedPreferencesUtil.isEmpty(userOid)) {
             // Lookup the System's (AndStatus) id from the Originated system's id
@@ -383,15 +382,15 @@ public class DataInserter {
                 }
             }
             if (mbUser.followedByReader != TriState.UNKNOWN ) {
-                if (mbUser.reader.oid.equalsIgnoreCase(ma.getUserOid())) {
+                if (readerId == counters.ma.getUserId()) {
                     values.put(MyDatabase.FollowingUser.USER_FOLLOWED, mbUser.followedByReader.toBoolean(false));
                     MyLog.v(TAG, "User '" + userName + "' is " + (mbUser.followedByReader.toBoolean(false) ? "" : "not ") 
-                            + "followed by " + ma.getAccountName() );
+                            + "followed by " + counters.ma.getAccountName() );
                 }
             }
             
             // Construct the Uri to the User
-            Uri userUri = MyProvider.getUserUri(ma.getUserId(), userId);
+            Uri userUri = MyProvider.getUserUri(counters.ma.getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
                 userUri = mContentResolver.insert(userUri, values);
@@ -405,32 +404,17 @@ public class DataInserter {
             }
             
         } catch (Exception e) {
-            Log.e(TAG, "insertUserFromJSONObject: " + e.toString());
+            Log.e(TAG, "insertUser: " + e.toString());
+            e.printStackTrace();
         }
         return userId;
     }
     
-    public long insertOrUpdateMsg(MbMessage jo) throws SQLiteConstraintException {
+    public long insertOrUpdateMsg(MbMessage message) throws SQLiteConstraintException {
         LatestUserMessages lum = new LatestUserMessages();
-        long rowId = insertOrUpdateMsg(jo, lum);
+        long rowId = insertOrUpdateMsg(message, lum);
         lum.save();
         mContentResolver.notifyChange(MyProvider.TIMELINE_URI, null);
         return rowId;
-    }
-
-    public int newMessagesCount() {
-        return mMessages;
-    }
-
-    public int newRepliesCount() {
-        return mReplies;
-    }
-
-    public int newMentionsCount() {
-        return mMentions;
-    }
-
-    public int totalMessagesDownloadedCount() {
-        return mDownloaded;
     }
 }

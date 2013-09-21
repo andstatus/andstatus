@@ -63,8 +63,6 @@ public class MyUtilTest extends ActivityTestCase {
     	public int numSomething = 0;
     	public int array_patterns = 0;
     	public int array_formats = 0;
-        // Is not used yet...
-        public String expectedOutput;
         
         public MessageFormatTest(int messageFormat,
     			int numSomething, int array_patterns, int array_formats) {
