@@ -18,6 +18,8 @@ package org.andstatus.app.net;
 
 import android.text.TextUtils;
 
+import org.andstatus.app.util.TriState;
+
 /**
  * 'Mb' stands for "Microblogging system" 
  * @author Yuri Volkov
@@ -38,8 +40,8 @@ public class MbMessage {
      * Some additional attributes may appear from the Reader's
      * point of view (usually - from the point of view of the authenticated user)
      */
-    public MbUser reader = null;
-    public Boolean favoritedByReader = null;
+    public MbUser actor = null;
+    public TriState favoritedByActor = TriState.UNKNOWN;
     
     // In our system
     public long originId = 0L;

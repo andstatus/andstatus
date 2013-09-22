@@ -1028,7 +1028,7 @@ public class MyService extends Service {
                         (create ? "create" : "destroy") + "Favorite; msgId not found: " + msgId);
             }
             if (ok) {
-                if (SharedPreferencesUtil.isTrue(message.favoritedByReader) != create) {
+                if (SharedPreferencesUtil.isTrue(message.favoritedByActor) != create) {
                     /**
                      * yvolk: 2011-09-27 Twitter docs state that
                      * this may happen due to asynchronous nature of
@@ -1040,7 +1040,7 @@ public class MyService extends Service {
                         // For the case we created favorite, let's
                         // change
                         // the flag manually.
-                        message.favoritedByReader = create;
+                        message.favoritedByActor = TriState.fromBoolean(create);
 
                         MyLog.d(TAG,
                                 (create ? "create" : "destroy")
@@ -1099,10 +1099,10 @@ public class MyService extends Service {
                         (follow ? "Follow" : "Stop following") + " User; userId not found: " + userId);
             }
             if (ok) {
-                if (user.followedByReader != TriState.UNKNOWN &&  user.followedByReader.toBoolean(follow) != follow) {
+                if (user.followedByActor != TriState.UNKNOWN &&  user.followedByActor.toBoolean(follow) != follow) {
                     if (follow) {
                         // Act just like for creating favorite...
-                        user.followedByReader = TriState.fromBoolean(follow);
+                        user.followedByActor = TriState.fromBoolean(follow);
 
                         MyLog.d(TAG,
                                 (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");

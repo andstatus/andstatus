@@ -128,7 +128,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
                 new TimelinePosition(sinceId) , 20, "acct:t131t@" + host);
         assertNotNull("timeline returned", timeline);
-        int size = 4;
+        int size = 5;
         assertEquals("Response for t131t", size, timeline.size());
 
         int ind = 0;
@@ -137,17 +137,22 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
 
         ind++;
         assertEquals("Other User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
-        assertEquals("Other actor", "acct:jpope@io.jpope.org", timeline.get(ind).mbUser.reader.oid);
-        assertEquals("Following", TriState.TRUE, timeline.get(ind).mbUser.followedByReader);
+        assertEquals("Other actor", "acct:jpope@io.jpope.org", timeline.get(ind).mbUser.actor.oid);
+        assertEquals("Following", TriState.TRUE, timeline.get(ind).mbUser.followedByActor);
 
         ind++;
         assertEquals("User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
         MbUser mbUser = timeline.get(ind).mbUser;
-        assertEquals("Following", TriState.TRUE, mbUser.followedByReader);
+        assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
 
         ind++;
-        assertTrue("Favorited by someone else", timeline.get(ind).mbMessage.favoritedByReader);
-        assertEquals("Reader -someone else", "acct:jpope@io.jpope.org" , timeline.get(ind).mbMessage.reader.oid);
+        assertEquals("Favorited by someone else", TriState.TRUE, timeline.get(ind).mbMessage.favoritedByActor);
+        assertEquals("Actor -someone else", "acct:jpope@io.jpope.org" , timeline.get(ind).mbMessage.actor.oid);
+        assertTrue("Does not have a recipient", timeline.get(ind).mbMessage.recipient == null);
+
+        ind++;
+        assertTrue("Have a recipient", timeline.get(ind).mbMessage.recipient != null);
+        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , timeline.get(ind).mbMessage.recipient.oid);
     }
 
     public void testGetUsersFollowedBy() throws ConnectionException {

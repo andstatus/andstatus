@@ -35,8 +35,8 @@ public class MbUser {
     public long updatedDate = 0;
     public MbMessage latestMessage = null;    
 
-    public MbUser reader = null;
-    public TriState followedByReader = TriState.UNKNOWN;
+    public MbUser actor = null;
+    public TriState followedByActor = TriState.UNKNOWN;
     
     // In our system
     public long originId = 0L;

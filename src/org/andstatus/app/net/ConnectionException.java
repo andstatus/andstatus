@@ -32,15 +32,19 @@ public class ConnectionException extends Exception {
         UNKNOWN,
         UNSUPPORTED_API,
         NOT_FOUND,
+        BAD_REQUEST,
         AUTHENTICATION_ERROR,
         CREDENTIALS_OF_OTHER_USER,
         NO_CREDENTIALS_FOR_HOST;
         
         public static StatusCode fromResponseCode(int responseCode) {
-            if (responseCode==404) {
-                return NOT_FOUND;
-            } else {
-                return UNKNOWN;
+            switch (responseCode) {
+                case 404:
+                    return NOT_FOUND;
+                case 400:
+                    return BAD_REQUEST;
+                default:
+                    return UNKNOWN;
             }
         }
     }
@@ -59,10 +63,11 @@ public class ConnectionException extends Exception {
     }
 
     public static ConnectionException fromStatusCodeHttp(int statusCodeHttp, final String detailMessage) {
-        if (statusCodeHttp == 404) {
-            return new ConnectionException(StatusCode.NOT_FOUND, detailMessage);
-        } else {
+        StatusCode statusCode = StatusCode.fromResponseCode(statusCodeHttp);
+        if (statusCode == StatusCode.UNKNOWN) {
             return new ConnectionException(detailMessage);
+        } else {
+            return new ConnectionException(statusCode, detailMessage);
         }
     }
 
@@ -81,7 +86,6 @@ public class ConnectionException extends Exception {
         this.statusCode = statusCode;
         switch (statusCode) {
             case UNKNOWN:
-            case NOT_FOUND:
                 break;
             default:
                 isHardError = true;

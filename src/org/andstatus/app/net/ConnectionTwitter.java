@@ -248,7 +248,7 @@ public abstract class ConnectionTwitter extends Connection {
             oid = jso.optString("id");
         } 
         MbMessage message =  MbMessage.fromOriginAndOid(data.originId, oid);
-        message.reader = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
+        message.actor = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
         try {
             if (jso.has("created_at")) {
                 Long created = 0L;
@@ -287,7 +287,7 @@ public abstract class ConnectionTwitter extends Connection {
                 message.via = jso.getString("source");
             }
             if (jso.has("favorited")) {
-                message.favoritedByReader = SharedPreferencesUtil.isTrue(jso.getString("favorited"));
+                message.favoritedByActor = TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited")));
             }
 
             // If the Msg is a Reply to other message
@@ -360,7 +360,7 @@ public abstract class ConnectionTwitter extends Connection {
             }
         }
         MbUser user = MbUser.fromOriginAndUserOid(data.originId, oid);
-        user.reader = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
+        user.actor = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
         user.userName = userName;
         user.realName = jso.optString("name");
         user.avatarUrl = jso.optString("profile_image_url");
@@ -373,7 +373,7 @@ public abstract class ConnectionTwitter extends Connection {
             }
         }
         if (!jso.isNull("following")) {
-            user.followedByReader = TriState.fromBoolean(jso.optBoolean("following"));
+            user.followedByActor = TriState.fromBoolean(jso.optBoolean("following"));
         }
         if (jso.has("status")) {
             JSONObject latestMessage;

@@ -826,6 +826,7 @@ public class MyProvider extends ContentProvider {
         msgProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
         msgProjectionMap.put(User.LINKED_USER_ID, User.LINKED_USER_ID);
         msgProjectionMap.put(MsgOfUser.USER_ID, MyDatabase.MSGOFUSER_TABLE_NAME + "." + MsgOfUser.USER_ID + " AS " + MsgOfUser.USER_ID);
+        msgProjectionMap.put(MsgOfUser.DIRECTED, MsgOfUser.DIRECTED);
         msgProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
         msgProjectionMap.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
         msgProjectionMap.put(MsgOfUser.REBLOG_OID, MsgOfUser.REBLOG_OID);

@@ -92,11 +92,11 @@ public class DataInserter {
                 counters.totalMessagesDownloaded += 1;
             }
             
-            long readerId = 0L;
-            if (message.reader != null) {
-                readerId = insertOrUpdateUser(message.reader, lum);
+            long actorId = 0L;
+            if (message.actor != null) {
+                actorId = insertOrUpdateUser(message.actor, lum);
             } else {
-                readerId = counters.ma.getUserId();
+                actorId = counters.ma.getUserId();
             }
             
             // Sender
@@ -210,18 +210,17 @@ public class DataInserter {
                 Long inReplyToUserId = 0L;
                 Long inReplyToMessageId = 0L;
 
-                boolean mentioned = (counters.timelineType == TimelineTypeEnum.MENTIONS);
-                
-                switch (counters.timelineType) {
-                    case DIRECT:
+                if (message.recipient != null) {
+                    long recipientId = insertOrUpdateUser(message.recipient, lum);
+                    if (recipientId == counters.ma.getUserId()) {
                         values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
-                        Long recipientId = 0L;
-                        if (message.recipient != null) {
-                            recipientId = insertOrUpdateUser(message.recipient, lum);
-                        }
                         values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
-                        break;
-                        
+                        MyLog.v(TAG, "Message '" + message.oid + "' is Directed to " 
+                                + counters.ma.getAccountName() );
+                    }
+                }
+                boolean mentioned = (counters.timelineType == TimelineTypeEnum.MENTIONS);
+                switch (counters.timelineType) {
                     case HOME:
                         values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
                         
@@ -229,10 +228,10 @@ public class DataInserter {
                         if (!TextUtils.isEmpty(message.via)) {
                             values.put(MyDatabase.Msg.VIA, message.via);
                         }
-                        if (message.favoritedByReader != null) {
-                            if (readerId == counters.ma.getUserId()) {
-                                values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(message.favoritedByReader));
-                                MyLog.v(TAG, "Message '" + message.oid + "' " + (message.favoritedByReader ? "favorited" : "unfavorited") 
+                        if (message.favoritedByActor != TriState.UNKNOWN) {
+                            if (actorId == counters.ma.getUserId()) {
+                                values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(message.favoritedByActor));
+                                MyLog.v(TAG, "Message '" + message.oid + "' " + (message.favoritedByActor.toBoolean(false) ? "favorited" : "unfavorited") 
                                         + " by " + counters.ma.getAccountName() );
                             }
                         }
@@ -331,8 +330,8 @@ public class DataInserter {
         long originId = mbUser.originId;
         
         long readerId = 0L;
-        if (mbUser.reader != null) {
-            readerId = insertOrUpdateUser(mbUser.reader, lum);
+        if (mbUser.actor != null) {
+            readerId = insertOrUpdateUser(mbUser.actor, lum);
         } else {
             readerId = counters.ma.getUserId();
         }
@@ -381,10 +380,10 @@ public class DataInserter {
                     values.put(MyDatabase.User.CREATED_DATE, mbUser.updatedDate);
                 }
             }
-            if (mbUser.followedByReader != TriState.UNKNOWN ) {
+            if (mbUser.followedByActor != TriState.UNKNOWN ) {
                 if (readerId == counters.ma.getUserId()) {
-                    values.put(MyDatabase.FollowingUser.USER_FOLLOWED, mbUser.followedByReader.toBoolean(false));
-                    MyLog.v(TAG, "User '" + userName + "' is " + (mbUser.followedByReader.toBoolean(false) ? "" : "not ") 
+                    values.put(MyDatabase.FollowingUser.USER_FOLLOWED, mbUser.followedByActor.toBoolean(false));
+                    MyLog.v(TAG, "User '" + userName + "' is " + (mbUser.followedByActor.toBoolean(false) ? "" : "not ") 
                             + "followed by " + counters.ma.getAccountName() );
                 }
             }

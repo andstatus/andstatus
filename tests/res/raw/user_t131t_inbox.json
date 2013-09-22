@@ -20,6 +20,239 @@
   },
   "items":[
     {
+    "to": [
+        {
+            "preferredUsername": "yvolk",
+            "url": "https://identi.ca/yvolk",
+            "displayName": "Yuri Volkov",
+            "links": {
+                "self": {
+                    "href": "https://identi.ca/api/user/yvolk/profile"
+                },
+                "activity-inbox": {
+                    "href": "https://identi.ca/api/user/yvolk/inbox"
+                },
+                "activity-outbox": {
+                    "href": "https://identi.ca/api/user/yvolk/feed"
+                }
+            },
+            "objectType": "person",
+            "followers": {
+                "url": "https://identi.ca/api/user/yvolk/followers"
+            },
+            "following": {
+                "url": "https://identi.ca/api/user/yvolk/following"
+            },
+            "favorites": {
+                "url": "https://identi.ca/api/user/yvolk/favorites"
+            },
+            "lists": {
+                "url": "https://identi.ca/api/user/yvolk/lists/person"
+            },
+            "status_net": {
+                "avatarLinks": [
+                    {
+                        "url": "http://avatar3.status.net/i/identica/925450-80-20120729183726.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 80,
+                        "height": 80
+                    },
+                    {
+                        "url": "http://avatar3.status.net/i/identica/925450-96-20120729183726.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 96,
+                        "height": 96
+                    },
+                    {
+                        "url": "http://avatar3.status.net/i/identica/925450-48-20120729183726.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 48,
+                        "height": 48
+                    },
+                    {
+                        "url": "http://avatar3.status.net/i/identica/925450-24-20120729183726.png",
+                        "rel": "avatar",
+                        "type": "image/png",
+                        "width": 24,
+                        "height": 24
+                    }
+                ],
+                "profile_info": {
+                    "local_id": "925450"
+                }
+            },
+            "image": {
+                "url": "http://avatar3.status.net/i/identica/925450-96-20120729183726.png",
+                "rel": "avatar",
+                "type": "image/png",
+                "width": 96,
+                "height": 96
+            },
+            "location": {
+                "objectType": "place",
+                "position": "+55.75222+37.61556/",
+                "lat": "55.75222",
+                "lon": "37.61556",
+                "displayName": "Moscow, Russia",
+                "url": "http://www.geonames.org/524901"
+            },
+            "portablecontacts_net": {
+                "preferredUsername": "yvolk",
+                "displayName": "Yuri Volkov",
+                "note": "I'm a Business Applications Architect, seeing identi.ca as a door to the new Universe... or at least to new communication scenarios :-)",
+                "addresses": {
+                    "formatted": "Moscow, Russia"
+                },
+                "urls": [
+                    {
+                        "type": "homepage",
+                        "value": "http://yurivolkov.com/Android/index_en.html",
+                        "primary": "true"
+                    }
+                ]
+            },
+            "upstreamDuplicates": [
+                "http://identi.ca/user/925450"
+            ],
+            "summary": "I'm a Business Applications Architect, seeing identi.ca as a door to the new Universe... or at least to new communication scenarios :-)",
+            "updated": "2013-08-06T03:19:52Z",
+            "id": "acct:yvolk@identi.ca"
+        }
+    ],
+    "generator": {
+        "displayName": "AndStatus",
+        "objectType": "application",
+        "published": "2013-09-21T17:39:56Z",
+        "updated": "2013-09-21T17:39:56Z",
+        "links": {
+            "self": {
+                "href": "https://identi.ca/api/application/ScxNTztVRRSN9AzFnso82A"
+            }
+        },
+        "likes": {
+            "url": "https://identi.ca/api/application/ScxNTztVRRSN9AzFnso82A/likes"
+        },
+        "replies": {
+            "url": "https://identi.ca/api/application/ScxNTztVRRSN9AzFnso82A/replies"
+        },
+        "shares": {
+            "url": "https://identi.ca/api/application/ScxNTztVRRSN9AzFnso82A/shares"
+        },
+        "id": "urn:uuid:f1c7c04e-6182-5eeb-bd45-3e681a859983"
+    },
+    "object": {
+        "content": "This is test direct message. Is it?",
+        "objectType": "comment",
+        "published": "2013-09-22T06:52:03Z",
+        "updated": "2013-09-22T06:52:03Z",
+        "links": {
+            "self": {
+                "href": "https://identi.ca/api/comment/9Xocr9B2SIajkTwJHn90Pw"
+            }
+        },
+        "likes": {
+            "url": "https://identi.ca/api/comment/9Xocr9B2SIajkTwJHn90Pw/likes",
+            "totalItems": 0
+        },
+        "replies": {
+            "url": "https://identi.ca/api/comment/9Xocr9B2SIajkTwJHn90Pw/replies",
+            "totalItems": 0
+        },
+        "shares": {
+            "url": "https://identi.ca/api/comment/9Xocr9B2SIajkTwJHn90Pw/shares",
+            "totalItems": 0
+        },
+        "url": "https://identi.ca/t131t/comment/9Xocr9B2SIajkTwJHn90Pw",
+        "id": "https://identi.ca/api/comment/9Xocr9B2SIajkTwJHn90Pw"
+    },
+    "actor": {
+        "preferredUsername": "t131t",
+        "url": "https://identi.ca/t131t",
+        "displayName": "Some tester 131",
+        "links": {
+            "self": {
+                "href": "https://identi.ca/api/user/t131t/profile"
+            },
+            "activity-inbox": {
+                "href": "https://identi.ca/api/user/t131t/inbox"
+            },
+            "activity-outbox": {
+                "href": "https://identi.ca/api/user/t131t/feed"
+            }
+        },
+        "objectType": "person",
+        "followers": {
+            "url": "https://identi.ca/api/user/t131t/followers"
+        },
+        "following": {
+            "url": "https://identi.ca/api/user/t131t/following"
+        },
+        "favorites": {
+            "url": "https://identi.ca/api/user/t131t/favorites"
+        },
+        "lists": {
+            "url": "https://identi.ca/api/user/t131t/lists/person"
+        },
+        "status_net": {
+            "avatarLinks": [
+                {
+                    "url": "https://secure.gravatar.com/avatar.php?gravatar_id=229fd3c98db5663b52d2f92f0cbf9eb1&default=http%3A%2F%2Ftheme2.status.net%2Fneo%2Fdefault-avatar-profile.png&size=96",
+                    "rel": "avatar",
+                    "width": 96,
+                    "height": 96
+                },
+                {
+                    "url": "https://secure.gravatar.com/avatar.php?gravatar_id=229fd3c98db5663b52d2f92f0cbf9eb1&default=http%3A%2F%2Ftheme2.status.net%2Fneo%2Fdefault-avatar-stream.png&size=48",
+                    "rel": "avatar",
+                    "width": 48,
+                    "height": 48
+                },
+                {
+                    "url": "https://secure.gravatar.com/avatar.php?gravatar_id=229fd3c98db5663b52d2f92f0cbf9eb1&default=http%3A%2F%2Ftheme2.status.net%2Fneo%2Fdefault-avatar-mini.png&size=24",
+                    "rel": "avatar",
+                    "width": 24,
+                    "height": 24
+                }
+            ],
+            "profile_info": {
+                "local_id": "929605"
+            }
+        },
+        "image": {
+            "url": "https://secure.gravatar.com/avatar.php?gravatar_id=229fd3c98db5663b52d2f92f0cbf9eb1&default=http%3A%2F%2Ftheme2.status.net%2Fneo%2Fdefault-avatar-profile.png&size=96",
+            "rel": "avatar",
+            "width": 96,
+            "height": 96
+        },
+        "portablecontacts_net": {
+            "preferredUsername": "t131t",
+            "displayName": "Some tester 131",
+            "note": "Testing account, please ignore"
+        },
+        "upstreamDuplicates": [
+            "http://identi.ca/user/929605"
+        ],
+        "summary": "Testing account, please ignore",
+        "updated": "2013-08-05T21:47:28Z",
+        "id": "acct:t131t@identi.ca"
+    },
+    "verb": "post",
+    "objectType": "activity",
+    "updated": "2013-09-22T06:52:03Z",
+    "links": {
+        "self": {
+            "href": "https://identi.ca/api/activity/wLU5yY5ISYK2yMu6FuMCGw"
+        }
+    },
+    "url": "https://identi.ca/undefined/activity/wLU5yY5ISYK2yMu6FuMCGw",
+    "published": "2013-09-22T06:52:03Z",
+    "content": "<a href='https://identi.ca/t131t'>Some tester 131</a> posted <a href='https://identi.ca/t131t/comment/9Xocr9B2SIajkTwJHn90Pw'>a comment</a>",
+    "id": "https://identi.ca/api/activity/wLU5yY5ISYK2yMu6FuMCGw"
+	}, 
+	{
     "verb": "favorite",
     "generator": {
         "displayName": "Puma",

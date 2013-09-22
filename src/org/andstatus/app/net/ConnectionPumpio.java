@@ -165,7 +165,7 @@ public class ConnectionPumpio extends Connection {
         }
         String oid = jso.optString("id");
         MbUser user = MbUser.fromOriginAndUserOid(data.originId, oid);
-        user.reader = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
+        user.actor = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
         user.userName = userOidToUsername(oid);
         user.oid = oid;
         user.realName = jso.optString("displayName");
@@ -445,13 +445,13 @@ public class ConnectionPumpio extends Connection {
             }
             mbUser = userFromJson(activity.getJSONObject("object"));
             if (activity.has("actor")) {
-                mbUser.reader = userFromJson(activity.getJSONObject("actor"));
+                mbUser.actor = userFromJson(activity.getJSONObject("actor"));
             }
             
             if (verb.equalsIgnoreCase("follow")) {
-                mbUser.followedByReader = TriState.TRUE;
+                mbUser.followedByActor = TriState.TRUE;
             } else if (verb.equalsIgnoreCase("stop-following")) {
-                mbUser.followedByReader = TriState.FALSE;
+                mbUser.followedByActor = TriState.FALSE;
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(TAG, e, activity, "Parsing activity");
@@ -486,13 +486,13 @@ public class ConnectionPumpio extends Connection {
                 return MbMessage.getEmpty();
             } 
             message =  MbMessage.fromOriginAndOid(data.originId, oid);
-            message.reader = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
+            message.actor = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
             message.sentDate = dateFromJson(activity, "updated");
 
             if (activity.has("actor")) {
                 message.sender = userFromJson(activity.getJSONObject("actor"));
                 if (!message.sender.isEmpty()) {
-                    message.reader = message.sender;
+                    message.actor = message.sender;
                 }
             }
             if (activity.has("to")) {
@@ -501,10 +501,13 @@ public class ConnectionPumpio extends Connection {
                     message.recipient = userFromJson(to);
                 } else {
                     JSONArray arrayOfTo = activity.optJSONArray("to");
-                    if (arrayOfTo != null && arrayOfTo.length() == 1) {
+                    if (arrayOfTo != null && arrayOfTo.length() > 0) {
                         // TODO: handle multiple recipients
                         to = arrayOfTo.optJSONObject(0);
-                        message.recipient = userFromJson(to);
+                        MbUser recipient = userFromJson(to);
+                        if (!recipient.isEmpty()) {
+                            message.recipient = recipient;
+                        }
                     }
                 }
             }
@@ -525,9 +528,9 @@ public class ConnectionPumpio extends Connection {
                 }
             } else {
                 if (verb.equalsIgnoreCase("favorite")) {
-                    message.favoritedByReader = true;
+                    message.favoritedByActor = TriState.TRUE;
                 } else if (verb.equalsIgnoreCase("unfavorite") || verb.equalsIgnoreCase("unlike")) {
-                    message.favoritedByReader = false;
+                    message.favoritedByActor = TriState.FALSE;
                 }
                 
                 if (PumpioObjectType.compatibleWith(jso) == PumpioObjectType.COMMENT) {
@@ -587,7 +590,7 @@ public class ConnectionPumpio extends Connection {
                 return MbMessage.getEmpty();
             } 
             message =  MbMessage.fromOriginAndOid(data.originId, oid);
-            message.reader = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
+            message.actor = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
 
             parseComment(message, jso);
         } catch (JSONException e) {
