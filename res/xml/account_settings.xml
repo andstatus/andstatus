@@ -21,31 +21,31 @@
     android:summary="@string/account_settings_summary"
     android:title="@string/account_settings_action" >
 
+    <!-- We really don't need android:persistent="true" but we need onSharedPreferenceChanged... -->        
+    <ListPreference 
+        android:key="origin_name"
+        android:persistent="true"
+        android:summary="@string/summary_preference_origin_system"
+        android:title="@string/title_preference_origin_system" 
+        android:entries="@array/origin_system_entries"
+        android:entryValues="@array/origin_system_entries"
+        android:dialogTitle="@string/dialog_title_preference_origin_system"
+        android:defaultValue="Twitter" />
+    <Preference
+        android:key="verify_credentials"
+        android:persistent="false"
+        android:summary="@string/summary_preference_verify_credentials"
+        android:title="@string/title_preference_verify_credentials" />
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="oauth"
+        android:persistent="true"
+        android:summaryOff="@string/summary_preference_oauth_off"
+        android:summaryOn="@string/summary_preference_oauth_on"
+        android:title="@string/title_preference_oauth" />
     <!-- USER CREDENTIALS -->
     <PreferenceCategory android:title="@string/category_title_preference_credentials" >
-        <!-- We really don't need android:persistent="true" but we need onSharedPreferenceChanged... -->        
-        <ListPreference 
-            android:key="origin_name"
-            android:persistent="true"
-            android:summary="@string/summary_preference_origin_system"
-            android:title="@string/title_preference_origin_system" 
-            android:entries="@array/origin_system_entries"
-            android:entryValues="@array/origin_system_entries"
-            android:dialogTitle="@string/dialog_title_preference_origin_system"
-            android:defaultValue="Twitter" />
-        <Preference
-            android:key="verify_credentials"
-            android:persistent="false"
-            android:summary="@string/summary_preference_verify_credentials"
-            android:title="@string/title_preference_verify_credentials" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="oauth"
-            android:persistent="true"
-            android:summaryOff="@string/summary_preference_oauth_off"
-            android:summaryOn="@string/summary_preference_oauth_on"
-            android:title="@string/title_preference_oauth" />
         <EditTextPreference
             android:dialogTitle="@string/dialog_title_preference_username"
             android:key="username_new"

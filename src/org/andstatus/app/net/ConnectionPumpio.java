@@ -22,7 +22,6 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.andstatus.app.net.ConnectionException.StatusCode;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -30,18 +29,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -115,59 +107,6 @@ public class ConnectionPumpio extends Connection {
         }
     }
     
-    /**
-     * Partially borrowed from the "Impeller" code !
-     */
-    @Override
-    public void registerClient() {
-        String consumerKey = "";
-        String consumerSecret = "";
-        http.data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-
-        try {
-            URL endpoint = new URL(http.pathToUrl(getApiPath(ApiRoutineEnum.REGISTER_CLIENT)));
-            HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
-                    
-            HashMap<String, String> params = new HashMap<String, String>();
-            params.put("type", "client_associate");
-            params.put("application_type", "native");
-            params.put("redirect_uris", Origin.CALLBACK_URI.toString());
-            params.put("client_name", HttpConnection.USER_AGENT);
-            params.put("application_name", HttpConnection.USER_AGENT);
-            String requestBody = HttpJavaNetUtils.encode(params);
-            conn.setDoOutput(true);
-            conn.setDoInput(true);
-            
-            Writer w = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
-            w.write(requestBody);
-            w.close();
-            
-            if(conn.getResponseCode() != 200) {
-                String msg = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream()));
-                Log.e(TAG, "Server returned an error response: " + msg);
-                Log.e(TAG, "Server returned an error response: " + conn.getResponseMessage());
-            } else {
-                String response = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-                JSONObject jso = new JSONObject(response);
-                if (jso != null) {
-                    consumerKey = jso.getString("client_id");
-                    consumerSecret = jso.getString("client_secret");
-                    http.data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-                }
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "registerClient Exception: " + e.toString());
-        } catch (JSONException e) {
-            Log.e(TAG, "registerClient Exception: " + e.toString());
-            e.printStackTrace();
-        } catch (ConnectionException e) {
-            Log.e(TAG, "registerClient Exception: " + e.toString());
-        }
-        if (http.data.oauthClientKeys.areKeysPresent()) {
-            MyLog.v(TAG, "Registered client for " + http.data.host);
-        }
-    }
-
     @Override
     protected String getApiPath1(ApiRoutineEnum routine) {
         String url;
@@ -402,7 +341,10 @@ public class ConnectionPumpio extends Connection {
             }
         }
         if (!conu.httpConnection.data.areOAuthClientKeysPresent()) {
-            throw new ConnectionException(StatusCode.UNSUPPORTED_API, "No client keys for the host yet: " + host);
+            conu.httpConnection.registerClient(getApiPath(ApiRoutineEnum.REGISTER_CLIENT));
+            if (!conu.httpConnection.getCredentialsPresent()) {
+                throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, conu.httpConnection.data.host, "No credentials");
+            }
         }
         conu.url = conu.url.replace("%nickname%", nickname);
         return conu;

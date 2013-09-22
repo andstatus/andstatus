@@ -25,19 +25,17 @@ import org.andstatus.app.util.MyLog;
 
 abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProvider {
     private static final String TAG = HttpConnectionOAuth.class.getSimpleName();
-    
-    public static final String USER_TOKEN = "user_token";
-    public static final String USER_SECRET = "user_secret";
     public static final String REQUEST_SUCCEEDED = "request_succeeded";
     
-    /**
-     * Saved User token
-     */
+    private String userTokenKey() {
+        return "user_token";
+    }
+    
+    private String userSecretKey() {
+        return "user_secret";
+    }
+    
     private String userToken;
-
-    /**
-     * Saved User secret
-     */
     private String userSecret;
 
     @Override
@@ -45,9 +43,9 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
         super.setConnectionData(connectionData);
         connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData);
         // We look for saved user keys
-        if (connectionData.dataReader.dataContains(USER_TOKEN) && connectionData.dataReader.dataContains(USER_SECRET)) {
-            userToken = connectionData.dataReader.getDataString(USER_TOKEN, null);
-            userSecret = connectionData.dataReader.getDataString(USER_SECRET, null);
+        if (connectionData.dataReader.dataContains(userTokenKey()) && connectionData.dataReader.dataContains(userSecretKey())) {
+            userToken = connectionData.dataReader.getDataString(userTokenKey(), null);
+            userSecret = connectionData.dataReader.getDataString(userSecretKey(), null);
             setUserTokenWithSecret(userToken, userSecret);
         }
     }  
@@ -119,23 +117,23 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
     public boolean save(AccountDataWriter dw) {
         boolean changed = super.save(dw);
 
-        if ( !TextUtils.equals(userToken, dw.getDataString(USER_TOKEN, null)) ||
-                !TextUtils.equals(userSecret, dw.getDataString(USER_SECRET, null)) 
+        if ( !TextUtils.equals(userToken, dw.getDataString(userTokenKey(), null)) ||
+                !TextUtils.equals(userSecret, dw.getDataString(userSecretKey(), null)) 
                 ) {
             changed = true;
 
             if (TextUtils.isEmpty(userToken)) {
-                dw.setDataString(USER_TOKEN, null);
+                dw.setDataString(userTokenKey(), null);
                 MyLog.d(TAG, "Clearing OAuth Token");
             } else {
-                dw.setDataString(USER_TOKEN, userToken);
+                dw.setDataString(userTokenKey(), userToken);
                 MyLog.d(TAG, "Saving OAuth Token: " + userToken);
             }
             if (TextUtils.isEmpty(userSecret)) {
-                dw.setDataString(USER_SECRET, null);
+                dw.setDataString(userSecretKey(), null);
                 MyLog.d(TAG, "Clearing OAuth Secret");
             } else {
-                dw.setDataString(USER_SECRET, userSecret);
+                dw.setDataString(userSecretKey(), userSecret);
                 MyLog.d(TAG, "Saving OAuth Secret: " + userSecret);
             }
         }

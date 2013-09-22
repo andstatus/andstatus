@@ -28,6 +28,8 @@ public abstract class HttpConnection {
 
     static final String USER_AGENT = "AndStatus";
  
+    public void registerClient(String path) throws ConnectionException {}
+    
     protected abstract JSONObject postRequest(String path, JSONObject jso) throws ConnectionException;
 
     protected void setConnectionData(HttpConnectionData data) {

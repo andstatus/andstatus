@@ -17,14 +17,19 @@
 package org.andstatus.app.net;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthConsumer;
 import oauth.signpost.basic.DefaultOAuthProvider;
+import oauth.signpost.exception.OAuthCommunicationException;
+import oauth.signpost.exception.OAuthExpectationFailedException;
+import oauth.signpost.exception.OAuthMessageSignerException;
 
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionException.StatusCode;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,11 +39,67 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 
 class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     private static final String TAG = HttpConnectionOAuthJavaNet.class.getSimpleName();
+
+    /**
+     * Partially borrowed from the "Impeller" code !
+     */
+    @Override
+    public void registerClient(String path) throws ConnectionException {
+        MyLog.v(TAG, "Registering client for " + data.host);
+        String consumerKey = "";
+        String consumerSecret = "";
+        data.oauthClientKeys.clear();
+
+        try {
+            URL endpoint = new URL(pathToUrl(path));
+            HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
+                    
+            HashMap<String, String> params = new HashMap<String, String>();
+            params.put("type", "client_associate");
+            params.put("application_type", "native");
+            params.put("redirect_uris", Origin.CALLBACK_URI.toString());
+            params.put("client_name", HttpConnection.USER_AGENT);
+            params.put("application_name", HttpConnection.USER_AGENT);
+            String requestBody = HttpJavaNetUtils.encode(params);
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            
+            Writer w = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+            w.write(requestBody);
+            w.close();
+            
+            if(conn.getResponseCode() != 200) {
+                String msg = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream()));
+                Log.e(TAG, "Server returned an error response: " + msg);
+                Log.e(TAG, "Server returned an error response: " + conn.getResponseMessage());
+            } else {
+                String response = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                JSONObject jso = new JSONObject(response);
+                if (jso != null) {
+                    consumerKey = jso.getString("client_id");
+                    consumerSecret = jso.getString("client_secret");
+                    data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+                }
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "registerClient Exception: " + e.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "registerClient Exception: " + e.toString());
+            e.printStackTrace();
+        }
+        if (data.oauthClientKeys.areKeysPresent()) {
+            MyLog.v(TAG, "Registered client for " + data.host);
+        } else {
+            throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, data.host, "No client keys for the host yet");
+        }
+    }
 
     @Override
     public OAuthProvider getProvider() {
@@ -62,7 +123,7 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             conn.setDoInput(true);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
-            getConsumer().sign(conn);
+            setAuthorization(conn, getConsumer(), false);
             
             if (jso != null) {
                 OutputStream os = conn.getOutputStream();
@@ -129,10 +190,11 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             
             URL url = new URL(pathToUrl(path));
             HttpURLConnection conn;
+            boolean redirected = false;
             for (boolean done=false; !done; ) {
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setInstanceFollowRedirects(false);
-                consumer.sign(conn);
+                setAuthorization(conn, consumer, redirected);
                 conn.connect();
                 int responseCode = conn.getResponseCode();
                 StatusCode statusCode = StatusCode.fromResponseCode(responseCode);
@@ -150,8 +212,21 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     case 302:
                     case 303:
                     case 307:
-                        url = new URL(conn.getHeaderField("Location"));
+                        // TODO: To decode the location?
+                        url = new URL(conn.getHeaderField("Location").replace("%3F", "?"));
                         MyLog.v(TAG, "Following redirect to " + url);
+                        redirected = true;
+                        if (MyLog.isLoggable(MyLog.APPTAG, android.util.Log.VERBOSE)) {
+                            String message = "Headers: ";
+                            for (int posn=0 ; ; posn++) {
+                                String fieldName = conn.getHeaderFieldKey(posn);
+                                if ( fieldName == null) {
+                                    MyLog.v(TAG, message);
+                                    break;
+                                }
+                                message += fieldName +": " + conn.getHeaderField(fieldName) + "; ";
+                            }
+                        }
                         break;                        
                     default:
                         responseString = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
@@ -173,6 +248,28 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             throw new ConnectionException("Error getting '" + path + "', " + e.toString());
         }
         return result;
+    }
+
+    private void setAuthorization(HttpURLConnection conn, OAuthConsumer consumer, boolean redirected)
+            throws OAuthMessageSignerException, OAuthExpectationFailedException,
+            OAuthCommunicationException {
+        if (getCredentialsPresent()) {
+            if (data.host.contentEquals(data.hostForUserToken)) {
+                consumer.sign(conn);
+            } else {
+                // See http://tools.ietf.org/html/draft-prodromou-dialback-00
+                if (redirected) {
+                    consumer.setTokenWithSecret("", "");
+                    consumer.sign(conn);
+                } else {
+                    conn.setRequestProperty("Authorization", "Dialback");
+                    conn.setRequestProperty("host", data.hostForUserToken);
+                    conn.setRequestProperty("token", getUserToken());
+                    MyLog.v(TAG, "Dialback authorization at " + data.host + "; host=" + data.hostForUserToken + "; token=" + getUserToken());
+                    consumer.sign(conn);
+                }
+            }
+        }
     }
 
     @Override

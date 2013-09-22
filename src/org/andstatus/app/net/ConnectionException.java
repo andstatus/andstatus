@@ -34,7 +34,7 @@ public class ConnectionException extends Exception {
         NOT_FOUND,
         AUTHENTICATION_ERROR,
         CREDENTIALS_OF_OTHER_USER,
-        NO_CLIENT_KEYS_FOR_HOST;
+        NO_CREDENTIALS_FOR_HOST;
         
         public static StatusCode fromResponseCode(int responseCode) {
             if (responseCode==404) {

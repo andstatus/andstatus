@@ -350,7 +350,9 @@ public abstract class Connection {
         return oa;
     }
 
-    public void registerClient() {}
+    public void registerClientForAccount() throws ConnectionException {
+        http.registerClient(getApiPath(ApiRoutineEnum.REGISTER_CLIENT));
+    }
 
     public void clearClientKeys() {
         http.clearClientKeys();

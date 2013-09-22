@@ -96,7 +96,7 @@ public class OAuthClientKeys {
     public void clear() {
         setConsumerKeyAndSecret("", "");
     }
-    
+
     public void setConsumerKeyAndSecret(String consumerKey, String consumerSecret) {
         strategy.setConsumerKeyAndSecret(consumerKey, consumerSecret);
         MyLog.d(TAG, "Saved " + strategy.toString() + "; "

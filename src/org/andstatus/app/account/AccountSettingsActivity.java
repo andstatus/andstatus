@@ -214,7 +214,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         mOriginName.setValue(ma.getOriginName());
         SharedPreferencesUtil.showListPreference(this, MyAccount.Builder.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
 
-        mOriginName.setEnabled(!state.builder.isPersistent());
+        mOriginName.setEnabled(!state.builder.isPersistent() && TextUtils.isEmpty(ma.getUsername()));
         
         if (mEditTextUsername.getText() == null
                 || ma.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
@@ -231,22 +231,37 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         mEditTextUsername.setSummary(summary);
         mEditTextUsername.setEnabled(!state.builder.isPersistent() && !ma.isUsernameValidToStartAddingNewAccount());
 
+        boolean isNeeded = ma.canChangeOAuth();
         if (ma.isOAuth() != mOAuth.isChecked()) {
             mOAuth.setChecked(ma.isOAuth());
         }
         // In fact, we should hide it if not enabled, but I couldn't find an easy way for this...
-        mOAuth.setEnabled(ma.canChangeOAuth());
+        mOAuth.setEnabled(isNeeded);
+        if (isNeeded) {
+            mOAuth.setTitle(R.string.title_preference_oauth);
+            mOAuth.setSummary(ma.isOAuth() ? R.string.summary_preference_oauth_on : R.string.summary_preference_oauth_off);
+        } else {
+            mOAuth.setTitle("");
+            mOAuth.setSummary("");
+        }
 
+        isNeeded = ma.getConnection().isPasswordNeeded();
         if (mEditTextPassword.getText() == null
                 || ma.getPassword().compareTo(mEditTextPassword.getText()) != 0) {
             mEditTextPassword.setText(ma.getPassword());
         }
-        summary = new StringBuilder(this.getText(R.string.summary_preference_password));
-        if (TextUtils.isEmpty(ma.getPassword())) {
-            summary.append(": (" + this.getText(R.string.not_set) + ")");
+        if (isNeeded) {
+            mEditTextPassword.setTitle(R.string.title_preference_password);
+            summary = new StringBuilder(this.getText(R.string.summary_preference_password));
+            if (TextUtils.isEmpty(ma.getPassword())) {
+                summary.append(": (" + this.getText(R.string.not_set) + ")");
+            }
+        } else {
+            summary = null;
+            mEditTextPassword.setTitle("");
         }
         mEditTextPassword.setSummary(summary);
-        mEditTextPassword.setEnabled(ma.getConnection().isPasswordNeeded());
+        mEditTextPassword.setEnabled(isNeeded);
 
         int titleResId;
         boolean addAccountOrVerifyCredentialsEnabled = ma.isOAuth() || ma.getCredentialsPresent();
@@ -595,11 +610,15 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             String message = "";
             String message2 = "";
 
-            if (!state.getAccount().areClientKeysPresent()) {
-                state.builder.registerClient();
-            } 
-            requestSucceeded = state.getAccount().areClientKeysPresent();
-
+            try {
+                if (!state.getAccount().areClientKeysPresent()) {
+                    state.builder.registerClient();
+                } 
+                requestSucceeded = state.getAccount().areClientKeysPresent();
+            } catch (ConnectionException e) {
+                message = e.getMessage();
+            }
+            
             try {
                 if (!requestSucceeded) {
                     message2 = AccountSettingsActivity.this

@@ -547,10 +547,10 @@ public class MyAccount implements AccountDataReader {
             }
         }
 
-        public void registerClient() {
+        public void registerClient() throws ConnectionException {
             MyLog.v(TAG, "Registering client application for " + myAccount.getUsername());
             setConnection();
-            myAccount.connection.registerClient();
+            myAccount.connection.registerClientForAccount();
         }
         
         private void setConnection() {

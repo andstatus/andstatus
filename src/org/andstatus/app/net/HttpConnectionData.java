@@ -27,6 +27,7 @@ class HttpConnectionData {
     public String oauthPath;
     public String accountUsername;
     public String host;
+    public String hostForUserToken = "";
     public AccountDataReader dataReader = null;
 
     public OAuthClientKeys oauthClientKeys;
@@ -36,26 +37,28 @@ class HttpConnectionData {
     }
     
     static HttpConnectionData fromConnectionData(OriginConnectionData oConnectionData) {
-        HttpConnectionData connectionData = new HttpConnectionData();
-        connectionData.originId = oConnectionData.originId;
-        connectionData.isHttps = oConnectionData.isHttps;
-        connectionData.basicPath = oConnectionData.basicPath;
-        connectionData.oauthPath = oConnectionData.oauthPath;
-        connectionData.accountUsername = oConnectionData.accountUsername;
-        connectionData.host = oConnectionData.host;
-        connectionData.dataReader = oConnectionData.dataReader;
-        return connectionData;
+        HttpConnectionData data = new HttpConnectionData();
+        data.originId = oConnectionData.originId;
+        data.isHttps = oConnectionData.isHttps;
+        data.basicPath = oConnectionData.basicPath;
+        data.oauthPath = oConnectionData.oauthPath;
+        data.accountUsername = oConnectionData.accountUsername;
+        data.host = oConnectionData.host;
+        data.hostForUserToken = oConnectionData.host;
+        data.dataReader = oConnectionData.dataReader;
+        return data;
     }
 
     public HttpConnectionData newCopy() {
-        HttpConnectionData connectionData = new HttpConnectionData();
-        connectionData.originId = originId;
-        connectionData.isHttps = isHttps;
-        connectionData.basicPath = basicPath;
-        connectionData.oauthPath = oauthPath;
-        connectionData.accountUsername = accountUsername;
-        connectionData.host = host;
-        connectionData.dataReader = dataReader;
-        return connectionData;
+        HttpConnectionData data = new HttpConnectionData();
+        data.originId = originId;
+        data.isHttps = isHttps;
+        data.basicPath = basicPath;
+        data.oauthPath = oauthPath;
+        data.accountUsername = accountUsername;
+        data.host = host;
+        data.hostForUserToken = hostForUserToken;
+        data.dataReader = dataReader;
+        return data;
     }
 }
