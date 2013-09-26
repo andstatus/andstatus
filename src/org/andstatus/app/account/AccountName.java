@@ -23,7 +23,7 @@ import org.andstatus.app.origin.Origin;
  * Account name, unique for this application and suitable for {@link android.accounts.AccountManager}
  * The name is permanent and cannot be changed. This is why it may be used as Key to retrieve the account.
  * Immutable class.  
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 class AccountName {
 

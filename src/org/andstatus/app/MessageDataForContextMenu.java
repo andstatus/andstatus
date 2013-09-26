@@ -29,7 +29,7 @@ import org.andstatus.app.data.MyProvider;
 
 /**
  * Helper class for the message context menu creation 
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 class MessageDataForContextMenu {
     /**

@@ -51,7 +51,7 @@ import android.util.Log;
  * honors the &quot;Minimum logging level&quot; preference. Use this class
  * throughout the application.
  * 
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class MyLog {
     private static final String TAG = MyLog.class.getSimpleName();

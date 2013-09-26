@@ -32,7 +32,7 @@ import javax.xml.transform.stream.StreamSource;
 
 /**
  * XSLT utils 
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class Xslt {
 

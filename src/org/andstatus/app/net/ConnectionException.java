@@ -23,7 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * @author Yuri Volkov
+ * @author yvolk@yurivolkov.com
  */
 public class ConnectionException extends Exception {
     private static final long serialVersionUID = 1L;

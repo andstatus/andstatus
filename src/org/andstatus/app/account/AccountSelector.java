@@ -34,7 +34,7 @@ import java.util.Map;
 
 /**
  * The purpose of this activity is to select Current account only, see {@link MyAccount#setCurrentMyAccount()}
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  *
  */
 public class AccountSelector extends ListActivity {

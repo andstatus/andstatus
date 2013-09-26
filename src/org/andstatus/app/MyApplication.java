@@ -28,19 +28,20 @@ import android.util.Log;
 import java.io.File;
 
 /**
- *
- * @author yvolk (Yuri Volkov), http://yurivolkov.com
+ * @author yvolk@yurivolkov.com
  */
 public class MyApplication extends Application {
     private static final String TAG = MyApplication.class.getSimpleName();
 
     @Override
     public void onCreate() {
+        Log.v(TAG, "onCreate started");
         MyPreferences.initialize(this, this);
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "onCreate");
-        }
         super.onCreate();
+        MyPreferences.triggerDatabaseUpgrade();
+        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            MyLog.v(TAG, "onCreate ended");
+        }
     }
 
     @Override

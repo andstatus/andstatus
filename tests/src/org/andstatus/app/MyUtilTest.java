@@ -28,7 +28,7 @@ public class MyUtilTest extends ActivityTestCase {
     
     /**
      * Test I18n class...
-     * @author yvolk (Yuri Volkov), http://yurivolkov.com
+     * @author yvolk@yurivolkov.com
      */
     public void test001MessageFormat() throws Exception {
     	Log.i(TAG,"testMessageFormat started");

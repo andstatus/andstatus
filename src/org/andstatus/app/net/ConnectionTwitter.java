@@ -35,7 +35,7 @@ import java.util.List;
 
 /**
  * Twitter API implementations
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public abstract class ConnectionTwitter extends Connection {
     private static final String TAG = ConnectionTwitter.class.getSimpleName();

@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * Specific implementation of the {@link ApiEnum.STATUSNET_TWITTER}
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
     private static final String TAG = ConnectionTwitterStatusNet.class.getSimpleName();

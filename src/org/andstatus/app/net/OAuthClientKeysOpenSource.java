@@ -20,7 +20,7 @@ import org.andstatus.app.origin.Origin.OriginEnum;
 
 /**
  * Keys of the "AndStatus-OpenSource" application.
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class OAuthClientKeysOpenSource implements OAuthClientKeysStrategy {
     private long originId = 0;

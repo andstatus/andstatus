@@ -43,7 +43,7 @@ import android.util.Log;
  * Stores ("inserts" -  adds or updates) messages and users
  *  from Microblogging system in the database.
  * 
- * @author Yuri Volkov
+ * @author yvolk@yurivolkov.com
  */
 public class DataInserter {
     private static final String TAG = DataInserter.class.getSimpleName();
@@ -212,9 +212,9 @@ public class DataInserter {
 
                 if (message.recipient != null) {
                     long recipientId = insertOrUpdateUser(message.recipient, lum);
+                    values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
                     if (recipientId == counters.ma.getUserId()) {
                         values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
-                        values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
                         MyLog.v(TAG, "Message '" + message.oid + "' is Directed to " 
                                 + counters.ma.getAccountName() );
                     }
@@ -324,6 +324,9 @@ public class DataInserter {
         return userId;
     }
     
+    /**
+     * @return userId
+     */
     public long insertOrUpdateUser(MbUser mbUser, LatestUserMessages lum) throws SQLiteConstraintException {
         String userName = mbUser.userName;
         String userOid = mbUser.oid;
@@ -403,9 +406,10 @@ public class DataInserter {
             }
             
         } catch (Exception e) {
-            Log.e(TAG, "insertUser: " + e.toString());
+            Log.e(TAG, "insertUser exception: " + e.toString());
             e.printStackTrace();
         }
+        MyLog.v(TAG, "insertUser, userId=" + userId + "; oid=" + userOid);
         return userId;
     }
     

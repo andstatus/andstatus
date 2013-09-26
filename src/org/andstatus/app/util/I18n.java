@@ -42,7 +42,7 @@ public class I18n {
 	 *  ...
 	 *  see /res/values-ru/arrays.xml (R.array.appwidget_message_patterns)
 	 * 
-	 * @author yvolk (Yuri Volkov), http://yurivolkov.com
+	 * @author yvolk@yurivolkov.com
 	 */
 	public static String formatQuantityMessage(Context context, int messageFormat,
 			int quantityOfSomething, int array_patterns, int array_formats) {

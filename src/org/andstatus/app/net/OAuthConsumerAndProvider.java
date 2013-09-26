@@ -20,7 +20,7 @@ import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 
 /**
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public interface OAuthConsumerAndProvider {
     /**

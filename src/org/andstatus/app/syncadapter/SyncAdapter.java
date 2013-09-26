@@ -108,7 +108,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
     public void onReceive(CommandData commandData) {
         MyLog.d(TAG, "onReceive, command=" + commandData.command);
         synchronized (syncResult) {
-            if (this.commandData == null || this.commandData.equals(commandData)) {
+            if (this.commandData != null && this.commandData.equals(commandData)) {
                 syncCompleted = true;
                 syncResult.stats.numAuthExceptions += commandData.commandResult.numAuthExceptions;
                 syncResult.stats.numIoExceptions += commandData.commandResult.numIoExceptions;

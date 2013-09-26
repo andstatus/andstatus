@@ -21,7 +21,7 @@ import android.text.TextUtils;
 /**
  * Since introducing support for Pump.Io it appeared that 
  * Position in the Timeline and Id of the Message may be different things.
- * @author Yuri Volkov
+ * @author yvolk@yurivolkov.com
  */
 public class TimelinePosition {
     private final String position;

@@ -871,7 +871,6 @@ public class MyProvider extends ContentProvider {
      */
     public static long oidToId(MyDatabase.OidEnum oidEnum, long originId, String oid) {
         long id = 0;
-        SQLiteStatement prog = null;
         String sql = "";
 
         try {
@@ -892,8 +891,14 @@ public class MyProvider extends ContentProvider {
                     throw new IllegalArgumentException("oidToId; Unknown oidEnum \"" + oidEnum);
             }
             SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
-            prog = db.compileStatement(sql);
+            SQLiteStatement prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
+            prog.releaseReference(); // TODO: everywhere
+            if (id == 1 || id == 388) {
+                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                    MyLog.v(TAG, "oidToId: sql=" + sql );
+                }
+            }
         } catch (SQLiteDoneException ed) {
             id = 0;
         } catch (Exception e) {
@@ -907,21 +912,24 @@ public class MyProvider extends ContentProvider {
     }
     
     /**
-     * @return two double quotes for empty/null strings
+     * @return two single quotes for empty/null strings (Use single quotes!)
      */
     public static String quoteIfNotQuoted(String original) {
-        String quoted = original;
-        if (TextUtils.isEmpty(quoted)) {
-            return (String.valueOf('\"') + String.valueOf('\"'));
+        if (TextUtils.isEmpty(original)) {
+            return "\'\'";
         }
-        int firstQuoteIndex = quoted.indexOf('"');
-        int lastQuoteIndex = quoted.lastIndexOf('"');
-        if (firstQuoteIndex > 0 || (lastQuoteIndex >= 0 && lastQuoteIndex < quoted.length()-1)) {
-            throw new IllegalArgumentException("The string to be quoted already has quotes inside: '" + quoted + "'");
-        }
+        String quoted = original.trim();
+        int firstQuoteIndex = quoted.indexOf('\'');
         if (firstQuoteIndex < 0) {
-            quoted = '\"' + quoted + '\"';
+            return '\'' + quoted + '\'';
         }
+        int lastQuoteIndex = quoted.lastIndexOf('\'');
+        if (firstQuoteIndex == 0 && lastQuoteIndex == quoted.length()-1) {
+            // Already quoted, search quotes inside
+            quoted = quoted.substring(1, lastQuoteIndex);
+        }
+        quoted = quoted.replace("'", "''");
+        quoted = '\'' + quoted + '\'';
         return quoted;
     }
     
@@ -929,18 +937,18 @@ public class MyProvider extends ContentProvider {
      * Lookup Originated system's id from the System's (AndStatus) id
      * 
      * @param oe what oid we need
-     * @param msgId - see {@link MyDatabase.Msg#_ID}
-     * @param userId Is needed to find reblog by this user
+     * @param entityId - see {@link MyDatabase.Msg#_ID}
+     * @param rebloggerUserId Is needed to find reblog by this user
      * @return - oid in Originated system (i.e. in the table, e.g.
      *         {@link MyDatabase.Msg#MSG_OID} empty string in case of an error
      */
-    public static String idToOid(OidEnum oe, long msgId, long userId) {
+    public static String idToOid(OidEnum oe, long entityId, long rebloggerUserId) {
         MyDatabase myDb = MyPreferences.getDatabase();
         if (myDb == null) {
             return "";
         } else {
             SQLiteDatabase db = myDb.getReadableDatabase();
-            return idToOid(db, oe, msgId, userId);
+            return idToOid(db, oe, entityId, rebloggerUserId);
         }
     }
 
@@ -949,38 +957,38 @@ public class MyProvider extends ContentProvider {
      * Lookup Originated system's id from the System's (AndStatus) id
      * 
      * @param oe what oid we need
-     * @param msgId - see {@link MyDatabase.Msg#_ID}
-     * @param userId Is needed to find reblog by this user
+     * @param entityId - see {@link MyDatabase.Msg#_ID}
+     * @param rebloggerUserId Is needed to find reblog by this user
      * @return - oid in Originated system (i.e. in the table, e.g.
      *         {@link MyDatabase.Msg#MSG_OID} empty string in case of an error
      */
-    public static String idToOid(SQLiteDatabase db, OidEnum oe, long msgId, long userId) {
+    public static String idToOid(SQLiteDatabase db, OidEnum oe, long entityId, long rebloggerUserId) {
         String oid = "";
         SQLiteStatement prog = null;
         String sql = "";
 
-        if (msgId > 0) {
+        if (entityId > 0) {
             try {
                 switch (oe) {
                     case MSG_OID:
                         sql = "SELECT " + MyDatabase.Msg.MSG_OID + " FROM "
-                                + MyDatabase.MSG_TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + msgId;
+                                + MyDatabase.MSG_TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId;
                         break;
 
                     case USER_OID:
                         sql = "SELECT " + MyDatabase.User.USER_OID + " FROM "
                                 + MyDatabase.USER_TABLE_NAME + " WHERE " + BaseColumns._ID + "="
-                                + msgId;
+                                + entityId;
                         break;
 
                     case REBLOG_OID:
-                        if (userId == 0) {
+                        if (rebloggerUserId == 0) {
                             Log.e(TAG, "idToOid: userId was not defined");
                         }
                         sql = "SELECT " + MyDatabase.MsgOfUser.REBLOG_OID + " FROM "
                                 + MyDatabase.MSGOFUSER_TABLE_NAME + " WHERE " 
-                                + MsgOfUser.MSG_ID + "=" + msgId + " AND "
-                                + MsgOfUser.USER_ID + "=" + userId;
+                                + MsgOfUser.MSG_ID + "=" + entityId + " AND "
+                                + MsgOfUser.USER_ID + "=" + rebloggerUserId;
                         break;
 
                     default:
@@ -988,10 +996,11 @@ public class MyProvider extends ContentProvider {
                 }
                 prog = db.compileStatement(sql);
                 oid = prog.simpleQueryForString();
+                prog.releaseReference(); // TODO: everywhere
                 
                 if (TextUtils.isEmpty(oid) && oe == OidEnum.REBLOG_OID) {
                     // This not reblogged message
-                    oid = idToOid(OidEnum.MSG_OID, msgId, 0);
+                    oid = idToOid(db, OidEnum.MSG_OID, entityId, 0);
                 }
                 
             } catch (SQLiteDoneException ed) {
@@ -1001,7 +1010,7 @@ public class MyProvider extends ContentProvider {
                 return "";
             }
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                MyLog.v(TAG, "idToOid: " + oe + " + " + msgId + " -> " + oid);
+                MyLog.v(TAG, "idToOid: " + oe + " + " + entityId + " -> " + oid);
             }
         }
         return oid;
@@ -1027,6 +1036,7 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
+                prog.releaseReference(); // TODO: everywhere
             } catch (SQLiteDoneException ed) {
                 userName = "";
             } catch (Exception e) {
@@ -1052,6 +1062,7 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
+                prog.releaseReference(); // TODO: everywhere
             } catch (SQLiteDoneException ed) {
                 userName = "";
             } catch (Exception e) {
@@ -1096,6 +1107,7 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForLong();
+                prog.releaseReference(); // TODO: everywhere
             } catch (SQLiteDoneException ed) {
                 columnValue = 0;
             } catch (Exception e) {
@@ -1134,6 +1146,7 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForString();
+                prog.releaseReference(); // TODO: everywhere
             } catch (SQLiteDoneException ed) {
                 columnValue = "";
             } catch (Exception e) {
@@ -1183,19 +1196,22 @@ public class MyProvider extends ContentProvider {
      * @return - id in our System (i.e. in the table, e.g.
      *         {@link MyDatabase.User#_ID} ), 0 if not found
      */
-    public static long userNameToId(long originId,
-            String userName) {
+    public static long userNameToId(long originId, String userName) {
+        SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+        return userNameToId(db, originId, userName);
+    }
+    
+    public static long userNameToId(SQLiteDatabase db, long originId, String userName) {
         long id = 0;
         SQLiteStatement prog = null;
         String sql = "";
-
         try {
             sql = "SELECT " + BaseColumns._ID + " FROM " + MyDatabase.USER_TABLE_NAME
                     + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USERNAME + "='"
                     + userName + "'";
-            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
+            prog.releaseReference(); // TODO: everywhere
         } catch (SQLiteDoneException ed) {
             id = 0;
         } catch (Exception e) {

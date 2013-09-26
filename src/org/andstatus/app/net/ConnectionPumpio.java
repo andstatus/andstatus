@@ -39,7 +39,7 @@ import java.util.Locale;
 
 /**
  * Implementation of pump.io API: <a href="https://github.com/e14n/pump.io/blob/master/API.md">https://github.com/e14n/pump.io/blob/master/API.md</a>  
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class ConnectionPumpio extends Connection {
     private static final String TAG = ConnectionPumpio.class.getSimpleName();

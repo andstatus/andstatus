@@ -32,7 +32,7 @@ import org.andstatus.app.util.TriState;
  *  Microblogging system (twitter.com, identi.ca, ... ) where messages are being created
  *  (it's the "Origin" of the messages). 
  *  TODO: Currently the class is almost a stub and serves for several predefined origins only :-)
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  *
  */
 public class Origin {
@@ -234,7 +234,7 @@ public class Origin {
     /**
      * Calculates number of Characters left for this message
      * taking shortened URL's length into account.
-     * @author yvolk
+     * @author yvolk@yurivolkov.com
      */
     public int charactersLeftForMessage(String message) {
         int messageLength = 0;

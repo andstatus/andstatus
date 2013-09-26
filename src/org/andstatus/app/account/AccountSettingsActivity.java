@@ -64,7 +64,7 @@ import org.json.JSONObject;
 /**
  * Add new or edit existing account
  * 
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class AccountSettingsActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
@@ -690,7 +690,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      *    Twitter site will redirect User back to
      *    AndStatus and then the second OAuth task will start.
      *   
-     * @author yvolk. This code is based on "BLOA" example,
+     * @author yvolk@yurivolkov.com This code is based on "BLOA" example,
      *         http://github.com/brione/Brion-Learns-OAuth yvolk: I had to move
      *         this code from OAuthActivity here in order to be able to show
      *         ProgressDialog and to get rid of any "Black blank screens"
@@ -817,7 +817,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      *    for "Access Token". 
      * 2. Stores the Access token for all future interactions with Twitter.
      * 
-     * @author yvolk. This code is based on "BLOA" example,
+     * @author yvolk@yurivolkov.com This code is based on "BLOA" example,
      *         http://github.com/brione/Brion-Learns-OAuth yvolk: I had to move
      *         this code from OAuthActivity here in order to be able to show
      *         ProgressDialog and to get rid of any "Black blank screens"
@@ -970,7 +970,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
 
     /**
      * Assuming we already have credentials to verify, verify them
-     * @author yvolk
+     * @author yvolk@yurivolkov.com
      */
     private class VerifyCredentialsTask extends AsyncTask<Void, Void, JSONObject> {
         private ProgressDialog dlg;

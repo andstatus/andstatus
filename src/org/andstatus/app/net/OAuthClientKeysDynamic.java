@@ -22,7 +22,7 @@ import org.andstatus.app.data.MyPreferences;
 
 /**
  * CLient Keys, obtained dynamically for each host and Origin.
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
     private static String KEY_OAUTH_CLIENT_KEY = "oauth_client_key";

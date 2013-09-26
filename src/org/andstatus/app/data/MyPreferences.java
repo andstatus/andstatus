@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010-2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * This is central point of accessing SharedPreferences and other global objects, used by AndStatus
  * Noninstantiable class 
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class MyPreferences {
     private static final String TAG = MyPreferences.class.getSimpleName();
@@ -50,6 +50,12 @@ public class MyPreferences {
      */
     private static volatile long preferencesChangeTime = 0;
     private static MyDatabase db;
+    private static volatile boolean shouldTriggerDatabaseUpgrade = false;
+    /**
+     * Semaphore enabling uninterrupted system upgrade
+     */
+    private static volatile Long upgradeEndTime = 0L;
+    private static volatile boolean upgradeStarted = false;
 
     /**
      * IDs used for testing purposes to identify instances of reference types.
@@ -123,7 +129,7 @@ public class MyPreferences {
      * @return System time when preferences were last changed
      */
     public static long initialize(Context context_in, Object object ) {
-        boolean justInitialized = false;
+        boolean initializedHere = false;
         String initializerName;
         if (object instanceof String) {
             initializerName = (String) object;
@@ -169,7 +175,7 @@ public class MyPreferences {
 
                         MyAccount.initialize(context);
                     }
-                    justInitialized = initialized;
+                    initializedHere = initialized;
                     if (initialized) {
                         MyLog.v(TAG, "Initialized by " + initializedBy + " context: " + context.getClass().getName());
                     } else {
@@ -178,8 +184,11 @@ public class MyPreferences {
                 }
             }
         } 
-        if (initialized && !justInitialized) {
+        if (initialized && !initializedHere) {
             MyLog.v(TAG, "Already initialized by " + initializedBy +  " (called by: " + initializerName + ")");
+        }
+        if (initialized && shouldTriggerDatabaseUpgrade) {
+            triggerDatabaseUpgrade();
         }
         return preferencesChangeTime;
     }
@@ -345,6 +354,64 @@ public class MyPreferences {
         return db;
     }
     
+    public static void triggerDatabaseUpgrade() {
+        if (isUpgrading()) {
+            Log.w(TAG, "Attempt to trigger database upgrade: already upgrading");
+            return;
+        }
+        long currentTime = java.lang.System.currentTimeMillis();
+        synchronized(upgradeEndTime) {
+            if (isUpgrading()) {
+                return;
+            }
+            final Long MILLIS_BEFORE_UPGRADE_TRIGGERED = 1000L;
+            upgradeEndTime = currentTime + MILLIS_BEFORE_UPGRADE_TRIGGERED;
+            shouldTriggerDatabaseUpgrade = true;            
+        }
+        try {
+            MyDatabase db = getDatabase();
+            if (db != null) {
+                db.getReadableDatabase();
+            }
+            shouldTriggerDatabaseUpgrade = false;
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to trigger database upgrade, will try later. Error: " + e.getMessage());
+            
+        } finally {
+            currentTime = java.lang.System.currentTimeMillis();
+            synchronized(upgradeEndTime) {
+                if (upgradeStarted) {
+                    final Long MILLIS_AFTER_UPGRADE = 5000L;
+                    upgradeEndTime = currentTime + MILLIS_AFTER_UPGRADE;
+                    Log.w(TAG, "Upgrade ended, waiting " + MILLIS_AFTER_UPGRADE + " more milliseconds");
+                } else {
+                    upgradeEndTime = 0L;
+                }
+            }
+        }
+    }
+    
+    public static void onUpgrade() {
+        final long MILLIS_FOR_UPGRADE = 10000L;
+        upgradeStarted = true;
+        upgradeEndTime = java.lang.System.currentTimeMillis() + MILLIS_FOR_UPGRADE;
+        Log.w(TAG, "on Upgrade, waiting " + MILLIS_FOR_UPGRADE + " milliseconds");
+    }
+    
+    public static boolean isUpgrading() {
+        if (upgradeEndTime == 0 ) {
+            return false;
+        }
+        long currentTime = java.lang.System.currentTimeMillis();
+        synchronized(upgradeEndTime) {
+            if (currentTime > upgradeEndTime) {
+                upgradeEndTime = 0L;
+                return false;
+            }
+        }
+        return true;
+    }
+    
     /**
      * Standard directory in which to place databases
      */
@@ -409,11 +476,16 @@ public class MyPreferences {
             }
             if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                 MyLog.v(TAG, (useExternalStorage ? "External" : "Internal") + " path: '" 
-                + ( (dir == null) ? "(null)" : dir.getPath()) + "'");
+                + ( (dir == null) ? "(null)" 
+                + "; baseDir=" + baseDir
+                + "; path to append=" + pathToAppend: dir.getPath()) + "'");
             }
         }
         if (textToLog != null) {
             Log.i(TAG, textToLog);
+        }
+        if (dir == null) {
+            throw new IllegalArgumentException(textToLog);
         }
         
         return dir;

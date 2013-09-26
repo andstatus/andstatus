@@ -22,7 +22,7 @@ import java.util.Map;
 
 /**
  * Collects {@link UserMsg} data (e.g. during timeline download) and allows to save it in bulk 
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class LatestUserMessages {
     private Map<Long, UserMsg> messages;

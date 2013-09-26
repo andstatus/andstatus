@@ -30,7 +30,7 @@ import org.andstatus.app.util.MyLog;
 /**
  * Command data store (message...)
  * 
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class CommandData {
     private static final String TAG = CommandData.class.getSimpleName();

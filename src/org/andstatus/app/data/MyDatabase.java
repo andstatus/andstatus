@@ -51,7 +51,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    static final int DATABASE_VERSION = 12;
+    public static final int DATABASE_VERSION = 12;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
 	public static final String MSG_TABLE_NAME = Msg.class.getSimpleName().toLowerCase(Locale.US);
@@ -600,7 +600,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
         new MyDatabaseConverter().onUpgrade(db, oldVersion, newVersion);
-        MyAccount.onUpgrade(db, oldVersion, newVersion);
         MyPreferences.onPreferencesChanged();
     }
 }

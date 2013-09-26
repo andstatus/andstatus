@@ -27,7 +27,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * Helper class to update the "Following User" information (see {@link MyDatabase.FollowingUser}) 
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class FollowingUserValues {
     private static final String TAG = FollowingUserValues.class.getSimpleName();

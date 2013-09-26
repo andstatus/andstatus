@@ -19,11 +19,14 @@ package org.andstatus.app.data;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import org.andstatus.app.account.MyAccountConverter;
+
 class MyDatabaseConverter {
     private static final String TAG = MyDatabaseConverter.class.getSimpleName();
 
     void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
-        int currentVersion = oldVersion; 
+        int currentVersion = oldVersion;
+        MyPreferences.onUpgrade();
         Log.i(TAG, "Upgrading database from version " + oldVersion + " to version " + newVersion);
         if (oldVersion < 9) {
             throw new IllegalArgumentException("Upgrade from this database version is not supported. Please reinstall the application");
@@ -150,7 +153,11 @@ class MyDatabaseConverter {
             sql = "DROP TABLE msgofuser_old";
             db.execSQL(sql);
             
-            sql = "UPDATE user SET user_oid = 'acct:' || username || '@identi.ca'"
+            sql = "UPDATE user SET username = username || '@identi.ca'"
+                    + " WHERE origin_id=2";
+            db.execSQL(sql);
+            
+            sql = "UPDATE user SET user_oid = 'acct:' || username"
                     + " WHERE origin_id=2";
             db.execSQL(sql);
             
@@ -226,6 +233,7 @@ class MyDatabaseConverter {
         }
         if (ok) {
             Log.i(TAG, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
+            ok = ( MyAccountConverter.convert11to12(db, oldVersion) == versionTo);
         } else {
             Log.e(TAG, "Database upgrading step failed to upgrade database from " + oldVersion 
                     + " to version " + versionTo

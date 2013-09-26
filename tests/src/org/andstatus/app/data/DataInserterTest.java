@@ -9,6 +9,7 @@ import org.andstatus.app.MessageCounters;
 import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.MyAccount.Builder;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -18,16 +19,19 @@ import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 
 import java.util.Set;
 
 public class DataInserterTest extends InstrumentationTestCase {
+    private static final String TAG = DataInserterTest.TAG + "." + Builder.class.getSimpleName();
     private Context context;
     private MbUser accountMbUser;
-    private String accountUserOid = "acct:t131t@identi.ca";
+    private final String accountUserOid = "acct:t131t@identi.ca";
     private String accountName;
+    private long accountUserId;
 
     @Override
     protected void setUp() throws Exception {
@@ -36,19 +40,37 @@ public class DataInserterTest extends InstrumentationTestCase {
 
         MyServiceManager.setServiceUnavailable();
         
+        String firstUserName = "firstTestUser@identi.ca";
+        MbUser firstMbUser  = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), 
+                "acct:" + firstUserName);
+        firstMbUser.userName = firstUserName;
+        MyAccount.Builder builderFirst = addAccount(firstMbUser);
+        MyLog.v(TAG, firstUserName + " added, id=" + builderFirst.getAccount().getUserId());
+        
         accountMbUser = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), accountUserOid);
         accountMbUser.userName = "t131t@identi.ca";
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName("/" + Origin.OriginEnum.PUMPIO.getName(), TriState.TRUE);
-        builder.setUserTokenWithSecret("sampleUserTokenForT131t", "sampleUserSecretFort131tUser");
-        builder.onVerifiedCredentials(accountMbUser, null);
+        MyAccount.Builder builder = addAccount(accountMbUser);
         accountName = builder.getAccount().getAccountName();
-        assertTrue("Account is persistent", builder.isPersistent());
-        assertTrue("Account has UserId", builder.getAccount().getUserId() != 0);
-        assertTrue("Account UserOid", builder.getAccount().getUserOid().equalsIgnoreCase(accountUserOid));
+        accountUserId = builder.getAccount().getUserId();
+        assertTrue("AccountUserId != 1", accountUserId != 1);
         builder = null;
         
         MyPreferences.onPreferencesChanged();
         MyPreferences.initialize(context, this);
+    }
+
+    private MyAccount.Builder addAccount(MbUser mbUser) throws ConnectionException {
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName("/" + Origin.OriginEnum.PUMPIO.getName(), TriState.TRUE);
+        builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.userName, "sampleUserSecretFor" + mbUser.userName);
+        builder.onVerifiedCredentials(mbUser, null);
+        assertTrue("Account is persistent", builder.isPersistent());
+        long userId = builder.getAccount().getUserId();
+        assertTrue("Account " + mbUser.userName + " has UserId", userId != 0);
+        assertEquals("Account UserOid", builder.getAccount().getUserOid(), mbUser.oid);
+        assertEquals("User in the database for id=" + userId, 
+                mbUser.oid,
+                MyProvider.idToOid(OidEnum.USER_OID, userId, 0));
+        return builder;
     }
     
     public void testUserAdded() throws ConnectionException {
@@ -59,7 +81,12 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     public void testFollowingUser() throws ConnectionException {
+        String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
+        deleteOldMessage(Origin.OriginEnum.PUMPIO.getId(), messageOid);
+        
         MyAccount ma = MyAccount.fromAccountName(accountName);
+        assertEquals("Account name", ma.getAccountName(), accountName);
+        assertEquals("UserId of " + ma.getAccountName(), ma.getUserId(), accountUserId);
 
         MessageCounters counters = new MessageCounters(ma, context, TimelineTypeEnum.HOME);
         DataInserter di = new DataInserter(counters);
@@ -77,7 +104,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         Set<Long> followedIds = MyProvider.getIdsOfUsersFollowedBy(ma.getUserId());
         assertFalse( "User " + username + " is not followed", followedIds.contains(somebodyId));
 
-        MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB");
+        MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), messageOid);
         message.body = "The test message by Somebody";
         message.sentDate = 13312696000L;
         message.via = "MyCoolClient";
@@ -85,6 +112,11 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.actor = accountMbUser;
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
+
+        long authorId = MyProvider.msgIdToLongColumnValue(Msg.AUTHOR_ID, messageId);
+        assertEquals("Author of the message", somebodyId, authorId);
+        long senderId = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, messageId);
+        assertEquals("Sender of the message", somebodyId, senderId);
         
         Uri contentUri = MyProvider.getTimelineUri(ma.getUserId(), TimelineTypeEnum.FOLLOWING_USER, false);
         SelectionAndArgs sa = new SelectionAndArgs();
@@ -111,6 +143,19 @@ public class DataInserterTest extends InstrumentationTestCase {
         cursor.close();
     }
 
+    private void deleteOldMessage(long originId, String messageOid) {
+        long messageIdOld = MyProvider.oidToId(OidEnum.MSG_OID, originId, messageOid);
+        if (messageIdOld != 0) {
+            SelectionAndArgs sa = new SelectionAndArgs();
+            sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + " = ?", new String[] {
+                String.valueOf(messageIdOld)
+            });
+            int deleted = context.getContentResolver().delete(MyDatabase.Msg.CONTENT_URI, sa.selection,
+                    sa.selectionArgs);
+            assertEquals( "Old message id=" + messageIdOld + " deleted", 1, deleted);
+        }
+    }
+    
     public void testMessageFavoritedByOtherUser() throws ConnectionException {
         MyAccount ma = MyAccount.fromAccountName(accountName);
 
@@ -197,6 +242,9 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     public void testDirectMessageToMyAccount() throws ConnectionException {
+        String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ";
+        deleteOldMessage(Origin.OriginEnum.PUMPIO.getId(), messageOid);
+
         MyAccount ma = MyAccount.fromAccountName(accountName);
 
         String username = "t131t@pumpity.net";
@@ -204,7 +252,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         author.userName = username;
         author.actor = accountMbUser;
         
-        MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ");
+        MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), messageOid);
         message.body = "Hello, this is a test Direct message by your namesake from http://pumpity.net";
         message.sentDate = 13312699000L;
         message.via = "AnyOtherClient";
@@ -224,15 +272,17 @@ public class DataInserterTest extends InstrumentationTestCase {
                         Long.toString(messageId)
                 });
         String[] PROJECTION = new String[] {
-            MsgOfUser.DIRECTED,
-            MyDatabase.User.LINKED_USER_ID
+            Msg.RECIPIENT_ID,
+            MyDatabase.User.LINKED_USER_ID,
+            MsgOfUser.DIRECTED
             };
         Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection, sa.selectionArgs, sortOrder);
         assertTrue("Cursor returned", cursor != null);
         assertTrue("Message found, id=" + messageId, cursor.getCount() == 1);
         cursor.moveToFirst();
-        assertTrue("Message is direct", cursor.getInt(0) == 1);
-        assertTrue("Message is directed to AccountUser", cursor.getLong(1) == ma.getUserId());
+        assertEquals("Recipient " + ma.getAccountName() + "; Id", ma.getUserId(), cursor.getLong(0));
+        assertEquals("Message is directed to AccountUser", ma.getUserId(), cursor.getLong(1));
+        assertTrue("Message " + messageId + " is direct", cursor.getInt(2) == 1);
         cursor.close();
     }
     

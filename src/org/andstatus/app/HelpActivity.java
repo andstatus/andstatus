@@ -42,7 +42,7 @@ import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 /**
- * @author Torgny & yvolk
+ * @author Torgny & yvolk@yurivolkov.com
  *
  */
 public class HelpActivity extends Activity implements SwipeInterface {

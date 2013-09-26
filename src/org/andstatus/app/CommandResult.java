@@ -22,7 +22,7 @@ import android.os.Parcelable;
 /**
  * Result of the command execution
  * See also {@link android.content.SyncStats}
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class CommandResult implements Parcelable {
     

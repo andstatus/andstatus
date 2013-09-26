@@ -21,7 +21,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.PeriodicSync;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -31,12 +30,10 @@ import android.util.Log;
 import java.util.List;
 import java.util.Vector;
 
-import org.andstatus.app.MessageCounters;
 import org.andstatus.app.R;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -56,7 +53,7 @@ import org.andstatus.app.util.TriState;
  * a Microblogging System (twitter.com, identi.ca etc.), 
  * Username in that system and {@link Connection} to it.
  * 
- * @author Yuri Volkov
+ * @author yvolk@yurivolkov.com
  */
 public class MyAccount implements AccountDataReader {
     private static final String TAG = MyAccount.class.getSimpleName();
@@ -106,6 +103,11 @@ public class MyAccount implements AccountDataReader {
          * Is OAuth on for this MyAccount?
          */
         public static final String KEY_OAUTH = "oauth";
+
+        /**
+         * Storing version of the account data
+         */
+        public static final String KEY_VERSION = "myversion";
         
         /**
          * Factory of Builder-s
@@ -129,8 +131,6 @@ public class MyAccount implements AccountDataReader {
         
         private MyAccount myAccount;
 
-        private Builder() {}
-        
         private Builder(Parcel source) {
             myAccount = new MyAccount();
             boolean isPersistent = myAccount.getDataBoolean(KEY_PERSISTENT, false);
@@ -177,6 +177,7 @@ public class MyAccount implements AccountDataReader {
                 throw new IllegalArgumentException(TAG + " null account is not allowed in the constructor");
             }
             myAccount.androidAccount = account;
+            myAccount.version = myAccount.getDataInt(KEY_VERSION, 0);
 
             myAccount.oAccountName = AccountName.fromAccountName(myAccount.androidAccount.name);
             
@@ -187,11 +188,14 @@ public class MyAccount implements AccountDataReader {
             myAccount.userOid = myAccount.getDataString(KEY_USER_OID, "");
             myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0);
             
-            fixMyAccount();
+            if (myAccount.version == MyDatabase.DATABASE_VERSION) {
+                fixMyAccount();
+            }
 
             setConnection();
             
-            if (!myAccount.getCredentialsPresent()) {
+            if (myAccount.version == MyDatabase.DATABASE_VERSION 
+                    && !myAccount.getCredentialsPresent()) {
                 if (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                     Log.e(TAG, "User's credentials were lost?! Fixing...");
                     setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
@@ -199,8 +203,12 @@ public class MyAccount implements AccountDataReader {
                 }
             }
             
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "Loaded " + this.toString());
+            if (myAccount.isValid()) { 
+                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                    Log.v(TAG, "Loaded " + this.toString());
+                }
+            } else {
+                Log.i(TAG, "Loaded Invalid account; version=" + myAccount.version + "; " + this.toString());
             }
         }
 
@@ -344,7 +352,7 @@ public class MyAccount implements AccountDataReader {
 
         public void save() {
             boolean changed = saveSilently();
-            if (changed && isPersistent()) {
+            if (changed && isPersistent() && !MyPreferences.isUpgrading()) {
                 MyPreferences.onPreferencesChanged();
             }
         }
@@ -432,6 +440,10 @@ public class MyAccount implements AccountDataReader {
                     setDataLong(MyPreferences.KEY_FETCH_FREQUENCY, myAccount.syncFrequencySeconds); 
                     changed = true;
                 }
+                if (myAccount.version != myAccount.getDataInt(KEY_VERSION, 0)) {
+                    setDataInt(KEY_VERSION, myAccount.version);
+                    changed = true;
+                }
 
                 MyLog.v(TAG, "Saved " + (changed ? " changed " : " no changes " ) + this);
             } catch (Exception e) {
@@ -496,13 +508,13 @@ public class MyAccount implements AccountDataReader {
             }
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
-            }
-            if (ok) {
                 myAccount.userOid = user.oid;
-                DataInserter di = new DataInserter(myAccount, MyPreferences.getContext(), TimelineTypeEnum.ALL);
-                LatestUserMessages lum = new LatestUserMessages();
-                myAccount.userId = di.insertOrUpdateUser(user, lum);
-                lum.save();
+                if (MyPreferences.isUpgrading()) {
+                    myAccount.userId = myAccount.getDataLong(KEY_USER_ID, myAccount.userId);
+                } else {
+                    DataInserter di = new DataInserter(myAccount, MyPreferences.getContext(), TimelineTypeEnum.ALL);
+                    myAccount.userId = di.insertOrUpdateUser(user);
+                }
             }
             if (ok && !isPersistent()) {
                 // Now we know the name (or proper case of the name) of this User!
@@ -513,7 +525,7 @@ public class MyAccount implements AccountDataReader {
                 setConnection();
                 save();
             }
-            if (!ok) {
+            if (!ok || !myAccount.getCredentialsPresent()) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
             }
             save();
@@ -650,6 +662,10 @@ public class MyAccount implements AccountDataReader {
         public void clearClientKeys() {
             myAccount.connection.clearClientKeys();
         }
+
+        protected int getVersion() {
+            return myAccount.version;
+        }
     }
     
     /**
@@ -659,11 +675,11 @@ public class MyAccount implements AccountDataReader {
     /**
      * Name of the default account. The name is the same for this class and for {@link android.accounts.Account}
      */
-    private static String defaultAccountName = "";
+    private static volatile String defaultAccountName = "";
     /**
      * Name of "current" account: it is not stored when application is killed
      */
-    private static String currentAccountName = "";
+    private static volatile String currentAccountName = "";
     
     private AccountName oAccountName = AccountName.fromAccountName("");
     private String userOid = "";
@@ -697,6 +713,7 @@ public class MyAccount implements AccountDataReader {
     private boolean isOAuth = true;
 
     private long syncFrequencySeconds = 0;
+    private int version = MyDatabase.DATABASE_VERSION;
     
     public enum CredentialsVerificationStatus {
         /** 
@@ -900,7 +917,7 @@ public class MyAccount implements AccountDataReader {
         return 0;
     }
     
-    private static List<MyAccount> persistentAccounts = new Vector<MyAccount>();
+    private static volatile List<MyAccount> persistentAccounts = new Vector<MyAccount>();
     
     /**
      * Get list of all persistent accounts
@@ -993,102 +1010,10 @@ public class MyAccount implements AccountDataReader {
     }
 
     private boolean isValid() {
-        return (oAccountName.isValid() && !TextUtils.isEmpty(userOid) && connection != null);
-    }
-
-    public static void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
-        int currentVersion = oldVersion; 
-        Log.i(TAG, "Upgrading accounts from version " + oldVersion + " to version " + newVersion);
-        if (currentVersion < 12) {
-            currentVersion = convert11to12(db, currentVersion);
-        }
-        if ( currentVersion == newVersion) {
-            Log.i(TAG, "Successfully upgraded accounts from version " + oldVersion + " to version "
-                    + newVersion + ".");
-        } else {
-            Log.e(TAG, "Error upgrading accounts from version " + oldVersion + " to version "
-                    + newVersion + ". Current accounts version=" + currentVersion);
-        }
-    }
-    
-    private static int convert11to12(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 12;
-        boolean ok = false;
-        String step = "";
-        try {
-            Log.i(TAG, "Accounts upgrading step from version " + oldVersion + " to version " + versionTo );
-            Context context = MyPreferences.getContext();
-            
-            android.accounts.AccountManager am = AccountManager.get(context);
-            android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
-            for (android.accounts.Account account : aa) {
-                // Structure of the account name changed!
-                String accountNameOld = account.name;
-                int indSlash = accountNameOld.indexOf("/");
-                String originName = "";
-                if (indSlash >= 0) {
-                    originName = accountNameOld.substring(0, indSlash);
-                }
-                indSlash = accountNameOld.indexOf("/");
-                String username = "";
-                if (indSlash >= 0) {
-                    if (indSlash < accountNameOld.length()-1) {
-                        username = accountNameOld.substring(indSlash + 1);
-                    }
-                } else {
-                    username = accountNameOld;
-                }
-                String prefsFileNameOld = "user_" + originName + "-" + username;
-                if (originName.equalsIgnoreCase("identi.ca")) {
-                    username += "@identi.ca";
-                    originName = "pump.io";
-                } else if (originName.equalsIgnoreCase("twitter")) {
-                    originName = "twitter";
-                }
-                AccountName accountNameNew = AccountName.fromOriginAndUserNames(originName, username);
-                Log.i(TAG, "Upgrading account " + accountNameOld + " to " + accountNameNew);
-
-                Builder builder = new Builder();
-                MyAccount myAccount = new MyAccount();
-                builder.myAccount = myAccount;
-                myAccount.androidAccount = account;
-                myAccount.oAccountName = accountNameNew;
-                myAccount.credentialsVerified = CredentialsVerificationStatus.load(myAccount);
-                builder.setOAuth(myAccount.getDataBoolean(Builder.KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuthDefault()));
-                myAccount.userId = myAccount.getDataLong(Builder.KEY_USER_ID, 0L);
-                myAccount.userOid = myAccount.getDataString(Builder.KEY_USER_OID, "");
-                myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0);
-
-                builder.setConnection();
-                
-                String oid = MyProvider.idToOid(db, OidEnum.USER_OID, myAccount.getUserId(), 0);
-                myAccount.userOid = oid;
-                builder.getAccount().androidAccount = null;
-                SharedPreferencesUtil.rename(context, prefsFileNameOld, accountNameNew.prefsFileName());
-                CredentialsVerificationStatus status = myAccount.getCredentialsVerified();
-                if (status != CredentialsVerificationStatus.SUCCEEDED) {
-                    builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
-                    builder.saveSilently();
-                    builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
-                }
-                builder.saveSilently();
-                
-            }
-            Log.i(TAG, "Removing old accounts");
-            for (android.accounts.Account account : aa) {
-                am.removeAccount(account, null, null);
-            }
-            ok = true;
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-        if (ok) {
-            Log.i(TAG, "Accounts upgrading step successfully upgraded accounts from " + oldVersion + " to version " + versionTo);
-        } else {
-            Log.e(TAG, "Error upgrading accounts from " + oldVersion + " to version " + versionTo
-                    + " step='" + step +"'");
-        }
-        return (ok ? versionTo : oldVersion) ;
+        return (version  == MyDatabase.DATABASE_VERSION && oAccountName.isValid() 
+                && !TextUtils.isEmpty(userOid)
+                && userId != 0
+                && connection != null);
     }
 
     /**
@@ -1180,8 +1105,9 @@ public class MyAccount implements AccountDataReader {
                     if (accountName.compareTo(androidAccount.name) == 0) {
                         myAccount = new Builder(androidAccount).getAccount();
                         persistentAccounts.add(myAccount);
-                        // It looks like preferences has changed...
-                        MyPreferences.onPreferencesChanged();
+                        if (!MyPreferences.isUpgrading()) {
+                            MyPreferences.onPreferencesChanged();
+                        }
                         break;
                     }
                 }
@@ -1372,6 +1298,7 @@ public class MyAccount implements AccountDataReader {
         String str = TAG;
         String members = getAccountName();
         try {
+            members += "; id=" + userId;
             members += "; oid=" + userOid;
             if (isPersistent()) {
                 members += "; persistent";
@@ -1381,7 +1308,10 @@ public class MyAccount implements AccountDataReader {
             }
             members += "; verified=" + getCredentialsVerified().name();
             if (getCredentialsPresent()) {
-                members += "; credentials present";
+                members += "; has credentials";
+            }
+            if (connection == null) {
+                members += "; no connection";
             }
         } catch (Exception e) {}
         return str + "{" + members + "}";

@@ -24,7 +24,7 @@ import org.andstatus.app.net.ConnectionException;
  *  (i.e. Tweets and Messages) from the Internet (e.g. from twitter.com server).
  * Then Store them into database using {@link DataInserter}
  * 
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public abstract class TimelineDownloader {
     private static final String TAG = TimelineDownloader.class.getSimpleName();

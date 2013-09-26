@@ -25,7 +25,7 @@ import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 /**
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public final class MyServiceReceiver extends BroadcastReceiver {
     static final String TAG = MyServiceReceiver.class.getSimpleName();

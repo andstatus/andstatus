@@ -30,7 +30,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  * (that changes when new tweets etc. arrive); - preferences (that are set once
  * in the appWidget configuration activity.
  * 
- * @author yvolk (Yuri Volkov), http://yurivolkov.com
+ * @author yvolk@yurivolkov.com
  */
 public class MyAppWidgetData {
 	private static final String TAG = MyAppWidgetData.class

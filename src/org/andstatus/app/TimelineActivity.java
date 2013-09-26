@@ -81,7 +81,7 @@ import org.andstatus.app.util.SelectionAndArgs;
 import java.util.Locale;
 
 /**
- * @author yvolk, torgny.bjers
+ * @author yvolk@yurivolkov.com, torgny.bjers
  */
 public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener {
 
@@ -300,11 +300,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!mIsFinishing) {
             boolean helpAsFirstActivity = false;
             boolean showChangeLog = false;
-
-            MyProvider.idToOid(OidEnum.USER_OID, 1, 0);  // This may trigger database upgrade
-            long preferencesChangeTimeNew = MyPreferences.initialize(this, this);
-            if (preferencesChangeTimeNew != preferencesChangeTime) {
-                Log.i(TAG, "Preferences changed after opening the database");
+            if (MyPreferences.isUpgrading()) {
+                Log.i(TAG, "Upgrade is in progress");
                 helpAsFirstActivity = true;
                 showChangeLog = true;
             } else if (MyPreferences.shouldSetDefaultValues()) {
@@ -1122,7 +1119,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         /**
          * Here we do all the work 
-         * @author yvolk
+         * @author yvolk@yurivolkov.com
          */
         class AsyncQueryListData extends AsyncTask<Void, Void, Void>{
             long startTime = System.nanoTime();
@@ -1784,7 +1781,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     /**
      * Determines where to save / retrieve position in the list
      * Two rows are always stored for each position hence two keys. Plus Query string is being stored for the search results.
-     * @author yvolk
+     * @author yvolk@yurivolkov.com
      */
     private class PositionStorage {
         /**

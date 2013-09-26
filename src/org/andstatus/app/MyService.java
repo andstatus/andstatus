@@ -234,7 +234,7 @@ public class MyService extends Service {
      * The command to the MyService or to MyAppWidgetProvider as a
      * enum We use 'code' for persistence
      * 
-     * @author yvolk
+     * @author yvolk@yurivolkov.com
      */
     public enum CommandEnum {
 
@@ -443,15 +443,21 @@ public class MyService extends Service {
      * Notify background processes that the service is stopping.
      * Stop if background processes has finished.
      * Persist everything that we'll need on next Service creation and free resources
+     * @param boolean forceNow 
      */
-    private synchronized void stopDelayed() {
+    private synchronized void stopDelayed(boolean forceNow) {
         if (!mInitialized) return;
 
         mIsStopping = true;
         boolean doStop = (mExecutors.size() == 0);
         if (!doStop) {
-            broadcastState(null);
-            return;
+            if (forceNow) {
+                Log.e(TAG, "stopDelayed: Forced to stop now");
+            } else {
+                MyLog.v(TAG, "stopDelayed: Cannot stop now");
+                broadcastState(null);
+                return;
+            }
         }
 
         unregisterReceiver(intentReceiver);
@@ -496,7 +502,7 @@ public class MyService extends Service {
     
     @Override
     public void onDestroy() {
-        stopDelayed();
+        stopDelayed(true);
         MyLog.d(TAG, "Service destroyed");
     }
 
@@ -613,8 +619,8 @@ public class MyService extends Service {
             commandData = new CommandData(intent);
             switch (commandData.command) {
                 case STOP_SERVICE:
-                    // Try to stop immediately
-                    stopDelayed();
+                    MyLog.v(TAG, "Command STOP_SERVICE received");
+                    stopDelayed(false);
                     return;
                 case BROADCAST_SERVICE_STATE:
                     broadcastState(commandData);
@@ -625,6 +631,12 @@ public class MyService extends Service {
                 default:
                     break;
             }
+        }
+        if (mIsStopping) {
+            MyLog.v(TAG, "The Service is stopping: ignoring the command: " +
+        (commandData == null ? "(empty)" : commandData.command));
+            stopDelayed(false);
+            return;
         }
         
         initialize();
@@ -816,11 +828,12 @@ public class MyService extends Service {
             if (mExecutors.size() == 0) {
                 relealeWakeLock();
                 if (mIsStopping) {
-                    stopDelayed();
+                    MyLog.v(TAG, "Is stopping and no executors");
+                    stopDelayed(false);
                 } else if ( notifyOfQueue(false) == 0) {
                     if (! ForegroundCheckTask.isAppOnForeground(MyPreferences.getContext())) {
                         MyLog.d(TAG, "App is on Background so stop this Service");
-                        stopDelayed();
+                        stopDelayed(false);
                     }
                 }
             }

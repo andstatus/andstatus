@@ -57,7 +57,7 @@ import org.andstatus.app.util.RelativeTime;
  * <li>res/xml/appwidget_info.xml</li>
  * </ul>
  * 
- * @author yvolk (Yuri Volkov), http://yurivolkov.com
+ * @author yvolk@yurivolkov.com
  */
 public class MyAppWidgetProvider extends AppWidgetProvider {
 	// log tag

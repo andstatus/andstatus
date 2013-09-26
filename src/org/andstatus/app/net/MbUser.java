@@ -22,7 +22,7 @@ import org.andstatus.app.util.TriState;
 
 /**
  * 'Mb' stands for "Microblogging system" 
- * @author Yuri Volkov
+ * @author yvolk@yurivolkov.com
  */
 public class MbUser {
     public String oid="";

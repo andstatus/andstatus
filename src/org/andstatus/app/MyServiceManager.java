@@ -62,7 +62,7 @@ public class MyServiceManager extends BroadcastReceiver {
     private static volatile java.util.Timer timerToMakeServiceAvailable;
     
     public static boolean isServiceAvailable() {
-        return serviceAvailable;
+        return serviceAvailable && !MyPreferences.isUpgrading();
     }
     public static synchronized void setServiceAvailable() {
         serviceAvailable = true;

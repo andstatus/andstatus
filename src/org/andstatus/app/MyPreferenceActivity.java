@@ -391,7 +391,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     /**
      * Move Data to/from External Storage
      *  
-     * @author yvolk
+     * @author yvolk@yurivolkov.com
      */
     private class MoveDataBetweenStoragesTask extends AsyncTask<Uri, Void, JSONObject> {
         private ProgressDialog dlg;

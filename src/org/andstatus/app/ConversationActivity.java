@@ -49,7 +49,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 /**
  * One selected message and, optionally, whole conversation
  * 
- * @author yvolk
+ * @author yvolk@yurivolkov.com
  */
 public class ConversationActivity extends Activity implements MyServiceListener {
 

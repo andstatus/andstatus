@@ -34,7 +34,7 @@ import java.util.Calendar;
 
 /**
  * Runs various tests...
- * @author yvolk (Yuri Volkov), http://yurivolkov.com
+ * @author yvolk@yurivolkov.com
  */
 public class MyAppWidgetProviderTest extends ActivityTestCase {
     static final String TAG = MyAppWidgetProviderTest.class.getSimpleName();

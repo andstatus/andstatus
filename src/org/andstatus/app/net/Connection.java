@@ -35,7 +35,7 @@ import java.util.List;
  * Authenticated User info (User account in the Microblogging system) and connection properties 
  * are provided in the constructor.
  * 
- * @author yvolk, torgny.bjers
+ * @author yvolk@yurivolkov.com, torgny.bjers
  */
 public abstract class Connection {
 
