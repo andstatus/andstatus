@@ -214,13 +214,12 @@ public abstract class ConnectionTwitter extends Connection {
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
         List<MbTimelineItem> timeline = new ArrayList<MbTimelineItem>();
         if (jArr != null) {
-            for (int index = 0; index < jArr.length(); index++) {
+            // Read the activities in chronological order
+            for (int index = jArr.length() - 1; index >= 0; index--) {
                 try {
                     JSONObject jso = jArr.getJSONObject(index);
                     MbTimelineItem item = timelineItemFromJson(jso);
-                    if (!item.isEmpty()) {
-                        timeline.add(item);
-                    }
+                    timeline.add(item);
                 } catch (JSONException e) {
                     throw ConnectionException.loggedJsonException(TAG, e, null, "Parsing timeline");
                 }

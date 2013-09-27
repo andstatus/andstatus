@@ -129,7 +129,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
                 new TimelinePosition(sinceId) , 20, "acct:t131t@" + host);
         assertNotNull("timeline returned", timeline);
         int size = 5;
-        assertEquals("Response for t131t", size, timeline.size());
+        assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
         assertEquals("Posting image", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());

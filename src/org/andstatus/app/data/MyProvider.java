@@ -893,7 +893,7 @@ public class MyProvider extends ContentProvider {
             SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
             SQLiteStatement prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
-            prog.releaseReference(); // TODO: everywhere
+            prog.releaseReference();
             if (id == 1 || id == 388) {
                 if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
                     MyLog.v(TAG, "oidToId: sql=" + sql );
@@ -996,7 +996,7 @@ public class MyProvider extends ContentProvider {
                 }
                 prog = db.compileStatement(sql);
                 oid = prog.simpleQueryForString();
-                prog.releaseReference(); // TODO: everywhere
+                prog.releaseReference();
                 
                 if (TextUtils.isEmpty(oid) && oe == OidEnum.REBLOG_OID) {
                     // This not reblogged message
@@ -1036,7 +1036,7 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
-                prog.releaseReference(); // TODO: everywhere
+                prog.releaseReference();
             } catch (SQLiteDoneException ed) {
                 userName = "";
             } catch (Exception e) {
@@ -1062,7 +1062,7 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
-                prog.releaseReference(); // TODO: everywhere
+                prog.releaseReference();
             } catch (SQLiteDoneException ed) {
                 userName = "";
             } catch (Exception e) {
@@ -1107,7 +1107,7 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForLong();
-                prog.releaseReference(); // TODO: everywhere
+                prog.releaseReference();
             } catch (SQLiteDoneException ed) {
                 columnValue = 0;
             } catch (Exception e) {
@@ -1146,7 +1146,7 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForString();
-                prog.releaseReference(); // TODO: everywhere
+                prog.releaseReference();
             } catch (SQLiteDoneException ed) {
                 columnValue = "";
             } catch (Exception e) {
@@ -1211,7 +1211,7 @@ public class MyProvider extends ContentProvider {
                     + userName + "'";
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
-            prog.releaseReference(); // TODO: everywhere
+            prog.releaseReference();
         } catch (SQLiteDoneException ed) {
             id = 0;
         } catch (Exception e) {
