@@ -38,8 +38,6 @@ public class DataInserterTest extends InstrumentationTestCase {
         super.setUp();
         context = TestSuite.initialize(this);
 
-        MyServiceManager.setServiceUnavailable();
-        
         String firstUserName = "firstTestUser@identi.ca";
         MbUser firstMbUser  = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), 
                 "acct:" + firstUserName);

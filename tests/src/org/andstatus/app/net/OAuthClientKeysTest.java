@@ -16,12 +16,10 @@
 
 package org.andstatus.app.net;
 
-import android.content.Context;
 import android.test.InstrumentationTestCase;
-import android.util.Log;
 
+import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccountTest;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.Origin.OriginEnum;
@@ -33,13 +31,8 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Context targetContext = this.getInstrumentation().getTargetContext();
-        if (targetContext == null) {
-            Log.e(TAG, "targetContext is null.");
-            throw new IllegalArgumentException("this.getInstrumentation().getTargetContext() returned null");
-        }
-        MyPreferences.forget();
-        MyPreferences.initialize(targetContext, this);
+        TestSuite.forget();
+        TestSuite.initialize(this);
     }
 
     public void testKeysSave() {

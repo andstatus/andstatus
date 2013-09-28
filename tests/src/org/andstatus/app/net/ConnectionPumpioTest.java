@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
@@ -46,12 +47,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        context = this.getInstrumentation().getTargetContext();
-        if (context == null) {
-            Log.e(TAG, "targetContext is null.");
-            throw new IllegalArgumentException("this.getInstrumentation().getTargetContext() returned null");
-        }
-        MyPreferences.initialize(context, this);
+        context = TestSuite.initialize(this);
 
         Origin origin = OriginEnum.PUMPIO.newOrigin();
         connectionData = origin.getConnectionData(TriState.UNKNOWN);

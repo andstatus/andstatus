@@ -58,4 +58,22 @@ public class MbUser {
     public boolean isEmpty() {
         return ((TextUtils.isEmpty(userName) && TextUtils.isEmpty(oid)) || originId==0);
     }
+
+    @Override
+    public String toString() {
+        String str = MbUser.class.getSimpleName();
+        String members = "oid=" + oid + "; originid=" + originId;
+        try {
+            if (!TextUtils.isEmpty(userName)) {
+                members += "; username=" + userName;
+            }
+            if (!TextUtils.isEmpty(realName)) {
+                members += "; realname=" + realName;
+            }
+            if (latestMessage != null) {
+                members += "; latest message present";
+            }
+        } catch (Exception e) {}
+        return str + "{" + members + "}";
+    }
 }

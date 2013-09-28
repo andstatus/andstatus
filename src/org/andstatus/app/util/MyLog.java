@@ -67,7 +67,7 @@ public class MyLog {
     /** 
      * Cached value of the persistent preference
      */
-    private static volatile int minLogLevel = Log.INFO;
+    private static volatile int minLogLevel = Log.VERBOSE;
 
     /**
      * Shortcut for debugging messages of the application

@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.app.PendingIntent;
 import android.text.format.Time;
 import android.util.Log;
+
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
 import org.andstatus.app.data.MyPreferences;
 
@@ -45,12 +46,12 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     
     public void test001WidgetTime() throws Exception {
     	Log.i(TAG,"testWidgetTime started");
-    	Context targetContext = this.getInstrumentation().getTargetContext();
-    	if (targetContext == null) {
+        Context context = TestSuite.initialize(this);
+    	if (context == null) {
     	    Log.e(TAG, "targetContext is null.");
     	    throw new Exception("this.getInstrumentation().getTargetContext() returned null");
     	}
-        MyPreferences.initialize(targetContext, this);
+        MyPreferences.initialize(context, this);
     	
     	MyAppWidgetProvider widget = new MyAppWidgetProvider();
     	Log.i(TAG,"MyAppWidgetProvider created");
@@ -80,7 +81,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
             long startMillis = dateTest.date1.toMillis(false /* use isDst */);
             long endMillis = dateTest.date2.toMillis(false /* use isDst */);
             int flags = dateTest.flags;
-            String output = DateUtils.formatDateRange(targetContext, startMillis, endMillis, flags);
+            String output = DateUtils.formatDateRange(context, startMillis, endMillis, flags);
             /*
             if (!dateTest.expectedOutput.equals(output)) {
                 Log.i("FormatDateRangeTest", "index " + index
@@ -88,7 +89,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
                         + " actual: " + output);
             } */
             
-            String output2 = widget.formatWidgetTime(targetContext, startMillis, endMillis);
+            String output2 = widget.formatWidgetTime(context, startMillis, endMillis);
         	Log.i(TAG,"\"" + output + "\"; \"" + output2 + "\"");
             
             //assertEquals(dateTest.expectedOutput, output);

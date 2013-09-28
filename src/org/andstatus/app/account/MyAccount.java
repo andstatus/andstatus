@@ -510,6 +510,7 @@ public class MyAccount implements AccountDataReader {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
                 myAccount.userOid = user.oid;
                 if (MyPreferences.isUpgrading()) {
+                    MyLog.v(TAG, "Upgrade in progress");
                     myAccount.userId = myAccount.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
                     DataInserter di = new DataInserter(myAccount, MyPreferences.getContext(), TimelineTypeEnum.ALL);
@@ -1290,9 +1291,6 @@ public class MyAccount implements AccountDataReader {
         }
     }
 
-    /**
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         String str = TAG;

@@ -35,12 +35,14 @@ public class MyApplication extends Application {
 
     @Override
     public void onCreate() {
+        super.onCreate();
         Log.v(TAG, "onCreate started");
         MyPreferences.initialize(this, this);
-        super.onCreate();
         MyPreferences.triggerDatabaseUpgrade();
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             MyLog.v(TAG, "onCreate ended");
+        } else {
+            Log.d(TAG, "onCreate ended, no verbose log");
         }
     }
 

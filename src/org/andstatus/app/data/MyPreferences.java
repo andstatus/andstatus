@@ -54,8 +54,9 @@ public class MyPreferences {
     /**
      * Semaphore enabling uninterrupted system upgrade
      */
-    private static volatile Long upgradeEndTime = 0L;
-    private static volatile boolean upgradeStarted = false;
+    private static Long upgradeEndTime = 0L;
+    private static boolean upgradeStarted = false;
+    private static boolean upgradeSuccessfullyCompleted = false;
 
     /**
      * IDs used for testing purposes to identify instances of reference types.
@@ -356,7 +357,7 @@ public class MyPreferences {
     
     public static void triggerDatabaseUpgrade() {
         if (isUpgrading()) {
-            Log.w(TAG, "Attempt to trigger database upgrade: already upgrading");
+            MyLog.v(TAG, "Attempt to trigger database upgrade: already upgrading");
             return;
         }
         long currentTime = java.lang.System.currentTimeMillis();
@@ -364,16 +365,29 @@ public class MyPreferences {
             if (isUpgrading()) {
                 return;
             }
+            if ( upgradeSuccessfullyCompleted) {
+                MyLog.v(TAG, "Attempt to trigger database upgrade: already completed successfully");
+            }
             final Long MILLIS_BEFORE_UPGRADE_TRIGGERED = 1000L;
             upgradeEndTime = currentTime + MILLIS_BEFORE_UPGRADE_TRIGGERED;
             shouldTriggerDatabaseUpgrade = true;            
         }
         try {
+            MyLog.v(TAG, "Upgrade triggered");
             MyDatabase db = getDatabase();
             if (db != null) {
                 db.getReadableDatabase();
             }
-            shouldTriggerDatabaseUpgrade = false;
+            synchronized(upgradeEndTime) {
+                shouldTriggerDatabaseUpgrade = false;
+                upgradeSuccessfullyCompleted = true;
+                if (upgradeStarted) {
+                    upgradeStarted = false;
+                    MyLog.v(TAG, "Upgraded completed successfully");
+                } else {
+                    MyLog.v(TAG, "No upgrade was required");
+                }
+            }
         } catch (Exception e) {
             Log.w(TAG, "Failed to trigger database upgrade, will try later. Error: " + e.getMessage());
             
@@ -393,17 +407,19 @@ public class MyPreferences {
     
     public static void onUpgrade() {
         final long MILLIS_FOR_UPGRADE = 10000L;
-        upgradeStarted = true;
-        upgradeEndTime = java.lang.System.currentTimeMillis() + MILLIS_FOR_UPGRADE;
+        synchronized(upgradeEndTime) {
+            upgradeStarted = true;
+            upgradeEndTime = java.lang.System.currentTimeMillis() + MILLIS_FOR_UPGRADE;
+        }
         Log.w(TAG, "on Upgrade, waiting " + MILLIS_FOR_UPGRADE + " milliseconds");
     }
     
     public static boolean isUpgrading() {
-        if (upgradeEndTime == 0 ) {
-            return false;
-        }
-        long currentTime = java.lang.System.currentTimeMillis();
         synchronized(upgradeEndTime) {
+            if (upgradeEndTime == 0 ) {
+                return false;
+            }
+            long currentTime = java.lang.System.currentTimeMillis();
             if (currentTime > upgradeEndTime) {
                 upgradeEndTime = 0L;
                 return false;

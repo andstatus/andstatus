@@ -19,10 +19,12 @@ package org.andstatus.app.net;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
-import android.util.Log;
 
+import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.AccountDataReaderEmpty;
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -47,12 +49,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        context = this.getInstrumentation().getTargetContext();
-        if (context == null) {
-            Log.e(TAG, "targetContext is null.");
-            throw new IllegalArgumentException("this.getInstrumentation().getTargetContext() returned null");
-        }
-        MyPreferences.initialize(context, this);
+        context = TestSuite.initialize(this);
 
         Origin origin = OriginEnum.TWITTER.newOrigin();
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
@@ -124,9 +121,9 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         startsWith = "This AndStatus application";
         assertEquals("Body of reblogged message starts with", startsWith, timeline.get(ind).mbMessage.rebloggedMessage.body.substring(0, startsWith.length()));
         // TODO: use Calendar
-        Date date = new Date(2013 - 1900, 9 - 1, 26, 18, 23, 05);
+        Date date = new Date(Date.UTC(2013 - 1900, 9 - 1, 26, 18, 23, 05));
         assertEquals("This message created at Thu Sep 26 18:23:05 +0000 2013 (" + date.toString() + ")", date.getTime(), timeline.get(ind).mbMessage.sentDate);
-        date = new Date(2013 - 1900, 3 - 1, 22, 13, 13, 7);
+        date = new Date(Date.UTC(2013 - 1900, 3 - 1, 22, 13, 13, 7));
         assertEquals("Reblogged message created at Fri Mar 22 13:13:07 +0000 2013 (" + date.toString() + ")", date.getTime(), timeline.get(ind).mbMessage.rebloggedMessage.sentDate);
 
         ind++;

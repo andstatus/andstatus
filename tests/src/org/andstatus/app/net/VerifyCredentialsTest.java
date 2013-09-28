@@ -1,0 +1,131 @@
+/* 
+ * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.andstatus.app.net;
+
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.test.InstrumentationTestCase;
+import android.text.TextUtils;
+import android.util.Log;
+
+import org.andstatus.app.TestSuite;
+import org.andstatus.app.account.AccountDataReaderEmpty;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
+import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.origin.Origin.OriginEnum;
+import org.andstatus.app.util.SelectionAndArgs;
+import org.andstatus.app.util.TriState;
+import org.json.JSONObject;
+
+public class VerifyCredentialsTest extends InstrumentationTestCase {
+    private static final String TAG = VerifyCredentialsTest.class.getSimpleName();
+    Context context;
+    Connection connection;
+    String host = "twitter.com";
+    HttpConnectionMock httpConnection;
+    OriginConnectionData connectionData;
+
+    String keyStored;
+    String secretStored;
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        context = TestSuite.initialize(this);
+
+        Origin origin = OriginEnum.TWITTER.newOrigin();
+        connectionData = origin.getConnectionData(TriState.UNKNOWN);
+        connectionData.dataReader = new AccountDataReaderEmpty();
+        connection = connectionData.connectionClass.newInstance();
+        connection.enrichConnectionData(connectionData);
+        connectionData.httpConnectionClass = HttpConnectionMock.class;
+        connection.setAccountData(connectionData);
+        httpConnection = (HttpConnectionMock) connection.http;
+
+        httpConnection.data.host = host;
+        httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
+        keyStored = httpConnection.data.oauthClientKeys.getConsumerKey();
+        secretStored = httpConnection.data.oauthClientKeys.getConsumerSecret();
+
+        if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {
+            httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232");
+        }
+        
+        for (int i=1; i < 11; i++) {
+            if(!MyPreferences.isUpgrading()) {
+                break;
+            }
+            Log.d(TAG, "Waiting for upgrade to end " + i);
+            try {
+                Thread.sleep(200);
+            } catch(InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }            
+        }
+        assertTrue("Not upgrading now", !MyPreferences.isUpgrading());
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        if (!TextUtils.isEmpty(keyStored)) {
+            httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
+        }
+    }
+
+    public void testVerifyCredentials() throws ConnectionException {
+        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.verify_credentials_twitter);
+        httpConnection.setResponse(jso);
+        
+        MbUser mbUser = connection.verifyCredentials();
+        assertEquals("User's oid is user oid of this account", "144771645", mbUser.oid);
+        
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName("/" + Origin.OriginEnum.TWITTER.getName(), TriState.TRUE);
+        builder.onVerifiedCredentials(mbUser, null);
+        assertTrue("Account is persistent", builder.isPersistent());
+        long userId = builder.getAccount().getUserId();
+        assertTrue("Account " + mbUser.userName + " has UserId", userId != 0);
+        assertEquals("Account UserOid", builder.getAccount().getUserOid(), mbUser.oid);
+        assertEquals("User in the database for id=" + userId, 
+                mbUser.oid,
+                MyProvider.idToOid(OidEnum.USER_OID, userId, 0));
+        
+        Uri contentUri = MyProvider.getTimelineUri(userId, TimelineTypeEnum.ALL, false);
+        SelectionAndArgs sa = new SelectionAndArgs();
+        String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
+        sa.addSelection(MyDatabase.Msg.SENDER_ID + " = ?",
+                new String[] {
+                        Long.toString(userId)
+                });
+        String[] PROJECTION = new String[] {
+            Msg.MSG_ID,
+            };
+        Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection, sa.selectionArgs, sortOrder);
+        assertTrue("Cursor returned", cursor != null);
+        assertTrue("Message by " + mbUser.userName + " found", cursor.getCount() > 0);
+        cursor.close();
+    }
+}

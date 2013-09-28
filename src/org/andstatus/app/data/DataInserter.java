@@ -229,10 +229,10 @@ public class DataInserter {
                             values.put(MyDatabase.Msg.VIA, message.via);
                         }
                         if (message.favoritedByActor != TriState.UNKNOWN) {
-                            if (actorId == counters.ma.getUserId()) {
+                            if (actorId != 0 && actorId == counters.ma.getUserId()) {
                                 values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(message.favoritedByActor));
                                 MyLog.v(TAG, "Message '" + message.oid + "' " + (message.favoritedByActor.toBoolean(false) ? "favorited" : "unfavorited") 
-                                        + " by " + counters.ma.getAccountName() );
+                                        + " by " + counters.ma.getAccountName());
                             }
                         }
 
@@ -328,6 +328,10 @@ public class DataInserter {
      * @return userId
      */
     public long insertOrUpdateUser(MbUser mbUser, LatestUserMessages lum) throws SQLiteConstraintException {
+        if (mbUser.isEmpty()) {
+            MyLog.v(TAG, "insertUser - mbUser is empty");
+            return 0;
+        }
         String userName = mbUser.userName;
         String userOid = mbUser.oid;
         long originId = mbUser.originId;

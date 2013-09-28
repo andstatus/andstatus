@@ -16,13 +16,11 @@
 
 package org.andstatus.app.account;
 
-import android.content.Context;
 import android.test.InstrumentationTestCase;
-import android.util.Log;
 
+import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.origin.Origin.OriginEnum;
 import org.andstatus.app.util.TriState;
 
@@ -32,12 +30,7 @@ public class MyAccountTest  extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Context targetContext = this.getInstrumentation().getTargetContext();
-        if (targetContext == null) {
-            Log.e(TAG, "targetContext is null.");
-            throw new IllegalArgumentException("this.getInstrumentation().getTargetContext() returned null");
-        }
-        MyPreferences.initialize(targetContext, this);
+        TestSuite.initialize(this);
     }
 
     public void testNewAccountCreation() {
