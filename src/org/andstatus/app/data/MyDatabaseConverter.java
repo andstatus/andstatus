@@ -235,6 +235,7 @@ class MyDatabaseConverter {
             Log.e(TAG, e.getMessage());
         }
         if (ok) {
+            MyPreferences.onUpgrade();
             Log.i(TAG, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
             ok = ( MyAccountConverter.convert11to12(db, oldVersion) == versionTo);
         } else {

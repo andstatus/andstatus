@@ -188,8 +188,12 @@ public class MyPreferences {
         if (initialized && !initializedHere) {
             MyLog.v(TAG, "Already initialized by " + initializedBy +  " (called by: " + initializerName + ")");
         }
-        if (initialized && shouldTriggerDatabaseUpgrade) {
-            triggerDatabaseUpgrade();
+        if (initialized) {
+            synchronized(upgradeEndTime) {
+                if (shouldTriggerDatabaseUpgrade) {
+                    triggerDatabaseUpgrade();
+                }
+            }
         }
         return preferencesChangeTime;
     }
@@ -406,7 +410,7 @@ public class MyPreferences {
     }
     
     public static void onUpgrade() {
-        final long MILLIS_FOR_UPGRADE = 10000L;
+        final long MILLIS_FOR_UPGRADE = 30000L;
         synchronized(upgradeEndTime) {
             upgradeStarted = true;
             upgradeEndTime = java.lang.System.currentTimeMillis() + MILLIS_FOR_UPGRADE;
@@ -421,6 +425,7 @@ public class MyPreferences {
             }
             long currentTime = java.lang.System.currentTimeMillis();
             if (currentTime > upgradeEndTime) {
+                MyLog.v(TAG,"Upgrade end time came");
                 upgradeEndTime = 0L;
                 return false;
             }

@@ -905,6 +905,7 @@ public class MyProvider extends ContentProvider {
             id = 0;
         } catch (Exception e) {
             Log.e(TAG, "oidToId: " + e.toString());
+            e.printStackTrace();
             return 0;
         }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
