@@ -820,6 +820,7 @@ public class MyProvider extends ContentProvider {
         msgProjectionMap.put(User.SENDER_NAME, User.SENDER_NAME);
         msgProjectionMap.put(Msg.BODY, Msg.BODY);
         msgProjectionMap.put(Msg.VIA, Msg.VIA);
+        msgProjectionMap.put(Msg.URL, Msg.URL);
         msgProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
         msgProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
         msgProjectionMap.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);
@@ -843,6 +844,7 @@ public class MyProvider extends ContentProvider {
         userProjectionMap.put(User.ORIGIN_ID, User.ORIGIN_ID);
         userProjectionMap.put(User.USERNAME, User.USERNAME);
         userProjectionMap.put(User.AVATAR_BLOB, User.AVATAR_BLOB);
+        userProjectionMap.put(User.URL, User.URL);
         userProjectionMap.put(User.CREATED_DATE, User.CREATED_DATE);
         userProjectionMap.put(User.INS_DATE, User.INS_DATE);
         
@@ -1119,6 +1121,10 @@ public class MyProvider extends ContentProvider {
             }
         }
         return columnValue;
+    }
+    
+    public static String msgIdToStringColumnValue(String columnName, long systemId) {
+        return idToStringColumnValue(MyDatabase.MSG_TABLE_NAME, columnName, systemId);
     }
     
     public static String userIdToStringColumnValue(String columnName, long systemId) {

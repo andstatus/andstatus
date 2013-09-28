@@ -1661,7 +1661,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
                     Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mTimelineType, true, info.id);
                     Cursor c = getContentResolver().query(uri, new String[] {
-                            MyDatabase.Msg.MSG_OID, MyDatabase.Msg.BODY
+                            MyDatabase.Msg.MSG_ID, MyDatabase.Msg.BODY
                     }, null, null, null);
                     try {
                         if (c != null && c.getCount() > 0) {
@@ -1684,7 +1684,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                             text.append(msgBody);
                             text.append("\n-- \n" + userName);
                             text.append("\n URL: " + ma.messagePermalink(userName, 
-                                    c.getString(c.getColumnIndex(MyDatabase.Msg.MSG_OID))));
+                                    c.getLong(c.getColumnIndex(MyDatabase.Msg.MSG_ID))));
                             
                             Intent share = new Intent(android.content.Intent.ACTION_SEND); 
                             share.setType("text/plain"); 

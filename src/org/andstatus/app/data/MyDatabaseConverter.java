@@ -135,6 +135,9 @@ class MyDatabaseConverter {
         try {
             Log.i(TAG, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
 
+            sql = "ALTER TABLE msg ADD COLUMN url TEXT";
+            db.execSQL(sql);
+            
             sql = "ALTER TABLE msgofuser ADD COLUMN reblogged INTEGER DEFAULT 0 NOT NULL";
             db.execSQL(sql);
             sql = "UPDATE msgofuser SET reblogged = retweeted";
@@ -193,7 +196,7 @@ class MyDatabaseConverter {
             sql="CREATE TABLE user (_id INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + "origin_id INTEGER DEFAULT 1 NOT NULL,user_oid TEXT,username TEXT NOT NULL,"
                     + "real_name TEXT,avatar_url TEXT,avatar_blob BLOB,user_description TEXT,"
-                    + "homepage TEXT,user_created_date INTEGER,user_ins_date INTEGER NOT NULL,"
+                    + "homepage TEXT,url TEXT,user_created_date INTEGER,user_ins_date INTEGER NOT NULL,"
                     + "home_timeline_position TEXT DEFAULT '' NOT NULL,home_timeline_item_date INTEGER DEFAULT 0 NOT NULL,"
                     + "home_timeline_date INTEGER DEFAULT 0 NOT NULL,"
                     + "favorites_timeline_position TEXT DEFAULT '' NOT NULL,favorites_timeline_item_date INTEGER DEFAULT 0 NOT NULL,"

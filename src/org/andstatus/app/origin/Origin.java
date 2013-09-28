@@ -260,12 +260,7 @@ public class Origin {
         return resId;
     }
     
-    /**
-     * @param userName Username in the Originating system
-     * @param messageOid {@link MyDatabase.Msg#MSG_OID}
-     * @return URL
-     */
-    public String messagePermalink(String userName, String messageOid) {
+    public String messagePermalink(String userName, long messageId) {
         return "";
     }
 

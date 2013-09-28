@@ -1255,11 +1255,8 @@ public class MyAccount implements AccountDataReader {
         return oAccountName.getOrigin().alternativeTermForResourceId(resId);
     }
     
-    /**
-     * {@link Origin#messagePermalink(String, String)}
-     */
-    public String messagePermalink(String userName, String messageOid) {
-        return oAccountName.getOrigin().messagePermalink(userName, messageOid);
+    public String messagePermalink(String userName, long messageId) {
+        return oAccountName.getOrigin().messagePermalink(userName, messageId);
     }
 
     /**

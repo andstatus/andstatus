@@ -177,6 +177,7 @@ public class ConnectionPumpio extends Connection {
         }
         user.description = jso.optString("summary");
         user.homepage = jso.optString("url");
+        user.url = jso.optString("url");
         user.updatedDate = dateFromJson(jso, "updated");
         return user;
     }
@@ -570,6 +571,7 @@ public class ConnectionPumpio extends Connection {
                     message.via = generator.getString("displayName");
                 }
             }
+            message.url = jso.optString("url");
 
             // If the Msg is a Reply to other message
             if (jso.has("inReplyTo")) {

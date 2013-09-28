@@ -17,6 +17,8 @@
 package org.andstatus.app.origin;
 
 import org.andstatus.app.R;
+import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.net.ConnectionTwitter1p1;
 import org.andstatus.app.util.TriState;
 
@@ -74,11 +76,11 @@ class OriginTwitter extends Origin {
     }
 
     @Override
-    public String messagePermalink(String userName, String messageOid) {
+    public String messagePermalink(String userName, long messageId) {
         String url = "https://twitter.com/"
                     + userName 
                     + "/status/"
-                    + messageOid;
+                    + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId);
         return url;
     }
 

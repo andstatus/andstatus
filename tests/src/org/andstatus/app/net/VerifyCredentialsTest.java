@@ -21,13 +21,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
@@ -72,21 +70,8 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {
             httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232");
         }
-        
-        for (int i=1; i < 11; i++) {
-            if(!MyPreferences.isUpgrading()) {
-                break;
-            }
-            Log.d(TAG, "Waiting for upgrade to end " + i);
-            try {
-                Thread.sleep(200);
-            } catch(InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }            
-        }
-        assertTrue("Not upgrading now", !MyPreferences.isUpgrading());
     }
-    
+
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -126,6 +111,9 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection, sa.selectionArgs, sortOrder);
         assertTrue("Cursor returned", cursor != null);
         assertTrue("Message by " + mbUser.userName + " found", cursor.getCount() > 0);
+        cursor.moveToFirst();
+        long messageId = cursor.getLong(0);
         cursor.close();
+        assertEquals("Message permalink at twitter", "https://twitter.com/" + builder.getAccount().getUsername() + "/status/383296535213002752", builder.getAccount().messagePermalink(builder.getAccount().getUsername(), messageId));
     }
 }

@@ -70,6 +70,9 @@ public class TestSuite extends TestCase {
         initialized =  (context != null);
         Log.d(TAG, "Test Suite" + (initialized ? "" : " was not") + " initialized");
         assertTrue("Test Suite initialized", initialized);
+        
+        waitTillUpgradeEnded();
+        
         return context;
     }
 
@@ -78,5 +81,20 @@ public class TestSuite extends TestCase {
         Log.d(TAG, "Before forget");
         MyPreferences.forget();
         initialized = false;
+    }
+    
+    public static void waitTillUpgradeEnded() {
+        for (int i=1; i < 11; i++) {
+            if(!MyPreferences.isUpgrading()) {
+                break;
+            }
+            Log.d(TAG, "Waiting for upgrade to end " + i);
+            try {
+                Thread.sleep(200);
+            } catch(InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }            
+        }
+        assertTrue("Not upgrading now", !MyPreferences.isUpgrading());
     }
 }

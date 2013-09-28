@@ -138,13 +138,16 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
 
         ind++;
         assertEquals("User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
+        assertEquals("Url of the actor", "https://identi.ca/t131t", timeline.get(ind).mbUser.actor.url);
         MbUser mbUser = timeline.get(ind).mbUser;
         assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
+        assertEquals("Url of the user", "https://fmrl.me/grdryn", mbUser.url);
 
         ind++;
         assertEquals("Favorited by someone else", TriState.TRUE, timeline.get(ind).mbMessage.favoritedByActor);
         assertEquals("Actor -someone else", "acct:jpope@io.jpope.org" , timeline.get(ind).mbMessage.actor.oid);
         assertTrue("Does not have a recipient", timeline.get(ind).mbMessage.recipient == null);
+        assertEquals("Url of the message", "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", timeline.get(ind).mbMessage.url);
 
         ind++;
         assertTrue("Have a recipient", timeline.get(ind).mbMessage.recipient != null);

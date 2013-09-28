@@ -17,6 +17,8 @@
 package org.andstatus.app.origin;
 
 import org.andstatus.app.R;
+import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.ConnectionPumpio;
 import org.andstatus.app.util.TriState;
 
@@ -50,8 +52,8 @@ class OriginPumpio extends Origin {
     }
     
     @Override
-    public String messagePermalink(String userName, String messageOid) {
-        return messageOid;
+    public String messagePermalink(String userName, long messageId) {
+        return MyProvider.msgIdToStringColumnValue(Msg.URL, messageId);
     }
     
     @Override

@@ -11,6 +11,7 @@ import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.Builder;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
@@ -47,6 +48,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         
         accountMbUser = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), accountUserOid);
         accountMbUser.userName = "t131t@identi.ca";
+        accountMbUser.url = "http://identi.ca/t131t";
         MyAccount.Builder builder = addAccount(accountMbUser);
         accountName = builder.getAccount().getAccountName();
         accountUserId = builder.getAccount().getUserId();
@@ -94,6 +96,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         somebody.userName = username;
         somebody.actor = accountMbUser;
         somebody.followedByActor = TriState.FALSE;
+        somebody.url = "http://identi.ca/somebody";
         di.insertOrUpdateUser(somebody);
 
         long somebodyId = MyProvider.oidToId(OidEnum.USER_OID, Origin.OriginEnum.PUMPIO.getId(), userOid);
@@ -106,15 +109,21 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.body = "The test message by Somebody";
         message.sentDate = 13312696000L;
         message.via = "MyCoolClient";
+        message.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         message.sender = somebody;
         message.actor = accountMbUser;
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
+        assertEquals("Message permalink", message.url, ma.messagePermalink(message.sender.userName, messageId));
 
         long authorId = MyProvider.msgIdToLongColumnValue(Msg.AUTHOR_ID, messageId);
         assertEquals("Author of the message", somebodyId, authorId);
+        String url = MyProvider.msgIdToStringColumnValue(Msg.URL, messageId);
+        assertEquals("Url of the message", message.url, url);
         long senderId = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, messageId);
         assertEquals("Sender of the message", somebodyId, senderId);
+        url = MyProvider.userIdToStringColumnValue(User.URL, senderId);
+        assertEquals("Url of the sender " + somebody.userName , somebody.url, url);
         
         Uri contentUri = MyProvider.getTimelineUri(ma.getUserId(), TimelineTypeEnum.FOLLOWING_USER, false);
         SelectionAndArgs sa = new SelectionAndArgs();

@@ -35,6 +35,7 @@ public class MbMessage {
     public MbMessage rebloggedMessage = null;
     public MbMessage inReplyToMessage = null;
     public String via = "";
+    public String url="";
 
     /**
      * Some additional attributes may appear from the Reader's

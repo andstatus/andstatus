@@ -31,6 +31,7 @@ public class MbUser {
     public String avatarUrl="";
     public String description="";
     public String homepage="";
+    public String url="";
     public long createdDate = 0;
     public long updatedDate = 0;
     public MbMessage latestMessage = null;    

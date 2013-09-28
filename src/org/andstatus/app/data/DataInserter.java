@@ -228,6 +228,9 @@ public class DataInserter {
                         if (!TextUtils.isEmpty(message.via)) {
                             values.put(MyDatabase.Msg.VIA, message.via);
                         }
+                        if (!TextUtils.isEmpty(message.url)) {
+                            values.put(MyDatabase.Msg.URL, message.url);
+                        }
                         if (message.favoritedByActor != TriState.UNKNOWN) {
                             if (actorId != 0 && actorId == counters.ma.getUserId()) {
                                 values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(message.favoritedByActor));
@@ -379,6 +382,9 @@ public class DataInserter {
             }
             if (!TextUtils.isEmpty(mbUser.homepage)) {
                 values.put(MyDatabase.User.HOMEPAGE, mbUser.homepage);
+            }
+            if (!TextUtils.isEmpty(mbUser.url)) {
+                values.put(MyDatabase.User.URL, mbUser.url);
             }
             if (mbUser.createdDate > 0) {
                 values.put(MyDatabase.User.CREATED_DATE, mbUser.createdDate);

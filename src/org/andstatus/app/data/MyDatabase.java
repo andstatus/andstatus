@@ -95,6 +95,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 	     */
         public static final String MSG_OID = "msg_oid";
         /**
+         * A link to the representation of the resource. Currently this is simply URL to the HTML 
+         * representation of the resource (its "permalink") 
+         */
+        public static final String URL = "url";
+        /**
          * Author of the message = User._ID
          * If message was "Reblogged" ("Retweeted", "Repeated", ...) this is Original author (whose message was reblogged)
          */
@@ -256,6 +261,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * User's web home page
          */
         public static final String HOMEPAGE = "homepage";
+        /**
+         * A link to the representation of the resource. Currently this is simply URL to the HTML 
+         * representation of the resource (its "permalink") 
+         */
+        public static final String URL = "url";
         /**
          * Date and time when the row was created in the originating system.
          * We store it as long returned by {@link java.util.Date#parse(String) }. 
@@ -520,6 +530,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Msg.RECIPIENT_ID + " INTEGER," 
                 + Msg.BODY + " TEXT," 
                 + Msg.VIA + " TEXT," 
+                + Msg.URL + " TEXT," 
                 + Msg.IN_REPLY_TO_MSG_ID + " INTEGER," 
                 + Msg.IN_REPLY_TO_USER_ID + " INTEGER," 
                 + Msg.CREATED_DATE + " INTEGER,"
@@ -555,6 +566,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.AVATAR_BLOB + " BLOB," 
                 + User.DESCRIPTION + " TEXT," 
                 + User.HOMEPAGE + " TEXT," 
+                + User.URL + " TEXT," 
                 + User.CREATED_DATE + " INTEGER,"
                 + User.INS_DATE + " INTEGER NOT NULL,"
                 + User.HOME_TIMELINE_POSITION + " TEXT DEFAULT '' NOT NULL," 
