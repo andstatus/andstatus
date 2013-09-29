@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 public class HttpConnectionMock extends HttpConnection {
     private static final String TAG = HttpConnectionMock.class.getSimpleName();
+    private JSONObject postedObject = null;
     private JSONObject responseObject = null;
 
     public void setResponse(JSONObject jso) {
@@ -16,6 +17,7 @@ public class HttpConnectionMock extends HttpConnection {
     
     @Override
     protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
+        postedObject = jso;
         return responseObject;
     }
 
@@ -62,6 +64,10 @@ public class HttpConnectionMock extends HttpConnection {
     public boolean getCredentialsPresent() {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    public JSONObject getPostedJSONObject() {
+        return postedObject;
     }
 
 }

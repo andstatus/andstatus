@@ -44,56 +44,6 @@ import java.util.Locale;
 public class ConnectionPumpio extends Connection {
     private static final String TAG = ConnectionPumpio.class.getSimpleName();
 
-    private enum PumpioObjectType {
-        ACTIVITY("activity", null) {
-            @Override
-            public boolean isMyType(JSONObject jso) {
-                boolean is = false;
-                if (jso != null) {
-                     is = jso.has("verb");
-                     // It may not have the "objectType" field as in the specification:
-                     //   http://activitystrea.ms/specs/json/1.0/
-                }
-                return is;
-            }
-        },
-        PERSON("person", null),
-        COMMENT("comment", null),
-        IMAGE("image", COMMENT),
-        NOTE("note", COMMENT),
-        UNKNOWN("unknown", null);
-        
-        private String fieldName;
-        private PumpioObjectType compatibleType = this;
-        PumpioObjectType(String fieldName, PumpioObjectType compatibleType) {
-            this.fieldName = fieldName;
-            if (compatibleType != null) {
-                this.compatibleType = compatibleType;
-            }
-        }
-        
-        public String fieldName() {
-            return fieldName;
-        }
-        
-        public boolean isMyType(JSONObject jso) {
-            boolean is = false;
-            if (jso != null) {
-                is = fieldName().equalsIgnoreCase(jso.optString("objectType"));
-            }
-            return is;
-        }
-        
-        public static PumpioObjectType compatibleWith(JSONObject jso) {
-            for(PumpioObjectType type : PumpioObjectType.values()) {
-                if (type.isMyType(jso)) {
-                    return type.compatibleType;
-                }
-            }
-            return UNKNOWN;
-        }
-    }
-
     @Override
     public void enrichConnectionData(OriginConnectionData connectionData) {
         super.enrichConnectionData(connectionData);

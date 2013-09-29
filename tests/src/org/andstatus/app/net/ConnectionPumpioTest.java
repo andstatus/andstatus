@@ -29,6 +29,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.Origin.OriginEnum;
 import org.andstatus.app.util.TriState;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -171,5 +172,33 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("gitorious@identi.ca", users.get(2).userName);
         assertEquals("acct:ken@coding.example", users.get(3).oid);
         assertEquals("Yuri Volkov", users.get(4).realName);
+    }
+    
+    public void testUpdateStatus() throws ConnectionException, JSONException {
+        String body = "@peter Do you think it's true?";
+        String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
+        httpConnection.setResponse(new JSONObject());
+        connection.data.accountUserOid = "acct:mytester@" + host;
+        connection.updateStatus(body, inReplyToId);
+        JSONObject activity = httpConnection.getPostedJSONObject();
+        assertTrue("Object present", activity.has("object"));
+        JSONObject obj = activity.getJSONObject("object");
+        assertEquals("Message content", body, obj.getString("content"));
+        assertEquals("Reply is comment", PumpioObjectType.COMMENT.id(), obj.getString("objectType"));
+        
+        assertTrue("InReplyTo is present", obj.has("inReplyTo"));
+        JSONObject inReplyToObject = obj.getJSONObject("inReplyTo");
+        assertEquals("Id of the in reply to object", inReplyToId, inReplyToObject.getString("id"));
+
+        body = "Testing the application...";
+        inReplyToId = "";
+        connection.updateStatus(body, inReplyToId);
+        activity = httpConnection.getPostedJSONObject();
+        assertTrue("Object present", activity.has("object"));
+        obj = activity.getJSONObject("object");
+        assertEquals("Message content", body, obj.getString("content"));
+        assertEquals("Message without reply is a note", PumpioObjectType.NOTE.id(), obj.getString("objectType"));
+        
+        assertTrue("InReplyTo is not present", !obj.has("inReplyTo"));
     }
 }
