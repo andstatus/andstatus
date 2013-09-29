@@ -45,14 +45,19 @@ public class DataInserterTest extends InstrumentationTestCase {
         firstMbUser.userName = firstUserName;
         MyAccount.Builder builderFirst = addAccount(firstMbUser);
         MyLog.v(TAG, firstUserName + " added, id=" + builderFirst.getAccount().getUserId());
-        
+
+        long accountUserId_existing = MyProvider.oidToId(OidEnum.USER_OID, firstMbUser.originId, firstMbUser.oid);
         accountMbUser = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), accountUserOid);
         accountMbUser.userName = "t131t@identi.ca";
         accountMbUser.url = "http://identi.ca/t131t";
         MyAccount.Builder builder = addAccount(accountMbUser);
         accountName = builder.getAccount().getAccountName();
         accountUserId = builder.getAccount().getUserId();
-        assertTrue("AccountUserId != 1", accountUserId != 1);
+        if (accountUserId_existing == 0) {
+            assertTrue("AccountUserId != 1", accountUserId != 1);
+        } else {
+            assertTrue("AccountUserId != 0", accountUserId != 0);
+        }
         builder = null;
         
         MyPreferences.onPreferencesChanged();

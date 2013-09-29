@@ -37,7 +37,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
     <release android:versionName="1.17.0" android:versionCode="78"
-        versionDate="2013-09-21"
+        versionDate="2013-09-29"
         versionTitle="Pump.io support added">
         <changes><change><a href="http://pump.io" >Pump.io</a> is a new application by the 
             authors of Status.net and of identi.ca service as it was before July 2013.
@@ -45,8 +45,13 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             which now is a part of the federated, distributed pump.io social network.
             AndStatus sees the whole network as one Microblogging system supporting user accounts
             from all its nodes not limiting to the identi.ca site only.
+            After installation of this app version old identi.ca accounts and data 
+            are automatically converted to be used with the new pump.io system. 
             <a href="https://github.com/andstatus/andstatus/issues/34" >Issue #34</a>.
              </change>
+             <change>Internal app structure redone in order to accomodate different
+                 microblooging systems. A suite of automated tests created 
+                 to increase the quality of the releases.</change>
         </changes>
     </release>
     <release android:versionName="1.16.0" android:versionCode="77"

@@ -46,6 +46,7 @@ public class MyAccountConverter {
             android.accounts.AccountManager am = AccountManager.get(context);
             android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
             for (android.accounts.Account account : aa) {
+                MyPreferences.onUpgrade();
                 MyAccount.Builder builderOld = new MyAccount.Builder(account);
                 if (builderOld.getVersion() == versionTo) {
                     Log.i(TAG, "Account " + account.name + " already converted?!");
@@ -94,6 +95,7 @@ public class MyAccountConverter {
             ok = true;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
+            e.printStackTrace();
         }
         if (ok) {
             Log.i(TAG, "Accounts upgrading step successfully upgraded accounts from " + oldVersion + " to version " + versionTo);
