@@ -19,11 +19,9 @@ package org.andstatus.app.net;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.AccountDataReaderEmpty;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;

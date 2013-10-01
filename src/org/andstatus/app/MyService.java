@@ -297,11 +297,6 @@ public class MyService extends Service {
         NOTIFY_CLEAR("notify-clear"),
 
         /**
-         * Boot completed, do what is needed...
-         */
-        BOOT_COMPLETED("boot-completed"),
-
-        /**
          * Stop the service after finishing all asynchronous treads (i.e. not immediately!)
          */
         STOP_SERVICE("stop-service"),
@@ -625,9 +620,6 @@ public class MyService extends Service {
                 case BROADCAST_SERVICE_STATE:
                     broadcastState(commandData);
                     return;
-                case BOOT_COMPLETED:
-                    // Force reexamining preferences
-                    preferencesExamineTime = 0;
                 default:
                     break;
             }
@@ -697,7 +689,6 @@ public class MyService extends Service {
             switch (commandData.command) {
                 case UNKNOWN:
                 case EMPTY:
-                case BOOT_COMPLETED:
                     // Nothing to do
                     break;
 

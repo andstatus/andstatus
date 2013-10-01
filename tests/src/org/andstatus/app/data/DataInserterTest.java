@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.MessageCounters;
-import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.Builder;

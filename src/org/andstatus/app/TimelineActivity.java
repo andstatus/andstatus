@@ -71,7 +71,6 @@ import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
 import org.andstatus.app.data.TweetBinder;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
-import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;

@@ -113,10 +113,7 @@ public class MyServiceManager extends BroadcastReceiver {
                 return;
             }
             MyPreferences.initialize(context, this);
-            if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-                MyLog.d(TAG, "Starting service on boot.");
-                sendCommand(CommandData.BOOT_COMPLETED_COMMAND);
-            } else if (action.equals("android.intent.action.ACTION_SHUTDOWN")) {
+            if (action.equals("android.intent.action.ACTION_SHUTDOWN")) {
                 // This system broadcast is Since: API Level 4
                 // We need this to persist unsaved data in the service
                 MyLog.d(TAG, "Stopping service on Shutdown");

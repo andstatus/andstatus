@@ -22,9 +22,6 @@ import android.text.TextUtils;
 
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.AccountDataReaderEmpty;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;

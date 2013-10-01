@@ -70,7 +70,6 @@ public class CommandData {
     public CommandResult commandResult = new CommandResult();
     
     public static final CommandData EMPTY_COMMAND = new CommandData(CommandEnum.EMPTY, "");
-    public static final CommandData BOOT_COMPLETED_COMMAND = new CommandData(CommandEnum.BOOT_COMPLETED, "");
     
     public CommandData(CommandEnum commandIn, String accountNameIn) {
         command = commandIn;

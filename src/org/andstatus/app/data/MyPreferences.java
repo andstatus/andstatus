@@ -505,9 +505,6 @@ public class MyPreferences {
         if (textToLog != null) {
             Log.i(TAG, textToLog);
         }
-        if (dir == null) {
-            throw new IllegalArgumentException(textToLog);
-        }
         
         return dir;
     }
