@@ -104,7 +104,7 @@ public class MyServiceManager extends BroadcastReceiver {
                 stateQueuedTime = System.nanoTime();
                 waitingForServiceState = false;
                 mServiceState = MyService.ServiceState.load(intent
-                        .getStringExtra(MyService.EXTRA_SERVICE_STATE));
+                        .getStringExtra(IntentExtra.EXTRA_SERVICE_STATE.key));
             }
             MyLog.d(TAG, "Notification received: Service state=" + mServiceState);
         } else {

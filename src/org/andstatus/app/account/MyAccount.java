@@ -947,17 +947,14 @@ public class MyAccount implements AccountDataReader {
      * Are authenticated users from more than one different Originating system?
      * @return count
      */
-    public static String shortestUniqueAccountName(MyAccount myAccount) {
+    public String shortestUniqueAccountName() {
         String uniqueName = "?";
-        if (myAccount == null) {
-            return uniqueName;
-        }
-        uniqueName = myAccount.toString();
+        uniqueName = toString();
 
         boolean found = false;
-        String possiblyUnique = myAccount.getUsername();
+        String possiblyUnique = getUsername();
         for (MyAccount persistentAccount : persistentAccounts) {
-            if (!persistentAccount.toString().equalsIgnoreCase(myAccount.toString()) ) {
+            if (!persistentAccount.toString().equalsIgnoreCase(toString()) ) {
                 if (persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique) ) {
                     found = true;
                     break;
@@ -970,7 +967,7 @@ public class MyAccount implements AccountDataReader {
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt);
                 for (MyAccount persistentAccount : persistentAccounts) {
-                    if (!persistentAccount.toString().equalsIgnoreCase(myAccount.toString()) ) {
+                    if (!persistentAccount.toString().equalsIgnoreCase(toString()) ) {
                         String toCompareWith = persistentAccount.getUsername();
                         indAt = toCompareWith.indexOf("@");
                         if (indAt > 0) {
@@ -1038,7 +1035,7 @@ public class MyAccount implements AccountDataReader {
      * @param originId
      * @return null if not found
      */
-    private static MyAccount findFirstMyAccountByOriginId(long originId) {
+    public static MyAccount findFirstMyAccountByOriginId(long originId) {
         MyAccount ma = null;
         for (MyAccount persistentAccount : persistentAccounts) {
             if (persistentAccount.getOriginId() == originId) {
@@ -1055,23 +1052,23 @@ public class MyAccount implements AccountDataReader {
      * For any action with the message we should choose an Account 
      * from the same originating (source) System.
      * @param messageId  Message ID
-     * @param timelineIsOfThisUserId The message is in his timeline. 0 if the message doesn't belong to any timeline
-     * @param preferredAccountUserId Preferred account (or 0), used in a case userId is not an Account 
+     * @param userIdForThisMessage The message is in his timeline. 0 if the message doesn't belong to any timeline
+     * @param preferredOtherUserId Preferred account (or 0), used in a case userId is not an Account 
      *          or is not linked to the message 
      * @return null if nothing suitable found
      */
-    public static MyAccount getAccountLinkedToThisMessage(long messageId, long timelineIsOfThisUserId, long preferredAccountUserId)
+    public static MyAccount getAccountWhichMayBeLinkedToThisMessage(long messageId, long userIdForThisMessage, long preferredOtherUserId)
     {
-        MyAccount ma = fromUserId(timelineIsOfThisUserId);
+        MyAccount ma = fromUserId(userIdForThisMessage);
         if (messageId == 0 || ma == null) {
-            ma = fromUserId(preferredAccountUserId);
+            ma = fromUserId(preferredOtherUserId);
         }
         long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, messageId);
         if (ma == null || originId != ma.getOriginId()) {
            ma = findFirstMyAccountByOriginId(originId); 
         }
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "getMyAccountLinkedToThisMessage msgId=" + messageId +"; userId=" + timelineIsOfThisUserId 
+            Log.v(TAG, "getMyAccountLinkedToThisMessage msgId=" + messageId +"; userId=" + userIdForThisMessage 
                     + " -> account=" + (ma==null ? "null" : ma.getAccountName()));
         }
         return ma;
@@ -1311,4 +1308,29 @@ public class MyAccount implements AccountDataReader {
         } catch (Exception e) {}
         return str + "{" + members + "}";
     }
+    
+    public int accountsOfThisOrigin() {
+        int count = 0;
+        for (MyAccount persistentAccount : persistentAccounts) {
+            if (persistentAccount.getOriginId() == this.getOriginId()) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
+    /**
+     * @return this account if there are no others
+     */
+    public MyAccount firstOtherAccountOfThisOrigin() {
+        for (MyAccount persistentAccount : persistentAccounts) {
+            if (persistentAccount.getOriginId() == this.getOriginId()) {
+                if (persistentAccount != this) {
+                    return persistentAccount;
+                }
+            }
+        }
+        return this;
+    }
+    
 }

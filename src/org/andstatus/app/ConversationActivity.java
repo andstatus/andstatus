@@ -102,7 +102,7 @@ public class ConversationActivity extends Activity implements MyServiceListener 
         Uri uri = intent.getData();
 
         mCurrentId = MyProvider.uriToMessageId(uri);
-        ma = MyAccount.getAccountLinkedToThisMessage(mCurrentId, 0, MyProvider.uriToAccountUserId(uri));
+        ma = MyAccount.getAccountWhichMayBeLinkedToThisMessage(mCurrentId, 0, MyProvider.uriToAccountUserId(uri));
         if (ma != null) {
             showConversation();
         }

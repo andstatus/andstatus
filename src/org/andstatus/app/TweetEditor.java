@@ -265,12 +265,12 @@ class TweetEditor {
             CommandData commandData = new CommandData(
                     CommandEnum.UPDATE_STATUS,
                     mAccount.getAccountName());
-            commandData.bundle.putString(MyService.EXTRA_STATUS, status);
+            commandData.bundle.putString(IntentExtra.EXTRA_STATUS.key, status);
             if (mReplyToId != 0) {
-                commandData.bundle.putLong(MyService.EXTRA_INREPLYTOID, mReplyToId);
+                commandData.bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key, mReplyToId);
             }
             if (mRecipientId != 0) {
-                commandData.bundle.putLong(MyService.EXTRA_RECIPIENTID, mRecipientId);
+                commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key, mRecipientId);
             }
             MyServiceManager.sendCommand(commandData);
             closeSoftKeyboard();
@@ -301,11 +301,11 @@ class TweetEditor {
             if (mEditText != null && mAccount != null) {
                 String status = mEditText.getText().toString();
                 if (!TextUtils.isEmpty(status)) {
-                    outState.putString(MyService.EXTRA_STATUS, status);
-                    outState.putLong(MyService.EXTRA_INREPLYTOID, mReplyToId);
-                    outState.putLong(MyService.EXTRA_RECIPIENTID, mRecipientId);
-                    outState.putString(MyService.EXTRA_ACCOUNT_NAME, mAccount.getAccountName());
-                    outState.putBoolean(MyService.EXTRA_SHOW_ACCOUNT, mShowAccount);
+                    outState.putString(IntentExtra.EXTRA_STATUS.key, status);
+                    outState.putLong(IntentExtra.EXTRA_INREPLYTOID.key, mReplyToId);
+                    outState.putLong(IntentExtra.EXTRA_RECIPIENTID.key, mRecipientId);
+                    outState.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, mAccount.getAccountName());
+                    outState.putBoolean(IntentExtra.EXTRA_SHOW_ACCOUNT.key, mShowAccount);
                 }
             }
         }
@@ -313,15 +313,15 @@ class TweetEditor {
     
     public void loadState(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(MyService.EXTRA_INREPLYTOID)) {
-                if (savedInstanceState.containsKey(MyService.EXTRA_STATUS)) {
-                    String status = savedInstanceState.getString(MyService.EXTRA_STATUS);
+            if (savedInstanceState.containsKey(IntentExtra.EXTRA_INREPLYTOID.key)) {
+                if (savedInstanceState.containsKey(IntentExtra.EXTRA_STATUS.key)) {
+                    String status = savedInstanceState.getString(IntentExtra.EXTRA_STATUS.key);
                     if (!TextUtils.isEmpty(status)) {
                         mStatus_restored = status;
-                        mReplyToId_restored = savedInstanceState.getLong(MyService.EXTRA_INREPLYTOID);
-                        mRecipientId_restored = savedInstanceState.getLong(MyService.EXTRA_RECIPIENTID);
-                        mAccountGuid_restored = savedInstanceState.getString(MyService.EXTRA_ACCOUNT_NAME);
-                        mShowAccount_restored = savedInstanceState.getBoolean(MyService.EXTRA_SHOW_ACCOUNT);
+                        mReplyToId_restored = savedInstanceState.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
+                        mRecipientId_restored = savedInstanceState.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
+                        mAccountGuid_restored = savedInstanceState.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
+                        mShowAccount_restored = savedInstanceState.getBoolean(IntentExtra.EXTRA_SHOW_ACCOUNT.key);
                         mIsStateLoaded = true;
                     }
                 }

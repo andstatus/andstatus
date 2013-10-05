@@ -47,6 +47,7 @@ import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.apache.http.client.UserTokenHandler;
 
 /**
  * Database provider for the MyDatabase database.
@@ -562,7 +563,6 @@ public class MyProvider extends ContentProvider {
      * @return String for {@link SQLiteQueryBuilder#setTables(String)}
      */
     private static String tablesForTimeline(Uri uri, String[] projection) {
-        String tables = MyDatabase.MSG_TABLE_NAME;
         MyDatabase.TimelineTypeEnum tt = uriToTimelineType(uri);
         // long selectedUserId = uriToUserId(uri);
         boolean isCombined = uriToIsCombined(uri);
@@ -590,56 +590,77 @@ public class MyProvider extends ContentProvider {
 
         Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
 
+        String tables = MyDatabase.MSG_TABLE_NAME;
         boolean linkedUserDefined = false;
+        boolean authorNameDefined = false;
         switch (tt) {
             case FOLLOWING_USER:
+                tables = "(SELECT " + FollowingUser.FOLLOWING_USER_ID + ", "
+                        + MyDatabase.FollowingUser.USER_FOLLOWED + ", "
+                        + FollowingUser.USER_ID + " AS " + User.LINKED_USER_ID
+                        + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME
+                        + " WHERE (" + MyDatabase.User.LINKED_USER_ID + accountUserIds
+                        + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1 )"
+                        + ") as fuser";
+                String userTable = MyDatabase.USER_TABLE_NAME;
+                if (!authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME)) {
+                    userTable = "(SELECT "
+                            + BaseColumns._ID + ", " + MyDatabase.User.USERNAME + " AS "
+                            + MyDatabase.User.AUTHOR_NAME
+                            + ", " + MyDatabase.User.USER_MSG_ID
+                            + " FROM " + MyDatabase.USER_TABLE_NAME + ")";
+                    authorNameDefined = true;
+                }
+                tables += " INNER JOIN " + userTable + " as u1"
+                        + " ON (" + FollowingUser.FOLLOWING_USER_ID + "=u1." + BaseColumns._ID + ")";
+                linkedUserDefined = true;
                 /**
                  * Select only the latest message from each following User's
                  * timeline
                  */
-                tables +=
-                        " INNER JOIN " + "(SELECT "
-                                + FollowingUser.FOLLOWING_USER_ID + ", "
-                                + MyDatabase.FollowingUser.USER_FOLLOWED + ", "
-                                + FollowingUser.USER_ID + " AS " + User.LINKED_USER_ID
-                                + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + ") as fuser"
-                                + " ON (msg." + MyDatabase.Msg.SENDER_ID + "=fuser."
-                                + MyDatabase.FollowingUser.FOLLOWING_USER_ID
-                                + " AND " + MyDatabase.User.LINKED_USER_ID + accountUserIds
-                                + " AND fuser." + MyDatabase.FollowingUser.USER_FOLLOWED + "=1 )";
-                tables = "(" + tables + ")"
-                        + " INNER JOIN " + MyDatabase.USER_TABLE_NAME + " as u1"
-                        + " ON (msg." + MyDatabase.Msg.SENDER_ID + "=u1." + BaseColumns._ID
-                        + " AND msg." + BaseColumns._ID + "=u1."
-                        + MyDatabase.User.USER_MSG_ID + ")";
-                linkedUserDefined = true;
+                tables  += " LEFT JOIN " + MyDatabase.MSG_TABLE_NAME
+                        + " ON (" 
+                        + "msg." + MyDatabase.Msg.SENDER_ID 
+                        + "=fuser." + MyDatabase.FollowingUser.FOLLOWING_USER_ID 
+                        + " AND msg." + BaseColumns._ID 
+                        + "=u1." + MyDatabase.User.USER_MSG_ID
+                        + ")";
             default:
                 break;
         }
 
         if (columns.contains(MyDatabase.MsgOfUser.FAVORITED)
-                || (columns.contains(MyDatabase.User.LINKED_USER_ID) && !linkedUserDefined)) {
+                || (columns.contains(MyDatabase.User.LINKED_USER_ID) && !linkedUserDefined)
+                ) {
             String tbl = "(SELECT *" 
                     + (linkedUserDefined ? "" : ", " + MyDatabase.MsgOfUser.USER_ID + " AS " 
                     + MyDatabase.User.LINKED_USER_ID)   
                     + " FROM " +  MyDatabase.MSGOFUSER_TABLE_NAME + ") AS mou ON "
                     + MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + "="
                     + "mou." + MyDatabase.MsgOfUser.MSG_ID;
-            if (tt == TimelineTypeEnum.FOLLOWING_USER) {
-                tbl += " AND mou." + MyDatabase.MsgOfUser.USER_ID 
-                        + "=" + MyDatabase.User.LINKED_USER_ID;
-                tables += " LEFT JOIN " + tbl;
-            } else {
-                tbl += " AND " + MyDatabase.User.LINKED_USER_ID + accountUserIds;
-                if (isCombined) {
-                    tables += " LEFT OUTER JOIN " + tbl;
-                } else {
-                    tables += " INNER JOIN " + tbl;
-                }
+            switch (tt) {
+                case FOLLOWING_USER:
+                    tbl += " AND mou." + MyDatabase.MsgOfUser.USER_ID 
+                    + "=" + MyDatabase.User.LINKED_USER_ID;
+                    tables += " LEFT JOIN " + tbl;
+                    break;
+                case MESSAGESTOACT:
+                    tbl += " AND mou." + MyDatabase.MsgOfUser.USER_ID 
+                    + "=" + MyDatabase.User.LINKED_USER_ID
+                    + (linkedUserDefined ? "" : " AND " + MyDatabase.User.LINKED_USER_ID + accountUserIds);
+                    tables += " LEFT JOIN " + tbl;
+                    break;
+                default:
+                    tbl += " AND " + MyDatabase.User.LINKED_USER_ID + accountUserIds;
+                    if (isCombined) {
+                        tables += " LEFT OUTER JOIN " + tbl;
+                    } else {
+                        tables += " INNER JOIN " + tbl;
+                    }
             }
         }
 
-        if (columns.contains(MyDatabase.User.AUTHOR_NAME)) {
+        if (!authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + BaseColumns._ID + ", " + MyDatabase.User.USERNAME + " AS "
                     + MyDatabase.User.AUTHOR_NAME

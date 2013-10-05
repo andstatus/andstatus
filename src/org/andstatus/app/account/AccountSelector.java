@@ -17,6 +17,7 @@
 package org.andstatus.app.account;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -25,6 +26,7 @@ import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyPreferences;
 
@@ -53,12 +55,15 @@ public class AccountSelector extends ListActivity {
         
         setContentView(R.layout.accountlist);
         
+        long originId = getIntent().getLongExtra(IntentExtra.ORIGIN_ID.key, 0);        
         ArrayList<Map<String, String>> data = new ArrayList<Map<String, String>>();
         for (int ind = 0; ind < MyAccount.list().length; ind++) {
-            HashMap<String, String> map = new HashMap<String, String>();
-            map.put(KEY_NAME, MyAccount.list()[ind].getAccountName());
-            map.put(KEY_TYPE, TYPE_ACCOUNT);
-            data.add(map);
+            if (originId==0 || MyAccount.list()[ind].getOriginId() == originId) {
+                HashMap<String, String> map = new HashMap<String, String>();
+                map.put(KEY_NAME, MyAccount.list()[ind].getAccountName());
+                map.put(KEY_TYPE, TYPE_ACCOUNT);
+                data.add(map);
+            }
         }
         
         ListAdapter adapter = new SimpleAdapter(this, 
@@ -76,14 +81,12 @@ public class AccountSelector extends ListActivity {
                 String  accountName = ((TextView)view.findViewById(R.id.name)).getText().toString();
                 MyAccount ma = MyAccount.fromAccountName(accountName);
                 if (ma != null) {
-                    MyAccount.setCurrentAccount(ma);
-                    AccountSelector.this.setResult(RESULT_OK);
+                    Intent dataToReturn = new Intent();
+                    dataToReturn.putExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key, ma.getAccountName());
+                    AccountSelector.this.setResult(RESULT_OK, dataToReturn);
                     finish();
                 }
             }
         });
-
-        
     }
-
 }

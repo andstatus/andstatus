@@ -23,14 +23,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-
 import android.text.format.DateFormat; 
 import android.text.format.DateUtils;
 import android.text.format.Time;
-
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyService;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
@@ -83,9 +82,9 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
             }
 			Bundle extras = intent.getExtras();
 			if (extras != null) {
-				msgType = MyService.CommandEnum.load(extras.getString(MyService.EXTRA_MSGTYPE));
+				msgType = MyService.CommandEnum.load(extras.getString(IntentExtra.EXTRA_MSGTYPE.key));
 				numSomethingReceived = extras
-						.getInt(MyService.EXTRA_NUMTWEETS);
+						.getInt(IntentExtra.EXTRA_NUMTWEETS.key);
 				int[] appWidgetIds = extras
 						.getIntArray(AppWidgetManager.EXTRA_APPWIDGET_IDS);
 				if (appWidgetIds == null || appWidgetIds.length == 0) {
@@ -345,7 +344,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 	                timeLineType = MyDatabase.TimelineTypeEnum.MENTIONS;
 			    }
 			}
-            intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
+            intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                     timeLineType.save());
 
             if ( data.areNew() ) {
@@ -355,7 +354,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                 if (MyAccount.list().length > 1) {
                     // There are more than one account, 
                     // so turn Combined timeline on in order to show all new messages.
-                    intent.putExtra(MyService.EXTRA_TIMELINE_IS_COMBINED, true);
+                    intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, true);
                 }
             }
             

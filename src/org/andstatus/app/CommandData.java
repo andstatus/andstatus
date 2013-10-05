@@ -98,8 +98,8 @@ public class CommandData {
      */
     public CommandData(String accountNameIn, String preferenceKey, boolean value) {
         this(CommandEnum.PUT_BOOLEAN_PREFERENCE, accountNameIn);
-        bundle.putString(MyService.EXTRA_PREFERENCE_KEY, preferenceKey);
-        bundle.putBoolean(MyService.EXTRA_PREFERENCE_VALUE, value);
+        bundle.putString(IntentExtra.EXTRA_PREFERENCE_KEY.key, preferenceKey);
+        bundle.putBoolean(IntentExtra.EXTRA_PREFERENCE_VALUE.key, value);
     }
 
     /**
@@ -112,8 +112,8 @@ public class CommandData {
      */
     public CommandData(String accountNameIn, String preferenceKey, long value) {
         this(CommandEnum.PUT_LONG_PREFERENCE, accountNameIn);
-        bundle.putString(MyService.EXTRA_PREFERENCE_KEY, preferenceKey);
-        bundle.putLong(MyService.EXTRA_PREFERENCE_VALUE, value);
+        bundle.putString(IntentExtra.EXTRA_PREFERENCE_KEY.key, preferenceKey);
+        bundle.putLong(IntentExtra.EXTRA_PREFERENCE_VALUE.key, value);
     }
 
     /**
@@ -125,8 +125,8 @@ public class CommandData {
      */
     public CommandData(String accountNameIn, String preferenceKey, String value) {
         this(CommandEnum.PUT_STRING_PREFERENCE, accountNameIn);
-        bundle.putString(MyService.EXTRA_PREFERENCE_KEY, preferenceKey);
-        bundle.putString(MyService.EXTRA_PREFERENCE_VALUE, value);
+        bundle.putString(IntentExtra.EXTRA_PREFERENCE_KEY.key, preferenceKey);
+        bundle.putString(IntentExtra.EXTRA_PREFERENCE_VALUE.key, value);
     }
 
     /**
@@ -139,11 +139,11 @@ public class CommandData {
         // Decode command
         String strCommand = "(no command)";
         if (bundle != null) {
-            strCommand = bundle.getString(MyService.EXTRA_MSGTYPE);
-            setAccountName(bundle.getString(MyService.EXTRA_ACCOUNT_NAME));
-            timelineType = TimelineTypeEnum.load(bundle.getString(MyService.EXTRA_TIMELINE_TYPE));
-            itemId = bundle.getLong(MyService.EXTRA_ITEMID);
-            commandResult = bundle.getParcelable(MyService.EXTRA_COMMAND_RESULT);
+            strCommand = bundle.getString(IntentExtra.EXTRA_MSGTYPE.key);
+            setAccountName(bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+            timelineType = TimelineTypeEnum.load(bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+            itemId = bundle.getLong(IntentExtra.EXTRA_ITEMID.key);
+            commandResult = bundle.getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
         }
         command = CommandEnum.load(strCommand);
     }
@@ -157,23 +157,23 @@ public class CommandData {
         bundle = new Bundle();
         String si = Integer.toString(index);
         // Decode command
-        String strCommand = sp.getString(MyService.EXTRA_MSGTYPE + si, CommandEnum.UNKNOWN.save());
-        setAccountName(sp.getString(MyService.EXTRA_ACCOUNT_NAME + si, ""));
-        timelineType = TimelineTypeEnum.load(sp.getString(MyService.EXTRA_TIMELINE_TYPE + si, ""));
-        itemId = sp.getLong(MyService.EXTRA_ITEMID + si, 0);
+        String strCommand = sp.getString(IntentExtra.EXTRA_MSGTYPE.key + si, CommandEnum.UNKNOWN.save());
+        setAccountName(sp.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, ""));
+        timelineType = TimelineTypeEnum.load(sp.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, ""));
+        itemId = sp.getLong(IntentExtra.EXTRA_ITEMID.key + si, 0);
         command = CommandEnum.load(strCommand);
 
         switch (command) {
             case UPDATE_STATUS:
-                bundle.putString(MyService.EXTRA_STATUS, sp.getString(MyService.EXTRA_STATUS + si, ""));
-                bundle.putLong(MyService.EXTRA_INREPLYTOID, sp.getLong(MyService.EXTRA_INREPLYTOID + si, 0));
-                bundle.putLong(MyService.EXTRA_RECIPIENTID, sp.getLong(MyService.EXTRA_RECIPIENTID + si, 0));
+                bundle.putString(IntentExtra.EXTRA_STATUS.key, sp.getString(IntentExtra.EXTRA_STATUS.key + si, ""));
+                bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key, sp.getLong(IntentExtra.EXTRA_INREPLYTOID.key + si, 0));
+                bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key, sp.getLong(IntentExtra.EXTRA_RECIPIENTID.key + si, 0));
                 break;
             default:
                 break;
         }
 
-        MyLog.v(TAG, "Restored command " + (MyService.EXTRA_MSGTYPE + si) + " = " + strCommand);
+        MyLog.v(TAG, "Restored command " + (IntentExtra.EXTRA_MSGTYPE + si) + " = " + strCommand);
     }
     
     /**
@@ -195,19 +195,19 @@ public class CommandData {
             }
             switch (command) {
                 case UPDATE_STATUS:
-                    text += bundle.getString(MyService.EXTRA_STATUS);
+                    text += bundle.getString(IntentExtra.EXTRA_STATUS.key);
                     break;
                 case PUT_BOOLEAN_PREFERENCE:
-                    text += bundle.getString(MyService.EXTRA_PREFERENCE_KEY)
-                            + bundle.getBoolean(MyService.EXTRA_PREFERENCE_VALUE);
+                    text += bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key)
+                            + bundle.getBoolean(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
                     break;
                 case PUT_LONG_PREFERENCE:
-                    text += bundle.getString(MyService.EXTRA_PREFERENCE_KEY)
-                            + bundle.getLong(MyService.EXTRA_PREFERENCE_VALUE);
+                    text += bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key)
+                            + bundle.getLong(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
                     break;
                 case PUT_STRING_PREFERENCE:
-                    text += bundle.getString(MyService.EXTRA_PREFERENCE_KEY)
-                            + bundle.getString(MyService.EXTRA_PREFERENCE_VALUE);
+                    text += bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key)
+                            + bundle.getString(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
                     break;
                 default:
                     break;
@@ -248,17 +248,17 @@ public class CommandData {
         if (bundle == null) {
             bundle = new Bundle();
         }
-        bundle.putString(MyService.EXTRA_MSGTYPE, command.save());
+        bundle.putString(IntentExtra.EXTRA_MSGTYPE.key, command.save());
         if (!TextUtils.isEmpty(getAccountName())) {
-            bundle.putString(MyService.EXTRA_ACCOUNT_NAME, getAccountName());
+            bundle.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, getAccountName());
         }
         if (timelineType != TimelineTypeEnum.UNKNOWN) {
-            bundle.putString(MyService.EXTRA_TIMELINE_TYPE, timelineType.save());
+            bundle.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
         }
         if (itemId != 0) {
-            bundle.putLong(MyService.EXTRA_ITEMID, itemId);
+            bundle.putLong(IntentExtra.EXTRA_ITEMID.key, itemId);
         }
-        bundle.putParcelable(MyService.EXTRA_COMMAND_RESULT, commandResult);        
+        bundle.putParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key, commandResult);        
         intent.putExtras(bundle);
         return intent;
     }
@@ -285,21 +285,21 @@ public class CommandData {
         String si = Integer.toString(index);
 
         android.content.SharedPreferences.Editor ed = sp.edit();
-        ed.putString(MyService.EXTRA_MSGTYPE + si, command.save());
+        ed.putString(IntentExtra.EXTRA_MSGTYPE.key + si, command.save());
         if (!TextUtils.isEmpty(getAccountName())) {
-            ed.putString(MyService.EXTRA_ACCOUNT_NAME + si, getAccountName());
+            ed.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, getAccountName());
         }
         if (timelineType != TimelineTypeEnum.UNKNOWN) {
-            ed.putString(MyService.EXTRA_TIMELINE_TYPE + si, timelineType.save());
+            ed.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, timelineType.save());
         }
         if (itemId != 0) {
-            ed.putLong(MyService.EXTRA_ITEMID + si, itemId);
+            ed.putLong(IntentExtra.EXTRA_ITEMID.key + si, itemId);
         }
         switch (command) {
             case UPDATE_STATUS:
-                ed.putString(MyService.EXTRA_STATUS + si, bundle.getString(MyService.EXTRA_STATUS));
-                ed.putLong(MyService.EXTRA_INREPLYTOID + si, bundle.getLong(MyService.EXTRA_INREPLYTOID));
-                ed.putLong(MyService.EXTRA_RECIPIENTID + si, bundle.getLong(MyService.EXTRA_RECIPIENTID));
+                ed.putString(IntentExtra.EXTRA_STATUS.key + si, bundle.getString(IntentExtra.EXTRA_STATUS.key));
+                ed.putLong(IntentExtra.EXTRA_INREPLYTOID.key + si, bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key));
+                ed.putLong(IntentExtra.EXTRA_RECIPIENTID.key + si, bundle.getLong(IntentExtra.EXTRA_RECIPIENTID.key));
                 break;
             default:
                 break;

@@ -414,6 +414,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         USER("user", R.string.timeline_title_user, User.USER_TIMELINE_POSITION, User.USER_TIMELINE_ITEM_DATE, User.USER_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE),
         /**
+         * For the selected user, the timeline includes all messages of the same origin irrespectively existence
+         * of the link between the message and the User. So the User may "Act" on this message.
+         */
+        MESSAGESTOACT("messages_to_act", R.string.timeline_title_home, User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
+        /**
          * Latest messages of every Following User (Following by this User - AndStatus account). 
          * So this is essentially a list of "Following users". 
          * The timeline doesn't have Message ID because we download User IDs only 

@@ -36,12 +36,24 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     <header>
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
-    <release android:versionName="1.17.0" android:versionCode="78"
+    <release android:versionName="1.18.0" android:versionCode="80"
+        versionDate="2013-10-05"
+        versionTitle="Act as... added for multiple accounts in one system">
+        <changes><change>In a case you have more than one account in one Microblogging system, 
+            AndStatus adds one more item to the message context menu, allowing you "to act as..." another 
+            account on the same message. This feature may be very convenient when e.g. some of the users 
+            you are following as an "account1", posts a note, which is more appropriate for discussion 
+            (replying or reblogging) as your another identity: "account2". This allows your accounts 
+            to be more focused (on one language, one topic etc.) and to avoid following the same user 
+            by more than one of your accounts.</change>
+        </changes>
+    </release>
+    <release android:versionName="1.17.1" android:versionCode="79"
         versionDate="2013-09-29"
         versionTitle="Pump.io support added">
         <changes><change><a href="http://pump.io" >Pump.io</a> is a new application by the 
             authors of Status.net and of identi.ca service as it was before July 2013.
-            Pmp.io is also a new engine for the <a href="http://identi.ca" >identi.ca</a> site, 
+            Pump.io is also a new engine for the <a href="http://identi.ca" >identi.ca</a> site, 
             which now is a part of the federated, distributed pump.io social network.
             AndStatus sees the whole network as one Microblogging system supporting user accounts
             from all its nodes not limiting to the identi.ca site only.

@@ -50,18 +50,21 @@ class MessageDataForContextMenu {
      */
     boolean isSender = false;
     boolean isAuthor = false;
+
+    /**
+     * Sometimes current message already tied to the first user (favorited by him...)
+     */
+    boolean canUseSecondAccountInsteadOfFirst = false;
     
-    boolean canUseCurrentAccountInsteadOfLinked = false;
-    
-    public MessageDataForContextMenu(Context context, long currentMyAccountUserId, TimelineTypeEnum timelineType, long msgId, long linkedUserId) {
-        ma = MyAccount.getAccountLinkedToThisMessage(msgId, linkedUserId,
-                currentMyAccountUserId);
+    public MessageDataForContextMenu(Context context, long userIdForThisMessage, long preferredOtherUserId, TimelineTypeEnum timelineType, long msgId) {
+        ma = MyAccount.getAccountWhichMayBeLinkedToThisMessage(msgId, userIdForThisMessage,
+                preferredOtherUserId);
         if (ma == null) {
             return;
         }
 
         // Get the record for the currently selected item
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), timelineType, false, msgId);
+        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.MESSAGESTOACT, false, msgId);
         Cursor c = context.getContentResolver().query(uri, new String[] {
                 BaseColumns._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
                 MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED,
@@ -89,18 +92,13 @@ class MessageDataForContextMenu {
                 isAuthor = (ma.getUserId() == authorId);
 
                 body = c.getString(c.getColumnIndex(MyDatabase.Msg.BODY));
-                
-                /*
-                 * Let's check if we can use current account instead of linked
-                 * to this message
-                 */
+
                 if ( timelineType != TimelineTypeEnum.FOLLOWING_USER) {
                     if (!isDirect && !favorited && !reblogged && !isSender && !senderFollowed && !authorFollowed
-                            && ma.getUserId() != currentMyAccountUserId) {
-                        MyAccount ma2 = MyAccount.fromUserId(currentMyAccountUserId);
+                            && ma.getUserId() != preferredOtherUserId) {
+                        MyAccount ma2 = MyAccount.fromUserId(preferredOtherUserId);
                         if (ma2 != null && ma.getOriginId() == ma2.getOriginId()) {
-                            // Yes, use current Account!
-                            canUseCurrentAccountInsteadOfLinked = true;
+                            canUseSecondAccountInsteadOfFirst = true;
                         }
                     }
                     

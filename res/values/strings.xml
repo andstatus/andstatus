@@ -110,6 +110,8 @@
     <string name="message_edit_hint">Enter your message here!</string>
 	<string name="message_characters_left">Characters left:</string>
     <string name="message_is_too_long">Message is too long.</string>
+	<string name="menu_item_act_as">Act as…</string>
+    <string name="menu_item_act_as_user">Act as "%1s"</string>
     <string name="menu_item_block">Block</string>
 	<string name="menu_item_destroy_favorite">Undo favorite</string>
     <string name="menu_item_destroy_reblog">Undo reblog</string>

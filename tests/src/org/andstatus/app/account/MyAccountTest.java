@@ -25,7 +25,6 @@ import org.andstatus.app.origin.Origin.OriginEnum;
 import org.andstatus.app.util.TriState;
 
 public class MyAccountTest  extends InstrumentationTestCase {
-    private static final String TAG = MyAccountTest.class.getSimpleName();
 
     @Override
     protected void setUp() throws Exception {

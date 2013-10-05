@@ -38,7 +38,6 @@ import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
 
 public class VerifyCredentialsTest extends InstrumentationTestCase {
-    private static final String TAG = VerifyCredentialsTest.class.getSimpleName();
     Context context;
     Connection connection;
     String host = "twitter.com";

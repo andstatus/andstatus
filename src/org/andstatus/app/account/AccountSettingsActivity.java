@@ -47,6 +47,8 @@ import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 
+import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyPreferenceActivity;
 import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.R;
@@ -70,9 +72,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
     private static final String TAG = AccountSettingsActivity.class.getSimpleName();
 
-    // Request codes for called activities
-    protected static final int REQUEST_SELECT_ACCOUNT = RESULT_FIRST_USER;
-    
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs
      */
@@ -160,7 +159,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             state = newState;
             if (state.accountShouldBeSelected) {
                 Intent i = new Intent(this, AccountSelector.class);
-                startActivityForResult(i, REQUEST_SELECT_ACCOUNT);
+                startActivityForResult(i, ActivityRequestCode.SELECT_ACCOUNT.id);
                 message += "Select account; ";
             }
             message += "action=" + state.getAccountAction() + "; ";
@@ -175,10 +174,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_SELECT_ACCOUNT:
+        switch (ActivityRequestCode.fromId(resultCode)) {
+            case SELECT_ACCOUNT:
                 if (resultCode == RESULT_OK) {
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyAccount.getCurrentAccountName(), TriState.UNKNOWN);
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key), TriState.UNKNOWN);
                     if (!state.builder.isPersistent()) {
                         mIsFinishing = true;
                     }
@@ -187,6 +186,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 }
                 if (!mIsFinishing) {
                     MyLog.v(TAG, "Switching to the selected account");
+                    MyAccount.setCurrentAccount(state.builder.getAccount());
                     state.setAccountAction(Intent.ACTION_EDIT);
                     showUserPreferences();
                 } else {

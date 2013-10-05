@@ -33,7 +33,6 @@ import java.util.Date;
 import java.util.List;
 
 public class ConnectionTwitterTest extends InstrumentationTestCase {
-    private static final String TAG = ConnectionTwitterTest.class.getSimpleName();
     Context context;
     Connection connection;
     String host = "twitter.com";

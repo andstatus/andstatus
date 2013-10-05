@@ -72,7 +72,7 @@ import android.util.Log;
 public class MyService extends Service {
     private static final String TAG = MyService.class.getSimpleName();
 
-    private static final String packageName = MyService.class.getPackage().getName();
+    static final String packageName = MyService.class.getPackage().getName();
 
     /**
      * Prefix of all actions of this Service
@@ -114,83 +114,6 @@ public class MyService extends Service {
      * @see CommandEnum
      */
     public static final String ACTION_GO = ACTIONPREFIX + "GO";
-
-    /**
-     * These names of extras are used in the Intent-notification of new Msg
-     * (e.g. to notify Widget).
-     */
-
-    /**
-     * This extra is used as a command to perform by MyService and
-     * MyAppWidgetProvider Value of this extra is string code of
-     * CommandEnum (not serialized enum !)
-     */
-    public static final String EXTRA_MSGTYPE = packageName + ".MSGTYPE";
-
-    /**
-     * Command parameter: long - ID of the Tweet (or Msg)
-     */
-    public static final String EXTRA_ITEMID = packageName + ".ITEMID";
-
-    public static final String EXTRA_COMMAND_RESULT = packageName + ".COMMAND_RESULT";
-    
-    /**
-     * ({@link ServiceState}
-     */
-    public static final String EXTRA_SERVICE_STATE = packageName + ".SERVICE_STATE";
-
-    /**
-     * Text of the status message
-     */
-    public static final String EXTRA_STATUS = packageName + ".STATUS";
-
-    /**
-     * Account name, see {@link MyAccount#getAccountName()}
-     */
-    public static final String EXTRA_ACCOUNT_NAME = packageName + ".ACCOUNT_NAME";
-
-    /**
-     * Do we need to show the account?
-     */
-    public static final String EXTRA_SHOW_ACCOUNT = packageName + ".SHOW_ACCOUNT";
-    
-    /**
-     * Name of the preference to set
-     */
-    public static final String EXTRA_PREFERENCE_KEY = packageName + ".PREFERENCE_KEY";
-
-    public static final String EXTRA_PREFERENCE_VALUE = packageName + ".PREFERENCE_VALUE";
-
-    /**
-     * Reply to
-     */
-    public static final String EXTRA_INREPLYTOID = packageName + ".INREPLYTOID";
-
-    /**
-     * Recipient of a Direct message
-     */
-    public static final String EXTRA_RECIPIENTID = packageName + ".RECIPIENTID";
-
-    /**
-     * Selected User. E.g. the User whose messages we are seeing  
-     */
-    public static final String EXTRA_SELECTEDUSERID = packageName + ".SELECTEDUSERID";
-    
-    /**
-     * Number of new tweets. Value is integer
-     */
-    public static final String EXTRA_NUMTWEETS = packageName + ".NUMTWEETS";
-
-    /**
-     * This extra is used to determine which timeline to show in
-     * TimelineActivity Value is {@link MyDatabase.TimelineTypeEnum} 
-     */
-    public static final String EXTRA_TIMELINE_TYPE = packageName + ".TIMELINE_TYPE";
-
-    /**
-     * Is the timeline combined in {@link TimelineActivity} 
-     */
-    public static final String EXTRA_TIMELINE_IS_COMBINED = packageName + ".TIMELINE_IS_COMBINED";
 
     /**
      * Communicate state of this service 
@@ -490,7 +413,7 @@ public class MyService extends Service {
         if (commandData != null) {
             intent = commandData.toIntent(intent);
         }
-        intent.putExtra(EXTRA_SERVICE_STATE, state.save());
+        intent.putExtra(IntentExtra.EXTRA_SERVICE_STATE.key, state.save());
         context.sendBroadcast(intent);
         MyLog.v(TAG, "state: " + state);
     }
@@ -698,8 +621,8 @@ public class MyService extends Service {
                         skipped = true;
                         break;
                     }
-                    String key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
-                    boolean boolValue = commandData.bundle.getBoolean(EXTRA_PREFERENCE_VALUE);
+                    String key = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key);
+                    boolean boolValue = commandData.bundle.getBoolean(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
                     MyLog.v(TAG, "Put boolean Preference '"
                             + key
                             + "'="
@@ -721,8 +644,8 @@ public class MyService extends Service {
                         skipped = true;
                         break;
                     }
-                    key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
-                    long longValue = commandData.bundle.getLong(EXTRA_PREFERENCE_VALUE);
+                    key = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key);
+                    long longValue = commandData.bundle.getLong(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
                     MyLog.v(TAG, "Put long Preference '"
                             + key
                             + "'="
@@ -743,8 +666,8 @@ public class MyService extends Service {
                         skipped = true;
                         break;
                     }
-                    key = commandData.bundle.getString(EXTRA_PREFERENCE_KEY);
-                    String stringValue = commandData.bundle.getString(EXTRA_PREFERENCE_VALUE);
+                    key = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key);
+                    String stringValue = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
                     MyLog.v(TAG, "Put String Preference '"
                             + key
                             + "'="
@@ -942,9 +865,9 @@ public class MyService extends Service {
                             commandData.command == CommandEnum.FOLLOW_USER);
                     break;
                 case UPDATE_STATUS:
-                    String status = commandData.bundle.getString(EXTRA_STATUS).trim();
-                    long replyToId = commandData.bundle.getLong(EXTRA_INREPLYTOID);
-                    long recipientId = commandData.bundle.getLong(EXTRA_RECIPIENTID);
+                    String status = commandData.bundle.getString(IntentExtra.EXTRA_STATUS.key).trim();
+                    long replyToId = commandData.bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
+                    long recipientId = commandData.bundle.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
                     updateStatus(commandData, status, replyToId, recipientId);
                     break;
                 case DESTROY_STATUS:
@@ -1582,7 +1505,7 @@ public class MyService extends Service {
                             R.array.notification_mention_formats);
                     messageTitle = R.string.notification_title_mentions;
                     intent = new Intent(getApplicationContext(), TimelineActivity.class);
-                    intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
+                    intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                             MyDatabase.TimelineTypeEnum.MENTIONS.save());
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
@@ -1595,7 +1518,7 @@ public class MyService extends Service {
                             R.array.notification_message_formats);
                     messageTitle = R.string.notification_title_messages;
                     intent = new Intent(getApplicationContext(), TimelineActivity.class);
-                    intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
+                    intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                             MyDatabase.TimelineTypeEnum.DIRECT.save());
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
@@ -1610,7 +1533,7 @@ public class MyService extends Service {
                                     R.array.notification_tweet_formats);
                     messageTitle = R.string.notification_title;
                     intent = new Intent(getApplicationContext(), TimelineActivity.class);
-                    intent.putExtra(MyService.EXTRA_TIMELINE_TYPE,
+                    intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                             MyDatabase.TimelineTypeEnum.HOME.save());
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
@@ -1635,8 +1558,8 @@ public class MyService extends Service {
          */
         private void updateWidgets(int numTweets, CommandEnum msgType) {
             Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
-            intent.putExtra(EXTRA_MSGTYPE, msgType.save());
-            intent.putExtra(EXTRA_NUMTWEETS, numTweets);
+            intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
+            intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
             sendBroadcast(intent);
         }
 

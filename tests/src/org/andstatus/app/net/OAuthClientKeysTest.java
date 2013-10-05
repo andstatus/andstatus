@@ -19,14 +19,12 @@ package org.andstatus.app.net;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.TestSuite;
-import org.andstatus.app.account.MyAccountTest;
 import org.andstatus.app.net.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.Origin.OriginEnum;
 import org.andstatus.app.util.TriState;
 
 public class OAuthClientKeysTest extends InstrumentationTestCase {
-    private static final String TAG = MyAccountTest.class.getSimpleName();
 
     @Override
     protected void setUp() throws Exception {

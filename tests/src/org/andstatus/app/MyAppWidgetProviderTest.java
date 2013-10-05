@@ -227,8 +227,8 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	Log.i(TAG,"Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
 
     	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
-		intent.putExtra(EXTRA_NUMTWEETS, numTweets);
-		intent.putExtra(EXTRA_MSGTYPE, msgType.save());
+		intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
+		intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
 		context.sendBroadcast(intent);
     	
 	}
@@ -252,8 +252,8 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	triggerTime = System.currentTimeMillis() + 3000;
     	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
     	intent.addCategory("msgType" + msgType);
-		intent.putExtra(EXTRA_NUMTWEETS, numTweets);
-		intent.putExtra(EXTRA_MSGTYPE, msgType.save());
+		intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
+		intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
     	
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pendingUpdate = PendingIntent.getBroadcast(context,
@@ -294,8 +294,8 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 	    	Log.i(TAG,"Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
 	    	
 	    	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
-			intent.putExtra(EXTRA_NUMTWEETS, numTweets);
-			intent.putExtra(EXTRA_MSGTYPE, msgType.save());
+			intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
+			intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
 			context.sendBroadcast(intent);
 		}
 	}

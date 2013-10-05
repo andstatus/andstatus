@@ -33,7 +33,6 @@ import org.json.JSONObject;
 import java.util.List;
 
 public class ConnectionPumpioTest extends InstrumentationTestCase {
-    private static final String TAG = ConnectionPumpioTest.class.getSimpleName();
     Context context;
     ConnectionPumpio connection;
     String host = "identi.ca";
