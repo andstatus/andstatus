@@ -33,6 +33,8 @@ import org.andstatus.app.data.MyPreferences;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * The purpose of this activity is to select Current account only, see {@link MyAccount#setCurrentMyAccount()}
@@ -55,15 +57,19 @@ public class AccountSelector extends ListActivity {
         
         setContentView(R.layout.accountlist);
         
-        long originId = getIntent().getLongExtra(IntentExtra.ORIGIN_ID.key, 0);        
-        ArrayList<Map<String, String>> data = new ArrayList<Map<String, String>>();
-        for (int ind = 0; ind < MyAccount.list().length; ind++) {
-            if (originId==0 || MyAccount.list()[ind].getOriginId() == originId) {
-                HashMap<String, String> map = new HashMap<String, String>();
-                map.put(KEY_NAME, MyAccount.list()[ind].getAccountName());
-                map.put(KEY_TYPE, TYPE_ACCOUNT);
-                data.add(map);
+        long originId = getIntent().getLongExtra(IntentExtra.ORIGIN_ID.key, 0);
+        SortedMap<String, MyAccount> accounts = new TreeMap<String, MyAccount>();  
+        for (MyAccount ma : MyAccount.list()) {
+            if (originId==0 || ma.getOriginId() == originId) {
+                accounts.put(ma.getAccountName(), ma);
             }
+        }
+        ArrayList<Map<String, String>> data = new ArrayList<Map<String, String>>();
+        for (MyAccount ma : accounts.values()) {
+            HashMap<String, String> map = new HashMap<String, String>();
+            map.put(KEY_NAME, ma.getAccountName());
+            map.put(KEY_TYPE, TYPE_ACCOUNT);
+            data.add(map);
         }
         
         ListAdapter adapter = new SimpleAdapter(this, 

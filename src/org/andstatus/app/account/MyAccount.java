@@ -856,7 +856,7 @@ public class MyAccount implements AccountDataReader {
     /**
      * Forget everything in order to reread from the sources if it will be needed
      */
-    public static void forget() {
+    public static synchronized void forget() {
         persistentAccounts.clear();
     }
     
@@ -990,7 +990,7 @@ public class MyAccount implements AccountDataReader {
     /**
      * Initialize the class. Required before first call to other methods.
      */
-    public static void initialize(Context context) {
+    public static synchronized void initialize(Context context) {
         forget();
         defaultAccountName = MyPreferences.getDefaultSharedPreferences().getString(KEY_DEFAULT_ACCOUNT_NAME, "");
 
@@ -1119,7 +1119,7 @@ public class MyAccount implements AccountDataReader {
      * 
      * @return Was the MyAccount (and Account) deleted?
      */
-    public static boolean delete(MyAccount ma) {
+    public static synchronized boolean delete(MyAccount ma) {
         boolean isDeleted = false;
 
         // Delete the User's object from the list

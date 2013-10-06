@@ -46,6 +46,9 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             (replying or reblogging) as your another identity: "account2". This allows your accounts 
             to be more focused (on one language, one topic etc.) and to avoid following the same user 
             by more than one of your accounts.</change>
+            <change>"Following" timeline always shows names of the users being followed by our account(s), 
+                even for reblogged messages.</change>
+            <change>Accounts in the "Select account" list are sorted alphabetically</change>
         </changes>
     </release>
     <release android:versionName="1.17.1" android:versionCode="79"

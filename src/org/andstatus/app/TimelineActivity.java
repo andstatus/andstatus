@@ -1463,7 +1463,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         // Create the Context menu
         try {
-            menu.setHeaderTitle((mIsTimelineCombined ? md.ma.getAccountName() + ": " : "")
+            menu.setHeaderTitle((MyAccount.numberOfPersistentAccounts() > 1 ? md.ma.shortestUniqueAccountName() + ": " : "")
                     + md.body);
 
             // Add menu items
