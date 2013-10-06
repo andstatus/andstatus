@@ -41,7 +41,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         versionTitle="Act as... added for multiple accounts in one system">
         <changes><change>In a case you have more than one account in one Microblogging system, 
             AndStatus adds one more item to the message context menu, allowing you "to act as..." another 
-            account on the same message. This feature may be very convenient when e.g. some of the users 
+            account on the same message. This feature may be very convenient when e.g. one of the users 
             you are following as an "account1", posts a note, which is more appropriate for discussion 
             (replying or reblogging) as your another identity: "account2". This allows your accounts 
             to be more focused (on one language, one topic etc.) and to avoid following the same user 

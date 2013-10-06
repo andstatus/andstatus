@@ -577,6 +577,7 @@ public class MyProvider extends ContentProvider {
                     nAccounts += 1;
                 }
                 accountUserIds += Long.toString(ma.getUserId());
+                accountUserId = ma.getUserId();
             }
 
         } else {
@@ -625,6 +626,14 @@ public class MyProvider extends ContentProvider {
                         + " AND msg." + BaseColumns._ID 
                         + "=u1." + MyDatabase.User.USER_MSG_ID
                         + ")";
+                break;
+            case MESSAGESTOACT:
+                if (nAccounts == 1) {
+                    tables = "(SELECT " + accountUserId + " AS " + MyDatabase.User.LINKED_USER_ID
+                            + ", * FROM " + MyDatabase.MSG_TABLE_NAME + ") AS msg";
+                    linkedUserDefined = true;
+                }
+                break;
             default:
                 break;
         }
@@ -640,14 +649,9 @@ public class MyProvider extends ContentProvider {
                     + "mou." + MyDatabase.MsgOfUser.MSG_ID;
             switch (tt) {
                 case FOLLOWING_USER:
-                    tbl += " AND mou." + MyDatabase.MsgOfUser.USER_ID 
-                    + "=" + MyDatabase.User.LINKED_USER_ID;
-                    tables += " LEFT JOIN " + tbl;
-                    break;
                 case MESSAGESTOACT:
                     tbl += " AND mou." + MyDatabase.MsgOfUser.USER_ID 
-                    + "=" + MyDatabase.User.LINKED_USER_ID
-                    + (linkedUserDefined ? "" : " AND " + MyDatabase.User.LINKED_USER_ID + accountUserIds);
+                    + "=" + MyDatabase.User.LINKED_USER_ID;
                     tables += " LEFT JOIN " + tbl;
                     break;
                 default:
