@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.MyPreferences;
 
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ import java.util.TreeMap;
 public class AccountSelector extends ListActivity {
     private static final String TAG = AccountSelector.class.getSimpleName();
 
+    private final String KEY_VISIBLE_NAME = "visible_name";
     private final String KEY_NAME = "name";
     private final String KEY_TYPE = "type";
     
@@ -67,6 +69,11 @@ public class AccountSelector extends ListActivity {
         ArrayList<Map<String, String>> data = new ArrayList<Map<String, String>>();
         for (MyAccount ma : accounts.values()) {
             HashMap<String, String> map = new HashMap<String, String>();
+            String visibleName = ma.getAccountName();
+            if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
+                visibleName = "(" + visibleName + ")";
+            }
+            map.put(KEY_VISIBLE_NAME, visibleName);
             map.put(KEY_NAME, ma.getAccountName());
             map.put(KEY_TYPE, TYPE_ACCOUNT);
             data.add(map);
@@ -75,8 +82,8 @@ public class AccountSelector extends ListActivity {
         ListAdapter adapter = new SimpleAdapter(this, 
                 data, 
                 R.layout.accountlist_item, 
-                new String[] {KEY_NAME, KEY_TYPE}, 
-                new int[] {R.id.name, R.id.type});
+                new String[] {KEY_VISIBLE_NAME, KEY_NAME, KEY_TYPE}, 
+                new int[] {R.id.visible_name, R.id.name, R.id.type});
         
         // Bind to our new adapter.
         setListAdapter(adapter);

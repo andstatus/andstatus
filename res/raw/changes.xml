@@ -37,7 +37,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
     <release android:versionName="1.18.0" android:versionCode="80"
-        versionDate="2013-10-05"
+        versionDate="2013-10-06"
         versionTitle="Act as... added for multiple accounts in one system">
         <changes><change>In a case you have more than one account in one Microblogging system, 
             AndStatus adds one more item to the message context menu, allowing you "to act as..." another 
@@ -48,7 +48,9 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             by more than one of your accounts.</change>
             <change>"Following" timeline always shows names of the users being followed by our account(s), 
                 even for reblogged messages.</change>
-            <change>Accounts in the "Select account" list are sorted alphabetically</change>
+            <change>Accounts in the "Select an Account" list are sorted alphabetically. 
+                Accounts, which are not successfully authenticated, are shown in parentheses. 
+                Go to "Manage accounts" to fix them.</change>
         </changes>
     </release>
     <release android:versionName="1.17.1" android:versionCode="79"
