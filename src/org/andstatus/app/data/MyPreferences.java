@@ -49,7 +49,7 @@ public class MyPreferences {
      * When preferences, loaded into this class, were changed
      */
     private static volatile long preferencesChangeTime = 0;
-    private static MyDatabase db;
+    private static volatile MyDatabase db;
     private static volatile boolean shouldTriggerDatabaseUpgrade = false;
     /**
      * Semaphore enabling uninterrupted system upgrade

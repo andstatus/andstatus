@@ -1048,6 +1048,7 @@ public class MyService extends Service {
                     new DataInserter(ma,
                             MyService.this.getApplicationContext(),
                             TimelineTypeEnum.HOME).insertOrUpdateUser(user);
+                    getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
                 }
             }
             setSoftErrorIfNotOk(commandData, ok);

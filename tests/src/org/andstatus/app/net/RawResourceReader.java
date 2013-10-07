@@ -52,11 +52,11 @@ public class RawResourceReader {
         try {
             jso = new JSONObject(RawResourceReader.getStringResource(context, id));
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            throw new IllegalArgumentException(e.getMessage());
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            throw new IllegalArgumentException(e.getMessage());
         }
         return jso;
     }

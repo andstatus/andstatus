@@ -67,7 +67,7 @@ class ActivitySender {
     }
 
     MbUser sendUser(String verb) throws ConnectionException {
-        return connection.userFromJson(sendMe(verb));
+        return connection.userFromJsonActivity(sendMe(verb));
     }
 
     JSONObject sendMe(String verb) throws ConnectionException {

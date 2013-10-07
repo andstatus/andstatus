@@ -109,7 +109,7 @@ public class ConnectionPumpio extends Connection {
         return userFromJson(user);
     }
 
-    MbUser userFromJson(JSONObject jso) throws ConnectionException {
+    private MbUser userFromJson(JSONObject jso) throws ConnectionException {
         if (!PumpioObjectType.PERSON.isMyType(jso)) {
             return MbUser.getEmpty();
         }
@@ -385,7 +385,7 @@ public class ConnectionPumpio extends Connection {
         return item;
     }
     
-    private MbUser userFromJsonActivity(JSONObject activity) throws ConnectionException {
+    public MbUser userFromJsonActivity(JSONObject activity) throws ConnectionException {
         MbUser mbUser;
         try {
             String verb = activity.getString("verb");
@@ -401,7 +401,8 @@ public class ConnectionPumpio extends Connection {
             
             if (verb.equalsIgnoreCase("follow")) {
                 mbUser.followedByActor = TriState.TRUE;
-            } else if (verb.equalsIgnoreCase("stop-following")) {
+            } else if (verb.equalsIgnoreCase("unfollow") 
+                    || verb.equalsIgnoreCase("stop-following")) {
                 mbUser.followedByActor = TriState.FALSE;
             }
         } catch (JSONException e) {

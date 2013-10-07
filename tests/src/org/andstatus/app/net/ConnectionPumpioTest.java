@@ -198,4 +198,17 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         
         assertTrue("InReplyTo is not present", !obj.has("inReplyTo"));
     }
+    
+    public void testUnfollowUser() throws ConnectionException {
+        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.unfollow_pumpio);
+        httpConnection.setResponse(jso);
+        connection.data.accountUserOid = "acct:t131t@" + host;
+        String userOid = "acct:evan@e14n.com";
+        MbUser user = connection.followUser(userOid, false);
+        assertTrue("User is present", !user.isEmpty());
+        assertEquals("Our account acted", connection.data.accountUserOid, user.actor.oid);
+        assertEquals("Object of action", userOid, user.oid);
+        assertEquals("Unfollowed", TriState.FALSE, user.followedByActor);
+    }
 }
