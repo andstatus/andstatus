@@ -1556,6 +1556,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 }
             }
             switch (md.ma.accountsOfThisOrigin()) {
+                case 1:
+                    break;
                 case 2:
                     ACT_AS_USER.addTo(menu, menuItemId++,
                             String.format(Locale.getDefault(),
