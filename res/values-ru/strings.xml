@@ -110,6 +110,8 @@
     <string name="message_edit_hint">Что происходит?</string>
 	<string name="message_characters_left">Осталось символов:</string>
     <string name="message_is_too_long">Сообщение - слишком длинное.</string>
+    <string name="menu_item_act_as">От имени…</string>
+    <string name="menu_item_act_as_user">От имени "%1s"</string>
     <string name="menu_item_block">Блокировать</string>
 	<string name="menu_item_destroy_favorite">Удалить из избранного</string>
     <string name="menu_item_destroy_reblog">Удалить пересказ</string>

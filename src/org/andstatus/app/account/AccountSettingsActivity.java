@@ -174,7 +174,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (ActivityRequestCode.fromId(resultCode)) {
+        switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_ACCOUNT:
                 if (resultCode == RESULT_OK) {
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key), TriState.UNKNOWN);
