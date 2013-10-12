@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
@@ -93,7 +94,7 @@ public class MyAppWidgetData {
 		mContext = context;
 		mappWidgetId = appWidgetId;
 		prefsFileName = PREFS_FILE_NAME + mappWidgetId;
-		MyPreferences.initialize(context, this);
+		MyContextHolder.initialize(context, this);
 	}
 
 	/**

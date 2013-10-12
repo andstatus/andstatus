@@ -341,7 +341,7 @@ public class MyService extends Service {
      */
     @Override
     public void onCreate() {
-        preferencesChangeTime = MyPreferences.initialize(this, this);
+        preferencesChangeTime = MyContextHolder.initialize(this, this);
         preferencesExamineTime = getMyServicePreferences().getLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, 0);
         MyLog.d(TAG, "Service created, preferencesChangeTime=" + preferencesChangeTime + ", examined=" + preferencesExamineTime);
 
@@ -425,7 +425,7 @@ public class MyService extends Service {
     }
 
     private int persistQueue(Queue<CommandData> q, String prefsFileName) {
-        Context context = MyPreferences.getContext();
+        Context context = MyContextHolder.get().context();
         int count = 0;
         // Delete any existing saved queue
         SharedPreferencesUtil.delete(context, prefsFileName);
@@ -448,7 +448,7 @@ public class MyService extends Service {
     private synchronized void initialize() {
 
         // Check when preferences were changed
-        long preferencesChangeTimeNew = MyPreferences.initialize(this, this);
+        long preferencesChangeTimeNew = MyContextHolder.initialize(this, this);
         long preferencesExamineTimeNew = java.lang.System.currentTimeMillis();
 
 
@@ -485,7 +485,7 @@ public class MyService extends Service {
     }
 
     private int restoreQueue(Queue<CommandData> q, String prefsFileName) {
-        Context context = MyPreferences.getContext();
+        Context context = MyContextHolder.get().context();
         int count = 0;
         if (SharedPreferencesUtil.exists(context, prefsFileName)) {
             boolean done = false;
@@ -715,7 +715,7 @@ public class MyService extends Service {
 
             if (!mCommands.isEmpty()) {
                 // Don't even launch executor if we're not online
-                if (isOnline() && MyPreferences.isDataAvailable()) {
+                if (isOnline() && MyContextHolder.get().isReady()) {
                     acquireWakeLock();
                     // only one Executing thread for now...
                     if (mExecutors.isEmpty()) {
@@ -745,7 +745,7 @@ public class MyService extends Service {
                     MyLog.v(TAG, "Is stopping and no executors");
                     stopDelayed(false);
                 } else if ( notifyOfQueue(false) == 0) {
-                    if (! ForegroundCheckTask.isAppOnForeground(MyPreferences.getContext())) {
+                    if (! ForegroundCheckTask.isAppOnForeground(MyContextHolder.get().context())) {
                         MyLog.d(TAG, "App is on Background so stop this Service");
                         stopDelayed(false);
                     }
@@ -1240,7 +1240,7 @@ public class MyService extends Service {
          */
         private void loadTimeline(CommandData commandData) {
             if (commandData.getAccount() == null) {
-                for (MyAccount acc : MyAccount.list()) {
+                for (MyAccount acc : MyContextHolder.get().persistentAccounts().list()) {
                     loadTimelineAccount(commandData, acc);
                     if (mIsStopping) {
                         setSoftErrorIfNotOk(commandData, false);
@@ -1256,7 +1256,7 @@ public class MyService extends Service {
             if (!commandData.commandResult.hasError()) {
                 // Notify all timelines, 
                 // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
-                MyPreferences.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
+                MyContextHolder.get().context().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
             }
         }
 

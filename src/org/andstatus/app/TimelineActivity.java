@@ -66,6 +66,7 @@ import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
@@ -74,6 +75,7 @@ import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
@@ -220,12 +222,13 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (instanceId == 0) {
-            instanceId = MyPreferences.nextInstanceId();
+            instanceId = InstanceId.next();
         } else {
             MyLog.d(TAG, "onCreate reuse the same instanceId=" + instanceId);
         }
 
-        preferencesChangeTime = MyPreferences.initialize(this, this);
+        preferencesChangeTime = MyContextHolder.initialize(this, this);
+        MyContextHolder.upgradeIfNeeded();
         
         if (MyLog.isLoggable(TAG, Log.DEBUG)) {
             MyLog.d(TAG, "onCreate instanceId=" + instanceId + " , preferencesChangeTime=" + preferencesChangeTime);
@@ -234,14 +237,17 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!mIsFinishing) {
             boolean helpAsFirstActivity = false;
             boolean showChangeLog = false;
-            if (MyPreferences.isUpgrading()) {
+            if (MyDatabaseConverter.isUpgrading()) {
                 Log.i(TAG, "Upgrade is in progress");
                 helpAsFirstActivity = true;
                 showChangeLog = true;
+            } else if (!MyContextHolder.get().isReady()) {
+                Log.i(TAG, "Context is not ready");
+                helpAsFirstActivity = true;
             } else if (MyPreferences.shouldSetDefaultValues()) {
                 Log.i(TAG, "We are running the Application for the very first time?");
                 helpAsFirstActivity = true;
-            } else if (MyAccount.getCurrentAccount() == null) {
+            } else if (MyContextHolder.get().persistentAccounts().getCurrentAccount() == null) {
                 Log.i(TAG, "No current MyAccount");
                 helpAsFirstActivity = true;
             } 
@@ -279,7 +285,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             return;
         }
 
-        mCurrentMyAccountUserId = MyAccount.getCurrentAccountUserId();
+        mCurrentMyAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         serviceConnector = new MyServiceReceiver(this);
         
         MyPreferences.loadTheme(TAG, this);
@@ -356,8 +362,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             public void onClick(View v) {
                 if (mTweetEditor.isVisible()) {
                     mTweetEditor.hide();
-                } else if (MyAccount.getCurrentAccount() != null) {
-                    mTweetEditor.startEditingMessage("", 0, 0, MyAccount.getCurrentAccount(), mIsTimelineCombined);
+                } else if (MyContextHolder.get().persistentAccounts().getCurrentAccount() != null) {
+                    mTweetEditor.startEditingMessage("", 0, 0, MyContextHolder.get().persistentAccounts().getCurrentAccount(), mIsTimelineCombined);
                 }
             }
         });
@@ -402,8 +408,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         super.onResume();
         MyLog.v(TAG, "onResume, instanceId=" + instanceId);
         if (!mIsFinishing) {
-            if (MyAccount.getCurrentAccount() != null) {
-                long preferencesChangeTimeNew = MyPreferences.initialize(this, this);
+            if (MyContextHolder.get().persistentAccounts().getCurrentAccount() != null) {
+                long preferencesChangeTimeNew = MyContextHolder.initialize(this, this);
                 if (preferencesChangeTimeNew != preferencesChangeTime) {
                     MyLog.v(TAG, "Restarting this Activity to apply all new changes of preferences");
                     finish();
@@ -715,7 +721,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
         menu.addIntentOptions(Menu.CATEGORY_ALTERNATIVE, 0, 0, new ComponentName(this,
                 TimelineActivity.class), null, intent, 0, null);
-        MyAccount ma = MyAccount.getCurrentAccount();
+        MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
         if (ma != null && ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
             MenuItem item = menu.findItem(R.id.reload_menu_item);
             item.setEnabled(false);
@@ -758,7 +764,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             return;
         }
         long linkedUserId = getLinkedUserIdFromCursor(position);
-        MyAccount ma = MyAccount.getAccountWhichMayBeLinkedToThisMessage(id, linkedUserId,
+        MyAccount ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(id, linkedUserId,
                 mCurrentMyAccountUserId);
         if (ma == null) {
             Log.e(TAG, "Account for the message " + id + " was not found");
@@ -845,7 +851,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         
         // Show current account info on the left button
         Button selectAccountButton = (Button) findViewById(R.id.selectAccountButton);
-        MyAccount ma = MyAccount.getCurrentAccount();
+        MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
         String accountName = ma.shortestUniqueAccountName();
         if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
             accountName = "(" + accountName + ")";
@@ -857,7 +863,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
         if (mTimelineType != TimelineTypeEnum.DIRECT) {
-            createMessageButton.setText(getString(MyAccount.getCurrentAccount().alternativeTermForResourceId(R.string.button_create_message)));
+            createMessageButton.setText(getString(MyContextHolder.get().persistentAccounts().getCurrentAccount().alternativeTermForResourceId(R.string.button_create_message)));
             createMessageButton.setVisibility(View.VISIBLE);
         } else {
             createMessageButton.setVisibility(View.GONE);
@@ -909,7 +915,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        MyPreferences.initialize(this, this);
+        MyContextHolder.initialize(this, this);
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "onNewIntent, instanceId=" + instanceId);
         }
@@ -949,11 +955,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (mTimelineType == TimelineTypeEnum.UNKNOWN) {
             /* Set default values */
             mTimelineType = TimelineTypeEnum.HOME;
-            mIsTimelineCombined = (MyAccount.numberOfPersistentAccounts() > 1);
+            mIsTimelineCombined = (MyContextHolder.get().persistentAccounts().size() > 1);
             mQueryString = "";
             mSelectedUserId = 0;
         }
-        mCurrentMyAccountUserId = MyAccount.getCurrentAccountUserId();
+        mCurrentMyAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         if (mSelectedUserId == 0 && mTimelineType == TimelineTypeEnum.USER) {
             mSelectedUserId = mCurrentMyAccountUserId;
         }
@@ -975,7 +981,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 textInitial += text;
             }
             MyLog.v(TAG, "Intent.ACTION_SEND '" + textInitial +"'");
-            mTweetEditor.startEditingMessage(textInitial, 0, 0, MyAccount.getCurrentAccount(), mIsTimelineCombined);
+            mTweetEditor.startEditingMessage(textInitial, 0, 0, MyContextHolder.get().persistentAccounts().getCurrentAccount(), mIsTimelineCombined);
         }
 
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
@@ -1297,7 +1303,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * Internet, older ones are not being reloaded.
      */
     protected void manualReload(boolean allTimelineTypes) {
-        MyAccount ma = MyAccount.fromUserId(mCurrentMyAccountUserId);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mCurrentMyAccountUserId);
         MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.HOME;
         long userId = 0;
         switch (mTimelineType) {
@@ -1322,9 +1328,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 return;
             }
             if (ma == null || ma.getOriginId() != originId) {
-                ma = MyAccount.fromUserId(userId);
+                ma = MyContextHolder.get().persistentAccounts().fromUserId(userId);
                 if (ma == null) {
-                    ma = MyAccount.findFirstMyAccountByOriginId(originId);
+                    ma = MyContextHolder.get().persistentAccounts().findFirstMyAccountByOriginId(originId);
                 }
             }
         }
@@ -1400,7 +1406,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_ACCOUNT:
                 if (resultCode == RESULT_OK) {
-                    MyAccount ma = MyAccount.fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
                     if (ma != null) {
                         MyLog.v(TAG, "Restarting the activity for the selected account " + ma.getAccountName());
                         finish();
@@ -1413,14 +1419,14 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                              */
                             timelineTypeNew = TimelineTypeEnum.HOME;
                         }
-                        MyAccount.setCurrentAccount(ma);
+                        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
                         switchTimelineActivity(timelineTypeNew, mIsTimelineCombined, ma.getUserId());
                     }
                 }
                 break;
             case SELECT_ACCOUNT_TO_ACT_AS:
                 if (resultCode == RESULT_OK) {
-                    MyAccount ma = MyAccount.fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
                     if (ma != null) {
                         accountUserIdToActAs = ma.getUserId();
                         getListView().showContextMenu();
@@ -1463,7 +1469,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         // Create the Context menu
         try {
-            menu.setHeaderTitle((MyAccount.numberOfPersistentAccounts() > 1 ? md.ma.shortestUniqueAccountName() + ": " : "")
+            menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().size() > 1 ? md.ma.shortestUniqueAccountName() + ": " : "")
                     + md.body);
 
             // Add menu items
@@ -1585,7 +1591,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         mCurrentMsgId = info.id;
-        MyAccount ma = MyAccount.fromUserId(actorUserIdForCurrentMessage);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(actorUserIdForCurrentMessage);
         if (ma != null) {
             long authorId;
             long senderId;
@@ -1667,7 +1673,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                          * We better switch to the account selected for this message in order not to
                          * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
                          */
-                        MyAccount.setCurrentAccount(ma);
+                        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
                         switchTimelineActivity(TimelineTypeEnum.USER, mIsTimelineCombined, senderId);
                         return true;
                     }
@@ -1679,7 +1685,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                          * We better switch to the account selected for this message in order not to
                          * add new "MsgOfUser" entries hence duplicated messages in the combined timeline 
                          */
-                        MyAccount.setCurrentAccount(ma);
+                        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
                         switchTimelineActivity(TimelineTypeEnum.USER, mIsTimelineCombined, authorId);
                         return true;
                     }
@@ -1772,7 +1778,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         
         public PositionStorage() {
             if ((mTimelineType != TimelineTypeEnum.USER) && !mIsTimelineCombined) {
-                MyAccount ma = MyAccount.fromUserId(mCurrentMyAccountUserId);
+                MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mCurrentMyAccountUserId);
                 if (ma != null) {
                     sp = ma.getAccountPreferences();
                     accountGuid = ma.getAccountName();

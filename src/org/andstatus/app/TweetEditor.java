@@ -20,7 +20,6 @@ package org.andstatus.app;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 
@@ -221,12 +220,12 @@ class TweetEditor {
                         textInitial += " ";
                     }
                     textInitial = "@" + replyToName + " ";
-                    messageDetails += " " + String.format(Locale.getDefault(), MyPreferences.getContext().getText(R.string.message_source_in_reply_to).toString(), replyToName);
+                    messageDetails += " " + String.format(Locale.getDefault(), MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), replyToName);
                 }
             } else {
                 String recipientName = MyProvider.userIdToName(recipientId);
                 if (!TextUtils.isEmpty(recipientName)) {
-                    messageDetails += " " + String.format(Locale.getDefault(), MyPreferences.getContext().getText(R.string.message_source_to).toString(), recipientName);
+                    messageDetails += " " + String.format(Locale.getDefault(), MyContextHolder.get().context().getText(R.string.message_source_to).toString(), recipientName);
                 }
             }
             mEditText.setText(textInitial);
@@ -339,7 +338,8 @@ class TweetEditor {
     public void continueEditingLoadedState() {
         if (isStateLoaded()) {
             mIsStateLoaded = false;
-            startEditingMessage(mStatus_restored, mReplyToId_restored, mRecipientId_restored, MyAccount.fromAccountName(mAccountGuid_restored), mShowAccount_restored);
+            startEditingMessage(mStatus_restored, mReplyToId_restored, mRecipientId_restored, 
+                    MyContextHolder.get().persistentAccounts().fromAccountName(mAccountGuid_restored), mShowAccount_restored);
         }
     }
 }

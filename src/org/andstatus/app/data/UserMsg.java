@@ -20,6 +20,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 import android.util.Log;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
@@ -146,7 +147,7 @@ public class UserMsg {
             sql = "UPDATE " + MyDatabase.USER_TABLE_NAME + " SET " + sql 
                     + " WHERE " + BaseColumns._ID + "=" + userId;
 
-            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
             db.execSQL(sql);
             
             changed = false;

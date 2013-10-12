@@ -57,7 +57,7 @@ class MessageDataForContextMenu {
     boolean canUseSecondAccountInsteadOfFirst = false;
     
     public MessageDataForContextMenu(Context context, long userIdForThisMessage, long preferredOtherUserId, TimelineTypeEnum timelineType, long msgId) {
-        ma = MyAccount.getAccountWhichMayBeLinkedToThisMessage(msgId, userIdForThisMessage,
+        ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(msgId, userIdForThisMessage,
                 preferredOtherUserId);
         if (ma == null) {
             return;
@@ -96,7 +96,7 @@ class MessageDataForContextMenu {
                 if ( timelineType != TimelineTypeEnum.FOLLOWING_USER) {
                     if (!isDirect && !favorited && !reblogged && !isSender && !senderFollowed && !authorFollowed
                             && ma.getUserId() != preferredOtherUserId) {
-                        MyAccount ma2 = MyAccount.fromUserId(preferredOtherUserId);
+                        MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(preferredOtherUserId);
                         if (ma2 != null && ma.getOriginId() == ma2.getOriginId()) {
                             canUseSecondAccountInsteadOfFirst = true;
                         }

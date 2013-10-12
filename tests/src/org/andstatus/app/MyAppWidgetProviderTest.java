@@ -23,7 +23,6 @@ import android.text.format.Time;
 import android.util.Log;
 
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
-import org.andstatus.app.data.MyPreferences;
 
 import static org.andstatus.app.MyService.*;
 
@@ -51,7 +50,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	    Log.e(TAG, "targetContext is null.");
     	    throw new Exception("this.getInstrumentation().getTargetContext() returned null");
     	}
-        MyPreferences.initialize(context, this);
+    	MyContextHolder.initialize(context, this);
     	
     	MyAppWidgetProvider widget = new MyAppWidgetProvider();
     	Log.i(TAG,"MyAppWidgetProvider created");

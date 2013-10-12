@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -144,7 +145,7 @@ class StateOfAccountChangeProcess {
             if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(AccountName.ORIGIN_SEPARATOR + Origin.ORIGIN_ENUM_DEFAULT.getName(), TriState.UNKNOWN);
             } else {
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyAccount.getCurrentAccountName(), TriState.UNKNOWN);
+                state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get().persistentAccounts().getCurrentAccountName(), TriState.UNKNOWN);
             }
             if (!state.builder.isPersistent()) {
                 state.setAccountAction(Intent.ACTION_INSERT);

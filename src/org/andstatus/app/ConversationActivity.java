@@ -42,6 +42,7 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -88,7 +89,7 @@ public class ConversationActivity extends Activity implements MyServiceListener 
         super.onCreate(savedInstanceState);
 
         if (instanceId == 0) {
-            instanceId = MyPreferences.nextInstanceId();
+            instanceId = InstanceId.next();
             MyLog.v(TAG, "onCreate instanceId=" + instanceId);
         } else {
             MyLog.v(TAG, "onCreate reuse the same instanceId=" + instanceId);
@@ -102,7 +103,7 @@ public class ConversationActivity extends Activity implements MyServiceListener 
         Uri uri = intent.getData();
 
         mCurrentId = MyProvider.uriToMessageId(uri);
-        ma = MyAccount.getAccountWhichMayBeLinkedToThisMessage(mCurrentId, 0, MyProvider.uriToAccountUserId(uri));
+        ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(mCurrentId, 0, MyProvider.uriToAccountUserId(uri));
         if (ma != null) {
             showConversation();
         }

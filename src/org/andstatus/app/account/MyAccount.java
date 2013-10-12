@@ -18,7 +18,6 @@ package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.PeriodicSync;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -28,12 +27,13 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.List;
-import java.util.Vector;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -57,7 +57,7 @@ import org.andstatus.app.util.TriState;
  */
 public class MyAccount implements AccountDataReader {
     private static final String TAG = MyAccount.class.getSimpleName();
-
+    
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
     public static class Builder implements Parcelable, AccountDataWriter {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
@@ -118,7 +118,7 @@ public class MyAccount implements AccountDataReader {
          * @return Builder - existed or newly created. For new Builder we assume that it is not persistent.
          */
         public static Builder newOrExistingFromAccountName(String accountName, TriState isOAuth) {
-            MyAccount myAccount = MyAccount.fromAccountName(accountName);
+            MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
             Builder mab;
             if (myAccount == null) {
                 // Create temporary MyAccount.Builder
@@ -163,7 +163,7 @@ public class MyAccount implements AccountDataReader {
             }
         }
 
-        private Builder (MyAccount ma) {
+        Builder (MyAccount ma) {
             this.myAccount = ma;
         }
         
@@ -254,11 +254,11 @@ public class MyAccount implements AccountDataReader {
          * Delete all User's data
          * @return true = success 
          */
-        private boolean deleteData() {
+        boolean deleteData() {
             boolean ok = true;
 
             // Old preferences file may be deleted, if it exists...
-            ok = SharedPreferencesUtil.delete(MyPreferences.getContext(), myAccount.oAccountName.prefsFileName());
+            ok = SharedPreferencesUtil.delete(MyContextHolder.get().context(), myAccount.oAccountName.prefsFileName());
 
             if (isPersistent()) {
                 if (myAccount.userId != 0) {
@@ -308,7 +308,7 @@ public class MyAccount implements AccountDataReader {
         public void setDataString(String key, String value) {
             try {
                 if (isPersistent()) {
-                    android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
+                    android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
                     am.setUserData(myAccount.androidAccount, key, value);
                 } else {
                     if (TextUtils.isEmpty(value)) {
@@ -352,7 +352,7 @@ public class MyAccount implements AccountDataReader {
 
         public void save() {
             boolean changed = saveSilently();
-            if (changed && isPersistent() && !MyPreferences.isUpgrading()) {
+            if (changed && isPersistent() && MyContextHolder.get().isReady()) {
                 MyPreferences.onPreferencesChanged();
             }
         }
@@ -378,7 +378,7 @@ public class MyAccount implements AccountDataReader {
                         changed = true;
                         // Now add this account to the Account Manager
                         // See {@link com.android.email.provider.EmailProvider.createAccountManagerAccount(Context, String, String)}
-                        AccountManager accountManager = AccountManager.get(MyPreferences.getContext());
+                        AccountManager accountManager = AccountManager.get(MyContextHolder.get().context());
 
                         /* Note: We could add userdata from {@link userData} Bundle, 
                          * but we decided to add it below one by one item
@@ -509,11 +509,11 @@ public class MyAccount implements AccountDataReader {
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
                 myAccount.userOid = user.oid;
-                if (MyPreferences.isUpgrading()) {
+                if (MyDatabaseConverter.isUpgrading()) {
                     MyLog.v(TAG, "Upgrade in progress");
                     myAccount.userId = myAccount.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
-                    DataInserter di = new DataInserter(myAccount, MyPreferences.getContext(), TimelineTypeEnum.ALL);
+                    DataInserter di = new DataInserter(myAccount, MyContextHolder.get().context(), TimelineTypeEnum.ALL);
                     myAccount.userId = di.insertOrUpdateUser(user);
                 }
             }
@@ -535,12 +535,12 @@ public class MyAccount implements AccountDataReader {
                 throw ce;
             }
             if (credentialsOfOtherUser) {
-                Log.e(TAG, MyPreferences.getContext().getText(R.string.error_credentials_of_other_user) + ": "
+                Log.e(TAG, MyContextHolder.get().context().getText(R.string.error_credentials_of_other_user) + ": "
                         + newName);
                 throw (new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, newName));
             }
             if (errorSettingUsername) {
-                String msg = MyPreferences.getContext().getText(R.string.error_set_username) + newName;
+                String msg = MyContextHolder.get().context().getText(R.string.error_set_username) + newName;
                 Log.e(TAG, msg);
                 throw (new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg));
             }
@@ -598,7 +598,7 @@ public class MyAccount implements AccountDataReader {
         private void assignUserId() {
             myAccount.userId = MyProvider.userNameToId(myAccount.getOriginId(), myAccount.getUsername());
             if (myAccount.userId == 0) {
-                DataInserter di = new DataInserter(myAccount, MyPreferences.getContext(), TimelineTypeEnum.ALL);
+                DataInserter di = new DataInserter(myAccount, MyContextHolder.get().context(), TimelineTypeEnum.ALL);
                 try {
                     // Construct "User" from available account info
                     // We need this User in order to be able to link Messages to him
@@ -667,20 +667,11 @@ public class MyAccount implements AccountDataReader {
         protected int getVersion() {
             return myAccount.version;
         }
+
+        void setSyncFrequency(long syncFrequencySeconds) {
+            myAccount.syncFrequencySeconds = syncFrequencySeconds;
+        }
     }
-    
-    /**
-     * Persistence key for the Name of the default account
-     */
-    public static final String KEY_DEFAULT_ACCOUNT_NAME = "default_account_name";
-    /**
-     * Name of the default account. The name is the same for this class and for {@link android.accounts.Account}
-     */
-    private static volatile String defaultAccountName = "";
-    /**
-     * Name of "current" account: it is not stored when application is killed
-     */
-    private static volatile String currentAccountName = "";
     
     private AccountName oAccountName = AccountName.fromAccountName("");
     private String userOid = "";
@@ -812,7 +803,7 @@ public class MyAccount implements AccountDataReader {
     public String getDataString(String key, String defValue) {
         String value = defValue;
         if (isPersistent()) {
-            android.accounts.AccountManager am = AccountManager.get(MyPreferences.getContext());
+            android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
             String str = am.getUserData(androidAccount, key);
             if (!TextUtils.isEmpty(str)) {
                 value = str;
@@ -852,90 +843,7 @@ public class MyAccount implements AccountDataReader {
     public CredentialsVerificationStatus getCredentialsVerified() {
         return credentialsVerified;
     }
-    
-    /**
-     * Forget everything in order to reread from the sources if it will be needed
-     */
-    public static synchronized void forget() {
-        persistentAccounts.clear();
-    }
-    
-    /**
-     * Get instance of current MyAccount (MyAccount selected by the user). The account isPersistent.
-     * As a side effect the function changes current account if old value is not valid.
-     * @return MyAccount or null if no persistent accounts exist
-     */
-    public static MyAccount getCurrentAccount() {
-        MyAccount ma = fromAccountName(currentAccountName);
-        if (ma != null) {
-            return ma;
-        }
-        currentAccountName = "";
-        ma = fromAccountName(defaultAccountName);
-        if (ma == null) {
-            defaultAccountName = "";
-        }
-        if (ma == null) {
-            if (persistentAccounts.size() > 0) {
-                ma = persistentAccounts.iterator().next();
-            }
-        }
-        if (ma != null) {
-            // Correct Current and Default Accounts if needed
-            if (TextUtils.isEmpty(currentAccountName)) {
-                setCurrentAccount(ma);
-            }
-            if (TextUtils.isEmpty(defaultAccountName)) {
-                setDefaultAccount(ma);
-            }
-        }
-        return ma;
-    }
-    
-    /**
-     * Get Guid of current MyAccount (MyAccount selected by the user). The account isPersistent
-     * 
-     * @param Context
-     * @return Account name or empty string if no persistent accounts exist
-     */
-    public static String getCurrentAccountName() {
-        MyAccount ma = getCurrentAccount();
-        if (ma != null) {
-            return ma.getAccountName();
-        } else {
-            return "";
-        }
-    }
-    
-    /**
-     * @return 0 if no current account
-     */
-    public static long getCurrentAccountUserId() {
-        MyAccount ma = getCurrentAccount();
-        if (ma != null) {
-            return ma.getUserId();
-        }
-        return 0;
-    }
-    
-    private static volatile List<MyAccount> persistentAccounts = new Vector<MyAccount>();
-    
-    /**
-     * Get list of all persistent accounts
-     * for the purpose of using these "accounts" elsewhere. Value of
-     * {@link #getCredentialsVerified()} is the main differentiator.
-     * 
-     * @param context
-     * @return Array of users, not null 
-     */
-    public static MyAccount[] list() {
-        return persistentAccounts.toArray(new MyAccount[persistentAccounts.size()]);
-    }
-    
-    public static int numberOfPersistentAccounts() {
-        return persistentAccounts.size();
-    }
-
+ 
     /**
      * @return Is this object persistent 
      */
@@ -953,7 +861,7 @@ public class MyAccount implements AccountDataReader {
 
         boolean found = false;
         String possiblyUnique = getUsername();
-        for (MyAccount persistentAccount : persistentAccounts) {
+        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
             if (!persistentAccount.toString().equalsIgnoreCase(toString()) ) {
                 if (persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique) ) {
                     found = true;
@@ -966,7 +874,7 @@ public class MyAccount implements AccountDataReader {
             int indAt = uniqueName.indexOf("@");
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt);
-                for (MyAccount persistentAccount : persistentAccounts) {
+                for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
                     if (!persistentAccount.toString().equalsIgnoreCase(toString()) ) {
                         String toCompareWith = persistentAccount.getUsername();
                         indAt = toCompareWith.indexOf("@");
@@ -986,191 +894,12 @@ public class MyAccount implements AccountDataReader {
         }
         return uniqueName;
     }
-    
-    /**
-     * Initialize the class. Required before first call to other methods.
-     */
-    public static synchronized void initialize(Context context) {
-        forget();
-        defaultAccountName = MyPreferences.getDefaultSharedPreferences().getString(KEY_DEFAULT_ACCOUNT_NAME, "");
 
-        android.accounts.AccountManager am = AccountManager.get(context);
-        android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
-        for (android.accounts.Account account : aa) {
-            MyAccount ma = new Builder(account).getAccount();
-            if (ma.isValid()) {
-                persistentAccounts.add(ma);
-            } else {
-                Log.e(TAG, "The account is not valid: " + ma);
-            }
-        }
-        MyLog.v(TAG, "Account list initialized, " + persistentAccounts.size() + " accounts");
-    }
-
-    private boolean isValid() {
+    boolean isValid() {
         return (version  == MyDatabase.DATABASE_VERSION && oAccountName.isValid() 
                 && !TextUtils.isEmpty(userOid)
                 && userId != 0
                 && connection != null);
-    }
-
-    /**
-     * Get MyAccount by the UserId. Valid User may not have an Account (in AndStatus)
-     * @param userId
-     * @return null if not found
-     */
-    public static MyAccount fromUserId(long userId) {
-        MyAccount ma = null;
-        for (MyAccount persistentAccount : persistentAccounts) {
-            if (persistentAccount.getUserId() == userId) {
-                ma = persistentAccount;
-                break;
-            }
-        }
-        return ma;
-    }
-
-    /**
-     * Return first found MyAccount with provided originId
-     * @param originId
-     * @return null if not found
-     */
-    public static MyAccount findFirstMyAccountByOriginId(long originId) {
-        MyAccount ma = null;
-        for (MyAccount persistentAccount : persistentAccounts) {
-            if (persistentAccount.getOriginId() == originId) {
-                ma = persistentAccount;
-                break;
-            }
-        }
-        return ma;
-    }
-    
-    /**
-     * Find account of the User linked to this message, 
-     * or other appropriate account in a case the User is not an Account.
-     * For any action with the message we should choose an Account 
-     * from the same originating (source) System.
-     * @param messageId  Message ID
-     * @param userIdForThisMessage The message is in his timeline. 0 if the message doesn't belong to any timeline
-     * @param preferredOtherUserId Preferred account (or 0), used in a case userId is not an Account 
-     *          or is not linked to the message 
-     * @return null if nothing suitable found
-     */
-    public static MyAccount getAccountWhichMayBeLinkedToThisMessage(long messageId, long userIdForThisMessage, long preferredOtherUserId)
-    {
-        MyAccount ma = fromUserId(userIdForThisMessage);
-        if (messageId == 0 || ma == null) {
-            ma = fromUserId(preferredOtherUserId);
-        }
-        long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, messageId);
-        if (ma == null || originId != ma.getOriginId()) {
-           ma = findFirstMyAccountByOriginId(originId); 
-        }
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "getMyAccountLinkedToThisMessage msgId=" + messageId +"; userId=" + userIdForThisMessage 
-                    + " -> account=" + (ma==null ? "null" : ma.getAccountName()));
-        }
-        return ma;
-    }
-    
-    /**
-     * Find persistent MyAccount by accountName in local cache AND in Android
-     * AccountManager
-     * 
-     * @return null if was not found
-     */
-    public static MyAccount fromAccountName(String accountName_in) {
-        MyAccount myAccount = null;
-        AccountName accountName = AccountName.fromAccountName(accountName_in);
-        if (TextUtils.isEmpty(accountName.getUsername())) {
-            return myAccount;
-        }
-
-        for (MyAccount persistentAccount : persistentAccounts) {
-            if (persistentAccount.getAccountName().compareTo(accountName.toString()) == 0) {
-                myAccount = persistentAccount;
-                break;
-            }
-        }
-        if (myAccount == null) {
-            // Try to find persisted Account which was not loaded yet
-            if (!TextUtils.isEmpty(accountName.toString())) {
-                android.accounts.Account[] androidAccounts = AccountManager.get(
-                        MyPreferences.getContext()).getAccountsByType(
-                        AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-                for (android.accounts.Account androidAccount : androidAccounts) {
-                    if (accountName.compareTo(androidAccount.name) == 0) {
-                        myAccount = new Builder(androidAccount).getAccount();
-                        persistentAccounts.add(myAccount);
-                        if (!MyPreferences.isUpgrading()) {
-                            MyPreferences.onPreferencesChanged();
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        return myAccount;
-    }
-    
-    /**
-     * Delete everything about the MyAccount
-     * 
-     * @return Was the MyAccount (and Account) deleted?
-     */
-    public static synchronized boolean delete(MyAccount ma) {
-        boolean isDeleted = false;
-
-        // Delete the User's object from the list
-        boolean found = false;
-        for (MyAccount persistentAccount : persistentAccounts) {
-            if (persistentAccount.equals(ma)) {
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            new Builder(ma).deleteData();
-
-            // And delete the object from the list
-            persistentAccounts.remove(ma);
-
-            isDeleted = true;
-            MyPreferences.onPreferencesChanged();
-        }
-        return isDeleted;
-    }
-
-    /**
-     * Set provided MyAccount as Current one.
-     * Current account selection is not persistent
-     */
-    public static synchronized void setCurrentAccount(MyAccount ma) {
-        if (ma != null) {
-            currentAccountName = ma.getAccountName();
-        }
-    }
-
-    /**
-     * Set provided MyAccount as a default one.
-     * Default account selection is persistent
-     */
-    private static synchronized void setDefaultAccount(MyAccount ma) {
-        if (ma != null) {
-            defaultAccountName = ma.getAccountName();
-        }
-        MyPreferences.getDefaultSharedPreferences().edit()
-                .putString(KEY_DEFAULT_ACCOUNT_NAME, defaultAccountName).commit();
-    }
-    
-    public static void onMyPreferencesChanged() {
-        long syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
-        for (MyAccount persistentAccount : persistentAccounts) {
-            Builder builder = new Builder(persistentAccount);
-            builder.myAccount.syncFrequencySeconds = syncFrequencySeconds;
-            builder.save();
-        }
     }
     
     private MyAccount() {};
@@ -1311,7 +1040,7 @@ public class MyAccount implements AccountDataReader {
     
     public int accountsOfThisOrigin() {
         int count = 0;
-        for (MyAccount persistentAccount : persistentAccounts) {
+        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
             if (persistentAccount.getOriginId() == this.getOriginId()) {
                 count++;
             }
@@ -1323,7 +1052,7 @@ public class MyAccount implements AccountDataReader {
      * @return this account if there are no others
      */
     public MyAccount firstOtherAccountOfThisOrigin() {
-        for (MyAccount persistentAccount : persistentAccounts) {
+        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
             if (persistentAccount.getOriginId() == this.getOriginId()) {
                 if (persistentAccount != this) {
                     return persistentAccount;

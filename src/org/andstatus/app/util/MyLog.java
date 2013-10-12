@@ -16,6 +16,8 @@
 
 package org.andstatus.app.util;
 
+import org.andstatus.app.MyContext;
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.data.MyPreferences;
 
 import java.io.BufferedWriter;
@@ -133,7 +135,8 @@ public class MyLog {
         if (initialized) return;
         synchronized (APPTAG) {
             if (initialized) return;
-            if (!MyPreferences.isInitialized()) return;
+            MyContext myContext = MyContextHolder.get();
+            if (!myContext.initialized()) return;
             // The class was not initialized yet.
             String val = "(not set)";
             try {

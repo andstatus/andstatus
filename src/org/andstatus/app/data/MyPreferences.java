@@ -16,8 +16,9 @@
 
 package org.andstatus.app.data;
 
+import org.andstatus.app.MyContext;
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TimelineActivity;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.util.MyLog;
 
 import android.content.Context;
@@ -27,41 +28,14 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.File;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * This is central point of accessing SharedPreferences and other global objects, used by AndStatus
+ * This is a central point of accessing SharedPreferences
  * Noninstantiable class 
  * @author yvolk@yurivolkov.com
  */
 public class MyPreferences {
     private static final String TAG = MyPreferences.class.getSimpleName();
-    private static volatile boolean initialized = false;
-    /**
-     * Single context object for which we will request SharedPreferences
-     */
-    private static Context context;
-    /**
-     * Name of the object that initialized the class
-     */
-    private static String initializedBy;
-    /**
-     * When preferences, loaded into this class, were changed
-     */
-    private static volatile long preferencesChangeTime = 0;
-    private static volatile MyDatabase db;
-    private static volatile boolean shouldTriggerDatabaseUpgrade = false;
-    /**
-     * Semaphore enabling uninterrupted system upgrade
-     */
-    private static Long upgradeEndTime = 0L;
-    private static boolean upgradeStarted = false;
-    private static boolean upgradeSuccessfullyCompleted = false;
-
-    /**
-     * IDs used for testing purposes to identify instances of reference types.
-     */
-    private static final AtomicInteger prevInstanceId = new AtomicInteger(0);
     
     /**
      * This is sort of button to start verification of credentials
@@ -123,138 +97,14 @@ public class MyPreferences {
     }
     
     /**
-     * This method should be called before any other operations in the application (as early as possible)
-     * If the class was initialized but preferences changed later, all preferences are reloaded ("refresh")
-     * @param context_in
-     * @param object - object that initialized the class 
-     * @return System time when preferences were last changed
-     */
-    public static long initialize(Context context_in, Object object ) {
-        boolean initializedHere = false;
-        String initializerName;
-        if (object instanceof String) {
-            initializerName = (String) object;
-        } else {
-            initializerName = object.getClass().getSimpleName();
-
-        }
-        if (initialized && arePreferencesChanged()) {
-            synchronized(MyPreferences.class) {
-                if (initialized) {
-                    long preferencesChangeTime_last = getPreferencesChangeTime();
-                    if (preferencesChangeTime != preferencesChangeTime_last) {
-                        MyLog.v(TAG, "Preferences changed " + (java.lang.System.currentTimeMillis() - preferencesChangeTime_last)/1000 +  " seconds ago, refreshing...");
-                        forget();
-                    }
-                }
-            }
-        }
-        if (!initialized) {
-            synchronized(MyPreferences.class) {
-                if (!initialized) {
-                    initializedBy = initializerName;
-                    Log.v(TAG, "Starting initialization by " + initializedBy);
-                    if (context_in != null) {
-                        // Maybe we should use context_in.getApplicationContext() ??
-                        context = context_in.getApplicationContext();
-                    
-                        /* This may be useful to know from where the class was initialized
-                        StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
-                        for(int i=0; i<elements.length; i++) { 
-                            Log.v(TAG, elements[i].toString()); 
-                        }
-                        */
-                    
-                        if ( context == null) {
-                            Log.v(TAG, "getApplicationContext is null, trying the context_in itself: " + context_in.getClass().getName());
-                            context = context_in;
-                        }
-                    }
-                    if ( context != null) {
-                        initialized = true;
-                        preferencesChangeTime = getPreferencesChangeTime();
-
-                        MyAccount.initialize(context);
-                    }
-                    initializedHere = initialized;
-                    if (initialized) {
-                        MyLog.v(TAG, "Initialized by " + initializedBy + " context: " + context.getClass().getName());
-                    } else {
-                        Log.e(TAG, "Failed to initialize by " + initializedBy);
-                    }
-                }
-            }
-        } 
-        if (initialized && !initializedHere) {
-            MyLog.v(TAG, "Already initialized by " + initializedBy +  " (called by: " + initializerName + ")");
-        }
-        if (initialized) {
-            synchronized(upgradeEndTime) {
-                if (shouldTriggerDatabaseUpgrade) {
-                    triggerDatabaseUpgrade();
-                }
-            }
-        }
-        return preferencesChangeTime;
-    }
-
-    public static synchronized Context initializeAndGetContext(Context context_in, java.lang.Object object ) {
-        initialize(context_in, object);
-        return getContext();
-    }
-    
-    /**
-     * @return Unique for this process integer, numbers are given in the order starting from 1
-     */
-    public static int nextInstanceId() {
-        return prevInstanceId.incrementAndGet();
-    }
-    
-    public static void forgetPreferencesIfTheyChanged() {
-        if (arePreferencesChanged()) {
-            synchronized(MyPreferences.class) {
-                if (arePreferencesChanged()) {
-                    forget();
-                }
-            }
-        }
-    }
-    
-    /**
-     * Forget everything in order to reread from the sources if it will be needed
-     * e.g. after configuration changes
-     */
-    public static synchronized void forget() {
-        initialized = false;
-        MyAccount.forget();
-        if (db != null) {
-            try {
-                db.close();
-            } catch (Exception e) {
-                Log.e(TAG, "Error closing database " + e.getMessage());
-            } finally {
-                db = null;
-            }
-        }
-        MyLog.forget();
-        context = null;
-        initializedBy = null;
-    }
-    
-    public static boolean isInitialized() {
-        return (initialized);
-    }
-    
-    /**
      * @return DefaultSharedPreferences for this application
      */
-    public static synchronized SharedPreferences getDefaultSharedPreferences() {
-        if (!isInitialized()) {
+    public static SharedPreferences getDefaultSharedPreferences() {
+        Context context = MyContextHolder.get().context();
+        if (context == null) {
             Log.e(TAG, "getDefaultSharedPreferences - Was not initialized yet");
-            /* TODO: */
-            StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
-            for(int i=0; i<elements.length; i++) { 
-                Log.v(TAG, elements[i].toString()); 
+            for(StackTraceElement element : Thread.currentThread().getStackTrace()) { 
+                Log.v(TAG, element.toString()); 
             }
             return null;
         } else {
@@ -262,18 +112,19 @@ public class MyPreferences {
         }
     }
 
-    public static synchronized boolean shouldSetDefaultValues() {
-        if (context == null) {
-            Log.e(TAG, "areDefaultValuesSet - Was not initialized yet");
+    public static boolean shouldSetDefaultValues() {
+        SharedPreferences sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
+        if (sp == null) {
             return false;
         } else {
-            boolean areSetAlready = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES)
+            boolean areSetAlready = sp
                     .getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false);
             return !areSetAlready;
         }
     }
     
-    public static synchronized void setDefaultValues(int resId, boolean readAgain) {
+    public static void setDefaultValues(int resId, boolean readAgain) {
+        Context context = MyContextHolder.get().context();
         if (context == null) {
             Log.e(TAG, "setDefaultValues - Was not initialized yet");
         } else {
@@ -281,9 +132,13 @@ public class MyPreferences {
         }
     }
     
-    public static synchronized SharedPreferences getSharedPreferences(String name) {
-        if (!isInitialized()) {
-            Log.e(TAG, "getSharedPreferences - Was not initialized yet");
+    public static SharedPreferences getSharedPreferences(String name) {
+        Context context = MyContextHolder.get().context();
+        if (context == null) {
+            Log.e(TAG, "getSharedPreferences for " + name + " - were not initialized yet");
+            for(StackTraceElement element : Thread.currentThread().getStackTrace()) { 
+                Log.v(TAG, element.toString()); 
+            }
             return null;
         } else {
             return context.getSharedPreferences(name, android.content.Context.MODE_PRIVATE);
@@ -291,15 +146,14 @@ public class MyPreferences {
     }
 
     public static final int MILLISECONDS = 1000;
-    public static final int SYNC_FREQUENCY_DEFAULT_SECONDS = 180;
+    private static final int SYNC_FREQUENCY_DEFAULT_SECONDS = 180;
     /**
      * @return the number of seconds between two sync ("fetch"...) actions.
      */
-    public static synchronized long getSyncFrequencySeconds() {
+    public static long getSyncFrequencySeconds() {
         long frequencySeconds = SYNC_FREQUENCY_DEFAULT_SECONDS;
-        if (!isInitialized()) {
-            Log.e(TAG, "getSyncFrequency - Was not initialized yet");
-        } else {
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
             long frequencySecondsStored = Long.parseLong(getDefaultSharedPreferences().getString(MyPreferences.KEY_FETCH_FREQUENCY, "0"));
             if (frequencySecondsStored > 0) { 
                 frequencySeconds = frequencySecondsStored;
@@ -319,124 +173,32 @@ public class MyPreferences {
      *  Event: Preferences have changed right now
      *  Remember when last changes to the preferences were made
      */
-    public static synchronized void onPreferencesChanged() {
-        if (initialized) {
-            getDefaultSharedPreferences()
-            .edit()
+    public static void onPreferencesChanged() {
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            sp.edit()
             .putLong(KEY_PREFERENCES_CHANGE_TIME,
                     java.lang.System.currentTimeMillis()).commit();
         }
     }
     
-    public static boolean arePreferencesChanged() {
-        return (preferencesChangeTime != getPreferencesChangeTime());
-    }
-
     /**
      * @return System time when AndStatus preferences were last time changed. 
      * We take into account here time when accounts were added/removed...
      */
-    public static synchronized long getPreferencesChangeTime() {
+    public static long getPreferencesChangeTime() {
         long preferencesChangeTime = 0;
-        if (isInitialized()) {
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
             preferencesChangeTime = getDefaultSharedPreferences().getLong(KEY_PREFERENCES_CHANGE_TIME, 0);            
         }
         return preferencesChangeTime;
-    }
-
-    public static Context getContext() {
-        return context;
-    }
-
-    public static synchronized MyDatabase getDatabase() {
-        if (db == null) {
-            if (isInitialized()) {
-                db = new MyDatabase(context);
-            } else {
-                Log.e(TAG, "getDatabase - Was not initialized yet");
-            }
-        }
-        return db;
-    }
-    
-    public static void triggerDatabaseUpgrade() {
-        if (isUpgrading()) {
-            MyLog.v(TAG, "Attempt to trigger database upgrade: already upgrading");
-            return;
-        }
-        long currentTime = java.lang.System.currentTimeMillis();
-        synchronized(upgradeEndTime) {
-            if (isUpgrading()) {
-                return;
-            }
-            if ( upgradeSuccessfullyCompleted) {
-                MyLog.v(TAG, "Attempt to trigger database upgrade: already completed successfully");
-            }
-            final Long MILLIS_BEFORE_UPGRADE_TRIGGERED = 1000L;
-            upgradeEndTime = currentTime + MILLIS_BEFORE_UPGRADE_TRIGGERED;
-            shouldTriggerDatabaseUpgrade = true;            
-        }
-        try {
-            MyLog.v(TAG, "Upgrade triggered");
-            MyDatabase db = getDatabase();
-            if (db != null) {
-                db.getReadableDatabase();
-            }
-            synchronized(upgradeEndTime) {
-                shouldTriggerDatabaseUpgrade = false;
-                upgradeSuccessfullyCompleted = true;
-                if (upgradeStarted) {
-                    upgradeStarted = false;
-                    MyLog.v(TAG, "Upgraded completed successfully");
-                } else {
-                    MyLog.v(TAG, "No upgrade was required");
-                }
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to trigger database upgrade, will try later. Error: " + e.getMessage());
-            
-        } finally {
-            currentTime = java.lang.System.currentTimeMillis();
-            synchronized(upgradeEndTime) {
-                if (upgradeStarted) {
-                    final Long MILLIS_AFTER_UPGRADE = 5000L;
-                    upgradeEndTime = currentTime + MILLIS_AFTER_UPGRADE;
-                    Log.w(TAG, "Upgrade ended, waiting " + MILLIS_AFTER_UPGRADE + " more milliseconds");
-                } else {
-                    upgradeEndTime = 0L;
-                }
-            }
-        }
-    }
-    
-    public static void onUpgrade() {
-        final long MILLIS_FOR_UPGRADE = 30000L;
-        synchronized(upgradeEndTime) {
-            upgradeStarted = true;
-            upgradeEndTime = java.lang.System.currentTimeMillis() + MILLIS_FOR_UPGRADE;
-        }
-        Log.w(TAG, "on Upgrade, waiting " + MILLIS_FOR_UPGRADE + " milliseconds");
-    }
-    
-    public static boolean isUpgrading() {
-        synchronized(upgradeEndTime) {
-            if (upgradeEndTime == 0 ) {
-                return false;
-            }
-            long currentTime = java.lang.System.currentTimeMillis();
-            if (currentTime > upgradeEndTime) {
-                MyLog.v(TAG,"Upgrade end time came");
-                upgradeEndTime = 0L;
-                return false;
-            }
-        }
-        return true;
     }
     
     /**
      * Standard directory in which to place databases
      */
-    public static String DIRECTORY_DATABASES = "databases";
+    private static String DIRECTORY_DATABASES = "databases";
     
     /**
      * This function works just like {@link android.content.Context#getExternalFilesDir
@@ -453,14 +215,15 @@ public class MyPreferences {
      * @return directory, already created for you OR null in case of error
      * @see <a href="http://developer.android.com/guide/topics/data/data-storage.html#filesExternal">filesExternal</a>
      */
-    public static synchronized File getDataFilesDir(String type, Boolean forcedUseExternalStorage) {
+    public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage) {
         File baseDir = null;
         String pathToAppend = "";
         File dir = null;
         String textToLog = null;
         boolean useExternalStorage = false;
-        if (context == null) {
-            textToLog = "getDataFilesDir - Was not initialized yet";
+        MyContext myContext = MyContextHolder.get();
+        if (myContext.context() == null) {
+            textToLog = "getDataFilesDir - no android.content.Context yet";
         } else {
             if (forcedUseExternalStorage == null) {
                 useExternalStorage = getDefaultSharedPreferences().getBoolean(KEY_USE_EXTERNAL_STORAGE, false); 
@@ -472,7 +235,7 @@ public class MyPreferences {
                 if (Environment.MEDIA_MOUNTED.equals(state)) {    
                     // We can read and write the media
                     baseDir = Environment.getExternalStorageDirectory();
-                    pathToAppend = "Android/data/" + context.getPackageName() + "/files";
+                    pathToAppend = "Android/data/" + myContext.context().getPackageName() + "/files";
                 } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
                     textToLog = "getDataFilesDir - We can only read External storage";
                 } else {    
@@ -480,7 +243,7 @@ public class MyPreferences {
                 }                
             } else {
                 baseDir = Environment.getDataDirectory();
-                pathToAppend = "data/" + context.getPackageName();
+                pathToAppend = "data/" + myContext.context().getPackageName();
             }
             if (baseDir != null) {
                 if (type != null) {
@@ -515,7 +278,7 @@ public class MyPreferences {
      * @param forcedUseExternalStorage if not null, use this value instead of stored in preferences as {@link #KEY_USE_EXTERNAL_STORAGE}
      * @return
      */
-    public static synchronized File getDatabasePath(String name, Boolean forcedUseExternalStorage) {
+    public static File getDatabasePath(String name, Boolean forcedUseExternalStorage) {
         File dbDir = getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, forcedUseExternalStorage);
         File dbAbsolutePath = null;
         if (dbDir != null) {
@@ -534,7 +297,7 @@ public class MyPreferences {
     /**
      * Load the theme according to the preferences.
      */
-    public static void loadTheme(String TAG, android.content.Context context) {
+    public static void loadTheme(String TAG, Context context) {
         boolean light = getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
         StringBuilder themeName = new StringBuilder();
         String name = getDefaultSharedPreferences().getString("theme", "AndStatus");

@@ -49,6 +49,7 @@ import oauth.signpost.exception.OAuthNotAuthorizedException;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.MyPreferenceActivity;
 import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.R;
@@ -116,7 +117,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        MyPreferences.initialize(this, this);
+        MyContextHolder.initialize(this, this);
+        MyContextHolder.upgradeIfNeeded();
+        
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
         
@@ -186,7 +189,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 }
                 if (!mIsFinishing) {
                     MyLog.v(TAG, "Switching to the selected account");
-                    MyAccount.setCurrentAccount(state.builder.getAccount());
+                    MyContextHolder.get().persistentAccounts().setCurrentAccount(state.builder.getAccount());
                     state.setAccountAction(Intent.ACTION_EDIT);
                     showUserPreferences();
                 } else {
@@ -300,7 +303,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     protected void onResume() {
         super.onResume();
 
-        MyPreferences.initialize(this, this);
+        MyContextHolder.initialize(this, this);
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
         
@@ -360,7 +363,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(
                 this);
         if (mIsFinishing) {
-            MyPreferences.forgetPreferencesIfTheyChanged();
+            MyContextHolder.release();;
             if (startPreferencesActivity) {
                 MyLog.v(TAG, "Returning to our Preferences Activity");
                 // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
@@ -379,7 +382,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         if (somethingIsBeingProcessed) {
             return;
         }
-        if (onSharedPreferenceChanged_busy || !MyPreferences.isInitialized()) {
+        if (onSharedPreferenceChanged_busy || !MyContextHolder.get().initialized()) {
             return;
         }
         onSharedPreferenceChanged_busy = true;
@@ -653,7 +656,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
 
                     if (succeeded) {
                         String accountName = state.getAccount().getAccountName();
-                        MyAccount.initialize(MyPreferences.getContext());
+                        MyContextHolder.get().persistentAccounts().reRead(MyContextHolder.get().context());
                         state.builder = MyAccount.Builder.newOrExistingFromAccountName(accountName, TriState.TRUE);
                         showUserPreferences();
                         new OAuthAcquireRequestTokenTask().execute();

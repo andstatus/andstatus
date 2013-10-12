@@ -25,7 +25,6 @@ import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.User;
@@ -81,7 +80,7 @@ public class TimelineDownloaderUser extends TimelineDownloader {
         }
         // Old list of followed users
         Set<Long> followedIds_old = MyProvider.getIdsOfUsersFollowedBy(userId);
-        SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         for (String followedUserOid : followedUsersOids) {
             long friendId = MyProvider.oidToId(MyDatabase.OidEnum.USER_OID, counters.ma.getOriginId(), followedUserOid);
             long msgId = 0;

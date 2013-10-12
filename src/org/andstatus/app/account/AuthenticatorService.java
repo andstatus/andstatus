@@ -16,6 +16,7 @@
 
 package org.andstatus.app.account;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.data.MyPreferences;
 
 import android.accounts.AbstractAccountAuthenticator;
@@ -50,7 +51,7 @@ public class AuthenticatorService extends Service {
 
         public Authenticator(Context context) {
             super(context);
-            MyPreferences.initialize(context, this);
+            MyContextHolder.initialize(context, this);
         }
 
         /** 
@@ -141,10 +142,10 @@ public class AuthenticatorService extends Service {
         public Bundle getAccountRemovalAllowed(AccountAuthenticatorResponse response,
                 Account account) throws NetworkErrorException {
             
-            MyAccount ma = MyAccount.fromAccountName(account.name);
+            MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(account.name);
             boolean deleted = true;
             if (ma != null) {
-                deleted = MyAccount.delete(ma);
+                deleted = MyContextHolder.get().persistentAccounts().delete(ma);
             }
             MyPreferences.onPreferencesChanged();
             

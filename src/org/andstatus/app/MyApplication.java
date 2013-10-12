@@ -37,8 +37,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Log.v(TAG, "onCreate started");
-        MyPreferences.initialize(this, this);
-        MyPreferences.triggerDatabaseUpgrade();
+        MyContextHolder.initialize(this, this);
         if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
             MyLog.v(TAG, "onCreate ended");
         } else {

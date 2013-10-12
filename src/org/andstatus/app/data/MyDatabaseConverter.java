@@ -19,14 +19,114 @@ package org.andstatus.app.data;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import org.andstatus.app.account.MyAccountConverter;
+import net.jcip.annotations.GuardedBy;
 
-class MyDatabaseConverter {
+import org.andstatus.app.MyContext;
+import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.account.MyAccountConverter;
+import org.andstatus.app.util.MyLog;
+
+public class MyDatabaseConverter {
     private static final String TAG = MyDatabaseConverter.class.getSimpleName();
 
+    @GuardedBy("upgradeEndTime")
+    private static volatile boolean shouldTriggerDatabaseUpgrade = false;
+    /**
+     * Semaphore enabling uninterrupted system upgrade
+     */
+    @GuardedBy("upgradeEndTime")
+    private static Long upgradeEndTime = 0L;
+    @GuardedBy("upgradeEndTime")
+    private static boolean upgradeStarted = false;
+    @GuardedBy("upgradeEndTime")
+    private static boolean upgradeSuccessfullyCompleted = false;
+    
+    public static void triggerDatabaseUpgrade() {
+        if (isUpgrading()) {
+            MyLog.v(TAG, "Attempt to trigger database upgrade: already upgrading");
+            return;
+        }
+        MyContext myContext = MyContextHolder.get();
+        long currentTime = java.lang.System.currentTimeMillis();
+        if (!myContext.initialized()) {
+            MyLog.v(TAG, "Attempt to trigger database upgrade: not initialized yet");
+            return;
+        }
+        if (isUpgrading()) {
+            return;
+        }
+        synchronized(upgradeEndTime) {
+            if (upgradeSuccessfullyCompleted) {
+                MyLog.v(TAG, "Attempt to trigger database upgrade: already completed successfully");
+            }
+            final Long MILLIS_BEFORE_UPGRADE_TRIGGERED = 1000L;
+            upgradeEndTime = currentTime + MILLIS_BEFORE_UPGRADE_TRIGGERED;
+            shouldTriggerDatabaseUpgrade = true;            
+        }
+        try {
+            MyLog.v(TAG, "Upgrade triggered");
+            MyContextHolder.release();
+            MyContextHolder.initialize(myContext.context(), TAG);
+            synchronized(upgradeEndTime) {
+                shouldTriggerDatabaseUpgrade = false;
+                upgradeSuccessfullyCompleted = true;
+                if (upgradeStarted) {
+                    upgradeStarted = false;
+                    MyLog.v(TAG, "Upgraded completed successfully");
+                } else {
+                    MyLog.v(TAG, "No upgrade was required");
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to trigger database upgrade, will try later. Error: " + e.getMessage());
+            
+        } finally {
+            currentTime = java.lang.System.currentTimeMillis();
+            synchronized(upgradeEndTime) {
+                if (upgradeStarted) {
+                    final Long MILLIS_AFTER_UPGRADE = 5000L;
+                    upgradeEndTime = currentTime + MILLIS_AFTER_UPGRADE;
+                    Log.w(TAG, "Upgrade ended, waiting " + MILLIS_AFTER_UPGRADE + " more milliseconds");
+                } else {
+                    upgradeEndTime = 0L;
+                }
+            }
+        }
+    }
+    
+    public static void stillUpgrading() {
+        final long MILLIS_FOR_UPGRADE = 30000L;
+        synchronized(upgradeEndTime) {
+            upgradeStarted = true;
+            upgradeEndTime = java.lang.System.currentTimeMillis() + MILLIS_FOR_UPGRADE;
+        }
+        Log.w(TAG, "on Upgrade, waiting " + MILLIS_FOR_UPGRADE + " milliseconds");
+    }
+    
+    public static boolean isUpgrading() {
+        synchronized(upgradeEndTime) {
+            if (upgradeEndTime == 0 ) {
+                return false;
+            }
+            long currentTime = java.lang.System.currentTimeMillis();
+            if (currentTime > upgradeEndTime) {
+                MyLog.v(TAG,"Upgrade end time came");
+                upgradeEndTime = 0L;
+                return false;
+            }
+        }
+        return true;
+    }
+    
     void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
+        if (!shouldTriggerDatabaseUpgrade) {
+            MyLog.v(TAG,"Upgrade end time came");
+        }
+        synchronized (upgradeEndTime) {
+            shouldTriggerDatabaseUpgrade = false;
+        }
         int currentVersion = oldVersion;
-        MyPreferences.onUpgrade();
+        stillUpgrading();
         Log.i(TAG, "Upgrading database from version " + oldVersion + " to version " + newVersion);
         if (oldVersion < 9) {
             throw new IllegalArgumentException("Upgrade from this database version is not supported. Please reinstall the application");
@@ -46,8 +146,7 @@ class MyDatabaseConverter {
         } else {
             Log.e(TAG, "Error upgrading database from version " + oldVersion + " to version "
                     + newVersion + ". Current database version=" + currentVersion);
-            // This throws an error
-            db.execSQL("Database upgrade failed. Current database version=" + currentVersion);
+            throw new Error("Database upgrade failed. Current database version=" + currentVersion);
         }
     }
 

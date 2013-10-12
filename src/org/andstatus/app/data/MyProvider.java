@@ -38,6 +38,7 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -47,7 +48,6 @@ import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.apache.http.client.UserTokenHandler;
 
 /**
  * Database provider for the MyDatabase database.
@@ -123,8 +123,8 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public boolean onCreate() {
-        MyPreferences.initialize(getContext(), this);
-        return (MyPreferences.getDatabase() == null) ? false : true;
+        MyContextHolder.initialize(getContext(), this);
+        return (MyContextHolder.get().getDatabase() == null) ? false : true;
     }
 
     /**
@@ -165,7 +165,7 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         String sqlDesc = "";
         int count = 0;
         switch (sUriMatcher.match(uri)) {
@@ -242,7 +242,7 @@ public class MyProvider extends ContentProvider {
             // 2010-07-21 yvolk: "now" is calculated exactly like it is in other
             // parts of the code
             Long now = System.currentTimeMillis();
-            SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
+            SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
 
             String table;
             String nullColumnHack;
@@ -508,9 +508,9 @@ public class MyProvider extends ContentProvider {
         }
 
         Cursor c = null;
-        if (MyPreferences.isDataAvailable()) {
+        if (MyContextHolder.get().isReady()) {
             // Get the database and run the query
-            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
             boolean logQuery = MyLog.isLoggable(TAG, Log.VERBOSE);
             try {
                 if (sql.length() == 0) {
@@ -548,9 +548,6 @@ public class MyProvider extends ContentProvider {
         }
 
         if (c != null) {
-            // Tell the cursor what Uri to watch, so it knows when its source
-            // data
-            // changes
             c.setNotificationUri(getContext().getContentResolver(), uri);
         }
         return c;
@@ -571,7 +568,7 @@ public class MyProvider extends ContentProvider {
         // Allows to link to one or more accounts
         String accountUserIds = "";
         if (isCombined || accountUserId == 0) {
-            for (MyAccount ma : MyAccount.list()) {
+            for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
                 if (!TextUtils.isEmpty(accountUserIds)) {
                     accountUserIds += ", ";
                     nAccounts += 1;
@@ -743,7 +740,7 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         int count = 0;
         long accountUserId = 0;
         int matchedCode = sUriMatcher.match(uri);
@@ -917,7 +914,7 @@ public class MyProvider extends ContentProvider {
                 default:
                     throw new IllegalArgumentException("oidToId; Unknown oidEnum \"" + oidEnum);
             }
-            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
             SQLiteStatement prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
             prog.releaseReference();
@@ -971,7 +968,7 @@ public class MyProvider extends ContentProvider {
      *         {@link MyDatabase.Msg#MSG_OID} empty string in case of an error
      */
     public static String idToOid(OidEnum oe, long entityId, long rebloggerUserId) {
-        MyDatabase myDb = MyPreferences.getDatabase();
+        MyDatabase myDb = MyContextHolder.get().getDatabase();
         if (myDb == null) {
             return "";
         } else {
@@ -1061,7 +1058,7 @@ public class MyProvider extends ContentProvider {
                 } else {
                     throw new IllegalArgumentException("msgIdToUsername; Unknown name \"" + msgUserColumnName);
                 }
-                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+                SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
                 prog.releaseReference();
@@ -1087,7 +1084,7 @@ public class MyProvider extends ContentProvider {
             try {
                 sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + MyDatabase.USER_TABLE_NAME
                         + " WHERE " + MyDatabase.USER_TABLE_NAME + "." + BaseColumns._ID + "=" + userId;
-                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+                SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
                 prog.releaseReference();
@@ -1132,7 +1129,7 @@ public class MyProvider extends ContentProvider {
                 sql = "SELECT t." + columnName
                         + " FROM " + tableName + " AS t"
                         + " WHERE t._id=" + systemId;
-                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+                SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForLong();
                 prog.releaseReference();
@@ -1175,7 +1172,7 @@ public class MyProvider extends ContentProvider {
                 sql = "SELECT t." + columnName
                         + " FROM " + tableName + " AS t"
                         + " WHERE t._id=" + systemId;
-                SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+                SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForString();
                 prog.releaseReference();
@@ -1229,7 +1226,7 @@ public class MyProvider extends ContentProvider {
      *         {@link MyDatabase.User#_ID} ), 0 if not found
      */
     public static long userNameToId(long originId, String userName) {
-        SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
         return userNameToId(db, originId, userName);
     }
     
@@ -1388,7 +1385,7 @@ public class MyProvider extends ContentProvider {
                 + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME 
                 + " WHERE " + where;
         
-        SQLiteDatabase db = MyPreferences.getDatabase().getWritableDatabase();
+        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         Cursor c = null;
         try {
             c = db.rawQuery(sql, null);

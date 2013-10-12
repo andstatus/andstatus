@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.MessageCounters;
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.Builder;
@@ -60,7 +61,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         builder = null;
         
         MyPreferences.onPreferencesChanged();
-        MyPreferences.initialize(context, this);
+        MyContextHolder.initialize(context, this);
     }
 
     private MyAccount.Builder addAccount(MbUser mbUser) throws ConnectionException {
@@ -78,7 +79,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     public void testUserAdded() throws ConnectionException {
-        MyAccount ma = MyAccount.fromAccountName(accountName);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
         assertTrue("Account is persistent", ma != null);
         assertTrue("Account has UserId", ma.getUserId() != 0);
         assertTrue("Account UserOid", ma.getUserOid().equalsIgnoreCase(accountUserOid));
@@ -88,7 +89,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         deleteOldMessage(Origin.OriginEnum.PUMPIO.getId(), messageOid);
         
-        MyAccount ma = MyAccount.fromAccountName(accountName);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
         assertEquals("Account name", ma.getAccountName(), accountName);
         assertEquals("UserId of " + ma.getAccountName(), ma.getUserId(), accountUserId);
 
@@ -168,7 +169,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     public void testMessageFavoritedByOtherUser() throws ConnectionException {
-        MyAccount ma = MyAccount.fromAccountName(accountName);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
 
         String username = "anybody@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), "acct:" + username);
@@ -213,7 +214,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
 
     public void testMessageFavoritedByAccountUser() throws ConnectionException {
-        MyAccount ma = MyAccount.fromAccountName(accountName);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
 
         String username = "example@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), "acct:" + username);
@@ -256,7 +257,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ";
         deleteOldMessage(Origin.OriginEnum.PUMPIO.getId(), messageOid);
 
-        MyAccount ma = MyAccount.fromAccountName(accountName);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
 
         String username = "t131t@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), "acct:" + username);

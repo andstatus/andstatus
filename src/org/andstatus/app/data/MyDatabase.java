@@ -16,6 +16,7 @@
 
 package org.andstatus.app.data;
 
+import org.andstatus.app.MyContextState;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.net.Connection;
@@ -508,17 +509,31 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         }
     }
     
-//    public static final int TIMELINE_TYPE_NONE = 0;
-//    public static final int TIMELINE_TYPE_HOME = 1;
-//    public static final int TIMELINE_TYPE_MENTIONS = 2;
-//    public static final int TIMELINE_TYPE_DIRECT = 3;
-//    public static final int TIMELINE_TYPE_FAVORITES = 4;
-
-    MyDatabase(Context context) {
-        // We use TAG instead of 'this' which cannot be used in this context
-        super(MyPreferences.initializeAndGetContext(context, TAG), DATABASE_NAME, null, DATABASE_VERSION);
+    public MyDatabase(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    private boolean onUpgradeTriggered = false;
+    public MyContextState checkState() {
+        MyContextState state = MyContextState.ERROR;
+        try {
+            onUpgradeTriggered = false;
+            if (MyPreferences.isDataAvailable()) {
+                SQLiteDatabase db = getReadableDatabase();
+                if (onUpgradeTriggered) {
+                    state = MyContextState.UPGRADING;
+                } else {
+                    if (db != null && db.isOpen()) {
+                        state = MyContextState.READY;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return state;
+    }
+    
     /**
      * On datatypes in SQLite see <a href="http://www.sqlite.org/datatype3.html">Datatypes In SQLite Version 3</a>.
      * See also <a href="http://sqlite.org/autoinc.html">SQLite Autoincrement</a>.

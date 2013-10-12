@@ -315,7 +315,7 @@ public class CommandData {
      * @return null if no MyAccount exists with supplied name
      */
     public MyAccount getAccount() {
-        return MyAccount.fromAccountName(accountName);
+        return MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
     }
     
     private void setAccountName(String accountName) {

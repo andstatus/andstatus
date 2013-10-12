@@ -19,6 +19,7 @@ package org.andstatus.app;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.MyService.ServiceState;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Timer;
@@ -62,7 +63,7 @@ public class MyServiceManager extends BroadcastReceiver {
     private static volatile java.util.Timer timerToMakeServiceAvailable;
     
     public static boolean isServiceAvailable() {
-        return serviceAvailable && !MyPreferences.isUpgrading();
+        return serviceAvailable && MyContextHolder.get().isReady();
     }
     public static synchronized void setServiceAvailable() {
         serviceAvailable = true;
@@ -91,7 +92,7 @@ public class MyServiceManager extends BroadcastReceiver {
     private int instanceId;
     
     public MyServiceManager() {
-        instanceId = MyPreferences.nextInstanceId();
+        instanceId = InstanceId.next();
         MyLog.v(TAG, TAG + " created, instanceId=" + instanceId );
     }
     
@@ -99,7 +100,7 @@ public class MyServiceManager extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         if (action.equals(MyService.ACTION_SERVICE_STATE)) {
-            MyPreferences.initialize(context, this);
+            MyContextHolder.initialize(context, this);
             synchronized (mServiceState) {
                 stateQueuedTime = System.nanoTime();
                 waitingForServiceState = false;
@@ -112,7 +113,7 @@ public class MyServiceManager extends BroadcastReceiver {
                 MyLog.d(TAG, "onReceive: Service is unavailable");
                 return;
             }
-            MyPreferences.initialize(context, this);
+            MyContextHolder.initialize(context, this);
             if (action.equals("android.intent.action.ACTION_SHUTDOWN")) {
                 // This system broadcast is Since: API Level 4
                 // We need this to persist unsaved data in the service
@@ -133,7 +134,7 @@ public class MyServiceManager extends BroadcastReceiver {
         if (!isServiceAvailable()) {
             // Imitate soft service error
             commandData.commandResult.numIoExceptions++;
-            MyService.broadcastState(MyPreferences.getContext(), MyService.ServiceState.STOPPED, commandData);
+            MyService.broadcastState(MyContextHolder.get().context(), MyService.ServiceState.STOPPED, commandData);
             return;
         }
         
@@ -141,7 +142,7 @@ public class MyServiceManager extends BroadcastReceiver {
         if (commandData != null) {
             serviceIntent = commandData.toIntent(serviceIntent);
         }
-        MyPreferences.getContext().startService(serviceIntent);
+        MyContextHolder.get().context().startService(serviceIntent);
     }
 
     /**
@@ -153,7 +154,7 @@ public class MyServiceManager extends BroadcastReceiver {
         
         //This is "mild" stopping
         CommandData element = new CommandData(CommandEnum.STOP_SERVICE, "");
-        MyPreferences.getContext().sendBroadcast(element.toIntent());
+        MyContextHolder.get().context().sendBroadcast(element.toIntent());
     }
 
     /**
@@ -174,7 +175,7 @@ public class MyServiceManager extends BroadcastReceiver {
                stateQueuedTime = time;
                mServiceState = ServiceState.UNKNOWN;
                CommandData element = new CommandData(CommandEnum.BROADCAST_SERVICE_STATE, "");
-               MyPreferences.getContext().sendBroadcast(element.toIntent());
+               MyContextHolder.get().context().sendBroadcast(element.toIntent());
            }
         }
         

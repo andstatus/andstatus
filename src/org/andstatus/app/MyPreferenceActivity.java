@@ -44,7 +44,6 @@ import android.view.KeyEvent;
 import android.widget.Toast;
 
 import org.andstatus.app.account.AccountSettingsActivity;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
@@ -90,7 +89,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        MyPreferences.initialize(this, this);
+        MyContextHolder.initialize(this, this);
         if (MyPreferences.shouldSetDefaultValues()) {
             // Default values for the preferences will be set only once
             // and in one place: here
@@ -145,7 +144,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     protected void onResume() {
         super.onResume();
 
-        MyPreferences.initialize(this, this);
+        MyContextHolder.initialize(this, this);
         
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
@@ -160,7 +159,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
 
         if (startTimelineActivity) {
-            MyPreferences.forgetPreferencesIfTheyChanged();
+            MyContextHolder.release();
             MyServiceManager.setServiceAvailable();
             // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
             Intent i = new Intent(this, TimelineActivity.class);
@@ -186,8 +185,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         
         Preference myPref = findPreference("manage_accounts");
         CharSequence summary;
-        if (MyAccount.numberOfPersistentAccounts() > 0) {
-            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyAccount.numberOfPersistentAccounts();
+        if (MyContextHolder.get().persistentAccounts().size() > 0) {
+            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().size();
         } else {
             summary = getText(R.string.summary_preference_accounts_absent);
         }
@@ -242,7 +241,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         if (somethingIsBeingChanging) {
             return;
         }
-        if (onSharedPreferenceChanged_busy || !MyPreferences.isInitialized()) {
+        if (onSharedPreferenceChanged_busy || !MyContextHolder.get().initialized()) {
             return;
         }
         onSharedPreferenceChanged_busy = true;
@@ -265,7 +264,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             MyPreferences.onPreferencesChanged();
             
             if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY)) {
-                MyAccount.onMyPreferencesChanged();
+                MyContextHolder.get().persistentAccounts().onMyPreferencesChanged();
                 showFrequency();
             }
             if (key.equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {
@@ -451,7 +450,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                 }
 
                 if (!done) {
-                    dbFileOld = MyPreferences.getContext().getDatabasePath(
+                    dbFileOld = MyContextHolder.get().context().getDatabasePath(
                             MyDatabase.DATABASE_NAME);
                     dbFileNew = MyPreferences.getDatabasePath(
                             MyDatabase.DATABASE_NAME, useExternalStorageNew);
@@ -508,8 +507,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                         .edit()
                         .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,
                                 useExternalStorageNew).commit();
-                        MyPreferences.forget();
-                        MyPreferences.initialize(MyPreferenceActivity.this, this);
+                        MyContextHolder.initialize(MyPreferenceActivity.this, this);
                     } catch (Exception e) {
                         message = "Couldn't save new settings. " + e.getMessage()
                                 + message;
@@ -640,7 +638,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if (MyAccount.numberOfPersistentAccounts() > 0) {
+            if (MyContextHolder.get().persistentAccounts().size() > 0) {
                 MyLog.v(TAG, "Going back to the Timeline");
                 finish();
                 startTimelineActivity = true;

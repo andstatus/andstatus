@@ -21,13 +21,17 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -41,12 +45,13 @@ public class MyAccountConverter {
         String step = "";
         try {
             Log.i(TAG, "Accounts upgrading step from version " + oldVersion + " to version " + versionTo );
-            Context context = MyPreferences.getContext();
+            Context context = MyContextHolder.get().context();
             
             android.accounts.AccountManager am = AccountManager.get(context);
             android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+            Collection<android.accounts.Account> accountsToRemove = new ArrayList<android.accounts.Account>(); 
             for (android.accounts.Account account : aa) {
-                MyPreferences.onUpgrade();
+                MyDatabaseConverter.stillUpgrading();
                 MyAccount.Builder builderOld = new MyAccount.Builder(account);
                 if (builderOld.getVersion() == versionTo) {
                     Log.i(TAG, "Account " + account.name + " already converted?!");
@@ -86,10 +91,13 @@ public class MyAccountConverter {
                     builder.setDataLong(MyAccount.Builder.KEY_USER_ID, userId);
                     SharedPreferencesUtil.rename(context, prefsFileNameOld, accountNameNew.prefsFileName());
                     builder.onVerifiedCredentials(accountMbUser, null);
+                    
+                    accountsToRemove.add(account);
                 }
             }
             Log.i(TAG, "Removing old accounts");
-            for (android.accounts.Account account : aa) {
+            for (android.accounts.Account account : accountsToRemove) {
+                Log.i(TAG, "Removing old account: " + account.name);
                 am.removeAccount(account, null, null);
             }
             ok = true;

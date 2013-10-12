@@ -30,15 +30,15 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.MyService;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -66,7 +66,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 	private MyService.CommandEnum msgType = MyService.CommandEnum.UNKNOWN;
 	private int numSomethingReceived = 0;
 	private static Object xlock = new Object();
-	private final int instanceId = MyPreferences.nextInstanceId();
+	private final int instanceId = InstanceId.next();
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -351,7 +351,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                 // TODO: We don't mention MyAccount in the intent 
                 // On the other hand the Widget is also is not Account aware yet,
                 //   so for now this is correct.
-                if (MyAccount.numberOfPersistentAccounts() > 1) {
+                if (MyContextHolder.get().persistentAccounts().size() > 1) {
                     // There are more than one account, 
                     // so turn Combined timeline on in order to show all new messages.
                     intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, true);

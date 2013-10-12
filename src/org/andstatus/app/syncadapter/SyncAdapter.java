@@ -26,6 +26,7 @@ import android.content.SyncResult;
 import android.os.Bundle;
 
 import org.andstatus.app.CommandData;
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.MyService;
 import org.andstatus.app.MyServiceListener;
 import org.andstatus.app.MyServiceReceiver;
@@ -66,8 +67,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
             MyLog.d(TAG, "onPerformSync skipped, account=" + account.name);
             return;
         }
-        if (!MyPreferences.isInitialized()) {
-            MyPreferences.initialize(context, this);
+        try {
+            MyContextHolder.getBlocking(context, this);
+        } catch (InterruptedException e1) {
+            MyLog.d(TAG, "onPerformSync Initialization was interrupted");
+            return;
         }
         Timer timer = new Timer();
         intentReceiver = new MyServiceReceiver(this);

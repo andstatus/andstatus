@@ -21,6 +21,7 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.net.TimelinePosition;
 import org.andstatus.app.util.MyLog;
@@ -155,7 +156,7 @@ public class LatestTimelineItem {
             sql = "UPDATE " + MyDatabase.USER_TABLE_NAME + " SET " + sql 
                     + " WHERE " + BaseColumns._ID + "=" + userId;
 
-            SQLiteDatabase db = MyPreferences.getDatabase().getReadableDatabase();
+            SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
             db.execSQL(sql);
             
             timelineDateChanged = false;

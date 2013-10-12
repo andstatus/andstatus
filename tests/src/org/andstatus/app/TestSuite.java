@@ -22,6 +22,7 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.util.Log;
 
+import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
@@ -49,7 +50,7 @@ public class TestSuite extends TestCase {
             throw new IllegalArgumentException("this.getInstrumentation().getTargetContext() returned null");
         }
         Log.d(TAG, "Before MyPreferences.initialize");
-        MyPreferences.initialize(context, testCase);
+        MyContextHolder.initialize(context, testCase);
         Log.d(TAG, "After MyPreferences.initialize");
         if (MyPreferences.shouldSetDefaultValues()) {
             Log.d(TAG, "Before setting default preferences");
@@ -66,12 +67,15 @@ public class TestSuite extends TestCase {
         MyLog.forget();
         assertTrue("Log level set to verbose", MyLog.isLoggable(TAG, Log.VERBOSE));
         MyServiceManager.setServiceUnavailable();
+
+        if (MyContextHolder.get().state() == MyContextState.UPGRADING) {
+            Log.d(TAG, "Upgrade needed");
+            MyDatabaseConverter.triggerDatabaseUpgrade();
+            waitTillUpgradeEnded();
+        }
         
-        initialized =  (context != null);
-        Log.d(TAG, "Test Suite" + (initialized ? "" : " was not") + " initialized");
-        assertTrue("Test Suite initialized", initialized);
-        
-        waitTillUpgradeEnded();
+        initialized =  MyContextHolder.get().isReady();
+        assertTrue("Test Suite initialized, MyContext state=" + MyContextHolder.get().state(), initialized);
         
         return context;
     }
@@ -79,13 +83,13 @@ public class TestSuite extends TestCase {
     public static synchronized void forget() {
         context = null;
         Log.d(TAG, "Before forget");
-        MyPreferences.forget();
+        MyContextHolder.release();
         initialized = false;
     }
     
     public static void waitTillUpgradeEnded() {
         for (int i=1; i < 11; i++) {
-            if(!MyPreferences.isUpgrading()) {
+            if(!MyDatabaseConverter.isUpgrading()) {
                 break;
             }
             Log.d(TAG, "Waiting for upgrade to end " + i);
@@ -95,6 +99,6 @@ public class TestSuite extends TestCase {
                 Thread.currentThread().interrupt();
             }            
         }
-        assertTrue("Not upgrading now", !MyPreferences.isUpgrading());
+        assertTrue("Not upgrading now", !MyDatabaseConverter.isUpgrading());
     }
 }

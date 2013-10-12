@@ -21,7 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -35,7 +35,7 @@ public final class MyServiceReceiver extends BroadcastReceiver {
     public MyServiceReceiver(MyServiceListener listener) {
         super();
         this.listener = listener;
-        instanceId = MyPreferences.nextInstanceId();
+        instanceId = InstanceId.next();
         MyLog.v(TAG, "Created, instanceId=" + instanceId + (listener != null ? "; listener='"
                 + listener.toString() + "'" : ""));
     }

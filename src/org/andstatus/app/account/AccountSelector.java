@@ -27,6 +27,7 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.MyPreferences;
@@ -61,7 +62,7 @@ public class AccountSelector extends ListActivity {
         
         long originId = getIntent().getLongExtra(IntentExtra.ORIGIN_ID.key, 0);
         SortedMap<String, MyAccount> accounts = new TreeMap<String, MyAccount>();  
-        for (MyAccount ma : MyAccount.list()) {
+        for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
             if (originId==0 || ma.getOriginId() == originId) {
                 accounts.put(ma.getAccountName(), ma);
             }
@@ -92,7 +93,7 @@ public class AccountSelector extends ListActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String  accountName = ((TextView)view.findViewById(R.id.name)).getText().toString();
-                MyAccount ma = MyAccount.fromAccountName(accountName);
+                MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
                 if (ma != null) {
                     Intent dataToReturn = new Intent();
                     dataToReturn.putExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key, ma.getAccountName());
