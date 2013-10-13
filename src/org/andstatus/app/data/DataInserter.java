@@ -37,7 +37,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 
 /**
  * Stores ("inserts" -  adds or updates) messages and users
@@ -72,7 +71,7 @@ public class DataInserter {
         Long rowId = 0L;
         try {
             if (message.isEmpty()) {
-                Log.w(TAG, funcName +", the message is empty, skipping: " + message.toString());
+                MyLog.w(TAG, funcName +", the message is empty, skipping: " + message.toString());
                 return 0;
             }
             
@@ -146,7 +145,7 @@ public class DataInserter {
             }
 
             if (SharedPreferencesUtil.isEmpty(rowOid)) {
-                Log.w(TAG, funcName +": no message id");
+                MyLog.w(TAG, funcName +": no message id");
                 skipIt = true;
             }
             if (!skipIt) {
@@ -215,7 +214,7 @@ public class DataInserter {
                     values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
                     if (recipientId == counters.ma.getUserId()) {
                         values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
-                        MyLog.v(TAG, "Message '" + message.oid + "' is Directed to " 
+                        MyLog.v(this, "Message '" + message.oid + "' is Directed to " 
                                 + counters.ma.getAccountName() );
                     }
                 }
@@ -234,7 +233,7 @@ public class DataInserter {
                         if (message.favoritedByActor != TriState.UNKNOWN) {
                             if (actorId != 0 && actorId == counters.ma.getUserId()) {
                                 values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(message.favoritedByActor));
-                                MyLog.v(TAG, "Message '" + message.oid + "' " + (message.favoritedByActor.toBoolean(false) ? "favorited" : "unfavorited") 
+                                MyLog.v(this, "Message '" + message.oid + "' " + (message.favoritedByActor.toBoolean(false) ? "favorited" : "unfavorited") 
                                         + " by " + counters.ma.getAccountName());
                             }
                         }
@@ -287,8 +286,8 @@ public class DataInserter {
                   values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
                 }
                 
-                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                    Log.v(TAG, ((rowId==0) ? "insertMsg" : "updateMsg") 
+                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                    MyLog.v(TAG, ((rowId==0) ? "insertMsg" : "updateMsg") 
                             + ":" 
                             + (isNew ? " new;" : "") 
                             + (isNewer ? " newer, sent at " + new Date(sentDate).toString() + ";" : "") );
@@ -310,10 +309,10 @@ public class DataInserter {
                 }
             }
             if (skipIt) {
-                Log.w(TAG, funcName +": the message was skipped: " + message.toString());
+                MyLog.w(TAG, funcName +": the message was skipped: " + message.toString());
             }
         } catch (Exception e) {
-            Log.e(TAG, funcName +": " + e.toString());
+            MyLog.e(this, funcName +": " + e.toString());
             e.printStackTrace();
         }
 
@@ -332,7 +331,7 @@ public class DataInserter {
      */
     public long insertOrUpdateUser(MbUser mbUser, LatestUserMessages lum) throws SQLiteConstraintException {
         if (mbUser.isEmpty()) {
-            MyLog.v(TAG, "insertUser - mbUser is empty");
+            MyLog.v(this, "insertUser - mbUser is empty");
             return 0;
         }
         String userName = mbUser.userName;
@@ -354,7 +353,7 @@ public class DataInserter {
         if (userId == 0) {
             // Try to Lookup by Username
             if (SharedPreferencesUtil.isEmpty(userName)) {
-                Log.w(TAG, "insertUser - no username: " + mbUser.toString());
+                MyLog.w(TAG, "insertUser - no username: " + mbUser.toString());
                 return userId;
             } else {
                 userId = MyProvider.userNameToId(originId, userName);
@@ -396,7 +395,7 @@ public class DataInserter {
             if (mbUser.followedByActor != TriState.UNKNOWN ) {
                 if (readerId == counters.ma.getUserId()) {
                     values.put(MyDatabase.FollowingUser.USER_FOLLOWED, mbUser.followedByActor.toBoolean(false));
-                    MyLog.v(TAG, "User '" + userName + "' is " + (mbUser.followedByActor.toBoolean(false) ? "" : "not ") 
+                    MyLog.v(this, "User '" + userName + "' is " + (mbUser.followedByActor.toBoolean(false) ? "" : "not ") 
                             + "followed by " + counters.ma.getAccountName() );
                 }
             }
@@ -416,10 +415,10 @@ public class DataInserter {
             }
             
         } catch (Exception e) {
-            Log.e(TAG, "insertUser exception: " + e.toString());
+            MyLog.e(this, "insertUser exception: " + e.toString());
             e.printStackTrace();
         }
-        MyLog.v(TAG, "insertUser, userId=" + userId + "; oid=" + userOid);
+        MyLog.v(this, "insertUser, userId=" + userId + "; oid=" + userOid);
         return userId;
     }
     

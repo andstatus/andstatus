@@ -17,7 +17,6 @@
 package org.andstatus.app;
 
 import android.content.Context;
-import android.util.Log;
 
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
@@ -101,7 +100,7 @@ public final class MyContextHolder {
         try {
             return getBlocking(context, initializedBy).preferencesChangeTime();
         } catch (InterruptedException e) {
-            Log.d(TAG, "Initialize was interrupted");
+            MyLog.d(TAG, "Initialize was interrupted");
             return 0;
         }
     }
@@ -117,13 +116,7 @@ public final class MyContextHolder {
         MyContext myContext = myInitializedContext;
         while (myContext == null || !myContext.initialized()) {
             if (myFutureContext == null) {
-                final String initializerName;
-                if (initializedBy instanceof String) {
-                    initializerName = (String) initializedBy;
-                } else {
-                    initializerName = initializedBy.getClass().getSimpleName();
-
-                }
+                final String initializerName = MyLog.objTagToString(initializedBy) ;
                 if (myContextCreator.context() == null) {
                     if (context == null) {
                         throw new IllegalStateException("MyContextHolder: context is unknown yet");

@@ -17,7 +17,6 @@
 package org.andstatus.app.net;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
@@ -52,7 +51,7 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
      */
     @Override
     public void registerClient(String path) throws ConnectionException {
-        MyLog.v(TAG, "Registering client for " + data.host);
+        MyLog.v(this, "Registering client for " + data.host);
         String consumerKey = "";
         String consumerSecret = "";
         data.oauthClientKeys.clear();
@@ -77,8 +76,8 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             
             if(conn.getResponseCode() != 200) {
                 String msg = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream()));
-                Log.e(TAG, "Server returned an error response: " + msg);
-                Log.e(TAG, "Server returned an error response: " + conn.getResponseMessage());
+                MyLog.e(this, "Server returned an error response: " + msg);
+                MyLog.e(this, "Server returned an error response: " + conn.getResponseMessage());
             } else {
                 String response = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                 JSONObject jso = new JSONObject(response);
@@ -89,13 +88,13 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                 }
             }
         } catch (IOException e) {
-            Log.e(TAG, "registerClient Exception: " + e.toString());
+            MyLog.e(this, "registerClient Exception: " + e.toString());
         } catch (JSONException e) {
-            Log.e(TAG, "registerClient Exception: " + e.toString());
+            MyLog.e(this, "registerClient Exception: " + e.toString());
             e.printStackTrace();
         }
         if (data.oauthClientKeys.areKeysPresent()) {
-            MyLog.v(TAG, "Registered client for " + data.host);
+            MyLog.v(this, "Registered client for " + data.host);
         } else {
             throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, data.host, "No client keys for the host yet");
         }
@@ -115,7 +114,7 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
         JSONObject result = null;
         try {
-            MyLog.v(TAG, "Posting " + (jso == null ? "(empty)" : jso.toString(2)));
+            MyLog.v(this, "Posting " + (jso == null ? "(empty)" : jso.toString(2)));
         
             URL url = new URL(pathToUrl(path));
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -133,7 +132,7 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                 try {
                     wr.close();
                 } catch (IOException e) {
-                    MyLog.v(TAG, "Error closing output stream: " + e);
+                    MyLog.v(this, "Error closing output stream: " + e);
                 }
             }
                         
@@ -214,14 +213,14 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     case 307:
                         // TODO: To decode the location?
                         url = new URL(conn.getHeaderField("Location").replace("%3F", "?"));
-                        MyLog.v(TAG, "Following redirect to " + url);
+                        MyLog.v(this, "Following redirect to " + url);
                         redirected = true;
-                        if (MyLog.isLoggable(MyLog.APPTAG, android.util.Log.VERBOSE)) {
+                        if (MyLog.isLoggable(MyLog.APPTAG, MyLog.VERBOSE)) {
                             String message = "Headers: ";
                             for (int posn=0 ; ; posn++) {
                                 String fieldName = conn.getHeaderFieldKey(posn);
                                 if ( fieldName == null) {
-                                    MyLog.v(TAG, message);
+                                    MyLog.v(this, message);
                                     break;
                                 }
                                 message += fieldName +": " + conn.getHeaderField(fieldName) + "; ";
@@ -265,7 +264,7 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     conn.setRequestProperty("Authorization", "Dialback");
                     conn.setRequestProperty("host", data.hostForUserToken);
                     conn.setRequestProperty("token", getUserToken());
-                    MyLog.v(TAG, "Dialback authorization at " + data.host + "; host=" + data.hostForUserToken + "; token=" + getUserToken());
+                    MyLog.v(this, "Dialback authorization at " + data.host + "; host=" + data.hostForUserToken + "; token=" + getUserToken());
                     consumer.sign(conn);
                 }
             }

@@ -17,7 +17,6 @@
 package org.andstatus.app.net;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionPumpio.ConnectionAndUrl;
@@ -98,8 +97,8 @@ class ActivitySender {
 
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.STATUSES_UPDATE, connection.data.accountUserOid);
             jso = conu.httpConnection.postRequest(conu.url, activity);
-            if (jso != null && MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                MyLog.v(TAG, "verb '" + verb + "' object id='" + objectId + "' " + jso.toString(2));
+            if (jso != null && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(this, "verb '" + verb + "' object id='" + objectId + "' " + jso.toString(2));
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(TAG, e, jso, "Error '" + verb + "' object id='" + objectId + "'");

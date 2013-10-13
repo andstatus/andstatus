@@ -171,7 +171,7 @@ class StateOfAccountChangeProcess {
             bundle.putParcelable(ACCOUNT_KEY, builder);
             bundle.putParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY, authenticatiorResponse);
             
-            MyLog.v(TAG, "State saved to Bundle");
+            MyLog.v(this, "State saved to Bundle");
         }
     }
 

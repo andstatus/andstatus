@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.provider.BaseColumns;
-import android.util.Log;
 
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -112,15 +111,15 @@ public class DataPruner {
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, "pruneOldRecords failed");
+            MyLog.e(this, "pruneOldRecords failed");
             e.printStackTrace();
         }
         mDeleted = nDeletedTime + nDeletedSize;
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG,
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG,
                     "pruneOldRecords; History time=" + maxDays + " days; deleted " + nDeletedTime
                             + " , since " + sinceTimestamp + ", now=" + System.currentTimeMillis());
-            Log.v(TAG, "pruneOldRecords; History size=" + maxSize + " messages; deleted "
+            MyLog.v(TAG, "pruneOldRecords; History size=" + maxSize + " messages; deleted "
                     + nDeletedSize + " of " + nTweets + " messages, since " + sinceTimestampSize);
         }
         

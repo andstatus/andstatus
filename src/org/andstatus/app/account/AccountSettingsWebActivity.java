@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -46,7 +45,7 @@ public class AccountSettingsWebActivity extends Activity {
             
             webView.loadUrl(url);
         } catch (Exception e) {
-            Log.e(TAG, "onCreate " + e);
+            MyLog.e(this, "onCreate " + e);
             e.printStackTrace();
             finish();
         }
@@ -57,7 +56,7 @@ public class AccountSettingsWebActivity extends Activity {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            MyLog.v(TAG, "shouldOverrideUrlLoading to: " + url);
+            MyLog.v(this, "shouldOverrideUrlLoading to: " + url);
             if (isThisCallback(url)) {
                 return true;
             }
@@ -89,7 +88,7 @@ public class AccountSettingsWebActivity extends Activity {
          */
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            MyLog.v(TAG, "onPageStarted: " + url);
+            MyLog.v(this, "onPageStarted: " + url);
             if (!isThisCallback(url)) {
                 super.onPageStarted(view, url, favicon);
             }

@@ -24,7 +24,6 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.util.List;
 
@@ -143,7 +142,7 @@ public class MyAccount implements AccountDataReader {
             if (isPersistent) {
                 myAccount.androidAccount = myAccount.userData.getParcelable(KEY_ACCOUNT);
                 if (myAccount.androidAccount == null) {
-                    Log.e(TAG, "The account was marked as persistent:" + this);
+                    MyLog.e(this, "The account was marked as persistent:" + this);
                 }
             }
         }
@@ -158,8 +157,8 @@ public class MyAccount implements AccountDataReader {
             setOAuth(isOAuth.toBoolean(myAccount.oAccountName.getOrigin().isOAuthDefault()));
             myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
             setConnection();
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "New temporary account created: " + this.toString());
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "New temporary account created: " + this.toString());
             }
         }
 
@@ -197,18 +196,18 @@ public class MyAccount implements AccountDataReader {
             if (myAccount.version == MyDatabase.DATABASE_VERSION 
                     && !myAccount.getCredentialsPresent()) {
                 if (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
-                    Log.e(TAG, "User's credentials were lost?! Fixing...");
+                    MyLog.e(this, "User's credentials were lost?! Fixing...");
                     setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
                     save();
                 }
             }
             
             if (myAccount.isValid()) { 
-                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                    Log.v(TAG, "Loaded " + this.toString());
+                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                    MyLog.v(TAG, "Loaded " + this.toString());
                 }
             } else {
-                Log.i(TAG, "Loaded Invalid account; version=" + myAccount.version + "; " + this.toString());
+                MyLog.i(this, "Loaded Invalid account; version=" + myAccount.version + "; " + this.toString());
             }
         }
 
@@ -226,7 +225,7 @@ public class MyAccount implements AccountDataReader {
             if (myAccount.userId==0) {
                 changed = true;
                 assignUserId();
-                Log.e(TAG, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
+                MyLog.e(this, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
             }
             if (myAccount.syncFrequencySeconds==0) {
                 myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
@@ -297,10 +296,10 @@ public class MyAccount implements AccountDataReader {
             
             if (isPersistent() && myAccount.userId==0) {
                 assignUserId();
-                Log.e(TAG, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
+                MyLog.e(this, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
             }
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "Loaded " + this.toString());
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "Loaded " + this.toString());
             }
         }
         
@@ -370,7 +369,7 @@ public class MyAccount implements AccountDataReader {
             
             try {
                 if (!myAccount.isValid()) {
-                    MyLog.v(TAG, "Didn't save invalid account: " + myAccount);
+                    MyLog.v(this, "Didn't save invalid account: " + myAccount);
                     return false;
                 }
                 if (!isPersistent() && (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED)) {
@@ -398,9 +397,9 @@ public class MyAccount implements AccountDataReader {
                         // SyncManager(865): can't find a sync adapter for SyncAdapterType Key 
                         // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, removing settings for it
                         
-                        MyLog.v(TAG, "Persisted " + myAccount.getAccountName());
+                        MyLog.v(this, "Persisted " + myAccount.getAccountName());
                     } catch (Exception e) {
-                        Log.e(TAG, "Adding Account to AccountManager: " + e.getMessage());
+                        MyLog.e(this, "Adding Account to AccountManager: " + e.getMessage());
                         myAccount.androidAccount = null;
                     }
                 }
@@ -445,9 +444,9 @@ public class MyAccount implements AccountDataReader {
                     changed = true;
                 }
 
-                MyLog.v(TAG, "Saved " + (changed ? " changed " : " no changes " ) + this);
+                MyLog.v(this, "Saved " + (changed ? " changed " : " no changes " ) + this);
             } catch (Exception e) {
-                Log.e(TAG, "saving " + myAccount.getAccountName() + ": " + e.toString());
+                MyLog.e(this, "saving " + myAccount.getAccountName() + ": " + e.toString());
                 e.printStackTrace();
                 changed = false;
             }
@@ -510,7 +509,7 @@ public class MyAccount implements AccountDataReader {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
                 myAccount.userOid = user.oid;
                 if (MyDatabaseConverter.isUpgrading()) {
-                    MyLog.v(TAG, "Upgrade in progress");
+                    MyLog.v(this, "Upgrade in progress");
                     myAccount.userId = myAccount.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
                     DataInserter di = new DataInserter(myAccount, MyContextHolder.get().context(), TimelineTypeEnum.ALL);
@@ -535,13 +534,13 @@ public class MyAccount implements AccountDataReader {
                 throw ce;
             }
             if (credentialsOfOtherUser) {
-                Log.e(TAG, MyContextHolder.get().context().getText(R.string.error_credentials_of_other_user) + ": "
+                MyLog.e(this, MyContextHolder.get().context().getText(R.string.error_credentials_of_other_user) + ": "
                         + newName);
                 throw (new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, newName));
             }
             if (errorSettingUsername) {
                 String msg = MyContextHolder.get().context().getText(R.string.error_set_username) + newName;
-                Log.e(TAG, msg);
+                MyLog.e(this, msg);
                 throw (new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg));
             }
             return ok;
@@ -561,7 +560,7 @@ public class MyAccount implements AccountDataReader {
         }
 
         public void registerClient() throws ConnectionException {
-            MyLog.v(TAG, "Registering client application for " + myAccount.getUsername());
+            MyLog.v(this, "Registering client application for " + myAccount.getUsername());
             setConnection();
             myAccount.connection.registerClientForAccount();
         }
@@ -608,7 +607,7 @@ public class MyAccount implements AccountDataReader {
                     myAccount.userId = di.insertOrUpdateUser(mbUser, lum);
                     lum.save();
                 } catch (Exception e) {
-                    Log.e(TAG, "Construct user: " + e.toString());
+                    MyLog.e(this, "Construct user: " + e.toString());
                 }
             }
         }
@@ -951,7 +950,7 @@ public class MyAccount implements AccountDataReader {
                 sp = MyPreferences.getSharedPreferences(prefsFileName);
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e(TAG, "Cound't get preferences '" + prefsFileName + "'");
+                MyLog.e(this, "Cound't get preferences '" + prefsFileName + "'");
                 sp = null;
             }
         }

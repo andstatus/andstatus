@@ -23,7 +23,6 @@ import android.app.Application;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
-import android.util.Log;
 
 import java.io.File;
 
@@ -36,12 +35,12 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.v(TAG, "onCreate started");
+        MyLog.v(TAG, "onCreate started");
         MyContextHolder.initialize(this, this);
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "onCreate ended");
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(this, "onCreate ended");
         } else {
-            Log.d(TAG, "onCreate ended, no verbose log");
+            MyLog.d(TAG, "onCreate ended, no verbose log");
         }
     }
 
@@ -57,8 +56,8 @@ public class MyApplication extends Application {
         if (dbAbsolutePath != null) {
             db = SQLiteDatabase.openDatabase(dbAbsolutePath.getPath(), factory, SQLiteDatabase.CREATE_IF_NECESSARY + SQLiteDatabase.OPEN_READWRITE );
         }
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "openOrCreateDatabase, name=" + name + ( db!=null ? " opened '" + db.getPath() + "'" : " NOT opened" ));
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(this, "openOrCreateDatabase, name=" + name + ( db!=null ? " opened '" + db.getPath() + "'" : " NOT opened" ));
         }
         return db;
     }

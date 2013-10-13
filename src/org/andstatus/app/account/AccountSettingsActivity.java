@@ -36,7 +36,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
@@ -172,7 +171,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         if (state.authenticatiorResponse != null) {
             message += "authenticatiorResponse; ";
         }
-        MyLog.v(TAG, "setState from " + calledFrom +"; " + message + "intent=" + intent.toUri(0));
+        MyLog.v(this, "setState from " + calledFrom +"; " + message + "intent=" + intent.toUri(0));
     }
     
     @Override
@@ -188,12 +187,12 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     mIsFinishing = true;
                 }
                 if (!mIsFinishing) {
-                    MyLog.v(TAG, "Switching to the selected account");
+                    MyLog.v(this, "Switching to the selected account");
                     MyContextHolder.get().persistentAccounts().setCurrentAccount(state.builder.getAccount());
                     state.setAccountAction(Intent.ACTION_EDIT);
                     showUserPreferences();
                 } else {
-                    MyLog.v(TAG, "No account supplied, finishing");
+                    MyLog.v(this, "No account supplied, finishing");
                     finish();
                 }
                 break;
@@ -312,8 +311,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         
         Uri uri = getIntent().getData();
         if (uri != null) {
-            if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "uri=" + uri.toString());
+            if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+                MyLog.d(TAG, "uri=" + uri.toString());
             }
             if (Origin.CALLBACK_URI.getScheme().equals(uri.getScheme())) {
                 // To prevent repeating of this task
@@ -365,7 +364,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         if (mIsFinishing) {
             MyContextHolder.release();;
             if (startPreferencesActivity) {
-                MyLog.v(TAG, "Returning to our Preferences Activity");
+                MyLog.v(this, "Returning to our Preferences Activity");
                 // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
                 Intent i = new Intent(this, MyPreferenceActivity.class);
                 i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -551,7 +550,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             doFinish = true;
         }
         if (doFinish) {
-            MyLog.v(TAG, "finish: action=" + state.getAccountAction() + "; " + message);
+            MyLog.v(this, "finish: action=" + state.getAccountAction() + "; " + message);
             mIsFinishing = true;
             finish();
         }
@@ -563,8 +562,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onPreferenceChange: " + preference.toString() + " -> " + (newValue == null ? "null" : newValue.toString()));
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "onPreferenceChange: " + preference.toString() + " -> " + (newValue == null ? "null" : newValue.toString()));
         }
         return true;
     }
@@ -719,7 +718,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             String message2 = "";
             try {
                 MyAccount ma = state.getAccount();
-                MyLog.v(TAG, "Retrieving request token for " + ma);
+                MyLog.v(this, "Retrieving request token for " + ma);
                 OAuthConsumer consumer = state.getAccount().getOAuthConsumerAndProvider().getConsumer();
 
                 // This is really important. If you were able to register your
@@ -847,7 +846,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
 
             if (state.getAccount().getOAuthConsumerAndProvider() == null) {
                 message = "Connection is not OAuth";
-                Log.e(TAG, message);
+                MyLog.e(this, message);
             }
             else {
                 // We don't need to worry about any saved states: we can reconstruct
@@ -950,7 +949,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                         .getString(R.string.dialog_title_authentication_failed);
                         if (message != null && message.length() > 0) {
                             message2 = message2 + ": " + message;
-                            Log.d(TAG, message);
+                            MyLog.d(TAG, message);
                         }
                         Toast.makeText(AccountSettingsActivity.this, message2, Toast.LENGTH_LONG).show();
 

@@ -21,6 +21,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.MyLog;
 
 import java.util.Locale;
 
@@ -29,14 +30,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.util.Log;
 
 /**
  * Database definitions and helper class.
  * Used mainly by {@link MyProvider}
  */
 public final class MyDatabase extends SQLiteOpenHelper  {
-    private static final String TAG = MyDatabase.class.getSimpleName();
     
     /**
      * Current database scheme version, defined by AndStatus developers.
@@ -540,7 +539,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        Log.i(TAG, "Creating tables");
+        MyLog.i(this, "Creating tables");
         db.execSQL("CREATE TABLE " + MSG_TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + Msg.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ENUM_DEFAULT.getId() + " NOT NULL," 

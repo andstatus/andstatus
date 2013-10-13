@@ -131,12 +131,12 @@ public abstract class Connection {
         String path = this.getApiPath1(routine);
         if (TextUtils.isEmpty(path)) {
             String detailMessage = "The API is not supported: '" + routine + "'";
-            Log.e(this.getClass().getSimpleName(), detailMessage);
+            MyLog.e(this.getClass().getSimpleName(), detailMessage);
             ConnectionException e = new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " + detailMessage);
             throw e;
         } else {
-            if (MyLog.isLoggable(null, Log.VERBOSE )) {
-                Log.v(this.getClass().getSimpleName(), "API '" + routine + "' Path=" + path);  
+            if (MyLog.isLoggable(null, MyLog.VERBOSE )) {
+                MyLog.v(this.getClass().getSimpleName(), "API '" + routine + "' Path=" + path);  
             }
         }
         return path;
@@ -150,8 +150,8 @@ public abstract class Connection {
      */
     public boolean isApiSupported(ApiRoutineEnum routine) {
         boolean is = !TextUtils.isEmpty(this.getApiPath1(routine));
-        if (!is && MyLog.isLoggable(null, Log.VERBOSE )) {
-          Log.v(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");  
+        if (!is && MyLog.isLoggable(null, MyLog.VERBOSE )) {
+          MyLog.v(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");  
         }
         return (is);
     }

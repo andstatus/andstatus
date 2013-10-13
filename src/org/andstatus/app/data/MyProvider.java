@@ -36,7 +36,6 @@ import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.account.MyAccount;
@@ -319,7 +318,7 @@ public class MyProvider extends ContentProvider {
             }
         } catch (Exception e) {
           e.printStackTrace();
-          Log.e(TAG, "Insert:" + e.getMessage());
+          MyLog.e(this, "Insert:" + e.getMessage());
         }
         return newUri;
     }
@@ -511,7 +510,7 @@ public class MyProvider extends ContentProvider {
         if (MyContextHolder.get().isReady()) {
             // Get the database and run the query
             SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
-            boolean logQuery = MyLog.isLoggable(TAG, Log.VERBOSE);
+            boolean logQuery = MyLog.isLoggable(TAG, MyLog.VERBOSE);
             try {
                 if (sql.length() == 0) {
                     /* We don't use selectionArgs here, they will be actually used (substitute ?-s in selection)
@@ -528,7 +527,7 @@ public class MyProvider extends ContentProvider {
                 c = db.rawQuery(sql, selectionArgs);
             } catch (Exception e) {
                 logQuery = true;
-                Log.e(TAG, "Database query failed");
+                MyLog.e(this, "Database query failed");
                 e.printStackTrace();
             }
 
@@ -537,12 +536,12 @@ public class MyProvider extends ContentProvider {
                 if (selectionArgs != null && selectionArgs.length > 0) {
                     msg += "; selectionArgs=" + Arrays.toString(selectionArgs);
                 }
-                Log.v(TAG, msg);
+                MyLog.v(TAG, msg);
                 if (built) {
                     msg = "uri=" + uri + "; projection=" + Arrays.toString(projection)
                     + "; selection=" + selection + "; sortOrder=" + sortOrder
                     + "; qb.getTables=" + qb.getTables() + "; orderBy=" + orderBy;
-                    Log.v(TAG, msg);
+                    MyLog.v(TAG, msg);
                 }
             }
         }
@@ -744,7 +743,7 @@ public class MyProvider extends ContentProvider {
         int count = 0;
         long accountUserId = 0;
         int matchedCode = sUriMatcher.match(uri);
-        //MyLog.v(TAG, "update, matched=" + matchedCode + "; PID=" + android.os.Process.myPid() + "; TID=" + android.os.Process.myTid());
+        //MyLog.v(this, "update, matched=" + matchedCode + "; PID=" + android.os.Process.myPid() + "; TID=" + android.os.Process.myTid());
         switch (matchedCode) {
             case MSG:
                 count = db.update(MyDatabase.MSG_TABLE_NAME, values, selection, selectionArgs);
@@ -919,18 +918,18 @@ public class MyProvider extends ContentProvider {
             id = prog.simpleQueryForLong();
             prog.releaseReference();
             if (id == 1 || id == 388) {
-                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                     MyLog.v(TAG, "oidToId: sql=" + sql );
                 }
             }
         } catch (SQLiteDoneException ed) {
             id = 0;
         } catch (Exception e) {
-            Log.e(TAG, "oidToId: " + e.toString());
+            MyLog.e(TAG, "oidToId: " + e.toString());
             e.printStackTrace();
             return 0;
         }
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "oidToId:" + originId + "+" + oid + " -> " + id + " oidEnum=" + oidEnum );
         }
         return id;
@@ -1008,7 +1007,7 @@ public class MyProvider extends ContentProvider {
 
                     case REBLOG_OID:
                         if (rebloggerUserId == 0) {
-                            Log.e(TAG, "idToOid: userId was not defined");
+                            MyLog.e(TAG, "idToOid: userId was not defined");
                         }
                         sql = "SELECT " + MyDatabase.MsgOfUser.REBLOG_OID + " FROM "
                                 + MyDatabase.MSGOFUSER_TABLE_NAME + " WHERE " 
@@ -1031,10 +1030,10 @@ public class MyProvider extends ContentProvider {
             } catch (SQLiteDoneException ed) {
                 oid = "";
             } catch (Exception e) {
-                Log.e(TAG, "idToOid: " + e.toString());
+                MyLog.e(TAG, "idToOid: " + e.toString());
                 return "";
             }
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "idToOid: " + oe + " + " + entityId + " -> " + oid);
             }
         }
@@ -1065,10 +1064,10 @@ public class MyProvider extends ContentProvider {
             } catch (SQLiteDoneException ed) {
                 userName = "";
             } catch (Exception e) {
-                Log.e(TAG, "msgIdToUsername: " + e.toString());
+                MyLog.e(TAG, "msgIdToUsername: " + e.toString());
                 return "";
             }
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "msgIdTo" + msgUserColumnName + ": " + messageId + " -> " + userName );
             }
         }
@@ -1091,10 +1090,10 @@ public class MyProvider extends ContentProvider {
             } catch (SQLiteDoneException ed) {
                 userName = "";
             } catch (Exception e) {
-                Log.e(TAG, "userIdToName: " + e.toString());
+                MyLog.e(TAG, "userIdToName: " + e.toString());
                 return "";
             }
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "userIdToName: " + userId + " -> " + userName );
             }
         }
@@ -1136,10 +1135,10 @@ public class MyProvider extends ContentProvider {
             } catch (SQLiteDoneException ed) {
                 columnValue = 0;
             } catch (Exception e) {
-                Log.e(TAG, "idToLongColumnValue table='" + tableName + "', column='" + columnName + "': " + e.toString());
+                MyLog.e(TAG, "idToLongColumnValue table='" + tableName + "', column='" + columnName + "': " + e.toString());
                 return 0;
             }
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "idToLongColumnValue table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
             }
         }
@@ -1179,10 +1178,10 @@ public class MyProvider extends ContentProvider {
             } catch (SQLiteDoneException ed) {
                 columnValue = "";
             } catch (Exception e) {
-                Log.e(TAG, "idToLongColumnValue table='" + tableName + "', column='" + columnName + "': " + e.toString());
+                MyLog.e(TAG, "idToLongColumnValue table='" + tableName + "', column='" + columnName + "': " + e.toString());
                 return "";
             }
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "idToLongColumnValue table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
             }
         }
@@ -1201,7 +1200,7 @@ public class MyProvider extends ContentProvider {
                 throw new IllegalArgumentException("msgIdToUserId; Unknown name \"" + msgUserColumnName);
             }
         } catch (Exception e) {
-            Log.e(TAG, "msgIdToUserId: " + e.toString());
+            MyLog.e(TAG, "msgIdToUserId: " + e.toString());
             return 0;
         }
         return userId;
@@ -1244,10 +1243,10 @@ public class MyProvider extends ContentProvider {
         } catch (SQLiteDoneException ed) {
             id = 0;
         } catch (Exception e) {
-            Log.e(TAG, "userNameToId: " + e.toString());
+            MyLog.e(TAG, "userNameToId: " + e.toString());
             return 0;
         }
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "userNameToId:" + originId + "+" + userName + " -> " + id);
         }
         return id;

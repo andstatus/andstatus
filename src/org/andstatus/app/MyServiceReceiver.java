@@ -36,7 +36,7 @@ public final class MyServiceReceiver extends BroadcastReceiver {
         super();
         this.listener = listener;
         instanceId = InstanceId.next();
-        MyLog.v(TAG, "Created, instanceId=" + instanceId + (listener != null ? "; listener='"
+        MyLog.v(this, "Created, instanceId=" + instanceId + (listener != null ? "; listener='"
                 + listener.toString() + "'" : ""));
     }
     
@@ -54,7 +54,7 @@ public final class MyServiceReceiver extends BroadcastReceiver {
     
     @Override
     public void onReceive(Context context, Intent intent) {
-        MyLog.v(TAG, "onReceive " + intent.toString());
+        MyLog.v(this, "onReceive " + intent.toString());
         if (listener != null) {
             listener.onReceive(new CommandData(intent));
         }

@@ -3,7 +3,6 @@ package org.andstatus.app.account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.account.MyAccount.Builder;
@@ -60,10 +59,10 @@ public class PersistentAccounts {
             if (ma.isValid()) {
                 persistentAccounts.put(ma.getAccountName(), ma);
             } else {
-                Log.e(TAG, "The account is not valid: " + ma);
+                MyLog.e(this, "The account is not valid: " + ma);
             }
         }
-        MyLog.v(TAG, "Account list initialized, " + persistentAccounts.size() + " accounts");
+        MyLog.v(this, "Account list initialized, " + persistentAccounts.size() + " accounts");
     }
     
     public static PersistentAccounts initialize(Context context) {
@@ -257,8 +256,8 @@ public class PersistentAccounts {
         if (ma == null || originId != ma.getOriginId()) {
            ma = findFirstMyAccountByOriginId(originId); 
         }
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "getMyAccountLinkedToThisMessage msgId=" + messageId +"; userId=" + userIdForThisMessage 
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "getMyAccountLinkedToThisMessage msgId=" + messageId +"; userId=" + userIdForThisMessage 
                     + " -> account=" + (ma==null ? "null" : ma.getAccountName()));
         }
         return ma;

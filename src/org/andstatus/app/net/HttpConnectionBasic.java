@@ -18,10 +18,10 @@
 package org.andstatus.app.net;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.util.Base64;
+import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -41,7 +41,6 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
-    private static final String TAG = HttpConnectionBasic.class.getSimpleName();
     protected String mPassword;
 
     @Override
@@ -83,11 +82,11 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
                 }
             }
         } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, e.toString());
+            MyLog.e(this, e.toString());
         } catch (JSONException e) {
             throw new ConnectionException(e);
         } catch (Exception e) {
-            Log.e(TAG, "postRequest: " + e.toString());
+            MyLog.e(this, "postRequest: " + e.toString());
             throw new ConnectionException(e);
         } finally {
             postMethod.abort();
@@ -133,7 +132,7 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
             jso = new JSONTokener(response);
             ok = true;
         } catch (Exception e) {
-            Log.e(TAG, "getRequest: " + e.toString());
+            MyLog.e(this, "getRequest: " + e.toString());
             throw new ConnectionException(e);
         } finally {
             getMethod.abort();
@@ -199,11 +198,11 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
                 stringBuffer.append(buffer, 0, count);
             }
         } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, e.toString());
+            MyLog.e(this, e.toString());
         } catch (IllegalStateException e) {
-            Log.e(TAG, e.toString());
+            MyLog.e(this, e.toString());
         } catch (IOException e) {
-            Log.e(TAG, e.toString());
+            MyLog.e(this, e.toString());
         }
         return stringBuffer.toString();
     }

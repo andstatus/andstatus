@@ -18,6 +18,7 @@ package org.andstatus.app.account;
 
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.util.MyLog;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
@@ -29,7 +30,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 
 /**
  * A very basic authenticator service for POP/IMAP.  At the moment, it has no UI hooks.  When called
@@ -168,12 +168,12 @@ public class AuthenticatorService extends Service {
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
-        Log.v(TAG, "onStart");
+        MyLog.v(TAG, "onStart");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.v(TAG, "onDestroy");
+        MyLog.v(TAG, "onDestroy");
     }
 }

@@ -22,7 +22,6 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
@@ -67,8 +66,8 @@ public class MyAppWidgetConfigure extends Activity {
 			mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
 					AppWidgetManager.INVALID_APPWIDGET_ID);
 		}
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "mAppWidgetId=" + mAppWidgetId);
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "mAppWidgetId=" + mAppWidgetId);
         }
 
 		// If they gave us an intent without the widget id, just bail.
@@ -124,13 +123,13 @@ public class MyAppWidgetConfigure extends Activity {
             AppWidgetManager awm = AppWidgetManager.getInstance(context);
             int[] appWidgetIds = awm.getAppWidgetIds(new android.content.ComponentName(packageName, 
                     className)); 
-            Log.i(TAG, "About to delete " + appWidgetIds.length +" Widgets of " + packageName + " package; class=" + className);
+            MyLog.i(TAG, "About to delete " + appWidgetIds.length +" Widgets of " + packageName + " package; class=" + className);
             AppWidgetHost host = new AppWidgetHost(context, 0);
             for (int ind = 0; ind < appWidgetIds.length; ind++) {
                 host.deleteAppWidgetId(appWidgetIds[ind]);         
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error deleting widgets: " + e.getMessage());
+            MyLog.e(TAG, "Error deleting widgets: " + e.getMessage());
         }
         return deletedCount;
     }

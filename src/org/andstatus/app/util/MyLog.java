@@ -63,21 +63,40 @@ public class MyLog {
      * Is used in isLoggable(APPTAG, ... ) calls
      */
     public static final String APPTAG = "AndStatus";
-
+    public static final int DEBUG = Log.DEBUG;
+    public static final int VERBOSE = Log.VERBOSE;
+    public static final int INFO = Log.INFO;
+    
     private static volatile boolean initialized = false;
     
     /** 
      * Cached value of the persistent preference
      */
-    private static volatile int minLogLevel = Log.VERBOSE;
+    private static volatile int minLogLevel = VERBOSE;
+
+    public static int e(Object objTag, String msg) {
+        String tag = objTagToString(objTag);
+        return Log.e(tag, msg);
+    }
+
+    public static int i(Object objTag, String msg) {
+        String tag = objTagToString(objTag);
+        return Log.i(tag, msg);
+    }
+
+    public static int w(Object objTag, String msg) {
+        String tag = objTagToString(objTag);
+        return Log.w(tag, msg);
+    }
 
     /**
      * Shortcut for debugging messages of the application
      */
-    public static int d(String tag, String msg) {
+    public static int d(Object objTag, String msg) {
+        String tag = objTagToString(objTag);
         int i = 0;
-        if (isLoggable(tag, Log.DEBUG)) {
-            i = Log.d(tag, msg);
+        if (isLoggable(tag, DEBUG)) {
+            i = Log.d(TAG, msg);
         }
         return i;
     }
@@ -85,10 +104,11 @@ public class MyLog {
     /**
      * Shortcut for debugging messages of the application
      */
-    public static int d(String tag, String msg, Throwable tr) {
+    public static int d(Object objTag, String msg, Throwable tr) {
+        String tag = objTagToString(objTag);
         int i = 0;
-        if (isLoggable(tag, Log.DEBUG)) {
-            i = Log.d(tag, msg, tr);
+        if (isLoggable(tag, DEBUG)) {
+            i = Log.d(TAG, msg, tr);
         }
         return i;
     }
@@ -96,12 +116,27 @@ public class MyLog {
     /**
      * Shortcut for verbose messages of the application
      */
-    public static int v(String tag, String msg) {
+    public static int v(Object objTag, String msg) {
+        String tag = objTagToString(objTag);
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
-            i = Log.v(tag, msg);
+            i = Log.v(TAG, msg);
         }
         return i;
+    }
+
+    public static String objTagToString(Object objTag) {
+        String tag = "";
+        if (objTag == null) {
+            tag = "(null)";
+        } else if (objTag instanceof String) {
+            tag = (String) objTag;
+        } else if (objTag instanceof Class<?>) {
+            tag = ((Class<?>) objTag).getSimpleName();
+        }else {
+            tag = objTag.getClass().getSimpleName();
+        }
+        return tag;
     }
 
     /**
@@ -110,7 +145,8 @@ public class MyLog {
      * @param level {@link android.util.Log#INFO} ...
      * @return
      */
-    public static boolean isLoggable(String tag, int level) {
+    public static boolean isLoggable(Object objTag, int level) {
+        String tag = objTagToString(objTag);
         boolean is = false;
         checkInit();
         if (level >= minLogLevel) {

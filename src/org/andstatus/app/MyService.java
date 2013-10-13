@@ -63,7 +63,6 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.BaseColumns;
-import android.util.Log;
 
 /**
  * This is an application service that serves as a connection between this Android Device
@@ -351,7 +350,7 @@ public class MyService extends Service {
 
         @Override
         public void onReceive(Context arg0, Intent intent) {
-            MyLog.v(TAG, "onReceive " + intent.toString());
+            MyLog.v(this, "onReceive " + intent.toString());
             receiveCommand(intent);
         }
 
@@ -370,9 +369,9 @@ public class MyService extends Service {
         boolean doStop = (mExecutors.size() == 0);
         if (!doStop) {
             if (forceNow) {
-                Log.e(TAG, "stopDelayed: Forced to stop now");
+                MyLog.e(this, "stopDelayed: Forced to stop now");
             } else {
-                MyLog.v(TAG, "stopDelayed: Cannot stop now");
+                MyLog.v(this, "stopDelayed: Cannot stop now");
                 broadcastState(null);
                 return;
             }
@@ -434,7 +433,7 @@ public class MyService extends Service {
             while (q.size() > 0) {
                 CommandData cd = q.poll();
                 cd.save(sp, count);
-                MyLog.v(TAG, "Command saved: " + cd.toString());
+                MyLog.v(this, "Command saved: " + cd.toString());
                 count += 1;
             }
             MyLog.d(TAG, "Queue saved to " + prefsFileName  + ", " + count + " msgs");
@@ -476,7 +475,7 @@ public class MyService extends Service {
             } else if (preferencesChangeTimeNew == preferencesChangeTime) {
                 MyLog.d(TAG, "Preferences didn't change, still at=" + preferencesChangeTimeNew);
             } else {
-                Log.e(TAG, "Preferences change time error, time=" + preferencesChangeTimeNew);
+                MyLog.e(this, "Preferences change time error, time=" + preferencesChangeTimeNew);
             }
             preferencesChangeTime = preferencesChangeTimeNew;
             preferencesExamineTime = preferencesExamineTimeNew;
@@ -496,10 +495,10 @@ public class MyService extends Service {
                     done = true;
                 } else {
                     if ( q.offer(cd) ) {
-                        MyLog.v(TAG, "Command restored: " + cd.toString());
+                        MyLog.v(this, "Command restored: " + cd.toString());
                         count += 1;
                     } else {
-                        Log.e(TAG, "Error restoring queue, command: " + cd.toString());
+                        MyLog.e(this, "Error restoring queue, command: " + cd.toString());
                     }
                 }
             } while (!done);
@@ -537,7 +536,7 @@ public class MyService extends Service {
             commandData = new CommandData(intent);
             switch (commandData.command) {
                 case STOP_SERVICE:
-                    MyLog.v(TAG, "Command STOP_SERVICE received");
+                    MyLog.v(this, "Command STOP_SERVICE received");
                     stopDelayed(false);
                     return;
                 case BROADCAST_SERVICE_STATE:
@@ -548,7 +547,7 @@ public class MyService extends Service {
             }
         }
         if (mIsStopping) {
-            MyLog.v(TAG, "The Service is stopping: ignoring the command: " +
+            MyLog.v(this, "The Service is stopping: ignoring the command: " +
         (commandData == null ? "(empty)" : commandData.command));
             stopDelayed(false);
             return;
@@ -562,7 +561,7 @@ public class MyService extends Service {
                 CommandData cd = mRetryQueue.poll();
                 if (!mCommands.contains(cd)) {
                     if (!mCommands.offer(cd)) {
-                        Log.e(TAG, "mCommands is full?");
+                        MyLog.e(this, "mCommands is full?");
                     }
                 }
             }
@@ -582,7 +581,7 @@ public class MyService extends Service {
         } else {
             MyLog.d(TAG, "Adding to the queue " + commandData);
             if (!mCommands.offer(commandData)) {
-                Log.e(TAG, "mCommands is full?");
+                MyLog.e(this, "mCommands is full?");
             }
         }
 
@@ -623,7 +622,7 @@ public class MyService extends Service {
                     }
                     String key = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key);
                     boolean boolValue = commandData.bundle.getBoolean(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
-                    MyLog.v(TAG, "Put boolean Preference '"
+                    MyLog.v(this, "Put boolean Preference '"
                             + key
                             + "'="
                             + boolValue
@@ -646,7 +645,7 @@ public class MyService extends Service {
                     }
                     key = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key);
                     long longValue = commandData.bundle.getLong(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
-                    MyLog.v(TAG, "Put long Preference '"
+                    MyLog.v(this, "Put long Preference '"
                             + key
                             + "'="
                             + longValue
@@ -668,7 +667,7 @@ public class MyService extends Service {
                     }
                     key = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key);
                     String stringValue = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
-                    MyLog.v(TAG, "Put String Preference '"
+                    MyLog.v(this, "Put String Preference '"
                             + key
                             + "'="
                             + stringValue
@@ -726,23 +725,23 @@ public class MyService extends Service {
                             executor = new CommandExecutor();
                         }
                         mExecutors.add(executor);
-                        MyLog.v(TAG, "Adding new executor " + executor);
+                        MyLog.v(this, "Adding new executor " + executor);
                         executor.execute();
                     } else {
-                        MyLog.v(TAG, "There is an Executor already");
+                        MyLog.v(this, "There is an Executor already");
                     }
                 } else {
                     notifyOfQueue(false);
                 }
             }
         } else {
-            MyLog.v(TAG, "Removing the Executor " + executorIn);
+            MyLog.v(this, "Removing the Executor " + executorIn);
             // Stop
             mExecutors.remove(executorIn);
             if (mExecutors.size() == 0) {
                 relealeWakeLock();
                 if (mIsStopping) {
-                    MyLog.v(TAG, "Is stopping and no executors");
+                    MyLog.v(this, "Is stopping and no executors");
                     stopDelayed(false);
                 } else if ( notifyOfQueue(false) == 0) {
                     if (! ForegroundCheckTask.isAppOnForeground(MyContextHolder.get().context())) {
@@ -828,7 +827,7 @@ public class MyService extends Service {
                         // Put the command to the retry queue
                         if (!mRetryQueue.contains(commandData)) {
                             if (!mRetryQueue.offer(commandData)) {
-                                Log.e(TAG, "mRetryQueue is full?");
+                                MyLog.e(this, "mRetryQueue is full?");
                             }
                         }
                     }        
@@ -886,7 +885,7 @@ public class MyService extends Service {
                     rateLimitStatus(commandData);
                     break;
                 default:
-                    Log.e(TAG, "Unexpected command here " + commandData);
+                    MyLog.e(this, "Unexpected command here " + commandData);
             }
         }
 
@@ -951,7 +950,7 @@ public class MyService extends Service {
                     logConnectionException(e, commandData, (create ? "create" : "destroy") + "Favorite Connection Exception");
                 }
             } else {
-                Log.e(TAG,
+                MyLog.e(this,
                         (create ? "create" : "destroy") + "Favorite; msgId not found: " + msgId);
             }
             if (ok) {
@@ -984,7 +983,7 @@ public class MyService extends Service {
                         // works even for the "Unfavorited" tweet :-)
                         ok = false;
 
-                        Log.e(TAG,
+                        MyLog.e(this,
                                 (create ? "create" : "destroy")
                                         + ". Favorited flag didn't change yet.");
                     }
@@ -1022,7 +1021,7 @@ public class MyService extends Service {
                     logConnectionException(e, commandData, (follow ? "Follow" : "Stop following") + " Exception");
                 }
             } else {
-                Log.e(TAG,
+                MyLog.e(this,
                         (follow ? "Follow" : "Stop following") + " User; userId not found: " + userId);
             }
             if (ok) {
@@ -1040,7 +1039,7 @@ public class MyService extends Service {
                     } else {
                         ok = false;
 
-                        Log.e(TAG,
+                        MyLog.e(this,
                                 (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");
                     }
                 }
@@ -1086,7 +1085,7 @@ public class MyService extends Service {
                             .delete(MyDatabase.Msg.CONTENT_URI, BaseColumns._ID + " = " + msgId, 
                                     null);
                 } catch (Exception e) {
-                    Log.e(TAG, "Error destroying status locally: " + e.toString());
+                    MyLog.e(this, "Error destroying status locally: " + e.toString());
                 }
             }
             setSoftErrorIfNotOk(commandData, ok);
@@ -1125,7 +1124,7 @@ public class MyService extends Service {
                     Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, false, msgId);
                     MyService.this.getApplicationContext().getContentResolver().update(msgUri, values, null, null);
                 } catch (Exception e) {
-                    Log.e(TAG, "Error destroying reblog locally: " + e.toString());
+                    MyLog.e(this, "Error destroying reblog locally: " + e.toString());
                 }
             }
             setSoftErrorIfNotOk(commandData, ok);
@@ -1148,7 +1147,7 @@ public class MyService extends Service {
                                 TimelineTypeEnum.ALL).insertOrUpdateMsg(message);
                         ok = true;
                     } catch (Exception e) {
-                        Log.e(TAG, "Error inserting status: " + e.toString());
+                        MyLog.e(this, "Error inserting status: " + e.toString());
                     }
                 }
             } catch (ConnectionException e) {
@@ -1231,7 +1230,7 @@ public class MyService extends Service {
             } else {
                 commandData.commandResult.numIoExceptions += 1;
             }
-            Log.e(TAG, detailedMessage + ": " + e.toString());
+            MyLog.e(this, detailedMessage + ": " + e.toString());
         }
         
         /**
@@ -1338,7 +1337,7 @@ public class MyService extends Service {
                         fl.download();
                         counters.accumulate();
                     } else {
-                        MyLog.v(TAG, "Not supported " + timelineType.save() + " for "
+                        MyLog.v(this, "Not supported " + timelineType.save() + " for "
                                 + acc.getAccountName());
                     }
 
@@ -1353,7 +1352,7 @@ public class MyService extends Service {
                 logConnectionException(e, commandData, descr +" Exception");
                 ok = false;
             } catch (SQLiteConstraintException e) {
-                Log.e(TAG, descr + ", SQLite Exception: " + e.toString());
+                MyLog.e(this, descr + ", SQLite Exception: " + e.toString());
                 ok = false;
             }
 
@@ -1631,7 +1630,7 @@ public class MyService extends Service {
                     && cm.getActiveNetworkInfo().isConnected()) {
                 is = true;
             } else {
-                MyLog.v(TAG, "Internet Connection Not Present");
+                MyLog.v(this, "Internet Connection Not Present");
             }
         } catch (Exception e) {}
         return is;

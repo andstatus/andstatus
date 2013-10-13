@@ -17,7 +17,6 @@
 package org.andstatus.app.data;
 
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import net.jcip.annotations.GuardedBy;
 
@@ -78,7 +77,7 @@ public class MyDatabaseConverter {
                 }
             }
         } catch (Exception e) {
-            Log.w(TAG, "Failed to trigger database upgrade, will try later. Error: " + e.getMessage());
+            MyLog.w(TAG, "Failed to trigger database upgrade, will try later. Error: " + e.getMessage());
             
         } finally {
             currentTime = java.lang.System.currentTimeMillis();
@@ -86,7 +85,7 @@ public class MyDatabaseConverter {
                 if (upgradeStarted) {
                     final Long MILLIS_AFTER_UPGRADE = 5000L;
                     upgradeEndTime = currentTime + MILLIS_AFTER_UPGRADE;
-                    Log.w(TAG, "Upgrade ended, waiting " + MILLIS_AFTER_UPGRADE + " more milliseconds");
+                    MyLog.w(TAG, "Upgrade ended, waiting " + MILLIS_AFTER_UPGRADE + " more milliseconds");
                 } else {
                     upgradeEndTime = 0L;
                 }
@@ -100,7 +99,7 @@ public class MyDatabaseConverter {
             upgradeStarted = true;
             upgradeEndTime = java.lang.System.currentTimeMillis() + MILLIS_FOR_UPGRADE;
         }
-        Log.w(TAG, "on Upgrade, waiting " + MILLIS_FOR_UPGRADE + " milliseconds");
+        MyLog.w(TAG, "on Upgrade, waiting " + MILLIS_FOR_UPGRADE + " milliseconds");
     }
     
     public static boolean isUpgrading() {
@@ -120,14 +119,14 @@ public class MyDatabaseConverter {
     
     void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
         if (!shouldTriggerDatabaseUpgrade) {
-            MyLog.v(TAG,"Upgrade end time came");
+            MyLog.v(this,"Upgrade end time came");
         }
         synchronized (upgradeEndTime) {
             shouldTriggerDatabaseUpgrade = false;
         }
         int currentVersion = oldVersion;
         stillUpgrading();
-        Log.i(TAG, "Upgrading database from version " + oldVersion + " to version " + newVersion);
+        MyLog.i(this, "Upgrading database from version " + oldVersion + " to version " + newVersion);
         if (oldVersion < 9) {
             throw new IllegalArgumentException("Upgrade from this database version is not supported. Please reinstall the application");
         } 
@@ -141,10 +140,10 @@ public class MyDatabaseConverter {
             currentVersion = convert11to12(db, currentVersion);
         }
         if ( currentVersion == newVersion) {
-            Log.i(TAG, "Successfully upgraded database from version " + oldVersion + " to version "
+            MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
                     + newVersion + ".");
         } else {
-            Log.e(TAG, "Error upgrading database from version " + oldVersion + " to version "
+            MyLog.e(this, "Error upgrading database from version " + oldVersion + " to version "
                     + newVersion + ". Current database version=" + currentVersion);
             throw new Error("Database upgrade failed. Current database version=" + currentVersion);
         }
@@ -159,7 +158,7 @@ public class MyDatabaseConverter {
         boolean ok = false;
         String sql = "";
         try {
-            Log.i(TAG, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
             String[] columns = {"home_timeline_msg_id", "home_timeline_date", 
                     "favorites_timeline_msg_id", "favorites_timeline_date",
                     "direct_timeline_msg_id", "direct_timeline_date", 
@@ -174,12 +173,12 @@ public class MyDatabaseConverter {
             db.execSQL(sql);
             ok = true;
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            MyLog.e(this, e.getMessage());
         }
         if (ok) {
-            Log.i(TAG, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
+            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
         } else {
-            Log.e(TAG, "Database upgrading step failed to upgrade database from " + oldVersion 
+            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
                     + " to version " + versionTo
                     + " SQL='" + sql +"'");
         }
@@ -194,7 +193,7 @@ public class MyDatabaseConverter {
         boolean ok = false;
         String sql = "";
         try {
-            Log.i(TAG, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
 
             String[] columns = {"following_user_date",
                     "user_msg_id", "user_msg_date"};
@@ -212,12 +211,12 @@ public class MyDatabaseConverter {
             db.execSQL(sql);
             ok = true;
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            MyLog.e(this, e.getMessage());
         }
         if (ok) {
-            Log.i(TAG, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
+            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
         } else {
-            Log.e(TAG, "Database upgrading step failed to upgrade database from " + oldVersion 
+            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
                     + " to version " + versionTo
                     + " SQL='" + sql +"'");
         }
@@ -232,7 +231,7 @@ public class MyDatabaseConverter {
         boolean ok = false;
         String sql = "";
         try {
-            Log.i(TAG, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
 
             sql = "ALTER TABLE msg ADD COLUMN url TEXT";
             db.execSQL(sql);
@@ -331,13 +330,13 @@ public class MyDatabaseConverter {
                         
             ok = true;
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            MyLog.e(this, e.getMessage());
         }
         if (ok) {
-            Log.i(TAG, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
+            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
             ok = ( MyAccountConverter.convert11to12(db, oldVersion) == versionTo);
         } else {
-            Log.e(TAG, "Database upgrading step failed to upgrade database from " + oldVersion 
+            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
                     + " to version " + versionTo
                     + " SQL='" + sql +"'");
         }

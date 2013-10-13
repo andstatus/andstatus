@@ -17,7 +17,6 @@
 package org.andstatus.app;
 
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.FollowingUserValues;
@@ -50,7 +49,7 @@ public class TimelineDownloaderUser extends TimelineDownloader {
         String userOid =  MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
         LatestTimelineItem latestTimelineItem = new LatestTimelineItem(counters.timelineType, userId);
         
-        if (MyLog.isLoggable(TAG, Log.DEBUG)) {
+        if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
             String strLog = "Loading timeline " + counters.timelineType.save() + "; account=" + counters.ma.getAccountName();
             strLog += "; user=" + MyProvider.userIdToName(userId);
             if (latestTimelineItem.getTimelineDownloadedDate() > 0) {
@@ -101,7 +100,7 @@ public class TimelineDownloaderUser extends TimelineDownloader {
                         downloadOneMessageBy(followedUserOid,lum);
                     }
                 } catch (ConnectionException e) {
-                    Log.w(TAG, "Failed to download the User object or his message for oid=" + followedUserOid);
+                    MyLog.w(TAG, "Failed to download the User object or his message for oid=" + followedUserOid);
                 }
             }
             if (friendId != 0) {

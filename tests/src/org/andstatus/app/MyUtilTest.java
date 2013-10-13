@@ -18,19 +18,16 @@ package org.andstatus.app;
 
 import android.content.Context;
 import android.test.ActivityTestCase;
-import android.util.Log;
 
 import org.andstatus.app.util.*;
 
 public class MyUtilTest extends ActivityTestCase {
-    static final String TAG = MyUtilTest.class.getSimpleName();
-    
     /**
      * Test I18n class...
      * @author yvolk@yurivolkov.com
      */
     public void test001MessageFormat() throws Exception {
-    	Log.i(TAG,"testMessageFormat started");
+    	MyLog.i(this, "testMessageFormat started");
     	Context context = MyContextHolder.get().context();
     	
         int len = messageFormatTests.length;
@@ -50,11 +47,11 @@ public class MyUtilTest extends ActivityTestCase {
                         + " expected: " + dateTest.expectedOutput
                         + " actual: " + output);
             } */
-        	Log.i(TAG,"num=" + numSomething + "; output=\"" + output + "\"");
+        	MyLog.i(this, "num=" + numSomething + "; output=\"" + output + "\"");
             
             //assertEquals(dateTest.expectedOutput, output);
         }         
-    	Log.i(TAG,"testMessageFormat ended");
+    	MyLog.i(this, "testMessageFormat ended");
     }   
 
     static private class MessageFormatTest {

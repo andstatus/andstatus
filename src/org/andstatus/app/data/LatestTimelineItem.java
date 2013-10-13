@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -125,8 +124,8 @@ public class LatestTimelineItem {
     public void save() {
         boolean changed = timelineDateChanged || 
                 (timelineItemChanged && !TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition()));
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "Timeline " + timelineType.save() 
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(this, "Timeline " + timelineType.save() 
                     + " for the user=" + MyProvider.userIdToName(userId) 
                     + " downloaded at " + (new Date(getTimelineDownloadedDate()).toString())
                     + (changed ? "" : " not changed")                    
@@ -162,7 +161,7 @@ public class LatestTimelineItem {
             timelineDateChanged = false;
             timelineItemChanged = false;
         } catch (Exception e) {
-            Log.e(TAG, "save: sql=" + sql + "; error=" + e.toString());
+            MyLog.e(this, "save: sql=" + sql + "; error=" + e.toString());
         }
     
     }
@@ -175,8 +174,8 @@ public class LatestTimelineItem {
         long passedMs = System.currentTimeMillis() - getTimelineDownloadedDate(); 
         boolean blnOut = (passedMs > frequencyMs);
         
-        if (blnOut && MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "It's time to auto update " + timelineType.save() 
+        if (blnOut && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(this, "It's time to auto update " + timelineType.save() 
                     + " for the user=" + MyProvider.userIdToName(userId)
                     + ". Minutes passed=" + passedMs/1000/60);
         }

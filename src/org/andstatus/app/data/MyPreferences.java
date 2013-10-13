@@ -25,7 +25,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import java.io.File;
 
@@ -102,9 +101,9 @@ public class MyPreferences {
     public static SharedPreferences getDefaultSharedPreferences() {
         Context context = MyContextHolder.get().context();
         if (context == null) {
-            Log.e(TAG, "getDefaultSharedPreferences - Was not initialized yet");
+            MyLog.e(TAG, "getDefaultSharedPreferences - Was not initialized yet");
             for(StackTraceElement element : Thread.currentThread().getStackTrace()) { 
-                Log.v(TAG, element.toString()); 
+                MyLog.v(TAG, element.toString()); 
             }
             return null;
         } else {
@@ -126,7 +125,7 @@ public class MyPreferences {
     public static void setDefaultValues(int resId, boolean readAgain) {
         Context context = MyContextHolder.get().context();
         if (context == null) {
-            Log.e(TAG, "setDefaultValues - Was not initialized yet");
+            MyLog.e(TAG, "setDefaultValues - Was not initialized yet");
         } else {
             PreferenceManager.setDefaultValues(context, resId, readAgain);
         }
@@ -135,9 +134,9 @@ public class MyPreferences {
     public static SharedPreferences getSharedPreferences(String name) {
         Context context = MyContextHolder.get().context();
         if (context == null) {
-            Log.e(TAG, "getSharedPreferences for " + name + " - were not initialized yet");
+            MyLog.e(TAG, "getSharedPreferences for " + name + " - were not initialized yet");
             for(StackTraceElement element : Thread.currentThread().getStackTrace()) { 
-                Log.v(TAG, element.toString()); 
+                MyLog.v(TAG, element.toString()); 
             }
             return null;
         } else {
@@ -258,7 +257,7 @@ public class MyPreferences {
                     }
                 }
             }
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, (useExternalStorage ? "External" : "Internal") + " path: '" 
                 + ( (dir == null) ? "(null)" 
                 + "; baseDir=" + baseDir
@@ -266,7 +265,7 @@ public class MyPreferences {
             }
         }
         if (textToLog != null) {
-            Log.i(TAG, textToLog);
+            MyLog.i(TAG, textToLog);
         }
         
         return dir;
@@ -311,8 +310,8 @@ public class MyPreferences {
         themeName.append(name);
         int themeId = context.getResources().getIdentifier(themeName.toString(), "style",
                 "org.andstatus.app");
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "loadTheme; theme=\"" + themeName.toString() + "\"; id=" + Integer.toHexString(themeId));
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "loadTheme; theme=\"" + themeName.toString() + "\"; id=" + Integer.toHexString(themeId));
         }
         context.setTheme(themeId);
     }

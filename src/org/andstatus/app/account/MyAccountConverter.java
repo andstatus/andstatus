@@ -19,7 +19,6 @@ package org.andstatus.app.account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.data.MyDatabaseConverter;
@@ -27,6 +26,7 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
@@ -44,7 +44,7 @@ public class MyAccountConverter {
         boolean ok = false;
         String step = "";
         try {
-            Log.i(TAG, "Accounts upgrading step from version " + oldVersion + " to version " + versionTo );
+            MyLog.i(TAG, "Accounts upgrading step from version " + oldVersion + " to version " + versionTo );
             Context context = MyContextHolder.get().context();
             
             android.accounts.AccountManager am = AccountManager.get(context);
@@ -54,7 +54,7 @@ public class MyAccountConverter {
                 MyDatabaseConverter.stillUpgrading();
                 MyAccount.Builder builderOld = new MyAccount.Builder(account);
                 if (builderOld.getVersion() == versionTo) {
-                    Log.i(TAG, "Account " + account.name + " already converted?!");
+                    MyLog.i(TAG, "Account " + account.name + " already converted?!");
                 } else {
                     // Structure of the account name changed!
                     long originId = Origin.OriginEnum.TWITTER.getId();
@@ -78,7 +78,7 @@ public class MyAccountConverter {
                     long userId = MyProvider.userNameToId(db, originId, username);
                     String userOid = MyProvider.idToOid(db, OidEnum.USER_OID, userId, 0);
                     AccountName accountNameNew = AccountName.fromOriginAndUserNames(originName, username);
-                    Log.i(TAG, "Upgrading account " + account.name + " to " + username + "; oid=" + userOid + "; id=" + userId);
+                    MyLog.i(TAG, "Upgrading account " + account.name + " to " + username + "; oid=" + userOid + "; id=" + userId);
 
                     MbUser accountMbUser = MbUser.fromOriginAndUserOid(originId, userOid);
                     accountMbUser.userName = username;
@@ -95,20 +95,20 @@ public class MyAccountConverter {
                     accountsToRemove.add(account);
                 }
             }
-            Log.i(TAG, "Removing old accounts");
+            MyLog.i(TAG, "Removing old accounts");
             for (android.accounts.Account account : accountsToRemove) {
-                Log.i(TAG, "Removing old account: " + account.name);
+                MyLog.i(TAG, "Removing old account: " + account.name);
                 am.removeAccount(account, null, null);
             }
             ok = true;
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            MyLog.e(TAG, e.getMessage());
             e.printStackTrace();
         }
         if (ok) {
-            Log.i(TAG, "Accounts upgrading step successfully upgraded accounts from " + oldVersion + " to version " + versionTo);
+            MyLog.i(TAG, "Accounts upgrading step successfully upgraded accounts from " + oldVersion + " to version " + versionTo);
         } else {
-            Log.e(TAG, "Error upgrading accounts from " + oldVersion + " to version " + versionTo
+            MyLog.e(TAG, "Error upgrading accounts from " + oldVersion + " to version " + versionTo
                     + " step='" + step +"'");
         }
         return (ok ? versionTo : oldVersion) ;

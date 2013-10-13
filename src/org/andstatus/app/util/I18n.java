@@ -17,7 +17,6 @@
 package org.andstatus.app.util;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.text.MessageFormat;
 import java.util.regex.Matcher;
@@ -70,8 +69,8 @@ public class I18n {
 	        message = mf.format(new Object[] { submessage });
 		}
 
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "formatMessage, num=" + toMatch + "; subformat=" + subformat 
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "formatMessage, num=" + toMatch + "; subformat=" + subformat 
     				+ "; submessage=" + submessage + "; message=" + message);
         }
 		return message;

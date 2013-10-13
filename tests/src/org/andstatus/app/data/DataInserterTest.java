@@ -9,7 +9,6 @@ import org.andstatus.app.MessageCounters;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.Builder;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
@@ -27,7 +26,6 @@ import org.andstatus.app.util.TriState;
 import java.util.Set;
 
 public class DataInserterTest extends InstrumentationTestCase {
-    private static final String TAG = DataInserterTest.TAG + "." + Builder.class.getSimpleName();
     private Context context;
     private MbUser accountMbUser;
     private final String accountUserOid = "acct:t131t@identi.ca";
@@ -44,7 +42,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 "acct:" + firstUserName);
         firstMbUser.userName = firstUserName;
         MyAccount.Builder builderFirst = addAccount(firstMbUser);
-        MyLog.v(TAG, firstUserName + " added, id=" + builderFirst.getAccount().getUserId());
+        MyLog.v(this, firstUserName + " added, id=" + builderFirst.getAccount().getUserId());
 
         long accountUserId_existing = MyProvider.oidToId(OidEnum.USER_OID, firstMbUser.originId, firstMbUser.oid);
         accountMbUser = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), accountUserOid);

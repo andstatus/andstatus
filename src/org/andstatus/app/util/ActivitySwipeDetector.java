@@ -47,12 +47,12 @@ public class ActivitySwipeDetector implements View.OnTouchListener {
     }
 
     public void onRightToLeftSwipe(View v){
-        Log.i(logTag, "RightToLeftSwipe!");
+        MyLog.i(logTag, "RightToLeftSwipe!");
         activity.onRightToLeft(v);
     }
 
     public void onLeftToRightSwipe(View v){
-        Log.i(logTag, "LeftToRightSwipe!");
+        MyLog.i(logTag, "LeftToRightSwipe!");
         activity.onLeftToRight(v);
     }
 
@@ -60,14 +60,14 @@ public class ActivitySwipeDetector implements View.OnTouchListener {
     public boolean onTouch(View v, MotionEvent event) {
         switch(event.getAction()){
         case MotionEvent.ACTION_DOWN: {
-            Log.d("onTouch", "ACTION_DOWN");
+            MyLog.d("onTouch", "ACTION_DOWN");
             timeDown = System.currentTimeMillis();
             downX = event.getX();
             downY = event.getY();
             return false;
         }
         case MotionEvent.ACTION_UP: {
-            Log.d("onTouch", "ACTION_UP");
+            MyLog.d("onTouch", "ACTION_UP");
             long timeUp = System.currentTimeMillis();
             float upX = event.getX();
             float upY = event.getY();

@@ -28,7 +28,6 @@ import java.util.TimerTask;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 /**
  * This receiver starts and stops {@link MyService} and also queries its state.
@@ -81,7 +80,7 @@ public class MyServiceManager extends BroadcastReceiver {
                 new TimerTask() {
                     @Override
                     public void run() {
-                        Log.i(TAG, "MyService is made available by a timer");
+                        MyLog.i(this, "MyService is made available by a timer");
                         setServiceAvailable();
                     }
                 }
@@ -93,7 +92,7 @@ public class MyServiceManager extends BroadcastReceiver {
     
     public MyServiceManager() {
         instanceId = InstanceId.next();
-        MyLog.v(TAG, TAG + " created, instanceId=" + instanceId );
+        MyLog.v(this, TAG + " created, instanceId=" + instanceId );
     }
     
     @Override

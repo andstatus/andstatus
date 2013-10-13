@@ -19,7 +19,6 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.Html;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
@@ -122,9 +121,9 @@ public abstract class ConnectionTwitter extends Connection {
     @Override
     public boolean destroyStatus(String statusId) throws ConnectionException {
         JSONObject jso = http.postRequest(getApiPath(ApiRoutineEnum.STATUSES_DESTROY) + statusId + EXTENSION);
-        if (jso != null && MyLog.isLoggable(null, Log.VERBOSE)) {
+        if (jso != null && MyLog.isLoggable(null, MyLog.VERBOSE)) {
             try {
-                Log.v(TAG, "destroyStatus response: " + jso.toString(2));
+                MyLog.v(TAG, "destroyStatus response: " + jso.toString(2));
             } catch (JSONException e) {
                 e.printStackTrace();
                 jso = null;
@@ -331,7 +330,7 @@ public abstract class ConnectionTwitter extends Connection {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(TAG, e, jso, "Parsing message");
         } catch (Exception e) {
-            Log.e(TAG, "messageFromJson: " + e.toString());
+            MyLog.e(this, "messageFromJson: " + e.toString());
             e.printStackTrace();
             return MbMessage.getEmpty();
         }

@@ -36,7 +36,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -198,13 +197,13 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     };
 
     boolean isLoading() {
-        //MyLog.v(TAG, "isLoading checked " + mIsLoading + ", instance " + instanceId);
+        //MyLog.v(this, "isLoading checked " + mIsLoading + ", instance " + instanceId);
         return (loadingLayout.getVisibility() == View.VISIBLE);
     }
     
     void setIsLoading(boolean isLoadingNew) {
         if (isLoading() != isLoadingNew) {
-            MyLog.v(TAG, "isLoading set to " + isLoadingNew + ", instanceId=" + instanceId );
+            MyLog.v(this, "isLoading set to " + isLoadingNew + ", instanceId=" + instanceId );
             if (isLoadingNew) {
                 loadingLayout.setVisibility(View.VISIBLE);
             } else {
@@ -230,7 +229,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         preferencesChangeTime = MyContextHolder.initialize(this, this);
         MyContextHolder.upgradeIfNeeded();
         
-        if (MyLog.isLoggable(TAG, Log.DEBUG)) {
+        if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
             MyLog.d(TAG, "onCreate instanceId=" + instanceId + " , preferencesChangeTime=" + preferencesChangeTime);
         }
 
@@ -238,17 +237,17 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             boolean helpAsFirstActivity = false;
             boolean showChangeLog = false;
             if (MyDatabaseConverter.isUpgrading()) {
-                Log.i(TAG, "Upgrade is in progress");
+                MyLog.i(this, "Upgrade is in progress");
                 helpAsFirstActivity = true;
                 showChangeLog = true;
             } else if (!MyContextHolder.get().isReady()) {
-                Log.i(TAG, "Context is not ready");
+                MyLog.i(this, "Context is not ready");
                 helpAsFirstActivity = true;
             } else if (MyPreferences.shouldSetDefaultValues()) {
-                Log.i(TAG, "We are running the Application for the very first time?");
+                MyLog.i(this, "We are running the Application for the very first time?");
                 helpAsFirstActivity = true;
             } else if (MyContextHolder.get().persistentAccounts().getCurrentAccount() == null) {
-                Log.i(TAG, "No current MyAccount");
+                MyLog.i(this, "No current MyAccount");
                 helpAsFirstActivity = true;
             } 
             
@@ -265,7 +264,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     MyPreferences.getDefaultSharedPreferences().edit().putInt(MyPreferences.KEY_VERSION_CODE_LAST, versionCode).commit();
                 }
             } catch (NameNotFoundException e) {
-                Log.e(TAG, "Unable to obtain package information", e);
+                MyLog.e(this, "Unable to obtain package information: " + e.getMessage());
             }
 
             if (helpAsFirstActivity || showChangeLog) {
@@ -406,17 +405,17 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     protected void onResume() {
         super.onResume();
-        MyLog.v(TAG, "onResume, instanceId=" + instanceId);
+        MyLog.v(this, "onResume, instanceId=" + instanceId);
         if (!mIsFinishing) {
             if (MyContextHolder.get().persistentAccounts().getCurrentAccount() != null) {
                 long preferencesChangeTimeNew = MyContextHolder.initialize(this, this);
                 if (preferencesChangeTimeNew != preferencesChangeTime) {
-                    MyLog.v(TAG, "Restarting this Activity to apply all new changes of preferences");
+                    MyLog.v(this, "Restarting this Activity to apply all new changes of preferences");
                     finish();
                     switchTimelineActivity(mTimelineType, mIsTimelineCombined, mSelectedUserId);
                 }
             } else { 
-                MyLog.v(TAG, "Finishing this Activity because there is no Account selected");
+                MyLog.v(this, "Finishing this Activity because there is no Account selected");
                 finish();
             }
         }
@@ -446,7 +445,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         firstScrollPos = getListView().getFirstVisiblePosition();
         android.widget.ListAdapter la = getListView().getAdapter();
         if (la == null) {
-            MyLog.v(TAG, "Position wasn't saved - no adapters yet");
+            MyLog.v(this, "Position wasn't saved - no adapters yet");
             return;
         }
         if (firstScrollPos > la.getCount() - 2) {
@@ -464,14 +463,14 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     lastScrollPos = -1;
                 }
             }
-            // Log.v(TAG, "lastScrollPos=" + lastScrollPos);
+            // MyLog.v(TAG, "lastScrollPos=" + lastScrollPos);
             if (lastScrollPos >= 0) {
                 lastRetrievedItemId = la.getItemId(lastScrollPos);
             }
         }
 
         if (firstVisibleItemId <= 0) {
-            MyLog.v(TAG, "Position wasn't saved \"" + ps.accountGuid + "\"; " + ps.keyFirst);
+            MyLog.v(this, "Position wasn't saved \"" + ps.accountGuid + "\"; " + ps.keyFirst);
             return;
         }
 
@@ -483,8 +482,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     .commit();
         }
 
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "Position saved    \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "Position saved    \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
                     + firstVisibleItemId + "; index=" + firstScrollPos + "; lastId="
                     + lastRetrievedItemId + "; index=" + lastScrollPos);
         }
@@ -494,8 +493,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         PositionStorage ps = new PositionStorage();
         ps.sp.edit().remove(ps.keyFirst).remove(ps.keyLast)
                 .remove(ps.keyQueryString).commit();
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "Position forgot   \"" + ps.accountGuid + "\"; " + ps.keyFirst);
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "Position forgot   \"" + ps.accountGuid + "\"; " + ps.keyFirst);
         }
     }
     
@@ -515,8 +514,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             if (scrollPos >= 0) {
                 getListView().setSelectionFromTop(scrollPos, 0);
                 loaded = true;
-                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                    Log.v(TAG, "Position restored \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                    MyLog.v(TAG, "Position restored \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
                             + firstItemId +"; index=" + scrollPos);
                 }
             } else {
@@ -532,12 +531,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 }
             }
         } catch (Exception e) {
-            Log.v(TAG, "Position error    \"" + e.getLocalizedMessage());
+            MyLog.v(TAG, "Position error    \"" + e.getLocalizedMessage());
             loaded = false;
         }
         if (!loaded) {
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "Didn't restore position \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "Didn't restore position \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
                         + firstItemId);
             }
             forgetListPosition();
@@ -546,15 +545,15 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private void setSelectionAtBottom(int scrollPos) {
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "setSelectionAtBottom, 1");
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "setSelectionAtBottom, 1");
         }
         int viewHeight = getListView().getHeight();
         int childHeight;
         childHeight = 30;
         int y = viewHeight - childHeight;
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "set position of last item to " + y + "px");
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "set position of last item to " + y + "px");
         }
         getListView().setSelectionFromTop(scrollPos, y);
     }
@@ -571,8 +570,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         boolean itemFound = false;
         ListView lv = getListView();
         int itemCount = lv.getCount();
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "item count: " + itemCount);
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "item count: " + itemCount);
         }
         for (listPos = 0; (!itemFound && (listPos < itemCount)); listPos++) {
             long itemId = lv.getItemIdAtPosition(listPos);
@@ -591,16 +590,16 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public void onContentChanged() {
         super.onContentChanged();
-        if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "Content changed");
+        if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+            MyLog.d(TAG, "Content changed");
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onPause, instanceId=" + instanceId);
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "onPause, instanceId=" + instanceId);
         }
         serviceConnector.unregisterReceiver(this);
 
@@ -640,7 +639,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     public void onDestroy() {
-        MyLog.v(TAG,"onDestroy, instanceId=" + instanceId);
+        MyLog.v(this,"onDestroy, instanceId=" + instanceId);
         super.onDestroy();
         if (mCursor != null && !mCursor.isClosed()) {
             mCursor.close();
@@ -652,7 +651,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     public void finish() {
-        MyLog.v(TAG,"Finish requested" + (mIsFinishing ? ", already finishing" : "") + ", instanceId=" + instanceId);
+        MyLog.v(this,"Finish requested" + (mIsFinishing ? ", already finishing" : "") + ", instanceId=" + instanceId);
         if (!mIsFinishing) {
             mIsFinishing = true;
         }
@@ -758,8 +757,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         if (id <= 0) {
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "onItemClick, id=" + id);
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "onItemClick, id=" + id);
             }
             return;
         }
@@ -767,23 +766,23 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         MyAccount ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(id, linkedUserId,
                 mCurrentMyAccountUserId);
         if (ma == null) {
-            Log.e(TAG, "Account for the message " + id + " was not found");
+            MyLog.e(this, "Account for the message " + id + " was not found");
             return;
         }
         
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onItemClick, id=" + id + "; linkedUserId=" + linkedUserId + " account=" + ma.getAccountName());
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "onItemClick, id=" + id + "; linkedUserId=" + linkedUserId + " account=" + ma.getAccountName());
         }
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mTimelineType, true, id);
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
-            if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "onItemClick, setData=" + uri);
+            if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+                MyLog.d(TAG, "onItemClick, setData=" + uri);
             }
             setResult(RESULT_OK, new Intent().setData(uri));
         } else {
-            if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "onItemClick, startActivity=" + uri);
+            if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+                MyLog.d(TAG, "onItemClick, startActivity=" + uri);
             }
             startActivity(new Intent(Intent.ACTION_VIEW, uri));
         }
@@ -916,8 +915,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         MyContextHolder.initialize(this, this);
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onNewIntent, instanceId=" + instanceId);
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "onNewIntent, instanceId=" + instanceId);
         }
         processNewIntent(intent);
         updateThisOnChangedParameters();
@@ -980,12 +979,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 }
                 textInitial += text;
             }
-            MyLog.v(TAG, "Intent.ACTION_SEND '" + textInitial +"'");
+            MyLog.v(this, "Intent.ACTION_SEND '" + textInitial +"'");
             mTweetEditor.startEditingMessage(textInitial, 0, 0, MyContextHolder.get().persistentAccounts().getCurrentAccount(), mIsTimelineCombined);
         }
 
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "processNewIntent; type=\"" + mTimelineType.save() + "\"");
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "processNewIntent; type=\"" + mTimelineType.save() + "\"");
         }
     }
 
@@ -1074,8 +1073,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             protected void onPreExecute() {
                 Intent intent = getIntent();
 
-                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                    Log.v(TAG, "queryListData; queryString=\"" + mQueryString + "\"; TimelineType="
+                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                    MyLog.v(TAG, "queryListData; queryString=\"" + mQueryString + "\"; TimelineType="
                             + mTimelineType.save()
                             + "; isCombined=" + (mIsTimelineCombined ? "yes" : "no"));
                 }
@@ -1204,11 +1203,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                                 sa.selectionArgs, sortOrder);
                         break;
                     } catch (IllegalStateException e) {
-                        Log.d(TAG, "Attempt " + attempt + " to prepare cursor: " + e.getMessage());
+                        MyLog.d(TAG, "Attempt " + attempt + " to prepare cursor: " + e.getMessage());
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e1) {
-                            Log.d(TAG, "Attempt " + attempt + " to prepare cursor was interrupted");
+                            MyLog.d(TAG, "Attempt " + attempt + " to prepare cursor was interrupted");
                             break;
                         }
                     }
@@ -1225,7 +1224,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                         if (loadOneMorePage) {
                             // This will prevent continuous loading...
                             if (cursor.getCount() > getListAdapter().getCount()) {
-                                MyLog.v(TAG, "On changing Cursor");
+                                MyLog.v(this, "On changing Cursor");
                                 ((SimpleCursorAdapter) getListAdapter()).changeCursor(cursor);
                                 mCursor = cursor;
                             } else {
@@ -1246,7 +1245,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     }
                 }
                 
-                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                     String cursorInfo = "cursor - ??";
                     if (cursor == null) {
                         cursorInfo = "new cursor is null";
@@ -1257,7 +1256,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     } else {
                         cursorInfo = mCursor.getCount() + " rows";
                     }
-                    Log.v(TAG, "queryListData; ended, " + cursorInfo + ", " + Double.valueOf((System.nanoTime() - startTime)/1.0E6).longValue() + " ms");
+                    MyLog.v(TAG, "queryListData; ended, " + cursorInfo + ", " + Double.valueOf((System.nanoTime() - startTime)/1.0E6).longValue() + " ms");
                 }
                 
                 queryListDataEnded(doRestorePosition);
@@ -1283,7 +1282,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         
         if (queryListDataInProgress) {
-            MyLog.v(TAG, "queryListData is already in progress, skipping this request");
+            MyLog.v(this, "queryListData is already in progress, skipping this request");
             return;
         }
 
@@ -1292,7 +1291,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             setIsLoading(true);
             new AsyncQueryListData().execute();
         } catch (Exception e) {
-            Log.e(TAG, "Error during AsyncQueryListData" + e.getLocalizedMessage());
+            MyLog.e(this, "Error during AsyncQueryListData" + e.getLocalizedMessage());
             queryListDataEnded(!loadOneMorePage);
         }
     }
@@ -1324,7 +1323,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             allAccounts = false;
             long originId = MyProvider.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, userId);
             if (originId == 0) {
-                Log.e(TAG, "Unknown origin for userId=" + userId);
+                MyLog.e(this, "Unknown origin for userId=" + userId);
                 return;
             }
             if (ma == null || ma.getOriginId() != originId) {
@@ -1359,8 +1358,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     protected void switchTimelineActivity(TimelineTypeEnum timelineType, boolean isTimelineCombined, long selectedUserId) {
         Intent intent;
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "switchTimelineActivity; type=\"" + timelineType.save() + "\"; isCombined=" + (isTimelineCombined ? "yes" : "no"));
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "switchTimelineActivity; type=\"" + timelineType.save() + "\"; isCombined=" + (isTimelineCombined ? "yes" : "no"));
         }
         switch (timelineType) {
             default:
@@ -1408,7 +1407,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 if (resultCode == RESULT_OK) {
                     MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
                     if (ma != null) {
-                        MyLog.v(TAG, "Restarting the activity for the selected account " + ma.getAccountName());
+                        MyLog.v(this, "Restarting the activity for the selected account " + ma.getAccountName());
                         finish();
                         TimelineTypeEnum timelineTypeNew = mTimelineType;
                         if (mTimelineType == TimelineTypeEnum.USER && mSelectedUserId != ma.getUserId()) {
@@ -1447,7 +1446,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         try {
             info = (AdapterView.AdapterContextMenuInfo) menuInfo;
         } catch (ClassCastException e) {
-            Log.e(TAG, "bad menuInfo", e);
+            MyLog.e(this, "bad menuInfo: " + e.getMessage());
             return;
         }
 
@@ -1575,7 +1574,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                             R.string.menu_item_act_as);
             }
         } catch (Exception e) {
-            Log.e(TAG, "onCreateContextMenu: " + e.toString());
+            MyLog.e(this, "onCreateContextMenu: " + e.toString());
         }
     }
 
@@ -1586,7 +1585,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         try {
             info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         } catch (ClassCastException e) {
-            Log.e(TAG, "bad menuInfo", e);
+            MyLog.e(this, "bad menuInfo: " + e.getMessage());
             return false;
         }
 
@@ -1596,7 +1595,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             long authorId;
             long senderId;
             ContextMenuItem contextMenuItem = ContextMenuItem.fromId(item.getItemId());
-            MyLog.v(TAG, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName());
+            MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName());
             switch (contextMenuItem) {
                 case REPLY:
                     mTweetEditor.startEditingMessage("", mCurrentMsgId, 0, ma, mIsTimelineCombined);
@@ -1659,7 +1658,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                             startActivity(Intent.createChooser(share, getText(R.string.menu_item_share)));
                         }
                     } catch (Exception e) {
-                        Log.e(TAG, "onContextItemSelected: " + e.toString());
+                        MyLog.e(this, "onContextItemSelected: " + e.toString());
                         return false;
                     } finally {
                         if (c != null && !c.isClosed())
@@ -1783,7 +1782,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     sp = ma.getAccountPreferences();
                     accountGuid = ma.getAccountName();
                 } else {
-                    Log.e(TAG, "No accoount for IserId=" + mCurrentMyAccountUserId);
+                    MyLog.e(this, "No accoount for IserId=" + mCurrentMyAccountUserId);
                 }
             }
             if (sp == null) {

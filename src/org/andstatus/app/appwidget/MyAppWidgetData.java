@@ -18,7 +18,6 @@ package org.andstatus.app.appwidget;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
@@ -133,7 +132,7 @@ public class MyAppWidgetData {
 		boolean Ok = false;
 		SharedPreferences prefs = MyPreferences.getSharedPreferences(prefsFileName);
 		if (prefs == null) {
-			Log.e(TAG, "The prefs file '" + prefsFileName + "' was not loaded");
+			MyLog.e(this, "The prefs file '" + prefsFileName + "' was not loaded");
 		} else {
 			nothingPref = prefs.getString(PREF_NOTHING_KEY, null);
 			if (nothingPref == null) {
@@ -154,8 +153,8 @@ public class MyAppWidgetData {
 	            dateCleared = prefs.getLong(PREF_DATECLEARED_KEY, 0);
 			}
 
-	        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-	            Log.v(TAG, "Prefs for appWidgetId=" + mappWidgetId
+	        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+	            MyLog.v(TAG, "Prefs for appWidgetId=" + mappWidgetId
 	                    + " were loaded");
 	        }
 			Ok = true;
@@ -167,12 +166,12 @@ public class MyAppWidgetData {
 	public boolean save() {
 		boolean Ok = false;
 		if (!isLoaded) {
-			Log.e(TAG, "Save without load is not possible");
+			MyLog.e(this, "Save without load is not possible");
 		} else {
 			SharedPreferences.Editor prefs = MyPreferences.getSharedPreferences(
 					prefsFileName).edit();
 			if (prefs == null) {
-				Log.e(TAG, "Prefs Editor was not loaded");
+				MyLog.e(this, "Prefs Editor was not loaded");
 			} else {
 				prefs.putString(PREF_NOTHING_KEY, nothingPref);
 				prefs.putInt(PREF_NUM_HOME_TIMELINE_KEY, numHomeTimeline);
@@ -182,8 +181,8 @@ public class MyAppWidgetData {
                 prefs.putLong(PREF_DATECHECKED_KEY, dateChecked);
 				prefs.putLong(PREF_DATECLEARED_KEY, dateCleared);
 				prefs.commit();
-	            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-    				Log.v(TAG, "Prefs for appWidgetId=" + mappWidgetId
+	            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+    				MyLog.v(TAG, "Prefs for appWidgetId=" + mappWidgetId
     				        + " were saved, nothing='" + nothingPref + "'");
 	            }
 				Ok = true;

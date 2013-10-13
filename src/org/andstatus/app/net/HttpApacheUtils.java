@@ -17,8 +17,8 @@
 package org.andstatus.app.net;
 
 import android.text.TextUtils;
-import android.util.Log;
 
+import org.andstatus.app.util.MyLog;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -50,10 +50,10 @@ class HttpApacheUtils {
         try {
             jsa = (JSONArray) jst.nextValue();
         } catch (JSONException e) {
-            Log.w(TAG, "getRequestAsArray, JSONException response=" + (jst == null ? "(null)" : jst.toString()));
+            MyLog.w(TAG, "getRequestAsArray, JSONException response=" + (jst == null ? "(null)" : jst.toString()));
             throw new ConnectionException(e.getLocalizedMessage());
         } catch (ClassCastException e) {
-            Log.w(TAG, "getRequestAsArray, ClassCastException response=" + (jst == null ? "(null)" : jst.toString()));
+            MyLog.w(TAG, "getRequestAsArray, ClassCastException response=" + (jst == null ? "(null)" : jst.toString()));
             throw new ConnectionException(e.getLocalizedMessage());
         }
         return jsa;
@@ -65,10 +65,10 @@ class HttpApacheUtils {
         try {
             jso = (JSONObject) jst.nextValue();
         } catch (JSONException e) {
-            Log.w(TAG, "getRequestAsObject, JSONException response=" + (jst == null ? "(null)" : jst.toString()));
+            MyLog.w(TAG, "getRequestAsObject, JSONException response=" + (jst == null ? "(null)" : jst.toString()));
             throw new ConnectionException(e.getLocalizedMessage());
         } catch (ClassCastException e) {
-            Log.w(TAG, "getRequestAsObject, ClassCastException response=" + (jst == null ? "(null)" : jst.toString()));
+            MyLog.w(TAG, "getRequestAsObject, ClassCastException response=" + (jst == null ? "(null)" : jst.toString()));
             throw new ConnectionException(e.getLocalizedMessage());
         }
         return jso;
@@ -89,7 +89,7 @@ class HttpApacheUtils {
             }
             jso = request.postRequest(postMethod);
         } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, e.toString());
+            MyLog.e(this, e.toString());
         }
         return jso;
     }

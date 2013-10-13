@@ -17,7 +17,6 @@
 package org.andstatus.app;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestTimelineItem;
@@ -40,7 +39,7 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
     public void download() throws ConnectionException {
         LatestTimelineItem latestTimelineItem = new LatestTimelineItem(counters.timelineType, userId);
         
-        if (MyLog.isLoggable(TAG, Log.DEBUG)) {
+        if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
             String strLog = "Loading timeline " + counters.timelineType.save() + "; account=" 
         + counters.ma.getAccountName()
         + "; user=" + MyProvider.userIdToName(userId);
@@ -94,7 +93,7 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
                     e.setHardError(true);
                     throw e;
                 }
-                Log.d(TAG, "The timeline was not found, last position='" + lastPosition +"'");
+                MyLog.d(TAG, "The timeline was not found, last position='" + lastPosition +"'");
                 lastPosition = TimelinePosition.getEmpty();
             }
         }

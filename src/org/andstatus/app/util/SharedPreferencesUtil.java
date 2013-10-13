@@ -21,8 +21,6 @@ import android.os.Environment;
 import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
 import android.text.TextUtils;
-import android.util.Log;
-
 
 import java.io.IOException;
 import java.io.File;
@@ -57,7 +55,7 @@ public class SharedPreferencesUtil {
                 File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
                 yes = prefFile.exists();
             } catch (Exception e) {
-                Log.e(TAG, e.toString());
+                MyLog.e(TAG, e.toString());
             }
         }
         return yes;
@@ -72,20 +70,20 @@ public class SharedPreferencesUtil {
         boolean isDeleted = false;
 
         if (context == null || prefsFileName == null || prefsFileName.length() == 0) {
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "delete: Nothing to do");
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "delete: Nothing to do");
             }
         } else {
             File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
             if (prefFile.exists()) {
                 isDeleted = prefFile.delete();
-                if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                    Log.v(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was "
+                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                    MyLog.v(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was "
                             + (isDeleted ? "" : "not ") + " deleted");
                 }
             } else {
-                if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-                    Log.d(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was not found");
+                if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+                    MyLog.d(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was not found");
                 }
             }
         }
@@ -102,31 +100,31 @@ public class SharedPreferencesUtil {
 
         if (context == null || oldPrefsFileName == null || oldPrefsFileName.length() == 0
                 || newPrefsFileName == null || newPrefsFileName.length() == 0) {
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "rename: Nothing to do");
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "rename: Nothing to do");
             }
         } else {
             File newPrefFile = new File(prefsDirectory(context), newPrefsFileName + FILE_EXTENSION);
             if (newPrefFile.exists()) {
                 try {
-                    if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                        Log.v(TAG, "rename: New file already exists: \""
+                    if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                        MyLog.v(TAG, "rename: New file already exists: \""
                                 + newPrefFile.getCanonicalPath() + "\"");
                     }
                 } catch (IOException e) {
-                    Log.e(TAG, e.toString());
+                    MyLog.e(TAG, e.toString());
                 }
             } else {
                 File oldPrefFile = new File(prefsDirectory(context), oldPrefsFileName + FILE_EXTENSION);
                 if (oldPrefFile.exists()) {
                     isRenamed = oldPrefFile.renameTo(newPrefFile);
-                    if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                        Log.v(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath() + "' was "
+                    if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                        MyLog.v(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath() + "' was "
                                 + (isRenamed ? "" : "not ") + " renamed");
                     }
                 } else {
-                    if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-                        Log.d(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath()
+                    if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+                        MyLog.d(TAG, "The prefs file '" + oldPrefFile.getAbsolutePath()
                                 + "' was not found");
                     }
                 }

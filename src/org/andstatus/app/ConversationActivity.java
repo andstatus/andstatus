@@ -90,9 +90,9 @@ public class ConversationActivity extends Activity implements MyServiceListener 
 
         if (instanceId == 0) {
             instanceId = InstanceId.next();
-            MyLog.v(TAG, "onCreate instanceId=" + instanceId);
+            MyLog.v(this, "onCreate instanceId=" + instanceId);
         } else {
-            MyLog.v(TAG, "onCreate reuse the same instanceId=" + instanceId);
+            MyLog.v(this, "onCreate reuse the same instanceId=" + instanceId);
         }
         MyServiceManager.setServiceAvailable();
         myServiceReceiver = new MyServiceReceiver(this);
@@ -110,7 +110,7 @@ public class ConversationActivity extends Activity implements MyServiceListener 
     }
 
     protected void showConversation() {
-        MyLog.v(TAG, "showConversation, instanceId=" + instanceId);
+        MyLog.v(this, "showConversation, instanceId=" + instanceId);
         if (mCurrentId != 0) {
             new ContentLoader().execute();
         }
@@ -171,11 +171,11 @@ public class ConversationActivity extends Activity implements MyServiceListener 
 
         private void findMessage(long msgId) {
             if (idsOfTheMessagesToFind.contains(msgId)) {
-                MyLog.v(TAG, "findMessage cycled on the msgId=" + msgId);
+                MyLog.v(this, "findMessage cycled on the msgId=" + msgId);
                 return;
             }
             idsOfTheMessagesToFind.add(msgId);
-            MyLog.v(TAG, "findMessage " + msgId);
+            MyLog.v(this, "findMessage " + msgId);
             Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, true, msgId);
             boolean skip = true;
             Cursor msg = null;
@@ -238,7 +238,7 @@ public class ConversationActivity extends Activity implements MyServiceListener 
                         row.rebloggersString += MyProvider.userIdToName(rebloggerId);
                     }
                     if (rows.contains(row)) {
-                        MyLog.v(TAG, "Message " + msgId + " is in the list already");
+                        MyLog.v(this, "Message " + msgId + " is in the list already");
                     } else {
                         rows.add(row);
                         skip = false;
@@ -248,14 +248,14 @@ public class ConversationActivity extends Activity implements MyServiceListener 
 
                 if (!skip) {
                     if (row.createdDate == 0) {
-                        MyLog.v(TAG, "Message " + msgId + " should be retrieved from the Internet");
+                        MyLog.v(this, "Message " + msgId + " should be retrieved from the Internet");
                         MyServiceManager.sendCommand(new CommandData(CommandEnum.GET_STATUS, ma
                                 .getAccountName(), msgId));
                     } else {
                         if (row.inReplyToMsgId != 0) {
                             findMessage(row.inReplyToMsgId);
                         } else if (!SharedPreferencesUtil.isEmpty(row.inReplyToName)) {
-                            MyLog.v(TAG, "Message " + msgId + " has reply to name ("
+                            MyLog.v(this, "Message " + msgId + " has reply to name ("
                                     + row.inReplyToName
                                     + ") but no reply to message id");
                             // Don't try to retrieve this message again. It

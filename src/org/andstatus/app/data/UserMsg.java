@@ -18,7 +18,6 @@ package org.andstatus.app.data;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
-import android.util.Log;
 
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -118,8 +117,8 @@ public class UserMsg {
      */
     public boolean save() {
         boolean ok = true;
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            MyLog.v(TAG, "User=" + MyProvider.userIdToName(userId) 
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(this, "User=" + MyProvider.userIdToName(userId) 
                     + " Latest msg at " + (new Date(getLastMsgDate()).toString())
                     + (changed ? "" : " not changed")                    
                     );
@@ -133,7 +132,7 @@ public class UserMsg {
         if (msgDate > lastMsgDate) {
             lastMsgDate = msgDate;
             lastMsgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, userId);
-            MyLog.v(TAG, "There is newer information in the database. User=" + MyProvider.userIdToName(userId) 
+            MyLog.v(this, "There is newer information in the database. User=" + MyProvider.userIdToName(userId) 
                     + " Latest msg at " + (new Date(getLastMsgDate()).toString()));
             changed = false;
             return ok;
@@ -153,7 +152,7 @@ public class UserMsg {
             changed = false;
         } catch (Exception e) {
             ok = false;
-            Log.e(TAG, "save: sql=" + sql + "; error=" + e.toString());
+            MyLog.e(this, "save: sql=" + sql + "; error=" + e.toString());
         }
         return ok;
     }

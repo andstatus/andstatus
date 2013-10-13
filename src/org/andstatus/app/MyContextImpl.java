@@ -17,7 +17,6 @@
 package org.andstatus.app;
 
 import android.content.Context;
-import android.util.Log;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -57,7 +56,7 @@ public final class MyContextImpl implements MyContext {
     public MyContext newInitialized(Context context, String initializerName) {
         MyContextImpl newMyContext = getCreator(context, initializerName);
         if ( newMyContext.context != null) {
-            Log.v(TAG, "Starting initialization by " + initializerName);
+            MyLog.v(TAG, "Starting initialization by " + initializerName);
             newMyContext.preferencesChangeTime = MyPreferences.getPreferencesChangeTime();
             MyDatabase newDb = new MyDatabase(newMyContext.context);
             newMyContext.state = newDb.checkState();
@@ -71,14 +70,14 @@ public final class MyContextImpl implements MyContext {
             }
         }
 
-        MyLog.v(TAG, "Initialized by " + newMyContext.initializedBy + " state=" + newMyContext.state + (newMyContext.context == null ? "; no context" : "; context: " + newMyContext.context.getClass().getName()));
+        MyLog.v(this, "Initialized by " + newMyContext.initializedBy + " state=" + newMyContext.state + (newMyContext.context == null ? "; no context" : "; context: " + newMyContext.context.getClass().getName()));
         return newMyContext;
     }
     
     @Override
     public MyContext newCreator(Context context, String initializerName) {
         MyContextImpl newMyContext = getCreator(context, initializerName);
-        MyLog.v(TAG, "newCreator by " + newMyContext.initializedBy 
+        MyLog.v(this, "newCreator by " + newMyContext.initializedBy 
                 + (newMyContext.context == null ? "" : " context: " + newMyContext.context.getClass().getName()));
         return newMyContext;
     }
@@ -93,12 +92,12 @@ public final class MyContextImpl implements MyContext {
             /* This may be useful to know from where the class was initialized
             StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
             for(int i=0; i<elements.length; i++) { 
-                Log.v(TAG, elements[i].toString()); 
+                MyLog.v(TAG, elements[i].toString()); 
             }
             */
         
             if ( newMyContext.context == null) {
-                Log.v(TAG, "getApplicationContext is null, trying the context_in itself: " + context.getClass().getName());
+                MyLog.v(TAG, "getApplicationContext is null, trying the context_in itself: " + context.getClass().getName());
                 newMyContext.context = context;
             }
         }
@@ -152,7 +151,7 @@ public final class MyContextImpl implements MyContext {
             try {
                 db.close();
             } catch (Exception e) {
-                Log.e(TAG, "Error closing database " + e.getMessage());
+                MyLog.e(this, "Error closing database " + e.getMessage());
             }
         }
         MyLog.forget();

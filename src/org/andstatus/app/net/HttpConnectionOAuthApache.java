@@ -16,14 +16,13 @@
 
 package org.andstatus.app.net;
 
-import android.util.Log;
-
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
 
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
+import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
@@ -114,7 +113,7 @@ class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApach
             jso = new JSONTokener(response);
             ok = true;
         } catch (Exception e) {
-            Log.e(TAG, "Exception was caught, URL='" + get.getURI().toString() + "'");
+            MyLog.e(this, "Exception was caught, URL='" + get.getURI().toString() + "'");
             e.printStackTrace();
             throw new ConnectionException(e.getLocalizedMessage());
         }
@@ -162,10 +161,10 @@ class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApach
             ok = true;
         } catch (HttpResponseException e) {
             ConnectionException e2 = ConnectionException.fromStatusCodeHttp(e.getStatusCode(), e.getLocalizedMessage());
-            Log.w(TAG, e2.getLocalizedMessage());
+            MyLog.w(TAG, e2.getLocalizedMessage());
             throw e2;
         } catch (JSONException e) {
-            Log.w(TAG, "postRequest, response=" + (response == null ? "(null)" : response));
+            MyLog.w(TAG, "postRequest, response=" + (response == null ? "(null)" : response));
             throw new ConnectionException(e.getLocalizedMessage());
         } catch (Exception e) {
             // We don't catch other exceptions because in fact it's vary difficult to tell

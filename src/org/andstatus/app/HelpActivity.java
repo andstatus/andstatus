@@ -30,7 +30,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -98,7 +97,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
             PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
             version.setText(pi.packageName + " v." + pi.versionName);
         } catch (NameNotFoundException e) {
-            Log.e(TAG, "Unable to obtain package information", e);
+            MyLog.e(this, "Unable to obtain package information: " + e.getMessage());
         }
 
         // Show the Change log

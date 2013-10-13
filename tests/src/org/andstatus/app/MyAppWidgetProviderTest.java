@@ -20,9 +20,9 @@ import android.app.AlarmManager;
 import android.content.Intent;
 import android.app.PendingIntent;
 import android.text.format.Time;
-import android.util.Log;
 
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
+import org.andstatus.app.util.MyLog;
 
 import static org.andstatus.app.MyService.*;
 
@@ -37,23 +37,22 @@ import java.util.Calendar;
  * @author yvolk@yurivolkov.com
  */
 public class MyAppWidgetProviderTest extends ActivityTestCase {
-    static final String TAG = MyAppWidgetProviderTest.class.getSimpleName();
 
     public MyAppWidgetProviderTest() {
     	initializeDateTests();
     }
     
     public void test001WidgetTime() throws Exception {
-    	Log.i(TAG,"testWidgetTime started");
+    	MyLog.i(this, "testWidgetTime started");
         Context context = TestSuite.initialize(this);
     	if (context == null) {
-    	    Log.e(TAG, "targetContext is null.");
+    	    MyLog.e(this, "targetContext is null.");
     	    throw new Exception("this.getInstrumentation().getTargetContext() returned null");
     	}
     	MyContextHolder.initialize(context, this);
     	
     	MyAppWidgetProvider widget = new MyAppWidgetProvider();
-    	Log.i(TAG,"MyAppWidgetProvider created");
+    	MyLog.i(this, "MyAppWidgetProvider created");
 
     	/*
     	long startMillis = 1267968833922l;
@@ -89,7 +88,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
             } */
             
             String output2 = widget.formatWidgetTime(context, startMillis, endMillis);
-        	Log.i(TAG,"\"" + output + "\"; \"" + output2 + "\"");
+        	MyLog.i(this, "\"" + output + "\"; \"" + output2 + "\"");
             
             //assertEquals(dateTest.expectedOutput, output);
         }         
@@ -176,7 +175,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     }
 
     public void test100Receiver() throws Exception {
-    	Log.i(TAG,"testReceiver started");
+    	MyLog.i(this, "testReceiver started");
 
     	int numTweets;
     	CommandEnum msgType;
@@ -223,7 +222,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	Context context = this.getInstrumentation().getContext();
     	//Context context = getInstrumentation().getContext();
 
-    	Log.i(TAG,"Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
+    	MyLog.i(this, "Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
 
     	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
 		intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
@@ -246,7 +245,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	//Context context = getInstrumentation().getContext();
     	long triggerTime;
 
-    	Log.i(TAG,"Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
+    	MyLog.i(this, "Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
 
     	triggerTime = System.currentTimeMillis() + 3000;
     	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
@@ -290,7 +289,7 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
         public void run() {
 	    	Context context = getInstrumentation().getContext();
 
-	    	Log.i(TAG,"Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
+	    	MyLog.i(this, "Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
 	    	
 	    	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
 			intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);

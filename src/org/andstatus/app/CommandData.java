@@ -33,7 +33,6 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class CommandData {
-    private static final String TAG = CommandData.class.getSimpleName();
     public CommandEnum command;
     
     /**
@@ -173,7 +172,7 @@ public class CommandData {
                 break;
         }
 
-        MyLog.v(TAG, "Restored command " + (IntentExtra.EXTRA_MSGTYPE + si) + " = " + strCommand);
+        MyLog.v(this, "Restored command " + (IntentExtra.EXTRA_MSGTYPE + si) + " = " + strCommand);
     }
     
     /**

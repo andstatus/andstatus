@@ -20,9 +20,9 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.util.Log;
 
 import org.andstatus.app.data.MyDatabase.FollowingUser;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
@@ -30,8 +30,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  * @author yvolk@yurivolkov.com
  */
 public class FollowingUserValues {
-    private static final String TAG = FollowingUserValues.class.getSimpleName();
-
     public long userId;
     public long followingUserId;
     private ContentValues contentValues = new ContentValues();
@@ -110,7 +108,7 @@ public class FollowingUserValues {
        // This is since API 11, see http://developer.android.com/reference/android/database/sqlite/SQLiteDatabaseLockedException.html
        //     } catch (SQLiteDatabaseLockedException e) {
             } catch (SQLiteException e) {
-                Log.w(TAG, "update, Database is locked, pass=" + pass);
+                MyLog.w(this, "update, Database is locked, pass=" + pass);
                 try {
                     // If the problem persists, maybe we will implement object locking...
                     Thread.sleep(300);

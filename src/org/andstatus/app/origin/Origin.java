@@ -211,8 +211,8 @@ public class Origin {
         boolean ok = false;
         if (username != null && (username.length() > 0)) {
             ok = username.matches(usernameRegEx);
-            if (!ok && MyLog.isLoggable(TAG, Log.INFO)) {
-                Log.i(TAG, "The Username is not valid: \"" + username + "\" in " + name);
+            if (!ok && MyLog.isLoggable(TAG, MyLog.INFO)) {
+                MyLog.i(this, "The Username is not valid: \"" + username + "\" in " + name);
             }
         }
         return ok;

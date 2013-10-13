@@ -24,7 +24,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FilterQueryProvider;
@@ -76,8 +75,8 @@ public class PagedCursorAdapter extends SimpleCursorAdapter implements FilterQue
 			}
 			mSortOrder += " " + constraint.toString().trim();
 		}
-		if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-		    Log.v(TAG, "runQuery, mUri=" + mUri + "; mProjection=" + Arrays.toString(mProjection) + "; mSortOrder=" + mSortOrder + ";");
+		if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+		    MyLog.v(TAG, "runQuery, mUri=" + mUri + "; mProjection=" + Arrays.toString(mProjection) + "; mSortOrder=" + mSortOrder + ";");
 		}
 		return mContentResolver.query(mUri, mProjection, null, null, mSortOrder);
 	}

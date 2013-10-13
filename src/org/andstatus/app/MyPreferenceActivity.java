@@ -39,7 +39,6 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.RingtonePreference;
 import android.preference.Preference.OnPreferenceChangeListener;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
@@ -95,9 +94,9 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             // and in one place: here
             MyPreferences.setDefaultValues(R.xml.preferences, false);
             if (MyPreferences.shouldSetDefaultValues()) {
-                Log.e(TAG, "Default values were not set?!");   
+                MyLog.e(this, "Default values were not set?!");   
             } else {
-                Log.i(TAG, "Default values has been set");   
+                MyLog.i(this, "Default values has been set");   
             }
         }
         addPreferencesFromResource(R.xml.preferences);
@@ -479,9 +478,9 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                     }
                 }
                 if (!done) {
-                    if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                        MyLog.v(TAG, "from: " + dbFileOld.getPath());
-                        MyLog.v(TAG, "to: " + dbFileNew.getPath());
+                    if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                        MyLog.v(this, "from: " + dbFileOld.getPath());
+                        MyLog.v(this, "to: " + dbFileNew.getPath());
                     }
                     try {
                         dbFileNew.createNewFile();
@@ -542,7 +541,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                     somethingIsBeingChanging = false;
                 }
             }
-            MyLog.v(TAG, "Move: " + message);
+            MyLog.v(this, "Move: " + message);
 
             try {
                 jso = new JSONObject();
@@ -620,7 +619,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                         .getString(R.string.error);
                         if (message != null && message.length() > 0) {
                             message2 = message2 + ": " + message;
-                            Log.d(TAG, message);
+                            MyLog.d(TAG, message);
                         }
                         Toast.makeText(MyPreferenceActivity.this, message2, Toast.LENGTH_LONG).show();
                         
@@ -639,7 +638,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             if (MyContextHolder.get().persistentAccounts().size() > 0) {
-                MyLog.v(TAG, "Going back to the Timeline");
+                MyLog.v(this, "Going back to the Timeline");
                 finish();
                 startTimelineActivity = true;
                 return true;    

@@ -26,7 +26,6 @@ import android.os.Bundle;
 import android.text.format.DateFormat; 
 import android.text.format.DateUtils;
 import android.text.format.Time;
-import android.util.Log;
 import android.widget.RemoteViews;
 
 import org.andstatus.app.IntentExtra;
@@ -70,15 +69,15 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onReceive; intent=" + intent);
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "onReceive; intent=" + intent);
         }
 		boolean done = false;
 		String action = intent.getAction();
 
 		if (MyService.ACTION_APPWIDGET_UPDATE.equals(action)) {
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "instanceId=" + instanceId + "; Intent from MyService received!");
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "instanceId=" + instanceId + "; Intent from MyService received!");
             }
 			Bundle extras = intent.getExtras();
 			if (extras != null) {
@@ -108,12 +107,12 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 						AppWidgetManager.INVALID_APPWIDGET_ID);
 				done = true;
 			}
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "instanceId=" + instanceId + "; Intent from MyService processed");
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "instanceId=" + instanceId + "; Intent from MyService processed");
             }
 		} else if (AppWidgetManager.ACTION_APPWIDGET_DELETED.equals(action)) {
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "Action APPWIDGET_DELETED was received");
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "Action APPWIDGET_DELETED was received");
             }
 			Bundle extras = intent.getExtras();
 			if (extras != null) {
@@ -134,8 +133,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 				}
 			}
 			if (!done) {
-	            if (MyLog.isLoggable(TAG, Log.DEBUG)) {
-	                Log.d(TAG, "Deletion was not done, extras='"
+	            if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+	                MyLog.d(TAG, "Deletion was not done, extras='"
 	                        + extras.toString() + "'");
 	            }
 			}
@@ -148,8 +147,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onUpdate");
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "onUpdate");
         }
 		// For each widget that needs an update, get the text that we should
 		// display:
@@ -165,8 +164,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 
 	@Override
 	public void onDeleted(Context context, int[] appWidgetIds) {
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onDeleted");
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "onDeleted");
         }
 		// When the user deletes the widget, delete all preferences associated
 		// with it.
@@ -178,15 +177,15 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 
 	@Override
 	public void onEnabled(Context context) {
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onEnabled");
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "onEnabled");
         }
 	}
 
 	@Override
 	public void onDisabled(Context context) {
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "onDisabled");
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "onDisabled");
         }
 
 	}
@@ -203,8 +202,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			int appWidgetId) {
 		boolean Ok = false;
 		try {
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "instanceId=" + instanceId + "; updateAppWidget appWidgetId=" + appWidgetId 
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "instanceId=" + instanceId + "; updateAppWidget appWidgetId=" + appWidgetId 
                         + "; msgType=" + msgType);
             }
 
@@ -260,7 +259,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			// Construct period of counting...
 			String widgetTime = "";
 			if (data.dateChecked == 0) {
-                Log.e(TAG, "data.dateChecked==0");
+                MyLog.e(this, "data.dateChecked==0");
                 widgetComment = context.getString(R.string.appwidget_nodata);
 			} else {
 				widgetTime = formatWidgetTime(context, data.dateCleared, data.dateChecked);
@@ -297,8 +296,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 	            }
 			}
 
-            if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "updateAppWidget text=\"" + widgetText.replaceAll("\n", "; ") + "\"; comment=\""
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "updateAppWidget text=\"" + widgetText.replaceAll("\n", "; ") + "\"; comment=\""
                         + widgetComment + "\"");
             }
 
@@ -376,11 +375,11 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			}
 			Ok = true;
 		} catch (Exception e) {
-			Log.e(TAG, "instanceId=" + instanceId + "; updateAppWidget exception: " + e.toString() );
+			MyLog.e(this, "instanceId=" + instanceId + "; updateAppWidget exception: " + e.toString() );
 			
 		} finally {
-            if ( !Ok || MyLog.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "instanceId=" + instanceId + "; updateAppWidget " + (Ok ? "succeded" : "failed") );
+            if ( !Ok || MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "instanceId=" + instanceId + "; updateAppWidget " + (Ok ? "succeded" : "failed") );
             }
 		}
 	}
@@ -393,7 +392,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 
 		if (endMillis == 0) {
 			widgetTime = "=0 ???";
-			Log.e(TAG, "data.dateUpdated==0");
+			MyLog.e(this, "data.dateUpdated==0");
 		} else {
 			Time timeStart = new Time();
 			timeStart.set(startMillis);

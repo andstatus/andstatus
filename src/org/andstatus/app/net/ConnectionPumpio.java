@@ -19,7 +19,6 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.Html;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -161,7 +160,7 @@ public class ConnectionPumpio extends Connection {
             long unixTime = df.parse(datePrepared).getTime();
             return unixTime;
         } catch (ParseException e) {
-            Log.e(TAG, "Failed to parse the date: '" + date +"'");
+            MyLog.e(TAG, "Failed to parse the date: '" + date +"'");
             return new Date().getTime();
         }
     }
@@ -255,7 +254,7 @@ public class ConnectionPumpio extends Connection {
         }
         if (TextUtils.isEmpty(objectType)) {
             objectType = "unknown object type: " + oid;
-            Log.e(TAG, objectType);
+            MyLog.e(this, objectType);
         }
         return objectType;
     }
@@ -278,7 +277,7 @@ public class ConnectionPumpio extends Connection {
         if (TextUtils.isEmpty(host)) {
             throw new IllegalArgumentException(apiRoutine + ": host is empty for the userId=" + userId);
         } else if (host.compareToIgnoreCase(http.data.host) != 0) {
-            MyLog.v(TAG, "Requesting data from the host: " + host);
+            MyLog.v(this, "Requesting data from the host: " + host);
             HttpConnectionData connectionData1 = http.data.newCopy();
             connectionData1.oauthClientKeys = null;
             connectionData1.host = host;
@@ -379,7 +378,7 @@ public class ConnectionPumpio extends Connection {
                 throw ConnectionException.loggedJsonException(TAG, e, activity, "Parsing timeline item");
             }
         } else {
-            Log.e(TAG, "Not an Activity in the timeline:" + activity.toString() );
+            MyLog.e(this, "Not an Activity in the timeline:" + activity.toString() );
             item.mbMessage = messageFromJson(activity);
         }
         return item;
@@ -412,9 +411,9 @@ public class ConnectionPumpio extends Connection {
     }
 
     MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
-        if (MyLog.isLoggable(TAG, Log.VERBOSE)) {
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             try {
-                MyLog.v(TAG, "messageFromJson: " + jso.toString(2));
+                MyLog.v(this, "messageFromJson: " + jso.toString(2));
             } catch (JSONException e) {
                 ConnectionException.loggedJsonException(TAG, e, jso, "messageFromJson");
             }
@@ -600,7 +599,7 @@ public class ConnectionPumpio extends Connection {
         ConnectionAndUrl conu = getConnectionAndUrl(ApiRoutineEnum.GET_USER, userId);
         JSONObject jso = conu.httpConnection.getRequest(conu.url);
         MbUser mbUser = userFromJson(jso);
-        MyLog.v(TAG, "getUser '" + userId + "' " + mbUser.realName);
+        MyLog.v(this, "getUser '" + userId + "' " + mbUser.realName);
         return mbUser;
     }
 }

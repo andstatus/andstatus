@@ -4,7 +4,6 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import java.util.List;
 
@@ -48,7 +47,7 @@ public class ForegroundCheckTask extends AsyncTask<Context, Void, Boolean> {
     public static boolean isAppOnForeground(Context context) {
         boolean is = true;
         if (context == null) {
-            Log.e(TAG, "Context is null.");
+            MyLog.e(TAG, "Context is null.");
         } else
             try {
                 is = ((new ForegroundCheckTask().execute(context).get()));
