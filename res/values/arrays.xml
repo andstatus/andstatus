@@ -100,6 +100,7 @@
     <string-array name="origin_system_entries">
         <item>twitter</item>
         <item>pump.io</item>
+        <item>status.net</item>
     </string-array>
     <string-array name="theme_values">
 		<item>Small</item>

@@ -21,8 +21,8 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
-import android.util.Log;
 
+import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection.ApiEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -35,7 +35,6 @@ import org.andstatus.app.util.TriState;
  *
  */
 public class Origin {
-    private static final String TAG = Origin.class.getSimpleName();
 
     public enum OriginEnum {
         /**
@@ -84,6 +83,9 @@ public class Origin {
                 origin.id = getId();
                 origin.name = getName();
                 origin.api = getApi();
+                if (origin.canSetHostOfOrigin()) {
+                    origin.host = MyPreferences.getDefaultSharedPreferences().getString(origin.keyOf(KEY_HOST_OF_ORIGIN),"");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -143,6 +145,7 @@ public class Origin {
     
     protected String name = OriginEnum.UNKNOWN.getName();
     protected long id = 0;
+    protected String host = "";
     protected ApiEnum api = ApiEnum.UNKNOWN_API;
 
     /**
@@ -160,6 +163,13 @@ public class Origin {
      */
     protected boolean shouldSetNewUsernameManuallyNoOAuth = false;
     
+    public final static String KEY_HOST_OF_ORIGIN = "host_of_origin"; 
+    protected boolean canSetHostOfOrigin = false;
+    
+    public boolean canSetHostOfOrigin() {
+        return canSetHostOfOrigin;
+    }
+
     protected int maxCharactersInMessage = CHARS_MAX_DEFAULT;
     protected String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     
@@ -211,7 +221,7 @@ public class Origin {
         boolean ok = false;
         if (username != null && (username.length() > 0)) {
             ok = username.matches(usernameRegEx);
-            if (!ok && MyLog.isLoggable(TAG, MyLog.INFO)) {
+            if (!ok && MyLog.isLoggable(this, MyLog.INFO)) {
                 MyLog.i(this, "The Username is not valid: \"" + username + "\" in " + name);
             }
         }
@@ -265,6 +275,7 @@ public class Origin {
 
     public OriginConnectionData getConnectionData(TriState triState) {
         OriginConnectionData connectionData = new OriginConnectionData();
+        connectionData.host = host;
         connectionData.api = api;
         connectionData.originId = id;
         connectionData.isOAuth = triState.toBoolean(isOAuthDefault);
@@ -274,5 +285,43 @@ public class Origin {
             }
         }
         return connectionData;
+    }
+    
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String hostOfOrigin) {    
+        if (!canSetHostOfOrigin) { 
+            throw new IllegalStateException("The " + name  +" origin doesn' allow setting it's host");
+        }
+        host = hostOfOrigin;
+    }
+
+    public boolean hostIsValid() {
+        return hostIsValid(host);
+    }
+
+    public boolean hostIsValid(String host) {
+        boolean ok = false;
+        if (host != null) {
+            // From http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
+            String validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
+            ok = host.matches(validHostnameRegex);
+        }
+        return ok;
+    }
+    
+    public void save() {
+        if (canSetHostOfOrigin()) {
+            String hostOld = MyPreferences.getDefaultSharedPreferences().getString(keyOf(KEY_HOST_OF_ORIGIN),"");
+            if (!hostOld.equals(host)) {
+                MyPreferences.getDefaultSharedPreferences().edit().putString(keyOf(KEY_HOST_OF_ORIGIN), host).commit();
+            }
+        }
+    }
+    
+    private String keyOf(String keyRoot) {
+        return keyRoot + Long.toString(id);
     }
 }

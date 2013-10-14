@@ -23,9 +23,10 @@ class OriginStatusNet extends Origin {
 
     protected OriginStatusNet() {
         isOAuthDefault = false;
-        canChangeOAuth = true; 
+        canChangeOAuth = false; 
         shouldSetNewUsernameManuallyIfOAuth = false;
         shouldSetNewUsernameManuallyNoOAuth = true;
+        canSetHostOfOrigin = true;
         usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
         maxCharactersInMessage = CHARS_MAX_DEFAULT;
     }
@@ -34,7 +35,6 @@ class OriginStatusNet extends Origin {
     public OriginConnectionData getConnectionData(TriState triState) {
         OriginConnectionData connectionData = super.getConnectionData(triState);
         connectionData.isHttps = false;
-        connectionData.host = "status.fsf.org";   // See http://federation.skilledtests.com/List_of_Independent_Statusnet_Instances.html
         connectionData.basicPath = "api";
         connectionData.oauthPath = "api";
         connectionData.connectionClass = ConnectionTwitterStatusNet.class;

@@ -36,7 +36,7 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
 
     @Override
     public void initialize(HttpConnectionData connectionData) {
-        keySuffix = connectionData.originId + "-" + connectionData.host; 
+        keySuffix = Long.toString(connectionData.originId) + "-" + connectionData.host; 
         keyConsumerKey = KEY_OAUTH_CLIENT_KEY + keySuffix;
         keyConsumerSecret = KEY_OAUTH_CLIENT_SECRET + keySuffix;
         consumerKey = MyPreferences.getDefaultSharedPreferences().getString(keyConsumerKey, "");

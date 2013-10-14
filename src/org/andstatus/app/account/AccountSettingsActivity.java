@@ -105,6 +105,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
 
     private Preference addAccountOrVerifyCredentials;
 
+    private EditTextPreference hostOfOrigin;
+    
     private boolean onSharedPreferenceChanged_busy = false;
     
     /**
@@ -125,10 +127,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         addPreferencesFromResource(R.xml.account_settings);
         
         mOriginName = (ListPreference) findPreference(MyAccount.Builder.KEY_ORIGIN_NAME);
+        addAccountOrVerifyCredentials = findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
         mOAuth = (CheckBoxPreference) findPreference(MyAccount.Builder.KEY_OAUTH);
         mEditTextUsername = (EditTextPreference) findPreference(MyAccount.Builder.KEY_USERNAME_NEW);
         mEditTextPassword = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
-        addAccountOrVerifyCredentials = findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
+        hostOfOrigin = (EditTextPreference) findPreference(Origin.KEY_HOST_OF_ORIGIN);
 
         restoreState(getIntent(), "onCreate");
     }
@@ -296,6 +299,23 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         addAccountOrVerifyCredentials.setTitle(titleResId);
         addAccountOrVerifyCredentials.setSummary(summary);
         addAccountOrVerifyCredentials.setEnabled(addAccountOrVerifyCredentialsEnabled);
+        
+        Origin origin = Origin.fromOriginId(ma.getOriginId());
+        isNeeded = Origin.fromOriginId(ma.getOriginId()).canSetHostOfOrigin();
+        boolean isEnabled = isNeeded && (ma.accountsOfThisOrigin() < 2);
+        hostOfOrigin.setEnabled(isEnabled);
+        if (isNeeded) {
+            hostOfOrigin.setTitle(R.string.title_preference_host);
+            if (origin.hostIsValid()) {
+                hostOfOrigin.setSummary(origin.getHost());
+            } else {
+                hostOfOrigin.setSummary(R.string.summary_preference_host);
+            }
+            hostOfOrigin.setText(origin.getHost());
+        } else {
+            hostOfOrigin.setTitle("");
+            hostOfOrigin.setSummary("");
+        }
     }
 
     @Override
@@ -439,6 +459,17 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             if (key.equals(Connection.KEY_PASSWORD)) {
                 if (state.getAccount().getPassword().compareTo(mEditTextPassword.getText()) != 0) {
                     state.builder.setPassword(mEditTextPassword.getText());
+                    showUserPreferences();
+                }
+            }
+            if (key.equals(Origin.KEY_HOST_OF_ORIGIN)) {
+                Origin origin = Origin.fromOriginId(state.getAccount().getOriginId());
+                if (origin.canSetHostOfOrigin()) {
+                    String host = hostOfOrigin.getText();
+                    if (origin.hostIsValid(host)) {
+                        origin.setHost(host);
+                    }
+                    origin.save();
                     showUserPreferences();
                 }
             }

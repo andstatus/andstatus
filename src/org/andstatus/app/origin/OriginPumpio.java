@@ -65,7 +65,6 @@ class OriginPumpio extends Origin {
     public OriginConnectionData getConnectionData(TriState triState) {
         OriginConnectionData connectionData = super.getConnectionData(triState);
         connectionData.isHttps = true;
-        connectionData.host = "identi.ca";  // Default host
         connectionData.basicPath = "api";
         connectionData.oauthPath = "oauth";
         connectionData.connectionClass = ConnectionPumpio.class;

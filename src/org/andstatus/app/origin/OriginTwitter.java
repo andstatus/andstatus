@@ -25,6 +25,7 @@ import org.andstatus.app.util.TriState;
 class OriginTwitter extends Origin {
 
     protected OriginTwitter() {
+        host = "api.twitter.com";
         isOAuthDefault = true;
         canChangeOAuth = false;  // Starting from 2010-09 twitter.com allows OAuth only
         shouldSetNewUsernameManuallyIfOAuth = false;
@@ -68,7 +69,6 @@ class OriginTwitter extends Origin {
     public OriginConnectionData getConnectionData(TriState triState) {
         OriginConnectionData connectionData = super.getConnectionData(triState);
         connectionData.isHttps = false;
-        connectionData.host = "api.twitter.com";
         connectionData.basicPath = "1.1";
         connectionData.oauthPath = "oauth";
         connectionData.connectionClass = ConnectionTwitter1p1.class;
