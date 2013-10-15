@@ -42,12 +42,12 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <changes><change>Added support of the "status.net"-like sites: "Even though identi.ca 
             has changed to pump.io there are many status.net servers outside 
             (and servers that are compatible to the status.net API)", 
-            see <a href="https://github.com/andstatus/andstatus/issues/37" >Issue #37</a></change>.
+            see <a href="https://github.com/andstatus/andstatus/issues/37" >Issue #37</a>.
             Actually, previously existed support for the Twitter-compatible status.net API 
             was re-enabled with one addition: the actual name of the status.net server
             is now customizable (it may be e.g. <a href="https://quitter.se/andstatus" >quitter.se</a> 
             or any compatible server). You may have several status.net accounts in AndStatus application, 
-            but all of them should be on the same server.
+            but all of them should be on the same server.</change>
         </changes>
     </release>
     <release android:versionName="1.18.1" android:versionCode="81"

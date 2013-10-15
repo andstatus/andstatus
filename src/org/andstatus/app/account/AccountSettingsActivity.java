@@ -268,8 +268,28 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         mEditTextPassword.setSummary(summary);
         mEditTextPassword.setEnabled(isNeeded);
 
+        Origin origin = Origin.fromOriginId(ma.getOriginId());
+        isNeeded = Origin.fromOriginId(ma.getOriginId()).canSetHostOfOrigin();
+        boolean isEnabled = isNeeded && (ma.accountsOfThisOrigin() == 0);
+        boolean originParametersPresent = true;
+        hostOfOrigin.setEnabled(isEnabled);
+        if (isNeeded) {
+            hostOfOrigin.setTitle(R.string.title_preference_host);
+            if (origin.hostIsValid()) {
+                hostOfOrigin.setSummary(origin.getHost());
+            } else {
+                hostOfOrigin.setSummary(R.string.summary_preference_host);
+                originParametersPresent = false;
+            }
+            hostOfOrigin.setText(origin.getHost());
+        } else {
+            hostOfOrigin.setTitle("");
+            hostOfOrigin.setSummary("");
+        }
+        
         int titleResId;
-        boolean addAccountOrVerifyCredentialsEnabled = ma.isOAuth() || ma.getCredentialsPresent();
+        boolean addAccountOrVerifyCredentialsEnabled = (ma.isOAuth() || ma.getCredentialsPresent()) 
+                && originParametersPresent;
         switch (ma.getCredentialsVerified()) {
             case SUCCEEDED:
                 titleResId = R.string.title_preference_verify_credentials;
@@ -299,23 +319,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         addAccountOrVerifyCredentials.setTitle(titleResId);
         addAccountOrVerifyCredentials.setSummary(summary);
         addAccountOrVerifyCredentials.setEnabled(addAccountOrVerifyCredentialsEnabled);
-        
-        Origin origin = Origin.fromOriginId(ma.getOriginId());
-        isNeeded = Origin.fromOriginId(ma.getOriginId()).canSetHostOfOrigin();
-        boolean isEnabled = isNeeded && (ma.accountsOfThisOrigin() < 2);
-        hostOfOrigin.setEnabled(isEnabled);
-        if (isNeeded) {
-            hostOfOrigin.setTitle(R.string.title_preference_host);
-            if (origin.hostIsValid()) {
-                hostOfOrigin.setSummary(origin.getHost());
-            } else {
-                hostOfOrigin.setSummary(R.string.summary_preference_host);
-            }
-            hostOfOrigin.setText(origin.getHost());
-        } else {
-            hostOfOrigin.setTitle("");
-            hostOfOrigin.setSummary("");
-        }
     }
 
     @Override
