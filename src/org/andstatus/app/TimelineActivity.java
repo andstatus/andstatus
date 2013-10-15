@@ -999,15 +999,15 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             mQueryString = "";
         }
 
-        TextView selecteUserText = (TextView) findViewById(R.id.selected_user_title_text);
+        TextView selectedUserText = (TextView) findViewById(R.id.selected_user_title_text);
         ToggleButton combinedTimelineToggle = (ToggleButton) findViewById(R.id.combinedTimelineToggle);
         combinedTimelineToggle.setChecked(mIsTimelineCombined);
         if (mSelectedUserId != 0 && mSelectedUserId != mCurrentMyAccountUserId) {
             combinedTimelineToggle.setVisibility(View.GONE);
-            selecteUserText.setText(MyProvider.userIdToName(mSelectedUserId));
-            selecteUserText.setVisibility(View.VISIBLE);
+            selectedUserText.setText(MyProvider.userIdToName(mSelectedUserId));
+            selectedUserText.setVisibility(View.VISIBLE);
         } else {
-            selecteUserText.setVisibility(View.GONE);
+            selectedUserText.setVisibility(View.GONE);
             // Show the "Combined" toggle even for one account to see messages, 
             // which are not on the timeline.
             // E.g. messages by users, downloaded on demand.

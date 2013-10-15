@@ -856,7 +856,7 @@ public class MyAccount implements AccountDataReader {
      */
     public String shortestUniqueAccountName() {
         String uniqueName = "?";
-        uniqueName = toString();
+        uniqueName = getAccountName();
 
         boolean found = false;
         String possiblyUnique = getUsername();
