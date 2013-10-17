@@ -122,8 +122,8 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public boolean onCreate() {
-        MyContextHolder.initialize(getContext(), this);
-        return (MyContextHolder.get().getDatabase() == null) ? false : true;
+        MyContextHolder.storeContextIfNotPresent(getContext(), this);
+        return MyContextHolder.get().isReady();
     }
 
     /**

@@ -96,7 +96,7 @@ public class MyLog {
         String tag = objTagToString(objTag);
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
-            i = Log.d(TAG, msg);
+            i = Log.d(tag, msg);
         }
         return i;
     }
@@ -108,7 +108,7 @@ public class MyLog {
         String tag = objTagToString(objTag);
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
-            i = Log.d(TAG, msg, tr);
+            i = Log.d(tag, msg, tr);
         }
         return i;
     }
@@ -120,7 +120,7 @@ public class MyLog {
         String tag = objTagToString(objTag);
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
-            i = Log.v(TAG, msg);
+            i = Log.v(tag, msg);
         }
         return i;
     }

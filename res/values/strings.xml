@@ -83,7 +83,7 @@
 	<string name="dialog_title_preference_min_log_level">Minimum logging level</string>
     <string name="dialog_title_preference_origin_system">Microblogging system</string>
     <string name="dialog_title_preference_password">Password</string>
-	<string name="dialog_title_preference_theme">Select a Theme</string>
+    <string name="dialog_title_preference_theme">Select a Theme</string>
 	<string name="dialog_title_preference_username">Username</string>
 	<string name="dialog_title_preference_username_pumpio">Webfinger ID</string>
 	<string name="dialog_title_registering_client">Registering AndStatus</string>
@@ -167,10 +167,11 @@
         Press \"Get Started\" button below and select the \"Manage accounts\" option
         in the AndStatus preferences <i>or</i> simply go to the \"Settings\" of Your device, 
         select \"Add account\" option and add an account of the \"AndStatus\" type.\n
-        You will be prompted to select desired Microblogging system (Twitter or identi.ca) 
+        You will be prompted to select desired Microblogging system 
+        (twitter, pump.io or status.net) 
         and authorise the AndStatus application\'s access to it
         at the Microblogging system\'s web site.\n 
-        Please note that currently for identi.ca only \"Basic auhentication\" works; i.e. no OAuth.\n
+        Please note that currently for \"status.net\" only \"Basic auhentication\" works; i.e. no OAuth.\n
         After successful creation of the account please launch AndStatus application again. 
         This time you will be presented with the Change Log. 
         Press the \"Get Started\" button below - and you will get to the main AndStatus window.\n
@@ -240,7 +241,9 @@
 	<string name="summary_preference_oauth_on">OAuth (secure authentication) is on</string>
     <string name="summary_preference_origin_system">{0}</string>
     <string name="summary_preference_password">Your password in the Microblogging system</string>
-    <string name="summary_preference_storage">Where and what information to store</string>
+	<string name="summary_preference_ssl_off">No SSL</string>
+	<string name="summary_preference_ssl_on">SSL is on</string>
+	<string name="summary_preference_storage">Where and what information to store</string>
 	<string name="summary_preference_storage_external_off">Store data in Internal Memory</string>
 	<string name="summary_preference_storage_external_on">Store data on External Memory</string>
 	<string name="summary_preference_theme">Select AndStatus theme</string>
@@ -277,6 +280,7 @@
     <string name="title_preference_password">Password</string>
 	<string name="title_preference_report_bug">Report Bug</string>
 	<string name="title_preference_storage">Storage</string>
+	<string name="title_preference_ssl">SSL</string>
 	<string name="title_preference_storage_external">Use External Storage</string>
 	<string name="title_preference_theme">Theme</string>
 	<string name="title_preference_username">Username</string>

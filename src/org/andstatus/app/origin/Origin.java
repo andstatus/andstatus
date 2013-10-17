@@ -145,7 +145,6 @@ public class Origin {
     
     protected String name = OriginEnum.UNKNOWN.getName();
     protected long id = 0;
-    protected String host = "";
     protected ApiEnum api = ApiEnum.UNKNOWN_API;
 
     /**
@@ -163,13 +162,14 @@ public class Origin {
      */
     protected boolean shouldSetNewUsernameManuallyNoOAuth = false;
     
+    protected String host = "";
     public final static String KEY_HOST_OF_ORIGIN = "host_of_origin"; 
     protected boolean canSetHostOfOrigin = false;
-    
-    public boolean canSetHostOfOrigin() {
-        return canSetHostOfOrigin;
-    }
 
+    protected boolean ssl = true;
+    public final static String KEY_SSL = "ssl"; 
+    protected boolean canChangeSsl = false;
+    
     protected int maxCharactersInMessage = CHARS_MAX_DEFAULT;
     protected String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     
@@ -287,6 +287,11 @@ public class Origin {
         return connectionData;
     }
     
+    
+    public boolean canSetHostOfOrigin() {
+        return canSetHostOfOrigin;
+    }
+
     public String getHost() {
         return host;
     }
@@ -312,11 +317,31 @@ public class Origin {
         return ok;
     }
     
+    public boolean canChangeSsl() {
+        return canChangeSsl;
+    }
+
+    public boolean isSsl() {
+        return ssl;
+    }
+
+    public void setSsl(boolean ssl) {
+        if (canChangeSsl) {
+            this.ssl = ssl;
+        }
+    }
+
     public void save() {
         if (canSetHostOfOrigin()) {
             String hostOld = MyPreferences.getDefaultSharedPreferences().getString(keyOf(KEY_HOST_OF_ORIGIN),"");
             if (!hostOld.equals(host)) {
                 MyPreferences.getDefaultSharedPreferences().edit().putString(keyOf(KEY_HOST_OF_ORIGIN), host).commit();
+            }
+        }
+        if (canChangeSsl()) {
+            boolean sslOld = MyPreferences.getDefaultSharedPreferences().getBoolean(keyOf(KEY_SSL), true);
+            if ( sslOld != ssl) {
+                MyPreferences.getDefaultSharedPreferences().edit().putBoolean(keyOf(KEY_SSL), ssl).commit();
             }
         }
     }

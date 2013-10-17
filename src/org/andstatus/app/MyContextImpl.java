@@ -22,6 +22,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
@@ -86,8 +87,7 @@ public final class MyContextImpl implements MyContext {
         MyContextImpl newMyContext = getEmpty();
         newMyContext.initializedBy = initializerName;
         if (context != null) {
-            // Maybe we should use context_in.getApplicationContext() ??
-            newMyContext.context = context.getApplicationContext();
+            Context contextToUse = context.getApplicationContext();
         
             /* This may be useful to know from where the class was initialized
             StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
@@ -96,9 +96,20 @@ public final class MyContextImpl implements MyContext {
             }
             */
         
-            if ( newMyContext.context == null) {
-                MyLog.v(TAG, "getApplicationContext is null, trying the context_in itself: " + context.getClass().getName());
-                newMyContext.context = context;
+            if ( contextToUse == null) {
+                MyLog.w(TAG, "getApplicationContext is null, trying the context itself: " + context.getClass().getName());
+                contextToUse = context;
+            }
+            if ( contextToUse != null) {
+                // TODO: Maybe we need to determine if the context is compatible, using some Interface...
+                // ...but we don't have any yet.
+                if (!context.getClass().getName().contains(this.getClass().getPackage().getName())) {
+                    MyLog.w(TAG, "Incompatible context: " + contextToUse.getClass().getName());
+                    contextToUse = null;
+                }
+            }
+            if ( contextToUse != null) {
+                newMyContext.context = contextToUse;
             }
         }
         return newMyContext;
@@ -117,7 +128,7 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public boolean isReady() {
-        return (state == MyContextState.READY);
+        return (state == MyContextState.READY && !MyDatabaseConverter.isUpgrading());
     }
 
     @Override

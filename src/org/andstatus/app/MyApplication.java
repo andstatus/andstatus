@@ -35,13 +35,8 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        MyLog.v(TAG, "onCreate started");
-        MyContextHolder.initialize(this, this);
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(this, "onCreate ended");
-        } else {
-            MyLog.d(TAG, "onCreate ended, no verbose log");
-        }
+        MyLog.v(this, "onCreate started");
+        MyContextHolder.storeContextIfNotPresent(this, this);
     }
 
     @Override
@@ -61,7 +56,6 @@ public class MyApplication extends Application {
         }
         return db;
     }
-
     
     /**
      * Since: API Level 11

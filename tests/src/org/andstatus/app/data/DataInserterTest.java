@@ -36,13 +36,13 @@ public class DataInserterTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         context = TestSuite.initialize(this);
+        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
 
         String firstUserName = "firstTestUser@identi.ca";
         MbUser firstMbUser  = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), 
                 "acct:" + firstUserName);
         firstMbUser.userName = firstUserName;
-        MyAccount.Builder builderFirst = addAccount(firstMbUser);
-        MyLog.v(this, firstUserName + " added, id=" + builderFirst.getAccount().getUserId());
+        addAccount(firstMbUser);
 
         long accountUserId_existing = MyProvider.oidToId(OidEnum.USER_OID, firstMbUser.originId, firstMbUser.oid);
         accountMbUser = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), accountUserOid);
@@ -60,6 +60,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         
         MyPreferences.onPreferencesChanged();
         MyContextHolder.initialize(context, this);
+        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
     }
 
     private MyAccount.Builder addAccount(MbUser mbUser) throws ConnectionException {
@@ -73,10 +74,12 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("User in the database for id=" + userId, 
                 mbUser.oid,
                 MyProvider.idToOid(OidEnum.USER_OID, userId, 0));
+        MyLog.v(this, builder.getAccount().getAccountName() + " added, id=" + builder.getAccount().getUserId());
         return builder;
     }
     
     public void testUserAdded() throws ConnectionException {
+        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
         assertTrue("Account is persistent", ma != null);
         assertTrue("Account has UserId", ma.getUserId() != 0);
@@ -84,6 +87,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     public void testFollowingUser() throws ConnectionException {
+        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         deleteOldMessage(Origin.OriginEnum.PUMPIO.getId(), messageOid);
         
@@ -167,6 +171,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     public void testMessageFavoritedByOtherUser() throws ConnectionException {
+        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
 
         String username = "anybody@pumpity.net";
@@ -212,6 +217,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
 
     public void testMessageFavoritedByAccountUser() throws ConnectionException {
+        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
 
         String username = "example@pumpity.net";
@@ -252,6 +258,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     public void testDirectMessageToMyAccount() throws ConnectionException {
+        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ";
         deleteOldMessage(Origin.OriginEnum.PUMPIO.getId(), messageOid);
 

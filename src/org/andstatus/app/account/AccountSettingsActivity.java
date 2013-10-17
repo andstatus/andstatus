@@ -106,6 +106,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     private Preference addAccountOrVerifyCredentials;
 
     private EditTextPreference hostOfOrigin;
+
+    private CheckBoxPreference ssl;
     
     private boolean onSharedPreferenceChanged_busy = false;
     
@@ -132,6 +134,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         mEditTextUsername = (EditTextPreference) findPreference(MyAccount.Builder.KEY_USERNAME_NEW);
         mEditTextPassword = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
         hostOfOrigin = (EditTextPreference) findPreference(Origin.KEY_HOST_OF_ORIGIN);
+        ssl = (CheckBoxPreference) findPreference(Origin.KEY_SSL);
 
         restoreState(getIntent(), "onCreate");
     }
@@ -236,6 +239,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         mEditTextUsername.setSummary(summary);
         mEditTextUsername.setEnabled(!state.builder.isPersistent() && !ma.isUsernameValidToStartAddingNewAccount());
 
+        // TODO: isOAuth should be a parameter of an Origin, not of an account
+        // Changing this parameter should trigger clearing of all the origin users' credentials.
         boolean isNeeded = ma.canChangeOAuth();
         if (ma.isOAuth() != mOAuth.isChecked()) {
             mOAuth.setChecked(ma.isOAuth());
@@ -285,6 +290,20 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         } else {
             hostOfOrigin.setTitle("");
             hostOfOrigin.setSummary("");
+        }
+
+        isNeeded = origin.canChangeSsl();
+        if (origin.isSsl() != ssl.isChecked()) {
+            ssl.setChecked(origin.isSsl());
+        }
+        isEnabled = isNeeded && (ma.accountsOfThisOrigin() == 0);
+        ssl.setEnabled(isEnabled);
+        if (isNeeded) {
+            ssl.setTitle(R.string.title_preference_oauth);
+            ssl.setSummary(ma.isOAuth() ? R.string.summary_preference_oauth_on : R.string.summary_preference_oauth_off);
+        } else {
+            ssl.setTitle("");
+            ssl.setSummary("");
         }
         
         int titleResId;
@@ -470,10 +489,31 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 if (origin.canSetHostOfOrigin()) {
                     String host = hostOfOrigin.getText();
                     if (origin.hostIsValid(host)) {
-                        origin.setHost(host);
+                        if (!origin.getHost().equalsIgnoreCase(host)) {
+                            origin.setHost(host);
+                            origin.save();
+                            state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                                    AccountName.fromOriginAndUserNames(mOriginName.getValue(),
+                                            state.getAccount().getUsername()).toString(),
+                                            TriState.fromBoolean(state.getAccount().isOAuth()));
+                            showUserPreferences();
+                        }
                     }
-                    origin.save();
-                    showUserPreferences();
+                }
+            }
+            if (key.equals(Origin.KEY_SSL)) {
+                Origin origin = Origin.fromOriginId(state.getAccount().getOriginId());
+                if (origin.canChangeSsl()) {
+                    boolean isSsl = ssl.isChecked();
+                    if (origin.isSsl() != isSsl) {
+                        origin.setSsl(isSsl);
+                        origin.save();
+                        state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                                AccountName.fromOriginAndUserNames(mOriginName.getValue(),
+                                        state.getAccount().getUsername()).toString(),
+                                        TriState.fromBoolean(state.getAccount().isOAuth()));
+                        showUserPreferences();
+                    }
                 }
             }
         } finally {

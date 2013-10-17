@@ -70,6 +70,13 @@
             android:singleLine="true"
             android:summary="@string/summary_preference_host"
             android:title="@string/title_preference_host" />
+	    <CheckBoxPreference
+	        android:defaultValue="true"
+	        android:key="ssl"
+	        android:persistent="true"
+	        android:summaryOff="@string/summary_preference_ssl_off"
+	        android:summaryOn="@string/summary_preference_ssl_on"
+	        android:title="@string/title_preference_ssl" />
     </PreferenceCategory>
     
 </PreferenceScreen>

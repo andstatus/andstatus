@@ -31,6 +31,7 @@ import org.andstatus.app.util.MyLog;
 public class TestSuite extends TestCase {
     private static volatile boolean initialized = false;
     private static volatile Context context;
+    private static volatile String dataPath;
     
     public static boolean isInitialized() {
         return initialized;
@@ -41,15 +42,29 @@ public class TestSuite extends TestCase {
             MyLog.d(TestSuite.class, "Already initialized");
             return context;
         }
-        MyLog.d(TestSuite.class, "Initializing Test Suite");
-        context = testCase.getInstrumentation().getTargetContext();
-        if (context == null) {
-            MyLog.e(TestSuite.class, "targetContext is null.");
-            throw new IllegalArgumentException("this.getInstrumentation().getTargetContext() returned null");
+        for (int iter=0; iter<5; iter++) {
+            MyLog.d(TestSuite.class, "Initializing Test Suite");
+            context = testCase.getInstrumentation().getTargetContext();
+            if (context == null) {
+                MyLog.e(TestSuite.class, "targetContext is null.");
+                throw new IllegalArgumentException("this.getInstrumentation().getTargetContext() returned null");
+            }
+            MyLog.d(TestSuite.class, "Before MyContextHolder.initialize " + iter);
+            try {
+                MyContextHolder.initialize(context, testCase);
+                MyLog.d(TestSuite.class, "After MyContextHolder.initialize " + iter);
+                break;
+            } catch (IllegalStateException e) {
+                MyLog.w(TestSuite.class, "Error caught " + iter);
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
-        MyLog.d(TestSuite.class, "Before MyPreferences.initialize");
-        MyContextHolder.initialize(context, testCase);
-        MyLog.d(TestSuite.class, "After MyPreferences.initialize");
+        assertTrue("MyContext state=" + MyContextHolder.get().state(), MyContextHolder.get().state() != MyContextState.EMPTY);
+        
         if (MyPreferences.shouldSetDefaultValues()) {
             MyLog.d(TestSuite.class, "Before setting default preferences");
             // Default values for the preferences will be set only once
@@ -69,15 +84,29 @@ public class TestSuite extends TestCase {
         if (MyContextHolder.get().state() == MyContextState.UPGRADING) {
             MyLog.d(TestSuite.class, "Upgrade needed");
             MyDatabaseConverter.triggerDatabaseUpgrade();
-            waitTillUpgradeEnded();
         }
+        waitTillUpgradeEnded();
         
         initialized =  MyContextHolder.get().isReady();
         assertTrue("Test Suite initialized, MyContext state=" + MyContextHolder.get().state(), initialized);
+        dataPath = MyContextHolder.get().context().getDatabasePath("andstatus").getPath();
+        MyLog.v("TestSuite", "Test Suite initialized, MyContext state=" + MyContextHolder.get().state() 
+                + "; databasePath=" + dataPath);
         
         return context;
     }
 
+    public static String checkDataPath(Object objTag) {
+        String message = "";
+        String dataPath2 = MyContextHolder.get().context().getDatabasePath("andstatus").getPath();
+        if (dataPath.equalsIgnoreCase(dataPath2)) {
+            return "ok";
+        }
+        message =  (MyContextHolder.get().isReady() ? "" : "not ready; ") + dataPath2 + " instead of " + dataPath;
+        MyLog.e(objTag, message);
+        return message;
+    }
+    
     public static synchronized void forget() {
         context = null;
         MyLog.d(TestSuite.class, "Before forget");
@@ -86,13 +115,13 @@ public class TestSuite extends TestCase {
     }
     
     public static void waitTillUpgradeEnded() {
-        for (int i=1; i < 11; i++) {
+        for (int i=1; i < 100; i++) {
             if(!MyDatabaseConverter.isUpgrading()) {
                 break;
             }
             MyLog.d(TestSuite.class, "Waiting for upgrade to end " + i);
             try {
-                Thread.sleep(200);
+                Thread.sleep(2000);
             } catch(InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }            

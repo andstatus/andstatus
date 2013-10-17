@@ -37,7 +37,6 @@ import android.os.IBinder;
  * password.
  */
 public class AuthenticatorService extends Service {
-    private static final String TAG = AuthenticatorService.class.getSimpleName();
 
     public static final String OPTIONS_USERNAME = "username";
     public static final String OPTIONS_PASSWORD = "password";
@@ -51,7 +50,6 @@ public class AuthenticatorService extends Service {
 
         public Authenticator(Context context) {
             super(context);
-            MyContextHolder.initialize(context, this);
         }
 
         /** 
@@ -164,16 +162,17 @@ public class AuthenticatorService extends Service {
             return null;
         }
     }
-
+    
     @Override
-    public void onStart(Intent intent, int startId) {
-        super.onStart(intent, startId);
-        MyLog.v(TAG, "onStart");
+    public void onCreate() {
+        super.onCreate();
+        MyLog.v(this, "onCreate");
+        MyContextHolder.initialize(this, this);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        MyLog.v(TAG, "onDestroy");
+        MyLog.v(this, "onDestroy");
     }
 }

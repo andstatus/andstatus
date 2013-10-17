@@ -100,7 +100,9 @@ public final class MyContextHolder {
         try {
             return getBlocking(context, initializedBy).preferencesChangeTime();
         } catch (InterruptedException e) {
-            MyLog.d(TAG, "Initialize was interrupted");
+            MyLog.d(TAG, "Initialize was interrupted, releasing resources...");
+            release();
+            Thread.currentThread().interrupt();
             return 0;
         }
     }
@@ -117,16 +119,7 @@ public final class MyContextHolder {
         while (myContext == null || !myContext.initialized()) {
             if (myFutureContext == null) {
                 final String initializerName = MyLog.objTagToString(initializedBy) ;
-                if (myContextCreator.context() == null) {
-                    if (context == null) {
-                        throw new IllegalStateException("MyContextHolder: context is unknown yet");
-                    }
-                    synchronized (contextLock) {
-                        // This allows to refer to the context 
-                        // even before myInitializedContext is initialized
-                        myContextCreator = myContextCreator.newCreator(context, initializerName); 
-                    }
-                }
+                storeContextIfNotPresent(context, initializedBy);
                 final Context contextFinal = myContextCreator.context();
                 Callable<MyContext> callable = new Callable<MyContext>() {
                     @Override
@@ -165,6 +158,26 @@ public final class MyContextHolder {
         return myContext;
     }
 
+    /**
+     *  Quickly return, providing context for the deferred initialization
+     */
+    public static void storeContextIfNotPresent(Context context, Object initializedBy) {
+        String initializerName = MyLog.objTagToString(initializedBy) ;
+        if (myContextCreator.context() == null) {
+            if (context == null) {
+                throw new IllegalStateException("MyContextHolder: context is unknown yet, called by " + initializerName);
+            }
+            synchronized (contextLock) {
+                // This allows to refer to the context 
+                // even before myInitializedContext is initialized
+                myContextCreator = myContextCreator.newCreator(context, initializerName); 
+            }
+            if (myContextCreator.context() == null) {
+                throw new IllegalStateException("MyContextHolder: no compatible context, called by " + initializerName);
+            }
+        }
+    }
+    
     public static void release() {
         synchronized(contextLock) {
             if (myInitializedContext != null) {

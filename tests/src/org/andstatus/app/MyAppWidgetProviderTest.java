@@ -38,18 +38,16 @@ import java.util.Calendar;
  */
 public class MyAppWidgetProviderTest extends ActivityTestCase {
 
-    public MyAppWidgetProviderTest() {
-    	initializeDateTests();
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestSuite.initialize(this);
+        initializeDateTests();
     }
     
     public void test001WidgetTime() throws Exception {
-    	MyLog.i(this, "testWidgetTime started");
-        Context context = TestSuite.initialize(this);
-    	if (context == null) {
-    	    MyLog.e(this, "targetContext is null.");
-    	    throw new Exception("this.getInstrumentation().getTargetContext() returned null");
-    	}
-    	MyContextHolder.initialize(context, this);
+        MyLog.i(this, "testWidgetTime started");
+        Context context = MyContextHolder.get().context();
     	
     	MyAppWidgetProvider widget = new MyAppWidgetProvider();
     	MyLog.i(this, "MyAppWidgetProvider created");
@@ -297,5 +295,4 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 			context.sendBroadcast(intent);
 		}
 	}
-   
 }
