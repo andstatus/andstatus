@@ -27,6 +27,7 @@ class OriginStatusNet extends Origin {
         shouldSetNewUsernameManuallyIfOAuth = false;
         shouldSetNewUsernameManuallyNoOAuth = true;
         canSetHostOfOrigin = true;
+        canChangeSsl = true;
         usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
         maxCharactersInMessage = CHARS_MAX_DEFAULT;
     }

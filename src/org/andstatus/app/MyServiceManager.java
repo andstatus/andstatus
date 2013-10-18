@@ -84,7 +84,7 @@ public class MyServiceManager extends BroadcastReceiver {
                         setServiceAvailable();
                     }
                 }
-                , 1800 * MyPreferences.MILLISECONDS);
+                , java.util.concurrent.TimeUnit.SECONDS.toMillis(1800));
         
     }
 

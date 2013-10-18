@@ -47,6 +47,7 @@ import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 
 import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.MyPreferenceActivity;
@@ -95,19 +96,19 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     
     private StateOfAccountChangeProcess state = null;
 
-    private CheckBoxPreference mOAuth;
+    private CheckBoxPreference oAuthCheckBox;
 
-    private EditTextPreference mEditTextUsername;
+    private EditTextPreference usernameText;
 
-    private EditTextPreference mEditTextPassword;
+    private EditTextPreference passwordText;
     
-    private ListPreference mOriginName;
+    private ListPreference originNameList;
 
     private Preference addAccountOrVerifyCredentials;
 
-    private EditTextPreference hostOfOrigin;
+    private EditTextPreference hostText;
 
-    private CheckBoxPreference ssl;
+    private CheckBoxPreference sslCheckBox;
     
     private boolean onSharedPreferenceChanged_busy = false;
     
@@ -121,20 +122,23 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
-        MyContextHolder.upgradeIfNeeded();
+        MyContextHolder.upgradeIfNeeded(this);
+        if (!MyContextHolder.get().isReady()) {
+            HelpActivity.startFromActivity(this, true, false);
+        }
         
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
         
         addPreferencesFromResource(R.xml.account_settings);
         
-        mOriginName = (ListPreference) findPreference(MyAccount.Builder.KEY_ORIGIN_NAME);
+        originNameList = (ListPreference) findPreference(MyAccount.Builder.KEY_ORIGIN_NAME);
         addAccountOrVerifyCredentials = findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
-        mOAuth = (CheckBoxPreference) findPreference(MyAccount.Builder.KEY_OAUTH);
-        mEditTextUsername = (EditTextPreference) findPreference(MyAccount.Builder.KEY_USERNAME_NEW);
-        mEditTextPassword = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
-        hostOfOrigin = (EditTextPreference) findPreference(Origin.KEY_HOST_OF_ORIGIN);
-        ssl = (CheckBoxPreference) findPreference(Origin.KEY_SSL);
+        oAuthCheckBox = (CheckBoxPreference) findPreference(MyAccount.Builder.KEY_OAUTH);
+        usernameText = (EditTextPreference) findPreference(MyAccount.Builder.KEY_USERNAME_NEW);
+        passwordText = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
+        hostText = (EditTextPreference) findPreference(Origin.KEY_HOST_OF_ORIGIN);
+        sslCheckBox = (CheckBoxPreference) findPreference(Origin.KEY_SSL);
 
         restoreState(getIntent(), "onCreate");
     }
@@ -219,14 +223,14 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     private void showUserPreferences() {
         MyAccount ma = state.getAccount();
         
-        mOriginName.setValue(ma.getOriginName());
+        originNameList.setValue(ma.getOriginName());
         SharedPreferencesUtil.showListPreference(this, MyAccount.Builder.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
 
-        mOriginName.setEnabled(!state.builder.isPersistent() && TextUtils.isEmpty(ma.getUsername()));
+        originNameList.setEnabled(!state.builder.isPersistent() && TextUtils.isEmpty(ma.getUsername()));
         
-        if (mEditTextUsername.getText() == null
-                || ma.getUsername().compareTo(mEditTextUsername.getText()) != 0) {
-            mEditTextUsername.setText(ma.getUsername());
+        if (usernameText.getText() == null
+                || ma.getUsername().compareTo(usernameText.getText()) != 0) {
+            usernameText.setText(ma.getUsername());
         }
         StringBuilder summary;
         if (ma.getUsername().length() > 0) {
@@ -234,76 +238,78 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         } else {
             summary = new StringBuilder(this.getText(ma.alternativeTermForResourceId(R.string.summary_preference_username)));
         }
-        mEditTextUsername.setDialogTitle(this.getText(ma.alternativeTermForResourceId(R.string.dialog_title_preference_username)));
-        mEditTextUsername.setTitle(this.getText(ma.alternativeTermForResourceId(R.string.title_preference_username)));
-        mEditTextUsername.setSummary(summary);
-        mEditTextUsername.setEnabled(!state.builder.isPersistent() && !ma.isUsernameValidToStartAddingNewAccount());
+        usernameText.setDialogTitle(this.getText(ma.alternativeTermForResourceId(R.string.dialog_title_preference_username)));
+        usernameText.setTitle(this.getText(ma.alternativeTermForResourceId(R.string.title_preference_username)));
+        usernameText.setSummary(summary);
+        usernameText.setEnabled(!state.builder.isPersistent() && !ma.isUsernameValidToStartAddingNewAccount());
 
         // TODO: isOAuth should be a parameter of an Origin, not of an account
         // Changing this parameter should trigger clearing of all the origin users' credentials.
         boolean isNeeded = ma.canChangeOAuth();
-        if (ma.isOAuth() != mOAuth.isChecked()) {
-            mOAuth.setChecked(ma.isOAuth());
+        if (ma.isOAuth() != oAuthCheckBox.isChecked()) {
+            oAuthCheckBox.setChecked(ma.isOAuth());
         }
         // In fact, we should hide it if not enabled, but I couldn't find an easy way for this...
-        mOAuth.setEnabled(isNeeded);
+        oAuthCheckBox.setEnabled(isNeeded);
         if (isNeeded) {
-            mOAuth.setTitle(R.string.title_preference_oauth);
-            mOAuth.setSummary(ma.isOAuth() ? R.string.summary_preference_oauth_on : R.string.summary_preference_oauth_off);
+            oAuthCheckBox.setTitle(R.string.title_preference_oauth);
+            oAuthCheckBox.setSummary(ma.isOAuth() ? R.string.summary_preference_oauth_on : R.string.summary_preference_oauth_off);
         } else {
-            mOAuth.setTitle("");
-            mOAuth.setSummary("");
+            oAuthCheckBox.setTitle("");
+            oAuthCheckBox.setSummary("");
         }
 
         isNeeded = ma.getConnection().isPasswordNeeded();
-        if (mEditTextPassword.getText() == null
-                || ma.getPassword().compareTo(mEditTextPassword.getText()) != 0) {
-            mEditTextPassword.setText(ma.getPassword());
+        if (passwordText.getText() == null
+                || ma.getPassword().compareTo(passwordText.getText()) != 0) {
+            passwordText.setText(ma.getPassword());
         }
         if (isNeeded) {
-            mEditTextPassword.setTitle(R.string.title_preference_password);
+            passwordText.setTitle(R.string.title_preference_password);
             summary = new StringBuilder(this.getText(R.string.summary_preference_password));
             if (TextUtils.isEmpty(ma.getPassword())) {
                 summary.append(": (" + this.getText(R.string.not_set) + ")");
             }
         } else {
             summary = null;
-            mEditTextPassword.setTitle("");
+            passwordText.setTitle("");
         }
-        mEditTextPassword.setSummary(summary);
-        mEditTextPassword.setEnabled(isNeeded);
+        passwordText.setSummary(summary);
+        passwordText.setEnabled(isNeeded 
+                && (ma.getCredentialsVerified()!=CredentialsVerificationStatus.SUCCEEDED));
 
         Origin origin = Origin.fromOriginId(ma.getOriginId());
         isNeeded = Origin.fromOriginId(ma.getOriginId()).canSetHostOfOrigin();
-        boolean isEnabled = isNeeded && (ma.accountsOfThisOrigin() == 0);
+        boolean isEnabled = isNeeded && (ma.accountsOfThisOrigin() == 0) 
+                && !state.builder.isPersistent();
         boolean originParametersPresent = true;
-        hostOfOrigin.setEnabled(isEnabled);
+        hostText.setEnabled(isEnabled);
         if (isNeeded) {
-            hostOfOrigin.setTitle(R.string.title_preference_host);
+            hostText.setTitle(R.string.title_preference_host);
             if (origin.hostIsValid()) {
-                hostOfOrigin.setSummary(origin.getHost());
+                hostText.setSummary(origin.getHost());
             } else {
-                hostOfOrigin.setSummary(R.string.summary_preference_host);
+                hostText.setSummary(R.string.summary_preference_host);
                 originParametersPresent = false;
             }
-            hostOfOrigin.setText(origin.getHost());
+            hostText.setText(origin.getHost());
         } else {
-            hostOfOrigin.setTitle("");
-            hostOfOrigin.setSummary("");
+            hostText.setTitle("");
+            hostText.setSummary("");
         }
 
         isNeeded = origin.canChangeSsl();
-        if (origin.isSsl() != ssl.isChecked()) {
-            ssl.setChecked(origin.isSsl());
+        if (origin.isSsl() != sslCheckBox.isChecked()) {
+            sslCheckBox.setChecked(origin.isSsl());
         }
-        isEnabled = isNeeded && (ma.accountsOfThisOrigin() == 0);
-        ssl.setEnabled(isEnabled);
+        isEnabled = isNeeded && (ma.accountsOfThisOrigin() == 0) && !state.builder.isPersistent();
+        sslCheckBox.setEnabled(isEnabled);
         if (isNeeded) {
-            ssl.setTitle(R.string.title_preference_oauth);
-            ssl.setSummary(ma.isOAuth() ? R.string.summary_preference_oauth_on : R.string.summary_preference_oauth_off);
+            sslCheckBox.setTitle(R.string.title_preference_ssl);
+            sslCheckBox.setSummary(origin.isSsl() ? R.string.summary_preference_ssl_on : R.string.summary_preference_ssl_off);
         } else {
-            ssl.setTitle("");
-            ssl.setSummary("");
+            sslCheckBox.setTitle("");
+            sslCheckBox.setSummary("");
         }
         
         int titleResId;
@@ -448,27 +454,27 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             // value if no changes
 
             if (key.equals(MyAccount.Builder.KEY_ORIGIN_NAME)) {
-                if (state.getAccount().getOriginName().compareToIgnoreCase(mOriginName.getValue()) != 0) {
+                if (state.getAccount().getOriginName().compareToIgnoreCase(originNameList.getValue()) != 0) {
                     // If we have changed the System, we should recreate the
                     // Account
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                            AccountName.fromOriginAndUserNames(mOriginName.getValue(),
+                            AccountName.fromOriginAndUserNames(originNameList.getValue(),
                                     state.getAccount().getUsername()).toString(),
                                     TriState.fromBoolean(state.getAccount().isOAuth()));
                     showUserPreferences();
                 }
             }
             if (key.equals(MyAccount.Builder.KEY_OAUTH)) {
-                if (state.getAccount().isOAuth() != mOAuth.isChecked()) {
+                if (state.getAccount().isOAuth() != oAuthCheckBox.isChecked()) {
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                            AccountName.fromOriginAndUserNames(mOriginName.getValue(),
+                            AccountName.fromOriginAndUserNames(originNameList.getValue(),
                                     state.getAccount().getUsername()).toString(),
-                                    TriState.fromBoolean(mOAuth.isChecked()));
+                                    TriState.fromBoolean(oAuthCheckBox.isChecked()));
                     showUserPreferences();
                 }
             }
             if (key.equals(MyAccount.Builder.KEY_USERNAME_NEW)) {
-                String usernameNew = mEditTextUsername.getText();
+                String usernameNew = usernameText.getText();
                 if (usernameNew.compareTo(state.getAccount().getUsername()) != 0) {
                     boolean isOAuth = state.getAccount().isOAuth();
                     String originName = state.getAccount().getOriginName();
@@ -479,21 +485,21 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 }
             }
             if (key.equals(Connection.KEY_PASSWORD)) {
-                if (state.getAccount().getPassword().compareTo(mEditTextPassword.getText()) != 0) {
-                    state.builder.setPassword(mEditTextPassword.getText());
+                if (state.getAccount().getPassword().compareTo(passwordText.getText()) != 0) {
+                    state.builder.setPassword(passwordText.getText());
                     showUserPreferences();
                 }
             }
             if (key.equals(Origin.KEY_HOST_OF_ORIGIN)) {
                 Origin origin = Origin.fromOriginId(state.getAccount().getOriginId());
                 if (origin.canSetHostOfOrigin()) {
-                    String host = hostOfOrigin.getText();
+                    String host = hostText.getText();
                     if (origin.hostIsValid(host)) {
                         if (!origin.getHost().equalsIgnoreCase(host)) {
                             origin.setHost(host);
                             origin.save();
                             state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                                    AccountName.fromOriginAndUserNames(mOriginName.getValue(),
+                                    AccountName.fromOriginAndUserNames(originNameList.getValue(),
                                             state.getAccount().getUsername()).toString(),
                                             TriState.fromBoolean(state.getAccount().isOAuth()));
                             showUserPreferences();
@@ -504,12 +510,12 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             if (key.equals(Origin.KEY_SSL)) {
                 Origin origin = Origin.fromOriginId(state.getAccount().getOriginId());
                 if (origin.canChangeSsl()) {
-                    boolean isSsl = ssl.isChecked();
+                    boolean isSsl = sslCheckBox.isChecked();
                     if (origin.isSsl() != isSsl) {
                         origin.setSsl(isSsl);
                         origin.save();
                         state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                                AccountName.fromOriginAndUserNames(mOriginName.getValue(),
+                                AccountName.fromOriginAndUserNames(originNameList.getValue(),
                                         state.getAccount().getUsername()).toString(),
                                         TriState.fromBoolean(state.getAccount().isOAuth()));
                         showUserPreferences();

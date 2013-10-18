@@ -71,10 +71,16 @@ public final class MyContextImpl implements MyContext {
             }
         }
 
-        MyLog.v(this, "Initialized by " + newMyContext.initializedBy + " state=" + newMyContext.state + (newMyContext.context == null ? "; no context" : "; context: " + newMyContext.context.getClass().getName()));
+        MyLog.v(this, toString());
         return newMyContext;
     }
     
+    @Override
+    public String toString() {
+        String out =  MyLog.objTagToString(this) +  " initialized by " + initializedBy + "; state=" + state +  "; " + (context == null ? "no context" : "context=" + context.getClass().getName());
+        return out;
+    }
+
     @Override
     public MyContext newCreator(Context context, String initializerName) {
         MyContextImpl newMyContext = getCreator(context, initializerName);

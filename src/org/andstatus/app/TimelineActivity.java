@@ -227,7 +227,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         preferencesChangeTime = MyContextHolder.initialize(this, this);
-        MyContextHolder.upgradeIfNeeded();
+        MyContextHolder.upgradeIfNeeded(this);
         
         if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
             MyLog.d(TAG, "onCreate instanceId=" + instanceId + " , preferencesChangeTime=" + preferencesChangeTime);
@@ -236,11 +236,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!mIsFinishing) {
             boolean helpAsFirstActivity = false;
             boolean showChangeLog = false;
-            if (MyDatabaseConverter.isUpgrading()) {
-                MyLog.i(this, "Upgrade is in progress");
-                helpAsFirstActivity = true;
-                showChangeLog = true;
-            } else if (!MyContextHolder.get().isReady()) {
+            if (!MyContextHolder.get().isReady()) {
                 MyLog.i(this, "Context is not ready");
                 helpAsFirstActivity = true;
             } else if (MyPreferences.shouldSetDefaultValues()) {
@@ -268,16 +264,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             }
 
             if (helpAsFirstActivity || showChangeLog) {
-                Intent intent = new Intent(this, HelpActivity.class);
-                if (helpAsFirstActivity) {
-                    intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
-                } else if (showChangeLog) {
-                    intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
-                }
-                startActivity(intent);
-                if (helpAsFirstActivity) {
-                    finish();
-                }
+                HelpActivity.startFromActivity(this, helpAsFirstActivity, showChangeLog);
             }
         }
         if (mIsFinishing) {

@@ -199,4 +199,17 @@ public class HelpActivity extends Activity implements SwipeInterface {
             mFlipper.showNext();
         }
     }
+    
+    public static void startFromActivity(Activity activity, boolean helpAsFirstActivity, boolean showChangeLog) {
+        Intent intent = new Intent(activity, HelpActivity.class);
+        if (helpAsFirstActivity) {
+            intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
+        } else if (showChangeLog) {
+            intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
+        }
+        activity.startActivity(intent);
+        if (helpAsFirstActivity) {
+            activity.finish();
+        }
+    }
 }

@@ -93,7 +93,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
                                     SyncAdapter.this.syncResult.notifyAll();
                                 }
                             }
-                        }, 180 * MyPreferences.MILLISECONDS);
+                        }, java.util.concurrent.TimeUnit.SECONDS.toMillis(180));
                     syncResult.wait();
                 }
             }

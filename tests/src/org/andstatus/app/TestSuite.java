@@ -29,6 +29,7 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class TestSuite extends TestCase {
+    private static final String TAG = TestSuite.class.getSimpleName();
     private static volatile boolean initialized = false;
     private static volatile Context context;
     private static volatile String dataPath;
@@ -39,23 +40,23 @@ public class TestSuite extends TestCase {
     
     public static synchronized Context initialize(InstrumentationTestCase testCase) {
         if (initialized) {
-            MyLog.d(TestSuite.class, "Already initialized");
+            MyLog.d(TAG, "Already initialized");
             return context;
         }
         for (int iter=0; iter<5; iter++) {
-            MyLog.d(TestSuite.class, "Initializing Test Suite");
+            MyLog.d(TAG, "Initializing Test Suite");
             context = testCase.getInstrumentation().getTargetContext();
             if (context == null) {
-                MyLog.e(TestSuite.class, "targetContext is null.");
+                MyLog.e(TAG, "targetContext is null.");
                 throw new IllegalArgumentException("this.getInstrumentation().getTargetContext() returned null");
             }
-            MyLog.d(TestSuite.class, "Before MyContextHolder.initialize " + iter);
+            MyLog.d(TAG, "Before MyContextHolder.initialize " + iter);
             try {
                 MyContextHolder.initialize(context, testCase);
-                MyLog.d(TestSuite.class, "After MyContextHolder.initialize " + iter);
+                MyLog.d(TAG, "After MyContextHolder.initialize " + iter);
                 break;
             } catch (IllegalStateException e) {
-                MyLog.w(TestSuite.class, "Error caught " + iter);
+                MyLog.w(TAG, "Error caught " + iter);
             }
             try {
                 Thread.sleep(100);
@@ -66,27 +67,27 @@ public class TestSuite extends TestCase {
         assertTrue("MyContext state=" + MyContextHolder.get().state(), MyContextHolder.get().state() != MyContextState.EMPTY);
         
         if (MyPreferences.shouldSetDefaultValues()) {
-            MyLog.d(TestSuite.class, "Before setting default preferences");
+            MyLog.d(TAG, "Before setting default preferences");
             // Default values for the preferences will be set only once
             // and in one place: here
             MyPreferences.setDefaultValues(R.xml.preferences_test, false);
             if (MyPreferences.shouldSetDefaultValues()) {
-                MyLog.e(TestSuite.class, "Default values were not set?!");   
+                MyLog.e(TAG, "Default values were not set?!");   
             } else {
-                MyLog.i(TestSuite.class, "Default values has been set");   
+                MyLog.i(TAG, "Default values has been set");   
             }
         }
         MyPreferences.getDefaultSharedPreferences().edit().putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE)).commit();
         MyLog.forget();
-        assertTrue("Log level set to verbose", MyLog.isLoggable(TestSuite.class, MyLog.VERBOSE));
+        assertTrue("Log level set to verbose", MyLog.isLoggable(TAG, MyLog.VERBOSE));
         MyServiceManager.setServiceUnavailable();
 
         if (MyContextHolder.get().state() == MyContextState.UPGRADING) {
-            MyLog.d(TestSuite.class, "Upgrade needed");
-            MyDatabaseConverter.triggerDatabaseUpgrade();
+            MyLog.d(TAG, "Upgrade is needed");
+            MyContextHolder.upgradeIfNeeded(TAG);
+            waitTillUpgradeEnded();
         }
-        waitTillUpgradeEnded();
-        
+        MyLog.d(TAG, "Before check isReady " + MyContextHolder.get());
         initialized =  MyContextHolder.get().isReady();
         assertTrue("Test Suite initialized, MyContext state=" + MyContextHolder.get().state(), initialized);
         dataPath = MyContextHolder.get().context().getDatabasePath("andstatus").getPath();
@@ -109,23 +110,23 @@ public class TestSuite extends TestCase {
     
     public static synchronized void forget() {
         context = null;
-        MyLog.d(TestSuite.class, "Before forget");
+        MyLog.d(TAG, "Before forget");
         MyContextHolder.release();
         initialized = false;
     }
     
     public static void waitTillUpgradeEnded() {
         for (int i=1; i < 100; i++) {
-            if(!MyDatabaseConverter.isUpgrading()) {
+            if(MyContextHolder.get().isReady()) {
                 break;
             }
-            MyLog.d(TestSuite.class, "Waiting for upgrade to end " + i);
+            MyLog.d(TAG, "Waiting for upgrade to end " + i);
             try {
                 Thread.sleep(2000);
             } catch(InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }            
         }
-        assertTrue("Not upgrading now", !MyDatabaseConverter.isUpgrading());
+        assertTrue("Is Ready now", MyContextHolder.get().isReady());
     }
 }

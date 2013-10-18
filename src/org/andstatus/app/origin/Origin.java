@@ -86,6 +86,9 @@ public class Origin {
                 if (origin.canSetHostOfOrigin()) {
                     origin.host = MyPreferences.getDefaultSharedPreferences().getString(origin.keyOf(KEY_HOST_OF_ORIGIN),"");
                 }
+                if (origin.canChangeSsl()) {
+                    origin.ssl = MyPreferences.getDefaultSharedPreferences().getBoolean(origin.keyOf(KEY_SSL), true);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -40,30 +40,37 @@ public class MyDatabaseConverter {
     @GuardedBy("upgradeEndTime")
     private static boolean upgradeSuccessfullyCompleted = false;
     
-    public static void triggerDatabaseUpgrade() {
+    public static void triggerDatabaseUpgrade(Object requester) {
+        String requesterName = MyLog.objTagToString(requester);
         if (isUpgrading()) {
-            MyLog.v(TAG, "Attempt to trigger database upgrade: already upgrading");
+            MyLog.v(TAG, "Attempt to trigger database upgrade by " + requesterName 
+                    + ": already upgrading");
             return;
         }
         MyContext myContext = MyContextHolder.get();
         long currentTime = java.lang.System.currentTimeMillis();
         if (!myContext.initialized()) {
-            MyLog.v(TAG, "Attempt to trigger database upgrade: not initialized yet");
-            return;
-        }
-        if (isUpgrading()) {
+            MyLog.v(TAG, "Attempt to trigger database upgrade by " + requesterName 
+                    + ": not initialized yet");
             return;
         }
         synchronized(upgradeEndTime) {
-            if (upgradeSuccessfullyCompleted) {
-                MyLog.v(TAG, "Attempt to trigger database upgrade: already completed successfully");
+            if (isUpgrading()) {
+                MyLog.v(TAG, "Attempt to trigger database upgrade by " + requesterName 
+                        + ": already upgrading");
+                return;
             }
-            final Long MILLIS_BEFORE_UPGRADE_TRIGGERED = 1000L;
-            upgradeEndTime = currentTime + MILLIS_BEFORE_UPGRADE_TRIGGERED;
+            if (upgradeSuccessfullyCompleted) {
+                MyLog.v(TAG, "Attempt to trigger database upgrade by " + requesterName 
+                        + ": already completed successfully");
+                return;
+            }
+            final Long SECONDS_BEFORE_UPGRADE_TRIGGERED = 5L;
+            upgradeEndTime = currentTime + java.util.concurrent.TimeUnit.SECONDS.toMillis(SECONDS_BEFORE_UPGRADE_TRIGGERED);
             shouldTriggerDatabaseUpgrade = true;            
         }
         try {
-            MyLog.v(TAG, "Upgrade triggered");
+            MyLog.v(TAG, "Upgrade triggered by " + requesterName);
             MyContextHolder.release();
             MyContextHolder.initialize(myContext.context(), TAG);
             synchronized(upgradeEndTime) {
@@ -83,9 +90,9 @@ public class MyDatabaseConverter {
             currentTime = java.lang.System.currentTimeMillis();
             synchronized(upgradeEndTime) {
                 if (upgradeStarted) {
-                    final Long MILLIS_AFTER_UPGRADE = 5000L;
-                    upgradeEndTime = currentTime + MILLIS_AFTER_UPGRADE;
-                    MyLog.w(TAG, "Upgrade ended, waiting " + MILLIS_AFTER_UPGRADE + " more milliseconds");
+                    final Long SECONDS_AFTER_UPGRADE = 5L;
+                    upgradeEndTime = currentTime + java.util.concurrent.TimeUnit.SECONDS.toMillis(SECONDS_AFTER_UPGRADE);
+                    MyLog.w(TAG, "Upgrade ended, waiting " + SECONDS_AFTER_UPGRADE + " more seconds");
                 } else {
                     upgradeEndTime = 0L;
                 }
@@ -94,12 +101,12 @@ public class MyDatabaseConverter {
     }
     
     public static void stillUpgrading() {
-        final long MILLIS_FOR_UPGRADE = 30000L;
+        final long SECONDS_FOR_UPGRADE = 30L;
         synchronized(upgradeEndTime) {
             upgradeStarted = true;
-            upgradeEndTime = java.lang.System.currentTimeMillis() + MILLIS_FOR_UPGRADE;
+            upgradeEndTime = java.lang.System.currentTimeMillis() + java.util.concurrent.TimeUnit.SECONDS.toMillis(SECONDS_FOR_UPGRADE);
         }
-        MyLog.w(TAG, "on Upgrade, waiting " + MILLIS_FOR_UPGRADE + " milliseconds");
+        MyLog.w(TAG, "Still upgrading. Wait " + SECONDS_FOR_UPGRADE + " more seconds");
     }
     
     public static boolean isUpgrading() {
@@ -119,7 +126,8 @@ public class MyDatabaseConverter {
     
     void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
         if (!shouldTriggerDatabaseUpgrade) {
-            MyLog.v(this,"Upgrade end time came");
+            MyLog.v(this,"onUpgrade - Trigger not set yet");
+            throw new IllegalStateException("onUpgrade - Trigger not set yet");
         }
         synchronized (upgradeEndTime) {
             shouldTriggerDatabaseUpgrade = false;

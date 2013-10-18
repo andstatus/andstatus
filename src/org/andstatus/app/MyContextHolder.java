@@ -179,6 +179,7 @@ public final class MyContextHolder {
     }
     
     public static void release() {
+        MyLog.d(TAG, "Releasing resources");
         synchronized(contextLock) {
             if (myInitializedContext != null) {
                 myInitializedContext.release();
@@ -188,11 +189,12 @@ public final class MyContextHolder {
         }
     }
     
-    public static void upgradeIfNeeded() {
+    public static void upgradeIfNeeded(Object requester) {
         if (get().state() == MyContextState.UPGRADING) {
-            release();
-            MyDatabaseConverter.triggerDatabaseUpgrade();
-            initialize(null, "After upgrade process");
+            MyDatabaseConverter.triggerDatabaseUpgrade(requester);
+            if (get().state() == MyContextState.UPGRADING) {
+                MyContextHolder.initialize(null, TAG + "-AfterUpgradeProcess");
+            }
         }
     }
 }

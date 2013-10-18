@@ -512,14 +512,15 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
-    private boolean onUpgradeTriggered = false;
+    private ThreadLocal<Boolean> onUpgradeTriggered = new ThreadLocal<Boolean>();
     public MyContextState checkState() {
         MyContextState state = MyContextState.ERROR;
+        SQLiteDatabase db = null;
         try {
-            onUpgradeTriggered = false;
+            onUpgradeTriggered.set(false);
             if (MyPreferences.isDataAvailable()) {
-                SQLiteDatabase db = getReadableDatabase();
-                if (onUpgradeTriggered) {
+                db = getReadableDatabase();
+                if (onUpgradeTriggered.get()) {
                     state = MyContextState.UPGRADING;
                 } else {
                     if (db != null && db.isOpen()) {
@@ -527,8 +528,16 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                     }
                 }
             }
+        } catch (IllegalStateException e) {
+            if (onUpgradeTriggered.get()) {
+                state = MyContextState.UPGRADING;
+            }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
         }
         return state;
     }
@@ -630,6 +639,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
+        onUpgradeTriggered.set(true);
         new MyDatabaseConverter().onUpgrade(db, oldVersion, newVersion);
         MyPreferences.onPreferencesChanged();
     }

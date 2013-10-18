@@ -144,7 +144,6 @@ public class MyPreferences {
         }
     }
 
-    public static final int MILLISECONDS = 1000;
     private static final int SYNC_FREQUENCY_DEFAULT_SECONDS = 180;
     /**
      * @return the number of seconds between two sync ("fetch"...) actions.
@@ -165,7 +164,7 @@ public class MyPreferences {
      * @return the number of milliseconds between two sync ("fetch"...) actions.
      */
     public static long getSyncFrequencyMs() {
-        return (getSyncFrequencySeconds() * MILLISECONDS);
+        return java.util.concurrent.TimeUnit.SECONDS.toMillis(getSyncFrequencySeconds());
     }
     
     /**
