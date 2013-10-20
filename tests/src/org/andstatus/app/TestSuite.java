@@ -21,7 +21,6 @@ import junit.framework.TestCase;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 

@@ -18,7 +18,6 @@
 package org.andstatus.app.net;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.data.MyDatabase.User;

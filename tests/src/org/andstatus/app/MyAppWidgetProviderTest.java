@@ -16,9 +16,7 @@
 
 package org.andstatus.app;
 
-import android.app.AlarmManager;
 import android.content.Intent;
-import android.app.PendingIntent;
 import android.text.format.Time;
 
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
@@ -227,72 +225,5 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 		intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
 		context.sendBroadcast(intent);
     	
-	}
-	
-    
-	/** 
-	 * Send Update intent to AndStatus Widget(s),
-	 * if there are some installed... (e.g. on the Home screen...) 
-	 * @see MyAppWidgetProvider
-	 * For some reason it sends Intents with the same "Extra" info
-	 */
-	private void updateWidgetsPending(int numTweets, CommandEnum msgType) throws Exception {
-		
-		// Let's try pending intents
-    	Context context = this.getInstrumentation().getContext();
-    	//Context context = getInstrumentation().getContext();
-    	long triggerTime;
-
-    	MyLog.i(this, "Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
-
-    	triggerTime = System.currentTimeMillis() + 3000;
-    	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
-    	intent.addCategory("msgType" + msgType);
-		intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
-		intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
-    	
-        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pendingUpdate = PendingIntent.getBroadcast(context,
-        		0 /* no requestCode */,
-                intent, 
-                0 /* no flags */);
-        
-        am.cancel(pendingUpdate);
-        am.set(AlarmManager.RTC, triggerTime, pendingUpdate);
-
-        Thread.sleep(5000);
-		
-	}
-
-    
-	/** 
-	 * Send Update intent to AndStatus Widget(s),
-	 * if there are some installed... (e.g. on the Home screen...) 
-	 * @see MyAppWidgetProvider
-	 */
-	private void updateWidgetsThreads(int numTweets, CommandEnum msgType) {
-		IntentSender runner = new IntentSender(numTweets, msgType);
-		runner.start();
-	}
-	
-	class IntentSender extends Thread {
-		int numTweets;
-		CommandEnum msgType;
-		public IntentSender(int numTweets, CommandEnum msgType) {
-			this.numTweets = numTweets;
-			this.msgType = msgType;
-		}
-		
-		@Override
-        public void run() {
-	    	Context context = getInstrumentation().getContext();
-
-	    	MyLog.i(this, "Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
-	    	
-	    	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
-			intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
-			intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
-			context.sendBroadcast(intent);
-		}
 	}
 }

@@ -28,7 +28,6 @@ import android.text.TextUtils;
 import java.util.List;
 
 import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.MyContextState;
 import org.andstatus.app.R;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestUserMessages;

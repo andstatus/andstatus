@@ -18,7 +18,6 @@ package org.andstatus.app;
 
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.MyService.ServiceState;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 

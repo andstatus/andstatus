@@ -65,7 +65,6 @@ import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
