@@ -21,12 +21,11 @@ import org.andstatus.app.MyService.ServiceState;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+
+import net.jcip.annotations.GuardedBy;
 
 /**
  * This receiver starts and stops {@link MyService} and also queries its state.
@@ -35,6 +34,13 @@ import android.content.Intent;
  */
 public class MyServiceManager extends BroadcastReceiver {
     private static final String TAG = MyServiceManager.class.getSimpleName();
+
+    private final int instanceId;
+    
+    public MyServiceManager() {
+        instanceId = InstanceId.next();
+        MyLog.v(this, TAG + " created, instanceId=" + instanceId );
+    }
 
     /**
      * Is the service started.
@@ -48,51 +54,11 @@ public class MyServiceManager extends BroadcastReceiver {
     /**
      * If true, we sent state request and are waiting for reply from {@link MyService} 
      */
-    private static boolean waitingForServiceState = false;
+    private static volatile boolean waitingForServiceState = false;
     /**
      * How long are we waiting for {@link MyService} response before deciding that the service is stopped
      */
     private static final int STATE_QUERY_TIMEOUT_SECONDS = 3;
-    
-        /**
-     * If false input commands/alarms will be ignored
-     */
-    private static volatile boolean serviceAvailable = true;
-    private static volatile java.util.Timer timerToMakeServiceAvailable;
-    
-    public static boolean isServiceAvailable() {
-        return serviceAvailable && MyContextHolder.get().isReady();
-    }
-    public static synchronized void setServiceAvailable() {
-        serviceAvailable = true;
-        if (timerToMakeServiceAvailable != null) {
-            timerToMakeServiceAvailable.cancel();           
-        } 
-    }
-    public static synchronized void setServiceUnavailable() {
-        serviceAvailable = false;
-        if (timerToMakeServiceAvailable != null) {
-            timerToMakeServiceAvailable.cancel();           
-        } 
-        timerToMakeServiceAvailable = new Timer();
-        timerToMakeServiceAvailable.schedule(
-                new TimerTask() {
-                    @Override
-                    public void run() {
-                        MyLog.i(this, "MyService is made available by a timer");
-                        setServiceAvailable();
-                    }
-                }
-                , java.util.concurrent.TimeUnit.SECONDS.toMillis(1800));
-        
-    }
-
-    private int instanceId;
-    
-    public MyServiceManager() {
-        instanceId = InstanceId.next();
-        MyLog.v(this, TAG + " created, instanceId=" + instanceId );
-    }
     
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -176,8 +142,57 @@ public class MyServiceManager extends BroadcastReceiver {
                MyContextHolder.get().context().sendBroadcast(element.toIntent());
            }
         }
-        
         return mServiceState;
     }
-    
+
+    @GuardedBy("isServiceAvailable")
+    private static Boolean isServiceAvailable = true;
+    @GuardedBy("isServiceAvailable")
+    private static long timeWhenTheServiceWillBeAvailable = 0;
+    public static boolean isServiceAvailable() {
+        boolean isAvailable = MyContextHolder.get().isReady();
+        if (!isAvailable) {
+            boolean tryToInitialize = false;
+            synchronized (isServiceAvailable) {
+                tryToInitialize = isServiceAvailable;
+            }
+            if (tryToInitialize && !MyContextHolder.get().initialized()) {
+                MyContextHolder.initialize(null, TAG);
+                isAvailable = MyContextHolder.get().isReady();
+            }
+        }
+        if (isAvailable) {
+            long availableInMillis = 0; 
+            synchronized (isServiceAvailable) {
+                availableInMillis = timeWhenTheServiceWillBeAvailable - System.currentTimeMillis();
+                if  (!isServiceAvailable) {
+                    if (availableInMillis <= 0) {
+                        setServiceAvailable();
+                    }
+                }
+                isAvailable = isServiceAvailable;
+            }
+            if (!isAvailable) {
+                MyLog.v(TAG,"Service will be available in " 
+                        + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(availableInMillis) 
+                        + " seconds");
+            }
+        } else {
+            MyLog.v(TAG,"Service is unavailable: Context is not Ready");
+        }
+        return isAvailable;
+    }
+    public static void setServiceAvailable() {
+        synchronized (isServiceAvailable) {
+            isServiceAvailable = true;
+            timeWhenTheServiceWillBeAvailable = 0;
+        }
+    }
+    public static void setServiceUnavailable() {
+        synchronized (isServiceAvailable) {
+            isServiceAvailable = false;
+            timeWhenTheServiceWillBeAvailable = System.currentTimeMillis() + 
+                    java.util.concurrent.TimeUnit.SECONDS.toMillis(15 * 60);
+        }
+    }
 }

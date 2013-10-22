@@ -159,7 +159,6 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 
         if (startTimelineActivity) {
             MyContextHolder.release();
-            MyServiceManager.setServiceAvailable();
             // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
             Intent i = new Intent(this, TimelineActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);

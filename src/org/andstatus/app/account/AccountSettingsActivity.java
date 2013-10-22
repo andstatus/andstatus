@@ -51,6 +51,7 @@ import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.MyPreferenceActivity;
+import org.andstatus.app.MyService;
 import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
@@ -126,9 +127,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         if (!MyContextHolder.get().isReady()) {
             HelpActivity.startFromActivity(this, true, false);
         }
-        
-        MyServiceManager.setServiceUnavailable();
-        MyServiceManager.stopService();
         
         addPreferencesFromResource(R.xml.account_settings);
         
@@ -382,6 +380,12 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     private void verifyCredentials(boolean reVerify) {
         MyAccount ma = state.getAccount();
         if (reVerify || ma.getCredentialsVerified() == CredentialsVerificationStatus.NEVER) {
+            MyServiceManager.setServiceUnavailable();
+            if (MyServiceManager.getServiceState() != MyService.ServiceState.STOPPED) {
+                MyServiceManager.stopService();
+                Toast.makeText(this, getText(R.string.system_is_busy_try_later), Toast.LENGTH_LONG).show();
+                return;
+            }
             if (ma.getCredentialsPresent()) {
                 // Credentials are present, so we may verify them
                 // This is needed even for OAuth - to know Twitter Username
