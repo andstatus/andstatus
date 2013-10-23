@@ -90,8 +90,12 @@ public class Origin {
                 if (origin.canChangeSsl()) {
                     origin.ssl = MyPreferences.getDefaultSharedPreferences().getBoolean(origin.keyOf(KEY_SSL), true);
                 }
-                origin.shortUrlLength = MyPreferences.getDefaultSharedPreferences().getInt(origin.keyOf(KEY_SHORTURLLENGTH), 0);
-                origin.textLimit = MyPreferences.getDefaultSharedPreferences().getInt(origin.keyOf(KEY_TEXT_LIMIT), TEXT_LIMIT_DEFAULT);
+                if (origin.shortUrlLength == 0) {
+                    origin.shortUrlLength = MyPreferences.getDefaultSharedPreferences().getInt(origin.keyOf(KEY_SHORTURLLENGTH), 0);
+                }
+                if (origin.textLimit == 0) {
+                    origin.textLimit = MyPreferences.getDefaultSharedPreferences().getInt(origin.keyOf(KEY_TEXT_LIMIT), TEXT_LIMIT_DEFAULT);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -178,7 +182,7 @@ public class Origin {
     /**
      * Maximum number of characters in the message
      */
-    protected int textLimit = TEXT_LIMIT_DEFAULT;
+    protected int textLimit = 0;
     protected String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     
     public static Origin toExistingOrigin(String originName_in) {

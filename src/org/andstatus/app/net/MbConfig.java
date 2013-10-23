@@ -26,7 +26,7 @@ public class MbConfig {
     private boolean isEmpty = true;
     
     public int shortUrlLength = 0;
-    public int textLimit = Origin.TEXT_LIMIT_DEFAULT;
+    public int textLimit = 0;
     
     public static MbConfig getEmpty() {
         MbConfig config = new MbConfig();

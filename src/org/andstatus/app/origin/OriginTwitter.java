@@ -31,9 +31,8 @@ class OriginTwitter extends Origin {
         shouldSetNewUsernameManuallyIfOAuth = false;
         shouldSetNewUsernameManuallyNoOAuth = true;
         usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
-        if (shortUrlLength == 0) {
-            shortUrlLength = 23;
-        }
+        shortUrlLength = 23; // TODO: Read from Config
+        textLimit = 140;
     }
 
     /**
