@@ -381,10 +381,14 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         MyAccount ma = state.getAccount();
         if (reVerify || ma.getCredentialsVerified() == CredentialsVerificationStatus.NEVER) {
             MyServiceManager.setServiceUnavailable();
-            if (MyServiceManager.getServiceState() != MyService.ServiceState.STOPPED) {
+            MyService.ServiceState state = MyServiceManager.getServiceState(); 
+            if (state != MyService.ServiceState.STOPPED) {
                 MyServiceManager.stopService();
-                Toast.makeText(this, getText(R.string.system_is_busy_try_later), Toast.LENGTH_LONG).show();
-                return;
+                if (state != MyService.ServiceState.UNKNOWN) {
+                    Toast.makeText(this, getText(R.string.system_is_busy_try_later) + " (" + state + ")", 
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
             }
             if (ma.getCredentialsPresent()) {
                 // Credentials are present, so we may verify them
