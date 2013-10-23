@@ -205,7 +205,7 @@ public class ConnectionPumpio extends Connection {
                     MbUser item = userFromJson(jso);
                     followedUsers.add(item);
                 } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(TAG, e, null, "Parsing list of users");
+                    throw ConnectionException.loggedJsonException(this, e, null, "Parsing list of users");
                 }
             }
         }
@@ -344,7 +344,7 @@ public class ConnectionPumpio extends Connection {
                     MbTimelineItem item = timelineItemFromJson(jso);
                     timeline.add(item);
                 } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(TAG, e, null, "Parsing timeline");
+                    throw ConnectionException.loggedJsonException(this, e, null, "Parsing timeline");
                 }
             }
         }
@@ -375,7 +375,7 @@ public class ConnectionPumpio extends Connection {
                     item.mbMessage = messageFromJsonActivity(activity);
                 }
             } catch (JSONException e) {
-                throw ConnectionException.loggedJsonException(TAG, e, activity, "Parsing timeline item");
+                throw ConnectionException.loggedJsonException(this, e, activity, "Parsing timeline item");
             }
         } else {
             MyLog.e(this, "Not an Activity in the timeline:" + activity.toString() );
@@ -405,17 +405,17 @@ public class ConnectionPumpio extends Connection {
                 mbUser.followedByActor = TriState.FALSE;
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(TAG, e, activity, "Parsing activity");
+            throw ConnectionException.loggedJsonException(this, e, activity, "Parsing activity");
         }
         return mbUser;
     }
 
     MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             try {
                 MyLog.v(this, "messageFromJson: " + jso.toString(2));
             } catch (JSONException e) {
-                ConnectionException.loggedJsonException(TAG, e, jso, "messageFromJson");
+                ConnectionException.loggedJsonException(this, e, jso, "messageFromJson");
             }
         }
         if (PumpioObjectType.ACTIVITY.isMyType(jso)) {
@@ -433,7 +433,7 @@ public class ConnectionPumpio extends Connection {
             String verb = activity.getString("verb");
             String oid = activity.optString("id");
             if (TextUtils.isEmpty(oid)) {
-                MyLog.d(TAG, "Pumpio activity has no id:" + activity.toString(2));
+                MyLog.d(this, "Pumpio activity has no id:" + activity.toString(2));
                 return MbMessage.getEmpty();
             } 
             message =  MbMessage.fromOriginAndOid(data.originId, oid);
@@ -491,7 +491,7 @@ public class ConnectionPumpio extends Connection {
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(TAG, e, activity, "Parsing activity");
+            throw ConnectionException.loggedJsonException(this, e, activity, "Parsing activity");
         }
         return message;
     }
@@ -529,7 +529,7 @@ public class ConnectionPumpio extends Connection {
                 message.inReplyToMessage = messageFromJson(inReplyToObject);
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(TAG, e, jso, "Parsing comment/note");
+            throw ConnectionException.loggedJsonException(this, e, jso, "Parsing comment/note");
         }
     }
     
@@ -546,7 +546,7 @@ public class ConnectionPumpio extends Connection {
 
             parseComment(message, jso);
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(TAG, e, jso, "Parsing comment");
+            throw ConnectionException.loggedJsonException(this, e, jso, "Parsing comment");
         }
         return message;
     }

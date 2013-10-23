@@ -39,6 +39,7 @@ import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionException.StatusCode;
+import org.andstatus.app.net.MbConfig;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.net.OAuthConsumerAndProvider;
 import org.andstatus.app.origin.Origin;
@@ -453,6 +454,25 @@ public class MyAccount implements AccountDataReader {
             return changed;
         }
 
+        public boolean getOriginConfig() throws ConnectionException {
+            boolean ok = false;
+            if (!ok) {
+                MbConfig config = null;
+                ConnectionException ce = null;
+                try {
+                    config = myAccount.getConnection().getConfig();
+                    ok = (!config.isEmpty());
+                    if (ok) {
+                       Origin.fromOriginId(myAccount.getOriginId()).save(config);
+                    }
+                } catch (ConnectionException e) {
+                    ce = e;
+                }
+                MyLog.v(this, "Get Origin config " + (ok ? "succeeded" : "failed"));
+            }
+            return ok;
+        }
+        
         /**
          * Verify the user's credentials. Returns true if authentication was
          * successful

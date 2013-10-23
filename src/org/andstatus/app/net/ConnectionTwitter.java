@@ -171,7 +171,7 @@ public abstract class ConnectionTwitter extends Connection {
                     list.add(jArr.getString(index));
                 }
             } catch (JSONException e) {
-                throw ConnectionException.loggedJsonException(TAG, e, jso, "Parsing friendsIds");
+                throw ConnectionException.loggedJsonException(this, e, jso, "Parsing friendsIds");
             }
         }
         return list;
@@ -220,7 +220,7 @@ public abstract class ConnectionTwitter extends Connection {
                     MbTimelineItem item = timelineItemFromJson(jso);
                     timeline.add(item);
                 } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(TAG, e, null, "Parsing timeline");
+                    throw ConnectionException.loggedJsonException(this, e, null, "Parsing timeline");
                 }
             }
         }
@@ -328,7 +328,7 @@ public abstract class ConnectionTwitter extends Connection {
                 }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(TAG, e, jso, "Parsing message");
+            throw ConnectionException.loggedJsonException(this, e, jso, "Parsing message");
         } catch (Exception e) {
             MyLog.e(this, "messageFromJson: " + e.toString());
             e.printStackTrace();
@@ -380,7 +380,7 @@ public abstract class ConnectionTwitter extends Connection {
                 // This message doesn't have a sender!
                 user.latestMessage = messageFromJson(latestMessage);
             } catch (JSONException e) {
-                throw ConnectionException.loggedJsonException(TAG, e, jso, "getting status from user");
+                throw ConnectionException.loggedJsonException(this, e, jso, "getting status from user");
             }
         }
         return user;
@@ -433,7 +433,6 @@ public abstract class ConnectionTwitter extends Connection {
            href="https://dev.twitter.com/docs/api/1/get/account/rate_limit_status">GET 
            account/rate_limit_status</a>
      * 
-     * @return JSONObject
      * @throws ConnectionException
      */
     @Override
@@ -455,7 +454,7 @@ public abstract class ConnectionTwitter extends Connection {
                         status.remaining = limitObject.optInt("remaining");
                         status.limit = limitObject.optInt("limit");
                     } catch (JSONException e) {
-                        throw ConnectionException.loggedJsonException(TAG, e, resources, "getting rate limits");
+                        throw ConnectionException.loggedJsonException(this, e, resources, "getting rate limits");
                     }
             }
         }

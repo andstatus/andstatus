@@ -52,11 +52,11 @@ public class ConnectionException extends Exception {
     private boolean isHardError = false;
     private String host = "";
 
-    public static ConnectionException loggedJsonException(String TAG, JSONException e, JSONObject jso, String detailMessage) throws ConnectionException {
-        MyLog.d(TAG, detailMessage + ": " + e.getMessage());
+    public static ConnectionException loggedJsonException(Object objTag, JSONException e, JSONObject jso, String detailMessage) throws ConnectionException {
+        MyLog.d(objTag, detailMessage + ": " + e.getMessage());
         if (jso != null) {
             try {
-                MyLog.v(TAG, "jso: " + jso.toString(4));
+                MyLog.v(objTag, "jso: " + jso.toString(4));
             } catch (JSONException e1) {}
         }
         return new ConnectionException(detailMessage);

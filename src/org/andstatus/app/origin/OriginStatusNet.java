@@ -16,6 +16,8 @@
 
 package org.andstatus.app.origin;
 
+import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.net.ConnectionTwitterStatusNet;
 import org.andstatus.app.util.TriState;
 
@@ -29,7 +31,6 @@ class OriginStatusNet extends Origin {
         canSetHostOfOrigin = true;
         canChangeSsl = true;
         usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
-        maxCharactersInMessage = CHARS_MAX_DEFAULT;
     }
 
     @Override
@@ -42,6 +43,14 @@ class OriginStatusNet extends Origin {
         return connectionData;
     }
 
+    @Override
+    public String messagePermalink(String userName, long messageId) {
+        String url = "http" + (isSsl() ? "s" : "") +  "://" + host
+                    + "/notice/"
+                    + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId);
+        return url;
+    }
+    
     @Override
     public boolean isUsernameValidToStartAddingNewAccount(String username, boolean isOAuthUser) {
         if (isOAuthUser) {

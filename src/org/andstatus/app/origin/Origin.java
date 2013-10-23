@@ -24,6 +24,7 @@ import android.text.util.Linkify;
 
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection.ApiEnum;
+import org.andstatus.app.net.MbConfig;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
@@ -89,6 +90,8 @@ public class Origin {
                 if (origin.canChangeSsl()) {
                     origin.ssl = MyPreferences.getDefaultSharedPreferences().getBoolean(origin.keyOf(KEY_SSL), true);
                 }
+                origin.shortUrlLength = MyPreferences.getDefaultSharedPreferences().getInt(origin.keyOf(KEY_SHORTURLLENGTH), 0);
+                origin.textLimit = MyPreferences.getDefaultSharedPreferences().getInt(origin.keyOf(KEY_TEXT_LIMIT), TEXT_LIMIT_DEFAULT);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -136,15 +139,12 @@ public class Origin {
     public static final Uri CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org");
     
     /**
-     * Maximum number of characters in the message
-     */
-    protected static int CHARS_MAX_DEFAULT = 140;
-    /**
      * Length of the link after changing to the shortened link
-     * -1 means that length doesn't change
+     * 0 means that length doesn't change
      * For Twitter.com see <a href="https://dev.twitter.com/docs/api/1.1/get/help/configuration">GET help/configuration</a>
      */
-    private static int LINK_LENGTH = 23;
+    protected int shortUrlLength = 0;
+    private static final String KEY_SHORTURLLENGTH = "shorturllength";
     
     protected String name = OriginEnum.UNKNOWN.getName();
     protected long id = 0;
@@ -173,7 +173,12 @@ public class Origin {
     public final static String KEY_SSL = "ssl"; 
     protected boolean canChangeSsl = false;
     
-    protected int maxCharactersInMessage = CHARS_MAX_DEFAULT;
+    public static int TEXT_LIMIT_DEFAULT = 140;
+    public final static String KEY_TEXT_LIMIT = "textlimit"; 
+    /**
+     * Maximum number of characters in the message
+     */
+    protected int textLimit = TEXT_LIMIT_DEFAULT;
     protected String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     
     public static Origin toExistingOrigin(String originName_in) {
@@ -253,19 +258,20 @@ public class Origin {
         if (!TextUtils.isEmpty(message)) {
             messageLength = message.length();
             
-            // Now try to adjust the length taking links into account
-            SpannableString ss = SpannableString.valueOf(message);
-            Linkify.addLinks(ss, Linkify.WEB_URLS);
-            URLSpan[] spans = ss.getSpans(0, messageLength, URLSpan.class);
-            long nLinks = spans.length;
-            for (int ind1=0; ind1 < nLinks; ind1++) {
-                int start = ss.getSpanStart(spans[ind1]);
-                int end = ss.getSpanEnd(spans[ind1]);
-                messageLength += LINK_LENGTH - (end - start);
+            if (shortUrlLength > 0) {
+                // Now try to adjust the length taking links into account
+                SpannableString ss = SpannableString.valueOf(message);
+                Linkify.addLinks(ss, Linkify.WEB_URLS);
+                URLSpan[] spans = ss.getSpans(0, messageLength, URLSpan.class);
+                long nLinks = spans.length;
+                for (int ind1=0; ind1 < nLinks; ind1++) {
+                    int start = ss.getSpanStart(spans[ind1]);
+                    int end = ss.getSpanEnd(spans[ind1]);
+                    messageLength += shortUrlLength - (end - start);
+                }
             }
-            
         }
-        return (maxCharactersInMessage - messageLength);
+        return (textLimit - messageLength);
     }
     
     public int alternativeTermForResourceId(int resId) {
@@ -334,6 +340,12 @@ public class Origin {
         }
     }
 
+    public void save(MbConfig config) {
+        shortUrlLength = config.shortUrlLength;
+        textLimit = config.textLimit;
+        save();
+    }
+    
     public void save() {
         if (canSetHostOfOrigin()) {
             String hostOld = MyPreferences.getDefaultSharedPreferences().getString(keyOf(KEY_HOST_OF_ORIGIN),"");
@@ -346,6 +358,14 @@ public class Origin {
             if ( sslOld != ssl) {
                 MyPreferences.getDefaultSharedPreferences().edit().putBoolean(keyOf(KEY_SSL), ssl).commit();
             }
+        }
+        int shortUrlLengthOld = MyPreferences.getDefaultSharedPreferences().getInt(keyOf(KEY_SHORTURLLENGTH), 0);
+        if ( shortUrlLengthOld != shortUrlLength) {
+            MyPreferences.getDefaultSharedPreferences().edit().putInt(keyOf(KEY_SHORTURLLENGTH), shortUrlLength).commit();
+        }
+        int textLimitOld = MyPreferences.getDefaultSharedPreferences().getInt(keyOf(KEY_TEXT_LIMIT), TEXT_LIMIT_DEFAULT);
+        if ( textLimitOld != textLimit) {
+            MyPreferences.getDefaultSharedPreferences().edit().putInt(keyOf(KEY_TEXT_LIMIT), textLimit).commit();
         }
     }
     

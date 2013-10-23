@@ -697,6 +697,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             String message2 = "";
 
             try {
+                state.builder.getOriginConfig();
                 if (!state.getAccount().areClientKeysPresent()) {
                     state.builder.registerClient();
                 } 
@@ -1089,6 +1090,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             if (!skip) {
                 what = MSG_ACCOUNT_INVALID;
                 try {
+                    state.builder.getOriginConfig();
                     if (state.builder.verifyCredentials(true)) {
                         what = MSG_ACCOUNT_VALID;
                     }

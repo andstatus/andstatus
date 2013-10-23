@@ -101,7 +101,7 @@ class ActivitySender {
                 MyLog.v(this, "verb '" + verb + "' object id='" + objectId + "' " + jso.toString(2));
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(TAG, e, jso, "Error '" + verb + "' object id='" + objectId + "'");
+            throw ConnectionException.loggedJsonException(this, e, jso, "Error '" + verb + "' object id='" + objectId + "'");
         }
         return jso;
     }

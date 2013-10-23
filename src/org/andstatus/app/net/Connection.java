@@ -68,6 +68,7 @@ public abstract class Connection {
         CREATE_FAVORITE,
         DESTROY_FAVORITE,
         FOLLOW_USER,
+        GET_CONFIG,
         GET_FRIENDS, // List of users
         GET_FRIENDS_IDS, // List of Users' IDs
         GET_USER,
@@ -365,5 +366,9 @@ public abstract class Connection {
 
     public boolean userObjectHasMessage() {
         return false;
+    }
+
+    public MbConfig getConfig() throws ConnectionException {
+        return MbConfig.getEmpty();
     }
 }

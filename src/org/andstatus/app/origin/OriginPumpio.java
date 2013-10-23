@@ -29,7 +29,7 @@ class OriginPumpio extends Origin {
         shouldSetNewUsernameManuallyIfOAuth = true;
         shouldSetNewUsernameManuallyNoOAuth = false;
         usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
-        maxCharactersInMessage = 5000; // This is not a hard limit, just for convenience.
+        textLimit = 5000; // TODO: This is not a hard limit, just for convenience.
     }
 
     @Override

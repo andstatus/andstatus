@@ -153,7 +153,7 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     }
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(TAG, e, result, "Error getting '" + path + "'");
+            throw ConnectionException.loggedJsonException(this, e, result, "Error getting '" + path + "'");
         } catch (ConnectionException e) {
             throw e;
         } catch(Exception e) {
