@@ -56,7 +56,7 @@ public final class MyServiceReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         MyLog.v(this, "onReceive " + intent.toString());
         if (listener != null) {
-            listener.onReceive(new CommandData(intent));
+            listener.onReceive(CommandData.fromIntent(intent));
         }
     }
 }

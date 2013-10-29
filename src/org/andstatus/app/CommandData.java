@@ -128,25 +128,33 @@ public class CommandData {
         bundle.putString(IntentExtra.EXTRA_PREFERENCE_VALUE.key, value);
     }
 
-    /**
-     * Used to decode command from the Intent upon receiving it
-     * 
-     * @param intent
-     */
-    public CommandData(Intent intent) {
-        bundle = intent.getExtras();
-        // Decode command
-        String strCommand = "(no command)";
-        if (bundle != null) {
-            strCommand = bundle.getString(IntentExtra.EXTRA_MSGTYPE.key);
-            setAccountName(bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key));
-            timelineType = TimelineTypeEnum.load(bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
-            itemId = bundle.getLong(IntentExtra.EXTRA_ITEMID.key);
-            commandResult = bundle.getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
-        }
-        command = CommandEnum.load(strCommand);
+    private CommandData() {
     }
 
+    /**
+     * Used to decode command from the Intent upon receiving it
+     */
+    public static CommandData fromIntent(Intent intent) {
+        CommandData commandData;
+        if (intent == null) {
+            commandData = EMPTY_COMMAND;
+        } else {
+            commandData = new CommandData();
+            commandData.bundle = intent.getExtras();
+            // Decode command
+            String strCommand = "(no command)";
+            if (commandData.bundle != null) {
+                strCommand = commandData.bundle.getString(IntentExtra.EXTRA_MSGTYPE.key);
+                commandData.setAccountName(commandData.bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                commandData.timelineType = TimelineTypeEnum.load(commandData.bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+                commandData.itemId = commandData.bundle.getLong(IntentExtra.EXTRA_ITEMID.key);
+                commandData.commandResult = commandData.bundle.getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
+            }
+            commandData.command = CommandEnum.load(strCommand);
+        }
+        return commandData;
+    }
+    
     /**
      * Restore this from the SharedPreferences 
      * @param sp
@@ -232,17 +240,10 @@ public class CommandData {
     /**
      * @return Intent to be sent to this.AndStatusService
      */
-    public Intent toIntent() {
-        return toIntent(null);
-    }
-
-    /**
-     * @return Intent to be sent to this.AndStatusService
-     */
     public Intent toIntent(Intent intent_in) {
         Intent intent = intent_in;
         if (intent == null) {
-            intent = new Intent(MyService.ACTION_GO);
+            throw new IllegalArgumentException("toIntent: input intent is null");
         }
         if (bundle == null) {
             bundle = new Bundle();

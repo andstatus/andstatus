@@ -17,9 +17,7 @@
 
 package org.andstatus.app;
 
-import java.util.HashSet;
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.andstatus.app.account.MyAccount;
@@ -38,7 +36,6 @@ import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbRateLimitStatus;
 import org.andstatus.app.net.MbUser;
-import org.andstatus.app.util.ForegroundCheckTask;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -60,9 +57,12 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.AsyncTask.Status;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.BaseColumns;
+
+import net.jcip.annotations.GuardedBy;
 
 /**
  * This is an application service that serves as a connection between this Android Device
@@ -113,44 +113,6 @@ public class MyService extends Service {
      * @see CommandEnum
      */
     public static final String ACTION_GO = ACTIONPREFIX + "GO";
-
-    /**
-     * Communicate state of this service 
-     */
-    public enum ServiceState {
-        RUNNING,
-        STOPPING,
-        STOPPED,
-        UNKNOWN;
-        
-        /**
-         * Like valueOf but doesn't throw exceptions: it returns UNKNOWN instead 
-         */
-        public static ServiceState load(String str) {
-            ServiceState state;
-            try {
-                state = valueOf(str);
-            } catch (IllegalArgumentException e) {
-                state = UNKNOWN;
-            }
-            return state;
-        }
-        public String save() {
-            return this.toString();
-        }
-    }
-    
-    private ServiceState getServiceState() {
-        ServiceState state = ServiceState.STOPPED; 
-        if (mInitialized) {
-            if (mIsStopping) {
-                state = ServiceState.STOPPING;
-            } else {
-                state = ServiceState.RUNNING;
-            }
-        }
-        return state;
-    }
     
     /**
      * The command to the MyService or to MyAppWidgetProvider as a
@@ -273,67 +235,95 @@ public class MyService extends Service {
     // TODO: Maybe this should be additional setting...
     public static boolean updateWidgetsOnEveryUpdate = true;
 
-    private boolean mNotificationsEnabled;
+    private volatile boolean mNotificationsEnabled;
+    private volatile boolean mNotificationsVibrate;
 
-    private boolean mNotificationsVibrate;
+    /**
+     * Communicate state of this service 
+     */
+    public enum ServiceState {
+        RUNNING,
+        STOPPING,
+        STOPPED,
+        UNKNOWN;
+        
+        /**
+         * Like valueOf but doesn't throw exceptions: it returns UNKNOWN instead 
+         */
+        public static ServiceState load(String str) {
+            ServiceState state;
+            try {
+                state = valueOf(str);
+            } catch (IllegalArgumentException e) {
+                state = UNKNOWN;
+            }
+            return state;
+        }
+        public String save() {
+            return this.toString();
+        }
+    }
+    
+    private ServiceState getServiceState() {
+        ServiceState state = ServiceState.STOPPED; 
+        synchronized (serviceStateLock) {
+            if (mInitialized) {
+                if (mIsStopping) {
+                    state = ServiceState.STOPPING;
+                } else {
+                    state = ServiceState.RUNNING;
+                }
+            }
+        }
+        return state;
+    }
 
+    private final Object serviceStateLock = new Object();
+    private boolean isStopping() {
+        synchronized (serviceStateLock) {
+            return mIsStopping;
+        }
+    }
+    @GuardedBy("serviceStateLock")
+    private boolean dontStop = false;
     /**
      * We are going to finish this service. The flag is being checked by background threads
      */
-    private volatile boolean mIsStopping = false;
+    @GuardedBy("serviceStateLock")
+    private boolean mIsStopping = false;
     /**
      * Flag to control the Service state persistence
      */
-    private volatile boolean mInitialized = false;
-
+    @GuardedBy("serviceStateLock")
+    private boolean mInitialized = false;
+    @GuardedBy("serviceStateLock")
+    private int lastProcessedStartId = 0;
     /**
-     * Commands queue to be processed by the Service
+     * For now let's have only ONE working thread 
+     * (it seems there is some problem in parallel execution...)
      */
-    private Queue<CommandData> mCommands = new ArrayBlockingQueue<CommandData>(100, true);
+    @GuardedBy("serviceStateLock")
+    private CommandExecutor executor = null;
 
-    /**
-     * Retry Commands queue
-     */
-    private Queue<CommandData> mRetryQueue = new ArrayBlockingQueue<CommandData>(100, true);
-
-    /**
-     * The set of threads that are currently executing commands For now let's
-     * have only ONE working thread (it seems there is some problem in parallel
-     * execution...)
-     */
-    private Set<CommandExecutor> mExecutors = new HashSet<CommandExecutor>();
-
+    private final Object wakeLockLock = new Object();
     /**
      * The reference to the wake lock used to keep the CPU from stopping during
      * background operations.
      */
-    private volatile PowerManager.WakeLock mWakeLock = null;
+    @GuardedBy("wakeLockLock")
+    private PowerManager.WakeLock wakeLock = null;
+
+    private final Queue<CommandData> mainCommandQueue = new ArrayBlockingQueue<CommandData>(100, true);
+    private final Queue<CommandData> retryCommandQueue = new ArrayBlockingQueue<CommandData>(100, true);
 
     /**
      * Time when shared preferences where changed as this knows it.
      */
-    protected long preferencesChangeTime = 0;
+    protected volatile long preferencesChangeTime = 0;
     /**
      * Time when shared preferences where analyzed
      */
-    protected long preferencesExamineTime = 0;
-    
-    /**
-     * @return Single instance of Default SharedPreferences is returned, this is why we
-     *         may synchronize on the object
-     */
-    private SharedPreferences getSp() {
-        return MyPreferences.getDefaultSharedPreferences();
-    }
-
-    /**
-     * The idea is to have SharePreferences, that are being edited by
-     * the service process only (to avoid problems of concurrent access.
-     * @return Single instance of SharedPreferences, specific to the class
-     */
-    private SharedPreferences getMyServicePreferences() {
-        return MyPreferences.getSharedPreferences(TAG);
-    }
+    protected volatile long preferencesExamineTime = 0;
 
     /**
      * After this the service state remains "STOPPED": we didn't initialize the instance yet!
@@ -346,122 +336,119 @@ public class MyService extends Service {
 
     }
 
-    private BroadcastReceiver intentReceiver = new BroadcastReceiver() {
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        MyLog.d(TAG, "onStartCommand: startid=" + startId);
+        receiveCommand(intent, startId);
+        return START_NOT_STICKY;
+    }
 
+    @GuardedBy("serviceStateLock")
+    private BroadcastReceiver intentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context arg0, Intent intent) {
             MyLog.v(this, "onReceive " + intent.toString());
-            receiveCommand(intent);
+            receiveCommand(intent, 0);
         }
-
     };
     
-    /**
-     * Notify background processes that the service is stopping.
-     * Stop if background processes has finished.
-     * Persist everything that we'll need on next Service creation and free resources
-     * @param boolean forceNow 
-     */
-    private synchronized void stopDelayed(boolean forceNow) {
-        if (!mInitialized) return;
+    private void receiveCommand(Intent intent, int startId) {
+        CommandData commandData = CommandData.fromIntent(intent);
+        switch (commandData.command) {
+            case STOP_SERVICE:
+                MyLog.v(this, "Command " + commandData.command + " received");
+                stopDelayed(false);
+                break;
+            case BROADCAST_SERVICE_STATE:
+                broadcastState(commandData);
+                break;
+            case UNKNOWN:
+                MyLog.v(this, "Command " + commandData.command + " ignored");
+                break;
+            default:
+                receiveOtherCommand(commandData, startId);
+                break;
+        }
+    }
 
-        mIsStopping = true;
-        boolean doStop = (mExecutors.size() == 0);
-        if (!doStop) {
-            if (forceNow) {
-                MyLog.e(this, "stopDelayed: Forced to stop now");
-            } else {
-                MyLog.v(this, "stopDelayed: Cannot stop now");
-                broadcastState(null);
-                return;
+    private void receiveOtherCommand(CommandData commandData, int startId) {
+        boolean isStopping = false;
+        synchronized(serviceStateLock) {
+            isStopping = isStopping();
+            if (!isStopping) {
+                dontStop = true;
+                if (startId != 0) {
+                    lastProcessedStartId = startId;
+                }
             }
         }
-
-        unregisterReceiver(intentReceiver);
-
-        // Clear notifications if any
-        notifyOfQueue(true);
-        
-        int count = 0;
-        // Save Queues
-        count += persistQueue(mCommands, TAG + "_" + "mCommands");
-        count += persistQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
-        MyLog.d(TAG, "State saved, " + (count>0 ? Integer.toString(count) : "no ") + " msg in the Queues");
-        
-        stopSelf();
-        relealeWakeLock();
-
-        mInitialized = false;
-        mIsStopping = false;
-        
-        broadcastState(null);
-    }
-
-    /**
-     * Send broadcast informing of the current state of this service
-     */
-    private void broadcastState(CommandData commandData) {
-        broadcastState(this, getServiceState(), commandData);
-    }
-
-    /**
-     * Send broadcast informing of the current state of this service
-     */
-    public static void broadcastState(Context context, ServiceState state, CommandData commandData) {
-        Intent intent = new Intent(ACTION_SERVICE_STATE);
-        if (commandData != null) {
-            intent = commandData.toIntent(intent);
-        }
-        intent.putExtra(IntentExtra.EXTRA_SERVICE_STATE.key, state.save());
-        context.sendBroadcast(intent);
-        MyLog.v(TAG, "state: " + state);
-    }
-    
-    @Override
-    public void onDestroy() {
-        stopDelayed(true);
-        MyLog.d(TAG, "Service destroyed");
-    }
-
-    private int persistQueue(Queue<CommandData> q, String prefsFileName) {
-        Context context = MyContextHolder.get().context();
-        int count = 0;
-        // Delete any existing saved queue
-        SharedPreferencesUtil.delete(context, prefsFileName);
-        if (q.size() > 0) {
-            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
-            while (q.size() > 0) {
-                CommandData cd = q.poll();
-                cd.save(sp, count);
-                MyLog.v(this, "Command saved: " + cd.toString());
-                count += 1;
+        if (isStopping) {
+            MyLog.v(this, "The Service is stopping: ignoring the command: " +  commandData.command);
+        } else {
+            try {
+                initialize();
+                if (mainCommandQueue.isEmpty()) {
+                    // This is a good place to send commands from retry Queue
+                    while (!retryCommandQueue.isEmpty()) {
+                        CommandData cd = retryCommandQueue.poll();
+                        if (!mainCommandQueue.contains(cd)) {
+                            if (!mainCommandQueue.offer(cd)) {
+                                MyLog.e(this, "mCommands is full?");
+                            }
+                        }
+                    }
+                }
+                if ( commandData.command == CommandEnum.EMPTY) {
+                    // Nothing to do
+                } else if (mainCommandQueue.contains(commandData)) {
+                    MyLog.d(TAG, "Duplicated " + commandData);
+                    // Reset retries counter on receiving duplicated command
+                    for (CommandData cd:mainCommandQueue) {
+                        if (cd.equals(commandData)) {
+                            cd.retriesLeft = 0;
+                            break;
+                        }
+                    }
+                } else {
+                    MyLog.d(TAG, "Adding to the queue " + commandData);
+                    if (!mainCommandQueue.offer(commandData)) {
+                        MyLog.e(this, "mCommands is full?");
+                    }
+                }
+            } finally {
+                synchronized(serviceStateLock) {
+                    dontStop = false;
+                }
             }
-            MyLog.d(TAG, "Queue saved to " + prefsFileName  + ", " + count + " msgs");
+            desideIfStopTheService(false);
         }
-        return count;
     }
     
     /**
      * Initialize and restore the state if it was not restored yet
      */
-    private synchronized void initialize() {
+    private void initialize() {
 
         // Check when preferences were changed
         long preferencesChangeTimeNew = MyContextHolder.initialize(this, this);
         long preferencesExamineTimeNew = java.lang.System.currentTimeMillis();
 
+        synchronized (serviceStateLock) {
+            if (!mInitialized) {
+                int count = 0;
+                // Restore Queues
+                count += restoreQueue(mainCommandQueue, TAG + "_" + "mCommands");
+                count += restoreQueue(retryCommandQueue, TAG + "_" + "mRetryQueue");
+                MyLog.d(TAG, "State restored, " + (count>0 ? Integer.toString(count) : "no") + " msg in the Queues");
 
-        if (!mInitialized) {
-            int count = 0;
-            // Restore Queues
-            count += restoreQueue(mCommands, TAG + "_" + "mCommands");
-            count += restoreQueue(mRetryQueue, TAG + "_" + "mRetryQueue");
-            MyLog.d(TAG, "State restored, " + (count>0 ? Integer.toString(count) : "no") + " msg in the Queues");
+                registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
 
-            registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
-            
-            mInitialized = true;
-            broadcastState(null);
+                mNotificationsEnabled = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_enabled", false);
+                mNotificationsVibrate = MyPreferences.getDefaultSharedPreferences().getBoolean("vibration", false);
+                
+                mInitialized = true;
+                broadcastState(null);
+            }
         }
         
         if (preferencesChangeTime != preferencesChangeTimeNew
@@ -509,267 +496,203 @@ public class MyService extends Service {
         }
         return count;
     }
+
+    /**
+     * The idea is to have SharePreferences, that are being edited by
+     * the service process only (to avoid problems of concurrent access.
+     * @return Single instance of SharedPreferences, specific to the class
+     */
+    private SharedPreferences getMyServicePreferences() {
+        return MyPreferences.getSharedPreferences(TAG);
+    }
+
+    private void desideIfStopTheService(boolean calledFromExecutor) {
+        synchronized(serviceStateLock) {
+            boolean isStopping = false;
+            if (!mInitialized) {
+                isStopping = false;
+                return;
+            }
+            if (dontStop) {
+                MyLog.v(this, "desideIfStopTheService: dontStop flag");
+                return;
+            }
+            isStopping = isStopping();
+            if (!isStopping) {
+                isStopping = mainCommandQueue.isEmpty()
+                        || !isOnline() 
+                        || !MyContextHolder.get().isReady();
+                if (isStopping && !calledFromExecutor && executor!= null) {
+                    isStopping = (executor.getStatus() != Status.RUNNING);
+                }
+            }
+            if (this.mIsStopping != isStopping) {
+                if (isStopping) {
+                    MyLog.v(this, "Desided to continue; startId=" + lastProcessedStartId);
+                } else {
+                    MyLog.v(this, "Desided to stop; startId=" + lastProcessedStartId 
+                            + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
+                            );
+                }
+                this.mIsStopping = isStopping;
+            }
+            if (isStopping || calledFromExecutor ) {
+                executor = null;
+            }
+            if (isStopping) {
+                stopDelayed(true);
+            } else {
+                acquireWakeLock();
+                if (executor == null) {
+                    executor = new CommandExecutor();
+                    MyLog.v(this, "Adding new executor " + executor);
+                    executor.execute();
+                } else {
+                    MyLog.v(this, "There is an Executor already");
+                }
+            }
+        }
+    }
+
+    /**
+     * We use this function before actual requests of Internet services Based on
+     * http
+     * ://stackoverflow.com/questions/1560788/how-to-check-internet-access-on
+     * -android-inetaddress-never-timeouts
+     */
+    public boolean isOnline() {
+        boolean is = false;
+        try {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            // test for connection
+            if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable()
+                    && cm.getActiveNetworkInfo().isConnected()) {
+                is = true;
+            } else {
+                MyLog.v(this, "Internet Connection Not Present");
+            }
+        } catch (Exception e) {}
+        return is;
+    }
+    
+    private void acquireWakeLock() {
+        synchronized(wakeLockLock) {
+            if (wakeLock == null) {
+                MyLog.d(TAG, "Acquiring wakelock");
+                PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+                wakeLock.acquire();
+            }
+        }
+    }
+    
+    private int totalQueuesSize() {
+        return retryCommandQueue.size() + mainCommandQueue.size();
+    }
     
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public void onDestroy() {
+        MyLog.v(TAG, "onDestroy");
+        stopDelayed(true);
+        MyLog.d(TAG, "Service destroyed");
     }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        MyLog.d(TAG, "onStartCommand: startid=" + startId);
-        receiveCommand(intent);
-        return START_NOT_STICKY;
-    }
-
+    
     /**
-     * Put Intent to the Command's queue and Start Execution thread if none is
-     * already running
-     * 
-     * @param Intent containing command and it's parameters. It may be null to
-     *            initialize execution only.
+     * Notify background processes that the service is stopping.
+     * Stop if background processes has finished.
+     * Persist everything that we'll need on next Service creation and free resources
+     * @param boolean forceNow 
      */
-    private synchronized void receiveCommand(Intent intent) {
-        
-        CommandData commandData = null;
-        if (intent != null) {
-            commandData = new CommandData(intent);
-            switch (commandData.command) {
-                case STOP_SERVICE:
-                    MyLog.v(this, "Command STOP_SERVICE received");
-                    stopDelayed(false);
+    private void stopDelayed(boolean forceNow) {
+        synchronized (serviceStateLock) {
+            if (mInitialized) {
+                if (dontStop) {
+                    MyLog.d(this, "stopDelayed: dontStop flag");
                     return;
-                case BROADCAST_SERVICE_STATE:
-                    broadcastState(commandData);
-                    return;
-                default:
-                    break;
-            }
-        }
-        if (mIsStopping) {
-            MyLog.v(this, "The Service is stopping: ignoring the command: " +
-        (commandData == null ? "(empty)" : commandData.command));
-            stopDelayed(false);
-            return;
-        }
-        
-        initialize();
-        
-        if (mCommands.isEmpty()) {
-            // This is a good place to send commands from retry Queue
-            while (!mRetryQueue.isEmpty()) {
-                CommandData cd = mRetryQueue.poll();
-                if (!mCommands.contains(cd)) {
-                    if (!mCommands.offer(cd)) {
-                        MyLog.e(this, "mCommands is full?");
-                    }
                 }
+                mIsStopping = true;
+            } else {
+                mIsStopping = false;
+                return;
             }
-        }
-
-        if (processCommandImmediately(commandData)) {
-            // Don't add to the queue
-        } else if (mCommands.contains(commandData)) {
-            MyLog.d(TAG, "Duplicated " + commandData);
-            // Reset retries counter on receiving duplicated command
-            for (CommandData cd:mCommands) {
-                if (cd.equals(commandData)) {
-                    cd.retriesLeft = 0;
-                    break;
-                }
-            }
-        } else {
-            MyLog.d(TAG, "Adding to the queue " + commandData);
-            if (!mCommands.offer(commandData)) {
-                MyLog.e(this, "mCommands is full?");
-            }
-        }
-
-        // Start Executor if necessary
-        startOrStopExecutor(true, null);
-    }
-
-    /**
-     * @param commandData may be null
-     * @return true if the command was processed (either successfully or not...)
-     */
-    private boolean processCommandImmediately(CommandData commandData) {
-        boolean processed = false;
-        // Processed successfully?
-        boolean ok = true;
-        boolean skipped = false;
-
-        /**
-         * Flag for debugging. It looks like for now we don't need to edit
-         * SharedPreferences from this part of code
-         */
-        boolean putPreferences = false;
-
-        processed = (commandData == null);
-        if (!processed) {
-            processed = true;
-            switch (commandData.command) {
-                case UNKNOWN:
-                case EMPTY:
-                    // Nothing to do
-                    break;
-
-                // TODO: Do we really need these three commands?
-                case PUT_BOOLEAN_PREFERENCE:
-                    if (!putPreferences) {
-                        skipped = true;
-                        break;
-                    }
-                    String key = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key);
-                    boolean boolValue = commandData.bundle.getBoolean(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
-                    MyLog.v(this, "Put boolean Preference '"
-                            + key
-                            + "'="
-                            + boolValue
-                            + ((commandData.getAccount() != null) ? " account='"
-                                    + commandData.getAccount().getAccountName() + "'" : " global"));
-                    SharedPreferences sp = null;
-                    if (commandData.getAccount() != null) {
-                        sp = commandData.getAccount().getAccountPreferences();
-                    } else {
-                        sp = getSp();
-                    }
-                    synchronized (sp) {
-                        sp.edit().putBoolean(key, boolValue).commit();
-                    }
-                    break;
-                case PUT_LONG_PREFERENCE:
-                    if (!putPreferences) {
-                        skipped = true;
-                        break;
-                    }
-                    key = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key);
-                    long longValue = commandData.bundle.getLong(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
-                    MyLog.v(this, "Put long Preference '"
-                            + key
-                            + "'="
-                            + longValue
-                            + ((commandData.getAccount() != null) ? " account='"
-                                    + commandData.getAccount().getAccountName() + "'" : " global"));
-                    if (commandData.getAccount() != null) {
-                        sp = commandData.getAccount().getAccountPreferences();
-                    } else {
-                        sp = getSp();
-                    }
-                    synchronized (sp) {
-                        sp.edit().putLong(key, longValue).commit();
-                    }
-                    break;
-                case PUT_STRING_PREFERENCE:
-                    if (!putPreferences) {
-                        skipped = true;
-                        break;
-                    }
-                    key = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key);
-                    String stringValue = commandData.bundle.getString(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
-                    MyLog.v(this, "Put String Preference '"
-                            + key
-                            + "'="
-                            + stringValue
-                            + ((commandData.getAccount() != null) ? " account='"
-                                    + commandData.getAccount().getAccountName() + "'" : " global"));
-                    if (commandData.getAccount() != null) {
-                        sp = commandData.getAccount().getAccountPreferences();
-                    } else {
-                        sp = getSp();
-                    }
-                    synchronized (sp) {
-                        sp.edit().putString(key, stringValue).commit();
-                    }
-                    break;
-
-                default:
-                    processed = false;
-                    break;
-            }
-            if (processed) {
-                MyLog.d(TAG, (skipped ? "Skipped" : (ok ? "Succeeded" : "Failed")) + " "
-                        + commandData);
-            }
-        }
-        return processed;
-    }
-
-    /**
-     * Start Execution thread if none is already running or stop execution
-     * 
-     * @param start true: start, false: stop
-     * @param executor - existing executor or null (if starting new executor)
-     * @param logMsg a log message to include for debugging
-     */
-    private synchronized void startOrStopExecutor(boolean start, CommandExecutor executorIn) {
-        if (start) {
-            start = !mIsStopping;
-        }
-        if (start) {
-            SharedPreferences sp = getSp();
-            mNotificationsEnabled = sp.getBoolean("notifications_enabled", false);
-            mNotificationsVibrate = sp.getBoolean("vibration", false);
-            sp = null;
-
-            if (!mCommands.isEmpty()) {
-                // Don't even launch executor if we're not online
-                if (isOnline() && MyContextHolder.get().isReady()) {
-                    acquireWakeLock();
-                    // only one Executing thread for now...
-                    if (mExecutors.isEmpty()) {
-                        CommandExecutor executor;
-                        if (executorIn != null) {
-                            executor = executorIn;
-                        } else {
-                            executor = new CommandExecutor();
-                        }
-                        mExecutors.add(executor);
-                        MyLog.v(this, "Adding new executor " + executor);
-                        executor.execute();
-                    } else {
-                        MyLog.v(this, "There is an Executor already");
-                    }
+            boolean mayStop = (executor == null || executor.getStatus() == Status.FINISHED);
+            if (!mayStop) {
+                if (forceNow) {
+                    MyLog.d(this, "stopDelayed: Forced to stop now, cancelling Executor");
+                    executor.cancel(true);
                 } else {
-                    notifyOfQueue(false);
+                    MyLog.v(this, "stopDelayed: Cannot stop now, executor is working");
+                    broadcastState(null);
+                    return;
                 }
             }
-        } else {
-            MyLog.v(this, "Removing the Executor " + executorIn);
-            // Stop
-            mExecutors.remove(executorIn);
-            if (mExecutors.size() == 0) {
-                relealeWakeLock();
-                if (mIsStopping) {
-                    MyLog.v(this, "Is stopping and no executors");
-                    stopDelayed(false);
-                } else if ( notifyOfQueue(false) == 0) {
-                    if (! ForegroundCheckTask.isAppOnForeground(MyContextHolder.get().context())) {
-                        MyLog.d(TAG, "App is on Background so stop this Service");
-                        stopDelayed(false);
-                    }
+            if( mInitialized) {
+                try {
+                    unregisterReceiver(intentReceiver);
+    
+                    notifyOfQueue();
+                    int count = 0;
+                    // Save Queues
+                    count += persistQueue(mainCommandQueue, TAG + "_" + "mCommands");
+                    count += persistQueue(retryCommandQueue, TAG + "_" + "mRetryQueue");
+                    MyLog.d(TAG, "State saved, " + (count>0 ? Integer.toString(count) : "no ") + " msg in the Queues");
+    
+                    relealeWakeLock();
+                    stopSelfResult(lastProcessedStartId);
+                } finally {
+                    mInitialized = false;
+                    mIsStopping = false;
+                    lastProcessedStartId = 0;
+                    dontStop = false;
                 }
             }
         }
+        broadcastState(null);
     }
 
+    private int persistQueue(Queue<CommandData> q, String prefsFileName) {
+        Context context = MyContextHolder.get().context();
+        int count = 0;
+        // Delete any existing saved queue
+        SharedPreferencesUtil.delete(context, prefsFileName);
+        if (q.size() > 0) {
+            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
+            while (q.size() > 0) {
+                CommandData cd = q.poll();
+                cd.save(sp, count);
+                MyLog.v(this, "Command saved: " + cd.toString());
+                count += 1;
+            }
+            MyLog.d(TAG, "Queue saved to " + prefsFileName  + ", " + count + " msgs");
+        }
+        return count;
+    }
+
+    private void relealeWakeLock() {
+        synchronized(wakeLockLock) {
+            if (wakeLock != null) {
+                MyLog.d(TAG, "Releasing wakelock");
+                wakeLock.release();
+                wakeLock = null;
+            }
+        }
+    }
+    
     /**
      * Notify user of the commands Queue size
      * 
      * @return total size of Queues
      */
-    private int notifyOfQueue(boolean clearNotification) {
-        int count = mRetryQueue.size() + mCommands.size();
-        NotificationManager nM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (count == 0 || clearNotification) {
-            // Clear notification
-            nM.cancel(CommandEnum.NOTIFY_QUEUE.ordinal());
-        } else if (mNotificationsEnabled && getSp().getBoolean(MyPreferences.KEY_NOTIFICATIONS_QUEUE, false)) {
-            if (mRetryQueue.size() > 0) {
-                MyLog.d(TAG, mRetryQueue.size() + " commands in Retry Queue.");
+    private int notifyOfQueue() {
+        int count = retryCommandQueue.size() + mainCommandQueue.size();
+        if (count == 0 ) {
+            clearNotifications();
+        } else if (mNotificationsEnabled && MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFICATIONS_QUEUE, false)) {
+            if (retryCommandQueue.size() > 0) {
+                MyLog.d(TAG, retryCommandQueue.size() + " commands in Retry Queue.");
             }
-            if (mCommands.size() > 0) {
-                MyLog.d(TAG, mCommands.size() + " commands in Main Queue.");
+            if (mainCommandQueue.size() > 0) {
+                MyLog.d(TAG, mainCommandQueue.size() + " commands in Main Queue.");
             }
 
             // Set up the notification to display to the user
@@ -798,25 +721,62 @@ public class MyService extends Service {
              * Kick the commands queue by sending empty command
              * This Intent will be sent upon a User tapping the notification 
              */
-            PendingIntent pi = PendingIntent.getBroadcast(this, 0, CommandData.EMPTY_COMMAND.toIntent(), 0);
+            PendingIntent pi = PendingIntent.getBroadcast(this, 0, CommandData.EMPTY_COMMAND.toIntent(intentForThisInitialized()), 0);
             notification.setLatestEventInfo(this, getText(messageTitle), aMessage, pi);
+
+            NotificationManager nM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             nM.notify(CommandEnum.NOTIFY_QUEUE.ordinal(), notification);
         }
         return count;
     }
+    
+    private void clearNotifications() {
+        NotificationManager nM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (nM != null) {
+            nM.cancel(CommandEnum.NOTIFY_QUEUE.ordinal());
+        }
+    }
+    
+    /**
+     * @return This intent will be received by MyService only if it's initialized
+     * (and corresponding broadcast receiver registered)
+     */
+    public static Intent intentForThisInitialized() {
+        return new Intent(MyService.ACTION_GO);
+    }
+    
+    /**
+     * Send broadcast informing of the current state of this service
+     */
+    private void broadcastState(CommandData commandData) {
+        broadcastState(this, getServiceState(), commandData);
+    }
 
+    /**
+     * Send broadcast informing of the current state of this service
+     */
+    public static void broadcastState(Context context, ServiceState state, CommandData commandData) {
+        Intent intent = new Intent(ACTION_SERVICE_STATE);
+        if (commandData != null) {
+            intent = commandData.toIntent(intent);
+        }
+        intent.putExtra(IntentExtra.EXTRA_SERVICE_STATE.key, state.save());
+        context.sendBroadcast(intent);
+        MyLog.v(TAG, "state: " + state);
+    }
+    
     private class CommandExecutor extends AsyncTask<Void, Void, Boolean> {
 
         @Override
         protected Boolean doInBackground(Void... arg0) {
-            MyLog.d(TAG, "CommandExecutor, " + mCommands.size() + " commands to process");
+            MyLog.d(TAG, "CommandExecutor, " + mainCommandQueue.size() + " commands to process");
 
             do {
-                if (mIsStopping) break;
+                if (isStopping()) break;
                 
                 // Get commands from the Queue one by one and execute them
                 // The queue is Blocking, so we can do this
-                CommandData commandData = mCommands.poll();
+                CommandData commandData = mainCommandQueue.poll();
                 if (commandData == null) {
                     break;
                 }
@@ -825,8 +785,8 @@ public class MyService extends Service {
                 if (shouldWeRetry(commandData)) {
                     synchronized(MyService.this) {
                         // Put the command to the retry queue
-                        if (!mRetryQueue.contains(commandData)) {
-                            if (!mRetryQueue.offer(commandData)) {
+                        if (!retryCommandQueue.contains(commandData)) {
+                            if (!retryCommandQueue.offer(commandData)) {
                                 MyLog.e(this, "mRetryQueue is full?");
                             }
                         }
@@ -924,9 +884,15 @@ public class MyService extends Service {
          */
         @Override
         protected void onPostExecute(Boolean notUsed) {
-            startOrStopExecutor(false, this);
+            desideIfStopTheService(true);
         }
 
+        @Override
+        protected void onCancelled(Boolean result) {
+            MyLog.v(this, "Executor was cancelled, result=" + result);
+            desideIfStopTheService(true);
+        }
+        
         /**
          * @param create true - create, false - destroy
          */
@@ -1241,7 +1207,7 @@ public class MyService extends Service {
             if (commandData.getAccount() == null) {
                 for (MyAccount acc : MyContextHolder.get().persistentAccounts().list()) {
                     loadTimelineAccount(commandData, acc);
-                    if (mIsStopping) {
+                    if (isStopping()) {
                         setSoftErrorIfNotOk(commandData, false);
                         break;
                     }
@@ -1249,7 +1215,7 @@ public class MyService extends Service {
             } else {
                 loadTimelineAccount(commandData, commandData.getAccount());
             }
-            if (!commandData.commandResult.hasError() && commandData.timelineType == TimelineTypeEnum.ALL && !mIsStopping) {
+            if (!commandData.commandResult.hasError() && commandData.timelineType == TimelineTypeEnum.ALL && !isStopping()) {
                 new DataPruner(MyService.this.getApplicationContext()).prune();
             }
             if (!commandData.commandResult.hasError()) {
@@ -1296,7 +1262,7 @@ public class MyService extends Service {
             boolean oKs[] = new boolean[atl.length];
             try {
                 for (int ind = 0; ind <= atl.length; ind++) {
-                    if (mIsStopping) {
+                    if (isStopping()) {
                         okAllTimelines = false;
                         break;
                     }
@@ -1432,22 +1398,13 @@ public class MyService extends Service {
                 return;
             }
 
-            boolean notificationsMessages = false;
-            boolean notificationsReplies = false;
-            boolean notificationsTimeline = false;
-            String ringtone = null;
-            SharedPreferences sp = getSp();
-            synchronized (sp) {
-                notificationsMessages = sp.getBoolean("notifications_messages", false);
-                notificationsReplies = sp.getBoolean("notifications_mentions", false);
-                notificationsTimeline = sp.getBoolean("notifications_timeline", false);
-                ringtone = sp.getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
-            }
-            sp = null;
+            boolean notificationsMessages = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_messages", false);
+            boolean notificationsReplies = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_mentions", false);
+            boolean notificationsTimeline = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_timeline", false);
+            String ringtone = MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
 
             // Make sure that notifications haven't been turned off for the
-            // message
-            // type
+            // message type
             switch (msgType) {
                 case NOTIFY_MENTIONS:
                     if (!notificationsReplies)
@@ -1597,42 +1554,9 @@ public class MyService extends Service {
             return errorOccured;
         }
     }
-
-    private synchronized void acquireWakeLock() {
-        if (mWakeLock == null) {
-            MyLog.d(TAG, "Acquiring wakelock");
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-            mWakeLock.acquire();
-        }
-    }
     
-    private synchronized void relealeWakeLock() {
-        if (mWakeLock != null) {
-            MyLog.d(TAG, "Releasing wakelock");
-            mWakeLock.release();
-            mWakeLock = null;
-        }
-    }
-
-    /**
-     * We use this function before actual requests of Internet services Based on
-     * http
-     * ://stackoverflow.com/questions/1560788/how-to-check-internet-access-on
-     * -android-inetaddress-never-timeouts
-     */
-    public boolean isOnline() {
-        boolean is = false;
-        try {
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            // test for connection
-            if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable()
-                    && cm.getActiveNetworkInfo().isConnected()) {
-                is = true;
-            } else {
-                MyLog.v(this, "Internet Connection Not Present");
-            }
-        } catch (Exception e) {}
-        return is;
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 }

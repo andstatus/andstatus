@@ -114,11 +114,11 @@ public class MyServiceManager extends BroadcastReceiver {
      */
     public static synchronized void stopService() {
         // Don't do this, because we may loose some information and (or) get Force Close
-        // context.stopService(new Intent(IMyService.class.getName()));
+        // context.stopService(new Intent(MyService.class.getName()));
         
         //This is "mild" stopping
         CommandData element = new CommandData(CommandEnum.STOP_SERVICE, "");
-        MyContextHolder.get().context().sendBroadcast(element.toIntent());
+        MyContextHolder.get().context().sendBroadcast(element.toIntent(MyService.intentForThisInitialized()));
     }
 
     /**
@@ -139,7 +139,7 @@ public class MyServiceManager extends BroadcastReceiver {
                stateQueuedTime = time;
                mServiceState = ServiceState.UNKNOWN;
                CommandData element = new CommandData(CommandEnum.BROADCAST_SERVICE_STATE, "");
-               MyContextHolder.get().context().sendBroadcast(element.toIntent());
+               MyContextHolder.get().context().sendBroadcast(element.toIntent(MyService.intentForThisInitialized()));
            }
         }
         return mServiceState;
