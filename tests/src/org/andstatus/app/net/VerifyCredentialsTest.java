@@ -96,13 +96,15 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         assertEquals("User in the database for id=" + userId, 
                 mbUser.oid,
                 MyProvider.idToOid(OidEnum.USER_OID, userId, 0));
-        
+
+        String msgOid = "383296535213002752";
         Uri contentUri = MyProvider.getTimelineUri(userId, TimelineTypeEnum.ALL, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
-        sa.addSelection(MyDatabase.Msg.SENDER_ID + " = ?",
+        sa.addSelection(MyDatabase.Msg.SENDER_ID + " = ? AND " 
+        + MyDatabase.Msg.MSG_OID + " = ?",
                 new String[] {
-                        Long.toString(userId)
+                        Long.toString(userId), msgOid 
                 });
         String[] PROJECTION = new String[] {
             Msg.MSG_ID,
@@ -113,6 +115,6 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         cursor.moveToFirst();
         long messageId = cursor.getLong(0);
         cursor.close();
-        assertEquals("Message permalink at twitter", "https://twitter.com/" + builder.getAccount().getUsername() + "/status/383296535213002752", builder.getAccount().messagePermalink(builder.getAccount().getUsername(), messageId));
+        assertEquals("Message permalink at twitter", "https://twitter.com/" + builder.getAccount().getUsername() + "/status/" + msgOid, builder.getAccount().messagePermalink(builder.getAccount().getUsername(), messageId));
     }
 }

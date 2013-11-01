@@ -24,9 +24,13 @@ enum PumpioObjectType {
         public boolean isMyType(JSONObject jso) {
             boolean is = false;
             if (jso != null) {
-                 is = jso.has("verb");
-                 // It may not have the "objectType" field as in the specification:
-                 //   http://activitystrea.ms/specs/json/1.0/
+                if (jso.has("objecttype")) {
+                    is = super.isMyType(jso);
+                } else {
+                    // It may not have the "objectType" field as in the specification:
+                    //   http://activitystrea.ms/specs/json/1.0/
+                    is = jso.has("verb") && jso.has("object");
+                }
             }
             return is;
         }

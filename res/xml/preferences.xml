@@ -143,7 +143,7 @@
             android:title="@string/title_preference_min_log_level" android:key="min_log_level"
             android:defaultValue="4" />
 		<Preference android:key="contact_developer" android:title="@string/title_preference_contact_developer">
-			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus" />
+			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/wiki" />
 		</Preference>
 		<Preference android:key="report_bug" android:title="@string/title_preference_report_bug">
 			<intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/issues" />

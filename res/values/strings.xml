@@ -159,7 +159,7 @@
 	<string name="resolve_view">View Message</string>
 	<string name="splash_button_learn_more">Learn More</string>
 	<string name="splash_button_get_started">Get Started</string>
-	<string name="splash_payoff_line">Light-Weight Twitter and identi.ca Client for Android™</string>
+	<string name="splash_payoff_line">Light-Weight Twitter, pump.io and status.net Client for Android™</string>
 	<string name="splash_text_learn_more_1"><h1><b>AndStatus User Guide</b></h1>\n\n
         <h2><b>1. Getting started</b></h2>\n\n
         In order to start using the application, you must add at least one \"AndStatus\" 

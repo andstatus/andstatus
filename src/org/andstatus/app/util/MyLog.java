@@ -26,6 +26,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
@@ -210,13 +212,26 @@ public class MyLog {
         initialized = false;
     }
     
+    /**
+     * from org.apache.commons.lang3.exception.ExceptionUtils
+     */
+    public static String getStackTrace(Throwable throwable) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw, true);
+        throwable.printStackTrace(pw);
+        return sw.getBuffer().toString();
+    }
+    
     public static boolean writeStringToFile(String string, String FileName) {
         boolean ok = false;
-        File dir1 = MyPreferences.getDataFilesDir("logs", false);
+        File dir1 = MyPreferences.getDataFilesDir("logs", null);
         if (dir1 == null) { return false; }
         File file = new File(dir1, FileName);
         Writer out = null;
         try {
+            if (file.exists()) {
+                file.delete();
+            }
             out = new BufferedWriter(new OutputStreamWriter(
                     new FileOutputStream(file.getAbsolutePath()), "UTF-8"));
             out.write(string);

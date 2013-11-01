@@ -53,6 +53,7 @@
 	<string name="category_title_preference_information">Информация</string>
 	<string name="category_title_preference_notifications">Уведомления</string>
 	<string name="category_title_preference_settings">Настройки</string>
+	<string name="category_title_preference_origin">Параметры системы микроблогов</string>
     <string name="combined_timeline_on">вместе</string>
     <string name="combined_timeline_off">для</string>
 	<string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>
@@ -78,6 +79,7 @@
 	<string name="dialog_title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="dialog_title_preference_history_size">Количество сообщений в истории</string>
 	<string name="dialog_title_preference_history_time">Время хранения истории</string>
+	<string name="dialog_title_preference_host">Хост</string>
     <string name="dialog_title_preference_min_log_level">Минимальный уровень журналирования</string>
     <string name="dialog_title_preference_origin_system">Система микроблогов</string>
     <string name="dialog_title_preference_password">Пароль</string>
@@ -157,7 +159,7 @@
 	<string name="resolve_view">Посмотреть сообщение</string>
 	<string name="splash_button_learn_more">Узнать больше</string>
 	<string name="splash_button_get_started">Начать работу</string>
-	<string name="splash_payoff_line">Лёгкий клиент Твиттера и identi.ca для Андроида™</string>
+	<string name="splash_payoff_line">Лёгкий клиент Твиттера, pump.io и status.net для Андроида™</string>
 	<string name="splash_text_learn_more_1"><h1><b>Руководство пользователя приложения AndStatus</b></h1>\n\n
         <h2><b>1. Начало работы</b></h2>\n\n
         Для того, чтобы начать пользоваться данным приложением, Вам необходимо добавить
@@ -166,10 +168,10 @@
         <i>или</i> нажмите кнопку \"Начать работу\" внизу данного окна, а далее выберите
         \"Управление аккаунтами\" в Настройках AndStatus-а.
         В открывшемся интерфейсе Вашего устройства выберите опцию \"Добавить аккаунт\".\n
-        Вам будет предложено выбрать \"Систему микроблогов\" (Twitter или identi.ca) 
+        Вам будет предложено выбрать \"Систему микроблогов\" (twitter, pump.io или status.net) 
         а далее - авторизовать доступ приложения AndStatus к этой системе 
         на сайте Системы микроблогов.\n
-        Обратите внимание на то, что в настоящее время для identi.ca работает только 
+        Обратите внимание на то, что в настоящее время для status.net работает только 
         \"Базовая аутентификация\" (т.е. нет OAuth).\n
         После успешного создания аккаунта, пожалуйста, запустите AndStatus повторно. Вам
         будет представлен Журнал изменений (англоязычный), а та же кнопка 
@@ -230,6 +232,7 @@
 	<string name="summary_preference_frequency">Обновления происходят каждые {0}.</string>
 	<string name="summary_preference_history_size">Сохранять историю до {0}.</string>
 	<string name="summary_preference_history_time">Хранить историю за {0}.</string>
+	<string name="summary_preference_host">Имя хоста системы, например quitter.se</string>
 	<string name="summary_preference_light_theme_off">Будет использована стандартная тема.</string>
 	<string name="summary_preference_light_theme_on">Будет использована светлая тема.</string>
     <string name="summary_preference_min_log_level">Уровень равен {0}.</string>
@@ -249,6 +252,8 @@
 	<string name="summary_preference_oauth_on">OAuth (защищённая аутентификация)</string>
     <string name="summary_preference_origin_system">{0}</string>
     <string name="summary_preference_password">Ваш пароль в Системе микроблогов</string>
+	<string name="summary_preference_ssl_off">без SSL</string>
+	<string name="summary_preference_ssl_on">SSL включён</string>
     <string name="summary_preference_storage">Где и какую информацию хранить</string>
 	<string name="summary_preference_storage_external_off">Сохранять данные во внутренней памяти</string>
 	<string name="summary_preference_storage_external_on">Сохранять данные во внешней памяти</string>
@@ -271,6 +276,7 @@
 	<string name="title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="title_preference_history_size">Размер истории</string>
 	<string name="title_preference_history_time">Длительность хранения истории</string>
+	<string name="title_preference_host">Хост</string>
 	<string name="title_preference_light_theme">Светлая тема</string>
     <string name="title_preference_min_log_level">Минимальный уровень журналирования</string>
 	<string name="title_preference_notification_sound">Мелодия звонка для уведомлений</string>
@@ -285,6 +291,7 @@
     <string name="title_preference_password">Пароль</string>
 	<string name="title_preference_report_bug">Сообщить об ошибке</string>
 	<string name="title_preference_storage">Память</string>
+	<string name="title_preference_ssl">SSL</string>
 	<string name="title_preference_storage_external">Использовать внешнюю память</string>
 	<string name="title_preference_theme">Тема</string>
 	<string name="title_preference_username">Имя пользователя</string>

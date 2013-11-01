@@ -56,8 +56,13 @@ public class ConnectionException extends Exception {
         MyLog.d(objTag, detailMessage + ": " + e.getMessage());
         if (jso != null) {
             try {
-                MyLog.v(objTag, "jso: " + jso.toString(4));
-            } catch (JSONException e1) {}
+                String stackTrace = MyLog.getStackTrace(e);
+                MyLog.writeStringToFile(stackTrace, "loggedErrorJson_stacktrace.txt");
+                MyLog.v(objTag, "stack trace: " + stackTrace);
+                String strJso = jso.toString(2);
+                MyLog.writeStringToFile(strJso, "loggedErrorJson.json");
+                MyLog.v(objTag, "jso: " + strJso);
+            } catch (JSONException ignored) {}
         }
         return new ConnectionException(detailMessage);
     }

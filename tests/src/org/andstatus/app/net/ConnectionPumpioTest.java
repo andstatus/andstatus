@@ -122,7 +122,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
                 new TimelinePosition(sinceId) , 20, "acct:t131t@" + host);
         assertNotNull("timeline returned", timeline);
-        int size = 5;
+        int size = 6;
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
@@ -150,6 +150,10 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         ind++;
         assertTrue("Have a recipient", timeline.get(ind).mbMessage.recipient != null);
         assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , timeline.get(ind).mbMessage.recipient.oid);
+
+        ind++;
+        assertTrue("Is a reply", timeline.get(ind).mbMessage.inReplyToMessage != null);
+        assertEquals("Is a reply to this user", timeline.get(ind).mbMessage.inReplyToMessage.sender.userName, "jankusanagi@identi.ca");
     }
 
     public void testGetUsersFollowedBy() throws ConnectionException {
