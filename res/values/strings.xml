@@ -159,7 +159,7 @@
 	<string name="resolve_view">View Message</string>
 	<string name="splash_button_learn_more">Learn More</string>
 	<string name="splash_button_get_started">Get Started</string>
-	<string name="splash_payoff_line">Light-Weight Twitter, pump.io and status.net Client for Android™</string>
+	<string name="splash_payoff_line">Light-Weight Twitter, pump.io and StatusNet Client for Android™</string>
 	<string name="splash_text_learn_more_1"><h1><b>AndStatus User Guide</b></h1>\n\n
         <h2><b>1. Getting started</b></h2>\n\n
         In order to start using the application, you must add at least one \"AndStatus\" 
@@ -168,10 +168,10 @@
         in the AndStatus preferences <i>or</i> simply go to the \"Settings\" of Your device, 
         select \"Add account\" option and add an account of the \"AndStatus\" type.\n
         You will be prompted to select desired Microblogging system 
-        (twitter, pump.io or status.net) 
+        (twitter, pump.io or StatusNet) 
         and authorise the AndStatus application\'s access to it
         at the Microblogging system\'s web site.\n 
-        Please note that currently for \"status.net\" only \"Basic auhentication\" works; i.e. no OAuth.\n
+        Please note that currently for \"StatusNet\" only \"Basic auhentication\" works; i.e. no OAuth.\n
         After successful creation of the account please launch AndStatus application again. 
         This time you will be presented with the Change Log. 
         Press the \"Get Started\" button below - and you will get to the main AndStatus window.\n

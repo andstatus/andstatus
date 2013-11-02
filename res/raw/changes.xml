@@ -38,15 +38,15 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
     <release android:versionName="2.0" android:versionCode="83"
         versionDate="2013-10-25"
-        versionTitle="Status.net support added">
-        <changes><change>Added support of the "status.net"-like sites: "Even though identi.ca 
-            has changed to pump.io there are many status.net servers outside 
-            (and servers that are compatible to the status.net API)", 
+        versionTitle="StatusNet support added">
+        <changes><change>Added support of the "<a href="http://status.net" >StatusNet</a>"-like sites: "Even though identi.ca 
+            has changed to pump.io there are many StatusNet servers outside 
+            (and servers that are compatible with the StatusNet API)", 
             see <a href="https://github.com/andstatus/andstatus/issues/37" >Issue #37</a>.
-            Actually, previously existed support for the Twitter-compatible status.net API 
-            was re-enabled with two additions: 1. The actual name of the status.net server
+            Actually, previously existed support for the Twitter-compatible StatusNet API 
+            was re-enabled with two additions: 1. The actual name of the StatusNet server
             is now customizable (it may be e.g. <a href="https://quitter.se/andstatus" >quitter.se</a> 
-            or any compatible server). You may have several status.net accounts in AndStatus application, 
+            or any compatible server). You may have several StatusNet accounts in AndStatus application, 
             but all of them should be on the same server. 2. Maximum number of characters
             in the message is being read from the server's configuration.</change>
         </changes>
@@ -73,7 +73,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         versionDate="2013-09-29"
         versionTitle="Pump.io support added">
         <changes><change><a href="http://pump.io" >Pump.io</a> is a new application by the 
-            authors of Status.net and of identi.ca service as it was before July 2013.
+            authors of StatusNet and of identi.ca service as it was before July 2013.
             Pump.io is also a new engine for the <a href="http://identi.ca" >identi.ca</a> site, 
             which now is a part of the federated, distributed pump.io social network.
             AndStatus sees the whole network as one Microblogging system supporting user accounts
