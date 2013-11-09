@@ -145,15 +145,16 @@ public class MyServiceManager extends BroadcastReceiver {
         return mServiceState;
     }
 
-    @GuardedBy("isServiceAvailable")
+    private static Object serviceAvailableLock = new Object();
+    @GuardedBy("serviceAvailableLock")
     private static Boolean isServiceAvailable = true;
-    @GuardedBy("isServiceAvailable")
+    @GuardedBy("serviceAvailableLock")
     private static long timeWhenTheServiceWillBeAvailable = 0;
     public static boolean isServiceAvailable() {
         boolean isAvailable = MyContextHolder.get().isReady();
         if (!isAvailable) {
             boolean tryToInitialize = false;
-            synchronized (isServiceAvailable) {
+            synchronized (serviceAvailableLock) {
                 tryToInitialize = isServiceAvailable;
             }
             if (tryToInitialize && !MyContextHolder.get().initialized()) {
@@ -163,7 +164,7 @@ public class MyServiceManager extends BroadcastReceiver {
         }
         if (isAvailable) {
             long availableInMillis = 0; 
-            synchronized (isServiceAvailable) {
+            synchronized (serviceAvailableLock) {
                 availableInMillis = timeWhenTheServiceWillBeAvailable - System.currentTimeMillis();
                 if  (!isServiceAvailable) {
                     if (availableInMillis <= 0) {
@@ -183,13 +184,13 @@ public class MyServiceManager extends BroadcastReceiver {
         return isAvailable;
     }
     public static void setServiceAvailable() {
-        synchronized (isServiceAvailable) {
+        synchronized (serviceAvailableLock) {
             isServiceAvailable = true;
             timeWhenTheServiceWillBeAvailable = 0;
         }
     }
     public static void setServiceUnavailable() {
-        synchronized (isServiceAvailable) {
+        synchronized (serviceAvailableLock) {
             isServiceAvailable = false;
             timeWhenTheServiceWillBeAvailable = System.currentTimeMillis() + 
                     java.util.concurrent.TimeUnit.SECONDS.toMillis(15 * 60);
