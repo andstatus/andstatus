@@ -130,8 +130,6 @@ public class MyProvider extends ContentProvider {
      * Get MIME type of the content, used for the supplied Uri
      * For discussion how this may be used see:
      * <a href="http://stackoverflow.com/questions/5351669/why-use-contentprovider-gettype-to-get-mime-type">Why use ContentProvider.getType() to get MIME type</a>
-     * 
-     * @see android.content.ContentProvider#getType(android.net.Uri)
      */
     @Override
     public String getType(Uri uri) {
@@ -152,7 +150,7 @@ public class MyProvider extends ContentProvider {
                 return User.CONTENT_ITEM_TYPE;
 
             default:
-                throw new IllegalArgumentException("Unknown URI " + uri);
+                return null;
         }
     }
 
