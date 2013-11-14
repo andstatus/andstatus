@@ -71,7 +71,7 @@ public class TweetBinder implements ViewBinder {
 			return true;
 		case R.id.tweet_avatar_image:
 			return true;
-		case R.id.tweet_favorite:
+		case R.id.message_favorited:
 			colIndex = cursor.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED);
 			if (colIndex > -1) {
 				if (cursor.getInt(colIndex) == 1) {

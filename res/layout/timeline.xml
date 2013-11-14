@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-    Copyright (c) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
+	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -20,15 +20,10 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:background="?attr/windowBackgroundColor">
-	<ScrollView
-		android:orientation="vertical"
-		android:layout_width="match_parent" 
-	    android:layout_height="0dip"
-	    android:layout_weight="1">
-		<LinearLayout android:orientation="vertical" 
-	        android:id="@+android:id/list"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content">
-	    </LinearLayout>	    
-	</ScrollView>
+	<ListView 
+	    android:id="@+android:id/list"
+		android:scrollbars="vertical" 
+		android:layout_width="match_parent"
+		android:layout_height="0dip" 
+		android:layout_weight="1" />
 </LinearLayout>

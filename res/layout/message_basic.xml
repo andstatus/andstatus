@@ -29,7 +29,7 @@
 			android:textAppearance="?attr/tweetUsernameAppearance"
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content" />
-		<ImageView android:id="@+id/tweet_favorite"
+		<ImageView android:id="@+id/message_favorited"
 			android:src="@android:drawable/star_off"
 			android:paddingTop="1dip"
 			android:layout_width="wrap_content"
@@ -46,5 +46,12 @@
 		android:textStyle="?attr/tweetSentDateStyle"
 		android:textColor="?attr/tweetSentDateColor"
 		android:textAppearance="?attr/tweetSentDateAppearance" />
-
+	<TextView android:id="@+id/id"
+        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:visibility="gone" />
+	<TextView android:id="@+id/linked_user_id"
+        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:visibility="gone" />
 </LinearLayout>

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,13 +25,16 @@ import org.andstatus.app.net.Connection.ApiRoutineEnum;
 
 import java.util.Locale;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -39,13 +42,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /**
- * "Enter your tweet here" box 
+ * "Enter your message here" box 
  */
-class TweetEditor {
-    private TimelineActivity mActivity;
-    private android.view.ViewGroup mEditor;
+class MessageEditor {
+    private Activity activity;
+    private android.view.ViewGroup editorView;
 
-    private Button mSendButton;
     /**
      * Text to be sent
      */
@@ -82,16 +84,20 @@ class TweetEditor {
     private String mAccountGuid_restored = "";
     private boolean mShowAccount_restored = false;
     
-    public TweetEditor(TimelineActivity activity) {
-        mActivity = activity;
-        mEditor = (android.view.ViewGroup) activity.findViewById(R.id.tweetlist_editor);
+    public MessageEditor(Activity activity) {
+        this.activity = activity;
 
-        mSendButton = (Button) activity.findViewById(R.id.messageEditSendButton);
-        mEditText = (EditText) activity.findViewById(R.id.edtTweetInput);
-        mCharsLeftText = (TextView) activity.findViewById(R.id.messageEditCharsLeftTextView);
-        mDetails = (TextView) activity.findViewById(R.id.messageEditDetails);
+        ViewGroup topViewGroup = (ViewGroup) this.activity.findViewById(R.id.messageListParent);
+        LayoutInflater inflater = LayoutInflater.from(this.activity);
+        editorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
+        topViewGroup.addView(editorView);
         
-        mSendButton.setOnClickListener(new View.OnClickListener() {
+        mEditText = (EditText) editorView.findViewById(R.id.edtTweetInput);
+        mCharsLeftText = (TextView) editorView.findViewById(R.id.messageEditCharsLeftTextView);
+        mDetails = (TextView) editorView.findViewById(R.id.messageEditDetails);
+        
+        Button sendButton = (Button) editorView.findViewById(R.id.messageEditSendButton);
+        sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 updateStatus();
@@ -170,7 +176,7 @@ class TweetEditor {
         mCharsLeftText.setText(String.valueOf(mAccount
                 .charactersLeftForMessage(mEditText.getText().toString())));
 
-        mEditor.setVisibility(View.VISIBLE);
+        editorView.setVisibility(View.VISIBLE);
         
         mEditText.requestFocus();
         /* do we need this instead?
@@ -182,11 +188,11 @@ class TweetEditor {
     }
     
     public void hide() {
-        mEditor.setVisibility(View.GONE);
+        editorView.setVisibility(View.GONE);
     }
     
     public boolean isVisible() {
-        return (mEditor.getVisibility() == View.VISIBLE);
+        return (editorView.getVisibility() == View.VISIBLE);
     }
     
     /**
@@ -255,10 +261,10 @@ class TweetEditor {
     private void updateStatus() {
         String status = mEditText.getText().toString();
         if (TextUtils.isEmpty(status.trim())) {
-            Toast.makeText(mActivity, R.string.cannot_send_empty_message,
+            Toast.makeText(activity, R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
         } else if (mAccount.charactersLeftForMessage(status) < 0) {
-            Toast.makeText(mActivity, R.string.message_is_too_long,
+            Toast.makeText(activity, R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
             CommandData commandData = new CommandData(
@@ -290,7 +296,7 @@ class TweetEditor {
      * Close the on-screen keyboard.
      */
     private void closeSoftKeyboard() {
-        InputMethodManager inputMethodManager = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
     }
     

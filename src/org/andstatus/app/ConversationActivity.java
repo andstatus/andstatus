@@ -18,6 +18,7 @@ package org.andstatus.app;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -31,8 +32,15 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
+
+import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
@@ -48,11 +56,11 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
- * One selected message and, optionally, whole conversation
+ * One selected message and, optionally, the whole conversation
  * 
  * @author yvolk@yurivolkov.com
  */
-public class ConversationActivity extends Activity implements MyServiceListener {
+public class ConversationActivity extends Activity implements MyServiceListener, ActionableMessageList {
 
     private static final String TAG = ConversationActivity.class.getSimpleName();
 
@@ -69,11 +77,12 @@ public class ConversationActivity extends Activity implements MyServiceListener 
             User.RECIPIENT_NAME,
             Msg.CREATED_DATE,
             User.LINKED_USER_ID,
-            MsgOfUser.REBLOGGED
+            MsgOfUser.REBLOGGED,
+            MsgOfUser.FAVORITED
     };
 
     /**
-     * Id of current Message, which is sort of "center" of the conversation view
+     * Id of current Message, which is sort of a "center" of the conversation view
      */
     protected long mCurrentId = 0;
     /**
@@ -84,6 +93,56 @@ public class ConversationActivity extends Activity implements MyServiceListener 
     protected int instanceId;
     MyServiceReceiver myServiceReceiver;
 
+    private MessageContextMenu contextMenu;
+    /** 
+     * Controls of the TweetEditor
+     */
+    private MessageEditor messageEditor;
+    
+    private Object messagesLock = new Object(); 
+    @GuardedBy("messagesLock")
+    private List<OneMessage> messages = new ArrayList<OneMessage>();
+
+    /**
+     * One message row
+     */
+    private class OneMessage {
+        long id;
+        long inReplyToMsgId = 0;
+        long createdDate = 0;
+        long linkedUserId = 0;
+        boolean favorited = false;
+        String author = "";
+        
+        /**
+         * Comma separated list of the names of all known rebloggers of the message
+         */
+        String rebloggersString = "";
+        String body = "";
+        String via = "";
+        String inReplyToName = "";
+        String recipientName = "";
+
+        public OneMessage(long id) {
+            this.id = id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof OneMessage)) {
+                return false;
+            }
+            OneMessage row = (OneMessage) o;
+            return (id == row.id);
+        }
+
+        @Override
+        public int hashCode() {
+            return Long.valueOf(id).hashCode();
+        }
+
+    }
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,6 +163,12 @@ public class ConversationActivity extends Activity implements MyServiceListener 
 
         mCurrentId = MyProvider.uriToMessageId(uri);
         ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(mCurrentId, 0, MyProvider.uriToAccountUserId(uri));
+
+        setContentView(R.layout.conversation);
+        messageEditor = new MessageEditor(this);
+        messageEditor.hide();
+        contextMenu = new MessageContextMenu(this);
+        
         if (ma != null) {
             showConversation();
         }
@@ -117,49 +182,8 @@ public class ConversationActivity extends Activity implements MyServiceListener 
     }
 
     private class ContentLoader extends AsyncTask<Void, Void, Void> {
-        /**
-         * One message row
-         */
-        private class OneRow {
-            long id;
-            long inReplyToMsgId = 0;
-            long createdDate = 0;
-            String author = "";
-            
-            /**
-             * Comma separated list of the names of all known rebloggers of the message
-             */
-            String rebloggersString = "";
-            String body = "";
-            String via = "";
-            String inReplyToName = "";
-            String recipientName = "";
-
-            public OneRow(long id) {
-                this.id = id;
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                if (!(o instanceof OneRow)) {
-                    return false;
-                }
-                OneRow row = (OneRow) o;
-                return (id == row.id);
-            }
-
-            @Override
-            public int hashCode() {
-                return Long.valueOf(id).hashCode();
-            }
-
-        }
-
-        /**
-         * Rows of the conversation TODO: sort them and maybe format differently
-         */
-        ArrayList<OneRow> rows = new ArrayList<OneRow>();
-        ArrayList<Long> idsOfTheMessagesToFind = new ArrayList<Long>();
+        List<OneMessage> rows = new ArrayList<OneMessage>();
+        List<Long> idsOfTheMessagesToFind = new ArrayList<Long>();
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -179,7 +203,7 @@ public class ConversationActivity extends Activity implements MyServiceListener 
             Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, true, msgId);
             boolean skip = true;
             Cursor msg = null;
-            OneRow row = new OneRow(msgId);
+            OneMessage row = new OneMessage(msgId);
             if (msgId != 0) {
                 msg = getContentResolver().query(uri, PROJECTION, null, null, null);
             }
@@ -222,9 +246,16 @@ public class ConversationActivity extends Activity implements MyServiceListener 
                         if (senderId != authorId) {
                             rebloggers.add(senderId);
                         }
-                        if (msg.getInt(msg.getColumnIndex(MsgOfUser.REBLOGGED)) == 1) {
-                            if (linkedUserId != authorId) {
+                        if (linkedUserId != 0) {
+                            if (row.linkedUserId == 0) {
+                                row.linkedUserId = linkedUserId;
+                            }
+                            if (msg.getInt(msg.getColumnIndex(MsgOfUser.REBLOGGED)) == 1
+                                    && linkedUserId != authorId) {
                                 rebloggers.add(linkedUserId);
+                            }
+                            if (msg.getInt(msg.getColumnIndex(MsgOfUser.FAVORITED)) == 1) {
+                                row.favorited = true;
                             }
                         }
                         
@@ -260,7 +291,7 @@ public class ConversationActivity extends Activity implements MyServiceListener 
                                     + ") but no reply to message id");
                             // Don't try to retrieve this message again. It
                             // looks like there really are such messages.
-                            OneRow row2 = new OneRow(0);
+                            OneMessage row2 = new OneMessage(0);
                             row2.author = row.inReplyToName;
                             row2.body = "("
                                     + ConversationActivity.this
@@ -276,82 +307,112 @@ public class ConversationActivity extends Activity implements MyServiceListener 
 
         @Override
         protected void onPostExecute(Void result) {
-            // Recreate conversation list
-            if (rows.size() > 1) {
-                setTitle(R.string.label_conversation);
-            } else {
-                setTitle(R.string.label_conversationactivity);
-            }
-            setContentView(R.layout.conversation);
-            LinearLayout list = (LinearLayout) findViewById(android.R.id.list);
-            for (int ind = 0; ind < rows.size(); ind++) {
-                list.addView(rowToView(rows.get(ind)));
-            }
-            super.onPostExecute(result);
+            recreateTheConversationView(rows);
         }
-
-        /**
-         * Formats message as a View (LinearLayout) suitable for a conversation
-         * list
-         * 
-         * @param message row to add to the conversation list
-         */
-        private LinearLayout rowToView(OneRow row) {
-            LayoutInflater inflater = LayoutInflater.from(ConversationActivity.this);
-            LinearLayout messageView = (LinearLayout) inflater.inflate(R.layout.tweetlist_item,
-                    null);
-
-            TextView author = (TextView) messageView.findViewById(R.id.message_author);
-            TextView body = (TextView) messageView.findViewById(R.id.message_body);
-            TextView details = (TextView) messageView.findViewById(R.id.message_details);
-
-            author.setText(row.author);
-            body.setLinksClickable(true);
-            body.setFocusable(true);
-            body.setFocusableInTouchMode(true);
-            body.setText(row.body);
-            Linkify.addLinks(body, Linkify.ALL);
-
-            // Everything else goes to messageDetails
-            String messageDetails = RelativeTime.getDifference(ConversationActivity.this,
-                    row.createdDate);
-            if (!SharedPreferencesUtil.isEmpty(row.via)) {
-                messageDetails += " " + String.format(
-                        Locale.getDefault(),
-                        getText(R.string.message_source_from).toString(),
-                        row.via);
-            }
-            if (row.inReplyToMsgId !=0) {
-                String inReplyToName = row.inReplyToName;
-                if (SharedPreferencesUtil.isEmpty(inReplyToName)) {
-                    inReplyToName = "...";
-                }
-                messageDetails += " "
-                        + String.format(Locale.getDefault(),
-                                getText(R.string.message_source_in_reply_to).toString(),
-                                row.inReplyToName);
-            }
-            if (!SharedPreferencesUtil.isEmpty(row.rebloggersString)) {
-                if (!row.rebloggersString.equals(row.author)) {
-                    if (!SharedPreferencesUtil.isEmpty(row.inReplyToName)) {
-                        messageDetails += ";";
-                    }
-                    messageDetails += " "
-                            + String.format(Locale.getDefault(), getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
-                                    .toString(), row.rebloggersString);
-                }
-            }
-            if (!SharedPreferencesUtil.isEmpty(row.recipientName)) {
-                messageDetails += " "
-                        + String.format(Locale.getDefault(), getText(R.string.message_source_to)
-                                .toString(), row.recipientName);
-            }
-            details.setText(messageDetails);
-            return messageView;
-        }
-
     }
 
+    private void recreateTheConversationView(List<OneMessage> rows) {
+        if (rows.size() > 1) {
+            setTitle(R.string.label_conversation);
+        } else {
+            setTitle(R.string.label_conversationactivity);
+        }
+        ViewGroup list = (ViewGroup) findViewById(android.R.id.list);
+        list.removeAllViews();
+        for (int ind = 0; ind < rows.size(); ind++) {
+            list.addView(rowToView(rows.get(ind)));
+        }
+        synchronized(messagesLock) {
+            messages = rows;
+        }
+    }
+
+    /**
+     * Formats message as a View (LinearLayout) suitable for a conversation
+     * list
+     * 
+     * @param message row to add to the conversation list
+     */
+    private LinearLayout rowToView(OneMessage row) {
+        LayoutInflater inflater = LayoutInflater.from(ConversationActivity.this);
+        LinearLayout messageView = (LinearLayout) inflater.inflate(R.layout.message_basic,
+                null);
+        messageView.setOnCreateContextMenuListener(contextMenu);
+
+        TextView id = (TextView) messageView.findViewById(R.id.id);
+        id.setText(Long.toString(row.id));
+        TextView linkedUserId = (TextView) messageView.findViewById(R.id.linked_user_id);
+        linkedUserId.setText(Long.toString(row.linkedUserId));
+
+        TextView author = (TextView) messageView.findViewById(R.id.message_author);
+        TextView body = (TextView) messageView.findViewById(R.id.message_body);
+        TextView details = (TextView) messageView.findViewById(R.id.message_details);
+
+        author.setText(row.author);
+        body.setLinksClickable(true);
+        body.setFocusable(true);
+        body.setFocusableInTouchMode(true);
+        body.setText(row.body);
+        Linkify.addLinks(body, Linkify.ALL);
+
+        // Everything else goes to messageDetails
+        String messageDetails = RelativeTime.getDifference(ConversationActivity.this,
+                row.createdDate);
+        if (!SharedPreferencesUtil.isEmpty(row.via)) {
+            messageDetails += " " + String.format(
+                    Locale.getDefault(),
+                    getText(R.string.message_source_from).toString(),
+                    row.via);
+        }
+        if (row.inReplyToMsgId !=0) {
+            String inReplyToName = row.inReplyToName;
+            if (SharedPreferencesUtil.isEmpty(inReplyToName)) {
+                inReplyToName = "...";
+            }
+            messageDetails += " "
+                    + String.format(Locale.getDefault(),
+                            getText(R.string.message_source_in_reply_to).toString(),
+                            row.inReplyToName);
+        }
+        if (!SharedPreferencesUtil.isEmpty(row.rebloggersString)) {
+            if (!row.rebloggersString.equals(row.author)) {
+                if (!SharedPreferencesUtil.isEmpty(row.inReplyToName)) {
+                    messageDetails += ";";
+                }
+                messageDetails += " "
+                        + String.format(Locale.getDefault(), getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
+                                .toString(), row.rebloggersString);
+            }
+        }
+        if (!SharedPreferencesUtil.isEmpty(row.recipientName)) {
+            messageDetails += " "
+                    + String.format(Locale.getDefault(), getText(R.string.message_source_to)
+                            .toString(), row.recipientName);
+        }
+        details.setText(messageDetails);
+        ImageView favorited = (ImageView) messageView.findViewById(R.id.message_favorited);
+        favorited.setImageResource(row.favorited ? android.R.drawable.star_on : android.R.drawable.star_off);
+        return messageView;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (ActivityRequestCode.fromId(requestCode)) {
+            case SELECT_ACCOUNT_TO_ACT_AS:
+                if (resultCode == RESULT_OK) {
+                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                    if (ma != null) {
+                        contextMenu.setAccountUserIdToActAs(ma.getUserId());
+                        contextMenu.showContextMenu();
+                    }
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
+    }
+    
     @Override
     protected void onResume() {
         super.onResume();
@@ -375,5 +436,52 @@ public class ConversationActivity extends Activity implements MyServiceListener 
                 break;
         }
         
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        contextMenu.onContextItemSelected(item);
+        return super.onContextItemSelected(item);
+    }
+
+    @Override
+    public Activity getActivity() {
+        return this;
+    }
+
+    @Override
+    public MessageEditor getMessageEditor() {
+        return messageEditor;
+    }
+
+    @Override
+    public long getLinkedUserIdFromCursor(int position) {
+        synchronized(messagesLock) {
+            if (position < 0 || position >= messages.size() ) {
+                return 0;
+            } else {
+                return messages.get(position).linkedUserId;
+            }
+        }
+    }
+
+    @Override
+    public long getCurrentMyAccountUserId() {
+        return ma.getUserId();
+    }
+
+    @Override
+    public long getSelectedUserId() {
+        return 0;
+    }
+
+    @Override
+    public TimelineTypeEnum getTimelineType() {
+        return TimelineTypeEnum.MESSAGESTOACT;
+    }
+
+    @Override
+    public boolean isTimelineCombined() {
+        return true;
     }
 }

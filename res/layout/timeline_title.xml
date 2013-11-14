@@ -3,7 +3,8 @@
 	android:layout_width="match_parent"
 	android:id="@+id/custom_title_left_right" 
     android:orientation="vertical" 
-    android:layout_height="45dp">
+    android:layout_height="wrap_content"
+    android:background="@android:color/darker_gray">
 
     <Button android:id="@+id/timelineTypeButton"
 		android:layout_width="wrap_content"
@@ -26,6 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/selected_user_title_text"
+        android:layout_centerVertical="true"
         android:textOn="@string/combined_timeline_on"
         android:textOff="@string/combined_timeline_off"
         android:onClick="onCombinedTimelineToggle" />
