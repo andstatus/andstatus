@@ -256,8 +256,8 @@
     <string name="summary_preference_storage">Где и какую информацию хранить</string>
 	<string name="summary_preference_storage_external_off">Сохранять данные во внутренней памяти</string>
 	<string name="summary_preference_storage_external_on">Сохранять данные во внешней памяти</string>
-	<string name="summary_preference_theme_color">Выберите размер текста</string>
-	<string name="summary_preference_theme_size">Выберите цветовую тему</string>
+	<string name="summary_preference_theme_color">Выберите цветовую тему</string>
+	<string name="summary_preference_theme_size">Выберите размер текста</string>
 	<string name="summary_preference_use_avatars_off">Аватары пользователей не будут показаны</string>
 	<string name="summary_preference_use_avatars_on">Аватары пользователей будут показаны</string>
 	<string name="summary_preference_username">Ваше имя пользователя в Системе микроблогов</string>
