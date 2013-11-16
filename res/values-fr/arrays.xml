@@ -42,7 +42,7 @@
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
-	<string-array name="fetch_frequency_values">
+	<string-array name="fetch_frequency_entries">
 		<item>3 minutes</item>
 		<item>5 minutes</item>
 		<item>10 minutes</item>
@@ -55,7 +55,7 @@
 		<item>12 heures</item>
 		<item>1 jour</item>
 	</string-array>
-	<string-array name="fetch_frequency_keys">
+	<string-array name="fetch_frequency_values">
 		<item>180</item>
 		<item>300</item>
 		<item>600</item>
@@ -81,12 +81,12 @@
 		<item>12 heures</item>
 		<item>jour</item>
 	</string-array>
-    <string-array name="log_level_values">
+    <string-array name="log_level_entries">
         <item>INFO</item>
         <item>DEBUG</item>
         <item>VERBOSE</item>
     </string-array>
-    <string-array name="log_level_keys">
+    <string-array name="log_level_value">
         <item>4</item>
         <item>3</item>
         <item>2</item>
@@ -96,21 +96,12 @@
         <item>DEBUG</item>
         <item>VERBOSE</item>
     </string-array>
-    <string-array name="origin_system_entries">
-        <item>Twitter</item>
-        <item>identi.ca</item>
-    </string-array>
-    <string-array name="theme_values">
+    <string-array name="theme_size_entries">
 		<item>Petit</item>
 		<item>Standard</item>
 		<item>Grand</item>
 	</string-array>
-	<string-array name="theme_keys">
-		<item>AndStatus.Small</item>
-		<item>AndStatus</item>
-		<item>AndStatus.Large</item>
-	</string-array>
-	<string-array name="history_size_values">
+	<string-array name="history_size_entries">
 		<item>500 messages</item>
 		<item>1000 messages</item>
 		<item>2000 messages</item>
@@ -121,7 +112,7 @@
 		<item>100000 messages</item>
         <item>1 mln messages</item>
     </string-array>
-	<string-array name="history_size_keys">
+	<string-array name="history_size_values">
 		<item>500</item>
 		<item>1000</item>
 		<item>2000</item>
@@ -143,7 +134,7 @@
 		<item>100000 messages</item>
         <item>1 mln messages</item>
     </string-array>
-	<string-array name="history_time_values">
+	<string-array name="history_time_entries">
 		<item>1 jour</item>
 		<item>2 jours</item>
 		<item>3 jours</item>
@@ -155,7 +146,7 @@
 		<item>1 an</item>
         <item>10 years</item>
     </string-array>
-	<string-array name="history_time_keys">
+	<string-array name="history_time_values">
 		<item>1</item>
 		<item>2</item>
 		<item>3</item>

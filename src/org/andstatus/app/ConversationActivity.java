@@ -34,15 +34,18 @@ import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.MyService.CommandEnum;
+import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -145,6 +148,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        requestWindowFeature(Window.FEATURE_NO_TITLE);    // Before loading the content view
         super.onCreate(savedInstanceState);
 
         if (instanceId == 0) {
@@ -165,6 +169,22 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(mCurrentId, 0, MyProvider.uriToAccountUserId(uri));
 
         setContentView(R.layout.conversation);
+
+        ViewGroup messageListParent = (ViewGroup) findViewById(R.id.messageListParent);
+        LayoutInflater inflater = LayoutInflater.from(this);
+        ViewGroup actionsView = (ViewGroup) inflater.inflate(R.layout.conversation_actions, null);
+        messageListParent.addView(actionsView, 0);
+
+
+        OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ConversationActivity.this.finish();
+            }
+        };
+        findViewById(R.id.upNavigation).setOnClickListener(listener);
+        findViewById(R.id.actionsIcon).setOnClickListener(listener);
+        
         messageEditor = new MessageEditor(this);
         messageEditor.hide();
         contextMenu = new MessageContextMenu(this);
@@ -312,11 +332,8 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     }
 
     private void recreateTheConversationView(List<OneMessage> rows) {
-        if (rows.size() > 1) {
-            setTitle(R.string.label_conversation);
-        } else {
-            setTitle(R.string.label_conversationactivity);
-        }
+        TextView titleText = (TextView) findViewById(R.id.titleText);
+        titleText.setText( rows.size() > 1 ? R.string.label_conversation : R.string.message);
         ViewGroup list = (ViewGroup) findViewById(android.R.id.list);
         list.removeAllViews();
         for (int ind = 0; ind < rows.size(); ind++) {

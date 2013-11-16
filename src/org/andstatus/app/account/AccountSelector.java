@@ -56,8 +56,6 @@ public class AccountSelector extends ListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        MyPreferences.loadTheme(TAG, this);
-        
         setContentView(R.layout.accountlist);
         
         long originId = getIntent().getLongExtra(IntentExtra.ORIGIN_ID.key, 0);

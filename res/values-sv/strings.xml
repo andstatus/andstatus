@@ -53,7 +53,7 @@
 	<!-- TODO: Finish translation --><string name="dialog_title_preference_history_size">History Size</string>
 	<!-- TODO: Finish translation --><string name="dialog_title_preference_history_time">History Time</string>
 	<string name="dialog_title_preference_password">Lösenord</string>
-	<string name="dialog_title_preference_theme">Välj ett tema</string>
+	<string name="dialog_title_preference_theme_color">Välj ett tema</string>
 	<string name="dialog_title_preference_username">Användarnamn</string>
 	<string name="dialog_title_sending_message">Skickar meddelande…</string>
 	<string name="dialog_title_service_unavailable">Tjänsten är inte tillgänglig</string>
@@ -63,7 +63,6 @@
 	<string name="favorite_created">Favorite created.</string>
 	<string name="favorite_destroyed">Favorite removed.</string>
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
-    <string name="label_conversationactivity">Tweet</string>
     <string name="loading">Loading…</string>
 	<string name="message_edit_hint">Enter your tweet here!</string>
 	<string name="message_characters_left">Characters left:</string>
@@ -112,8 +111,6 @@
 	<string name="summary_preference_frequency">Updates are fetched every {0}.</string>
 	<string name="summary_preference_history_size">Remember tweet history up to {0}.</string>
 	<string name="summary_preference_history_time">Remember tweet history up to {0}.</string>
-	<string name="summary_preference_light_theme_off">The standard theme will be used.</string>
-	<string name="summary_preference_light_theme_on">The light theme will be used.</string>
 	<string name="summary_preference_no_ringtone">Silent</string>
 	<string name="summary_preference_notifications">Change notification options</string>
 	<string name="summary_preference_notifications_enabled">Should notifications be enabled?</string>
@@ -132,7 +129,6 @@
 	<string name="summary_preference_storage">Where to store data and images</string>
 	<string name="summary_preference_storage_external_off">Store data in Internal Memory</string>
 	<string name="summary_preference_storage_external_on">Store data on External Memory</string>
-	<string name="summary_preference_theme">Select AndStatus theme</string>
 	<string name="summary_preference_use_avatars_off">User avatars will not be displayed</string>
 	<string name="summary_preference_use_avatars_on">User avatars will be displayed</string>
 	<string name="summary_preference_username">Your Twitter username</string>
@@ -144,7 +140,6 @@
 	<string name="title_preference_frequency">Update Frequency</string>
 	<string name="title_preference_history_size">History Size</string>
 	<string name="title_preference_history_time">History Time</string>
-	<string name="title_preference_light_theme">Light Theme</string>
 	<string name="title_preference_notification_sound">Notification Ringtone</string>
 	<string name="title_preference_notifications">Notifications</string>
 	<string name="title_preference_notifications_enabled">Enable Notifications</string>
@@ -154,7 +149,7 @@
 	<string name="title_preference_password">Lösenord</string>
 	<string name="title_preference_storage">Lagring</string>
 	<string name="title_preference_storage_external">Använd extern lagring</string>
-	<string name="title_preference_theme">Tema</string>
+	<string name="title_preference_theme_color">Tema</string>
 	<string name="title_preference_username">Användarnamn</string>
 	<string name="title_preference_use_avatars">Display Avatars</string>
 	<string name="title_preference_vibration">Vibration</string>

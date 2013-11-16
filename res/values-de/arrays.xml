@@ -43,7 +43,7 @@
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
-	<string-array name="fetch_frequency_values">
+	<string-array name="fetch_frequency_entries">
 		<item>3 Minuten</item>
 		<item>5 Minuten</item>
 		<item>10 Minuten</item>
@@ -56,7 +56,7 @@
 		<item>12 Stunden</item>
 		<item>1 Tag</item>
 	</string-array>
-	<string-array name="fetch_frequency_keys">
+	<string-array name="fetch_frequency_values">
 		<item>180</item>
 		<item>300</item>
 		<item>600</item>
@@ -82,15 +82,10 @@
 		<item>alle 12 Stunden</item>
 		<item>täglich</item>
 	</string-array>
-	<string-array name="theme_values">
+	<string-array name="theme_size_entries">
 		<item>Klein</item>
 		<item>Normal</item>
 		<item>Groß</item>
-	</string-array>
-	<string-array name="theme_keys">
-		<item>AndStatus.Small</item>
-		<item>AndStatus</item>
-		<item>AndStatus.Large</item>
 	</string-array>
 	<string-array name="notification_tweet_formats">
 		<item>"{0} neuen tweet"</item>

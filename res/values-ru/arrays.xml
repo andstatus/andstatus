@@ -47,7 +47,7 @@
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>
 	</string-array>
-	<string-array name="fetch_frequency_values">
+	<string-array name="fetch_frequency_entries">
 		<item>"3 минуты"</item>
 		<item>"5 минут"</item>
 		<item>"10 минут"</item>
@@ -60,7 +60,7 @@
 		<item>"12 часов"</item>
 		<item>"1 сутки"</item>
 	</string-array>
-	<string-array name="fetch_frequency_keys">
+	<string-array name="fetch_frequency_values">
 		<item>180</item>
 		<item>300</item>
 		<item>600</item>
@@ -86,17 +86,12 @@
 		<item>"каждые 12 часов"</item>
 		<item>"раз в сутки"</item>
 	</string-array>
-	<string-array name="theme_values">
+	<string-array name="theme_size_entries">
 		<item>"Большая"</item>
 		<item>"Средняя"</item>
 		<item>"Малая"</item>
 	</string-array>
-	<string-array name="theme_keys">
-		<item>AndStatus.Large</item>
-		<item>AndStatus</item>
-		<item>AndStatus.Small</item>
-	</string-array>
-	<string-array name="history_size_values">
+	<string-array name="history_size_entries">
 		<item>"500 сообщений"</item>
 		<item>"1000 сообщений"</item>
 		<item>"2000 сообщений"</item>
@@ -107,7 +102,7 @@
 		<item>"100000 сообщений"</item>
 		<item>"1 млн. сообщений"</item>
 	</string-array>
-	<string-array name="history_size_keys">
+	<string-array name="history_size_values">
 		<item>500</item>
 		<item>1000</item>
 		<item>2000</item>
@@ -129,7 +124,7 @@
 		<item>"100000 сообщений"</item>
 		<item>"1 млн. сообщений"</item>
 	</string-array>
-	<string-array name="history_time_values">
+	<string-array name="history_time_entries">
 		<item>"1 день"</item>
 		<item>"2 дня"</item>
 		<item>"3 дня"</item>
@@ -141,7 +136,7 @@
 		<item>"1 год"</item>
 		<item>"10 лет"</item>
 	</string-array>
-	<string-array name="history_time_keys">
+	<string-array name="history_time_values">
 		<item>1</item>
 		<item>2</item>
 		<item>3</item>

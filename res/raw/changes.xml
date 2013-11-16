@@ -36,8 +36,25 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     <header>
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
-    <release android:versionName="2.0" android:versionCode="83"
-        versionDate="2013-10-25"
+    <release android:versionName="3.0" android:versionCode="85"
+        versionDate="2013-11-16"
+        versionTitle="Answering in Conversation view added">
+        <changes>
+            <change>When clicking on a message in a Timeline, 
+                you see the message or the whole thread. You can act on
+                messages of this thread (reply, make favorite etc.) just like in the Timeline view
+                <a href="https://github.com/andstatus/andstatus/issues/40" >Issue #40</a>.
+			</change>
+            <change>Theme support extended. Now AndStatus allows selecting Device Default, 
+                Light and Dark themes, using Holo themes for compatible devices. 
+                Light Theme is fixed for Android v.3+ 
+                (because the Holo.Light theme is used, not a legacy theme as for the older devices).
+                <a href="https://github.com/andstatus/andstatus/issues/38" >Issue #38</a>.
+			</change>
+        </changes>
+    </release>
+    <release android:versionName="2.1" android:versionCode="84"
+        versionDate="2013-11-01"
         versionTitle="StatusNet support added">
         <changes><change>Added support of the "<a href="http://status.net" >StatusNet</a>"-like sites: "Even though identi.ca 
             has changed to pump.io there are many StatusNet servers outside 

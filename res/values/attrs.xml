@@ -16,32 +16,30 @@
  -->
 <resources>
 	<declare-styleable name="StyledAttributes">
-		<attr name="tweetUsernameAppearance" format="reference" />
-		<attr name="tweetUsernameColor" format="reference|color" />
-		<attr name="tweetUsernameStyle">
+		<attr name="messageUsernameAppearance" format="reference" />
+		<attr name="messageUsernameColor" format="reference|color" />
+		<attr name="messageUsernameStyle">
 			<flag name="normal" value="0"/>
 			<flag name="bold" value="1"/>
 			<flag name="italic" value="2"/>
 		</attr>
 
-		<attr name="tweetMessageAppearance" format="reference" />
-		<attr name="tweetMessageColor" format="reference|color" />
-		<attr name="tweetMessageStyle">
+		<attr name="messageBodyAppearance" format="reference" />
+		<attr name="messageBodyColor" format="reference|color" />
+		<attr name="messageBodyStyle">
 			<flag name="normal" value="0"/>
 			<flag name="bold" value="1"/>
 			<flag name="italic" value="2"/>
 		</attr>
 
-		<attr name="tweetSentDateAppearance" format="reference" />
-		<attr name="tweetSentDateColor" format="reference|color" />
-		<attr name="tweetSentDateStyle">
+		<attr name="messageDetailsAppearance" format="reference" />
+		<attr name="messageDetailsColor" format="reference|color" />
+		<attr name="messageDetailsStyle">
 			<flag name="normal" value="0"/>
 			<flag name="bold" value="1"/>
 			<flag name="italic" value="2"/>
 		</attr>
 
 		<attr name="textEditColor" format="reference|color" />
-
-		<attr name="windowBackgroundColor" format="reference|color" />
 	</declare-styleable>
 </resources>

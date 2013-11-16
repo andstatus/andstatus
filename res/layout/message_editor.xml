@@ -40,13 +40,13 @@
         android:layout_width="match_parent">
         <LinearLayout android:layout_height="wrap_content"
             android:layout_width="0dip" android:layout_weight="1">
-            <EditText android:id="@+id/edtTweetInput"
+            <EditText android:id="@+id/messageBodyEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine|textImeMultiLine"
                 android:imeOptions="actionSend|flagNoEnterAction"
                 android:maxLines="8"
-                android:maxLength="4000"
+                android:maxLength="5000"
                 android:hint="@string/message_edit_hint" />
         </LinearLayout>
 

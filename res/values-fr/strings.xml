@@ -77,7 +77,7 @@
     <string name="dialog_title_preference_min_log_level">Niveau de journalisation</string>
     <string name="dialog_title_preference_origin_system">Système de microblogage</string>
     <string name="dialog_title_preference_password">Mot de passe</string>
-	<string name="dialog_title_preference_theme">Choisir un thème</string>
+	<string name="dialog_title_preference_theme_color">Choisir un thème</string>
 	<string name="dialog_title_preference_username">Identifiant</string>
     <string name="dialog_title_select_timeline">Choisir une timeline</string>
 	<string name="dialog_title_sending_message">Envoi du message…</string>
@@ -97,7 +97,6 @@
     <string name="id_of_this_message_was_not_specified">Id du message non spécifié</string>
 	<string name="label_accountselector">Choisir un compte</string>
     <string name="label_conversation">Conversation</string>
-    <string name="label_conversationactivity">Message</string>
     <string name="loading">Chargement…</string>
     <string name="message">Message</string>
     <string name="message_twitter">Tweet</string>
@@ -178,8 +177,7 @@
 	<string name="summary_preference_frequency">Rafraîchissement toutes les {0}.</string>
 	<string name="summary_preference_history_size">Conserver {0}.</string>
 	<string name="summary_preference_history_time">Conserver les messages pendant {0}.</string>
-	<string name="summary_preference_light_theme_off">Le thème standard sera utilisé.</string>
-	<string name="summary_preference_light_theme_on">Le thème clair sera utilisé.</string>
+	<string name="summary_preference_theme_color">Le thème standard/clair sera utilisé.</string>
     <string name="summary_preference_min_log_level">Niveau sélectionné : {0}.</string>
 	<string name="summary_preference_no_ringtone">Silencieux</string>
 	<string name="summary_preference_notifications">Changer les options de notification</string>
@@ -202,7 +200,6 @@
     <string name="summary_preference_storage">Quelles informations et où les enregistrer</string>
 	<string name="summary_preference_storage_external_off">Enregistre les données sur la mémoire interne</string>
 	<string name="summary_preference_storage_external_on">Enregistre les données sur la mémoire externe</string>
-	<string name="summary_preference_theme">Choisir un thème</string>
 	<string name="summary_preference_use_avatars_off">Les avatars ne seront pas affichés</string>
 	<string name="summary_preference_use_avatars_on">Les avatars seront affichés</string>
 	<string name="summary_preference_username">Votre identifiant Twitter</string>
@@ -220,7 +217,6 @@
 	<string name="title_preference_frequency">Fréquence des rafraîchissements</string>
 	<string name="title_preference_history_size">Taille de l\'historique</string>
 	<string name="title_preference_history_time">Durée de l\'historique</string>
-	<string name="title_preference_light_theme">Thème clair</string>
     <string name="title_preference_min_log_level">Niveau de journalisation</string>
 	<string name="title_preference_notification_sound">Sonnerie de notification</string>
 	<string name="title_preference_notifications">Notifications</string>
@@ -234,7 +230,7 @@
 	<string name="title_preference_report_bug">Rapporter un bogue</string>
 	<string name="title_preference_storage">Sauvegarde</string>
 	<string name="title_preference_storage_external">Utiliser un support externe</string>
-	<string name="title_preference_theme">Thème</string>
+	<string name="title_preference_theme_color">Thème</string>
 	<string name="title_preference_username">Identifiant</string>
 	<string name="title_preference_use_avatars">Afficher les avatars</string>
     <string name="title_preference_verify_credentials">Revérifier les identifiants</string>

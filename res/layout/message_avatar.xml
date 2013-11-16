@@ -33,9 +33,9 @@
 		android:layout_width="match_parent"
 		android:layout_toRightOf="@id/tweet_avatar_image"
 		android:layout_alignParentTop="true"
-		android:textStyle="?attr/tweetUsernameStyle"
-		android:textColor="?attr/tweetUsernameColor"
-		android:textAppearance="?attr/tweetUsernameAppearance"/>
+		android:textStyle="?attr/messageUsernameStyle"
+		android:textColor="?attr/messageUsernameColor"
+		android:textAppearance="?attr/messageUsernameAppearance"/>
 
 	<TextView android:id="@+id/message_body"
 		android:layout_height="wrap_content"
@@ -43,9 +43,9 @@
 		android:layout_toRightOf="@id/tweet_avatar_image"
 		android:layout_alignParentRight="true"
 		android:layout_alignWithParentIfMissing="true"
-		android:textStyle="?attr/tweetMessageStyle"
-		android:textColor="?attr/tweetMessageColor"
-		android:textAppearance="?attr/tweetMessageAppearance"
+		android:textStyle="?attr/messageBodyStyle"
+		android:textColor="?attr/messageBodyColor"
+		android:textAppearance="?attr/messageBodyAppearance"
 		android:layout_below="@id/message_author"/>
 
 	<TextView android:id="@+id/message_details"
@@ -54,8 +54,8 @@
 		android:layout_toRightOf="@id/tweet_avatar_image"
 		android:layout_alignParentRight="true"
 		android:layout_alignWithParentIfMissing="true"
-		android:textStyle="?attr/tweetSentDateStyle"
-		android:textColor="?attr/tweetSentDateColor"
-		android:textAppearance="?attr/tweetSentDateAppearance"
+		android:textStyle="?attr/messageDetailsStyle"
+		android:textColor="?attr/messageDetailsColor"
+		android:textAppearance="?attr/messageDetailsAppearance"
 		android:layout_below="@id/message_body"/>
 </RelativeLayout>

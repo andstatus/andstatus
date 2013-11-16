@@ -23,9 +23,9 @@
 	android:paddingRight="5dip" android:paddingTop="15dip">
 	<ProgressBar android:layout_marginRight="6dip" android:layout_height="18dip" android:layout_width="18dip"/>
 	<TextView android:id="@+id/loading_text" android:layout_width="wrap_content"
-        android:textStyle="?attr/tweetMessageStyle"
-        android:textColor="?attr/tweetMessageColor"
-		android:textAppearance="?attr/tweetMessageAppearance"
+        android:textStyle="?attr/messageBodyStyle"
+        android:textColor="?attr/messageBodyColor"
+		android:textAppearance="?attr/messageBodyAppearance"
 		android:layout_height="wrap_content" android:text="@string/loading"></TextView>
 
 </LinearLayout>

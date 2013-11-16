@@ -61,6 +61,10 @@ public class MyPreferences {
      * Minimum logging level for the whole application (i.e. for any tag)
      */
     public static final String KEY_MIN_LOG_LEVEL = "min_log_level";
+    
+    public static final String KEY_THEME_SIZE = "theme_size";
+    public static final String KEY_THEME_COLOR = "theme_color";
+    
     /**
      * Use this dir: http://developer.android.com/reference/android/content/Context.html#getExternalFilesDir(java.lang.String)
      * (for API 8)
@@ -296,21 +300,21 @@ public class MyPreferences {
      * Load the theme according to the preferences.
      */
     public static void loadTheme(String TAG, Context context) {
-        boolean light = getDefaultSharedPreferences().getBoolean("appearance_light_theme", false);
-        StringBuilder themeName = new StringBuilder();
-        String name = getDefaultSharedPreferences().getString("theme", "AndStatus");
-        if (name.indexOf("Theme.") > -1) {
-            name = name.substring(name.indexOf("Theme."));
-        }
-        themeName.append("Theme.");
-        if (light) {
-            themeName.append("Light.");
-        }
-        themeName.append(name);
+        String themeColor = getDefaultSharedPreferences().getString(KEY_THEME_COLOR, "DeviceDefault");
+        StringBuilder themeName = new StringBuilder("Theme.");
+        themeName.append(themeColor);
+        themeName.append(".AndStatus.");
+        String themeSize = getDefaultSharedPreferences().getString(KEY_THEME_SIZE, "StandardSize");
+        themeName.append(themeSize);
         int themeId = context.getResources().getIdentifier(themeName.toString(), "style",
                 "org.andstatus.app");
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "loadTheme; theme=\"" + themeName.toString() + "\"; id=" + Integer.toHexString(themeId));
+        if (themeId == 0 || MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            String text = "loadTheme; theme=\"" + themeName.toString() + "\"; id=" + Integer.toHexString(themeId);
+            if (themeId == 0) {
+                MyLog.e(TAG, text);
+            } else {
+                MyLog.v(TAG, text);
+            }
         }
         context.setTheme(themeId);
     }

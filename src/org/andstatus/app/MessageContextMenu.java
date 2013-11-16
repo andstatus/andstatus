@@ -82,8 +82,8 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
     }
     private long accountUserIdToActAs;
 
-    public MessageContextMenu(ActionableMessageList activity) {
-        this.messageList = activity;
+    public MessageContextMenu(ActionableMessageList actionableMessageList) {
+        messageList = actionableMessageList;
     }
 
     @Override

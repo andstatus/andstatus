@@ -44,9 +44,10 @@
 
 	<string name="authentication_never">Didn\'t authenticate yet</string>
 	<string name="authentication_successful">Authentication successful!</string>
-	<string name="button_send">Send</string>
     <string name="button_create_message">Blog</string>
     <string name="button_create_message_twitter">Tweet</string>
+	<string name="button_hide">Hide</string>
+    <string name="button_send">Send</string>
     <string name="cannot_send_empty_message">Cannot send empty message.</string>
 	<string name="category_title_preference_appearance">Appearance</string>
 	<string name="category_title_preference_credentials">User Credentials</string>
@@ -83,8 +84,9 @@
 	<string name="dialog_title_preference_min_log_level">Minimum logging level</string>
     <string name="dialog_title_preference_origin_system">Microblogging system</string>
     <string name="dialog_title_preference_password">Password</string>
-    <string name="dialog_title_preference_theme">Select a Theme</string>
-	<string name="dialog_title_preference_username">Username</string>
+    <string name="dialog_title_preference_theme_color">Select a Color Theme</string>
+    <string name="dialog_title_preference_theme_size">Select a Size</string>
+    <string name="dialog_title_preference_username">Username</string>
 	<string name="dialog_title_preference_username_pumpio">Webfinger ID</string>
 	<string name="dialog_title_registering_client">Registering AndStatus</string>
 	<string name="dialog_title_select_timeline">Select a Timeline</string>
@@ -105,7 +107,6 @@
     <string name="id_of_this_message_was_not_specified">Id of this message was not specified</string>
 	<string name="label_accountselector">Select an Account</string>
     <string name="label_conversation">Conversation</string>
-    <string name="label_conversationactivity">Message</string>
     <string name="loading">Loading…</string>
     <string name="message">Message</string>
     <string name="message_twitter">Tweet</string>
@@ -222,8 +223,7 @@
 	<string name="summary_preference_history_size">Remember message history up to {0}.</string>
 	<string name="summary_preference_history_time">Remember message history up to {0}.</string>
 	<string name="summary_preference_host">Host name of the system, e.g. quitter.se</string>
-	<string name="summary_preference_light_theme_off">The standard theme will be used.</string>
-	<string name="summary_preference_light_theme_on">The light theme will be used.</string>
+	<string name="summary_preference_theme_color">Color and style</string>
     <string name="summary_preference_min_log_level">The level is {0}.</string>
 	<string name="summary_preference_no_ringtone">Silent</string>
 	<string name="summary_preference_notifications">Change notification options</string>
@@ -246,7 +246,7 @@
 	<string name="summary_preference_storage">Where and what information to store</string>
 	<string name="summary_preference_storage_external_off">Store data in Internal Memory</string>
 	<string name="summary_preference_storage_external_on">Store data on External Memory</string>
-	<string name="summary_preference_theme">Select AndStatus theme</string>
+	<string name="summary_preference_theme_size">Select text size</string>
 	<string name="summary_preference_use_avatars_off">User avatars will not be displayed</string>
 	<string name="summary_preference_use_avatars_on">User avatars will be displayed</string>
 	<string name="summary_preference_username">Your username in the Microblogging system</string>
@@ -266,7 +266,7 @@
 	<string name="title_preference_history_size">History Size</string>
 	<string name="title_preference_history_time">History Time</string>
 	<string name="title_preference_host">Host</string>
-	<string name="title_preference_light_theme">Light Theme</string>
+	<string name="title_preference_theme_color">Color Theme</string>
     <string name="title_preference_min_log_level">Minimum logging level</string>
 	<string name="title_preference_notification_sound">Notification Ringtone</string>
 	<string name="title_preference_notifications">Notifications</string>
@@ -282,7 +282,7 @@
 	<string name="title_preference_storage">Storage</string>
 	<string name="title_preference_ssl">SSL</string>
 	<string name="title_preference_storage_external">Use External Storage</string>
-	<string name="title_preference_theme">Theme</string>
+	<string name="title_preference_theme_size">Size</string>
 	<string name="title_preference_username">Username</string>
 	<string name="title_preference_username_pumpio">Webfinger ID</string>
 	<string name="title_preference_use_avatars">Display Avatars</string>

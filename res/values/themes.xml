@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
+    Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,81 +14,87 @@
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	See the License for the specific language governing permissions and
 	limitations under the License.
-	
-	For 'android:attr' reference see: http://developer.android.com/reference/android/R.attr.html
-	For 'android:color' reference see: http://developer.android.com/reference/android/R.color.html
+ 
+ 	See http://developer.android.com/guide/topics/ui/themes.html
  -->
 <resources>
-	<style name="Theme">
-		<item name="tweetUsernameAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="tweetUsernameColor">?android:attr/textColorSecondary</item>
-		<item name="tweetUsernameStyle">bold</item>
+    <!-- ThemeSelector resolves to different themes depending on configuration (see styles.xml files)
+    Groups of the Themes below SHOULD be the same in everything but parent Theme -->
+	<style name="Theme.Dark.AndStatus.StandardSize" parent="@style/DarkThemeSelector">
+		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameColor">?android:attr/textColorSecondary</item>
+		<item name="messageUsernameStyle">bold</item>
 
-		<item name="tweetMessageAppearance">?android:attr/textAppearanceMedium</item>
-		<!-- yvolk: '?android:attr/textColorPrimary' causes black on black sometimes on Android v.2.3.3 ... -->
-		<item name="tweetMessageColor">?android:attr/textColorPrimaryNoDisable</item>
-		<item name="tweetMessageStyle">normal</item>
+		<item name="messageBodyAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyColor">?android:attr/textColorPrimary</item>
+		<item name="messageBodyStyle">normal</item>
 
-		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="tweetSentDateColor">?android:attr/textColorTertiary</item>
-		<item name="tweetSentDateStyle">italic</item>
-
-		<item name="textEditColor">?android:attr/textColorPrimaryInverse</item>
-        <item name="windowBackgroundColor">@android:color/background_dark</item>
-        
-        <!-- On custom title see 
-          http://staticallytyped.wordpress.com/2011/03/18/android-dynamic-and-custom-title-bars/ 
-        -->
-        <item name="android:windowTitleStyle">@style/customTitleStyle</item>
-        <item name="android:windowTitleSize">45dp</item>
+		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsColor">?android:attr/textColorTertiary</item>
+		<item name="messageDetailsStyle">italic</item>
+		
+		<item name="android:windowNoTitle">true</item>
 	</style>
-	
-	<style name="Theme.AndStatus">
+	<style name="Theme.Light.AndStatus.StandardSize" parent="@style/LightThemeSelector">
+		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameColor">?android:attr/textColorSecondary</item>
+		<item name="messageUsernameStyle">bold</item>
+
+		<item name="messageBodyAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyColor">?android:attr/textColorPrimary</item>
+		<item name="messageBodyStyle">normal</item>
+
+		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsColor">?android:attr/textColorTertiary</item>
+		<item name="messageDetailsStyle">italic</item>
+				
+		<item name="android:windowNoTitle">true</item>
 	</style>
+	<style name="Theme.DeviceDefault.AndStatus.StandardSize" parent="@style/DeviceDefaultThemeSelector">
+		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageUsernameColor">?android:attr/textColorSecondary</item>
+		<item name="messageUsernameStyle">bold</item>
 
-	<style name="Theme.AndStatus.Small">
-		<item name="tweetUsernameAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="tweetMessageAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageBodyAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyColor">?android:attr/textColorPrimary</item>
+		<item name="messageBodyStyle">normal</item>
+
+		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsColor">?android:attr/textColorTertiary</item>
+		<item name="messageDetailsStyle">italic</item>
+				
+		<item name="android:windowNoTitle">true</item>
 	</style>
-
-	<style name="Theme.AndStatus.Large">
-		<item name="tweetUsernameAppearance">?android:attr/textAppearanceMedium</item>
-		<item name="tweetMessageAppearance">?android:attr/textAppearanceLarge</item>
-		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
+				
+	<style name="Theme.Dark.AndStatus.Small" parent="@style/Theme.Dark.AndStatus.StandardSize">
+		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageBodyAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
-
-	<!-- The Light style is in fact style with inverted colors  -->	
-	<style name="Theme.Light">
-        <item name="android:textColorPrimary">@android:color/primary_text_light</item>
-        <item name="android:textColorSecondary">@android:color/secondary_text_light</item>
-        <item name="android:textColorTertiary">@android:color/tertiary_text_light</item>
-        <item name="android:textColorPrimaryInverse">@android:color/primary_text_dark</item>
-        <item name="android:textColorSecondaryInverse">@android:color/secondary_text_dark</item>
-        <item name="android:textColorTertiaryInverse">@android:color/tertiary_text_dark</item>
-        <item name="android:textColorPrimaryNoDisable">@android:color/primary_text_light_nodisable</item>
-        <item name="android:textColorSecondaryNoDisable">@android:color/secondary_text_light_nodisable</item>
-        <item name="android:textColorPrimaryInverseNoDisable">@android:color/primary_text_dark_nodisable</item>
-        <item name="android:textColorSecondaryInverseNoDisable">@android:color/secondary_text_dark_nodisable</item>
-
-        <item name="android:listViewStyle">@android:style/Widget.ListView.White</item>
-        <item name="android:listDivider">@android:drawable/divider_horizontal_bright</item>
-        <item name="textEditColor">?android:textColorPrimary</item>
-        <item name="windowBackgroundColor">@android:color/background_light</item>
+	<style name="Theme.Light.AndStatus.Small" parent="@style/Theme.Light.AndStatus.StandardSize">
+		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageBodyAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
-
-	<style name="Theme.Light.AndStatus">
+	<style name="Theme.DeviceDefault.AndStatus.Small" parent="@style/Theme.DeviceDefault.AndStatus.StandardSize">
+		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageBodyAppearance">?android:attr/textAppearanceSmall</item>
+		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
-
-	<style name="Theme.Light.AndStatus.Small">
-		<item name="tweetUsernameAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="tweetMessageAppearance">?android:attr/textAppearanceSmall</item>
-		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
+		
+	<style name="Theme.Dark.AndStatus.Large" parent="@style/Theme.Dark.AndStatus.StandardSize">
+		<item name="messageUsernameAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyAppearance">?android:attr/textAppearanceLarge</item>
+		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
-
-	<style name="Theme.Light.AndStatus.Large">
-		<item name="tweetUsernameAppearance">?android:attr/textAppearanceMedium</item>
-		<item name="tweetMessageAppearance">?android:attr/textAppearanceLarge</item>
-		<item name="tweetSentDateAppearance">?android:attr/textAppearanceSmall</item>
+	<style name="Theme.Light.AndStatus.Large" parent="@style/Theme.Light.AndStatus.StandardSize">
+		<item name="messageUsernameAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyAppearance">?android:attr/textAppearanceLarge</item>
+		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
+	</style>
+	<style name="Theme.DeviceDefault.AndStatus.Large" parent="@style/Theme.DeviceDefault.AndStatus.StandardSize">
+		<item name="messageUsernameAppearance">?android:attr/textAppearanceMedium</item>
+		<item name="messageBodyAppearance">?android:attr/textAppearanceLarge</item>
+		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
 	</style>
 </resources>

@@ -19,13 +19,14 @@ package org.andstatus.app;
 
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 
 import java.util.Locale;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
@@ -45,7 +46,7 @@ import android.widget.Toast;
  * "Enter your message here" box 
  */
 class MessageEditor {
-    private Activity activity;
+    private ActionableMessageList messageList;
     private android.view.ViewGroup editorView;
 
     /**
@@ -84,17 +85,30 @@ class MessageEditor {
     private String mAccountGuid_restored = "";
     private boolean mShowAccount_restored = false;
     
-    public MessageEditor(Activity activity) {
-        this.activity = activity;
+    public MessageEditor(ActionableMessageList actionableMessageList) {
+        messageList = actionableMessageList;
 
-        ViewGroup topViewGroup = (ViewGroup) this.activity.findViewById(R.id.messageListParent);
-        LayoutInflater inflater = LayoutInflater.from(this.activity);
+        ViewGroup messageListParent = (ViewGroup) messageList.getActivity().findViewById(R.id.messageListParent);
+        LayoutInflater inflater = LayoutInflater.from(messageList.getActivity());
         editorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
-        topViewGroup.addView(editorView);
+        messageListParent.addView(editorView);
         
-        mEditText = (EditText) editorView.findViewById(R.id.edtTweetInput);
+        mEditText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
         mCharsLeftText = (TextView) editorView.findViewById(R.id.messageEditCharsLeftTextView);
         mDetails = (TextView) editorView.findViewById(R.id.messageEditDetails);
+        
+        Button createMessageButton = (Button) messageList.getActivity().findViewById(R.id.createMessageButton);
+        createMessageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyAccount accountForButton = accountforCreateMessageButton();
+                if ( isVisible() || accountForButton == null) {
+                    hide();
+                } else {
+                    startEditingMessage("", 0, 0, accountForButton, messageList.isTimelineCombined());
+                }
+            }
+        });
         
         Button sendButton = (Button) editorView.findViewById(R.id.messageEditSendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -158,6 +172,20 @@ class MessageEditor {
         });
     }
     
+    private MyAccount accountforCreateMessageButton() {
+        MyAccount accountForButton = null;
+        if (isVisible()) {
+            accountForButton = mAccount;
+        } else {
+            accountForButton = MyContextHolder.get().persistentAccounts().getCurrentAccount();
+            if (accountForButton != null 
+                    && accountForButton.getCredentialsVerified() != MyAccount.CredentialsVerificationStatus.SUCCEEDED ) {
+                accountForButton = null;
+            }
+        }
+        return accountForButton;
+    }
+    
     /**
      * Continue message editing
      * @return new state of visibility
@@ -175,8 +203,9 @@ class MessageEditor {
     public void show() {
         mCharsLeftText.setText(String.valueOf(mAccount
                 .charactersLeftForMessage(mEditText.getText().toString())));
-
+        
         editorView.setVisibility(View.VISIBLE);
+        updateCreateMessageButton();
         
         mEditText.requestFocus();
         /* do we need this instead?
@@ -187,8 +216,26 @@ class MessageEditor {
         
     }
     
+    public void updateCreateMessageButton() {
+        MyAccount accountForButton = accountforCreateMessageButton();
+        boolean isButtonVisible = isVisible();
+        int resId = R.string.button_hide;
+        if (!isButtonVisible
+                && accountForButton != null 
+                && messageList.getTimelineType() != TimelineTypeEnum.DIRECT
+                && messageList.getTimelineType() != TimelineTypeEnum.MESSAGESTOACT
+                && accountForButton.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ) {
+            isButtonVisible = true;
+            resId = accountForButton.alternativeTermForResourceId(R.string.button_create_message);
+        }
+        Button createMessageButton = (Button) messageList.getActivity().findViewById(R.id.createMessageButton);
+        createMessageButton.setText(resId);
+        createMessageButton.setVisibility(isButtonVisible ? View.VISIBLE : View.GONE);
+    }
+    
     public void hide() {
         editorView.setVisibility(View.GONE);
+        updateCreateMessageButton();
     }
     
     public boolean isVisible() {
@@ -261,10 +308,10 @@ class MessageEditor {
     private void updateStatus() {
         String status = mEditText.getText().toString();
         if (TextUtils.isEmpty(status.trim())) {
-            Toast.makeText(activity, R.string.cannot_send_empty_message,
+            Toast.makeText(messageList.getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
         } else if (mAccount.charactersLeftForMessage(status) < 0) {
-            Toast.makeText(activity, R.string.message_is_too_long,
+            Toast.makeText(messageList.getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
             CommandData commandData = new CommandData(
@@ -296,7 +343,7 @@ class MessageEditor {
      * Close the on-screen keyboard.
      */
     private void closeSoftKeyboard() {
-        InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager inputMethodManager = (InputMethodManager) messageList.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
     }
     

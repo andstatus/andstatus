@@ -2,7 +2,6 @@
 <!-- Layout for listing accounts -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:background="?attr/windowBackgroundColor"
     android:layout_height="wrap_content"
     android:orientation="vertical" >
     <ListView

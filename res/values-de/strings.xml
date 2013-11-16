@@ -53,7 +53,7 @@
 	<string name="dialog_title_external_storage_missing">Externer Speicher fehlt</string>
 	<string name="dialog_title_preference_frequency">Aktualisierungsfrequenz</string>
 	<string name="dialog_title_preference_password">Passwort</string>
-	<string name="dialog_title_preference_theme">Design wählen</string>
+	<string name="dialog_title_preference_theme_color">Design wählen</string>
 	<string name="dialog_title_preference_username">Benutzername</string>
 	<string name="dialog_title_sending_message">Nachricht senden…</string>
 	<string name="dialog_title_service_unavailable">Dienst nicht verfügbar</string>
@@ -63,7 +63,6 @@
 	<string name="favorite_created">Favorit erstellt.</string>
 	<string name="favorite_destroyed">Favorit entfernt.</string>
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
-    <string name="label_conversationactivity">Tweet</string>
     <string name="loading">Lade…</string>
 	<string name="message_edit_hint">Gib deinen tweet hier ein!</string>
 	<string name="message_characters_left">Verbleibende Zeichen:</string>
@@ -131,8 +130,6 @@
 	<string name="status_destroyed">Der Tweet wurde entfernt.</string>
 	<string name="summary_preference_appearance">Ändere das Aussehen von AndStatus</string>
 	<string name="summary_preference_frequency">Aktualisierungen werden {0} abgerufen.</string>
-	<string name="summary_preference_light_theme_off">Standard Design wird benutzt.</string>
-	<string name="summary_preference_light_theme_on">Das helle Design wird benutzt.</string>
 	<string name="summary_preference_no_ringtone">Stumm</string>
 	<string name="summary_preference_notifications">Benachrichtigungsoptionen</string>
 	<string name="summary_preference_notifications_enabled">Sollen Benachrichtigungen aktiviert werden?</string>
@@ -151,7 +148,7 @@
 	<string name="summary_preference_storage">Speicherort für Daten und Bilder</string>
 	<string name="summary_preference_storage_external_off">Internen Speicher verwenden</string>
 	<string name="summary_preference_storage_external_on">Externen Speicher verwenden</string>
-	<string name="summary_preference_theme">AndStatus Design wählen</string>
+	<string name="summary_preference_theme_color">Standard/Das helle Design wird benutzt.</string>
 	<string name="summary_preference_use_avatars_off">Benutzeravatare werden nicht angezeigt</string>
 	<string name="summary_preference_use_avatars_on">Benutzeravatare werden angezeigt</string>
 	<string name="summary_preference_username">Dein Twitter Benutzername</string>
@@ -161,7 +158,7 @@
 	<string name="timeline_reloaded">Chronik wurde aktualisiert.</string>
 	<string name="title_preference_appearance">Design</string>
 	<string name="title_preference_frequency">Aktualisierungsfrequenz</string>
-	<string name="title_preference_light_theme">Helles Design</string>
+	<string name="title_preference_theme_color">Design</string>
 	<string name="title_preference_notification_sound">Benachrichtigung mit Ton</string>
 	<string name="title_preference_notifications">Benachrichtigungen</string>
 	<string name="title_preference_notifications_enabled">Benachrichtigungen aktivieren</string>
@@ -171,7 +168,7 @@
 	<string name="title_preference_password">Passwort</string>
 	<string name="title_preference_storage">Speicher</string>
 	<string name="title_preference_storage_external">Externen Speicher verwenden</string>
-	<string name="title_preference_theme">Design</string>
+	<string name="title_preference_theme_size">Design</string>
 	<string name="title_preference_username">Benutzername</string>
 	<string name="title_preference_use_avatars">Avatare anzeigen</string>
 	<string name="title_preference_vibration">Vibration</string>

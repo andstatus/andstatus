@@ -199,6 +199,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        requestWindowFeature(Window.FEATURE_NO_TITLE);    // Before loading the content view
         super.onCreate(savedInstanceState);
         if (instanceId == 0) {
             instanceId = InstanceId.next();
@@ -256,16 +257,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         
         MyPreferences.loadTheme(TAG, this);
 
-        // Request window features before loading the content view
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-
         setContentView(R.layout.timeline);
 
-        ViewGroup list = (ViewGroup) this.findViewById(android.R.id.list);
-        ViewGroup parent = ((ViewGroup) list.getParent());
+        ViewGroup messageListParent = (ViewGroup) findViewById(R.id.messageListParent);
         LayoutInflater inflater = LayoutInflater.from(this);
-        ViewGroup editorView = (ViewGroup) inflater.inflate(R.layout.timeline_title, null);
-        parent.addView(editorView, 0);
+        ViewGroup actionsView = (ViewGroup) inflater.inflate(R.layout.timeline_actions, null);
+        messageListParent.addView(actionsView, 0);
 
         contextMenu = new MessageContextMenu(this);
         
@@ -326,18 +323,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 startActivityForResult(i, ActivityRequestCode.SELECT_ACCOUNT.id);
             }
         });
-       
-        Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
-        createMessageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (messageEditor.isVisible()) {
-                    messageEditor.hide();
-                } else if (MyContextHolder.get().persistentAccounts().getCurrentAccount() != null) {
-                    messageEditor.startEditingMessage("", 0, 0, MyContextHolder.get().persistentAccounts().getCurrentAccount(), mIsTimelineCombined);
-                }
-            }
-        });
 
         if (!isInstanceStateRestored) {
             mIsTimelineCombined = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false);
@@ -393,7 +378,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         if (!mIsFinishing) {
             serviceConnector.registerReceiver(this);
-            updateTitle();
             if (!isLoading()) {
                 restoreListPosition();
             }
@@ -634,53 +618,57 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     protected Dialog onCreateDialog(int id) {
         switch (id) {
             case DIALOG_ID_TIMELINE_TYPE:
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(R.string.dialog_title_select_timeline);
-                String[] timelines = {
-                        getString(MyDatabase.TimelineTypeEnum.HOME.resId()),
-                        getString(MyDatabase.TimelineTypeEnum.FAVORITES.resId()),
-                        getString(MyDatabase.TimelineTypeEnum.MENTIONS.resId()),
-                        getString(MyDatabase.TimelineTypeEnum.DIRECT.resId()),
-                        getString(MyDatabase.TimelineTypeEnum.USER.resId()),
-                        getString(MyDatabase.TimelineTypeEnum.FOLLOWING_USER.resId())
-                };
-                builder.setItems(timelines, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // The 'which' argument contains the index position of the selected item
-                        switch (which) {
-                            case 0:
-                                contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.HOME, mIsTimelineCombined, mCurrentMyAccountUserId);
-                                break;
-
-                            case 1:
-                                contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.FAVORITES, mIsTimelineCombined, mCurrentMyAccountUserId);
-                                break;
-
-                            case 2:
-                                contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.MENTIONS, mIsTimelineCombined, mCurrentMyAccountUserId);
-                                break;
-
-                            case 3:
-                                contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.DIRECT, mIsTimelineCombined, mCurrentMyAccountUserId);
-                                break;
-
-                            case 4:
-                                contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.USER, mIsTimelineCombined, mCurrentMyAccountUserId);
-                                break;
-
-                            case 5:
-                                contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.FOLLOWING_USER, mIsTimelineCombined, mCurrentMyAccountUserId);
-                                break;
-                        }
-                    }
-                });
-                return builder.create();                
+                return newTimelinetypeSelector();
             default:
                 return super.onCreateDialog(id);
         }
     }
 
+    private AlertDialog newTimelinetypeSelector() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.dialog_title_select_timeline);
+        String[] timelines = {
+                getString(MyDatabase.TimelineTypeEnum.HOME.resId()),
+                getString(MyDatabase.TimelineTypeEnum.FAVORITES.resId()),
+                getString(MyDatabase.TimelineTypeEnum.MENTIONS.resId()),
+                getString(MyDatabase.TimelineTypeEnum.DIRECT.resId()),
+                getString(MyDatabase.TimelineTypeEnum.USER.resId()),
+                getString(MyDatabase.TimelineTypeEnum.FOLLOWING_USER.resId())
+        };
+        builder.setItems(timelines, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // The 'which' argument contains the index position of the selected item
+                switch (which) {
+                    case 0:
+                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.HOME, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        break;
+
+                    case 1:
+                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.FAVORITES, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        break;
+
+                    case 2:
+                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.MENTIONS, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        break;
+
+                    case 3:
+                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.DIRECT, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        break;
+
+                    case 4:
+                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.USER, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        break;
+
+                    case 5:
+                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.FOLLOWING_USER, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        break;
+                }
+            }
+        });
+        return builder.create();                
+    }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -822,7 +810,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * 
      * @param rightText Right title part
      */
-    public void updateTitle(String rightText) {
+    public void updateActionBar(String rightText) {
         String timelinename = getString(mTimelineType.resId());
         Button timelineTypeButton = (Button) findViewById(R.id.timelineTypeButton);
         timelineTypeButton.setText(timelinename + (mIsSearchMode ? " *" : ""));
@@ -838,22 +826,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         
         TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
         rightTitle.setText(rightText);
-
-        Button createMessageButton = (Button) findViewById(R.id.createMessageButton);
-        if (mTimelineType != TimelineTypeEnum.DIRECT) {
-            createMessageButton.setText(getString(MyContextHolder.get().persistentAccounts().getCurrentAccount().alternativeTermForResourceId(R.string.button_create_message)));
-            createMessageButton.setVisibility(View.VISIBLE);
-        } else {
-            createMessageButton.setVisibility(View.GONE);
-        }
     }
 
-    /**
-     * Updates the activity title.
-     */
-   public void updateTitle() {
-        // First set less detailed title
-        updateTitle("");
+   public void updateActionBar() {
+        updateActionBar("");
     }
 
     /**
@@ -862,7 +838,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * @return Text currently in the editor
      */
     protected CharSequence getSavedText() {
-        return ((EditText) findViewById(R.id.edtTweetInput)).getText();
+        return ((EditText) findViewById(R.id.messageBodyEditText)).getText();
     }
 
     /**
@@ -871,7 +847,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * @param text
      */
     protected void setSavedText(CharSequence text) {
-        ((EditText) findViewById(R.id.edtTweetInput)).setText(text);
+        ((EditText) findViewById(R.id.messageBodyEditText)).setText(text);
     }
 
     /**
@@ -978,7 +954,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             mQueryString = "";
         }
 
-        TextView selectedUserText = (TextView) findViewById(R.id.selected_user_title_text);
+        TextView selectedUserText = (TextView) findViewById(R.id.selectedUserText);
         ToggleButton combinedTimelineToggle = (ToggleButton) findViewById(R.id.combinedTimelineToggle);
         combinedTimelineToggle.setChecked(mIsTimelineCombined);
         if (mSelectedUserId != 0 && mSelectedUserId != mCurrentMyAccountUserId) {
@@ -995,14 +971,17 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         noMoreItems = false;
         contextMenu.setAccountUserIdToActAs(0);
 
-        queryListData(false);
-        
+        updateActionBar();
         if (messageEditor.isStateLoaded()) {
             messageEditor.continueEditingLoadedState();
         } else if (messageEditor.isVisible()) {
             // This is done to request focus (if we need this...)
             messageEditor.show();
+        } else {
+            messageEditor.updateCreateMessageButton();
         }
+        
+        queryListData(false);
     }
     
     /**
@@ -1487,7 +1466,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 break;
             case RATE_LIMIT_STATUS:
                 if (commandData.commandResult.hourly_limit > 0) {
-                    updateTitle(commandData.commandResult.remaining_hits + "/"
+                    updateActionBar(commandData.commandResult.remaining_hits + "/"
                             + commandData.commandResult.hourly_limit);
                 }
             default:

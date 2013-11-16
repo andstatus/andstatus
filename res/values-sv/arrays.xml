@@ -42,7 +42,7 @@
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
-	<string-array name="fetch_frequency_values">
+	<string-array name="fetch_frequency_entries">
 		<item>3 minuter</item>
 		<item>5 minuter</item>
 		<item>10 minuter</item>
@@ -55,7 +55,7 @@
 		<item>12 timmar</item>
 		<item>1 dag</item>
 	</string-array>
-	<string-array name="fetch_frequency_keys">
+	<string-array name="fetch_frequency_values">
 		<item>180</item>
 		<item>300</item>
 		<item>600</item>
@@ -81,17 +81,12 @@
 		<item>12 timmar</item>
 		<item>dag</item>
 	</string-array>
-	<string-array name="theme_values">
+	<string-array name="theme_size_entries">
 		<item>Mindre</item>
 		<item>Normal</item>
 		<item>Stor</item>
 	</string-array>
-	<string-array name="theme_keys">
-		<item>AndStatus.Small</item>
-		<item>AndStatus</item>
-		<item>AndStatus.Large</item>
-	</string-array>
-	<string-array name="history_size_values">
+	<string-array name="history_size_entries">
 		<item>500 tweets</item>
 		<item>1000 tweets</item>
 		<item>2000 tweets</item>
@@ -101,7 +96,7 @@
 		<item>50000 tweets</item>
 		<item>100000 tweets</item>
 	</string-array>
-	<string-array name="history_size_keys">
+	<string-array name="history_size_values">
 		<item>500</item>
 		<item>1000</item>
 		<item>2000</item>
@@ -121,7 +116,7 @@
 		<item>50000 tweets</item>
 		<item>100000 tweets</item>
 	</string-array>
-	<string-array name="history_time_values">
+	<string-array name="history_time_entries">
 		<item>1 dag</item>
 		<item>2 dagar</item>
 		<item>3 dagar</item>
@@ -130,7 +125,7 @@
 		<item>6 dagar</item>
 		<item>1 vecka</item>
 	</string-array>
-	<string-array name="history_time_keys">
+	<string-array name="history_time_values">
 		<item>1</item>
 		<item>2</item>
 		<item>3</item>

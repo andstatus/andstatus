@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:id="@+id/actions" 
+    android:orientation="vertical" 
+    android:layout_height="wrap_content"
+    android:background="@android:color/darker_gray">
+
+	<ImageView android:id="@+id/upNavigation"
+		android:src="@drawable/ic_ab_back_holo_light_am"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
+        android:layout_centerVertical="true" />
+
+	<ImageView android:id="@+id/actionsIcon"
+		android:src="@drawable/icon"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
+        android:layout_toRightOf="@+id/upNavigation"
+        android:layout_centerVertical="true" />
+
+	<TextView android:id="@+id/titleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/actionsIcon"
+        android:layout_centerVertical="true"
+        android:textColor="@android:color/primary_text_dark"
+        android:text="@string/message" />
+    
+    <Button
+	    android:id="@+id/createMessageButton"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentRight="true"
+	    android:layout_centerVertical="true"
+	    android:text="@string/button_create_message"
+	    android:visibility="visible" />
+</RelativeLayout>
