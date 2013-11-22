@@ -22,18 +22,18 @@ import org.andstatus.app.data.MyPreferences;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
+
+import net.jcip.annotations.GuardedBy;
 
 /**
  * There is a need to turn debug (and maybe even verbose) logging on and off
@@ -69,6 +69,8 @@ public class MyLog {
     public static final int VERBOSE = Log.VERBOSE;
     public static final int INFO = Log.INFO;
     
+    private static Object lock = new Object();
+    @GuardedBy("lock")
     private static volatile boolean initialized = false;
     
     /** 
@@ -76,11 +78,35 @@ public class MyLog {
      */
     private static volatile int minLogLevel = VERBOSE;
 
+    private MyLog() {
+        
+    }
+    
+    public static int e(Object objTag, String msg, Throwable tr) {
+        String tag = objTagToString(objTag);
+        return Log.e(tag, msg, tr);
+    }
+
+    public static int e(Object objTag, Throwable tr) {
+        String tag = objTagToString(objTag);
+        return Log.e(tag, "", tr);
+    }
+    
     public static int e(Object objTag, String msg) {
         String tag = objTagToString(objTag);
         return Log.e(tag, msg);
     }
 
+    public static int i(Object objTag, String msg, Throwable tr) {
+        String tag = objTagToString(objTag);
+        return Log.i(tag, msg, tr);
+    }
+    
+    public static int i(Object objTag, Throwable tr) {
+        String tag = objTagToString(objTag);
+        return Log.i(tag, "", tr);
+    }
+    
     public static int i(Object objTag, String msg) {
         String tag = objTagToString(objTag);
         return Log.i(tag, msg);
@@ -115,6 +141,15 @@ public class MyLog {
         return i;
     }
 
+    public static int v(Object objTag, Throwable e) {
+        String tag = objTagToString(objTag);
+        int i = 0;
+        if (isLoggable(tag, Log.VERBOSE)) {
+            i = Log.v(tag, "", e);
+        }
+        return i;
+    }
+    
     /**
      * Shortcut for verbose messages of the application
      */
@@ -123,6 +158,15 @@ public class MyLog {
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             i = Log.v(tag, msg);
+        }
+        return i;
+    }
+
+    public static int v(Object objTag, String msg, Throwable tr) {
+        String tag = objTagToString(objTag);
+        int i = 0;
+        if (isLoggable(tag, Log.VERBOSE)) {
+            i = Log.v(tag, msg, tr);
         }
         return i;
     }
@@ -170,39 +214,50 @@ public class MyLog {
      * Initialize using a double-check idiom 
      */
     private static void checkInit() {
-        if (initialized) return;
-        synchronized (APPTAG) {
-            if (initialized) return;
+        if (initialized) {
+            return;
+        }
+        synchronized (lock) {
+            if (initialized) {
+                return;
+            }
             MyContext myContext = MyContextHolder.get();
-            if (!myContext.initialized()) return;
+            if (!myContext.initialized()) {
+                return;
+            }
             // The class was not initialized yet.
             String val = "(not set)";
             try {
                 SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();  
                 if (sp != null) {
-                    try {
-                        /**
-                         * Due to the Android bug
-                         * ListPreference operate with String values only...
-                         * See http://code.google.com/p/android/issues/detail?id=2096
-                         */
-                        val = sp.getString(MyPreferences.KEY_MIN_LOG_LEVEL, String.valueOf(Log.ASSERT));  
-                        minLogLevel = Integer.parseInt(val);  
-                    } catch (java.lang.ClassCastException e) {
-                        minLogLevel = sp.getInt(MyPreferences.KEY_MIN_LOG_LEVEL,Log.ASSERT);
-                        val = Integer.toString(minLogLevel);
-                        Log.e(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
-                    }
+                    val = getMinLogLevel(sp);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, "Error in isLoggable");
+                Log.e(TAG, "Error in isLoggable", e);
             }
             if (Log.INFO >= minLogLevel) {
                 Log.i(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'");
             }
             initialized = true;
         }
+    }
+
+    private static String getMinLogLevel(SharedPreferences sp) {
+        String val;
+        try {
+            /**
+             * Due to the Android bug
+             * ListPreference operate with String values only...
+             * See http://code.google.com/p/android/issues/detail?id=2096
+             */
+            val = sp.getString(MyPreferences.KEY_MIN_LOG_LEVEL, String.valueOf(Log.ASSERT));  
+            minLogLevel = Integer.parseInt(val);  
+        } catch (java.lang.ClassCastException e) {
+            minLogLevel = sp.getInt(MyPreferences.KEY_MIN_LOG_LEVEL,Log.ASSERT);
+            val = Integer.toString(minLogLevel);
+            Log.e(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + val +"'", e);
+        }
+        return val;
     }
 
     /**
@@ -218,38 +273,38 @@ public class MyLog {
     public static String getStackTrace(Throwable throwable) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw, true);
-        throwable.printStackTrace(pw);
+        throwable.printStackTrace(pw); // NOSONAR
         return sw.getBuffer().toString();
     }
     
-    public static boolean writeStringToFile(String string, String FileName) {
+    public static boolean writeStringToFile(String string, String fileName) {
         boolean ok = false;
         File dir1 = MyPreferences.getDataFilesDir("logs", null);
-        if (dir1 == null) { return false; }
-        File file = new File(dir1, FileName);
+        if (dir1 == null) { 
+            return false; 
+            }
+        File file = new File(dir1, fileName);
         Writer out = null;
         try {
-            if (file.exists()) {
-                file.delete();
+            if (file.exists() 
+                && !file.delete()) {
+                MyLog.e(TAG, "Couldn't delete the file: " + fileName);
             }
             out = new BufferedWriter(new OutputStreamWriter(
                     new FileOutputStream(file.getAbsolutePath()), "UTF-8"));
             out.write(string);
             ok = true;
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            MyLog.d(TAG, fileName, e);
         } finally {
             try {
                 if (out != null ) {
                     out.close();
                 }
-            } catch (IOException e) {}
+            } catch (IOException e) {
+                MyLog.d(TAG, "Closing " + fileName, e);
+            }
         }        
         return ok;
     }
-    
 }

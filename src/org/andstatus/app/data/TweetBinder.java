@@ -38,50 +38,68 @@ import org.andstatus.app.util.RelativeTime;
 public class TweetBinder implements ViewBinder {
 	/**
 	 * @see android.widget.SimpleCursorAdapter.ViewBinder#setViewValue(android.view.View, android.database.Cursor, int)
+	 * 
+	 * To avoid BC_UNCONFIRMED_CAST warning instanceof is used before casting. 
+	 * Unfortunately, findbugs doesn't understand isAssignableFrom
+	 * see http://osdir.com/ml/java-findbugs-general/2010-03/msg00001.html
 	 */
 	@Override
     public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-		int colIndex = -1;
 		switch (view.getId()) {
-		case R.id.message_details:
-			String messageDetails = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
-            colIndex = cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID);
-            if (colIndex > -1) {
-                long replyToMsgId = cursor.getLong(colIndex);
-                if (replyToMsgId != 0) {
-                    String replyToName = "";
-                    colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
-                    if (colIndex > -1) {
-                        replyToName = cursor.getString(colIndex);
-                    }
-                    if (TextUtils.isEmpty(replyToName)) {
-                        replyToName = "...";
-                    }
-                    messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.message_source_in_reply_to).toString(), replyToName);
+    		case R.id.message_details:
+                if ( view instanceof TextView) {
+    	            setMessageDetails(cursor, columnIndex, (TextView) view);
+    		    }
+    			return true;
+    		case R.id.tweet_avatar_image:
+    			return true;
+    		case R.id.message_favorited:
+    		    if ( view instanceof ImageView) {
+    		        setFavorited(cursor, (ImageView) view);
                 }
-            }
-            colIndex = cursor.getColumnIndex(User.RECIPIENT_NAME);
-            if (colIndex > -1) {
-                String recipientName = cursor.getString(colIndex);
-                if (!TextUtils.isEmpty(recipientName)) {
-                    messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.message_source_to).toString(), recipientName);
-                }
-            }
-			((TextView)view).setText(messageDetails);
-			return true;
-		case R.id.tweet_avatar_image:
-			return true;
-		case R.id.message_favorited:
-			colIndex = cursor.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED);
-			if (colIndex > -1) {
-				if (cursor.getInt(colIndex) == 1) {
-					((ImageView)view).setImageResource(android.R.drawable.star_on);
-				} else {
-					((ImageView)view).setImageResource(android.R.drawable.star_off);
-				}
-			}
-			return true;
+    			return true;
+    		default:
+    		    break;
 		}
 		return false;
 	}
+
+    private void setMessageDetails(Cursor cursor, int columnIndex, TextView view) {
+        String messageDetails = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
+        int columnIndex2 = cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID);
+        if (columnIndex2 > -1) {
+            long replyToMsgId = cursor.getLong(columnIndex2);
+            if (replyToMsgId != 0) {
+                String replyToName = "";
+                columnIndex2 = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
+                if (columnIndex2 > -1) {
+                    replyToName = cursor.getString(columnIndex2);
+                }
+                if (TextUtils.isEmpty(replyToName)) {
+                    replyToName = "...";
+                }
+                messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.message_source_in_reply_to).toString(), replyToName);
+            }
+        }
+        columnIndex2 = cursor.getColumnIndex(User.RECIPIENT_NAME);
+        if (columnIndex2 > -1) {
+            String recipientName = cursor.getString(columnIndex2);
+            if (!TextUtils.isEmpty(recipientName)) {
+                messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.message_source_to).toString(), recipientName);
+            }
+        }
+        view.setText(messageDetails);
+    }
+    
+    private void setFavorited(Cursor cursor, ImageView view) {
+        int colIndex = cursor.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED);
+        if (colIndex > -1) {
+            if (cursor.getInt(colIndex) == 1) {
+                view.setImageResource(android.R.drawable.star_on);
+            } else {
+                view.setImageResource(android.R.drawable.star_off);
+            }
+        }
+    }
+    
 }

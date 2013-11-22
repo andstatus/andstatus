@@ -36,6 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 
 class HttpApacheUtils {
+    private static final String NULL_JSON = "(null)";
+
     private static final String TAG = HttpApacheUtils.class.getSimpleName();
     
     private HttpApacheRequest request;
@@ -50,11 +52,11 @@ class HttpApacheUtils {
         try {
             jsa = (JSONArray) jst.nextValue();
         } catch (JSONException e) {
-            MyLog.w(TAG, "getRequestAsArray, JSONException response=" + (jst == null ? "(null)" : jst.toString()));
-            throw new ConnectionException(e.getLocalizedMessage());
+            MyLog.i(TAG, "getRequestAsArray, JSONException response=" + (jst == null ? NULL_JSON : jst.toString()));
+            throw new ConnectionException("getRequestAsArray", e);
         } catch (ClassCastException e) {
-            MyLog.w(TAG, "getRequestAsArray, ClassCastException response=" + (jst == null ? "(null)" : jst.toString()));
-            throw new ConnectionException(e.getLocalizedMessage());
+            MyLog.i(TAG, "getRequestAsArray, ClassCastException response=" + (jst == null ? NULL_JSON : jst.toString()));
+            throw new ConnectionException("getRequestAsArray", e);
         }
         return jsa;
     }
@@ -65,11 +67,11 @@ class HttpApacheUtils {
         try {
             jso = (JSONObject) jst.nextValue();
         } catch (JSONException e) {
-            MyLog.w(TAG, "getRequestAsObject, JSONException response=" + (jst == null ? "(null)" : jst.toString()));
-            throw new ConnectionException(e.getLocalizedMessage());
+            MyLog.i(this, "getRequestAsObject, JSONException response=" + (jst == null ? NULL_JSON : jst.toString()), e);
+            throw new ConnectionException("getRequestAsObject", e);
         } catch (ClassCastException e) {
-            MyLog.w(TAG, "getRequestAsObject, ClassCastException response=" + (jst == null ? "(null)" : jst.toString()));
-            throw new ConnectionException(e.getLocalizedMessage());
+            MyLog.i(this, "getRequestAsObject, ClassCastException response=" + (jst == null ? NULL_JSON : jst.toString()), e);
+            throw new ConnectionException("getRequestAsObject", e);
         }
         return jso;
     }
@@ -89,7 +91,7 @@ class HttpApacheUtils {
             }
             jso = request.postRequest(postMethod);
         } catch (UnsupportedEncodingException e) {
-            MyLog.e(this, e.toString());
+            MyLog.e(this, e);
         }
         return jso;
     }
@@ -99,8 +101,9 @@ class HttpApacheUtils {
      */
     final static List<NameValuePair> jsonToNameValuePair(JSONObject jso) throws ConnectionException {
         List<NameValuePair> formParams = new ArrayList<NameValuePair>();
-        for (@SuppressWarnings("unchecked")
-        Iterator<String> iterator = jso.keys(); iterator.hasNext();) {
+        @SuppressWarnings("unchecked")
+        Iterator<String> iterator =  jso.keys();
+        while (iterator.hasNext()) {
             String name = iterator.next();
             String value = jso.optString(name);
             if (!TextUtils.isEmpty(value)) {

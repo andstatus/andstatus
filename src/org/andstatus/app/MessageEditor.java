@@ -148,6 +148,7 @@ class MessageEditor {
                                 mEditText.append("\n");
                                 return true;
                             }
+                            break;
                         default:
                             mCharsLeftText.setText(String.valueOf(mAccount
                                     .charactersLeftForMessage(mEditText.getText().toString())));
@@ -265,14 +266,15 @@ class MessageEditor {
             mRecipientId = recipientId;
             mAccount = myAccount;
             mShowAccount = showAccount;
+            String textInitial2 = textInitial;
             String messageDetails = (showAccount ? mAccount.getAccountName() : "");
             if (recipientId == 0) {
                 if (replyToId != 0) {
                     String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, replyToId);
-                    if (!TextUtils.isEmpty(textInitial)) {
-                        textInitial += " ";
+                    if (!TextUtils.isEmpty(textInitial2)) {
+                        textInitial2 += " ";
                     }
-                    textInitial = "@" + replyToName + " ";
+                    textInitial2 = "@" + replyToName + " ";
                     messageDetails += " " + String.format(Locale.getDefault(), MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), replyToName);
                 }
             } else {
@@ -281,7 +283,7 @@ class MessageEditor {
                     messageDetails += " " + String.format(Locale.getDefault(), MyContextHolder.get().context().getText(R.string.message_source_to).toString(), recipientName);
                 }
             }
-            mEditText.setText(textInitial);
+            mEditText.setText(textInitial2);
             // mEditText.append(textInitial, 0, textInitial.length());
             mDetails.setText(messageDetails);
             if (TextUtils.isEmpty(messageDetails)) {

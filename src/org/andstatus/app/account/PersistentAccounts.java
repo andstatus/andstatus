@@ -24,11 +24,11 @@ public class PersistentAccounts {
     /**
      * Name of the default account. The name is the same for this class and for {@link android.accounts.Account}
      */
-    private static volatile String defaultAccountName = "";
+    private volatile String defaultAccountName = "";
     /**
      * Name of "current" account: it is not stored when application is killed
      */
-    private static volatile String currentAccountName = "";
+    private volatile String currentAccountName = "";
     
     private ConcurrentHashMap<String,MyAccount> persistentAccounts = new ConcurrentHashMap<String, MyAccount>();
     
@@ -51,6 +51,7 @@ public class PersistentAccounts {
     }
 
     public void reRead(Context context) {
+        defaultAccountName = MyPreferences.getDefaultSharedPreferences().getString(KEY_DEFAULT_ACCOUNT_NAME, "");
         persistentAccounts.clear();
         android.accounts.AccountManager am = AccountManager.get(context);
         android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
@@ -66,7 +67,6 @@ public class PersistentAccounts {
     }
     
     public static PersistentAccounts initialize(Context context) {
-        defaultAccountName = MyPreferences.getDefaultSharedPreferences().getString(KEY_DEFAULT_ACCOUNT_NAME, "");
         PersistentAccounts pa = getEmpty();
         pa.reRead(context);
         return pa;
@@ -97,7 +97,7 @@ public class PersistentAccounts {
             new MyAccount.Builder(ma).deleteData();
 
             // And delete the object from the list
-            persistentAccounts.remove(ma);
+            persistentAccounts.remove(ma.getAccountName());
 
             isDeleted = true;
             MyPreferences.onPreferencesChanged();

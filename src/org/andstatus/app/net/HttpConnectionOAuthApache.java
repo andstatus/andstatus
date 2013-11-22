@@ -47,6 +47,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApacheRequest {
+    private static final String NULL_JSON = "(null)";
     private static final String TAG = HttpConnectionOAuth.class.getSimpleName();
     private HttpClient mClient;
 
@@ -113,9 +114,8 @@ class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApach
             jso = new JSONTokener(response);
             ok = true;
         } catch (Exception e) {
-            MyLog.e(this, "Exception was caught, URL='" + get.getURI().toString() + "'");
-            e.printStackTrace();
-            throw new ConnectionException(e.getLocalizedMessage());
+            MyLog.e(this, "Exception was caught, URL='" + get.getURI().toString() + "'", e);
+            throw new ConnectionException(e);
         }
         if (!ok) {
             jso = null;
@@ -160,17 +160,16 @@ class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApach
             jso = new JSONObject(response);
             ok = true;
         } catch (HttpResponseException e) {
-            ConnectionException e2 = ConnectionException.fromStatusCodeHttp(e.getStatusCode(), e.getLocalizedMessage());
-            MyLog.w(TAG, e2.getLocalizedMessage());
+            ConnectionException e2 = ConnectionException.fromStatusCodeHttp(e.getStatusCode(), "postRequest", e);
+            MyLog.i(TAG, e2);
             throw e2;
         } catch (JSONException e) {
-            MyLog.w(TAG, "postRequest, response=" + (response == null ? "(null)" : response));
-            throw new ConnectionException(e.getLocalizedMessage());
+            MyLog.i(TAG, "postRequest, response=" + (response == null ? NULL_JSON : response), e);
+            throw new ConnectionException(e);
         } catch (Exception e) {
             // We don't catch other exceptions because in fact it's vary difficult to tell
             // what was a real cause of it. So let's make code clearer.
-            e.printStackTrace();
-            throw new ConnectionException(e.getLocalizedMessage());
+            throw new ConnectionException(e);
         }
         if (!ok) {
             jso = null;

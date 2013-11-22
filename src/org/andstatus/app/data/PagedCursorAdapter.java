@@ -54,7 +54,7 @@ public class PagedCursorAdapter extends SimpleCursorAdapter implements FilterQue
 			String[] from, int[] to, Uri uri, String[] projection, String sortOrder) {
 		super(context, layout, c, from, to);
 		mContentResolver = context.getContentResolver();
-		mProjection = projection;
+		mProjection = projection.clone();
 		mUri = uri;
 		mSortOrder = sortOrder;
 		setFilterQueryProvider(this);

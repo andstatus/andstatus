@@ -81,6 +81,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
                 break;
             default:
                 url = "";
+                break;
         }
         if (!TextUtils.isEmpty(url)) {
             url = pathToUrl(url);

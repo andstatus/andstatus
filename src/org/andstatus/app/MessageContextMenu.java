@@ -95,7 +95,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             try {
                 info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             } catch (ClassCastException e) {
-                MyLog.e(this, "bad menuInfo: " + e.getMessage());
+                MyLog.e(this, "bad menuInfo", e);
                 return;
             }
 
@@ -229,11 +229,11 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                                     md.ma.firstOtherAccountOfThisOrigin().shortestUniqueAccountName()));
                     break;
                 default:
-                    ACT_AS.addTo(menu, menuItemId++,
-                            R.string.menu_item_act_as);
+                    ACT_AS.addTo(menu, menuItemId++, R.string.menu_item_act_as);
+                    break;
             }
         } catch (Exception e) {
-            MyLog.e(this, "onCreateContextMenu: " + e.toString());
+            MyLog.e(this, "onCreateContextMenu", e);
         }
     }
 
@@ -249,7 +249,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 mCurrentMsgId = info.id;
             }
         } catch (ClassCastException e) {
-            MyLog.e(this, "bad menuInfo: " + e.getMessage());
+            MyLog.e(this, "bad menuInfo", e);
             return false;
         }
         if (mCurrentMsgId == 0) {
@@ -325,11 +325,12 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                             messageList.getActivity().startActivity(Intent.createChooser(share, getContext().getText(R.string.menu_item_share)));
                         }
                     } catch (Exception e) {
-                        MyLog.e(this, "onContextItemSelected: " + e.toString());
+                        MyLog.e(this, "onContextItemSelected", e);
                         return false;
                     } finally {
-                        if (c != null && !c.isClosed())
+                        if (c != null && !c.isClosed()) {
                             c.close();
+                        }
                     }
                     return true;
                 case SENDER_MESSAGES:
@@ -382,7 +383,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     showContextMenu();
                     return true;
                 default:
-                    return false;
+                    break;
             }
         }
 
@@ -395,20 +396,19 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             MyLog.v(this, "switchTimelineActivity; type=\"" + timelineType.save() + "\"; isCombined=" + (isTimelineCombined ? "yes" : "no"));
         }
         switch (timelineType) {
-            default:
-                timelineType = MyDatabase.TimelineTypeEnum.HOME;
-                // Actually we use one Activity for all timelines...
             case MENTIONS:
             case FAVORITES:
             case HOME:
             case DIRECT:
             case USER:
             case FOLLOWING_USER:
-                intent = new Intent(getContext(), TimelineActivity.class);
                 break;
-
+            default:
+                timelineType = MyDatabase.TimelineTypeEnum.HOME;
+                break;
         }
-
+        // Actually we use one Activity for all timelines...
+        intent = new Intent(getContext(), TimelineActivity.class);
         intent.removeExtra(SearchManager.QUERY);
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, isTimelineCombined);

@@ -161,7 +161,7 @@ public class LatestTimelineItem {
             timelineDateChanged = false;
             timelineItemChanged = false;
         } catch (Exception e) {
-            MyLog.e(this, "save: sql=" + sql + "; error=" + e.toString());
+            MyLog.e(this, "save: sql=" + sql + "; error:", e);
         }
     
     }

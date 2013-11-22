@@ -66,7 +66,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     private MyAccount.Builder addAccount(MbUser mbUser) throws ConnectionException {
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName("/" + Origin.OriginEnum.PUMPIO.getName(), TriState.TRUE);
         builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.userName, "sampleUserSecretFor" + mbUser.userName);
-        builder.onVerifiedCredentials(mbUser, null);
+        builder.onCredentialsVerified(mbUser, null);
         assertTrue("Account is persistent", builder.isPersistent());
         long userId = builder.getAccount().getUserId();
         assertTrue("Account " + mbUser.userName + " has UserId", userId != 0);
@@ -119,8 +119,13 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         message.sender = somebody;
         message.actor = accountMbUser;
+        TestSuite.clearAssertionData();
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
+        AssersionData data = TestSuite.getMycontextForTest().takeDataByKey("insertOrUpdateMsg");
+        assertFalse( "Data put", data.isEmpty());
+        assertEquals("Message Oid", messageOid, data.getValues().getAsString(MyDatabase.Msg.MSG_OID));
+        assertEquals("Message permalink before storage", message.url, data.getValues().getAsString(MyDatabase.Msg.URL));
         assertEquals("Message permalink", message.url, ma.messagePermalink(message.sender.userName, messageId));
 
         long authorId = MyProvider.msgIdToLongColumnValue(Msg.AUTHOR_ID, messageId);

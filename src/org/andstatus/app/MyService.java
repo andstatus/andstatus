@@ -255,6 +255,7 @@ public class MyService extends Service {
             try {
                 state = valueOf(str);
             } catch (IllegalArgumentException e) {
+                MyLog.v(TAG, e);
                 state = UNKNOWN;
             }
             return state;
@@ -571,7 +572,9 @@ public class MyService extends Service {
             } else {
                 MyLog.v(this, "Internet Connection Not Present");
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.v(this, "isOnline", e);
+        }
         return is;
     }
     
@@ -846,6 +849,7 @@ public class MyService extends Service {
                     break;
                 default:
                     MyLog.e(this, "Unexpected command here " + commandData);
+                    break;
             }
         }
 
@@ -861,6 +865,7 @@ public class MyService extends Service {
                         if (!commandData.commandResult.hasHardError()) {
                             commandData.commandResult.willRetry = true;
                         }
+                        break;
                 }
             }
             if (commandData.commandResult.willRetry) {
@@ -1051,7 +1056,7 @@ public class MyService extends Service {
                             .delete(MyDatabase.Msg.CONTENT_URI, BaseColumns._ID + " = " + msgId, 
                                     null);
                 } catch (Exception e) {
-                    MyLog.e(this, "Error destroying status locally: " + e.toString());
+                    MyLog.e(this, "Error destroying status locally", e);
                 }
             }
             setSoftErrorIfNotOk(commandData, ok);
@@ -1090,7 +1095,7 @@ public class MyService extends Service {
                     Uri msgUri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, false, msgId);
                     MyService.this.getApplicationContext().getContentResolver().update(msgUri, values, null, null);
                 } catch (Exception e) {
-                    MyLog.e(this, "Error destroying reblog locally: " + e.toString());
+                    MyLog.e(this, "Error destroying reblog locally", e);
                 }
             }
             setSoftErrorIfNotOk(commandData, ok);
@@ -1113,7 +1118,7 @@ public class MyService extends Service {
                                 TimelineTypeEnum.ALL).insertOrUpdateMsg(message);
                         ok = true;
                     } catch (Exception e) {
-                        MyLog.e(this, "Error inserting status: " + e.toString());
+                        MyLog.e(this, "Error inserting status", e);
                     }
                 }
             } catch (ConnectionException e) {
@@ -1318,7 +1323,7 @@ public class MyService extends Service {
                 logConnectionException(e, commandData, descr +" Exception");
                 ok = false;
             } catch (SQLiteConstraintException e) {
-                MyLog.e(this, descr + ", SQLite Exception: " + e.toString());
+                MyLog.e(this, descr + ", SQLite Exception", e);
                 ok = false;
             }
 

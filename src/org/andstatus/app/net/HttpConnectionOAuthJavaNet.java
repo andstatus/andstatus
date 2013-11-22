@@ -44,7 +44,9 @@ import java.net.URL;
 import java.util.HashMap;
 
 class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
-    private static final String TAG = HttpConnectionOAuthJavaNet.class.getSimpleName();
+    private static final String NON_JSON_RESPONSE = ", non-JSON response: '";
+    private static final String ERROR_GETTING = "Error getting '";
+    private static final String COMMA_STATUS = "', status=";
 
     /**
      * Partially borrowed from the "Impeller" code !
@@ -88,10 +90,9 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                 }
             }
         } catch (IOException e) {
-            MyLog.e(this, "registerClient Exception: " + e.toString());
+            MyLog.e(this, "registerClient Exception", e);
         } catch (JSONException e) {
-            MyLog.e(this, "registerClient Exception: " + e.toString());
-            e.printStackTrace();
+            MyLog.e(this, "registerClient Exception", e);
         }
         if (data.oauthClientKeys.areKeysPresent()) {
             MyLog.v(this, "Registered client for " + data.host);
@@ -132,7 +133,7 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                 try {
                     wr.close();
                 } catch (IOException e) {
-                    MyLog.v(this, "Error closing output stream: " + e);
+                    MyLog.d(this, "Error closing output stream", e);
                 }
             }
                         
@@ -143,21 +144,14 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     break;
                 default:
                     String responseString = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
-                    try {
-                        JSONObject jsonError = new JSONObject(responseString);
-                        String error = jsonError.optString("error");
-                        StatusCode statusCode = (error.indexOf("not found") < 0 ? StatusCode.UNKNOWN : StatusCode.NOT_FOUND);
-                        throw new ConnectionException(statusCode, "Error getting '" + path + "', status=" + responseCode + ", error='" + error + "'");
-                    } catch (JSONException e) {
-                        throw new ConnectionException("Error getting '" + path + "', status=" + responseCode + ", non-JSON response: '" + responseString + "'");
-                    }
+                    throw exceptionFromJsonErrorResponse(path, responseCode, responseString, StatusCode.UNKNOWN);
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, result, "Error getting '" + path + "'");
+            throw ConnectionException.loggedJsonException(this, e, result, ERROR_GETTING + path + "'");
         } catch (ConnectionException e) {
             throw e;
         } catch(Exception e) {
-            throw new ConnectionException("Error getting '" + path + "', " + e.toString());
+            throw new ConnectionException(ERROR_GETTING + path + "'", e);
         }
         return result;
     }
@@ -190,7 +184,8 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             URL url = new URL(pathToUrl(path));
             HttpURLConnection conn;
             boolean redirected = false;
-            for (boolean done=false; !done; ) {
+            boolean done=false;
+            do {
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setInstanceFollowRedirects(false);
                 setAuthorization(conn, consumer, redirected);
@@ -204,49 +199,57 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                             result = new JSONObject(responseString);
                             done = true;
                         } catch (JSONException e) {
-                            throw new ConnectionException(statusCode, "Error reading response from '" + path + "', status=" + responseCode + ", non-JSON response: '" + responseString + "'");
+                            throw new ConnectionException(statusCode, "Error reading response from '" 
+                                    + path + COMMA_STATUS 
+                                    + responseCode + NON_JSON_RESPONSE + responseString + "'", e);
                         }
                         break;
                     case 301:
                     case 302:
                     case 303:
                     case 307:
-                        // TODO: To decode the location?
                         url = new URL(conn.getHeaderField("Location").replace("%3F", "?"));
                         MyLog.v(this, "Following redirect to " + url);
                         redirected = true;
                         if (MyLog.isLoggable(MyLog.APPTAG, MyLog.VERBOSE)) {
-                            String message = "Headers: ";
+                            StringBuilder message = new StringBuilder("Headers: ");
                             for (int posn=0 ; ; posn++) {
                                 String fieldName = conn.getHeaderFieldKey(posn);
                                 if ( fieldName == null) {
-                                    MyLog.v(this, message);
+                                    MyLog.v(this, message.toString());
                                     break;
                                 }
-                                message += fieldName +": " + conn.getHeaderField(fieldName) + "; ";
+                                message.append(fieldName +": " + conn.getHeaderField(fieldName) + "; ");
                             }
                         }
                         break;                        
                     default:
                         responseString = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
-                        try {
-                            JSONObject jsonError = new JSONObject(responseString);
-                            String error = jsonError.optString("error");
-                            if (statusCode == StatusCode.UNKNOWN) {
-                                statusCode = (error.indexOf("not found") < 0 ? StatusCode.UNKNOWN : StatusCode.NOT_FOUND);
-                            }
-                            throw new ConnectionException(statusCode, "Error getting '" + path + "', status=" + responseCode + ", error='" + error + "'");
-                        } catch (JSONException e) {
-                            throw new ConnectionException(statusCode, "Error getting '" + path + "', status=" + responseCode + ", non-JSON response: '" + responseString + "'");
-                        }
+                        throw exceptionFromJsonErrorResponse(path, responseCode, responseString, statusCode);
                 }
-            }
+            } while (!done);
         } catch (ConnectionException e) {
             throw e;
         } catch(Exception e) {
-            throw new ConnectionException("Error getting '" + path + "', " + e.toString());
+            throw new ConnectionException(ERROR_GETTING + path + "'", e);
         }
         return result;
+    }
+
+    public ConnectionException exceptionFromJsonErrorResponse(String path, int responseCode, String responseString,
+            StatusCode statusCode) {
+        ConnectionException ce = null;
+        try {
+            JSONObject jsonError = new JSONObject(responseString);
+            String error = jsonError.optString("error");
+            if (statusCode == StatusCode.UNKNOWN) {
+                statusCode = (error.indexOf("not found") < 0 ? StatusCode.UNKNOWN : StatusCode.NOT_FOUND);
+            }
+            ce = new ConnectionException(statusCode, ERROR_GETTING + path + COMMA_STATUS + responseCode + ", error='" + error + "'");
+        } catch (JSONException e) {
+            ce = new ConnectionException(statusCode, ERROR_GETTING + path + COMMA_STATUS + responseCode + NON_JSON_RESPONSE + responseString + "'", e);
+        }
+        return ce;
     }
 
     private void setAuthorization(HttpURLConnection conn, OAuthConsumer consumer, boolean redirected)
@@ -282,13 +285,13 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             try {
                 jsa = jso.getJSONArray("items");
             } catch (JSONException e) {
-                throw new ConnectionException("'items' is not an array?!");
+                throw new ConnectionException("'items' is not an array?!", e);
             }
         } else {
             try {
-                MyLog.d(TAG, "Response from server: " + jso.toString(4));
+                MyLog.d(this, "Response from server: " + jso.toString(4));
             } catch (JSONException e) {
-                e.printStackTrace();
+                MyLog.e(this, e);
             }
             throw new ConnectionException("No array was returned");
         }

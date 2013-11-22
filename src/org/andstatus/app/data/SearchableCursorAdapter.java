@@ -23,6 +23,8 @@ import android.net.Uri;
 import android.widget.FilterQueryProvider;
 import android.widget.SimpleCursorAdapter;
 
+import java.util.Arrays;
+
 /**
  * SearchableCursorAdapter provides an easy way of extending SimpleCursorAdapter
  * in order to allow for searches from auto-complete text fields and the like.
@@ -50,10 +52,10 @@ public class SearchableCursorAdapter extends SimpleCursorAdapter implements Filt
 	 */
 	public SearchableCursorAdapter(Context context, int layout, Cursor c,
 			String[] from, int[] to, Uri uri, String[] projection, String sortOrder) {
-		super(context, layout, c, from, to);
+		super(context, layout, c, from, to.clone());
 		mContentResolver = context.getContentResolver();
-		mFrom = from;
-		mProjection = projection;
+		mFrom = from.clone();
+		mProjection = projection.clone();
 		mUri = uri;
 		mSortOrder = sortOrder;
 		setFilterQueryProvider(this);

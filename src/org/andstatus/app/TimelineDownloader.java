@@ -49,6 +49,7 @@ public abstract class TimelineDownloader {
                 throw new IllegalArgumentException(TAG + ": Invalid TimelineType for loadTimeline: " + counters.timelineType);
             default:
                 td = new TimelineDownloaderMsg();
+                break;
         }
         td.counters = counters;
         td.userId = userId;

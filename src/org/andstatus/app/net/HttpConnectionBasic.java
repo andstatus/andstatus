@@ -18,6 +18,7 @@
 package org.andstatus.app.net;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.util.Base64;
@@ -41,6 +42,18 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
+    public static class LOGGER {
+        public static int e(Object objTag, String msg, Exception e) {
+            String tag = MyLog.objTagToString(objTag);
+            return Log.e(tag, msg + e.toString());
+        }
+
+        public static int e(Object objTag, String msg) {
+            String tag = MyLog.objTagToString(objTag);
+            return Log.e(tag, msg);
+        }
+    }
+
     protected String mPassword;
 
     @Override
@@ -82,11 +95,11 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
                 }
             }
         } catch (UnsupportedEncodingException e) {
-            MyLog.e(this, e.toString());
+            MyLog.e(this, e);
         } catch (JSONException e) {
             throw new ConnectionException(e);
         } catch (Exception e) {
-            MyLog.e(this, "postRequest: " + e.toString());
+            MyLog.e(this, "postRequest", e);
             throw new ConnectionException(e);
         } finally {
             postMethod.abort();
@@ -132,7 +145,7 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
             jso = new JSONTokener(response);
             ok = true;
         } catch (Exception e) {
-            MyLog.e(this, "getRequest: " + e.toString());
+            MyLog.e(this, "getRequest", e);
             throw new ConnectionException(e);
         } finally {
             getMethod.abort();
@@ -190,19 +203,26 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
             length = 1024;
         }
         StringBuffer stringBuffer = new StringBuffer(length);
+        InputStreamReader inputStreamReader = null;
         try {
-            InputStreamReader inputStreamReader = new InputStreamReader(httpEntity.getContent(), HTTP.UTF_8);
-            char buffer[] = new char[length];
+            inputStreamReader = new InputStreamReader(httpEntity.getContent(), HTTP.UTF_8);
+            char[] buffer = new char[length];
             int count;
             while ((count = inputStreamReader.read(buffer, 0, length - 1)) > 0) {
                 stringBuffer.append(buffer, 0, count);
             }
         } catch (UnsupportedEncodingException e) {
-            MyLog.e(this, e.toString());
+            MyLog.e(this, e);
         } catch (IllegalStateException e) {
-            MyLog.e(this, e.toString());
+            MyLog.e(this, e);
         } catch (IOException e) {
-            MyLog.e(this, e.toString());
+            MyLog.e(this, e);
+        } finally {
+            if (inputStreamReader != null) {
+                try {
+                    inputStreamReader.close();
+                } catch (IOException ignored) {} // NOSONAR
+            }
         }
         return stringBuffer.toString();
     }

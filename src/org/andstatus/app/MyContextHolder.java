@@ -39,15 +39,16 @@ import java.util.concurrent.FutureTask;
 public final class MyContextHolder {
     private static final String TAG = MyContextHolder.class.getSimpleName();
 
-    private static Integer contextLock = 0;
-    @GuardedBy("contextLock")
+    private static final Object CONTEXT_LOCK = new Object();
+    @GuardedBy("CONTEXT_LOCK")
     private static volatile MyContext myContextCreator = MyContextImpl.getEmpty();
-    @GuardedBy("contextLock")
+    @GuardedBy("CONTEXT_LOCK")
     private static volatile MyContext myInitializedContext = null;
-    @GuardedBy("contextLock")
+    @GuardedBy("CONTEXT_LOCK")
     private static volatile Future<MyContext> myFutureContext = null;
 
-    private MyContextHolder() {};
+    private MyContextHolder() {
+    }
     
     /**
      * Immediately get currently available context, even if it's empty
@@ -62,18 +63,21 @@ public final class MyContextHolder {
     
     /**
      * This is mainly for mocking / testing
-     * @param myContext_new Should not be null
+     * @param myContextNew Should not be null
      * @return previous MyContext
      */
-    public static MyContext replaceCreator(MyContext myContext_new) {
-        if (myContext_new == null) {
+    public static MyContext replaceCreator(MyContext myContextNew) {
+        if (myContextNew == null) {
             throw new IllegalArgumentException("replace: myContext_new should not be null");
         }
-        synchronized (contextLock) {
-            MyContext myContext_old = myInitializedContext;
-            myContextCreator = myContext_new;
+        synchronized (CONTEXT_LOCK) {
+            MyContext myContextOld = myInitializedContext;
+            if (myContextOld == null) {
+                myContextOld = myContextCreator;
+            }
+            myContextCreator = myContextNew;
             release();
-            return myContext_old;
+            return myContextOld;
         }
     }
     
@@ -84,11 +88,11 @@ public final class MyContextHolder {
      */
     public static long initialize(Context context, Object initializedBy) {
         if (get().initialized() && arePreferencesChanged()) {
-            synchronized(contextLock) {
+            synchronized(CONTEXT_LOCK) {
                 if (get().initialized() && arePreferencesChanged()) {
-                    long preferencesChangeTime_last = MyPreferences.getPreferencesChangeTime() ;
-                    if (get().preferencesChangeTime() != preferencesChangeTime_last) {
-                        MyLog.v(TAG, "Preferences changed " + (java.lang.System.currentTimeMillis() - preferencesChangeTime_last)/1000 +  " seconds ago, refreshing...");
+                    long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
+                    if (get().preferencesChangeTime() != preferencesChangeTimeLast) {
+                        MyLog.v(TAG, "Preferences changed " + (java.lang.System.currentTimeMillis() - preferencesChangeTimeLast)/1000 +  " seconds ago, refreshing...");
                         release();
                     }
                 }
@@ -100,7 +104,7 @@ public final class MyContextHolder {
         try {
             return getBlocking(context, initializedBy).preferencesChangeTime();
         } catch (InterruptedException e) {
-            MyLog.d(TAG, "Initialize was interrupted, releasing resources...");
+            MyLog.d(TAG, "Initialize was interrupted, releasing resources...", e);
             release();
             Thread.currentThread().interrupt();
             return 0;
@@ -108,7 +112,7 @@ public final class MyContextHolder {
     }
 
     public static boolean arePreferencesChanged() {
-        return (get().preferencesChangeTime() != MyPreferences.getPreferencesChangeTime());
+        return get().preferencesChangeTime() != MyPreferences.getPreferencesChangeTime();
     }
     
     /**
@@ -118,46 +122,60 @@ public final class MyContextHolder {
         MyContext myContext = myInitializedContext;
         while (myContext == null || !myContext.initialized()) {
             if (myFutureContext == null) {
-                final String initializerName = MyLog.objTagToString(initializedBy) ;
-                storeContextIfNotPresent(context, initializedBy);
-                final Context contextFinal = myContextCreator.context();
-                Callable<MyContext> callable = new Callable<MyContext>() {
-                    @Override
-                    public MyContext call() throws Exception {
-                        return myContextCreator.newInitialized(contextFinal, initializerName);
-                    }
-                };
-                FutureTask<MyContext> futureTask = new FutureTask<MyContext>(callable);
-                synchronized (contextLock) {
-                    if (myInitializedContext != null) {
-                        myContext = myInitializedContext;
-                        break;
-                    }
-                    if (myFutureContext == null) {
-                        myFutureContext = futureTask;
-                        futureTask.run();
-                    }
-                }
-            }
-            try {
-                MyLog.v(TAG, "May block at myFutureContext.get()");
-                myContext = myFutureContext.get();
-                MyLog.v(TAG, "Passed myFutureContext.get()");
-                synchronized (contextLock) {
-                    if (myInitializedContext != null) {
-                        myContext = myInitializedContext;
-                        break;
-                    } else {
-                        myInitializedContext = myContext;
-                    }
-                }
-            } catch (ExecutionException e) {
-                myFutureContext = null;
+                myContext = createMyFutureContext(context, initializedBy, myContext);
+            } else {
+                myContext = waitForMyFutureContext(myContext);
             }
         }
         return myContext;
     }
 
+    private static MyContext createMyFutureContext(Context contextIn, Object initializedBy,
+            MyContext myContextIn) {
+        MyContext myContextOut = myContextIn;
+        final String initializerName = MyLog.objTagToString(initializedBy) ;
+        storeContextIfNotPresent(contextIn, initializedBy);
+        final Context contextForCallable = myContextCreator.context();
+        Callable<MyContext> callable = new Callable<MyContext>() {
+            @Override
+            public MyContext call() {
+                return myContextCreator.newInitialized(contextForCallable, initializerName);
+            }
+        };
+        FutureTask<MyContext> futureTask = new FutureTask<MyContext>(callable);
+        synchronized (CONTEXT_LOCK) {
+            if (myInitializedContext != null) {
+                myContextOut = myInitializedContext;
+            }
+            if (myFutureContext == null) {
+                myFutureContext = futureTask;
+                futureTask.run();
+            }
+        }
+        return myContextOut;
+    }
+
+    private static MyContext waitForMyFutureContext(MyContext myContextIn)
+            throws InterruptedException {
+        MyContext myContextOut = myContextIn;
+        try {
+            MyLog.v(TAG, "May block at myFutureContext.get()");
+            myContextOut = myFutureContext.get();
+            MyLog.v(TAG, "Passed myFutureContext.get()");
+            synchronized (CONTEXT_LOCK) {
+                if (myInitializedContext != null) {
+                    myContextOut = myInitializedContext;
+                } else {
+                    myInitializedContext = myContextOut;
+                }
+            }
+        } catch (ExecutionException e) {
+            MyLog.v(TAG, e);
+            myFutureContext = null;
+        }
+        return myContextOut;
+    }
+    
     /**
      *  Quickly return, providing context for the deferred initialization
      */
@@ -167,7 +185,7 @@ public final class MyContextHolder {
             if (context == null) {
                 throw new IllegalStateException("MyContextHolder: context is unknown yet, called by " + initializerName);
             }
-            synchronized (contextLock) {
+            synchronized (CONTEXT_LOCK) {
                 // This allows to refer to the context 
                 // even before myInitializedContext is initialized
                 myContextCreator = myContextCreator.newCreator(context, initializerName); 
@@ -180,7 +198,7 @@ public final class MyContextHolder {
     
     public static void release() {
         MyLog.d(TAG, "Releasing resources");
-        synchronized(contextLock) {
+        synchronized(CONTEXT_LOCK) {
             if (myInitializedContext != null) {
                 myInitializedContext.release();
                 myInitializedContext = null;

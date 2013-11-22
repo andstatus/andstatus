@@ -64,17 +64,15 @@ public class MbUser {
     public String toString() {
         String str = MbUser.class.getSimpleName();
         String members = "oid=" + oid + "; originid=" + originId;
-        try {
-            if (!TextUtils.isEmpty(userName)) {
-                members += "; username=" + userName;
-            }
-            if (!TextUtils.isEmpty(realName)) {
-                members += "; realname=" + realName;
-            }
-            if (latestMessage != null) {
-                members += "; latest message present";
-            }
-        } catch (Exception e) {}
+        if (!TextUtils.isEmpty(userName)) {
+            members += "; username=" + userName;
+        }
+        if (!TextUtils.isEmpty(realName)) {
+            members += "; realname=" + realName;
+        }
+        if (latestMessage != null) {
+            members += "; latest message present";
+        }
         return str + "{" + members + "}";
     }
 }

@@ -39,8 +39,7 @@ class StateOfAccountChangeProcess {
     /** Stored state of the single object of this class
      * It's static so it generally stays intact between the {@link AccountSettingsActivity}'s instantiations 
      * */
-    static Bundle stateStored = null;
-    
+    private static final Bundle stateStored = new Bundle();
 
     /** Intent extras for launch directly from system account manager
      * NOTE: This string must match the one in res/xml/account_preferences.xml
@@ -83,7 +82,8 @@ class StateOfAccountChangeProcess {
     private static final String REQUEST_SECRET = "request_secret";
     private static final String REQUEST_TOKEN = "request_token";
     
-    private StateOfAccountChangeProcess() {}
+    private StateOfAccountChangeProcess() {
+    }
 
     /**
      * Restore state if it was stored earlier or create default new one
@@ -176,19 +176,18 @@ class StateOfAccountChangeProcess {
     }
 
     private boolean restore(Bundle bundle) {
-        boolean restored = false;
-        if (bundle != null) {
-            if (bundle.containsKey(ACTION_COMPLETED_KEY)) {
-                setAccountAction(bundle.getString(ACCOUNT_ACTION_KEY));
-                actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true);
-                actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY);
-                builder = bundle.getParcelable(ACCOUNT_KEY);
-                authenticatiorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY);
-                restored = true;
-            }
+        boolean restoredNow = false;
+        if (bundle != null
+                && bundle.containsKey(ACTION_COMPLETED_KEY)) {
+            setAccountAction(bundle.getString(ACCOUNT_ACTION_KEY));
+            actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true);
+            actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY);
+            builder = bundle.getParcelable(ACCOUNT_KEY);
+            authenticatiorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY);
+            restoredNow = true;
         }
-        this.restored = restored;
-        return restored;
+        this.restored = restoredNow;
+        return restoredNow;
     }
 
     public String getRequestToken() {
@@ -216,7 +215,7 @@ class StateOfAccountChangeProcess {
         if (actionCompleted) {
             forget();
         } else {
-            StateOfAccountChangeProcess.stateStored = new Bundle();
+            StateOfAccountChangeProcess.stateStored.clear();
             save(StateOfAccountChangeProcess.stateStored);
         }
     }
@@ -230,7 +229,7 @@ class StateOfAccountChangeProcess {
      */
     void forget() {
         authenticatiorResponse = null;
-        StateOfAccountChangeProcess.stateStored = null;
+        StateOfAccountChangeProcess.stateStored.clear();
     }
 
     String getAccountAction() {

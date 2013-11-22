@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data-sources>
+	<data-source id="h2_server-1384679521972-577043802" provider="generic" driver="h2_server" name="H2 - sonar" create-date="1384679521972" save-password="true" show-system-objects="true" read-only="false">
+		<connection host="localhost" port="9092" server="" database="sonar" url="jdbc:h2:tcp://localhost:9092/sonar" user="sonar" password="AAsIIVMjpQ==" type="dev"/>
+		<custom-property name="default.autocommit" value="false"/>
+	</data-source>
+</data-sources>

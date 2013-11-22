@@ -51,6 +51,8 @@ public class TestSuite extends TestCase {
             }
             MyLog.d(TAG, "Before MyContextHolder.initialize " + iter);
             try {
+                MyContextForTest myContextForTest = new MyContextForTest();
+                myContextForTest.setContext(MyContextHolder.replaceCreator(myContextForTest));
                 MyContextHolder.initialize(context, testCase);
                 MyLog.d(TAG, "After MyContextHolder.initialize " + iter);
                 break;
@@ -127,5 +129,19 @@ public class TestSuite extends TestCase {
             }            
         }
         assertTrue("Is Ready now", MyContextHolder.get().isReady());
+    }
+
+    public static void clearAssertionData() {
+        getMycontextForTest().getData().clear();
+    }
+    
+    public static MyContextForTest getMycontextForTest() {
+        MyContextForTest myContextForTest = null;
+        if (MyContextHolder.get() instanceof MyContextForTest) {
+            myContextForTest = (MyContextForTest) MyContextHolder.get(); 
+        } else {
+            fail("Wrong type of current context");
+        }
+        return myContextForTest;
     }
 }

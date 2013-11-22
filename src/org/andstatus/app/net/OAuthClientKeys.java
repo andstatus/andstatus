@@ -59,7 +59,7 @@ public class OAuthClientKeys {
                 Class cls = Class.forName(SECRET_CLASS_NAME);
                 keys.strategy = (OAuthClientKeysStrategy) cls.newInstance();
             } catch (Exception e) {
-                MyLog.v(TAG, "Class " + SECRET_CLASS_NAME + " was not loaded:" + e.getMessage());
+                MyLog.v(TAG, "Class " + SECRET_CLASS_NAME + " was not loaded", e);
                 noSecretClass = true;
             }
         }

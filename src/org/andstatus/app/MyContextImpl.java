@@ -21,6 +21,7 @@ import android.content.Context;
 import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.account.PersistentAccounts;
+import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyPreferences;
@@ -51,7 +52,8 @@ public final class MyContextImpl implements MyContext {
     private MyDatabase db;
     PersistentAccounts persistentAccounts ;
     
-    private MyContextImpl() {};
+    private MyContextImpl() {
+    }
 
     @Override
     public MyContext newInitialized(Context context, String initializerName) {
@@ -68,6 +70,7 @@ public final class MyContextImpl implements MyContext {
                     break;
                 default: 
                     newMyContext.persistentAccounts = PersistentAccounts.getEmpty();
+                    break;
             }
         }
 
@@ -106,17 +109,13 @@ public final class MyContextImpl implements MyContext {
                 MyLog.w(TAG, "getApplicationContext is null, trying the context itself: " + context.getClass().getName());
                 contextToUse = context;
             }
-            if ( contextToUse != null) {
-                // TODO: Maybe we need to determine if the context is compatible, using some Interface...
-                // ...but we don't have any yet.
-                if (!context.getClass().getName().contains(this.getClass().getPackage().getName())) {
-                    MyLog.w(TAG, "Incompatible context: " + contextToUse.getClass().getName());
-                    contextToUse = null;
-                }
+            // TODO: Maybe we need to determine if the context is compatible, using some Interface...
+            // ...but we don't have any yet.
+            if (!context.getClass().getName().contains(this.getClass().getPackage().getName())) {
+                MyLog.w(TAG, "Incompatible context: " + contextToUse.getClass().getName());
+                contextToUse = null;
             }
-            if ( contextToUse != null) {
-                newMyContext.context = contextToUse;
-            }
+            newMyContext.context = contextToUse;
         }
         return newMyContext;
     }
@@ -168,7 +167,7 @@ public final class MyContextImpl implements MyContext {
             try {
                 db.close();
             } catch (Exception e) {
-                MyLog.e(this, "Error closing database " + e.getMessage());
+                MyLog.e(this, "Error closing database", e);
             }
         }
         MyLog.forget();
@@ -177,5 +176,17 @@ public final class MyContextImpl implements MyContext {
     @Override
     public PersistentAccounts persistentAccounts() {
         return persistentAccounts;
+    }
+
+    @Override
+    public boolean isTestRun() {
+        return false;
+    }
+
+    /**
+     * Noop for this implementation
+     */
+    @Override
+    public void put(AssersionData data) {
     }
 }

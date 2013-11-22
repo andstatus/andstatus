@@ -100,7 +100,7 @@ public class TimelineDownloaderUser extends TimelineDownloader {
                         downloadOneMessageBy(followedUserOid,lum);
                     }
                 } catch (ConnectionException e) {
-                    MyLog.w(TAG, "Failed to download the User object or his message for oid=" + followedUserOid);
+                    MyLog.i(TAG, "Failed to download the User object or his message for oid=" + followedUserOid, e);
                 }
             }
             if (friendId != 0) {

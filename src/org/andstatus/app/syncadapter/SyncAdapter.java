@@ -46,6 +46,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
     private final Context context;
     private volatile CommandData commandData;
     private volatile boolean syncCompleted = false;
+    private Object syncLock = new Object();
     private volatile SyncResult syncResult;
     
     private MyServiceReceiver intentReceiver;
@@ -70,7 +71,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
             MyLog.d(this, "onPerformSync Context is not ready, account=" + account.name);
             return;
         }
-        Timer timer = new Timer();
         intentReceiver = new MyServiceReceiver(this);
         syncCompleted = false;
         try {
@@ -80,27 +80,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
             commandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
                     TimelineTypeEnum.ALL, 0);
             MyServiceManager.sendCommand(commandData);
-            synchronized (syncResult) {
-                if (!syncCompleted) {
-                    timer.schedule(
-                        new TimerTask() {
-                            @Override
-                            public void run() {
-                                synchronized (SyncAdapter.this.syncResult) {
-                                    SyncAdapter.this.syncResult.stats.numIoExceptions++;
-                                    MyLog.d(this, "onPerformSync timeout");
-                                    SyncAdapter.this.syncResult.notifyAll();
-                                }
-                            }
-                        }, java.util.concurrent.TimeUnit.SECONDS.toMillis(180));
-                    syncResult.wait();
+            synchronized(syncLock) {
+                for (int iteration = 0; iteration < 10; iteration++) {
+                    if (syncCompleted) {
+                        break;
+                    }
+                    syncLock.wait(java.util.concurrent.TimeUnit.SECONDS.toMillis(30));
                 }
             }
             MyLog.d(this, "onPerformSync ended, " + (syncResult.hasError() ? "has error" : "ok"));
         } catch (InterruptedException e) {
-            MyLog.d(this, "onPerformSync interrupted");
+            MyLog.d(this, "onPerformSync interrupted", e);
         } finally {
-            timer.cancel();
             intentReceiver.unregisterReceiver(context);            
         }
     }
@@ -108,13 +99,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
     @Override
     public void onReceive(CommandData commandData) {
         MyLog.d(this, "onReceive, command=" + commandData.command);
-        synchronized (syncResult) {
+        synchronized (syncLock) {
             if (this.commandData != null && this.commandData.equals(commandData)) {
                 syncCompleted = true;
                 syncResult.stats.numAuthExceptions += commandData.commandResult.numAuthExceptions;
                 syncResult.stats.numIoExceptions += commandData.commandResult.numIoExceptions;
                 syncResult.stats.numParseExceptions += commandData.commandResult.numParseExceptions;
-                syncResult.notifyAll();
+                syncLock.notifyAll();
             }
         }
     }

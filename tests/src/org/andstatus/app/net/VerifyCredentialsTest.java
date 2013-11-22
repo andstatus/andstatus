@@ -88,7 +88,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         assertEquals("User's oid is user oid of this account", "144771645", mbUser.oid);
         
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName("/" + Origin.OriginEnum.TWITTER.getName(), TriState.TRUE);
-        builder.onVerifiedCredentials(mbUser, null);
+        builder.onCredentialsVerified(mbUser, null);
         assertTrue("Account is persistent", builder.isPersistent());
         long userId = builder.getAccount().getUserId();
         assertTrue("Account " + mbUser.userName + " has UserId", userId != 0);

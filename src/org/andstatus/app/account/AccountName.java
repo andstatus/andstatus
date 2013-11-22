@@ -54,16 +54,16 @@ class AccountName {
         return fixOriginName(originName);
     }
 
-    private String fixUsername(String username_in) {
-        String username = "";
-        if (username_in != null) {
-            username = username_in.trim();
+    private String fixUsername(String usernameIn) {
+        String usernameOut = "";
+        if (usernameIn != null) {
+            usernameOut = usernameIn.trim();
         }
-        if (!origin.isUsernameValid(username)) {
-            username = "";
+        if (!origin.isUsernameValid(usernameOut)) {
+            usernameOut = "";
         }
-        return username;
-    };
+        return usernameOut;
+    }
     
     String accountNameToUsername(String accountName) {
         accountName = fixAccountName(accountName);
@@ -105,7 +105,8 @@ class AccountName {
         return accountName;
     }
     
-    private AccountName() {};
+    private AccountName() {
+    }
     
     @Override
     public String toString() {
@@ -137,8 +138,6 @@ class AccountName {
      * @return Name without path and extension
      */
     String prefsFileName() {
-        String fileName = FILE_PREFIX + toString().replace("@", "-").replace(ORIGIN_SEPARATOR, "-");
-        return fileName;
+        return FILE_PREFIX + toString().replace("@", "-").replace(ORIGIN_SEPARATOR, "-");
     }
-    
 }

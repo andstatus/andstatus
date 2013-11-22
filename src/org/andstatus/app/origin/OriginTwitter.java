@@ -62,6 +62,7 @@ class OriginTwitter extends Origin {
                 break;
             default:
                 resId_out = resId;
+                break;
         }
         return resId_out;
     }

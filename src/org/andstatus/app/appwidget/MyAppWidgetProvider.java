@@ -375,7 +375,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			}
 			Ok = true;
 		} catch (Exception e) {
-			MyLog.e(this, "instanceId=" + instanceId + "; updateAppWidget exception: " + e.toString() );
+			MyLog.e(this, "instanceId=" + instanceId + "; updateAppWidget exception", e);
 			
 		} finally {
             if ( !Ok || MyLog.isLoggable(TAG, MyLog.VERBOSE)) {

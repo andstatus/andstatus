@@ -39,12 +39,14 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.RingtonePreference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONException;
@@ -176,8 +178,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         showFrequency();
         showHistorySize();
         showHistoryTime();
-        showRingtone(MyPreferences.getDefaultSharedPreferences().getString(
-                MyPreferences.KEY_RINGTONE_PREFERENCE, null));
+        showRingtone();
         showMinLogLevel();
         showUseExternalStorage();
         
@@ -208,16 +209,18 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_MIN_LOG_LEVEL, R.array.log_level_value, R.array.log_level_display, R.string.summary_preference_min_log_level);
     }
     
-    protected void showRingtone(Object newValue) {
-        String ringtone = (String) newValue;
-        Uri uri;
+    protected void showRingtone() {
+        String ringtoneString = MyPreferences.getDefaultSharedPreferences().getString(
+                MyPreferences.KEY_RINGTONE_PREFERENCE, null);
+        Uri uri = Uri.EMPTY;
         Ringtone rt;
-        if (ringtone == null) {
+        if (ringtoneString == null) {
             uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        } else if ("".equals(ringtone)) {
+        } else if ("".equals(ringtoneString)) {
             mNotificationRingtone.setSummary(R.string.summary_preference_no_ringtone);
-        } else {
-            uri = Uri.parse(ringtone);
+        } 
+        if (uri != Uri.EMPTY) {
+            uri = Uri.parse(ringtoneString);
             rt = RingtoneManager.getRingtone(this, uri);
             mNotificationRingtone.setSummary(rt.getTitle(this));
         }
@@ -245,19 +248,9 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         onSharedPreferenceChanged_busy = true;
 
         try {
-            String value = "(not set)";
-            if (sharedPreferences.contains(key)) {
-                try {
-                    value = sharedPreferences.getString(key, "");
-                } catch (ClassCastException e) {
-                    try {
-                        value = Boolean.toString(sharedPreferences.getBoolean(key, false));
-                    } catch (ClassCastException e2) {
-                        value = "??";
-                    }
-                }
+            if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+                logKeyValue(sharedPreferences, key);
             }
-            MyLog.d(TAG, "onSharedPreferenceChanged: " + key + "='" + value + "'");
 
             MyPreferences.onPreferencesChanged();
             
@@ -266,8 +259,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                 showFrequency();
             }
             if (key.equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {
-                // TODO: Try to move it here from onPreferenceChange...
-                // updateRingtone();
+                showRingtone();
             }
             if (key.equals(MyPreferences.KEY_HISTORY_SIZE)) {
                 showHistorySize();
@@ -287,14 +279,27 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         } finally {
             onSharedPreferenceChanged_busy = false;
         }
+    }
+
+    @SuppressWarnings("all")
+    private void logKeyValue(SharedPreferences sharedPreferences, String key) {
+        String value = "(not set)";
+        if (sharedPreferences.contains(key)) {
+            try {
+                value = sharedPreferences.getString(key, "");
+            } catch (ClassCastException e) {
+                try {
+                    value = Boolean.toString(sharedPreferences.getBoolean(key, false));
+                } catch (ClassCastException e2) {
+                    value = "??";
+                }
+            }
+        }
+        MyLog.d(TAG, "onSharedPreferenceChanged: " + key + "='" + value + "'");
     };
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (preference.getKey().equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {
-            showRingtone(newValue);
-            return true;
-        }
         return false;
     }
 
@@ -344,25 +349,20 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                             titleId = R.string.dialog_title_service_unavailable;
                             summaryId = R.string.dialog_summary_service_unavailable;
                         }
+                        dlg = DialogFactory.newNoActionAlertDialog(this, titleId, summaryId);
+                        break;
                     case MSG_SOCKET_TIMEOUT_EXCEPTION:
                         if (titleId == 0) {
                             titleId = R.string.dialog_title_connection_timeout;
                             summaryId = R.string.dialog_summary_connection_timeout;
                         }
-                        dlg = new AlertDialog.Builder(this)
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle(titleId)
-                        .setMessage(summaryId)
-                        .setPositiveButton(android.R.string.ok,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface Dialog,
-                                            int whichButton) {
-                                    }
-                                }).create();
+                        dlg = DialogFactory.newNoActionAlertDialog(this, titleId, summaryId);
+                        break;
                     default:
                         dlg = super.onCreateDialog(id);
+                        break;
                 }
+                break;
         }
         return dlg;
     }
@@ -395,11 +395,12 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 
         @Override
         protected void onPreExecute() {
+            // indeterminate duration not cancelable
             dlg = ProgressDialog.show(MyPreferenceActivity.this,
                     getText(R.string.dialog_title_external_storage),
-                    getText(R.string.dialog_summary_external_storage), true, // indeterminate
-                    // duration
-                    false); // not cancel-able
+                    getText(R.string.dialog_summary_external_storage), 
+                    true, 
+                    false);
         }
 
         @Override
@@ -488,12 +489,14 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                             succeeded = true;
                         }
                     } catch (Exception e) {
+                        MyLog.v(this, "Copy database", e);
                         message = "Couldn't copy database: " + e.getMessage() + ". "
                                 + message;
                     }
                     done = true;
                 }
             } catch (Exception e) {
+                MyLog.v(this, e);
                 message = "Error: " + e.getMessage() + ". " + message;
                 succeeded = false;
             } finally {
@@ -507,6 +510,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                                 useExternalStorageNew).commit();
                         MyContextHolder.initialize(MyPreferenceActivity.this, this);
                     } catch (Exception e) {
+                        MyLog.v(this, "Save new settings", e);
                         message = "Couldn't save new settings. " + e.getMessage()
                                 + message;
                     }
@@ -532,6 +536,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                         }
                     }
                 } catch (Exception e) {
+                    MyLog.v(this, "Delete old file", e);
                     message = "Couldn't delete old files. " + e.getMessage() + ". "
                             + message;
                 }
@@ -547,7 +552,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                 jso.put("succeeded", succeeded);
                 jso.put("message", message);
             } catch (JSONException e) {
-                e.printStackTrace();
+                MyLog.e(this, e);
             }
             return jso;
         }
@@ -596,11 +601,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         // This is in the UI thread, so we can mess with the UI
         @Override
         protected void onPostExecute(JSONObject jso) {
-            try {
-                dlg.dismiss();
-            } catch (Exception e1) { 
-                // Ignore this error  
-            }
+            DialogFactory.dismissSafely(dlg);
             if (jso != null) {
                 try {
                     boolean succeeded = jso.getBoolean("succeeded");
@@ -626,7 +627,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                     MyPreferenceActivity.this.showUseExternalStorage();
                     
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    MyLog.e(this, e);
                 }
             }
             mUseExternalStorage_busy = false;

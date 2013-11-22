@@ -111,6 +111,7 @@ public abstract class ConnectionTwitter extends Connection {
                 break;
             default:
                 url = "";
+                break;
         }
         if (!TextUtils.isEmpty(url)) {
             url = http.data.basicPath + "/" + url;
@@ -125,7 +126,7 @@ public abstract class ConnectionTwitter extends Connection {
             try {
                 MyLog.v(TAG, "destroyStatus response: " + jso.toString(2));
             } catch (JSONException e) {
-                e.printStackTrace();
+                MyLog.e(this, e);
                 jso = null;
             }
         }
@@ -144,7 +145,7 @@ public abstract class ConnectionTwitter extends Connection {
         try {
             out.put("user_id", userId);
         } catch (JSONException e) {
-            e.printStackTrace();
+            MyLog.e(this, e);
         }
         JSONObject user = postRequest((follow ? ApiRoutineEnum.FOLLOW_USER : ApiRoutineEnum.STOP_FOLLOWING_USER), out);
         return userFromJson(user);
@@ -330,8 +331,7 @@ public abstract class ConnectionTwitter extends Connection {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, e, jso, "Parsing message");
         } catch (Exception e) {
-            MyLog.e(this, "messageFromJson: " + e.toString());
-            e.printStackTrace();
+            MyLog.e(this, "messageFromJson", e);
             return MbMessage.getEmpty();
         }
         return message;
@@ -408,7 +408,7 @@ public abstract class ConnectionTwitter extends Connection {
                 formParams.put("user_id", userId);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.POST_DIRECT_MESSAGE, formParams);
         return messageFromJson(jso);
@@ -456,6 +456,7 @@ public abstract class ConnectionTwitter extends Connection {
                     } catch (JSONException e) {
                         throw ConnectionException.loggedJsonException(this, e, resources, "getting rate limits");
                     }
+                    break;
             }
         }
         return status;
@@ -474,7 +475,7 @@ public abstract class ConnectionTwitter extends Connection {
                 formParams.put("in_reply_to_status_id", inReplyToId);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.STATUSES_UPDATE, formParams);
         return messageFromJson(jso);

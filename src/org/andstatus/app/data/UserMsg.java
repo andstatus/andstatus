@@ -152,7 +152,7 @@ public class UserMsg {
             changed = false;
         } catch (Exception e) {
             ok = false;
-            MyLog.e(this, "save: sql=" + sql + "; error=" + e.toString());
+            MyLog.e(this, "save: sql='" + sql + "'", e);
         }
         return ok;
     }

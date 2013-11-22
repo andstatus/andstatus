@@ -28,16 +28,17 @@ import org.andstatus.app.util.MyLog;
 public class MyDatabaseConverter {
     private static final String TAG = MyDatabaseConverter.class.getSimpleName();
 
-    @GuardedBy("upgradeEndTime")
+    private final static Object upgradeLock = new Object();
+    @GuardedBy("upgradeLock")
     private static volatile boolean shouldTriggerDatabaseUpgrade = false;
     /**
      * Semaphore enabling uninterrupted system upgrade
      */
-    @GuardedBy("upgradeEndTime")
+    @GuardedBy("upgradeLock")
     private static Long upgradeEndTime = 0L;
-    @GuardedBy("upgradeEndTime")
+    @GuardedBy("upgradeLock")
     private static boolean upgradeStarted = false;
-    @GuardedBy("upgradeEndTime")
+    @GuardedBy("upgradeLock")
     private static boolean upgradeSuccessfullyCompleted = false;
     
     public static void triggerDatabaseUpgrade(Object requester) {
@@ -54,7 +55,7 @@ public class MyDatabaseConverter {
                     + ": not initialized yet");
             return;
         }
-        synchronized(upgradeEndTime) {
+        synchronized(upgradeLock) {
             if (isUpgrading()) {
                 MyLog.v(TAG, "Attempt to trigger database upgrade by " + requesterName 
                         + ": already upgrading");
@@ -73,7 +74,7 @@ public class MyDatabaseConverter {
             MyLog.v(TAG, "Upgrade triggered by " + requesterName);
             MyContextHolder.release();
             MyContextHolder.initialize(myContext.context(), TAG);
-            synchronized(upgradeEndTime) {
+            synchronized(upgradeLock) {
                 shouldTriggerDatabaseUpgrade = false;
                 upgradeSuccessfullyCompleted = true;
                 if (upgradeStarted) {
@@ -84,11 +85,11 @@ public class MyDatabaseConverter {
                 }
             }
         } catch (Exception e) {
-            MyLog.w(TAG, "Failed to trigger database upgrade, will try later. Error: " + e.getMessage());
+            MyLog.i(TAG, "Failed to trigger database upgrade, will try later", e);
             
         } finally {
             currentTime = java.lang.System.currentTimeMillis();
-            synchronized(upgradeEndTime) {
+            synchronized(upgradeLock) {
                 if (upgradeStarted) {
                     final Long SECONDS_AFTER_UPGRADE = 5L;
                     upgradeEndTime = currentTime + java.util.concurrent.TimeUnit.SECONDS.toMillis(SECONDS_AFTER_UPGRADE);
@@ -102,7 +103,7 @@ public class MyDatabaseConverter {
     
     public static void stillUpgrading() {
         final long SECONDS_FOR_UPGRADE = 30L;
-        synchronized(upgradeEndTime) {
+        synchronized(upgradeLock) {
             upgradeStarted = true;
             upgradeEndTime = java.lang.System.currentTimeMillis() + java.util.concurrent.TimeUnit.SECONDS.toMillis(SECONDS_FOR_UPGRADE);
         }
@@ -110,7 +111,7 @@ public class MyDatabaseConverter {
     }
     
     public static boolean isUpgrading() {
-        synchronized(upgradeEndTime) {
+        synchronized(upgradeLock) {
             if (upgradeEndTime == 0 ) {
                 return false;
             }
@@ -129,7 +130,7 @@ public class MyDatabaseConverter {
             MyLog.v(this,"onUpgrade - Trigger not set yet");
             throw new IllegalStateException("onUpgrade - Trigger not set yet");
         }
-        synchronized (upgradeEndTime) {
+        synchronized (upgradeLock) {
             shouldTriggerDatabaseUpgrade = false;
         }
         int currentVersion = oldVersion;
@@ -153,7 +154,7 @@ public class MyDatabaseConverter {
         } else {
             MyLog.e(this, "Error upgrading database from version " + oldVersion + " to version "
                     + newVersion + ". Current database version=" + currentVersion);
-            throw new Error("Database upgrade failed. Current database version=" + currentVersion);
+            throw new IllegalStateException("Database upgrade failed. Current database version=" + currentVersion);
         }
     }
 
@@ -181,7 +182,7 @@ public class MyDatabaseConverter {
             db.execSQL(sql);
             ok = true;
         } catch (Exception e) {
-            MyLog.e(this, e.getMessage());
+            MyLog.e(this, e);
         }
         if (ok) {
             MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
@@ -219,7 +220,7 @@ public class MyDatabaseConverter {
             db.execSQL(sql);
             ok = true;
         } catch (Exception e) {
-            MyLog.e(this, e.getMessage());
+            MyLog.e(this, e);
         }
         if (ok) {
             MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
@@ -338,7 +339,7 @@ public class MyDatabaseConverter {
                         
             ok = true;
         } catch (Exception e) {
-            MyLog.e(this, e.getMessage());
+            MyLog.e(this, e);
         }
         if (ok) {
             MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);

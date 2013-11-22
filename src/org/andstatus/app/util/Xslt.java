@@ -21,6 +21,7 @@ import android.content.Context;
 import android.webkit.WebView;
 
 import java.io.StringWriter;
+
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -35,6 +36,7 @@ import javax.xml.transform.stream.StreamSource;
  * @author yvolk@yurivolkov.com
  */
 public class Xslt {
+    private static final String TAG = Xslt.class.getSimpleName();
 
     /**
      * Transform XML input files using supplied XSL stylesheet and return as String
@@ -67,11 +69,11 @@ public class Xslt {
             trans.transform(xmlSource, result);
             output = result.getWriter().toString();
         } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
+            MyLog.e(TAG, e);
         } catch (TransformerFactoryConfigurationError e) {
-            e.printStackTrace();
+            MyLog.e(TAG, e);
         } catch (TransformerException e) {
-            e.printStackTrace();
+            MyLog.e(TAG, e);
         }
         return output;
     }
@@ -91,7 +93,7 @@ public class Xslt {
             WebView view = (WebView) activity.findViewById(resView);
             view.loadData(output,"text/html","utf-8");
         } catch (Exception e) {
-            e.printStackTrace();
+            MyLog.e(TAG, e);
         }
     }
     

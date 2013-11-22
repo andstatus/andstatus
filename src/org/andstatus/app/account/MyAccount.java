@@ -317,14 +317,18 @@ public class MyAccount implements AccountDataReader {
                         myAccount.userData.putString(key, value);
                     }
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                MyLog.v(this, e);
+            }
         }
 
         @Override
         public void setDataInt(String key, int value) {
             try {
                 setDataString(key, Integer.toString(value));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                MyLog.v(this, e);
+            }
         }
 
         public void setDataLong(String key, long value) {
@@ -341,13 +345,17 @@ public class MyAccount implements AccountDataReader {
                 } else {
                     setDataString(key, Long.toString(value));
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                MyLog.v(this, e);
+            }
         }
         
         public void setDataBoolean(String key, boolean value) {
             try {
                 setDataString(key, Boolean.toString(value));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                MyLog.v(this, e);
+            }
         }
 
         public void save() {
@@ -400,7 +408,7 @@ public class MyAccount implements AccountDataReader {
                         
                         MyLog.v(this, "Persisted " + myAccount.getAccountName());
                     } catch (Exception e) {
-                        MyLog.e(this, "Adding Account to AccountManager: " + e.getMessage());
+                        MyLog.e(this, "Adding Account to AccountManager", e);
                         myAccount.androidAccount = null;
                     }
                 }
@@ -447,8 +455,7 @@ public class MyAccount implements AccountDataReader {
 
                 MyLog.v(this, "Saved " + (changed ? " changed " : " no changes " ) + this);
             } catch (Exception e) {
-                MyLog.e(this, "saving " + myAccount.getAccountName() + ": " + e.toString());
-                e.printStackTrace();
+                MyLog.e(this, "saving " + myAccount.getAccountName(), e);
                 changed = false;
             }
             return changed;
@@ -458,17 +465,15 @@ public class MyAccount implements AccountDataReader {
             boolean ok = false;
             if (!ok) {
                 MbConfig config = null;
-                ConnectionException ce = null;
                 try {
                     config = myAccount.getConnection().getConfig();
                     ok = (!config.isEmpty());
                     if (ok) {
                        Origin.fromOriginId(myAccount.getOriginId()).save(config);
                     }
-                } catch (ConnectionException e) {
-                    ce = e;
+                } finally {
+                    MyLog.v(this, "Get Origin config " + (ok ? "succeeded" : "failed"));
                 }
-                MyLog.v(this, "Get Origin config " + (ok ? "succeeded" : "failed"));
             }
             return ok;
         }
@@ -489,20 +494,17 @@ public class MyAccount implements AccountDataReader {
                 }
             }
             if (!ok) {
-                MbUser user = null;
-                ConnectionException ce = null;
                 try {
-                    user = myAccount.getConnection().verifyCredentials();
-                    ok = (!user.isEmpty());
+                    MbUser user = myAccount.getConnection().verifyCredentials();
+                    ok = onCredentialsVerified(user, null);
                 } catch (ConnectionException e) {
-                    ce = e;
+                    ok = onCredentialsVerified(null, e);
                 }
-                ok = onVerifiedCredentials(user, ce);
             }
             return ok;
         }
         
-        public boolean onVerifiedCredentials(MbUser user, ConnectionException ce) throws ConnectionException {
+        public boolean onCredentialsVerified(MbUser user, ConnectionException ce) throws ConnectionException {
             boolean ok = (ce == null) && user != null && !user.isEmpty();
             if (ok && TextUtils.isEmpty(user.oid)) {
                 ok = false;
@@ -596,9 +598,9 @@ public class MyAccount implements AccountDataReader {
                 myAccount.connection.enrichConnectionData(connectionData);
                 myAccount.connection.setAccountData(connectionData);
             } catch (InstantiationException e) {
-                e.printStackTrace();
+                MyLog.i(this, e);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                MyLog.i(this, e);
             }
         }
 
@@ -627,7 +629,7 @@ public class MyAccount implements AccountDataReader {
                     myAccount.userId = di.insertOrUpdateUser(mbUser, lum);
                     lum.save();
                 } catch (Exception e) {
-                    MyLog.e(this, "Construct user: " + e.toString());
+                    MyLog.e(this, "Construct user", e);
                 }
             }
         }
@@ -781,7 +783,9 @@ public class MyAccount implements AccountDataReader {
             if (str.compareTo("null") != 0) {
                 value = Integer.parseInt(str);
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.v(this, e);
+        }
         return value;
     }
 
@@ -800,7 +804,9 @@ public class MyAccount implements AccountDataReader {
                     value = Long.parseLong(str);
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.v(this, e);
+        }
         return value;
     }
 
@@ -811,7 +817,9 @@ public class MyAccount implements AccountDataReader {
             if (str.compareTo("null") != 0) {
                 value = SharedPreferencesUtil.isTrue(str);
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.v(this, e);
+        }
         return value;
     }
 
@@ -851,7 +859,9 @@ public class MyAccount implements AccountDataReader {
             if (str.compareTo("null") != 0) {
                 contains = true;
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.v(this, e);
+        }
         return contains;
     }
     
@@ -969,8 +979,7 @@ public class MyAccount implements AccountDataReader {
             try {
                 sp = MyPreferences.getSharedPreferences(prefsFileName);
             } catch (Exception e) {
-                e.printStackTrace();
-                MyLog.e(this, "Cound't get preferences '" + prefsFileName + "'");
+                MyLog.e(this, "Cound't get preferences '" + prefsFileName + "'", e);
                 sp = null;
             }
         }
@@ -1053,7 +1062,9 @@ public class MyAccount implements AccountDataReader {
             if (connection == null) {
                 members += "; no connection";
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.v(this, members, e);
+        }
         return str + "{" + members + "}";
     }
     

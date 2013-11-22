@@ -97,7 +97,7 @@ public class Origin {
                     origin.textLimit = MyPreferences.getDefaultSharedPreferences().getInt(origin.keyOf(KEY_TEXT_LIMIT), TEXT_LIMIT_DEFAULT);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                MyLog.e(this, e);
             }
             return origin;        
         }

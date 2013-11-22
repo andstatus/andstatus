@@ -37,7 +37,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -45,7 +44,6 @@ import android.widget.TextView;
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.MyService.CommandEnum;
-import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
@@ -449,6 +447,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
                 if (!commandData.commandResult.hasError()) {
                     showConversation();
                 }
+                break;
             default:
                 break;
         }

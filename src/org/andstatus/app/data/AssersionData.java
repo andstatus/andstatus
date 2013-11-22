@@ -14,33 +14,39 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.net;
+package org.andstatus.app.data;
+
+import android.content.ContentValues;
 
 /**
- * 'Mb' stands for "Microblogging system" 
  * @author yvolk@yurivolkov.com
  */
-public class MbConfig {
-    private boolean isEmpty = true;
+public class AssersionData {
+    private final String key;
+    private final ContentValues values;
+
+    public static AssersionData getEmpty(String keyIn) {
+        return new AssersionData(keyIn, null);
+    }
     
-    public int shortUrlLength = 0;
-    public int textLimit = 0;
+    public AssersionData(String keyIn, ContentValues valuesIn) {
+        key = keyIn;
+        if (valuesIn == null) {
+            values = new ContentValues();
+        } else {
+            values = valuesIn;
+        }
+    }
     
-    public static MbConfig getEmpty() {
-        MbConfig config = new MbConfig();
-        return config;
+    public String getKey() {
+        return key;
     }
 
-    public static MbConfig fromTextLimit(int textLimit) {
-        MbConfig config = new MbConfig();
-        config.textLimit = textLimit;
-        config.isEmpty = (textLimit == 0);
-        return config;
+    public ContentValues getValues() {
+        return values;
     }
     
-    private MbConfig() {}
-    
     public boolean isEmpty() {
-        return (isEmpty);
+        return values.size() == 0;
     }
 }

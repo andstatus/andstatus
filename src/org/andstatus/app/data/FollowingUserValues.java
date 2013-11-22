@@ -108,13 +108,12 @@ public class FollowingUserValues {
        // This is since API 11, see http://developer.android.com/reference/android/database/sqlite/SQLiteDatabaseLockedException.html
        //     } catch (SQLiteDatabaseLockedException e) {
             } catch (SQLiteException e) {
-                MyLog.w(this, "update, Database is locked, pass=" + pass);
+                MyLog.i(this, "update, Database is locked, pass=" + pass, e);
                 try {
                     // If the problem persists, maybe we will implement object locking...
                     Thread.sleep(300);
-                } catch (InterruptedException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                } catch (InterruptedException e2) {
+                    MyLog.e(this, e2);
                 }
             }
         }

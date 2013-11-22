@@ -45,8 +45,7 @@ public class AccountSettingsWebActivity extends Activity {
             
             webView.loadUrl(url);
         } catch (Exception e) {
-            MyLog.e(this, "onCreate " + e);
-            e.printStackTrace();
+            MyLog.e(this, "onCreate", e);
             finish();
         }
     }

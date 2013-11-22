@@ -241,7 +241,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     MyPreferences.getDefaultSharedPreferences().edit().putInt(MyPreferences.KEY_VERSION_CODE_LAST, versionCode).commit();
                 }
             } catch (NameNotFoundException e) {
-                MyLog.e(this, "Unable to obtain package information: " + e.getMessage());
+                MyLog.e(this, "Unable to obtain package information", e);
             }
 
             if (helpAsFirstActivity || showChangeLog) {
@@ -336,9 +336,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * @param view combinedTimelineToggle
      */
     public void onCombinedTimelineToggle(View view) {
-        boolean on = ((android.widget.ToggleButton) view).isChecked();
-        MyPreferences.getDefaultSharedPreferences().edit().putBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, on).commit();
-        contextMenu.switchTimelineActivity(mTimelineType, on, mCurrentMyAccountUserId);
+        if (view instanceof android.widget.ToggleButton) {
+            boolean on = ((android.widget.ToggleButton) view).isChecked();
+            MyPreferences.getDefaultSharedPreferences().edit().putBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, on).commit();
+            contextMenu.switchTimelineActivity(mTimelineType, on, mCurrentMyAccountUserId);
+        }
     }
     
     public void onTimelineTypeButtonClick(View view) {
@@ -487,7 +489,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 }
             }
         } catch (Exception e) {
-            MyLog.v(TAG, "Position error    \"" + e.getLocalizedMessage());
+            MyLog.v(TAG, "Position error", e);
             loaded = false;
         }
         if (!loaded) {
@@ -620,8 +622,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             case DIALOG_ID_TIMELINE_TYPE:
                 return newTimelinetypeSelector();
             default:
-                return super.onCreateDialog(id);
+                break;
         }
+        return super.onCreateDialog(id);
     }
 
     private AlertDialog newTimelinetypeSelector() {
@@ -763,14 +766,16 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public long getLinkedUserIdFromCursor(int position) {
         long userId = 0;
         try {
-            mCursor.moveToPosition(position);
-            int columnIndex = mCursor.getColumnIndex(User.LINKED_USER_ID);
-            if (columnIndex > -1) {
-                try {
+            if (mCursor != null && !mCursor.isClosed()) {
+                mCursor.moveToPosition(position);
+                int columnIndex = mCursor.getColumnIndex(User.LINKED_USER_ID);
+                if (columnIndex > -1) {
                     userId = mCursor.getLong(columnIndex);
-                } catch (Exception e) {}
+                }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.v(this, e);
+        }
         return (userId);
     }
 
@@ -1161,11 +1166,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                                 sa.selectionArgs, sortOrder);
                         break;
                     } catch (IllegalStateException e) {
-                        MyLog.d(TAG, "Attempt " + attempt + " to prepare cursor: " + e.getMessage());
+                        MyLog.d(TAG, "Attempt " + attempt + " to prepare cursor", e);
                         try {
                             Thread.sleep(500);
-                        } catch (InterruptedException e1) {
-                            MyLog.d(TAG, "Attempt " + attempt + " to prepare cursor was interrupted");
+                        } catch (InterruptedException e2) {
+                            MyLog.d(TAG, "Attempt " + attempt + " to prepare cursor was interrupted", e2);
                             break;
                         }
                     }
@@ -1234,6 +1239,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                                 // This is supposed to be a one time task.
                                 manualReload(true);
                             } 
+                            break;
                     }
                 }
             }
@@ -1249,7 +1255,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             setIsLoading(true);
             new AsyncQueryListData().execute();
         } catch (Exception e) {
-            MyLog.e(this, "Error during AsyncQueryListData" + e.getLocalizedMessage());
+            MyLog.e(this, "Error during AsyncQueryListData", e);
             queryListDataEnded(!loadOneMorePage);
         }
     }
@@ -1469,6 +1475,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     updateActionBar(commandData.commandResult.remaining_hits + "/"
                             + commandData.commandResult.hourly_limit);
                 }
+                break;
             default:
                 break;
         }

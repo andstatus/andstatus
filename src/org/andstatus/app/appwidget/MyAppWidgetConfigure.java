@@ -129,7 +129,7 @@ public class MyAppWidgetConfigure extends Activity {
                 host.deleteAppWidgetId(appWidgetIds[ind]);         
             }
         } catch (Exception e) {
-            MyLog.e(TAG, "Error deleting widgets: " + e.getMessage());
+            MyLog.e(TAG, "Error deleting widgets", e);
         }
         return deletedCount;
     }

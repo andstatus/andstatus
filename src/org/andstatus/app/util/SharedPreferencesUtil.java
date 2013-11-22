@@ -55,7 +55,7 @@ public class SharedPreferencesUtil {
                 File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
                 yes = prefFile.exists();
             } catch (Exception e) {
-                MyLog.e(TAG, e.toString());
+                MyLog.e(TAG, e);
             }
         }
         return yes;
@@ -112,7 +112,7 @@ public class SharedPreferencesUtil {
                                 + newPrefFile.getCanonicalPath() + "\"");
                     }
                 } catch (IOException e) {
-                    MyLog.e(TAG, e.toString());
+                    MyLog.e(TAG, e);
                 }
             } else {
                 File oldPrefFile = new File(prefsDirectory(context), oldPrefsFileName + FILE_EXTENSION);
@@ -142,26 +142,26 @@ public class SharedPreferencesUtil {
      */
     public static void showListPreference(PreferenceActivity pa, String keyPreference, int entryValuesR, int displayR, int summaryR) {
         String displayParm = "";
-        ListPreference lP = (ListPreference) pa.findPreference(keyPreference);
-        if (lP != null) {
+        ListPreference listPref = (ListPreference) pa.findPreference(keyPreference);
+        if (listPref != null) {
             String[] k = pa.getResources().getStringArray(entryValuesR);
             String[] d = pa.getResources().getStringArray(displayR);
             displayParm = d[0];
-            String listValue = lP.getValue();
+            String listValue = listPref.getValue();
             for (int i = 0; i < k.length; i++) {
                 if (listValue.equals(k[i])) {
                     displayParm = d[i];
                     break;
                 }
             }
+            MessageFormat sf = new MessageFormat(pa.getText(summaryR)
+                    .toString());
+            listPref.setSummary(sf.format(new Object[] {
+                displayParm
+            }));
         } else {
             displayParm = keyPreference + " was not found";
         }
-        MessageFormat sf = new MessageFormat(pa.getText(summaryR)
-                .toString());
-        lP.setSummary(sf.format(new Object[] {
-            displayParm
-        }));
     }
 
     /**
@@ -204,7 +204,9 @@ public class SharedPreferencesUtil {
                     }
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.v(TAG, o.toString(), e);
+        }
         return is;
     }
 }

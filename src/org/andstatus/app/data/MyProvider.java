@@ -133,25 +133,27 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public String getType(Uri uri) {
+        String type = null;
         switch (sUriMatcher.match(uri)) {
             case MSG:
             case TIMELINE:
             case TIMELINE_SEARCH:
             case MSG_COUNT:
-                return Msg.CONTENT_TYPE;
-
+                type = Msg.CONTENT_TYPE;
+                break;
             case TIMELINE_MSG_ID:
-                return Msg.CONTENT_ITEM_TYPE;
-
+                type = Msg.CONTENT_ITEM_TYPE;
+                break;
             case USERS:
-                return User.CONTENT_TYPE;
-
+                type = User.CONTENT_TYPE;
+                break;
             case USER_ID:
-                return User.CONTENT_ITEM_TYPE;
-
+                type = User.CONTENT_ITEM_TYPE;
+                break;
             default:
-                return null;
+                break;
         }
+        return type;
     }
 
     /**
@@ -176,10 +178,11 @@ public class MyProvider extends ContentProvider {
                             + ") AND ("
                             + selection
                             + "))";
-                    sqlDesc = selectionG + (selectionArgs != null ? "; args=" + selectionArgs.toString() : "");
+                    String descSuffix = "; args=" + Arrays.toString(selectionArgs);
+                    sqlDesc = selectionG + descSuffix;
                     count = db.delete(MyDatabase.MSGOFUSER_TABLE_NAME, selectionG, selectionArgs);
                     // Now delete messages themselves
-                    sqlDesc = selection + (selectionArgs != null ? "; args=" + selectionArgs.toString() : "");
+                    sqlDesc = selection + descSuffix;
                     count = db.delete(MyDatabase.MSG_TABLE_NAME, selection, selectionArgs);
                     /*
                     if (count > 0) {
@@ -195,7 +198,7 @@ public class MyProvider extends ContentProvider {
                     db.setTransactionSuccessful();
                     getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
                 } catch(Exception e) {
-                    MyLog.d(TAG, e.toString() + "; SQL='" + sqlDesc + "'");
+                    MyLog.d(TAG, "; SQL='" + sqlDesc + "'", e);
                 } finally {
                     db.endTransaction();
                 }
@@ -315,8 +318,7 @@ public class MyProvider extends ContentProvider {
                 newUri = MyProvider.getUserUri(accountUserId, rowId);
             }
         } catch (Exception e) {
-          e.printStackTrace();
-          MyLog.e(this, "Insert:" + e.getMessage());
+          MyLog.e(this, "Insert", e);
         }
         return newUri;
     }
@@ -525,8 +527,7 @@ public class MyProvider extends ContentProvider {
                 c = db.rawQuery(sql, selectionArgs);
             } catch (Exception e) {
                 logQuery = true;
-                MyLog.e(this, "Database query failed");
-                e.printStackTrace();
+                MyLog.e(this, "Database query failed", e);
             }
 
             if (logQuery) {
@@ -565,15 +566,16 @@ public class MyProvider extends ContentProvider {
         // Allows to link to one or more accounts
         String accountUserIds = "";
         if (isCombined || accountUserId == 0) {
+            StringBuilder sb = new StringBuilder();
             for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
-                if (!TextUtils.isEmpty(accountUserIds)) {
-                    accountUserIds += ", ";
+                if (sb.length() > 0) {
+                    sb.append(", ");
                     nAccounts += 1;
                 }
-                accountUserIds += Long.toString(ma.getUserId());
+                sb.append(Long.toString(ma.getUserId()));
                 accountUserId = ma.getUserId();
             }
-
+            accountUserIds = sb.toString();
         } else {
             accountUserIds = Long.toString(accountUserId);
         }
@@ -655,6 +657,7 @@ public class MyProvider extends ContentProvider {
                     } else {
                         tables += " INNER JOIN " + tbl;
                     }
+                    break;
             }
         }
 
@@ -917,14 +920,14 @@ public class MyProvider extends ContentProvider {
             prog.releaseReference();
             if (id == 1 || id == 388) {
                 if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                    MyLog.v(TAG, "oidToId: sql=" + sql );
+                    MyLog.v(TAG, "oidToId: sql='" + sql +"'");
                 }
             }
-        } catch (SQLiteDoneException ed) {
+        } catch (SQLiteDoneException e) {
+            MyLog.v(TAG, e);
             id = 0;
         } catch (Exception e) {
-            MyLog.e(TAG, "oidToId: " + e.toString());
-            e.printStackTrace();
+            MyLog.e(TAG, "oidToId: sql='" + sql +"'", e);
             return 0;
         }
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
@@ -1025,10 +1028,11 @@ public class MyProvider extends ContentProvider {
                     oid = idToOid(db, OidEnum.MSG_OID, entityId, 0);
                 }
                 
-            } catch (SQLiteDoneException ed) {
+            } catch (SQLiteDoneException e) {
+                MyLog.v(TAG, e);
                 oid = "";
             } catch (Exception e) {
-                MyLog.e(TAG, "idToOid: " + e.toString());
+                MyLog.e(TAG, "idToOid", e);
                 return "";
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
@@ -1059,10 +1063,11 @@ public class MyProvider extends ContentProvider {
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
                 prog.releaseReference();
-            } catch (SQLiteDoneException ed) {
+            } catch (SQLiteDoneException e) {
+                MyLog.v(TAG, e);
                 userName = "";
             } catch (Exception e) {
-                MyLog.e(TAG, "msgIdToUsername: " + e.toString());
+                MyLog.e(TAG, "msgIdToUsername", e);
                 return "";
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
@@ -1085,10 +1090,11 @@ public class MyProvider extends ContentProvider {
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
                 prog.releaseReference();
-            } catch (SQLiteDoneException ed) {
+            } catch (SQLiteDoneException e) {
+                MyLog.v(TAG, e);
                 userName = "";
             } catch (Exception e) {
-                MyLog.e(TAG, "userIdToName: " + e.toString());
+                MyLog.e(TAG, "userIdToName", e);
                 return "";
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
@@ -1130,10 +1136,12 @@ public class MyProvider extends ContentProvider {
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForLong();
                 prog.releaseReference();
-            } catch (SQLiteDoneException ed) {
+            } catch (SQLiteDoneException e) {
+                MyLog.v(TAG, e);
                 columnValue = 0;
             } catch (Exception e) {
-                MyLog.e(TAG, "idToLongColumnValue table='" + tableName + "', column='" + columnName + "': " + e.toString());
+                MyLog.e(TAG, "idToLongColumnValue table='" + tableName 
+                        + "', column='" + columnName + "'", e);
                 return 0;
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
@@ -1173,10 +1181,12 @@ public class MyProvider extends ContentProvider {
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForString();
                 prog.releaseReference();
-            } catch (SQLiteDoneException ed) {
+            } catch (SQLiteDoneException e) {
+                MyLog.v(TAG, e);
                 columnValue = "";
             } catch (Exception e) {
-                MyLog.e(TAG, "idToLongColumnValue table='" + tableName + "', column='" + columnName + "': " + e.toString());
+                MyLog.e(TAG, "idToLongColumnValue table='" + tableName 
+                        + "', column='" + columnName + "'", e);
                 return "";
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
@@ -1198,7 +1208,7 @@ public class MyProvider extends ContentProvider {
                 throw new IllegalArgumentException("msgIdToUserId; Unknown name \"" + msgUserColumnName);
             }
         } catch (Exception e) {
-            MyLog.e(TAG, "msgIdToUserId: " + e.toString());
+            MyLog.e(TAG, "msgIdToUserId", e);
             return 0;
         }
         return userId;
@@ -1238,10 +1248,11 @@ public class MyProvider extends ContentProvider {
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
             prog.releaseReference();
-        } catch (SQLiteDoneException ed) {
+        } catch (SQLiteDoneException e) {
+            MyLog.v(TAG, e);
             id = 0;
         } catch (Exception e) {
-            MyLog.e(TAG, "userNameToId: " + e.toString());
+            MyLog.e(TAG, "userNameToId", e);
             return 0;
         }
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
@@ -1306,8 +1317,13 @@ public class MyProvider extends ContentProvider {
                 case TIMELINE_SEARCH:
                 case TIMELINE_MSG_ID:
                     isCombined = ( (Long.parseLong(uri.getPathSegments().get(5)) == 0) ? false : true);
+                    break;
+                default:
+                    break;
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.d(TAG, String.valueOf(uri), e);
+        }
         return isCombined;        
     }
 
@@ -1325,8 +1341,13 @@ public class MyProvider extends ContentProvider {
                 case TIMELINE_SEARCH:
                 case TIMELINE_MSG_ID:
                     tt = MyDatabase.TimelineTypeEnum.load(uri.getPathSegments().get(3));
+                    break;
+                default:
+                    break;
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.d(TAG, String.valueOf(uri), e);
+        }
         return tt;        
     }
     
@@ -1337,8 +1358,13 @@ public class MyProvider extends ContentProvider {
             switch (matchedCode) {
                 case TIMELINE_MSG_ID:
                     messageId = Long.parseLong(uri.getPathSegments().get(7));
+                    break;
+                default:
+                    break;
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.v(TAG, e);
+        }
         return messageId;        
     }
     
@@ -1353,8 +1379,13 @@ public class MyProvider extends ContentProvider {
                 case USERS:
                 case USER_ID:
                     accountUserId = Long.parseLong(uri.getPathSegments().get(1));
+                    break;
+                default:
+                    break;
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.v(TAG, e);
+        }
         return accountUserId;        
     }
     
@@ -1365,8 +1396,13 @@ public class MyProvider extends ContentProvider {
             switch (matchedCode) {
                 case USER_ID:
                     userId = Long.parseLong(uri.getPathSegments().get(3));
+                    break;
+                default:
+                    break;
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MyLog.e(TAG, e);
+        }
         return userId;        
     }
     

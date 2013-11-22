@@ -19,7 +19,6 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,6 +41,7 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
                 break;
             default:
                 url = "";
+                break;
         }
         if (TextUtils.isEmpty(url)) {
             url = super.getApiPath1(routine);

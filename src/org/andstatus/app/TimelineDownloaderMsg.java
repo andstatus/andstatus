@@ -93,7 +93,7 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
                     e.setHardError(true);
                     throw e;
                 }
-                MyLog.d(TAG, "The timeline was not found, last position='" + lastPosition +"'");
+                MyLog.d(TAG, "The timeline was not found, last position='" + lastPosition +"'", e);
                 lastPosition = TimelinePosition.getEmpty();
             }
         }

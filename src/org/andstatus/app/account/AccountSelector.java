@@ -30,7 +30,6 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
-import org.andstatus.app.data.MyPreferences;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,13 +43,11 @@ import java.util.TreeMap;
  *
  */
 public class AccountSelector extends ListActivity {
-    private static final String TAG = AccountSelector.class.getSimpleName();
-
-    private final String KEY_VISIBLE_NAME = "visible_name";
-    private final String KEY_NAME = "name";
-    private final String KEY_TYPE = "type";
+    private final static String KEY_VISIBLE_NAME = "visible_name";
+    private final static String KEY_NAME = "name";
+    private final static String KEY_TYPE = "type";
     
-    private final String TYPE_ACCOUNT = "account";
+    private final static String TYPE_ACCOUNT = "account";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

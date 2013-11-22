@@ -48,7 +48,7 @@ public final class MyServiceReceiver extends BroadcastReceiver {
         try {
             context.unregisterReceiver(this);
         } catch (IllegalArgumentException e) {
-            // Already unregistered
+            MyLog.v(this, e);
         }
     }
     

@@ -529,11 +529,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 }
             }
         } catch (IllegalStateException e) {
+            MyLog.v(this, e);
             if (onUpgradeTriggered.get()) {
                 state = MyContextState.UPGRADING;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            MyLog.e(this, e);
         } finally {
             if (db != null && db.isOpen()) {
                 db.close();

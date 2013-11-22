@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net;
 
+import android.net.NetworkInfo.DetailedState;
 import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
@@ -62,9 +63,18 @@ public class ConnectionException extends Exception {
                 String strJso = jso.toString(2);
                 MyLog.writeStringToFile(strJso, "loggedErrorJson.json");
                 MyLog.v(objTag, "jso: " + strJso);
-            } catch (JSONException ignored) {}
+            } catch (JSONException ignored) {} // NOSONAR
         }
         return new ConnectionException(detailMessage);
+    }
+
+    public static ConnectionException fromStatusCodeHttp(int statusCodeHttp, String detailMessage, Throwable throwable) {
+        StatusCode statusCode = StatusCode.fromResponseCode(statusCodeHttp);
+        if (statusCode == StatusCode.UNKNOWN) {
+            return new ConnectionException(detailMessage, throwable);
+        } else {
+            return new ConnectionException(statusCode, detailMessage, throwable);
+        }
     }
 
     public static ConnectionException fromStatusCodeHttp(int statusCodeHttp, final String detailMessage) {
@@ -88,6 +98,15 @@ public class ConnectionException extends Exception {
 
     public ConnectionException(StatusCode statusCode, final String detailMessage) {
         super(detailMessage);
+        processStatusCode(statusCode);
+    }
+
+    public ConnectionException(StatusCode statusCode, String detailMessage, Throwable throwable) {
+        super(detailMessage, throwable);
+        processStatusCode(statusCode);
+    }
+
+    private void processStatusCode(StatusCode statusCode) {
         this.statusCode = statusCode;
         switch (statusCode) {
             case UNKNOWN:
@@ -97,10 +116,6 @@ public class ConnectionException extends Exception {
                 break;
         }
     }
-
-    public StatusCode getStatusCode() {
-        return this.statusCode;
-    }
 	
 	public ConnectionException(Throwable throwable) {
 		super(throwable);
@@ -109,6 +124,10 @@ public class ConnectionException extends Exception {
 	public ConnectionException(String detailMessage, Throwable throwable) {
 		super(detailMessage, throwable);
 	}
+    
+    public StatusCode getStatusCode() {
+        return this.statusCode;
+    }
 
     @Override
     public String toString() {

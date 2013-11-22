@@ -19,6 +19,7 @@ package org.andstatus.app.data;
 import java.util.Date;
 
 import org.andstatus.app.MessageCounters;
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -63,7 +64,7 @@ public class DataInserter {
         return insertOrUpdateMsgBySender(message, lum, 0);
     }
     
-    private long insertOrUpdateMsgBySender(MbMessage message, LatestUserMessages lum, long senderId_in) throws SQLiteConstraintException {
+    private long insertOrUpdateMsgBySender(MbMessage message, LatestUserMessages lum, long senderIdIn) throws SQLiteConstraintException {
         final String funcName = "Inserting/updating msg";
         /**
          * Id of the message in our system, see {@link MyDatabase.Msg#MSG_ID}
@@ -102,8 +103,8 @@ public class DataInserter {
             long senderId = 0L;
             if (message.sender != null) {
                 senderId = insertOrUpdateUser(message.sender, lum);
-            } else if (senderId_in != 0) {
-                senderId = senderId_in;
+            } else if (senderIdIn != 0) {
+                senderId = senderIdIn;
             }
 
             String rowOid = message.oid;
@@ -219,51 +220,48 @@ public class DataInserter {
                     }
                 }
                 boolean mentioned = (counters.timelineType == TimelineTypeEnum.MENTIONS);
-                switch (counters.timelineType) {
-                    case HOME:
-                        values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
-                        
-                    default:
-                        if (!TextUtils.isEmpty(message.via)) {
-                            values.put(MyDatabase.Msg.VIA, message.via);
-                        }
-                        if (!TextUtils.isEmpty(message.url)) {
-                            values.put(MyDatabase.Msg.URL, message.url);
-                        }
-                        if (message.favoritedByActor != TriState.UNKNOWN) {
-                            if (actorId != 0 && actorId == counters.ma.getUserId()) {
-                                values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(message.favoritedByActor));
-                                MyLog.v(this, "Message '" + message.oid + "' " + (message.favoritedByActor.toBoolean(false) ? "favorited" : "unfavorited") 
-                                        + " by " + counters.ma.getAccountName());
-                            }
-                        }
+                if (counters.timelineType == TimelineTypeEnum.HOME) {
+                    values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
+                }
+                if (!TextUtils.isEmpty(message.via)) {
+                    values.put(MyDatabase.Msg.VIA, message.via);
+                }
+                if (!TextUtils.isEmpty(message.url)) {
+                    values.put(MyDatabase.Msg.URL, message.url);
+                }
+                if (message.favoritedByActor != TriState.UNKNOWN) {
+                    if (actorId != 0 && actorId == counters.ma.getUserId()) {
+                        values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(message.favoritedByActor));
+                        MyLog.v(this, "Message '" + message.oid + "' " + (message.favoritedByActor.toBoolean(false) ? "favorited" : "unfavorited") 
+                                + " by " + counters.ma.getAccountName());
+                    }
+                }
 
-                        if (message.inReplyToMessage != null) {
-                            // Type of the timeline is ALL meaning that message does not belong to this timeline
-                            DataInserter di = new DataInserter(counters);
-                            inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
-                            if (message.inReplyToMessage.sender != null) {
-                                inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
-                            } else if (inReplyToMessageId != 0) {
-                                inReplyToUserId = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, inReplyToMessageId);
-                            }
-                        }
-                        if (inReplyToUserId != 0) {
-                            values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
+                if (message.inReplyToMessage != null) {
+                    // Type of the timeline is ALL meaning that message does not belong to this timeline
+                    DataInserter di = new DataInserter(counters);
+                    inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
+                    if (message.inReplyToMessage.sender != null) {
+                        inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
+                    } else if (inReplyToMessageId != 0) {
+                        inReplyToUserId = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, inReplyToMessageId);
+                    }
+                }
+                if (inReplyToUserId != 0) {
+                    values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
 
-                            if (counters.ma.getUserId() == inReplyToUserId) {
-                                values.put(MyDatabase.MsgOfUser.REPLIED, 1);
-                                if (countIt) { 
-                                    counters.newRepliesCount++; 
-                                    }
-                                // We consider a Reply to be a Mention also?! 
-                                // ...Yes, at least as long as we don't have "Replies" timeline type 
-                                mentioned = true;
+                    if (counters.ma.getUserId() == inReplyToUserId) {
+                        values.put(MyDatabase.MsgOfUser.REPLIED, 1);
+                        if (countIt) { 
+                            counters.newRepliesCount++; 
                             }
-                        }
-                        if (inReplyToMessageId != 0) {
-                            values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
-                        }
+                        // We consider a Reply to be a Mention also?! 
+                        // ...Yes, at least as long as we don't have "Replies" timeline type 
+                        mentioned = true;
+                    }
+                }
+                if (inReplyToMessageId != 0) {
+                    values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
                 }
                 
                 if (countIt) { 
@@ -292,6 +290,9 @@ public class DataInserter {
                             + (isNew ? " new;" : "") 
                             + (isNewer ? " newer, sent at " + new Date(sentDate).toString() + ";" : "") );
                 }
+                if (MyContextHolder.get().isTestRun()) {
+                    MyContextHolder.get().put(new AssersionData("insertOrUpdateMsg", values));
+                }
                 if (rowId == 0) {
                     // There was no such row so add the new one
                     msgUri = mContentResolver.insert(MyProvider.getTimelineUri(counters.ma.getUserId(), MyDatabase.TimelineTypeEnum.HOME, false), values);
@@ -312,8 +313,7 @@ public class DataInserter {
                 MyLog.w(TAG, funcName +": the message was skipped: " + message.toString());
             }
         } catch (Exception e) {
-            MyLog.e(this, funcName +": " + e.toString());
-            e.printStackTrace();
+            MyLog.e(this, funcName, e);
         }
 
         return rowId;
@@ -415,8 +415,7 @@ public class DataInserter {
             }
             
         } catch (Exception e) {
-            MyLog.e(this, "insertUser exception: " + e.toString());
-            e.printStackTrace();
+            MyLog.e(this, "insertUser exception", e);
         }
         MyLog.v(this, "insertUser, userId=" + userId + "; oid=" + userOid);
         return userId;

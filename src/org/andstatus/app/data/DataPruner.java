@@ -111,8 +111,7 @@ public class DataPruner {
                 }
             }
         } catch (Exception e) {
-            MyLog.e(this, "pruneOldRecords failed");
-            e.printStackTrace();
+            MyLog.e(this, "pruneOldRecords failed", e);
         }
         mDeleted = nDeletedTime + nDeletedSize;
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {

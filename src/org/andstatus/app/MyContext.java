@@ -19,6 +19,7 @@ package org.andstatus.app;
 import android.content.Context;
 
 import org.andstatus.app.account.PersistentAccounts;
+import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 
 public interface MyContext {
@@ -26,11 +27,13 @@ public interface MyContext {
     MyContext newCreator(Context context, String initializerName);
     boolean initialized();
     boolean isReady();
+    boolean isTestRun();
     MyContextState state();
     Context context();
     String initializedBy();
     long preferencesChangeTime();
     MyDatabase getDatabase();
     PersistentAccounts persistentAccounts();
+    void put(AssersionData data);
     void release();
 }

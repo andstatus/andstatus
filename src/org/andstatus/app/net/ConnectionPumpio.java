@@ -88,6 +88,7 @@ public class ConnectionPumpio extends Connection {
                 break;
             default:
                 url = "";
+                break;
         }
         if (!TextUtils.isEmpty(url)) {
             url = http.data.basicPath + "/" + url;
@@ -160,7 +161,7 @@ public class ConnectionPumpio extends Connection {
             long unixTime = df.parse(datePrepared).getTime();
             return unixTime;
         } catch (ParseException e) {
-            MyLog.e(TAG, "Failed to parse the date: '" + date +"'");
+            MyLog.e(TAG, "Failed to parse the date: '" + date +"'", e);
             return new Date().getTime();
         }
     }
@@ -285,9 +286,9 @@ public class ConnectionPumpio extends Connection {
                 conu.httpConnection = http.getClass().newInstance();
                 conu.httpConnection.setConnectionData(connectionData1);
             } catch (InstantiationException e) {
-                e.printStackTrace();
+                MyLog.e(this, e);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                MyLog.e(this, e);
             }
         }
         if (!conu.httpConnection.data.areOAuthClientKeysPresent()) {

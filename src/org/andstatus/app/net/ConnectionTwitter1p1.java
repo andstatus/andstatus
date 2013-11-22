@@ -18,6 +18,7 @@ package org.andstatus.app.net;
 
 import android.text.TextUtils;
 
+import org.andstatus.app.util.MyLog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,6 +47,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
                 break;
             default:
                 url = "";
+                break;
         }
         if (TextUtils.isEmpty(url)) {
             url = super.getApiPath1(routine);
@@ -61,7 +63,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         try {
             out.put("id", statusId);
         } catch (JSONException e) {
-            e.printStackTrace();
+            MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.CREATE_FAVORITE, out);
         return messageFromJson(jso);
@@ -73,7 +75,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         try {
             out.put("id", statusId);
         } catch (JSONException e) {
-            e.printStackTrace();
+            MyLog.e(this, e);
         }
         JSONObject jso = postRequest(ApiRoutineEnum.DESTROY_FAVORITE, out);
         return messageFromJson(jso);

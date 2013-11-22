@@ -58,14 +58,13 @@ public class ActivitySwipeDetector implements View.OnTouchListener {
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         switch(event.getAction()){
-        case MotionEvent.ACTION_DOWN: {
+        case MotionEvent.ACTION_DOWN:
             MyLog.d("onTouch", "ACTION_DOWN");
             timeDown = System.currentTimeMillis();
             downX = event.getX();
             downY = event.getY();
             return false;
-        }
-        case MotionEvent.ACTION_UP: {
+        case MotionEvent.ACTION_UP: 
             MyLog.d("onTouch", "ACTION_UP");
             long timeUp = System.currentTimeMillis();
             float upX = event.getX();
@@ -84,15 +83,20 @@ public class ActivitySwipeDetector implements View.OnTouchListener {
             }
 
             final long M_SEC = 1000;
-            if (absDeltaX > MIN_DISTANCE && absDeltaX > time * VELOCITY / M_SEC) {
-                if(deltaX < 0) { this.onLeftToRightSwipe(v); return true; }
-                if(deltaX > 0) { this.onRightToLeftSwipe(v); return true; }
+            if (absDeltaX > MIN_DISTANCE && absDeltaX > time * VELOCITY / (float) M_SEC) {
+                if(deltaX < 0) { 
+                    this.onLeftToRightSwipe(v); 
+                    return true; 
+                }
+                if(deltaX > 0) { 
+                    this.onRightToLeftSwipe(v); 
+                    return true; 
+                }
             } else {
                 MyLog.v(logTag, String.format("absDeltaX=%.2f, MIN_DISTANCE=%.2f, absDeltaX > MIN_DISTANCE=%b", absDeltaX, MIN_DISTANCE, (absDeltaX > MIN_DISTANCE)));
-                MyLog.v(logTag, String.format("absDeltaX=%.2f, time=%d, VELOCITY=%d, time*VELOCITY/M_SEC=%d, absDeltaX > time * VELOCITY / M_SEC=%b", absDeltaX, time, VELOCITY, time * VELOCITY / M_SEC, (absDeltaX > time * VELOCITY / M_SEC)));
+                MyLog.v(logTag, String.format("absDeltaX=%.2f, time=%d, VELOCITY=%d, time*VELOCITY/M_SEC=%d, absDeltaX > time * VELOCITY / M_SEC=%b", absDeltaX, time, VELOCITY, time * VELOCITY / M_SEC, (absDeltaX > time * VELOCITY / (float) M_SEC)));
             }
-
-        }
+            break;
         }
         return false;
     }

@@ -90,7 +90,7 @@ public class MyAccountConverter {
                     builder.setUserTokenWithSecret(userToken, userSecret);
                     builder.setDataLong(MyAccount.Builder.KEY_USER_ID, userId);
                     SharedPreferencesUtil.rename(context, prefsFileNameOld, accountNameNew.prefsFileName());
-                    builder.onVerifiedCredentials(accountMbUser, null);
+                    builder.onCredentialsVerified(accountMbUser, null);
                     
                     accountsToRemove.add(account);
                 }
@@ -102,8 +102,7 @@ public class MyAccountConverter {
             }
             ok = true;
         } catch (Exception e) {
-            MyLog.e(TAG, e.getMessage());
-            e.printStackTrace();
+            MyLog.e(TAG, e);
         }
         if (ok) {
             MyLog.i(TAG, "Accounts upgrading step successfully upgraded accounts from " + oldVersion + " to version " + versionTo);
