@@ -588,7 +588,7 @@ public class ConnectionPumpio extends Connection {
     
     @Override
     public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
-        return verbWithUser(follow ? "follow" : "unfollow", userId);
+        return verbWithUser(follow ? "follow" : "stop-following", userId);
     }
 
     private MbUser verbWithUser(String verb, String userId) throws ConnectionException {
