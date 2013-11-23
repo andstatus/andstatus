@@ -106,8 +106,6 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         mNotificationRingtone = (RingtonePreference) findPreference(MyPreferences.KEY_RINGTONE_PREFERENCE);
         mUseExternalStorage = (CheckBoxPreference) getPreferenceScreen().findPreference(
                 MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
-
-        mNotificationRingtone.setOnPreferenceChangeListener(this);
         
         Preference myPref = findPreference("manage_accounts");
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -213,16 +211,20 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         String ringtoneString = MyPreferences.getDefaultSharedPreferences().getString(
                 MyPreferences.KEY_RINGTONE_PREFERENCE, null);
         Uri uri = Uri.EMPTY;
-        Ringtone rt;
+        Ringtone rt = null;
         if (ringtoneString == null) {
             uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        } else if ("".equals(ringtoneString)) {
-            mNotificationRingtone.setSummary(R.string.summary_preference_no_ringtone);
-        } 
-        if (uri != Uri.EMPTY) {
+        } else if (!TextUtils.isEmpty(ringtoneString)) {
             uri = Uri.parse(ringtoneString);
+        }
+        MyLog.v(this, "Ringtone URI: " + uri);
+        if (uri != null && uri != Uri.EMPTY) {
             rt = RingtoneManager.getRingtone(this, uri);
+        }
+        if (rt != null) {
             mNotificationRingtone.setSummary(rt.getTitle(this));
+        } else {
+            mNotificationRingtone.setSummary(R.string.summary_preference_no_ringtone);
         }
     }
     
