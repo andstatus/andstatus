@@ -9,6 +9,7 @@ import org.andstatus.app.MessageCounters;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
@@ -68,20 +69,23 @@ public class DataInserterTest extends InstrumentationTestCase {
         builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.userName, "sampleUserSecretFor" + mbUser.userName);
         builder.onCredentialsVerified(mbUser, null);
         assertTrue("Account is persistent", builder.isPersistent());
+        MyAccount ma = builder.getAccount();
+        assertEquals("Credentials of " + mbUser.userName + " successfully verified", 
+                CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
         long userId = builder.getAccount().getUserId();
         assertTrue("Account " + mbUser.userName + " has UserId", userId != 0);
-        assertEquals("Account UserOid", builder.getAccount().getUserOid(), mbUser.oid);
+        assertEquals("Account UserOid", ma.getUserOid(), mbUser.oid);
         assertEquals("User in the database for id=" + userId, 
                 mbUser.oid,
                 MyProvider.idToOid(OidEnum.USER_OID, userId, 0));
-        MyLog.v(this, builder.getAccount().getAccountName() + " added, id=" + builder.getAccount().getUserId());
+        MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
         return builder;
     }
     
     public void testUserAdded() throws ConnectionException {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
-        assertTrue("Account is persistent", ma != null);
+        assertTrue("Account " + accountName + " is persistent", ma != null);
         assertTrue("Account has UserId", ma.getUserId() != 0);
         assertTrue("Account UserOid", ma.getUserOid().equalsIgnoreCase(accountUserOid));
     }
@@ -122,7 +126,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         TestSuite.clearAssertionData();
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
-        AssersionData data = TestSuite.getMycontextForTest().takeDataByKey("insertOrUpdateMsg");
+        AssersionData data = TestSuite.getMyContextForTest().takeDataByKey("insertOrUpdateMsg");
         assertFalse( "Data put", data.isEmpty());
         assertEquals("Message Oid", messageOid, data.getValues().getAsString(MyDatabase.Msg.MSG_OID));
         assertEquals("Message permalink before storage", message.url, data.getValues().getAsString(MyDatabase.Msg.URL));

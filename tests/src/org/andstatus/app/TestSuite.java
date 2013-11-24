@@ -21,7 +21,9 @@ import junit.framework.TestCase;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.data.DataInserterTest;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -132,10 +134,10 @@ public class TestSuite extends TestCase {
     }
 
     public static void clearAssertionData() {
-        getMycontextForTest().getData().clear();
+        getMyContextForTest().getData().clear();
     }
     
-    public static MyContextForTest getMycontextForTest() {
+    public static MyContextForTest getMyContextForTest() {
         MyContextForTest myContextForTest = null;
         if (MyContextHolder.get() instanceof MyContextForTest) {
             myContextForTest = (MyContextForTest) MyContextHolder.get(); 
@@ -143,5 +145,22 @@ public class TestSuite extends TestCase {
             fail("Wrong type of current context");
         }
         return myContextForTest;
+    }
+    
+    /**
+     * This method mimics execution of one test case before another
+     */
+    public static void enshureDataAdded() throws ConnectionException {
+        if (MyContextHolder.get().persistentAccounts().size() == 0) {
+            DataInserterTest dataInserter = new DataInserterTest();
+            dataInserter.testUserAdded();
+            dataInserter.testFollowingUser();
+            dataInserter.testMessageFavoritedByOtherUser();
+            dataInserter.testMessageFavoritedByAccountUser();
+            dataInserter.testDirectMessageToMyAccount();
+        }
+        if (MyContextHolder.get().persistentAccounts().size() == 0) {
+            fail("No persistent accounts");
+        }
     }
 }

@@ -727,7 +727,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         if (id <= 0) {
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "onItemClick, id=" + id);
+                MyLog.v(TAG, "onItemClick, position=" + position + "; id=" + id + "; view=" + view);
             }
             return;
         }
@@ -740,7 +740,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "onItemClick, id=" + id + "; linkedUserId=" + linkedUserId + " account=" + ma.getAccountName());
+            MyLog.v(TAG, "onItemClick, position=" + position + "; id=" + id + "; view=" + view
+                    + "; linkedUserId=" + linkedUserId + " account=" + ma.getAccountName());
         }
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mTimelineType, true, id);
         String action = getIntent().getAction();
