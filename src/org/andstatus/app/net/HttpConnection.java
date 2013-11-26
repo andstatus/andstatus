@@ -64,7 +64,10 @@ public abstract class HttpConnection {
         return false;
     }
     
-    public void setPassword(String password) { }
+    public void setPassword(String password) {
+        // Nothing to do
+    }
+    
     
     public String getPassword() {
         return "";
@@ -87,7 +90,7 @@ public abstract class HttpConnection {
     public abstract boolean getCredentialsPresent();
 
     public void setUserTokenWithSecret(String token, String secret) {
-        throw(new IllegalArgumentException("setUserTokenWithSecret is for OAuth only!"));
+        throw new IllegalArgumentException("setUserTokenWithSecret is for OAuth only!");
     }
 
     String getUserToken() {

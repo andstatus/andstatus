@@ -89,7 +89,7 @@ public enum IntentExtra{
 
     public static IntentExtra fromKey(String key) {
         for (IntentExtra item : IntentExtra.values()) {
-            if (item.key == key) {
+            if (item.key.contentEquals(key)) {
                 return item;
             }
         }

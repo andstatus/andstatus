@@ -71,12 +71,12 @@ import net.jcip.annotations.GuardedBy;
 public class MyService extends Service {
     private static final String TAG = MyService.class.getSimpleName();
 
-    static final String packageName = MyService.class.getPackage().getName();
+    static final String PACKAGE_NAME = MyService.class.getPackage().getName();
 
     /**
      * Prefix of all actions of this Service
      */
-    private static final String ACTIONPREFIX = packageName + ".action.";
+    private static final String ACTIONPREFIX = PACKAGE_NAME + ".action.";
 
     /**
      * Intent with this action sent when it is time to update AndStatus
@@ -618,7 +618,7 @@ public class MyService extends Service {
                 mIsStopping = false;
                 return;
             }
-            boolean mayStop = (executor == null || executor.getStatus() == Status.FINISHED);
+            boolean mayStop = executor == null || executor.getStatus() == Status.FINISHED;
             if (!mayStop) {
                 if (forceNow) {
                     MyLog.d(this, "stopDelayed: Forced to stop now, cancelling Executor");
@@ -658,9 +658,9 @@ public class MyService extends Service {
         int count = 0;
         // Delete any existing saved queue
         SharedPreferencesUtil.delete(context, prefsFileName);
-        if (q.size() > 0) {
+        if (!q.isEmpty()) {
             SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
-            while (q.size() > 0) {
+            while (!q.isEmpty()) {
                 CommandData cd = q.poll();
                 cd.save(sp, count);
                 MyLog.v(this, "Command saved: " + cd.toString());
@@ -691,10 +691,10 @@ public class MyService extends Service {
         if (count == 0 ) {
             clearNotifications();
         } else if (mNotificationsEnabled && MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFICATIONS_QUEUE, false)) {
-            if (retryCommandQueue.size() > 0) {
+            if (!retryCommandQueue.isEmpty()) {
                 MyLog.d(TAG, retryCommandQueue.size() + " commands in Retry Queue.");
             }
-            if (mainCommandQueue.size() > 0) {
+            if (!mainCommandQueue.isEmpty()) {
                 MyLog.d(TAG, mainCommandQueue.size() + " commands in Main Queue.");
             }
 
@@ -775,7 +775,9 @@ public class MyService extends Service {
             MyLog.d(TAG, "CommandExecutor, " + mainCommandQueue.size() + " commands to process");
 
             do {
-                if (isStopping()) break;
+                if (isStopping()) {
+                    break;
+                }
                 
                 // Get commands from the Queue one by one and execute them
                 // The queue is Blocking, so we can do this
@@ -795,8 +797,9 @@ public class MyService extends Service {
                         }
                     }        
                 }
-                MyLog.d(TAG, (commandData.commandResult.hasError() ?
-                        (commandData.commandResult.willRetry ? "Will retry" : "Failed") : "Succeeded") 
+                MyLog.d(TAG, (commandData.commandResult.hasError() 
+                        ? (commandData.commandResult.willRetry ? "Will retry" : "Failed") 
+                                : "Succeeded") 
                         + " " + commandData);
                 broadcastState(commandData);
                 if (commandData.commandResult.hasError() && !isOnline()) {
@@ -1412,16 +1415,19 @@ public class MyService extends Service {
             // message type
             switch (msgType) {
                 case NOTIFY_MENTIONS:
-                    if (!notificationsReplies)
+                    if (!notificationsReplies) {
                         return;
+                    }
                     break;
                 case NOTIFY_DIRECT_MESSAGE:
-                    if (!notificationsMessages)
+                    if (!notificationsMessages) {
                         return;
+                    }
                     break;
                 case NOTIFY_HOME_TIMELINE:
-                    if (!notificationsTimeline)
+                    if (!notificationsTimeline) {
                         return;
+                    }
                     break;
                 default:
                     break;
@@ -1535,8 +1541,8 @@ public class MyService extends Service {
                 MbRateLimitStatus rateLimitStatus = conn.rateLimitStatus();
                 ok = !rateLimitStatus.isEmpty();
                 if (ok) {
-                    commandData.commandResult.remaining_hits = rateLimitStatus.remaining; 
-                    commandData.commandResult.hourly_limit = rateLimitStatus.limit;
+                    commandData.commandResult.remainingHits = rateLimitStatus.remaining; 
+                    commandData.commandResult.hourlyLimit = rateLimitStatus.limit;
                  }
             } catch (ConnectionException e) {
                 logConnectionException(e, commandData, "rateLimitStatus Exception");

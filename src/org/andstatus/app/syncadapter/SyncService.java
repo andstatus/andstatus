@@ -50,9 +50,6 @@ public class SyncService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    /*
-     * {@inheritDoc}
-     */
     @Override
     public IBinder onBind(Intent intent) {
         MyLog.d(TAG, "onBind");

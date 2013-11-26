@@ -38,6 +38,9 @@ import javax.xml.transform.stream.StreamSource;
 public class Xslt {
     private static final String TAG = Xslt.class.getSimpleName();
 
+    private Xslt() {
+    }
+    
     /**
      * Transform XML input files using supplied XSL stylesheet and return as String
      * @param resXml XML file to transform. This file is localized! It should be put into "raw-<language>" folder 
@@ -46,14 +49,6 @@ public class Xslt {
      */
     public static String toHtmlString(Context context, int resXml, int resXsl) {
         String output = "";
-
-        //   If we decided to avoid any XSLT, we would write this:
-        //   This file is localized! 
-        // java.io.InputStream is = getResources().openRawResource(R.raw.resXml);
-        //   This is how to show raw xml file:
-        //   answer from: http://stackoverflow.com/questions/309424/read-convert-an-inputstream-to-a-string
-        // java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        // output = s.hasNext() ? s.next() : "";
         
         // Based on http://stackoverflow.com/questions/6215001/convert-xml-file-using-xslt-in-android
         try {

@@ -49,7 +49,9 @@ public class OAuthClientKeysOpenSource implements OAuthClientKeysStrategy {
     }
 
     @Override
-    public void setConsumerKeyAndSecret(String ConsumerKey, String ConsumerSecret) {}
+    public void setConsumerKeyAndSecret(String consumerKey, String consumerSecret) {
+        // Nothing to do
+    }
 
     @Override
     public String toString() {

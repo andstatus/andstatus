@@ -19,7 +19,7 @@ package org.andstatus.app.util;
 /**
  * Add selection and it's argument (for query...)
  */
-public class SelectionAndArgs {
+public final class SelectionAndArgs {
   public String selection;
   public String[] selectionArgs;
   public int nArgs;

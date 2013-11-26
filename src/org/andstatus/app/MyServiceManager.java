@@ -78,7 +78,7 @@ public class MyServiceManager extends BroadcastReceiver {
                 return;
             }
             MyContextHolder.initialize(context, this);
-            if (action.equals("android.intent.action.ACTION_SHUTDOWN")) {
+            if ("android.intent.action.ACTION_SHUTDOWN".equals(action)) {
                 // This system broadcast is Since: API Level 4
                 // We need this to persist unsaved data in the service
                 MyLog.d(TAG, "Stopping service on Shutdown");
@@ -113,8 +113,7 @@ public class MyServiceManager extends BroadcastReceiver {
      * Stop  {@link MyService} asynchronously
      */
     public static synchronized void stopService() {
-        // Don't do this, because we may loose some information and (or) get Force Close
-        // context.stopService(new Intent(MyService.class.getName()));
+        // Don't do "context.stopService", because we may loose some information and (or) get Force Close
         
         //This is "mild" stopping
         CommandData element = new CommandData(CommandEnum.STOP_SERVICE, "");

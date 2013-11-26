@@ -26,6 +26,6 @@ public class MbRateLimitStatus {
     public int limit = 0;
     
     public boolean isEmpty() {
-      return (limit == 0 && remaining == 0);   
+      return limit == 0 && remaining == 0;   
     }
 }

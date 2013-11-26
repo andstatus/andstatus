@@ -43,12 +43,11 @@ public class TimelinePosition {
     }
 
     public static TimelinePosition getEmpty() {
-        TimelinePosition position = new TimelinePosition("");
-        return position;
+        return new TimelinePosition("");
     }
 
     public boolean isEmpty() {
-        return (TextUtils.isEmpty(position));
+        return TextUtils.isEmpty(position);
     }
     
 }

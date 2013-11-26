@@ -23,10 +23,14 @@ import org.andstatus.app.util.MyLog;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * This is a central point of accessing SharedPreferences
@@ -253,10 +257,15 @@ public class MyPreferences {
                 }
                 dir = new File(baseDir, pathToAppend);
                 if (!dir.exists()) {
-                    dir.mkdirs();
-                    if (!dir.exists()) {
-                        textToLog = "getDataFilesDir - Could not create '" + dir.getPath() + "'";
-                        dir = null;
+                    try {
+                        dir.mkdirs();
+                    } catch (Exception e) {
+                        MyLog.e(TAG, "Error creating directory", e);
+                    } finally {
+                        if (!dir.exists()) {
+                            textToLog = "getDataFilesDir - Could not create '" + dir.getPath() + "'";
+                            dir = null;
+                        }
                     }
                 }
             }
@@ -293,13 +302,13 @@ public class MyPreferences {
      * Simple check that allows to prevent data access errors
      */
     public static boolean isDataAvailable() {
-        return (getDataFilesDir(null, null) != null);
+        return getDataFilesDir(null, null) != null;
     }
 
     /**
      * Load the theme according to the preferences.
      */
-    public static void loadTheme(String TAG, Context context) {
+    public static void loadTheme(String tag, Context context) {
         String themeColor = getDefaultSharedPreferences().getString(KEY_THEME_COLOR, "DeviceDefault");
         StringBuilder themeName = new StringBuilder("Theme.");
         themeName.append(themeColor);
@@ -308,15 +317,31 @@ public class MyPreferences {
         themeName.append(themeSize);
         int themeId = context.getResources().getIdentifier(themeName.toString(), "style",
                 "org.andstatus.app");
-        if (themeId == 0 || MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+        if (themeId == 0 || MyLog.isLoggable(tag, MyLog.VERBOSE)) {
             String text = "loadTheme; theme=\"" + themeName.toString() + "\"; id=" + Integer.toHexString(themeId);
             if (themeId == 0) {
-                MyLog.e(TAG, text);
+                MyLog.e(tag, text);
             } else {
-                MyLog.v(TAG, text);
+                MyLog.v(tag, text);
             }
         }
         context.setTheme(themeId);
+    }
+
+    public static boolean checkAndUpdateLastOpenedAppVersion(Context context)
+            throws NameNotFoundException {
+        boolean changed = false;
+        int versionCodeLast =  getDefaultSharedPreferences().getInt(KEY_VERSION_CODE_LAST, 0);
+        PackageManager pm = context.getPackageManager();
+        PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
+        int versionCode =  pi.versionCode;
+        if (versionCodeLast < versionCode) {
+            // Even if the User will see only the first page of the Help activity,
+            // count this as showing the Change Log
+            changed = true;
+            getDefaultSharedPreferences().edit().putInt(KEY_VERSION_CODE_LAST, versionCode).commit();
+        }
+        return changed;
     }
     
 }

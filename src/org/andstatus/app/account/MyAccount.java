@@ -55,11 +55,11 @@ import org.andstatus.app.util.TriState;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class MyAccount implements AccountDataReader {
+public final class MyAccount implements AccountDataReader {
     private static final String TAG = MyAccount.class.getSimpleName();
     
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
-    public static class Builder implements Parcelable, AccountDataWriter {
+    public static final class Builder implements Parcelable, AccountDataWriter {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
 
 
@@ -446,7 +446,7 @@ public class MyAccount implements AccountDataReader {
                 if (!isPersistent() && (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED)) {
                     try {
                         changed = true;
-                        /* Now add this account to the Account Manager
+                        /** Now add this account to the Account Manager
                          * See {@link com.android.email.provider.EmailProvider.createAccountManagerAccount(Context, String, String)}
                          * 
                          * Note: We could add userdata from {@link userData} Bundle, 
@@ -572,12 +572,12 @@ public class MyAccount implements AccountDataReader {
             if (credentialsOfOtherUser) {
                 MyLog.e(this, MyContextHolder.get().context().getText(R.string.error_credentials_of_other_user) + ": "
                         + newName);
-                throw (new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, newName));
+                throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, newName);
             }
             if (errorSettingUsername) {
                 String msg = MyContextHolder.get().context().getText(R.string.error_set_username) + newName;
                 MyLog.e(this, msg);
-                throw (new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg));
+                throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
             }
             return ok;
         }
@@ -809,7 +809,7 @@ public class MyAccount implements AccountDataReader {
             if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY) && isPersistent()) {
                 List<PeriodicSync> syncs = ContentResolver.getPeriodicSyncs(androidAccount, MyProvider.AUTHORITY);
                 // Take care of the first in the list
-                if (syncs.size() > 0) {
+                if (!syncs.isEmpty()) {
                     value = syncs.get(0).period;
                 }
             } else {
@@ -891,7 +891,7 @@ public class MyAccount implements AccountDataReader {
      * @return Is this object persistent 
      */
     private boolean isPersistent() {
-        return (androidAccount != null);
+        return androidAccount != null;
     }
     
     /**
@@ -914,13 +914,13 @@ public class MyAccount implements AccountDataReader {
         }
         if (!found) {
             uniqueName = possiblyUnique;
-            int indAt = uniqueName.indexOf("@");
+            int indAt = uniqueName.indexOf('@');
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt);
                 for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
                     if (!persistentAccount.toString().equalsIgnoreCase(toString()) ) {
                         String toCompareWith = persistentAccount.getUsername();
-                        indAt = toCompareWith.indexOf("@");
+                        indAt = toCompareWith.indexOf('@');
                         if (indAt > 0) {
                             toCompareWith = toCompareWith.substring(0, indAt);
                         }
@@ -939,13 +939,14 @@ public class MyAccount implements AccountDataReader {
     }
 
     boolean isValid() {
-        return (version  == MyDatabase.DATABASE_VERSION && oAccountName.isValid() 
+        return version  == MyDatabase.DATABASE_VERSION && oAccountName.isValid() 
                 && !TextUtils.isEmpty(userOid)
                 && userId != 0
-                && connection != null);
+                && connection != null;
     }
     
-    private MyAccount() {};
+    private MyAccount() {
+    }
 
     public String getUsername() {
         return oAccountName.getUsername();
@@ -1005,7 +1006,7 @@ public class MyAccount implements AccountDataReader {
     }
     
     public boolean areClientKeysPresent() {
-        return (connection.areOAuthClientKeysPresent());
+        return connection.areOAuthClientKeysPresent();
     }
     
     public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {

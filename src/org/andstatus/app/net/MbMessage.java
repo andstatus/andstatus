@@ -56,8 +56,7 @@ public class MbMessage {
     }
     
     public static MbMessage getEmpty() {
-        MbMessage message = new MbMessage();
-        return message;
+        return new MbMessage();
     }
 
     public MbMessage markAsEmpty() {
@@ -68,6 +67,6 @@ public class MbMessage {
     private MbMessage() {}
     
     public boolean isEmpty() {
-        return (this.isEmpty || TextUtils.isEmpty(oid) || originId==0);
+        return this.isEmpty || TextUtils.isEmpty(oid) || originId==0;
     }
 }

@@ -19,11 +19,11 @@ package org.andstatus.app;
 import junit.framework.TestCase;
 
 import android.content.Context;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.data.DataInserterTest;
 import org.andstatus.app.data.MyPreferences;
-import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -39,7 +39,7 @@ public class TestSuite extends TestCase {
         return initialized;
     }
     
-    public static synchronized Context initialize(InstrumentationTestCase testCase) {
+    public static synchronized Context initialize(InstrumentationTestCase testCase) throws NameNotFoundException {
         if (initialized) {
             MyLog.d(TAG, "Already initialized");
             return context;
@@ -96,6 +96,10 @@ public class TestSuite extends TestCase {
         dataPath = MyContextHolder.get().context().getDatabasePath("andstatus").getPath();
         MyLog.v("TestSuite", "Test Suite initialized, MyContext state=" + MyContextHolder.get().state() 
                 + "; databasePath=" + dataPath);
+        
+        if (MyPreferences.checkAndUpdateLastOpenedAppVersion(MyContextHolder.get().context())) {
+            MyLog.i(TAG, "New version of application is running");
+        }
         
         return context;
     }

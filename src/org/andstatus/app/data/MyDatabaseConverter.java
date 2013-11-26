@@ -41,6 +41,10 @@ public class MyDatabaseConverter {
     @GuardedBy("upgradeLock")
     private static boolean upgradeSuccessfullyCompleted = false;
     
+    final static Long SECONDS_BEFORE_UPGRADE_TRIGGERED = 5L;
+    final static long SECONDS_FOR_UPGRADE = 30L;
+    final static Long SECONDS_AFTER_UPGRADE = 5L;
+
     public static void triggerDatabaseUpgrade(Object requester) {
         String requesterName = MyLog.objTagToString(requester);
         if (isUpgrading()) {
@@ -66,7 +70,6 @@ public class MyDatabaseConverter {
                         + ": already completed successfully");
                 return;
             }
-            final Long SECONDS_BEFORE_UPGRADE_TRIGGERED = 5L;
             upgradeEndTime = currentTime + java.util.concurrent.TimeUnit.SECONDS.toMillis(SECONDS_BEFORE_UPGRADE_TRIGGERED);
             shouldTriggerDatabaseUpgrade = true;            
         }
@@ -91,7 +94,6 @@ public class MyDatabaseConverter {
             currentTime = java.lang.System.currentTimeMillis();
             synchronized(upgradeLock) {
                 if (upgradeStarted) {
-                    final Long SECONDS_AFTER_UPGRADE = 5L;
                     upgradeEndTime = currentTime + java.util.concurrent.TimeUnit.SECONDS.toMillis(SECONDS_AFTER_UPGRADE);
                     MyLog.w(TAG, "Upgrade ended, waiting " + SECONDS_AFTER_UPGRADE + " more seconds");
                 } else {
@@ -102,7 +104,6 @@ public class MyDatabaseConverter {
     }
     
     public static void stillUpgrading() {
-        final long SECONDS_FOR_UPGRADE = 30L;
         synchronized(upgradeLock) {
             upgradeStarted = true;
             upgradeEndTime = java.lang.System.currentTimeMillis() + java.util.concurrent.TimeUnit.SECONDS.toMillis(SECONDS_FOR_UPGRADE);
@@ -191,7 +192,7 @@ public class MyDatabaseConverter {
                     + " to version " + versionTo
                     + " SQL='" + sql +"'");
         }
-        return (ok ? versionTo : oldVersion) ;
+        return ok ? versionTo : oldVersion;
     }
 
     /**
@@ -229,7 +230,7 @@ public class MyDatabaseConverter {
                     + " to version " + versionTo
                     + " SQL='" + sql +"'");
         }
-        return (ok ? versionTo : oldVersion) ;
+        return ok ? versionTo : oldVersion;
     }
 
     /**

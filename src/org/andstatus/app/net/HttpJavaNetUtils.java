@@ -25,7 +25,10 @@ import java.net.URLEncoder;
 import java.util.Map;
 
 class HttpJavaNetUtils {
-    static String encode(Map<String, String> params) {
+    private HttpJavaNetUtils() {
+    }
+    
+    static String encode(Map<String, String> params) throws ConnectionException {
         try {
             StringBuilder sb = new StringBuilder();
             for(Map.Entry<String, String> entry : params.entrySet()) {
@@ -38,8 +41,8 @@ class HttpJavaNetUtils {
             }
             
             return sb.toString();
-        } catch(UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex);
+        } catch(UnsupportedEncodingException e) {
+            throw new ConnectionException("Encoding params", e);
         }
     }
 

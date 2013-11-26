@@ -67,7 +67,7 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
                 if (messages.size() < 2) {  // We may assume that we downloaded the same message...
                     toDownload = 0;
                 }
-                if (messages.size() > 0) {
+                if (!messages.isEmpty()) {
                     toDownload -= messages.size();
                     DataInserter di = new DataInserter(counters);
                     for (MbTimelineItem item : messages) {

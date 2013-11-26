@@ -155,8 +155,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 		// - Create a RemoteViews object for it
 		// - Set the text in the RemoteViews object
 		// - Tell the AppWidgetManager to show that rows object for the widget.
-		final int N = appWidgetIds.length;
-		for (int i = 0; i < N; i++) {
+		final int n = appWidgetIds.length;
+		for (int i = 0; i < n; i++) {
 			int appWidgetId = appWidgetIds[i];
 			updateAppWidget(context, appWidgetManager, appWidgetId);
 		}
@@ -169,8 +169,8 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
         }
 		// When the user deletes the widget, delete all preferences associated
 		// with it.
-		final int N = appWidgetIds.length;
-		for (int i = 0; i < N; i++) {
+		final int n = appWidgetIds.length;
+		for (int i = 0; i < n; i++) {
 			new MyAppWidgetData(context, appWidgetIds[i]).delete();
 		}
 	}
@@ -200,7 +200,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 	 */
 	void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
 			int appWidgetId) {
-		boolean Ok = false;
+		boolean ok = false;
 		try {
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "instanceId=" + instanceId + "; updateAppWidget appWidgetId=" + appWidgetId 
@@ -359,7 +359,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
             
             // This line is necessary to actually bring Extra to the target intent
             // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
-            intent.setData((android.net.Uri.parse(MyProvider.TIMELINE_URI.toString() + "#" + android.os.SystemClock.elapsedRealtime())));
+            intent.setData(android.net.Uri.parse(MyProvider.TIMELINE_URI.toString() + "#" + android.os.SystemClock.elapsedRealtime()));
 			PendingIntent pendingIntent = PendingIntent.getActivity(context,
 					0 /* no requestCode */, intent, 0 /* no flags */);
 			views.setOnClickPendingIntent(R.id.widget, pendingIntent);
@@ -373,13 +373,13 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			} else {
 				appWidgetManager.updateAppWidget(appWidgetId, views);
 			}
-			Ok = true;
+			ok = true;
 		} catch (Exception e) {
 			MyLog.e(this, "instanceId=" + instanceId + "; updateAppWidget exception", e);
 			
 		} finally {
-            if ( !Ok || MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "instanceId=" + instanceId + "; updateAppWidget " + (Ok ? "succeded" : "failed") );
+            if ( !ok || MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "instanceId=" + instanceId + "; updateAppWidget " + (ok ? "succeded" : "failed") );
             }
 		}
 	}

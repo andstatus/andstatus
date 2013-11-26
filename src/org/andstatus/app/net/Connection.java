@@ -116,7 +116,8 @@ public abstract class Connection {
     protected HttpConnection http;
     protected OriginConnectionData data;
     
-    protected Connection() {}
+    protected Connection() {
+    }
 
     /**
      * @return an empty string in case the API routine is not supported
@@ -153,7 +154,7 @@ public abstract class Connection {
         if (!is && MyLog.isLoggable(null, MyLog.VERBOSE )) {
           MyLog.v(this.getClass().getSimpleName(), "The API routine '" + routine + "' is not supported");  
         }
-        return (is);
+        return is;
     }
     
     /**
@@ -362,7 +363,9 @@ public abstract class Connection {
         return http.data.areOAuthClientKeysPresent();
     }
 
-    public void enrichConnectionData(OriginConnectionData connectionData2) { }
+    public void enrichConnectionData(OriginConnectionData connectionData2) {
+        // Nothing to do
+    }
 
     public boolean userObjectHasMessage() {
         return false;

@@ -78,11 +78,11 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     // End Of the list ----------------------------------------
 
     private CheckBoxPreference mUseExternalStorage;
-    private boolean mUseExternalStorage_busy = false;
+    private boolean useExternalStorageIsBusy = false;
 
     private RingtonePreference mNotificationRingtone;
 
-    private boolean onSharedPreferenceChanged_busy = false;
+    private boolean onSharedPreferenceChangedIsBusy = false;
 
     private boolean startTimelineActivity = false;
     
@@ -244,10 +244,10 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         if (somethingIsBeingChanging) {
             return;
         }
-        if (onSharedPreferenceChanged_busy || !MyContextHolder.get().initialized()) {
+        if (onSharedPreferenceChangedIsBusy || !MyContextHolder.get().initialized()) {
             return;
         }
-        onSharedPreferenceChanged_busy = true;
+        onSharedPreferenceChangedIsBusy = true;
 
         try {
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
@@ -273,13 +273,13 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                 showMinLogLevel();
             }
             if (key.equals(MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW)) {
-                if (!mUseExternalStorage_busy) {
-                    mUseExternalStorage_busy = true;
+                if (!useExternalStorageIsBusy) {
+                    useExternalStorageIsBusy = true;
                     showDialog(DLG_MOVE_DATA_BETWEEN_STORAGES);
                 }
             }
         } finally {
-            onSharedPreferenceChanged_busy = false;
+            onSharedPreferenceChangedIsBusy = false;
         }
     }
 
@@ -320,7 +320,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                         @Override
                         public void onCancel(DialogInterface dialog) {
                             MyPreferenceActivity.this.showUseExternalStorage();
-                            MyPreferenceActivity.this.mUseExternalStorage_busy = false;
+                            MyPreferenceActivity.this.useExternalStorageIsBusy = false;
                         }
                     })
                     .setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
@@ -377,6 +377,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                 ((AlertDialog) dialog)
                         .setMessage(getText(mUseExternalStorage.isChecked() ? R.string.summary_preference_storage_external_on
                                 : R.string.summary_preference_storage_external_off));
+                break;
+            default:
                 break;
         }
     }
@@ -571,7 +573,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         boolean copyFile(File src, File dst) throws IOException {
             long sizeIn = -1;
             long sizeCopied = 0;
-            boolean Ok = false;
+            boolean ok = false;
             if (src != null) {
                 if (src.exists()) {
                     sizeIn = src.length();
@@ -585,19 +587,21 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                             outChannel = new java.io.FileOutputStream(dst)
                             .getChannel();
                             sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
-                            Ok = (sizeIn == sizeCopied);
+                            ok = (sizeIn == sizeCopied);
                         } finally {
-                            if (inChannel != null)
+                            if (inChannel != null) {
                                 inChannel.close();
-                            if (outChannel != null)
+                            }
+                            if (outChannel != null) {
                                 outChannel.close();
+                            }
                         }
 
                     }
                 }
             }
             MyLog.d(TAG, "Copied " + sizeCopied + " bytes of " + sizeIn);
-            return (Ok);
+            return ok;
         }
 
         // This is in the UI thread, so we can mess with the UI
@@ -613,10 +617,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                     MyLog.d(TAG, this.getClass().getSimpleName() + " ended, "
                             + (succeeded ? "moved" : "move failed"));
                     
-                    if (succeeded) {
-
-                    } else {
-
+                    if (!succeeded) {
                         String message2 = MyPreferenceActivity.this
                         .getString(R.string.error);
                         if (message != null && message.length() > 0) {
@@ -624,7 +625,6 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                             MyLog.d(TAG, message);
                         }
                         Toast.makeText(MyPreferenceActivity.this, message2, Toast.LENGTH_LONG).show();
-                        
                     }
                     MyPreferenceActivity.this.showUseExternalStorage();
                     
@@ -632,7 +632,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                     MyLog.e(this, e);
                 }
             }
-            mUseExternalStorage_busy = false;
+            useExternalStorageIsBusy = false;
         }
     }
 

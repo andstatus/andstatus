@@ -99,8 +99,7 @@ public class ConnectionPumpio extends Connection {
     @Override
     public MbRateLimitStatus rateLimitStatus() throws ConnectionException {
         // TODO Method stub
-        MbRateLimitStatus status = new MbRateLimitStatus();
-        return status;
+        return new MbRateLimitStatus();
     }
 
     @Override
@@ -146,20 +145,21 @@ public class ConnectionPumpio extends Connection {
     /**
      * Simple solution based on:
      * http://stackoverflow.com/questions/2201925/converting-iso8601-compliant-string-to-java-util-date
+     * @return Unix time
      */
     private static long parseDate(String date) {
-        if(date == null)
+        if(date == null) {
             return new Date().getTime();
+        }
         String datePrepared;        
-        if (date.lastIndexOf("Z") == date.length()-1) {
+        if (date.lastIndexOf('Z') == date.length()-1) {
             datePrepared = date.substring(0, date.length()-1) + "+0000";
         } else {
             datePrepared = date.replaceAll("\\+0([0-9]){1}\\:00", "+0$100");
         }
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY);
         try {
-            long unixTime = df.parse(datePrepared).getTime();
-            return unixTime;
+            return df.parse(datePrepared).getTime();
         } catch (ParseException e) {
             MyLog.e(TAG, "Failed to parse the date: '" + date +"'", e);
             return new Date().getTime();
@@ -355,7 +355,7 @@ public class ConnectionPumpio extends Connection {
 
     @Override
     public int fixedDownloadLimitForApiRoutine(int limit, ApiRoutineEnum apiRoutine) {
-        final int maxLimit = (apiRoutine == ApiRoutineEnum.GET_FRIENDS ? 200 : 20);
+        final int maxLimit = apiRoutine == ApiRoutineEnum.GET_FRIENDS ? 200 : 20;
         int out = super.fixedDownloadLimitForApiRoutine(limit, apiRoutine);
         if (out > maxLimit) {
             out = maxLimit;
@@ -399,10 +399,10 @@ public class ConnectionPumpio extends Connection {
                 mbUser.actor = userFromJson(activity.getJSONObject("actor"));
             }
             
-            if (verb.equalsIgnoreCase("follow")) {
+            if ("follow".equalsIgnoreCase(verb)) {
                 mbUser.followedByActor = TriState.TRUE;
-            } else if (verb.equalsIgnoreCase("unfollow") 
-                    || verb.equalsIgnoreCase("stop-following")) {
+            } else if ("unfollow".equalsIgnoreCase(verb) 
+                    || "stop-following".equalsIgnoreCase(verb)) {
                 mbUser.followedByActor = TriState.FALSE;
             }
         } catch (JSONException e) {
@@ -472,16 +472,16 @@ public class ConnectionPumpio extends Connection {
             
             JSONObject jso = activity.getJSONObject("object");
             // Is this a reblog ("Share" in terms of Activity streams)?
-            if (verb.equalsIgnoreCase("share")) {
+            if ("share".equalsIgnoreCase(verb)) {
                 message.rebloggedMessage = messageFromJson(jso);
                 if (message.rebloggedMessage.isEmpty()) {
                     MyLog.d(TAG, "No reblogged message " + jso.toString(2));
                     return message.markAsEmpty();
                 }
             } else {
-                if (verb.equalsIgnoreCase("favorite")) {
+                if ("favorite".equalsIgnoreCase(verb)) {
                     message.favoritedByActor = TriState.TRUE;
-                } else if (verb.equalsIgnoreCase("unfavorite") || verb.equalsIgnoreCase("unlike")) {
+                } else if ("unfavorite".equalsIgnoreCase(verb) || "unlike".equalsIgnoreCase(verb)) {
                     message.favoritedByActor = TriState.FALSE;
                 }
                 
@@ -555,7 +555,7 @@ public class ConnectionPumpio extends Connection {
     private String userOidToUsername(String userId) {
         String username = "";
         if (!TextUtils.isEmpty(userId)) {
-            int indexOfColon = userId.indexOf(":");
+            int indexOfColon = userId.indexOf(':');
             if (indexOfColon > 0) {
                 username = userId.substring(indexOfColon+1);
             }
@@ -566,8 +566,8 @@ public class ConnectionPumpio extends Connection {
     private String userOidToNickname(String userId) {
         String nickname = "";
         if (!TextUtils.isEmpty(userId)) {
-            int indexOfColon = userId.indexOf(":");
-            int indexOfAt = userId.indexOf("@");
+            int indexOfColon = userId.indexOf(':');
+            int indexOfAt = userId.indexOf('@');
             if (indexOfColon > 0 && indexOfAt > indexOfColon) {
                 nickname = userId.substring(indexOfColon+1, indexOfAt);
             }
@@ -578,7 +578,7 @@ public class ConnectionPumpio extends Connection {
     String usernameToHost(String username) {
         String host = "";
         if (!TextUtils.isEmpty(username)) {
-            int indexOfAt = username.indexOf("@");
+            int indexOfAt = username.indexOf('@');
             if (indexOfAt >= 0) {
                 host = username.substring(indexOfAt + 1);
             }

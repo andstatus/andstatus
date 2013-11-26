@@ -170,16 +170,16 @@ public class DataInserter {
                 // Construct the Uri to the Msg
                 Uri msgUri = MyProvider.getTimelineMsgUri(counters.ma.getUserId(), counters.timelineType, false, rowId);
 
-                long sentDate_stored = 0;
+                long sentDateStored = 0;
                 if (rowId != 0) {
-                    sentDate_stored = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, rowId);
-                    isNew = (sentDate_stored == 0);
+                    sentDateStored = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, rowId);
+                    isNew = (sentDateStored == 0);
                     if (!isNew) {
-                      long senderId_stored = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, rowId);
-                      isNew = (senderId_stored == 0);
+                      long senderIdStored = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, rowId);
+                      isNew = (senderIdStored == 0);
                     }
                 }
-                if (sentDate > sentDate_stored) {
+                if (sentDate > sentDateStored) {
                     isNewer = true;
                     // This message is newer than already stored in our database, so count it!
                     countIt = true;
@@ -219,7 +219,7 @@ public class DataInserter {
                                 + counters.ma.getAccountName() );
                     }
                 }
-                boolean mentioned = (counters.timelineType == TimelineTypeEnum.MENTIONS);
+                boolean mentioned = counters.timelineType == TimelineTypeEnum.MENTIONS;
                 if (counters.timelineType == TimelineTypeEnum.HOME) {
                     values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
                 }

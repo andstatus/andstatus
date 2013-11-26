@@ -130,7 +130,7 @@ public abstract class ConnectionTwitter extends Connection {
                 jso = null;
             }
         }
-        return (jso != null);
+        return jso != null;
     }
     
     /**
@@ -147,7 +147,7 @@ public abstract class ConnectionTwitter extends Connection {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject user = postRequest((follow ? ApiRoutineEnum.FOLLOW_USER : ApiRoutineEnum.STOP_FOLLOWING_USER), out);
+        JSONObject user = postRequest(follow ? ApiRoutineEnum.FOLLOW_USER : ApiRoutineEnum.STOP_FOLLOWING_USER, out);
         return userFromJson(user);
     } 
 
@@ -469,6 +469,7 @@ public abstract class ConnectionTwitter extends Connection {
             formParams.put("status", message);
             
             // This parameter was removed from API:
+            // TODO: Check with StatusNet!
             // formParams.add(new BasicNameValuePair("source", SOURCE_PARAMETER));
             
             if ( !TextUtils.isEmpty(inReplyToId)) {

@@ -53,8 +53,8 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
     }
     
     @Override
-    public void setConsumerKeyAndSecret(String consumerKey_in, String consumerSecret_in) {
-        if (TextUtils.isEmpty(consumerKey_in) || TextUtils.isEmpty(consumerSecret_in)) {
+    public void setConsumerKeyAndSecret(String consumerKeyIn, String consumerSecretIn) {
+        if (TextUtils.isEmpty(consumerKeyIn) || TextUtils.isEmpty(consumerSecretIn)) {
             consumerKey = "";
             consumerSecret = "";
             MyPreferences.getDefaultSharedPreferences().edit()
@@ -62,8 +62,8 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
             .remove(keyConsumerSecret)
             .commit();
         } else {
-            consumerKey = consumerKey_in;
-            consumerSecret = consumerSecret_in;
+            consumerKey = consumerKeyIn;
+            consumerSecret = consumerSecretIn;
             MyPreferences.getDefaultSharedPreferences().edit()
             .putString(keyConsumerKey, consumerKey)
             .putString(keyConsumerSecret, consumerSecret)

@@ -92,7 +92,7 @@ public class MyProvider extends ContentProvider {
      */
     public static final String SEARCH_SEGMENT = "search";
 
-    private static final UriMatcher sUriMatcher;
+    private static final UriMatcher URI_MATCHER;
     /**
      * Matched codes, returned by {@link UriMatcher#match(Uri)}
      * This first member is for a Timeline of selected User (Account) (or all timelines...) and it corresponds to the {@link #TIMELINE_URI}
@@ -134,7 +134,7 @@ public class MyProvider extends ContentProvider {
     @Override
     public String getType(Uri uri) {
         String type = null;
-        switch (sUriMatcher.match(uri)) {
+        switch (URI_MATCHER.match(uri)) {
             case MSG:
             case TIMELINE:
             case TIMELINE_SEARCH:
@@ -167,7 +167,7 @@ public class MyProvider extends ContentProvider {
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         String sqlDesc = "";
         int count = 0;
-        switch (sUriMatcher.match(uri)) {
+        switch (URI_MATCHER.match(uri)) {
             case MSG:
                 db.beginTransaction();
                 try {
@@ -254,11 +254,10 @@ public class MyProvider extends ContentProvider {
                 values = new ContentValues();
             }
 
-            switch (sUriMatcher.match(uri)) {
+            switch (URI_MATCHER.match(uri)) {
                 case TIMELINE:
                     accountUserId = uriToAccountUserId(uri);
                     MyDatabase.TimelineTypeEnum timelineType = uriToTimelineType(uri);
-                    boolean isCombined = uriToIsCombined(uri);
                     
                     table = MyDatabase.MSG_TABLE_NAME;
                     nullColumnHack = Msg.BODY;
@@ -266,17 +265,20 @@ public class MyProvider extends ContentProvider {
                     /**
                      * Add default values for missed required fields
                      */
-                    if (!values.containsKey(Msg.AUTHOR_ID))
+                    if (!values.containsKey(Msg.AUTHOR_ID)) {
                         if (values.containsKey(Msg.SENDER_ID)) {
                             values.put(Msg.AUTHOR_ID, values.get(Msg.SENDER_ID).toString());
                         }
-                    if (!values.containsKey(Msg.BODY))
+                    }
+                    if (!values.containsKey(Msg.BODY)) {
                         values.put(Msg.BODY, "");
-                    if (!values.containsKey(Msg.VIA))
+                    }
+                    if (!values.containsKey(Msg.VIA)) {
                         values.put(Msg.VIA, "");
+                    }
                     values.put(Msg.INS_DATE, now);
                     
-                    msgOfUserValues = prepareMsgOfUserValues(accountUserId, timelineType, isCombined, values);
+                    msgOfUserValues = prepareMsgOfUserValues(accountUserId, values);
                     break;
 
                 case USER_ID:
@@ -329,7 +331,7 @@ public class MyProvider extends ContentProvider {
      * @param values
      * @return
      */
-    private ContentValues prepareMsgOfUserValues(long userId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined, ContentValues values) {
+    private ContentValues prepareMsgOfUserValues(long userId, ContentValues values) {
         ContentValues msgOfUserValues = null;
         if (userId != 0) {
             // Add MsgOfUser link to Current User MyAccount
@@ -407,7 +409,7 @@ public class MyProvider extends ContentProvider {
         boolean built = false;
         String sql = "";
 
-        int matchedCode = sUriMatcher.match(uri);
+        int matchedCode = URI_MATCHER.match(uri);
         switch (matchedCode) {
             case TIMELINE:
                 qb.setDistinct(true);
@@ -519,7 +521,7 @@ public class MyProvider extends ContentProvider {
                      * and here: <a href="http://code.google.com/p/android/issues/detail?id=4467">SQLiteQueryBuilder.buildQuery ignores selectionArgs</a>
                      */
                     sql = qb.buildQuery(projection, selection, selectionArgs, null, null, orderBy, null);
-                    // We cannot use this method in API 10...
+                    // TODO: We cannot use this method in API 10...
                     // sql = qb.buildQuery(projection, selection, null, null, orderBy, null);
                     built = true;
                 }
@@ -559,7 +561,6 @@ public class MyProvider extends ContentProvider {
      */
     private static String tablesForTimeline(Uri uri, String[] projection) {
         MyDatabase.TimelineTypeEnum tt = uriToTimelineType(uri);
-        // long selectedUserId = uriToUserId(uri);
         boolean isCombined = uriToIsCombined(uri);
         long accountUserId = uriToAccountUserId(uri);
         int nAccounts = 1;
@@ -743,8 +744,7 @@ public class MyProvider extends ContentProvider {
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         int count = 0;
         long accountUserId = 0;
-        int matchedCode = sUriMatcher.match(uri);
-        //MyLog.v(this, "update, matched=" + matchedCode + "; PID=" + android.os.Process.myPid() + "; TID=" + android.os.Process.myTid());
+        int matchedCode = URI_MATCHER.match(uri);
         switch (matchedCode) {
             case MSG:
                 count = db.update(MyDatabase.MSG_TABLE_NAME, values, selection, selectionArgs);
@@ -752,10 +752,8 @@ public class MyProvider extends ContentProvider {
 
             case TIMELINE_MSG_ID:
                 accountUserId = uriToAccountUserId(uri);
-                MyDatabase.TimelineTypeEnum timelineType = uriToTimelineType(uri);
-                boolean isCombined = uriToIsCombined(uri);
                 long rowId = uriToMessageId(uri);
-                ContentValues msgOfUserValues = prepareMsgOfUserValues(accountUserId, timelineType, isCombined, values);
+                ContentValues msgOfUserValues = prepareMsgOfUserValues(accountUserId, values);
                 if (values.size() > 0) {
                     count = db.update(MyDatabase.MSG_TABLE_NAME, values, BaseColumns._ID + "=" + rowId
                             + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
@@ -807,7 +805,7 @@ public class MyProvider extends ContentProvider {
      *  Static Definitions for UriMatcher and Projection Maps
      */
     static {
-        sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+        URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 
         /** 
          * The order of PathSegments (parameters of timelines) in the URI
@@ -816,20 +814,20 @@ public class MyProvider extends ContentProvider {
          * 4 - 5. "combined/" +  0 or 1  (1 for combined timeline) 
          * 6 - 7. MyDatabase.MSG_TABLE_NAME + "/" + MSG_ID  (optional, used to access specific Message)
          */
-        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/search/*", TIMELINE_SEARCH);
-        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/" + MyDatabase.MSG_TABLE_NAME + "/#", TIMELINE_MSG_ID);
-        sUriMatcher.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#", TIMELINE);
+        URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/search/*", TIMELINE_SEARCH);
+        URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/" + MyDatabase.MSG_TABLE_NAME + "/#", TIMELINE_MSG_ID);
+        URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#", TIMELINE);
 
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/count", MSG_COUNT);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME, MSG);
+        URI_MATCHER.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/count", MSG_COUNT);
+        URI_MATCHER.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME, MSG);
 
         /** 
          * The order of PathSegments in the URI
          * 1. MyAccount USER_ID is the first parameter (so we can add 'following' information...)
          * 2 - 3. "su/" + USER_ID  (optional, used to access specific User)
          */
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#/su/#", USER_ID);
-        sUriMatcher.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#", USERS);
+        URI_MATCHER.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#/su/#", USER_ID);
+        URI_MATCHER.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#", USERS);
 
         msgProjectionMap = new HashMap<String, String>();
         msgProjectionMap.put(BaseColumns._ID, MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
@@ -1311,7 +1309,7 @@ public class MyProvider extends ContentProvider {
     public static boolean uriToIsCombined(Uri uri) {
         boolean isCombined = false;
         try {
-            int matchedCode = sUriMatcher.match(uri);
+            int matchedCode = URI_MATCHER.match(uri);
             switch (matchedCode) {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
@@ -1335,7 +1333,7 @@ public class MyProvider extends ContentProvider {
     public static MyDatabase.TimelineTypeEnum uriToTimelineType(Uri uri) {
         MyDatabase.TimelineTypeEnum tt = MyDatabase.TimelineTypeEnum.UNKNOWN;
         try {
-            int matchedCode = sUriMatcher.match(uri);
+            int matchedCode = URI_MATCHER.match(uri);
             switch (matchedCode) {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
@@ -1354,7 +1352,7 @@ public class MyProvider extends ContentProvider {
     public static long uriToMessageId(Uri uri) {
         long messageId = 0;
         try {
-            int matchedCode = sUriMatcher.match(uri);
+            int matchedCode = URI_MATCHER.match(uri);
             switch (matchedCode) {
                 case TIMELINE_MSG_ID:
                     messageId = Long.parseLong(uri.getPathSegments().get(7));
@@ -1371,7 +1369,7 @@ public class MyProvider extends ContentProvider {
     public static long uriToAccountUserId(Uri uri) {
         long accountUserId = 0;
         try {
-            int matchedCode = sUriMatcher.match(uri);
+            int matchedCode = URI_MATCHER.match(uri);
             switch (matchedCode) {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
@@ -1392,7 +1390,7 @@ public class MyProvider extends ContentProvider {
     public static long uriToUserId(Uri uri) {
         long userId = 0;
         try {
-            int matchedCode = sUriMatcher.match(uri);
+            int matchedCode = URI_MATCHER.match(uri);
             switch (matchedCode) {
                 case USER_ID:
                     userId = Long.parseLong(uri.getPathSegments().get(3));

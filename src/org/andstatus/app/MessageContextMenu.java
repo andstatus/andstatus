@@ -413,9 +413,8 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, isTimelineCombined);
         intent.putExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, selectedUserId);
-        // We don't use the Action anywhere, so there is no need it setting it.
+        // We don't use Intent.ACTION_SEARCH action anywhere, so there is no need it setting it.
         // - we're analyzing query instead!
-        // intent.setAction(Intent.ACTION_SEARCH);
         messageList.getActivity().startActivity(intent);
     }
 

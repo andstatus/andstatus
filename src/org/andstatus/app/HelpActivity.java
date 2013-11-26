@@ -48,17 +48,17 @@ public class HelpActivity extends Activity implements SwipeInterface {
 	// Constants
 	public static final String TAG = "HelpActivity";
 
-    private static final String packageName = MyService.class.getPackage().getName();
+    private static final String PACKAGE_NAME = MyService.class.getPackage().getName();
 	
     /**
      * integer - Index of Help screen to show first
      */
-    public static final String EXTRA_HELP_PAGE_ID = packageName + ".HELP_PAGE_ID";
+    public static final String EXTRA_HELP_PAGE_ID = PACKAGE_NAME + ".HELP_PAGE_ID";
     /**
      * boolean - If the activity is the first then we should provide means 
      * to start {@link TimelineActivity} from this activity
      */
-    public static final String EXTRA_IS_FIRST_ACTIVITY = packageName + ".IS_FIRST_ACTIVITY";
+    public static final String EXTRA_IS_FIRST_ACTIVITY = PACKAGE_NAME + ".IS_FIRST_ACTIVITY";
 
     /**
      * Change Log page index
@@ -137,8 +137,8 @@ public class HelpActivity extends Activity implements SwipeInterface {
         View view = findViewById(R.id.help_changelog);
         view.setOnTouchListener(swipe);
 		
-		final Button learn_more = (Button) findViewById(R.id.button_help_learn_more);
-		learn_more.setOnClickListener(new OnClickListener() {
+		final Button learnMore = (Button) findViewById(R.id.button_help_learn_more);
+		learnMore.setOnClickListener(new OnClickListener() {
 			@Override
             public void onClick(View v) {
 				mFlipper.showNext();
@@ -154,7 +154,6 @@ public class HelpActivity extends Activity implements SwipeInterface {
 		
         
         AlphaAnimation anim = (AlphaAnimation) AnimationUtils.loadAnimation(HelpActivity.this, R.anim.fade_in);
-//        findViewById(R.id.help_container).startAnimation(anim);
         mFlipper.startAnimation(anim);
 		
 	}
@@ -186,7 +185,6 @@ public class HelpActivity extends Activity implements SwipeInterface {
 
     @Override
     public void onLeftToRight(View v) {
-        //Toast.makeText(HelpActivity.this, "right", Toast.LENGTH_SHORT).show();
         if (mFlipper != null) {
             mFlipper.showPrevious();
         }
@@ -194,7 +192,6 @@ public class HelpActivity extends Activity implements SwipeInterface {
 
     @Override
     public void onRightToLeft(View v) {
-        //Toast.makeText(HelpActivity.this, "left", Toast.LENGTH_SHORT).show();
         if (mFlipper != null) {
             mFlipper.showNext();
         }

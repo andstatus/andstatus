@@ -32,7 +32,8 @@ public class PersistentAccounts {
     
     private ConcurrentHashMap<String,MyAccount> persistentAccounts = new ConcurrentHashMap<String, MyAccount>();
     
-    private PersistentAccounts() {};
+    private PersistentAccounts() {
+    }
     
     /**
      * Get list of all persistent accounts
@@ -50,7 +51,7 @@ public class PersistentAccounts {
         return persistentAccounts.size();
     }
 
-    public void reRead(Context context) {
+    public PersistentAccounts reRead(Context context) {
         defaultAccountName = MyPreferences.getDefaultSharedPreferences().getString(KEY_DEFAULT_ACCOUNT_NAME, "");
         persistentAccounts.clear();
         android.accounts.AccountManager am = AccountManager.get(context);
@@ -64,12 +65,11 @@ public class PersistentAccounts {
             }
         }
         MyLog.v(this, "Account list initialized, " + persistentAccounts.size() + " accounts");
+        return this;
     }
     
     public static PersistentAccounts initialize(Context context) {
-        PersistentAccounts pa = getEmpty();
-        pa.reRead(context);
-        return pa;
+        return getEmpty().reRead(context);
     }
     
     public static PersistentAccounts getEmpty() {
@@ -111,9 +111,9 @@ public class PersistentAccounts {
      * 
      * @return null if was not found
      */
-    public MyAccount fromAccountName(String accountName_in) {
+    public MyAccount fromAccountName(String accountNameIn) {
         MyAccount myAccount = null;
-        AccountName accountName = AccountName.fromAccountName(accountName_in);
+        AccountName accountName = AccountName.fromAccountName(accountNameIn);
         if (TextUtils.isEmpty(accountName.getUsername())) {
             return myAccount;
         }
@@ -160,7 +160,7 @@ public class PersistentAccounts {
             defaultAccountName = "";
         }
         if (ma == null) {
-            if (persistentAccounts.size() > 0) {
+            if (!persistentAccounts.isEmpty()) {
                 ma = persistentAccounts.values().iterator().next();
             }
         }
@@ -246,8 +246,8 @@ public class PersistentAccounts {
      *          or is not linked to the message 
      * @return null if nothing suitable found
      */
-    public MyAccount getAccountWhichMayBeLinkedToThisMessage(long messageId, long userIdForThisMessage, long preferredOtherUserId)
-    {
+    public MyAccount getAccountWhichMayBeLinkedToThisMessage(long messageId, long userIdForThisMessage, 
+            long preferredOtherUserId)  {
         MyAccount ma = fromUserId(userIdForThisMessage);
         if (messageId == 0 || ma == null) {
             ma = fromUserId(preferredOtherUserId);

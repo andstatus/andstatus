@@ -80,7 +80,7 @@ class ActivitySender {
                     throw new IllegalArgumentException("Nothing to send");
                 }
                 obj.put("content", content);
-                PumpioObjectType objectType = (TextUtils.isEmpty(inReplyToId) ? PumpioObjectType.NOTE : PumpioObjectType.COMMENT);
+                PumpioObjectType objectType = TextUtils.isEmpty(inReplyToId) ? PumpioObjectType.NOTE : PumpioObjectType.COMMENT;
                 obj.put("objectType", objectType.id());
                 obj.put("author", activity.getJSONObject("actor"));
             } else {

@@ -39,6 +39,9 @@ import java.util.Collection;
 public class MyAccountConverter {
     private static final String TAG = MyAccount.class.getSimpleName();
 
+    private MyAccountConverter() {
+    }
+    
     public static int convert11to12(SQLiteDatabase db, int oldVersion) {
         final int versionTo = 12;
         boolean ok = false;
@@ -68,11 +71,11 @@ public class MyAccountConverter {
                         }
                     }
                     String prefsFileNameOld = "user_" + originName + "-" + username;
-                    if (originName.equalsIgnoreCase("identi.ca")) {
+                    if ("identi.ca".equalsIgnoreCase(originName)) {
                         username += "@identi.ca";
                         originName = "pump.io";
                         originId = Origin.OriginEnum.PUMPIO.getId();
-                    } else if (originName.equalsIgnoreCase("twitter")) {
+                    } else if ("twitter".equalsIgnoreCase(originName)) {
                         originName = "twitter";
                     }
                     long userId = MyProvider.userNameToId(db, originId, username);
@@ -110,7 +113,7 @@ public class MyAccountConverter {
             MyLog.e(TAG, "Error upgrading accounts from " + oldVersion + " to version " + versionTo
                     + " step='" + step +"'");
         }
-        return (ok ? versionTo : oldVersion) ;
+        return ok ? versionTo : oldVersion;
     }
 
 }

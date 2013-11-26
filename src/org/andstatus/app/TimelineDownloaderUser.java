@@ -78,13 +78,13 @@ public class TimelineDownloaderUser extends TimelineDownloader {
                     + " and " + ApiRoutineEnum.GET_FRIENDS_IDS);
         }
         // Old list of followed users
-        Set<Long> followedIds_old = MyProvider.getIdsOfUsersFollowedBy(userId);
+        Set<Long> followedIdsOld = MyProvider.getIdsOfUsersFollowedBy(userId);
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         for (String followedUserOid : followedUsersOids) {
             long friendId = MyProvider.oidToId(MyDatabase.OidEnum.USER_OID, counters.ma.getOriginId(), followedUserOid);
             long msgId = 0;
             if (friendId != 0) {
-                followedIds_old.remove(friendId);
+                followedIdsOld.remove(friendId);
                 msgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
                 // The Friend doesn't have any messages sent, so let's download the latest
             }
@@ -113,7 +113,7 @@ public class TimelineDownloaderUser extends TimelineDownloader {
         lum.save();
         
         // Now let's remove "following" information for all users left in the Set:
-        for (long notFollowingId : followedIds_old) {
+        for (long notFollowingId : followedIdsOld) {
             FollowingUserValues fu = new FollowingUserValues(userId, notFollowingId);
             fu.setFollowed(false);
             fu.update(db);

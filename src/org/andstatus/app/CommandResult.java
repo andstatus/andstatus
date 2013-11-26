@@ -32,18 +32,19 @@ public class CommandResult implements Parcelable {
     public boolean willRetry = false;
     
     // 0 means these values were not set
-    public int hourly_limit = 0;
-    public int remaining_hits = 0;
+    public int hourlyLimit = 0;
+    public int remainingHits = 0;
 
-    public CommandResult() {}
+    public CommandResult() {
+    }
     
     public CommandResult(Parcel parcel) {
         numAuthExceptions = parcel.readLong();
         numIoExceptions = parcel.readLong();
         numParseExceptions = parcel.readLong();
         willRetry = (parcel.readInt() != 0);
-        hourly_limit = parcel.readInt();
-        remaining_hits = parcel.readInt();
+        hourlyLimit = parcel.readInt();
+        remainingHits = parcel.readInt();
     }
 
     public boolean hasError() {
@@ -69,8 +70,8 @@ public class CommandResult implements Parcelable {
         dest.writeLong(numIoExceptions);
         dest.writeLong(numParseExceptions);
         dest.writeInt(willRetry ? 1 : 0);
-        dest.writeInt(hourly_limit);
-        dest.writeInt(remaining_hits);
+        dest.writeInt(hourlyLimit);
+        dest.writeInt(remainingHits);
     }
 
     public static final Creator<CommandResult> CREATOR = new Creator<CommandResult>() {

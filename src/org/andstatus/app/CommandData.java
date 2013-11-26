@@ -240,8 +240,8 @@ public class CommandData {
     /**
      * @return Intent to be sent to this.AndStatusService
      */
-    public Intent toIntent(Intent intent_in) {
-        Intent intent = intent_in;
+    public Intent toIntent(Intent intentIn) {
+        Intent intent = intentIn;
         if (intent == null) {
             throw new IllegalArgumentException("toIntent: input intent is null");
         }
@@ -269,7 +269,7 @@ public class CommandData {
             return false;
         }
         CommandData cd = (CommandData) o;
-        return (hashCode() == cd.hashCode());
+        return hashCode() == cd.hashCode();
     }
 
     /**

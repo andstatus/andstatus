@@ -39,7 +39,7 @@ class StateOfAccountChangeProcess {
     /** Stored state of the single object of this class
      * It's static so it generally stays intact between the {@link AccountSettingsActivity}'s instantiations 
      * */
-    private static final Bundle stateStored = new Bundle();
+    private static final Bundle STORED_STATE = new Bundle();
 
     /** Intent extras for launch directly from system account manager
      * NOTE: This string must match the one in res/xml/account_preferences.xml
@@ -215,13 +215,13 @@ class StateOfAccountChangeProcess {
         if (actionCompleted) {
             forget();
         } else {
-            StateOfAccountChangeProcess.stateStored.clear();
-            save(StateOfAccountChangeProcess.stateStored);
+            StateOfAccountChangeProcess.STORED_STATE.clear();
+            save(StateOfAccountChangeProcess.STORED_STATE);
         }
     }
     
     boolean restore() {
-        return restore(StateOfAccountChangeProcess.stateStored);
+        return restore(StateOfAccountChangeProcess.STORED_STATE);
     }
 
     /**
@@ -229,7 +229,7 @@ class StateOfAccountChangeProcess {
      */
     void forget() {
         authenticatiorResponse = null;
-        StateOfAccountChangeProcess.stateStored.clear();
+        StateOfAccountChangeProcess.STORED_STATE.clear();
     }
 
     String getAccountAction() {

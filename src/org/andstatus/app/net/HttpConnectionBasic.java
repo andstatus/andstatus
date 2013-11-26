@@ -42,18 +42,6 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
-    public static class LOGGER {
-        public static int e(Object objTag, String msg, Exception e) {
-            String tag = MyLog.objTagToString(objTag);
-            return Log.e(tag, msg + e.toString());
-        }
-
-        public static int e(Object objTag, String msg) {
-            String tag = MyLog.objTagToString(objTag);
-            return Log.e(tag, msg);
-        }
-    }
-
     protected String mPassword;
 
     @Override
@@ -159,8 +147,8 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
 
     @Override
     public boolean getCredentialsPresent() {
-        return (!TextUtils.isEmpty(data.accountUsername) 
-                && !TextUtils.isEmpty(mPassword));
+        return !TextUtils.isEmpty(data.accountUsername) 
+                && !TextUtils.isEmpty(mPassword);
     }
 
     @Override
@@ -202,7 +190,7 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
             // Length is unknown or large
             length = 1024;
         }
-        StringBuffer stringBuffer = new StringBuffer(length);
+        StringBuilder stringBuffer = new StringBuilder(length);
         InputStreamReader inputStreamReader = null;
         try {
             inputStreamReader = new InputStreamReader(httpEntity.getContent(), HTTP.UTF_8);
@@ -269,6 +257,8 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
         case 502:
         case 503:
             throw new ConnectionException(String.valueOf(code));
+        default:
+            break;
         }
     }
 }

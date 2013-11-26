@@ -46,10 +46,9 @@ class AccountName {
         accountName = AccountName.fixAccountName(accountName);
         int indSeparator = accountName.lastIndexOf(ORIGIN_SEPARATOR);
         String originName = "";
-        if (indSeparator >= 0) {
-            if (indSeparator < accountName.length()-1) {
+        if (indSeparator >= 0 &&
+            indSeparator < accountName.length()-1) {
                 originName = accountName.substring(indSeparator + 1);
-            }
         }
         return fixOriginName(originName);
     }
@@ -68,17 +67,17 @@ class AccountName {
     String accountNameToUsername(String accountName) {
         accountName = fixAccountName(accountName);
         int indSeparator = accountName.indexOf(ORIGIN_SEPARATOR);
-        String username = "";
+        String usernameOut = "";
         if (indSeparator > 0) {
-            username = accountName.substring(0, indSeparator);
+            usernameOut = accountName.substring(0, indSeparator);
         }
-        return fixUsername(username);
+        return fixUsername(usernameOut);
     }
 
-    static String fixAccountName(String accountName_in) {
+    static String fixAccountName(String accountNameIn) {
         String accountName = "";
-        if (accountName_in != null) {
-            accountName = accountName_in.trim();
+        if (accountNameIn != null) {
+            accountName = accountNameIn.trim();
         }
         return accountName;
     }
@@ -90,10 +89,10 @@ class AccountName {
         return accountName;
     }
 
-    static String fixOriginName(String originName_in) {
+    static String fixOriginName(String originNameIn) {
         String originName = "";
-        if (originName_in != null) {
-            originName = originName_in.trim();
+        if (originNameIn != null) {
+            originName = originNameIn.trim();
         }
         return originName;
     }

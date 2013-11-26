@@ -65,6 +65,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 	 * and also for "direct messages", "direct dents" etc.
 	 */
 	public static final class Msg implements BaseColumns {
+	    private Msg() {
+	    }
 	    /**
 	     * These are in fact definitions for Timelines based on the table, 
 	     * not for the Msg table itself.
@@ -169,7 +171,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This table is used to filter User's timelines (based on flags: SUBSCRIBED etc.) 
      */
     public static final class MsgOfUser {
-        // Columns in the database:
+        private MsgOfUser() {
+        }
         
         /**
          * Fields for joining tables
@@ -219,6 +222,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 	 * see {@link MyAccount#getUserId()}
 	 */
 	public static final class User implements BaseColumns {
+	    private User() {
+	    }
 		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + USER_TABLE_NAME);
 		/* like in AndroidManifest.xml */
 		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.andstatus.provider." + USER_TABLE_NAME;
@@ -348,6 +353,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * (by {@link FollowingUser#USER_ID}) user is following (otherwise known as their "friends"). 
      */
     public static final class FollowingUser {
+        private FollowingUser() {
+        }
         
         public static final String USER_ID = User.USER_ID;
         public static final String FOLLOWING_USER_ID = "following_user_id";

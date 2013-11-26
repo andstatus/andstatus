@@ -31,6 +31,9 @@ public class SharedPreferencesUtil {
     
     public static final String FILE_EXTENSION = ".xml";
 
+    private SharedPreferencesUtil() {
+    }
+    
     /**
      * @param Context
      * @return Directory for files of SharedPreferences
@@ -171,16 +174,15 @@ public class SharedPreferencesUtil {
      * @return true if str is null or zero length or "null"
      */
     public static boolean isEmpty(CharSequence str) {
-        if (TextUtils.isEmpty(str))
+        if (TextUtils.isEmpty(str) || str.equals("null")) {
             return true;
-        else if (str.equals("null"))
-            return true;
-        else
+        } else {
             return false;
+        }
     }
 
     public static int isTrueAsInt(Object o) {
-        return (isTrue(o) ? 1 : 0);
+        return isTrue(o) ? 1 : 0;
     }
     
     /**

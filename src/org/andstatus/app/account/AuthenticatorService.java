@@ -68,20 +68,6 @@ public class AuthenticatorService extends Service {
                 AccountManager.get(AuthenticatorService.this).addAccountExplicitly(
                             account, options.getString(OPTIONS_PASSWORD), null);
 
-                /* TODO:
-                // Set up email syncing
-                boolean syncEmail = false;
-                if (options.containsKey(OPTIONS_EMAIL_SYNC_ENABLED) &&
-                        options.getBoolean(OPTIONS_EMAIL_SYNC_ENABLED)) {
-                    syncEmail = true;
-                }
-                
-                ContentResolver.setIsSyncable(account, EmailContent.AUTHORITY, 1);
-                ContentResolver.setSyncAutomatically(account, EmailContent.AUTHORITY, syncEmail);
-                ContentResolver.setIsSyncable(account, ContactsContract.AUTHORITY, 0);
-                ContentResolver.setIsSyncable(account, CalendarProviderStub.AUTHORITY, 0);
-                */
-
                 Bundle b = new Bundle();
                 b.putString(AccountManager.KEY_ACCOUNT_NAME, options.getString(OPTIONS_USERNAME));
                 b.putString(AccountManager.KEY_ACCOUNT_TYPE, ANDROID_ACCOUNT_TYPE);

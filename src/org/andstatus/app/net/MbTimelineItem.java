@@ -39,6 +39,6 @@ public class MbTimelineItem {
     }
 
     public boolean isEmpty() {
-        return (getType() == ItemType.EMPTY);
+        return getType() == ItemType.EMPTY;
     }
 }

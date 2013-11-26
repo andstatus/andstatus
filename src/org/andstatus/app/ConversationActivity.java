@@ -134,7 +134,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
                 return false;
             }
             OneMessage row = (OneMessage) o;
-            return (id == row.id);
+            return id == row.id;
         }
 
         @Override
@@ -415,9 +415,9 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_ACCOUNT_TO_ACT_AS:
                 if (resultCode == RESULT_OK) {
-                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
-                    if (ma != null) {
-                        contextMenu.setAccountUserIdToActAs(ma.getUserId());
+                    MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                    if (myAccount != null) {
+                        contextMenu.setAccountUserIdToActAs(myAccount.getUserId());
                         contextMenu.showContextMenu();
                     }
                 }

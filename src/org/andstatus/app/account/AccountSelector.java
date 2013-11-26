@@ -43,11 +43,11 @@ import java.util.TreeMap;
  *
  */
 public class AccountSelector extends ListActivity {
-    private final static String KEY_VISIBLE_NAME = "visible_name";
-    private final static String KEY_NAME = "name";
-    private final static String KEY_TYPE = "type";
+    private static final String KEY_VISIBLE_NAME = "visible_name";
+    private static final String KEY_NAME = "name";
+    private static final String KEY_TYPE = "type";
     
-    private final static String TYPE_ACCOUNT = "account";
+    private static final String TYPE_ACCOUNT = "account";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

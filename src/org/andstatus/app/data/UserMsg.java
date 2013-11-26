@@ -31,7 +31,7 @@ import java.util.Date;
  * Manages minimal information about the latest downloaded message by one User. 
  * We count messages where the User is either a Sender or an Author
  */
-public class UserMsg {
+public final class UserMsg {
     private static final String TAG = UserMsg.class.getSimpleName();
 
     /**
@@ -57,8 +57,8 @@ public class UserMsg {
     /**
      * Retrieve from the database information about the last downloaded message by this User
      */
-    public UserMsg(long userId_in) {
-        userId = userId_in;
+    public UserMsg(long userIdIn) {
+        userId = userIdIn;
         if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }
@@ -69,8 +69,8 @@ public class UserMsg {
     /**
      * All information is supplied in this constructor, so it doesn't lookup anything in the database
      */
-    public UserMsg(long userId_in, long msgId, long msgDate) {
-        userId = userId_in;
+    public UserMsg(long userIdIn, long msgId, long msgDate) {
+        userId = userIdIn;
         if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }

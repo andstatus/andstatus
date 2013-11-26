@@ -61,11 +61,11 @@ public class LatestTimelineItem {
     
     /**
      * Retrieve information about the last downloaded message from this timeline
-     * @param userId_in Should always be Id of the User of this timeline
+     * @param userIdIn Should always be Id of the User of this timeline
      */
-    public LatestTimelineItem(TimelineTypeEnum timelineType_in, long userId_in) {
-        timelineType = timelineType_in;
-        userId = userId_in;
+    public LatestTimelineItem(TimelineTypeEnum timelineTypeIn, long userIdIn) {
+        timelineType = timelineTypeIn;
+        userId = userIdIn;
         if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }
@@ -149,7 +149,6 @@ public class LatestTimelineItem {
                 + MyProvider.quoteIfNotQuoted(position.getPosition()) + ", "
                 + timelineType.columnNameLatestTimelineItemDate() + "="
                 + timelineItemDate;
-                ;
             }
 
             sql = "UPDATE " + MyDatabase.USER_TABLE_NAME + " SET " + sql 
@@ -172,7 +171,7 @@ public class LatestTimelineItem {
     public boolean isTimeToAutoUpdate() {
         long frequencyMs = MyPreferences.getSyncFrequencyMs();
         long passedMs = System.currentTimeMillis() - getTimelineDownloadedDate(); 
-        boolean blnOut = (passedMs > frequencyMs);
+        boolean blnOut = passedMs > frequencyMs;
         
         if (blnOut && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(this, "It's time to auto update " + timelineType.save() 

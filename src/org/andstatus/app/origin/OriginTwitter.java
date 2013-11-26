@@ -43,28 +43,28 @@ class OriginTwitter extends Origin {
      */
     @Override
     public int alternativeTermForResourceId(int resId) {
-        int resId_out;
+        int resIdOut;
         switch (resId) {
             case R.string.button_create_message:
-                resId_out = R.string.button_create_message_twitter;
+                resIdOut = R.string.button_create_message_twitter;
                 break;
             case R.string.menu_item_destroy_reblog:
-                resId_out = R.string.menu_item_destroy_reblog_twitter;
+                resIdOut = R.string.menu_item_destroy_reblog_twitter;
                 break;
             case R.string.menu_item_reblog:
-                resId_out = R.string.menu_item_reblog_twitter;
+                resIdOut = R.string.menu_item_reblog_twitter;
                 break;
             case R.string.message:
-                resId_out = R.string.message_twitter;
+                resIdOut = R.string.message_twitter;
                 break;
             case R.string.reblogged_by:
-                resId_out = R.string.reblogged_by_twitter;
+                resIdOut = R.string.reblogged_by_twitter;
                 break;
             default:
-                resId_out = resId;
+                resIdOut = resId;
                 break;
         }
-        return resId_out;
+        return resIdOut;
     }
     
     @Override

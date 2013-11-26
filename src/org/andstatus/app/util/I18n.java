@@ -28,6 +28,9 @@ import java.util.regex.Pattern;
 public class I18n {
 	private static final String TAG = I18n.class.getSimpleName();
     
+    private I18n() {
+    }
+	
 	/**
 	 * The function enables to have different localized message formats
 	 *  (actually, any number of them)
@@ -44,12 +47,12 @@ public class I18n {
 	 * @author yvolk@yurivolkov.com
 	 */
 	public static String formatQuantityMessage(Context context, int messageFormat,
-			int quantityOfSomething, int array_patterns, int array_formats) {
+			int quantityOfSomething, int arrayPatterns, int arrayFormats) {
 		String submessage = "";
 		String message = "";
 		String toMatch = Integer.valueOf(quantityOfSomething).toString();
-		String[] p = context.getResources().getStringArray(array_patterns);
-		String[] f = context.getResources().getStringArray(array_formats);
+		String[] p = context.getResources().getStringArray(arrayPatterns);
+		String[] f = context.getResources().getStringArray(arrayFormats);
 		String subformat = "{0} ???";
 		for (int i = 0; i < p.length; i++) {
 			Pattern pattern = Pattern.compile(p[i]);

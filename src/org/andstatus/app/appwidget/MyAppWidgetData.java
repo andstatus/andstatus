@@ -113,8 +113,7 @@ public class MyAppWidgetData {
 	 * @return
 	 */
 	public boolean areNew() {
-	    boolean are = (numMentions >0) || (numDirectMessages > 0) || (numHomeTimeline > 0);
-	    return are;
+	    return (numMentions >0) || (numDirectMessages > 0) || (numHomeTimeline > 0);
 	}
 	
     /**
@@ -129,7 +128,7 @@ public class MyAppWidgetData {
     }
 	
 	public boolean load() {
-		boolean Ok = false;
+		boolean ok = false;
 		SharedPreferences prefs = MyPreferences.getSharedPreferences(prefsFileName);
 		if (prefs == null) {
 			MyLog.e(this, "The prefs file '" + prefsFileName + "' was not loaded");
@@ -138,10 +137,9 @@ public class MyAppWidgetData {
 			if (nothingPref == null) {
 				nothingPref = mContext
 						.getString(R.string.appwidget_nothingnew_default);
-				// TODO Add AndStatus Debug option...
-//				if (debug) {
-//					nothingPref += " (" + mappWidgetId + ")";
-//				}
+				if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+					nothingPref += " (" + mappWidgetId + ")";
+				}
 			}
             dateChecked = prefs.getLong(PREF_DATECHECKED_KEY, 0);
 			if (dateChecked == 0) {
@@ -157,14 +155,14 @@ public class MyAppWidgetData {
 	            MyLog.v(TAG, "Prefs for appWidgetId=" + mappWidgetId
 	                    + " were loaded");
 	        }
-			Ok = true;
-			isLoaded = Ok;
+			ok = true;
+			isLoaded = ok;
 		}
-		return Ok;
+		return ok;
 	}
 
 	public boolean save() {
-		boolean Ok = false;
+		boolean ok = false;
 		if (!isLoaded) {
 			MyLog.e(this, "Save without load is not possible");
 		} else {
@@ -185,10 +183,10 @@ public class MyAppWidgetData {
     				MyLog.v(TAG, "Prefs for appWidgetId=" + mappWidgetId
     				        + " were saved, nothing='" + nothingPref + "'");
 	            }
-				Ok = true;
+				ok = true;
 			}
 		}
-		return Ok;
+		return ok;
 	}
 
 	/**

@@ -185,8 +185,8 @@ public class Origin {
     protected int textLimit = 0;
     protected String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     
-    public static Origin toExistingOrigin(String originName_in) {
-        Origin origin = fromOriginName(originName_in);
+    public static Origin toExistingOrigin(String originNameIn) {
+        Origin origin = fromOriginName(originNameIn);
         if (origin.getId() == 0) {
             origin = fromOriginId(ORIGIN_ENUM_DEFAULT.getId());
         }
@@ -215,7 +215,7 @@ public class Origin {
      * Was this Origin stored for future reuse?
      */
     public boolean isPersistent() {
-        return (getId() != 0);
+        return getId() != 0;
     }
     
     public boolean isOAuthDefault() {
@@ -275,7 +275,7 @@ public class Origin {
                 }
             }
         }
-        return (textLimit - messageLength);
+        return textLimit - messageLength;
     }
     
     public int alternativeTermForResourceId(int resId) {

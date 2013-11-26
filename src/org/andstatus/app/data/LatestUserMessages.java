@@ -37,14 +37,14 @@ public class LatestUserMessages {
     /**
      * Add information about new/updated message by the User
      */
-    public void onNewUserMsg(UserMsg um_in) {
+    public void onNewUserMsg(UserMsg umIn) {
         // On different implementations see 
         // http://stackoverflow.com/questions/81346/most-efficient-way-to-increment-a-map-value-in-java
-        UserMsg um = messages.get(um_in.getUserId());
+        UserMsg um = messages.get(umIn.getUserId());
         if (um == null) {
-            um = um_in;
+            um = umIn;
         } else {
-            um.onNewMsg(um_in.getLastMsgId(), um_in.getLastMsgDate() );
+            um.onNewMsg(umIn.getLastMsgId(), umIn.getLastMsgDate() );
         }
         messages.put(um.getUserId(), um);
     }

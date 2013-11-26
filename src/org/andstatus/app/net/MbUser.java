@@ -50,14 +50,13 @@ public class MbUser {
     }
     
     public static MbUser getEmpty() {
-        MbUser user = new MbUser();
-        return user;
+        return new MbUser();
     }
     
     private MbUser() {}
     
     public boolean isEmpty() {
-        return ((TextUtils.isEmpty(userName) && TextUtils.isEmpty(oid)) || originId==0);
+        return (TextUtils.isEmpty(userName) && TextUtils.isEmpty(oid)) || originId==0;
     }
 
     @Override

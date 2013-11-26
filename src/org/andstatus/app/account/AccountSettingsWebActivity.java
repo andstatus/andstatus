@@ -30,8 +30,8 @@ import org.andstatus.app.util.MyLog;
 
 public class AccountSettingsWebActivity extends Activity {
     private static final String TAG = AccountSettingsWebActivity.class.getSimpleName();
-    private static final String packageName = AccountSettingsWebActivity.class.getPackage().getName();
-    public static final String EXTRA_URLTOOPEN = packageName + ".URLTOOPEN";
+    private static final String PACKAGE_NAME = AccountSettingsWebActivity.class.getPackage().getName();
+    public static final String EXTRA_URLTOOPEN = PACKAGE_NAME + ".URLTOOPEN";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +41,8 @@ public class AccountSettingsWebActivity extends Activity {
             String url = getIntent().getStringExtra(EXTRA_URLTOOPEN);
             MyLog.d(TAG, "Loading the URL: " + url);
             WebView webView = (WebView) findViewById(R.id.accountSettingsWebView);
-            webView.setWebViewClient(new WebViewListener()); // see http://stackoverflow.com/questions/5561709/opening-webview-not-in-new-browser
+            // see http://stackoverflow.com/questions/5561709/opening-webview-not-in-new-browser
+            webView.setWebViewClient(new WebViewListener()); 
             
             webView.loadUrl(url);
         } catch (Exception e) {
@@ -71,7 +72,6 @@ public class AccountSettingsWebActivity extends Activity {
                 MyLog.d(TAG, "Callback to: " + url);
                 if (!isFinishing) {
                     isFinishing = true;
-                    //Intent i = new Intent(Intent.ACTION_VIEW, uri);
                     Intent i = new Intent(AccountSettingsWebActivity.this, AccountSettingsActivity.class);
                     i.setData(uri);
                     startActivity(i);                

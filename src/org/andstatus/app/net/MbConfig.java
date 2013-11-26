@@ -27,8 +27,7 @@ public class MbConfig {
     public int textLimit = 0;
     
     public static MbConfig getEmpty() {
-        MbConfig config = new MbConfig();
-        return config;
+        return new MbConfig();
     }
 
     public static MbConfig fromTextLimit(int textLimit) {
@@ -41,6 +40,6 @@ public class MbConfig {
     private MbConfig() {}
     
     public boolean isEmpty() {
-        return (isEmpty);
+        return isEmpty;
     }
 }

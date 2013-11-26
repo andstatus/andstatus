@@ -106,8 +106,9 @@ class MessageDataForContextMenu {
                 
             }
         } finally {
-            if (c != null && !c.isClosed())
+            if (c != null && !c.isClosed()) {
                 c.close();
+            }
         }
     }
 }

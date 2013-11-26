@@ -72,7 +72,6 @@ class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApach
         HttpConnectionParams.setStaleCheckingEnabled(params, true);
 
         HttpProtocolParams.setUseExpectContinue(params, false);
-        // HttpConnectionParams.setTcpNoDelay(parameters, true);
         HttpConnectionParams.setSoTimeout(params, 30000);
         HttpConnectionParams.setSocketBufferSize(params, 2*8192);
         return params;
@@ -149,9 +148,6 @@ class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApach
         String response = null;
         boolean ok = false;
         try {
-            // Maybe we'll need this:
-            // post.setParams(...);
-
             if (data.oauthClientKeys.areKeysPresent()) {
                 // sign the request to authenticate
                 getConsumer().sign(post);

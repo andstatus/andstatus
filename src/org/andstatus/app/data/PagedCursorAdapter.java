@@ -58,7 +58,6 @@ public class PagedCursorAdapter extends SimpleCursorAdapter implements FilterQue
 		mUri = uri;
 		mSortOrder = sortOrder;
 		setFilterQueryProvider(this);
-		//mInflater = LayoutInflater.from(context);
 	}
 
 	@Override

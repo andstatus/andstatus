@@ -27,8 +27,6 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -177,8 +175,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     };
 
     boolean isLoading() {
-        //MyLog.v(this, "isLoading checked " + mIsLoading + ", instance " + instanceId);
-        return (loadingLayout.getVisibility() == View.VISIBLE);
+        return loadingLayout.getVisibility() == View.VISIBLE;
     }
     
     void setIsLoading(boolean isLoadingNew) {
@@ -230,15 +227,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             
             // Show Change Log after update
             try {
-                int versionCodeLast =  MyPreferences.getDefaultSharedPreferences().getInt(MyPreferences.KEY_VERSION_CODE_LAST, 0);
-                PackageManager pm = getPackageManager();
-                PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
-                int versionCode =  pi.versionCode;
-                if (versionCodeLast < versionCode) {
-                    // Even if the User will see only the first page of the Help activity,
-                    // count this as showing the Change Log
-                    showChangeLog = true;
-                    MyPreferences.getDefaultSharedPreferences().edit().putInt(MyPreferences.KEY_VERSION_CODE_LAST, versionCode).commit();
+                if (MyPreferences.checkAndUpdateLastOpenedAppVersion(this)) {
+                    showChangeLog = true;                    
                 }
             } catch (NameNotFoundException e) {
                 MyLog.e(this, "Unable to obtain package information", e);
@@ -260,6 +250,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         setContentView(R.layout.timeline);
 
         ViewGroup messageListParent = (ViewGroup) findViewById(R.id.messageListParent);
+        // We use "this" as a context, otherwise custom styles are not recognized...
         LayoutInflater inflater = LayoutInflater.from(this);
         ViewGroup actionsView = (ViewGroup) inflater.inflate(R.layout.timeline_actions, null);
         messageListParent.addView(actionsView, 0);
@@ -273,11 +264,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         boolean isInstanceStateRestored = false;
         boolean isLoadingNew = false;
         if (savedInstanceState != null) {
-            TimelineTypeEnum timelineType_new = TimelineTypeEnum.load(savedInstanceState
+            TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(savedInstanceState
                     .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
-            if (timelineType_new != TimelineTypeEnum.UNKNOWN) {
+            if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
                 isInstanceStateRestored = true;
-                mTimelineType = timelineType_new;
+                mTimelineType = timelineTypeNew;
                 messageEditor.loadState(savedInstanceState);
                 if (savedInstanceState.containsKey(KEY_IS_LOADING)) {
                     isLoadingNew = savedInstanceState.getBoolean(KEY_IS_LOADING);
@@ -299,17 +290,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         
         // Create list footer to show the progress of message loading
-        // We use "this" as a context, otherwise custom styles are not recognized...
-        // LayoutInflater inflater = LayoutInflater.from(this);
         loadingLayout = (LinearLayout) inflater.inflate(R.layout.item_loading, null);
         getListView().addFooterView(loadingLayout);
         setIsLoading(isLoadingNew);
 
-        /* This also works (after we've added R.layout.item_loading to the view)
-           but is not needed here:
-        mListFooter = (LinearLayout) findViewById(R.id.item_loading);
-        */
-        
         // Attach listeners to the message list
         getListView().setOnScrollListener(this);
         getListView().setOnCreateContextMenuListener(contextMenu);
@@ -421,7 +405,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     lastScrollPos = -1;
                 }
             }
-            // MyLog.v(TAG, "lastScrollPos=" + lastScrollPos);
             if (lastScrollPos >= 0) {
                 lastRetrievedItemId = la.getItemId(lastScrollPos);
             }
@@ -531,7 +514,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "item count: " + itemCount);
         }
-        for (listPos = 0; (!itemFound && (listPos < itemCount)); listPos++) {
+        for (listPos = 0; !itemFound && (listPos < itemCount); listPos++) {
             long itemId = lv.getItemIdAtPosition(listPos);
             if (itemId == searchedId) {
                 itemFound = true;
@@ -666,6 +649,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     case 5:
                         contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.FOLLOWING_USER, mIsTimelineCombined, mCurrentMyAccountUserId);
                         break;
+                    default:
+                        break;
                 }
             }
         });
@@ -710,6 +695,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 break;
             case R.id.reload_menu_item:
                 manualReload(false);
+                break;
+            default:
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -777,7 +764,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         } catch (Exception e) {
             MyLog.v(this, e);
         }
-        return (userId);
+        return userId;
     }
 
     @Override
@@ -806,6 +793,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             case OnScrollListener.SCROLL_STATE_FLING:
                 // Turn the "fast scroll thumb" on
                 view.setFastScrollEnabled(true);
+                break;
+            default:
                 break;
         }
     }
@@ -890,10 +879,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * @param intentNew
      */
     private void processNewIntent(Intent intentNew) {
-        TimelineTypeEnum timelineType_new = TimelineTypeEnum.load(intentNew
+        TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(intentNew
                 .getStringExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key));
-        if (timelineType_new != TimelineTypeEnum.UNKNOWN) {
-            mTimelineType = timelineType_new;
+        if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
+            mTimelineType = timelineTypeNew;
             mIsTimelineCombined = intentNew.getBooleanExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mIsTimelineCombined);
             mQueryString = intentNew.getStringExtra(SearchManager.QUERY);
             mSelectedUserId = intentNew.getLongExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
@@ -901,10 +890,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
             if (appSearchData != null) {
                 // We use other packaging of the same parameters in onSearchRequested
-                timelineType_new = TimelineTypeEnum.load(appSearchData
+                timelineTypeNew = TimelineTypeEnum.load(appSearchData
                         .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
-                if (timelineType_new != TimelineTypeEnum.UNKNOWN) {
-                    mTimelineType = timelineType_new;
+                if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
+                    mTimelineType = timelineTypeNew;
                     mIsTimelineCombined = appSearchData.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mIsTimelineCombined);
                     /* The query itself is still from the Intent */
                     mQueryString = intentNew.getStringExtra(SearchManager.QUERY);
@@ -1016,8 +1005,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * @param otherThread This method is being accessed from other thread
      * @param loadOneMorePage true - load one more page of messages, false - reload the same page
      */
-    protected void queryListData(boolean loadOneMorePage_in) {
-        final boolean loadOneMorePage = loadOneMorePage_in;
+    protected void queryListData(boolean loadOneMorePageIn) {
+        final boolean loadOneMorePage = loadOneMorePageIn;
 
         /**
          * Here we do all the work 
@@ -1147,16 +1136,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     }
                     sortOrder += " LIMIT 0," + nMessages;
                 }
-
-                // This is for testing pruneOldRecords
-                // try {
-                // TimelineDownloader fl = new TimelineDownloader(TimelineActivity.this,
-                // TimelineActivity.TIMELINE_TYPE_HOME);
-                // fl.pruneOldRecords();
-                //
-                // } catch (Exception e) {
-                // e.printStackTrace();
-                // }
             }
 
             @Override
@@ -1472,9 +1451,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 }
                 break;
             case RATE_LIMIT_STATUS:
-                if (commandData.commandResult.hourly_limit > 0) {
-                    updateActionBar(commandData.commandResult.remaining_hits + "/"
-                            + commandData.commandResult.hourly_limit);
+                if (commandData.commandResult.hourlyLimit > 0) {
+                    updateActionBar(commandData.commandResult.remainingHits + "/"
+                            + commandData.commandResult.hourlyLimit);
                 }
                 break;
             default:

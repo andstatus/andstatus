@@ -22,12 +22,15 @@ public class InstanceId {
     /**
      * IDs used for testing purposes to identify instances of reference types.
      */
-    private static final AtomicInteger prevInstanceId = new AtomicInteger(0);
+    private static final AtomicInteger PREV_INSTANCE_ID = new AtomicInteger(0);
 
+    private InstanceId() {
+    }
+    
     /**
      * @return Unique for this process integer, numbers are given in the order starting from 1
      */
     public static int next() {
-        return prevInstanceId.incrementAndGet();
+        return PREV_INSTANCE_ID.incrementAndGet();
     }
 }

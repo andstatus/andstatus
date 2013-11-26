@@ -79,11 +79,11 @@ class MessageEditor {
      * Do we hold loaded but not restored state
      */
     private boolean mIsStateLoaded = false;
-    private String mStatus_restored = "";
-    private long mReplyToId_restored = 0;
-    private long mRecipientId_restored = 0;
-    private String mAccountGuid_restored = "";
-    private boolean mShowAccount_restored = false;
+    private String statusRestored = "";
+    private long replyToIdRestored = 0;
+    private long recipientIdRestored = 0;
+    private String accountGuidRestored = "";
+    private boolean showAccountRestored = false;
     
     public MessageEditor(ActionableMessageList actionableMessageList) {
         messageList = actionableMessageList;
@@ -128,10 +128,12 @@ class MessageEditor {
 
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Nothing to do
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Nothing to do
             }
         });
 
@@ -209,12 +211,6 @@ class MessageEditor {
         updateCreateMessageButton();
         
         mEditText.requestFocus();
-        /* do we need this instead?
-        if (mActivity.hasHardwareKeyboard()) {
-            mEditText.requestFocus();
-        }
-        */
-        
     }
     
     public void updateCreateMessageButton() {
@@ -240,7 +236,7 @@ class MessageEditor {
     }
     
     public boolean isVisible() {
-        return (editorView.getVisibility() == View.VISIBLE);
+        return editorView.getVisibility() == View.VISIBLE;
     }
     
     /**
@@ -256,18 +252,18 @@ class MessageEditor {
         if (myAccount == null) {
             return;
         }
-        String accountGuid_prev = "";
+        String accountGuidPrev = "";
         if (mAccount != null) {
-            accountGuid_prev = mAccount.getAccountName();
+            accountGuidPrev = mAccount.getAccountName();
         }
         if (mReplyToId != replyToId || mRecipientId != recipientId 
-                || accountGuid_prev.compareTo(myAccount.getAccountName()) != 0 || mShowAccount != showAccount) {
+                || accountGuidPrev.compareTo(myAccount.getAccountName()) != 0 || mShowAccount != showAccount) {
             mReplyToId = replyToId;
             mRecipientId = recipientId;
             mAccount = myAccount;
             mShowAccount = showAccount;
             String textInitial2 = textInitial;
-            String messageDetails = (showAccount ? mAccount.getAccountName() : "");
+            String messageDetails = showAccount ? mAccount.getAccountName() : "";
             if (recipientId == 0) {
                 if (replyToId != 0) {
                     String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, replyToId);
@@ -371,11 +367,11 @@ class MessageEditor {
                 if (savedInstanceState.containsKey(IntentExtra.EXTRA_STATUS.key)) {
                     String status = savedInstanceState.getString(IntentExtra.EXTRA_STATUS.key);
                     if (!TextUtils.isEmpty(status)) {
-                        mStatus_restored = status;
-                        mReplyToId_restored = savedInstanceState.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
-                        mRecipientId_restored = savedInstanceState.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
-                        mAccountGuid_restored = savedInstanceState.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
-                        mShowAccount_restored = savedInstanceState.getBoolean(IntentExtra.EXTRA_SHOW_ACCOUNT.key);
+                        statusRestored = status;
+                        replyToIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
+                        recipientIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
+                        accountGuidRestored = savedInstanceState.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
+                        showAccountRestored = savedInstanceState.getBoolean(IntentExtra.EXTRA_SHOW_ACCOUNT.key);
                         mIsStateLoaded = true;
                     }
                 }
@@ -393,8 +389,8 @@ class MessageEditor {
     public void continueEditingLoadedState() {
         if (isStateLoaded()) {
             mIsStateLoaded = false;
-            startEditingMessage(mStatus_restored, mReplyToId_restored, mRecipientId_restored, 
-                    MyContextHolder.get().persistentAccounts().fromAccountName(mAccountGuid_restored), mShowAccount_restored);
+            startEditingMessage(statusRestored, replyToIdRestored, recipientIdRestored, 
+                    MyContextHolder.get().persistentAccounts().fromAccountName(accountGuidRestored), showAccountRestored);
         }
     }
 }

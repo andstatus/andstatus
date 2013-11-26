@@ -80,8 +80,7 @@ public final class MyContextImpl implements MyContext {
     
     @Override
     public String toString() {
-        String out =  MyLog.objTagToString(this) +  " initialized by " + initializedBy + "; state=" + state +  "; " + (context == null ? "no context" : "context=" + context.getClass().getName());
-        return out;
+        return  MyLog.objTagToString(this) +  " initialized by " + initializedBy + "; state=" + state +  "; " + (context == null ? "no context" : "context=" + context.getClass().getName());
     }
 
     @Override
@@ -97,13 +96,6 @@ public final class MyContextImpl implements MyContext {
         newMyContext.initializedBy = initializerName;
         if (context != null) {
             Context contextToUse = context.getApplicationContext();
-        
-            /* This may be useful to know from where the class was initialized
-            StackTraceElement[] elements = Thread.currentThread().getStackTrace(); 
-            for(int i=0; i<elements.length; i++) { 
-                MyLog.v(TAG, elements[i].toString()); 
-            }
-            */
         
             if ( contextToUse == null) {
                 MyLog.w(TAG, "getApplicationContext is null, trying the context itself: " + context.getClass().getName());
@@ -128,12 +120,12 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public boolean initialized() {
-        return (state != MyContextState.EMPTY && state != MyContextState.ERROR);
+        return state != MyContextState.EMPTY && state != MyContextState.ERROR;
     }
 
     @Override
     public boolean isReady() {
-        return (state == MyContextState.READY && !MyDatabaseConverter.isUpgrading());
+        return state == MyContextState.READY && !MyDatabaseConverter.isUpgrading();
     }
 
     @Override

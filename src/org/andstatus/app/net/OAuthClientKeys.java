@@ -48,7 +48,8 @@ public class OAuthClientKeys {
     private final static String SECRET_CLASS_NAME = OAuthClientKeysOpenSource.class.getPackage().getName() + "." + "OAuthClientKeysSecret";
     private static boolean noSecretClass = false;
     
-    private OAuthClientKeys() {}
+    private OAuthClientKeys() {
+    }
 
     public static OAuthClientKeys fromConnectionData(HttpConnectionData connectionData) {
         OAuthClientKeys keys = new OAuthClientKeys();
@@ -82,7 +83,7 @@ public class OAuthClientKeys {
     }
     
     public boolean areKeysPresent() {
-        return (!TextUtils.isEmpty(getConsumerKey()) && !TextUtils.isEmpty(getConsumerSecret()));
+        return !TextUtils.isEmpty(getConsumerKey()) && !TextUtils.isEmpty(getConsumerSecret());
     }
     
     public String getConsumerKey() {
