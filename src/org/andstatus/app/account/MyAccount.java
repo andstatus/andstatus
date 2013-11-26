@@ -381,38 +381,7 @@ public class MyAccount implements AccountDataReader {
                     MyLog.v(this, "Didn't save invalid account: " + myAccount);
                     return false;
                 }
-                if (!isPersistent() && (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED)) {
-                    try {
-                        changed = true;
-                        // Now add this account to the Account Manager
-                        // See {@link com.android.email.provider.EmailProvider.createAccountManagerAccount(Context, String, String)}
-                        AccountManager accountManager = AccountManager.get(MyContextHolder.get().context());
-
-                        /* Note: We could add userdata from {@link userData} Bundle, 
-                         * but we decided to add it below one by one item
-                         */
-
-                        // Create account to be persisted
-                        myAccount.androidAccount = new android.accounts.Account(myAccount.getAccountName(), AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-                        accountManager.addAccountExplicitly(myAccount.androidAccount, myAccount.getPassword(), null);
-                        
-                        ContentResolver.setIsSyncable(myAccount.androidAccount, MyProvider.AUTHORITY, 1);
-                        
-                        // This is not needed because we don't use the "network tickles"... yet?!
-                        // See http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
-                        ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
-
-                        // Without SyncAdapter we got the error:
-                        // SyncManager(865): can't find a sync adapter for SyncAdapterType Key 
-                        // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, removing settings for it
-                        
-                        MyLog.v(this, "Persisted " + myAccount.getAccountName());
-                    } catch (Exception e) {
-                        MyLog.e(this, "Adding Account to AccountManager", e);
-                        myAccount.androidAccount = null;
-                    }
-                }
-                
+                changed = addAndroidAccount(changed);
                 if (myAccount.getDataString(KEY_USERNAME, "").compareTo(myAccount.oAccountName.getUsername()) !=0 ) {
                     setDataString(KEY_USERNAME, myAccount.oAccountName.getUsername());
                     changed = true;
@@ -457,6 +426,51 @@ public class MyAccount implements AccountDataReader {
             } catch (Exception e) {
                 MyLog.e(this, "saving " + myAccount.getAccountName(), e);
                 changed = false;
+            }
+            return changed;
+        }
+
+        private boolean addAndroidAccount(boolean changedIn) {
+            boolean changed = changedIn;
+            if (!isPersistent()) {
+                // Let's check if there is such an Android Account already
+                android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
+                android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+                for (android.accounts.Account account : aa) {
+                    if (myAccount.getAccountName().equalsIgnoreCase(account.name)) {
+                        changed = true;
+                        myAccount.androidAccount = account;
+                        break;
+                    }
+                }
+                if (!isPersistent() && (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED)) {
+                    try {
+                        changed = true;
+                        /* Now add this account to the Account Manager
+                         * See {@link com.android.email.provider.EmailProvider.createAccountManagerAccount(Context, String, String)}
+                         * 
+                         * Note: We could add userdata from {@link userData} Bundle, 
+                         * but we decided to add it below one by one item
+                         */
+                        myAccount.androidAccount = new android.accounts.Account(myAccount.getAccountName(), AuthenticatorService.ANDROID_ACCOUNT_TYPE);
+                        am.addAccountExplicitly(myAccount.androidAccount, myAccount.getPassword(), null);
+                        
+                        ContentResolver.setIsSyncable(myAccount.androidAccount, MyProvider.AUTHORITY, 1);
+                        
+                        // This is not needed because we don't use the "network tickles"... yet?!
+                        // See http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
+                        ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
+       
+                        // Without SyncAdapter we got the error:
+                        // SyncManager(865): can't find a sync adapter for SyncAdapterType Key 
+                        // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, removing settings for it
+                        
+                        MyLog.v(this, "Persisted " + myAccount.getAccountName());
+                    } catch (Exception e) {
+                        MyLog.e(this, "Adding Account to AccountManager", e);
+                        myAccount.androidAccount = null;
+                    }
+                }
             }
             return changed;
         }

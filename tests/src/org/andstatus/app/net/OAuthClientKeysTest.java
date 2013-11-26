@@ -34,24 +34,43 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
     }
 
     public void testKeysSave() {
-       Origin origin = OriginEnum.PUMPIO.newOrigin();
-       HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(origin.getConnectionData(TriState.UNKNOWN));
-       connectionData.host = "example.com";
-       connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData);
-       connectionData.oauthClientKeys.clear();
-       assertEquals("Keys are cleared", false, connectionData.oauthClientKeys.areKeysPresent());
+       HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
+               OriginEnum.PUMPIO.newOrigin().getConnectionData(TriState.UNKNOWN));
+       final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
+       final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
 
-       connectionData.oauthClientKeys.setConsumerKeyAndSecret("thisiskey", "secret2348");
+       connectionData.host = "example.com";
+       OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
+       keys1.clear();
+       assertEquals("Keys are cleared", false, keys1.areKeysPresent());
+       keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+
        OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
        assertEquals("Keys are loaded", true, keys2.areKeysPresent());
-       assertEquals("thisiskey", keys2.getConsumerKey());
-       assertEquals("secret2348", keys2.getConsumerSecret());
+       assertEquals(consumerKey, keys2.getConsumerKey());
+       assertEquals(consumerSecret, keys2.getConsumerSecret());
        keys2.clear();
 
        OAuthClientKeys keys3 = OAuthClientKeys.fromConnectionData(connectionData);
        assertEquals("Keys are cleared", false, keys3.areKeysPresent());
     }
 
+    public static void insertTestKeys() {
+        HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
+                OriginEnum.PUMPIO.newOrigin().getConnectionData(TriState.UNKNOWN));
+        final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
+        final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
+        // Saving
+        connectionData.host = "identi.ca";
+        OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
+        keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+        // Checking
+        OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
+        assertEquals("Keys are loaded", true, keys2.areKeysPresent());
+        assertEquals(consumerKey, keys2.getConsumerKey());
+        assertEquals(consumerSecret, keys2.getConsumerSecret());
+    }
+    
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();

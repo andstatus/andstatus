@@ -149,10 +149,13 @@ public class TestSuite extends TestCase {
     
     /**
      * This method mimics execution of one test case before another
+     * @throws Exception 
      */
-    public static void enshureDataAdded() throws ConnectionException {
+    public static void enshureDataAdded() throws Exception {
+        MyLog.v(TAG, "enshureDataAdded started");
         if (MyContextHolder.get().persistentAccounts().size() == 0) {
             DataInserterTest dataInserter = new DataInserterTest();
+            dataInserter.setUp();
             dataInserter.testUserAdded();
             dataInserter.testFollowingUser();
             dataInserter.testMessageFavoritedByOtherUser();
@@ -162,5 +165,6 @@ public class TestSuite extends TestCase {
         if (MyContextHolder.get().persistentAccounts().size() == 0) {
             fail("No persistent accounts");
         }
+        MyLog.v(TAG, "enshureDataAdded ended");
     }
 }

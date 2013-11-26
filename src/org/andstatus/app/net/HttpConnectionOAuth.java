@@ -61,6 +61,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
                 yes = true;
             }
         }
+        MyLog.v(this, "Credentials present?: clientKeys=" + data.oauthClientKeys.areKeysPresent() + " user keys:" + !TextUtils.isEmpty(userToken) + ", " + !TextUtils.isEmpty(userSecret));
         return yes;
     }
 
@@ -99,6 +100,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
             userToken = token;
             userSecret = secret;
         }
+        MyLog.v(this, "Credentials set?: " + !TextUtils.isEmpty(token) + ", " + !TextUtils.isEmpty(secret));
     }
 
     @Override
