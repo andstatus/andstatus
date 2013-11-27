@@ -468,10 +468,6 @@ public abstract class ConnectionTwitter extends Connection {
         try {
             formParams.put("status", message);
             
-            // This parameter was removed from API:
-            // TODO: Check with StatusNet!
-            // formParams.add(new BasicNameValuePair("source", SOURCE_PARAMETER));
-            
             if ( !TextUtils.isEmpty(inReplyToId)) {
                 formParams.put("in_reply_to_status_id", inReplyToId);
             }

@@ -60,18 +60,18 @@
 			android:summary="@string/summary_preference_appearance"
 			android:title="@string/title_preference_appearance">
 			<PreferenceCategory android:title="@string/category_title_preference_appearance">
-				<ListPreference android:key="theme_size" android:entries="@array/theme_size_entries"
+                <ListPreference android:key="theme_color" android:entries="@array/theme_color_entries"
+                    android:entryValues="@array/theme_color_values"
+                    android:defaultValue="DeviceDefault"
+                    android:title="@string/title_preference_theme_color"
+                    android:summary="@string/summary_preference_theme_color"
+                    android:dialogTitle="@string/dialog_title_preference_theme_color" />
+			    <ListPreference android:key="theme_size" android:entries="@array/theme_size_entries"
 					android:entryValues="@array/theme_size_values"
 					android:defaultValue="StandardSize"
 					android:title="@string/title_preference_theme_size"
 					android:summary="@string/summary_preference_theme_size"
 					android:dialogTitle="@string/dialog_title_preference_theme_size" />
-				<ListPreference android:key="theme_color" android:entries="@array/theme_color_entries"
-					android:entryValues="@array/theme_color_values"
-					android:defaultValue="DeviceDefault"
-					android:title="@string/title_preference_theme_color"
-					android:summary="@string/summary_preference_theme_color"
-					android:dialogTitle="@string/dialog_title_preference_theme_color" />
 <!--
 				<CheckBoxPreference android:key="appearance_use_avatars"
 					android:title="@string/title_preference_use_avatars"

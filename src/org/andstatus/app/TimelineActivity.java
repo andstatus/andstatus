@@ -904,7 +904,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (mTimelineType == TimelineTypeEnum.UNKNOWN) {
             /* Set default values */
             mTimelineType = TimelineTypeEnum.HOME;
-            mIsTimelineCombined = (MyContextHolder.get().persistentAccounts().size() > 1);
             mQueryString = "";
             mSelectedUserId = 0;
         }

@@ -19,6 +19,7 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -68,6 +69,25 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
         return list;
     }
 
+    @Override
+    public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
+        JSONObject formParams = new JSONObject();
+        try {
+            formParams.put("status", message);
+            
+            // This parameter was removed from Twitter API, but it still is in StatusNet
+            formParams.put("source", HttpConnection.USER_AGENT);
+            
+            if ( !TextUtils.isEmpty(inReplyToId)) {
+                formParams.put("in_reply_to_status_id", inReplyToId);
+            }
+        } catch (JSONException e) {
+            MyLog.e(this, e);
+        }
+        JSONObject jso = postRequest(ApiRoutineEnum.STATUSES_UPDATE, formParams);
+        return messageFromJson(jso);
+    }
+    
     @Override
     public MbConfig getConfig() throws ConnectionException {
         JSONObject result = http.getRequest(getApiPath(ApiRoutineEnum.GET_CONFIG));
