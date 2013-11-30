@@ -27,25 +27,6 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         TestSuite.initialize(this);
         TestSuite.enshureDataAdded();
         
-        MyLog.i(this, "Persistent accounts: " + MyContextHolder.get().persistentAccounts().size());
-        boolean found = (MyContextHolder.get().persistentAccounts().getCurrentAccount().getCredentialsVerified() 
-                == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
-        if (!found) {
-            for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
-                MyLog.i(this, ma.toString());
-                if (ma.getCredentialsVerified() 
-                == MyAccount.CredentialsVerificationStatus.SUCCEEDED) {
-                    found = true;
-                    MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-                    break;
-                }
-            }
-        }
-        assertTrue("Found account, which is successfully verified", found); 
-        assertTrue("Current account is successfully verified", 
-                MyContextHolder.get().persistentAccounts().getCurrentAccount().getCredentialsVerified() 
-                == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
-        
         mActivity = getActivity();
         waitForListLoaded(mActivity);
 

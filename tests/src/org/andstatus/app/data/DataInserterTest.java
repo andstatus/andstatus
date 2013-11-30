@@ -4,9 +4,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
+import android.text.TextUtils;
 
 import org.andstatus.app.MessageCounters;
 import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
@@ -17,10 +19,12 @@ import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.ConnectionPumpio;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.net.OAuthClientKeysTest;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.Origin.OriginEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
@@ -28,71 +32,33 @@ import org.andstatus.app.util.TriState;
 import java.util.Set;
 
 public class DataInserterTest extends InstrumentationTestCase {
+    private static int iteration = 0;
     private Context context;
+
     private MbUser accountMbUser;
-    private final String accountUserOid = "acct:t131t@identi.ca";
-    private String accountName;
-    private long accountUserId;
+    private MyAccount ma;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        iteration++;
         context = TestSuite.initialize(this);
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
 
         OAuthClientKeysTest.insertTestKeys();
         
-        String firstUserName = "firstTestUser@identi.ca";
-        MbUser firstMbUser  = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), 
-                "acct:" + firstUserName);
-        firstMbUser.userName = firstUserName;
-        addAccount(firstMbUser);
+        addPumpIoAccount("acct:firstTestUser@identi.ca");
+        addPumpIoAccount("acct:t131t@identi.ca");
 
-        long accountUserId_existing = MyProvider.oidToId(OidEnum.USER_OID, firstMbUser.originId, firstMbUser.oid);
-        accountMbUser = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), accountUserOid);
-        accountMbUser.userName = "t131t@identi.ca";
-        accountMbUser.url = "http://identi.ca/t131t";
-        MyAccount.Builder builder = addAccount(accountMbUser);
-        accountName = builder.getAccount().getAccountName();
-        accountUserId = builder.getAccount().getUserId();
-        if (accountUserId_existing == 0) {
-            assertTrue("AccountUserId != 1", accountUserId != 1);
-        } else {
-            assertTrue("AccountUserId != 0", accountUserId != 0);
-        }
-        builder = null;
+        String userOid = "acct:" + TestSuite.CONVERSATION_ACCOUNT_NAME.substring(0, TestSuite.CONVERSATION_ACCOUNT_NAME.indexOf('/'));
+        accountMbUser = userFromPumpioOid(userOid);
+        ma = addPumpIoAccount(userOid);
         
         MyPreferences.onPreferencesChanged();
         MyContextHolder.initialize(context, this);
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-    }
-
-    private MyAccount.Builder addAccount(MbUser mbUser) throws ConnectionException {
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(mbUser.userName + "/" + Origin.OriginEnum.PUMPIO.getName(), TriState.TRUE);
-        builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.userName, "sampleUserSecretFor" + mbUser.userName);
-        assertTrue("Credentials of " + mbUser.userName + " are present", builder.getAccount().getCredentialsPresent());
-        builder.onCredentialsVerified(mbUser, null);
-        assertTrue("Account is persistent", builder.isPersistent());
-        MyAccount ma = builder.getAccount();
-        assertEquals("Credentials of " + mbUser.userName + " successfully verified", 
-                CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
-        long userId = ma.getUserId();
-        assertTrue("Account " + mbUser.userName + " has UserId", userId != 0);
-        assertEquals("Account UserOid", ma.getUserOid(), mbUser.oid);
-        assertEquals("User in the database for id=" + userId, 
-                mbUser.oid,
-                MyProvider.idToOid(OidEnum.USER_OID, userId, 0));
-        assertEquals("Account name", mbUser.userName + "/" + Origin.OriginEnum.PUMPIO.getName(), ma.getAccountName());
-        MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
-        return builder;
-    }
-    
-    public void testUserAdded() throws ConnectionException {
-        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
-        assertTrue("Account " + accountName + " is persistent", ma != null);
-        assertTrue("Account has UserId", ma.getUserId() != 0);
-        assertTrue("Account UserOid", ma.getUserOid().equalsIgnoreCase(accountUserOid));
+        
+        MyServiceManager.setServiceUnavailable();
     }
     
     public void testFollowingUser() throws ConnectionException {
@@ -100,10 +66,6 @@ public class DataInserterTest extends InstrumentationTestCase {
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         deleteOldMessage(Origin.OriginEnum.PUMPIO.getId(), messageOid);
         
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
-        assertEquals("Account name", ma.getAccountName(), accountName);
-        assertEquals("UserId of " + ma.getAccountName(), ma.getUserId(), accountUserId);
-
         MessageCounters counters = new MessageCounters(ma, context, TimelineTypeEnum.HOME);
         DataInserter di = new DataInserter(counters);
         String username = "somebody@identi.ca";
@@ -186,7 +148,6 @@ public class DataInserterTest extends InstrumentationTestCase {
     
     public void testMessageFavoritedByOtherUser() throws ConnectionException {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
 
         String username = "anybody@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), "acct:" + username);
@@ -232,7 +193,6 @@ public class DataInserterTest extends InstrumentationTestCase {
 
     public void testMessageFavoritedByAccountUser() throws ConnectionException {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
 
         String username = "example@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), "acct:" + username);
@@ -276,8 +236,6 @@ public class DataInserterTest extends InstrumentationTestCase {
         String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ";
         deleteOldMessage(Origin.OriginEnum.PUMPIO.getId(), messageOid);
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
-
         String username = "t131t@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), "acct:" + username);
         author.userName = username;
@@ -317,4 +275,106 @@ public class DataInserterTest extends InstrumentationTestCase {
         cursor.close();
     }
     
+    public void testConversation() throws ConnectionException {
+        assertEquals("Only PumpIo supported in this test", OriginEnum.PUMPIO, TestSuite.CONVERSATION_ACCOUNT_ORIGIN  );
+        
+        MbUser author1 = userFromPumpioOid("acct:firstAuthor@pumpity.net");
+        MbUser author2 = userFromPumpioOid("acct:second@identi.ca");
+        MbUser author3 = userFromPumpioOid("acct:third@pump.example.com");
+        
+        MbMessage minus1 = buildPumpIoMessage(author2, "Older one message", null, null);
+        MbMessage selected = buildPumpIoMessage(author1, "Selected message", minus1, TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
+        MbMessage reply1 = buildPumpIoMessage(author3, "Reply 1 to selected", selected, null);
+        MbMessage reply2 = buildPumpIoMessage(author2, "Reply 2 to selected", selected, null);
+        MbMessage reply3 = buildPumpIoMessage(author1, "Reply 3 to selected by the same author", selected, null);
+        addMessage(selected);
+        addMessage(reply3);
+        addMessage(reply1);
+        addMessage(reply2);
+        MbMessage reply4 = buildPumpIoMessage(author1, "Reply 4 to Reply 1 other author", reply1, null);
+        addMessage(reply4);
+        addMessage(buildPumpIoMessage(author2, "Reply 5 to Reply 4", reply4, null));
+        addMessage(buildPumpIoMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
+
+        MbMessage reply7 = buildPumpIoMessage(author1, "Reply 7 to Reply 2", reply2, null);
+        MbMessage reply8 = buildPumpIoMessage(author1, "Reply 8 to Reply 7", reply7, null);
+        addMessage(reply8);
+    }
+
+    private MbMessage buildPumpIoMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
+        String messageOid = messageOidIn;
+        if (TextUtils.isEmpty(messageOid)) {
+            messageOid = author.url  + "/" + (inReplyToMessage == null ? "note" : "comment") + "thisisfakeuri" + System.nanoTime();
+        }
+        MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), messageOid);
+        message.body = body + " it" + iteration;
+        message.sentDate = System.currentTimeMillis();
+        message.via = "AndStatus";
+        message.sender = author;
+        message.actor = accountMbUser;
+        message.inReplyToMessage = inReplyToMessage;
+        try {
+            Thread.sleep(2);
+        } catch (InterruptedException ignored) {
+        }
+        return message;
+    }
+    
+    private long addMessage(MbMessage message) {
+        DataInserter di = new DataInserter(ma, context, TimelineTypeEnum.HOME);
+        long messageId = di.insertOrUpdateMsg(message);
+        assertTrue( "Message added " + message.oid, messageId != 0);
+        return messageId;
+    }
+    
+    
+    private MyAccount addPumpIoAccount(String userOid) throws ConnectionException {
+        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
+
+        Origin origin = OriginEnum.PUMPIO.newOrigin();
+        long accountUserId_existing = MyProvider.oidToId(OidEnum.USER_OID, origin.getId(), userOid);
+        MbUser mbUser = userFromPumpioOid(userOid);
+        MyAccount ma = addPumpIoAccount(mbUser);
+        long accountUserId = ma.getUserId();
+        if (accountUserId_existing == 0 && !userOid.contains("firstTestUser")) {
+            assertTrue("AccountUserId != 1", accountUserId != 1);
+        } else {
+            assertTrue("AccountUserId != 0", accountUserId != 0);
+        }
+        assertTrue("Account " + userOid + " is persistent", ma != null);
+        assertTrue("Account UserOid", ma.getUserOid().equalsIgnoreCase(userOid));
+        assertTrue("Account is successfully verified", ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
+        return ma;
+    }
+    
+    private MbUser userFromPumpioOid(String userOid) {
+        String userName = ConnectionPumpio.userOidToUsername(userOid);
+        MbUser mbUser = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), userOid);
+        mbUser.userName = userName;
+        mbUser.url = "http://" + ConnectionPumpio.usernameToHost(userName)  + "/" + ConnectionPumpio.userOidToNickname(userOid);
+        if (accountMbUser != null) {
+            mbUser.actor = accountMbUser;
+        }
+        return mbUser;
+    }
+
+    private MyAccount addPumpIoAccount(MbUser mbUser) throws ConnectionException {
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(mbUser.userName + "/" + Origin.OriginEnum.PUMPIO.getName(), TriState.TRUE);
+        builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.userName, "sampleUserSecretFor" + mbUser.userName);
+        assertTrue("Credentials of " + mbUser.userName + " are present", builder.getAccount().getCredentialsPresent());
+        builder.onCredentialsVerified(mbUser, null);
+        assertTrue("Account is persistent", builder.isPersistent());
+        MyAccount ma = builder.getAccount();
+        assertEquals("Credentials of " + mbUser.userName + " successfully verified", 
+                CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
+        long userId = ma.getUserId();
+        assertTrue("Account " + mbUser.userName + " has UserId", userId != 0);
+        assertEquals("Account UserOid", ma.getUserOid(), mbUser.oid);
+        assertEquals("User in the database for id=" + userId, 
+                mbUser.oid,
+                MyProvider.idToOid(OidEnum.USER_OID, userId, 0));
+        assertEquals("Account name", mbUser.userName + "/" + Origin.OriginEnum.PUMPIO.getName(), ma.getAccountName());
+        MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
+        return ma;
+    }
 }

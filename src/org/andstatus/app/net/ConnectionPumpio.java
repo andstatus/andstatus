@@ -552,7 +552,7 @@ public class ConnectionPumpio extends Connection {
         return message;
     }
     
-    private String userOidToUsername(String userId) {
+    public static String userOidToUsername(String userId) {
         String username = "";
         if (!TextUtils.isEmpty(userId)) {
             int indexOfColon = userId.indexOf(':');
@@ -563,7 +563,7 @@ public class ConnectionPumpio extends Connection {
         return username;
     }
     
-    private String userOidToNickname(String userId) {
+    public static String userOidToNickname(String userId) {
         String nickname = "";
         if (!TextUtils.isEmpty(userId)) {
             int indexOfColon = userId.indexOf(':');
@@ -575,7 +575,7 @@ public class ConnectionPumpio extends Connection {
         return nickname;
     }
 
-    String usernameToHost(String username) {
+    public static String usernameToHost(String username) {
         String host = "";
         if (!TextUtils.isEmpty(username)) {
             int indexOfAt = username.indexOf('@');

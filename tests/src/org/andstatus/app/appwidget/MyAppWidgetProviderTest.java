@@ -54,22 +54,6 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	
     	MyAppWidgetProvider widget = new MyAppWidgetProvider();
     	MyLog.i(this, "MyAppWidgetProvider created");
-
-    	/*
-    	long startMillis = 1267968833922l;
-    	long endMillis = 1267968834922l;
-    	
-    	widgetTime = "3/7/10";
-        assertEquals("Widget time is not equal for " + widgetTime, widgetTime, widget.formatWidgetTime(targetContext, startMillis, endMillis));
-
-        Time time = new Time();
-    	time.set(1, 1, 10, 8, 3, 2010);
-    	startMillis = time.toMillis(false);
-    	time.setToNow();
-    	endMillis = time.toMillis(false);
-    	widgetTime = "4/8/10 - 4:01 PM";
-        assertEquals("Widget time is not equal for " + widgetTime, widgetTime, widget.formatWidgetTime(targetContext, startMillis, endMillis));
-        */
     	
         int len = dateTests.length;
         for (int index = 0; index < len; index++) {
@@ -81,13 +65,6 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
             long endMillis = dateTest.date2.toMillis(false /* use isDst */);
             int flags = dateTest.flags;
             String output = DateUtils.formatDateRange(context, startMillis, endMillis, flags);
-            /*
-            if (!dateTest.expectedOutput.equals(output)) {
-                Log.i("FormatDateRangeTest", "index " + index
-                        + " expected: " + dateTest.expectedOutput
-                        + " actual: " + output);
-            } */
-            
             String output2 = widget.formatWidgetTime(context, startMillis, endMillis);
         	MyLog.i(this, "\"" + output + "\"; \"" + output2 + "\"");
             

@@ -17,10 +17,12 @@
 
 package org.andstatus.app.data;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import android.content.ContentProvider;
@@ -1420,11 +1422,8 @@ public class MyProvider extends ContentProvider {
         Cursor c = null;
         try {
             c = db.rawQuery(sql, null);
-            if (c != null && c.getCount() > 0) {
-                c.moveToFirst();
-                do {
-                    friends.add(c.getLong(0));
-                } while (c.moveToNext());
+            while (c.moveToNext()) {
+                friends.add(c.getLong(0));
             }
         } finally {
             if (c != null) {
@@ -1432,5 +1431,30 @@ public class MyProvider extends ContentProvider {
             }
         }
         return friends;
+    }
+
+    /**
+     * Newest replies are the first
+     */
+    public static List<Long> getReplyIds(long msgId) {
+        List<Long> replies = new ArrayList<Long>();
+        String sql = "SELECT " + MyDatabase.Msg._ID 
+                + " FROM " + MyDatabase.MSG_TABLE_NAME 
+                + " WHERE " + MyDatabase.Msg.IN_REPLY_TO_MSG_ID + "=" + msgId
+                + " ORDER BY " + Msg.CREATED_DATE + " DESC";
+        
+        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        Cursor c = null;
+        try {
+            c = db.rawQuery(sql, null);
+            while (c.moveToNext()) {
+                replies.add(c.getLong(0));
+            }
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return replies;
     }
 }

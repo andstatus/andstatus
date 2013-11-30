@@ -299,9 +299,7 @@ class MessageEditor {
     
 
     /**
-     * Handles threaded sending of the message, typed in the mEditText text box.
-     * Queued message sending is supported (if initial sending failed for some
-     * reason).
+     * Send the message asynchronously
      */
     private void updateStatus() {
         String status = mEditText.getText().toString();

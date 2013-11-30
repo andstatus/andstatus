@@ -33,7 +33,8 @@
     <string name="timeline_title_following_user">Следуем за</string>
     <string name="timeline_title_mentions">Упоминания</string>
 	<string name="timeline_title_home">Дом</string>
-    <string name="timeline_title_user">Пользователь</string>
+    <string name="timeline_title_replies">Ответы</string>
+	<string name="timeline_title_user">Пользователь</string>
     
     <string name="appwidget_configure_instructions">Настройте сообщение Виджета, которое показывается в том случае, если нет ничего нового:</string>
     <string name="appwidget_nothingnew_default">Ничего нового после:</string>

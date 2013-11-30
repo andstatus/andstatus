@@ -433,6 +433,10 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         FOLLOWING_USER("following_user", R.string.timeline_title_following_user, "", "", User.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.GET_FRIENDS_IDS),
         /**
+         * Replies
+         */
+        REPLIES("replies", R.string.timeline_title_replies, User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
+        /**
          * All timelines (e.g. for download of all timelines. 
          * This is generally done after addition of the new MyAccount).
          */

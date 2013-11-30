@@ -22,8 +22,10 @@ import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.DataInserterTest;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.origin.Origin.OriginEnum;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -151,24 +153,54 @@ public class TestSuite extends TestCase {
         return myContextForTest;
     }
     
+    private static volatile boolean dataAdded = false;
     /**
      * This method mimics execution of one test case before another
      * @throws Exception 
      */
     public static void enshureDataAdded() throws Exception {
         MyLog.v(TAG, "enshureDataAdded started");
-        if (MyContextHolder.get().persistentAccounts().size() == 0) {
+        if (!dataAdded) {
+            dataAdded = true;
             DataInserterTest dataInserter = new DataInserterTest();
             dataInserter.setUp();
-            dataInserter.testUserAdded();
             dataInserter.testFollowingUser();
             dataInserter.testMessageFavoritedByOtherUser();
             dataInserter.testMessageFavoritedByAccountUser();
             dataInserter.testDirectMessageToMyAccount();
+            dataInserter.testConversation();
         }
+
         if (MyContextHolder.get().persistentAccounts().size() == 0) {
             fail("No persistent accounts");
         }
+        setSuccessfulAccountAsCurrent();
+        
         MyLog.v(TAG, "enshureDataAdded ended");
+    }
+    
+    public static final OriginEnum CONVERSATION_ACCOUNT_ORIGIN = OriginEnum.PUMPIO;
+    public static final String CONVERSATION_ACCOUNT_NAME = "testerofandstatus@identi.ca/pump.io";
+    public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + System.nanoTime();
+    
+    private static void setSuccessfulAccountAsCurrent() {
+        MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().persistentAccounts().size());
+        boolean found = (MyContextHolder.get().persistentAccounts().getCurrentAccount().getCredentialsVerified() 
+                == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
+        if (!found) {
+            for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
+                MyLog.i(TAG, ma.toString());
+                if (ma.getCredentialsVerified() 
+                == MyAccount.CredentialsVerificationStatus.SUCCEEDED) {
+                    found = true;
+                    MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+                    break;
+                }
+            }
+        }
+        assertTrue("Found account, which is successfully verified", found); 
+        assertTrue("Current account is successfully verified", 
+                MyContextHolder.get().persistentAccounts().getCurrentAccount().getCredentialsVerified() 
+                == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
     }
 }
