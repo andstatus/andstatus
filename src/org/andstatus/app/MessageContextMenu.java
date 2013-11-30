@@ -291,7 +291,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     return true;
                 case SHARE:
                     String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), messageList.getTimelineType(), true, info.id);
+                    Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), messageList.getTimelineType(), true, mCurrentMsgId);
                     Cursor c = getContext().getContentResolver().query(uri, new String[] {
                             MyDatabase.Msg.MSG_ID, MyDatabase.Msg.BODY
                     }, null, null, null);
