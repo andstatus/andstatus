@@ -306,16 +306,20 @@ public class ConversationViewLoader {
         View messageView = inflater.inflate(layoutResource, null);
         messageView.setOnCreateContextMenuListener(contextMenu);
 
-        int indent0 = 8;
-        int indentPixels = indent0 * (2 * oMsg.indentLevel);
+        // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
+        int indent0 = (int)( 10 * context.getResources().getDisplayMetrics().density);
+        int indentPixels = indent0 * oMsg.indentLevel;
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
         if (oMsg.id == selectedMessageId && oMsgs.size() > 1) {
             messageIndented.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.message_current_background));
         }
-        messageIndented.setPadding(indentPixels, 2, 6, 2);
+        messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
 
-        if (MyLog.isLoggable(this, MyLog.VERBOSE) && oMsg.indentLevel > 0) {
+        if (oMsg.indentLevel > 0 && android.os.Build.VERSION.SDK_INT > 14 ) {
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                MyLog.v(this,"density=" + context.getResources().getDisplayMetrics().density);
+            }
             ImageView indentView = new ConversationIndentImageView(context, messageIndented, indentPixels);
             ((ViewGroup) messageIndented.getParent()).addView(indentView);
         }
