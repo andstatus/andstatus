@@ -298,7 +298,10 @@ public class DataInserterTest extends InstrumentationTestCase {
 
         MbMessage reply7 = buildPumpIoMessage(author1, "Reply 7 to Reply 2", reply2, null);
         MbMessage reply8 = buildPumpIoMessage(author1, "Reply 8 to Reply 7", reply7, null);
-        addMessage(reply8);
+        MbMessage reply9 = buildPumpIoMessage(author1, "Reply 9 to Reply 7", reply7, null);
+        addMessage(reply9);
+        MbMessage reply10 = buildPumpIoMessage(author1, "Reply 10 to Reply 8", reply8, null);
+        addMessage(reply10);
     }
 
     private MbMessage buildPumpIoMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {

@@ -104,7 +104,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
           }
         });
 
-        Activity nextActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 5000);
+        Activity nextActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 15000);
         MyLog.v(this, "testOpeningConversationActivity-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);

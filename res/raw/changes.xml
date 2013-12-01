@@ -36,6 +36,22 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     <header>
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
+    <release android:versionName="4.0" android:versionCode="86"
+        versionDate="2013-12-01"
+        versionTitle="Show the whole conversation tree including later replies">
+        <changes>
+            <change>Conversation view extended to show not only previous messages (as before), 
+                but also latest replies, if they were already downloaded. 
+                Plus other branches of the same tree. Different branched are shown with indentation.
+                <a href="https://github.com/andstatus/andstatus/issues/50" >Issue #50</a>.
+            </change>
+            <change>Combined timeline setting now persists between sessions. This is
+                desirable for users who didn't like combined timeline turned on on every startup.</change>
+            <change>Fixed "Stop following" doesn't work at pump.io sites
+                <a href="https://github.com/andstatus/andstatus/issues/51" >Issue #51</a>.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="3.0" android:versionCode="85"
         versionDate="2013-11-16"
         versionTitle="Answering in Conversation view added">

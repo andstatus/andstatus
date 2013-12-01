@@ -130,22 +130,25 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         }
     }
 
-    private class ContentLoader extends AsyncTask<Void, Void, List<ConversationOneMessage>> {
+    private class ContentLoader extends AsyncTask<Void, Void, ConversationViewLoader> {
 
         @Override
-        protected List<ConversationOneMessage> doInBackground(Void... params) {
+        protected ConversationViewLoader doInBackground(Void... params) {
             ConversationViewLoader loader = new ConversationViewLoader(
                     ConversationActivity.this, ma, selectedMessageId, contextMenu);
-            return loader.load();
+            loader.load();
+            return loader;
         }
         
         @Override
-        protected void onPostExecute(List<ConversationOneMessage> result) {
-            recreateTheConversationView(result);
+        protected void onPostExecute(ConversationViewLoader loader) {
+            recreateTheConversationView(loader);
         }
     }
     
-    private void recreateTheConversationView(List<ConversationOneMessage> oMsgs) {
+    private void recreateTheConversationView(ConversationViewLoader loader) {
+        loader.createViews();
+        List<ConversationOneMessage> oMsgs = loader.getMsgs();
         TextView titleText = (TextView) findViewById(R.id.titleText);
         titleText.setText( oMsgs.size() > 1 ? R.string.label_conversation : R.string.message);
         ViewGroup list = (ViewGroup) findViewById(android.R.id.list);

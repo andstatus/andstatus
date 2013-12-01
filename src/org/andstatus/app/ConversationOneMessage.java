@@ -16,6 +16,7 @@
 
 package org.andstatus.app;
 
+import android.view.View;
 import android.widget.LinearLayout;
 
 import java.util.ArrayList;
@@ -41,13 +42,19 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
     String inReplyToName = "";
     String recipientName = "";
 
-    int order = 0;
+    int listOrder = 0;
+    /**
+     * This order is reverse to the {@link #listOrder}. 
+     * First message in the conversation has it == 1.
+     * The number is visible to the user.
+     */
+    int historyOrder = 0;
     int nReplies = 0;
     int nParentReplies = 0;
-    int intentLevel = 0;
+    int indentLevel = 0;
     int replyLevel = 0;
     
-    LinearLayout view = null;
+    View view = null;
     
     public ConversationOneMessage(long idIn, int replyLevelIn) {
         this.id = idIn;
@@ -73,7 +80,7 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
      */
     @Override
     public int compareTo(ConversationOneMessage another) {
-        int compared = order - another.order;
+        int compared = listOrder - another.listOrder;
         if (compared == 0) {
             if (createdDate == another.createdDate) {
                 if ( id == another.id) {

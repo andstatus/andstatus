@@ -24,6 +24,8 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -72,6 +74,11 @@ public class ConversationViewLoader {
     private ReplyLevelComparator replyLevelComparator = new ReplyLevelComparator();
     
     List<ConversationOneMessage> oMsgs = new ArrayList<ConversationOneMessage>();
+
+    public List<ConversationOneMessage> getMsgs() {
+        return oMsgs;
+    }
+
     List<Long> idsOfTheMessagesToFind = new ArrayList<Long>();
 
     public ConversationViewLoader(Context contextIn, MyAccount maIn, long selectedMessageIdIn, MessageContextMenu contextMenuIn) {
@@ -81,13 +88,13 @@ public class ConversationViewLoader {
         contextMenu = contextMenuIn;
     }
     
-    public List<ConversationOneMessage> load() {
+    public void load() {
+        idsOfTheMessagesToFind.clear();
+        oMsgs.clear();
         findPreviousMessagesRecursively(new ConversationOneMessage(selectedMessageId, 0));
         Collections.sort(oMsgs, replyLevelComparator);
         enumerateMessages();
         Collections.sort(oMsgs);
-        createViews();
-        return oMsgs;
     }
 
     private void findPreviousMessagesRecursively(ConversationOneMessage oMsg) {
@@ -237,26 +244,35 @@ public class ConversationViewLoader {
             return compared;
         }
     }
+
+    private class OrderCounters {
+        int list = -1;
+        int history = 1;
+    }
     
     private void enumerateMessages() {
+        idsOfTheMessagesToFind.clear();
         for (ConversationOneMessage oMsg : oMsgs) {
-            oMsg.order = 0;
+            oMsg.listOrder = 0;
+            oMsg.historyOrder = 0;
         }
-        int order = oMsgs.size() +1;
+        OrderCounters order = new OrderCounters();
         for (int ind = oMsgs.size()-1; ind >= 0; ind--) {
             ConversationOneMessage oMsg = oMsgs.get(ind);
-            if (oMsg.order > 0 ) {
+            if (oMsg.listOrder < 0 ) {
                 continue;
             }
-            order = enumerateBranch(oMsg, order, 0);
+            enumerateBranch(oMsg, order, 0);
         }
     }
 
-    private int enumerateBranch(ConversationOneMessage oMsg, int orderIn, int intent) {
-        int order = orderIn;
-        oMsg.order = order;
-        order--;
-        oMsg.intentLevel = intent;
+    private void enumerateBranch(ConversationOneMessage oMsg, OrderCounters order, int intent) {
+        if (checkAndAddMessageToFind(oMsg.id)) {
+            return;
+        }
+        oMsg.historyOrder = order.history++;
+        oMsg.listOrder = order.list--;
+        oMsg.indentLevel = intent;
         if (oMsg.nReplies > 1 || oMsg.nParentReplies > 1 ) {
             intent++;
         }
@@ -264,13 +280,15 @@ public class ConversationViewLoader {
            ConversationOneMessage reply = oMsgs.get(ind);
            if (reply.inReplyToMsgId == oMsg.id) {
                reply.nParentReplies = oMsg.nReplies;
-               order = enumerateBranch(reply, order, intent);
+               enumerateBranch(reply, order, intent);
            }
         }
-        return order;
     }
     
-    private void createViews() {
+    /**
+     * This better be done in UI thread...
+     */
+    public void createViews() {
         for (int ind = 0; ind < oMsgs.size(); ind++) {
             oMsgs.get(ind).view = oneMessageToView(oMsgs.get(ind));
         }
@@ -279,20 +297,29 @@ public class ConversationViewLoader {
     /**
      * Formats message as a View suitable for a conversation list
      */
-    private LinearLayout oneMessageToView(ConversationOneMessage oMsg) {
+    private View oneMessageToView(ConversationOneMessage oMsg) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        int layoutResource = R.layout.message_basic;
+        int layoutResource = R.layout.message_conversation;
         if (!Activity.class.isAssignableFrom(context.getClass())) {
-            layoutResource = R.layout.message_basic_no_theme;
+            MyLog.w(this, "Context should be from an Activity");
         }
-        LinearLayout messageView = (LinearLayout) inflater.inflate(layoutResource, null);
-        if (oMsg.id == selectedMessageId) {
-            messageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.message_current_background));
-        }
-        int padding0 = messageView.getPaddingLeft();
-        messageView.setPadding(padding0 * (2 * oMsg.intentLevel + 1), 2, 6, 2);
+        View messageView = inflater.inflate(layoutResource, null);
         messageView.setOnCreateContextMenuListener(contextMenu);
 
+        int indent0 = 8;
+        int indentPixels = indent0 * (2 * oMsg.indentLevel);
+
+        LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
+        if (oMsg.id == selectedMessageId && oMsgs.size() > 1) {
+            messageIndented.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.message_current_background));
+        }
+        messageIndented.setPadding(indentPixels, 2, 6, 2);
+
+        if (MyLog.isLoggable(this, MyLog.VERBOSE) && oMsg.indentLevel > 0) {
+            ImageView indentView = new ConversationIndentImageView(context, messageIndented, indentPixels);
+            ((ViewGroup) messageIndented.getParent()).addView(indentView);
+        }
+        
         TextView id = (TextView) messageView.findViewById(R.id.id);
         id.setText(Long.toString(oMsg.id));
         TextView linkedUserId = (TextView) messageView.findViewById(R.id.linked_user_id);
@@ -303,6 +330,10 @@ public class ConversationViewLoader {
         TextView details = (TextView) messageView.findViewById(R.id.message_details);
 
         author.setText(oMsg.author);
+
+        TextView number = (TextView) messageView.findViewById(R.id.message_number);
+        number.setText(Integer.toString(oMsg.historyOrder));
+        
         body.setLinksClickable(true);
         body.setFocusable(true);
         body.setFocusableInTouchMode(true);
@@ -310,8 +341,7 @@ public class ConversationViewLoader {
         Linkify.addLinks(body, Linkify.ALL);
 
         // Everything else goes to messageDetails
-        String messageDetails = RelativeTime.getDifference(context,
-                oMsg.createdDate);
+        String messageDetails = RelativeTime.getDifference(context, oMsg.createdDate);
         if (!SharedPreferencesUtil.isEmpty(oMsg.via)) {
             messageDetails += " " + String.format(
                     Locale.getDefault(),
@@ -326,7 +356,8 @@ public class ConversationViewLoader {
             messageDetails += " "
                     + String.format(Locale.getDefault(),
                             context.getText(R.string.message_source_in_reply_to).toString(),
-                            oMsg.inReplyToName);
+                            oMsg.inReplyToName)
+                    + " (" + msgIdToHistoryOrder(oMsg.inReplyToMsgId) + ")";
         }
         if (!SharedPreferencesUtil.isEmpty(oMsg.rebloggersString)) {
             if (!oMsg.rebloggersString.equals(oMsg.author)) {
@@ -344,12 +375,21 @@ public class ConversationViewLoader {
                             .toString(), oMsg.recipientName);
         }
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            messageDetails = "(" + oMsg.intentLevel + "," + oMsg.replyLevel + "," + oMsg.order + ") " + messageDetails;
+            messageDetails = messageDetails + " (i" + oMsg.indentLevel + ",r" + oMsg.replyLevel + ")";
         }
         details.setText(messageDetails);
         ImageView favorited = (ImageView) messageView.findViewById(R.id.message_favorited);
         favorited.setImageResource(oMsg.favorited ? android.R.drawable.star_on : android.R.drawable.star_off);
         return messageView;
+    }
+
+    private int msgIdToHistoryOrder(long msgId) {
+        for (ConversationOneMessage oMsg : oMsgs) {
+            if (oMsg.id == msgId ) {
+                return oMsg.historyOrder;
+            }
+        }
+        return 0;
     }
     
 }
