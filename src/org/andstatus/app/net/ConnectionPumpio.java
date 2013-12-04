@@ -32,7 +32,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -131,39 +130,29 @@ public class ConnectionPumpio extends Connection {
         return user;
     }
     
-    private long dateFromJson(JSONObject jso, String fieldName) {
-        long date = 0;
-        if (jso != null && jso.has(fieldName)) {
-            String updated = jso.optString(fieldName);
-            if (updated.length() > 0) {
-                date = parseDate(updated);
-            }
-        }
-        return date;
-    }
-    
     /**
      * Simple solution based on:
      * http://stackoverflow.com/questions/2201925/converting-iso8601-compliant-string-to-java-util-date
-     * @return Unix time
+     * @return Unix time. Returns 0 in a case of an error
      */
-    private static long parseDate(String date) {
-        if(date == null) {
-            return new Date().getTime();
+    @Override
+    public long parseDate(String stringDate) {
+        long unixDate = 0;
+        if(stringDate != null) {
+            String datePrepared;        
+            if (stringDate.lastIndexOf('Z') == stringDate.length()-1) {
+                datePrepared = stringDate.substring(0, stringDate.length()-1) + "+0000";
+            } else {
+                datePrepared = stringDate.replaceAll("\\+0([0-9]){1}\\:00", "+0$100");
+            }
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY);
+            try {
+                unixDate = df.parse(datePrepared).getTime();
+            } catch (ParseException e) {
+                MyLog.e(this, "Failed to parse the date: '" + stringDate +"'", e);
+            }
         }
-        String datePrepared;        
-        if (date.lastIndexOf('Z') == date.length()-1) {
-            datePrepared = date.substring(0, date.length()-1) + "+0000";
-        } else {
-            datePrepared = date.replaceAll("\\+0([0-9]){1}\\:00", "+0$100");
-        }
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY);
-        try {
-            return df.parse(datePrepared).getTime();
-        } catch (ParseException e) {
-            MyLog.e(TAG, "Failed to parse the date: '" + date +"'", e);
-            return new Date().getTime();
-        }
+        return unixDate;
     }
     
     @Override

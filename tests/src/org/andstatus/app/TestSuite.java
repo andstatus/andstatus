@@ -28,6 +28,11 @@ import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.origin.Origin.OriginEnum;
 import org.andstatus.app.util.MyLog;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -202,5 +207,12 @@ public class TestSuite extends TestCase {
         assertTrue("Current account is successfully verified", 
                 MyContextHolder.get().persistentAccounts().getCurrentAccount().getCredentialsVerified() 
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
+    }
+    
+    public static Date gmtTime(int year, int month, int day, int hour, int minute, int second) {
+        GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+        cal.set(year, month, day, hour, minute, second);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();        
     }
 }

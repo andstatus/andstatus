@@ -249,16 +249,7 @@ public abstract class ConnectionTwitter extends Connection {
         MbMessage message =  MbMessage.fromOriginAndOid(data.originId, oid);
         message.actor = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
         try {
-            if (jso.has("created_at")) {
-                Long created = 0L;
-                String createdAt = jso.getString("created_at");
-                if (createdAt.length() > 0) {
-                    created = Date.parse(createdAt);
-                }
-                if (created > 0) {
-                    message.sentDate = created;
-                }
-            }
+            message.sentDate = dateFromJson(jso, "created_at");
 
             JSONObject sender;
             if (jso.has("sender")) {
@@ -364,12 +355,7 @@ public abstract class ConnectionTwitter extends Connection {
         user.avatarUrl = jso.optString("profile_image_url");
         user.description = jso.optString("description");
         user.homepage = jso.optString("url");
-        if (jso.has("created_at")) {
-            String createdAt = jso.optString("created_at");
-            if (createdAt.length() > 0) {
-                user.createdDate = Date.parse(createdAt);
-            }
-        }
+        user.createdDate = dateFromJson(jso, "created_at");
         if (!jso.isNull("following")) {
             user.followedByActor = TriState.fromBoolean(jso.optBoolean("following"));
         }

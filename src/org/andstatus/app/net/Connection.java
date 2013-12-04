@@ -26,8 +26,14 @@ import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
+import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Handles connection to the API of the Microblogging System (i.e. to the {@link Origin})
@@ -373,5 +379,35 @@ public abstract class Connection {
 
     public MbConfig getConfig() throws ConnectionException {
         return MbConfig.getEmpty();
+    }
+    
+    /**
+     * @return Unix time. Returns 0 in a case of an error or absence of such a field
+     */
+    public long dateFromJson(JSONObject jso, String fieldName) {
+        long date = 0;
+        if (jso != null && jso.has(fieldName)) {
+            String updated = jso.optString(fieldName);
+            if (updated.length() > 0) {
+                date = parseDate(updated);
+            }
+        }
+        return date;
+    }
+    
+    /**
+     * Currently seems like most universal solution
+     * @return Unix time. Returns 0 in a case of an error
+     */
+    public long parseDate(String stringDate) {
+        long unixDate = 0;
+        if(stringDate != null) {
+            try {
+                unixDate = Date.parse(stringDate);
+            } catch (IllegalArgumentException e) {
+                MyLog.e(this, "Failed to parse the date: '" + stringDate +"'", e);
+            }
+        }
+        return unixDate;
     }
 }

@@ -137,7 +137,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String IN_REPLY_TO_USER_ID = "in_reply_to_user_id";
         /**
          * Date and time when the row was created in the originating system.
-         * We store it as long returned by {@link java.util.Date#parse(String) }. 
+         * We store it as long returned by {@link org.andstatus.app.net.Connection#dateFromJson(JSONObject, String) }. 
          * NULL means the row was not retrieved from the Internet yet
          */
 		public static final String CREATED_DATE = "msg_created_date";
@@ -273,7 +273,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String URL = "url";
         /**
          * Date and time when the row was created in the originating system.
-         * We store it as long returned by {@link java.util.Date#parse(String) }. 
+         * We store it as long returned by {@link org.andstatus.app.net.Connection#dateFromJson(JSONObject, String) }. 
          * NULL means the row was not retrieved from the Internet yet
          * (And maybe there is no such User in the originating system...)
          */

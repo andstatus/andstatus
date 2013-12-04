@@ -30,6 +30,8 @@ import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class ConnectionPumpioTest extends InstrumentationTestCase {
@@ -127,33 +129,39 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
 
         int ind = 0;
         assertEquals("Posting image", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
-        assertTrue("trailing linebreaks trimmed: '" + timeline.get(ind).mbMessage.body + "'", timeline.get(ind).mbMessage.body.endsWith("Link"));
+        MbMessage mbMessage = timeline.get(ind).mbMessage;
+        assertTrue("trailing linebreaks trimmed: '" + mbMessage.body + "'", mbMessage.body.endsWith("Link"));
+        assertEquals("Message sent date: " + mbMessage.sentDate, TestSuite.gmtTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 32).getTime(), mbMessage.sentDate);
 
         ind++;
         assertEquals("Other User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
-        assertEquals("Other actor", "acct:jpope@io.jpope.org", timeline.get(ind).mbUser.actor.oid);
-        assertEquals("Following", TriState.TRUE, timeline.get(ind).mbUser.followedByActor);
+        MbUser mbUser = timeline.get(ind).mbUser;
+        assertEquals("Other actor", "acct:jpope@io.jpope.org", mbUser.actor.oid);
+        assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
 
         ind++;
         assertEquals("User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
-        assertEquals("Url of the actor", "https://identi.ca/t131t", timeline.get(ind).mbUser.actor.url);
-        MbUser mbUser = timeline.get(ind).mbUser;
+        mbUser = timeline.get(ind).mbUser;
+        assertEquals("Url of the actor", "https://identi.ca/t131t", mbUser.actor.url);
         assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
         assertEquals("Url of the user", "https://fmrl.me/grdryn", mbUser.url);
 
         ind++;
-        assertEquals("Favorited by someone else", TriState.TRUE, timeline.get(ind).mbMessage.favoritedByActor);
-        assertEquals("Actor -someone else", "acct:jpope@io.jpope.org" , timeline.get(ind).mbMessage.actor.oid);
-        assertTrue("Does not have a recipient", timeline.get(ind).mbMessage.recipient == null);
-        assertEquals("Url of the message", "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", timeline.get(ind).mbMessage.url);
+        mbMessage = timeline.get(ind).mbMessage;
+        assertEquals("Favorited by someone else", TriState.TRUE, mbMessage.favoritedByActor);
+        assertEquals("Actor -someone else", "acct:jpope@io.jpope.org" , mbMessage.actor.oid);
+        assertTrue("Does not have a recipient", mbMessage.recipient == null);
+        assertEquals("Url of the message", "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", mbMessage.url);
 
         ind++;
-        assertTrue("Have a recipient", timeline.get(ind).mbMessage.recipient != null);
-        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , timeline.get(ind).mbMessage.recipient.oid);
+        mbMessage = timeline.get(ind).mbMessage;
+        assertTrue("Have a recipient", mbMessage.recipient != null);
+        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , mbMessage.recipient.oid);
 
         ind++;
-        assertTrue("Is a reply", timeline.get(ind).mbMessage.inReplyToMessage != null);
-        assertEquals("Is a reply to this user", timeline.get(ind).mbMessage.inReplyToMessage.sender.userName, "jankusanagi@identi.ca");
+        mbMessage = timeline.get(ind).mbMessage;
+        assertTrue("Is a reply", mbMessage.inReplyToMessage != null);
+        assertEquals("Is a reply to this user", mbMessage.inReplyToMessage.sender.userName, "jankusanagi@identi.ca");
     }
 
     public void testGetUsersFollowedBy() throws ConnectionException {
@@ -214,5 +222,10 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Our account acted", connection.data.accountUserOid, user.actor.oid);
         assertEquals("Object of action", userOid, user.oid);
         assertEquals("Unfollowed", TriState.FALSE, user.followedByActor);
+    }
+
+    public void testParseDate() {
+        String stringDate = "Wed Nov 27 09:27:01 -0300 2013";
+        assertEquals("Bad date shouldn't throw (" + stringDate + ")", 0, connection.parseDate(stringDate) );
     }
 }

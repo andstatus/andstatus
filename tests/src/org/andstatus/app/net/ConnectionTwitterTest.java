@@ -29,6 +29,7 @@ import org.andstatus.app.origin.Origin.OriginEnum;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -89,46 +90,59 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
 
         int ind = 0;
         assertEquals("Posting message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
-        assertTrue("Favorited", timeline.get(ind).mbMessage.favoritedByActor.toBoolean(false));
-        assertEquals("Actor", connectionData.accountUserOid, timeline.get(ind).mbMessage.actor.oid);
-        assertEquals("Author's oid", "221452291", timeline.get(ind).mbMessage.sender.oid);
-        assertEquals("Author's username", "Know", timeline.get(ind).mbMessage.sender.userName);
-        assertEquals("Author's Display name", "Just so you Know", timeline.get(ind).mbMessage.sender.realName);
+        MbMessage mbMessage = timeline.get(ind).mbMessage;
+        assertTrue("Favorited", mbMessage.favoritedByActor.toBoolean(false));
+        assertEquals("Actor", connectionData.accountUserOid, mbMessage.actor.oid);
+        assertEquals("Author's oid", "221452291", mbMessage.sender.oid);
+        assertEquals("Author's username", "Know", mbMessage.sender.userName);
+        assertEquals("Author's Display name", "Just so you Know", mbMessage.sender.realName);
 
         ind++;
-        assertTrue("Does not have a recipient", timeline.get(ind).mbMessage.recipient == null);
-        assertTrue("Is not a reblog", timeline.get(ind).mbMessage.rebloggedMessage == null);
-        assertTrue("Is a reply", timeline.get(ind).mbMessage.inReplyToMessage != null);
-        assertEquals("Reply to the message id", "17176774678", timeline.get(ind).mbMessage.inReplyToMessage.oid);
-        assertEquals("Reply to the message by userOid", "144771645", timeline.get(ind).mbMessage.inReplyToMessage.sender.oid);
-        assertTrue("Is not Favorited", !timeline.get(ind).mbMessage.favoritedByActor.toBoolean(true));
+        mbMessage = timeline.get(ind).mbMessage;
+        assertTrue("Does not have a recipient", mbMessage.recipient == null);
+        assertTrue("Is not a reblog", mbMessage.rebloggedMessage == null);
+        assertTrue("Is a reply", mbMessage.inReplyToMessage != null);
+        assertEquals("Reply to the message id", "17176774678", mbMessage.inReplyToMessage.oid);
+        assertEquals("Reply to the message by userOid", "144771645", mbMessage.inReplyToMessage.sender.oid);
+        assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
         String startsWith = "@t131t";
-        assertEquals("Body of this message starts with", startsWith, timeline.get(ind).mbMessage.body.substring(0, startsWith.length()));
+        assertEquals("Body of this message starts with", startsWith, mbMessage.body.substring(0, startsWith.length()));
 
         ind++;
-        assertTrue("Does not have a recipient", timeline.get(ind).mbMessage.recipient == null);
-        assertTrue("Is a reblog", timeline.get(ind).mbMessage.rebloggedMessage != null);
-        assertTrue("Is not a reply", timeline.get(ind).mbMessage.inReplyToMessage == null);
-        assertEquals("Reblog of the message id", "315088751183409153", timeline.get(ind).mbMessage.rebloggedMessage.oid);
-        assertEquals("Reblog of the message by userOid", "442756884", timeline.get(ind).mbMessage.rebloggedMessage.sender.oid);
-        assertTrue("Is not Favorited", !timeline.get(ind).mbMessage.favoritedByActor.toBoolean(true));
+        mbMessage = timeline.get(ind).mbMessage;
+        assertTrue("Does not have a recipient", mbMessage.recipient == null);
+        assertTrue("Is a reblog", mbMessage.rebloggedMessage != null);
+        assertTrue("Is not a reply", mbMessage.inReplyToMessage == null);
+        assertEquals("Reblog of the message id", "315088751183409153", mbMessage.rebloggedMessage.oid);
+        assertEquals("Reblog of the message by userOid", "442756884", mbMessage.rebloggedMessage.sender.oid);
+        assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
         startsWith = "RT @AndStatus1: This AndStatus application";
-        assertEquals("Body of this message starts with", startsWith, timeline.get(ind).mbMessage.body.substring(0, startsWith.length()));
+        assertEquals("Body of this message starts with", startsWith, mbMessage.body.substring(0, startsWith.length()));
         startsWith = "This AndStatus application";
-        assertEquals("Body of reblogged message starts with", startsWith, timeline.get(ind).mbMessage.rebloggedMessage.body.substring(0, startsWith.length()));
-        // TODO: use Calendar
-        Date date = new Date(Date.UTC(2013 - 1900, 9 - 1, 26, 18, 23, 05));
-        assertEquals("This message created at Thu Sep 26 18:23:05 +0000 2013 (" + date.toString() + ")", date.getTime(), timeline.get(ind).mbMessage.sentDate);
-        date = new Date(Date.UTC(2013 - 1900, 3 - 1, 22, 13, 13, 7));
-        assertEquals("Reblogged message created at Fri Mar 22 13:13:07 +0000 2013 (" + date.toString() + ")", date.getTime(), timeline.get(ind).mbMessage.rebloggedMessage.sentDate);
+        assertEquals("Body of reblogged message starts with", startsWith, mbMessage.rebloggedMessage.body.substring(0, startsWith.length()));
+        Date date = TestSuite.gmtTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 05);
+        assertEquals("This message created at Thu Sep 26 18:23:05 +0000 2013 (" + date.toString() + ")", date.getTime(), mbMessage.sentDate);
+        date = TestSuite.gmtTime(2013, Calendar.MARCH, 22, 13, 13, 7);
+        assertEquals("Reblogged message created at Fri Mar 22 13:13:07 +0000 2013 (" + date.toString() + ")", date.getTime(), mbMessage.rebloggedMessage.sentDate);
 
         ind++;
-        assertTrue("Does not have a recipient", timeline.get(ind).mbMessage.recipient == null);
-        assertTrue("Is not a reblog", timeline.get(ind).mbMessage.rebloggedMessage == null);
-        assertTrue("Is not a reply", timeline.get(ind).mbMessage.inReplyToMessage == null);
-        assertTrue("Is not Favorited", !timeline.get(ind).mbMessage.favoritedByActor.toBoolean(true));
-        assertEquals("Author's oid is user oid of this account", connectionData.accountUserOid, timeline.get(ind).mbMessage.sender.oid);
+        mbMessage = timeline.get(ind).mbMessage;
+        assertTrue("Does not have a recipient", mbMessage.recipient == null);
+        assertTrue("Is not a reblog", mbMessage.rebloggedMessage == null);
+        assertTrue("Is not a reply", mbMessage.inReplyToMessage == null);
+        assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
+        assertEquals("Author's oid is user oid of this account", connectionData.accountUserOid, mbMessage.sender.oid);
         startsWith = "And this is";
-        assertEquals("Body of this message starts with", startsWith, timeline.get(ind).mbMessage.body.substring(0, startsWith.length()));
+        assertEquals("Body of this message starts with", startsWith, mbMessage.body.substring(0, startsWith.length()));
     }
+    
+    public void testParseDate() {
+        String stringDate = "Wed Nov 27 09:27:01 -0300 2013";
+        assertEquals("Bad date shouldn't throw (" + stringDate + ")", 0, connection.parseDate(stringDate) );
+        Date date = TestSuite.gmtTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 05);
+        stringDate = "Thu Sep 26 22:23:05 GMT+04:00 2013";   // date.toString gives wrong value!!!
+        long parsed = connection.parseDate(stringDate);
+        assertEquals("Testing the date: Thu Sep 26 18:23:05 +0000 2013 (" + stringDate + " vs " + new Date(parsed).toString() + ")", date.getTime(), parsed);
+    }
+    
 }
