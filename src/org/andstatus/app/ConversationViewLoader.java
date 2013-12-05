@@ -316,7 +316,7 @@ public class ConversationViewLoader {
         }
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
 
-        if (oMsg.indentLevel > 0 && android.os.Build.VERSION.SDK_INT > 14 ) {
+        if (oMsg.indentLevel > 0) {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
                 MyLog.v(this,"density=" + context.getResources().getDisplayMetrics().density);
             }

@@ -26,7 +26,7 @@
 		<item name="messageUsernameStyle">bold</item>
 
 		<item name="messageBodyAppearance">?android:attr/textAppearanceMedium</item>
-		<item name="messageBodyColor">?android:attr/textColorPrimary</item>
+		<item name="messageBodyColor">?android:attr/textColorPrimaryNoDisable</item>
 		<item name="messageBodyStyle">normal</item>
 
 		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
@@ -41,7 +41,7 @@
 		<item name="messageUsernameStyle">bold</item>
 
 		<item name="messageBodyAppearance">?android:attr/textAppearanceMedium</item>
-		<item name="messageBodyColor">?android:attr/textColorPrimary</item>
+		<item name="messageBodyColor">?android:attr/textColorPrimaryNoDisable</item>
 		<item name="messageBodyStyle">normal</item>
 
 		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
@@ -56,7 +56,7 @@
 		<item name="messageUsernameStyle">bold</item>
 
 		<item name="messageBodyAppearance">?android:attr/textAppearanceMedium</item>
-		<item name="messageBodyColor">?android:attr/textColorPrimary</item>
+		<item name="messageBodyColor">?android:attr/textColorPrimaryNoDisable</item>
 		<item name="messageBodyStyle">normal</item>
 
 		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>

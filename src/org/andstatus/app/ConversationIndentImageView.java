@@ -48,16 +48,49 @@ public class ConversationIndentImageView extends ImageView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int height = referencedView.getMeasuredHeight();
+        MyLog.v(this, "onMeasure, indent=" + widthPixels + ", refHeight=" + height + ", spec=" + MeasureSpec.toString(heightMeasureSpec));
         int mode = MeasureSpec.EXACTLY;
-        MyLog.v(this, "onMeasure, indent=" + widthPixels + ", height=" + height);
         if (height == 0) {
             height = MAX_HEIGH;
             mode = MeasureSpec.AT_MOST;
         } else {
             getLayoutParams().height = height;
         }
-        int measuredWidth = MeasureSpec.makeMeasureSpec(widthPixels,  MeasureSpec.EXACTLY);
-        int measuredHeight = MeasureSpec.makeMeasureSpec(height, mode);
+        int measuredWidth;
+        int measuredHeight;
+        if (android.os.Build.VERSION.SDK_INT > 14) {
+            measuredWidth = MeasureSpec.makeMeasureSpec(widthPixels,  MeasureSpec.EXACTLY);
+            measuredHeight = MeasureSpec.makeMeasureSpec(height, mode);
+        } else {
+            measuredWidth = myResolveSizeAndState(widthPixels, widthMeasureSpec, 0);
+            measuredHeight = myResolveSizeAndState(height, heightMeasureSpec, 0);
+        }
         setMeasuredDimension(measuredWidth, measuredHeight);
+    }
+
+    /**
+     * This very useful function is since API 11: {@link #resolveSizeAndState(int, int, int)}
+     * so we copy-pasted it here for compatibility with API 8 
+     */
+    private static int myResolveSizeAndState(int size, int measureSpec, int childMeasuredState) {
+        int result = size;
+        int specMode = MeasureSpec.getMode(measureSpec);
+        int specSize =  MeasureSpec.getSize(measureSpec);
+        switch (specMode) {
+        case MeasureSpec.UNSPECIFIED:
+            result = size;
+            break;
+        case MeasureSpec.AT_MOST:
+            if (specSize < size) {
+                result = specSize | MEASURED_STATE_TOO_SMALL;
+            } else {
+                result = size;
+            }
+            break;
+        case MeasureSpec.EXACTLY:
+            result = specSize;
+            break;
+        }
+        return result | (childMeasuredState&MEASURED_STATE_MASK);
     }
 }
