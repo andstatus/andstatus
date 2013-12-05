@@ -36,6 +36,22 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     <header>
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
+    <release android:versionName="4.1" android:versionCode="87"
+        versionDate="2013-12-05"
+        versionTitle="User timeline improved">
+        <changes>
+            <change>Combined "User" Timeline shows messages by all my accounts, 
+                not only by currently selected, as it was before 
+                <a href="https://github.com/andstatus/andstatus/issues/45" >Issue #45</a>.</change>
+            <change>Convenience: If "User" is current timeline, and we see messages by one of my accounts, 
+                changing current account doesn't change timeline type, as it was before.</change>
+            <change>Fixes for Android v.2.x: Improved Conversation view (colored lines
+                added!), message text color fixed.</change>
+            <change>Fixed "Date parse error causes crash of the application"
+                <a href="https://github.com/andstatus/andstatus/issues/52" >Issue #52</a>.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="4.0" android:versionCode="86"
         versionDate="2013-12-01"
         versionTitle="Show the whole conversation tree including later replies">

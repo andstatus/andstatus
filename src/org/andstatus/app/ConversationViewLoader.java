@@ -266,21 +266,21 @@ public class ConversationViewLoader {
         }
     }
 
-    private void enumerateBranch(ConversationOneMessage oMsg, OrderCounters order, int intent) {
+    private void enumerateBranch(ConversationOneMessage oMsg, OrderCounters order, int indent) {
         if (checkAndAddMessageToFind(oMsg.id)) {
             return;
         }
         oMsg.historyOrder = order.history++;
         oMsg.listOrder = order.list--;
-        oMsg.indentLevel = intent;
+        oMsg.indentLevel = indent;
         if (oMsg.nReplies > 1 || oMsg.nParentReplies > 1 ) {
-            intent++;
+            indent++;
         }
         for (int ind = oMsgs.size() - 1; ind >= 0; ind--) {
            ConversationOneMessage reply = oMsgs.get(ind);
            if (reply.inReplyToMsgId == oMsg.id) {
                reply.nParentReplies = oMsg.nReplies;
-               enumerateBranch(reply, order, intent);
+               enumerateBranch(reply, order, indent);
            }
         }
     }

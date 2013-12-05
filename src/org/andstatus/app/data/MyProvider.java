@@ -259,7 +259,6 @@ public class MyProvider extends ContentProvider {
             switch (URI_MATCHER.match(uri)) {
                 case TIMELINE:
                     accountUserId = uriToAccountUserId(uri);
-                    MyDatabase.TimelineTypeEnum timelineType = uriToTimelineType(uri);
                     
                     table = MyDatabase.MSG_TABLE_NAME;
                     nullColumnHack = Msg.BODY;
@@ -564,29 +563,7 @@ public class MyProvider extends ContentProvider {
     private static String tablesForTimeline(Uri uri, String[] projection) {
         MyDatabase.TimelineTypeEnum tt = uriToTimelineType(uri);
         boolean isCombined = uriToIsCombined(uri);
-        long accountUserId = uriToAccountUserId(uri);
-        int nAccounts = 1;
-        // Allows to link to one or more accounts
-        String accountUserIds = "";
-        if (isCombined || accountUserId == 0) {
-            StringBuilder sb = new StringBuilder();
-            for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
-                if (sb.length() > 0) {
-                    sb.append(", ");
-                    nAccounts += 1;
-                }
-                sb.append(Long.toString(ma.getUserId()));
-                accountUserId = ma.getUserId();
-            }
-            accountUserIds = sb.toString();
-        } else {
-            accountUserIds = Long.toString(accountUserId);
-        }
-        if (nAccounts == 1) {
-            accountUserIds = "=" + accountUserIds;
-        } else {
-            accountUserIds = " IN (" + accountUserIds + ")";
-        }
+        AccountUserIds userIds = new AccountUserIds(isCombined, uriToAccountUserId(uri));
 
         Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
 
@@ -599,7 +576,7 @@ public class MyProvider extends ContentProvider {
                         + MyDatabase.FollowingUser.USER_FOLLOWED + ", "
                         + FollowingUser.USER_ID + " AS " + User.LINKED_USER_ID
                         + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME
-                        + " WHERE (" + MyDatabase.User.LINKED_USER_ID + accountUserIds
+                        + " WHERE (" + MyDatabase.User.LINKED_USER_ID + userIds.getSqlUserIds()
                         + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1 )"
                         + ") as fuser";
                 String userTable = MyDatabase.USER_TABLE_NAME;
@@ -627,8 +604,8 @@ public class MyProvider extends ContentProvider {
                         + ")";
                 break;
             case MESSAGESTOACT:
-                if (nAccounts == 1) {
-                    tables = "(SELECT " + accountUserId + " AS " + MyDatabase.User.LINKED_USER_ID
+                if (userIds.getnIds() == 1) {
+                    tables = "(SELECT " + userIds.getAccountUserId() + " AS " + MyDatabase.User.LINKED_USER_ID
                             + ", * FROM " + MyDatabase.MSG_TABLE_NAME + ") AS msg";
                     linkedUserDefined = true;
                 }
@@ -654,7 +631,7 @@ public class MyProvider extends ContentProvider {
                     tables += " LEFT JOIN " + tbl;
                     break;
                 default:
-                    tbl += " AND " + MyDatabase.User.LINKED_USER_ID + accountUserIds;
+                    tbl += " AND " + MyDatabase.User.LINKED_USER_ID + userIds.getSqlUserIds();
                     if (isCombined) {
                         tables += " LEFT OUTER JOIN " + tbl;
                     } else {

@@ -16,6 +16,8 @@
 
 package org.andstatus.app.util;
 
+import android.text.TextUtils;
+
 /**
  * Add selection and it's argument (for query...)
  */
@@ -35,27 +37,21 @@ public final class SelectionAndArgs {
   }
   
   public int addSelection(String selectionAdd, String[] selectionArgsAdd) {
-      if (selectionAdd == null) {
-          selectionAdd = "";
-      }
       if (selectionArgsAdd == null) {
           selectionArgsAdd = new String[] {};
       }
       int nArgsAdd = selectionArgsAdd.length;
-      if (nArgsAdd > 0) {
+      if (!TextUtils.isEmpty(selectionAdd)) {
           if (selection.length() == 0) {
               selection = selectionAdd;
           } else {
               selection = "(" + selection + ") AND (" + selectionAdd + ")";
           }
-          
+      }
+      if (nArgsAdd > 0) {
           String[] selectionArgs2 = new String[nArgs + nArgsAdd];
-          for (int i = 0; i < nArgs; i++) {
-              selectionArgs2[i] = selectionArgs[i];
-          }
-          for (int i = nArgs; i < nArgs + nArgsAdd; i++) {
-              selectionArgs2[i] = selectionArgsAdd[i - nArgs];
-          }
+          System.arraycopy(selectionArgs, 0, selectionArgs2, 0, nArgs);
+          System.arraycopy(selectionArgsAdd, 0, selectionArgs2, nArgs, nArgsAdd);
           selectionArgs = selectionArgs2;
           
           nArgs += nArgsAdd;

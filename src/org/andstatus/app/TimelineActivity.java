@@ -61,6 +61,7 @@ import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.data.AccountUserIds;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
@@ -1089,17 +1090,18 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                             });
                             break;
                         case USER:
+                            AccountUserIds userIds = new AccountUserIds(isTimelineCombined(), getSelectedUserId());
                             // Reblogs are included also
-                            sa.addSelection(MyDatabase.Msg.AUTHOR_ID + " = ? OR "
-                                    + MyDatabase.Msg.SENDER_ID + " = ? OR "
+                            sa.addSelection(MyDatabase.Msg.AUTHOR_ID + " " + userIds.getSqlUserIds() 
+                                    + " OR "
+                                    + MyDatabase.Msg.SENDER_ID + " " + userIds.getSqlUserIds() 
+                                    + " OR " 
                                     + "("
-                                    + User.LINKED_USER_ID + " = ? AND "
+                                    + User.LINKED_USER_ID + " " + userIds.getSqlUserIds() 
+                                    + " AND "
                                     + MyDatabase.MsgOfUser.REBLOGGED + " = 1"
                                     + ")",
-                                    new String[] {
-                                            Long.toString(mSelectedUserId), Long.toString(mSelectedUserId),
-                                            Long.toString(mSelectedUserId)
-                                    });
+                                    null);
                             break;
                         default:
                             break;
@@ -1320,11 +1322,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                         MyLog.v(this, "Restarting the activity for the selected account " + ma.getAccountName());
                         finish();
                         TimelineTypeEnum timelineTypeNew = mTimelineType;
-                        if (mTimelineType == TimelineTypeEnum.USER && mSelectedUserId != ma.getUserId()) {
+                        if (mTimelineType == TimelineTypeEnum.USER 
+                                &&  (MyContextHolder.get().persistentAccounts().fromUserId(mSelectedUserId) == null)) {
                             /*  "Other User's timeline" vs "My User's timeline" 
-                             * Actually we saw messages of other user, not of (previous) MyAccount,
+                             * Actually we saw messages of the user, who is not MyAccount,
                              * so let's switch to the HOME
-                             * TODO: Open "Other User timeline" in a separate Activity
+                             * TODO: Open "Other User timeline" in a separate Activity?!
                              */
                             timelineTypeNew = TimelineTypeEnum.HOME;
                         }
