@@ -68,7 +68,7 @@ public class MyPreferences {
     
     public static final String KEY_THEME_SIZE = "theme_size";
     public static final String KEY_THEME_COLOR = "theme_color";
-    
+    public static final String KEY_SHOW_AVATARS = "show_avatars";
     /**
      * Use this dir: http://developer.android.com/reference/android/content/Context.html#getExternalFilesDir(java.lang.String)
      * (for API 8)
@@ -343,5 +343,8 @@ public class MyPreferences {
         }
         return changed;
     }
-    
+
+    public static boolean showAvatars() {
+        return getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_SHOW_AVATARS, false);
+    }
 }

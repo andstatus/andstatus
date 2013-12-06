@@ -2,7 +2,7 @@ package org.andstatus.app;
 
 import android.app.Activity;
 
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineTypeEnum;
 
 /**
  * Activity should implement this interface in order to use {@link MessageContextMenu} 

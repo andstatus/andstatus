@@ -17,9 +17,7 @@
 package org.andstatus.app.data;
 
 import org.andstatus.app.MyContextState;
-import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.net.Connection;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
@@ -42,6 +40,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
+     * v.13 2013-12-06 yvolk. Avatar table added
      * v.12 2013-08-30 yvolk. Adapting for Pump.Io
      * v.11 2013-05-18 yvolk. FollowingUser table added. User table extended with a column
      *      to store the date the list of Following users was loaded.
@@ -51,7 +50,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    public static final int DATABASE_VERSION = 12;
+    public static final int DATABASE_VERSION = 13;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
 	public static final String MSG_TABLE_NAME = Msg.class.getSimpleName().toLowerCase(Locale.US);
@@ -251,13 +250,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String REAL_NAME = "real_name";
 		/**
-		 * To track changes of the image and update cached image 
+		 * The latest url of the avatar 
 		 */
         public static final String AVATAR_URL = "avatar_url";
-        /**
-         * Cached avatar image
-         */
-        public static final String AVATAR_BLOB = "avatar_blob";
         /**
          * User's description
          */
@@ -373,6 +368,43 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String SENDER_FOLLOWED = "sender_followed";
     }
 	
+    public static final class Avatar implements BaseColumns {
+        public static final String TABLE_NAME = Avatar.class.getSimpleName().toLowerCase(Locale.US);
+        private Avatar() {
+        }
+        /**
+         * Every avatar is connected to exactly one user.
+         */
+        public static final String USER_ID = "user_id";
+        /**
+         * Date and time of the information. Used to decide which 
+         * (version of) information
+         * is newer (we may upload older information later...)
+         */
+        public static final String VALID_FROM = "avatar_valid_from";
+        /**
+         * Url of the avatar 
+         */
+        public static final String URL = "avatar_url";
+        /**
+         * See {@link AvatarStatus}
+         */
+        public static final String STATUS = "avatar_status";
+        public static final String FILE_NAME = "avatar_file_name";
+        /**
+         * Date and time there was last attempt to load avatar. The attempt may be successfull or not.
+         */
+        public static final String LOADED_DATE = "avatar_loaded_date";
+        
+        /*
+         * Derived columns (they are not stored in this table but are result of joins)
+         */
+        /**
+         * Alias for the primary key
+         */
+        public static final String AVATAR_ID = "avatar_id";
+    }
+
     /**
      * ids in originating system
      */
@@ -388,136 +420,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         USER_OID
     }
     
-    
-    /**
-     * These values help set timeline filters closer to the database (in ContentProvider...)
-     */
-    public enum TimelineTypeEnum {
-        /**
-         * The Timeline type is unknown
-         */
-        UNKNOWN("unknown", R.string.unimplemented, User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
-        /**
-         * The Home timeline and other information (replies...).
-         */
-        HOME("home", R.string.timeline_title_home, User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
-        /**
-         * The Mentions timeline and other information (replies...).
-         */
-        MENTIONS("mentions", R.string.timeline_title_mentions, User.MENTIONS_TIMELINE_POSITION, User.MENTIONS_TIMELINE_ITEM_DATE, User.MENTIONS_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_MENTIONS_TIMELINE),
-        /**
-         * Direct messages (direct dents...)
-         */
-        DIRECT("direct", R.string.timeline_title_direct_messages, User.DIRECT_TIMELINE_POSITION, User.DIRECT_TIMELINE_ITEM_DATE, User.DIRECT_TIMELINE_DATE, Connection.ApiRoutineEnum.DIRECT_MESSAGES),
-        /**
-         * Favorites (favorited messages)
-         */
-        FAVORITES("favorites", R.string.timeline_title_favorites, User.FAVORITES_TIMELINE_POSITION, User.FAVORITES_TIMELINE_ITEM_DATE, User.FAVORITES_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
-        /**
-         * Messages of the selected User (where he is an Author or a Sender only (e.g. for Reblog/Retweet). 
-         * This User may be not the same as a user of current account ( {@link MyAccount#currentAccountName}}.
-         * Moreover, the User may not be "AndStatus account" at all.
-         * Hence this timeline type requires the User parameter.
-         */
-        USER("user", R.string.timeline_title_user, User.USER_TIMELINE_POSITION, User.USER_TIMELINE_ITEM_DATE, User.USER_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_USER_TIMELINE),
-        /**
-         * For the selected user, the timeline includes all messages of the same origin irrespectively existence
-         * of the link between the message and the User. So the User may "Act" on this message.
-         */
-        MESSAGESTOACT("messages_to_act", R.string.timeline_title_home, User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
-        /**
-         * Latest messages of every Following User (Following by this User - AndStatus account). 
-         * So this is essentially a list of "Following users". 
-         * The timeline doesn't have Message ID because we download User IDs only 
-         * See {@link FollowingUser}
-         */
-        FOLLOWING_USER("following_user", R.string.timeline_title_following_user, "", "", User.FOLLOWING_USER_DATE, Connection.ApiRoutineEnum.GET_FRIENDS_IDS),
-        /**
-         * Replies
-         */
-        REPLIES("replies", R.string.timeline_title_replies, User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
-        /**
-         * All timelines (e.g. for download of all timelines. 
-         * This is generally done after addition of the new MyAccount).
-         */
-        ALL("all", R.string.unimplemented, User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY);
-        
-        /**
-         * code of the enum that is used in messages
-         */
-        private String code;
-        /**
-         * The id of the string resource with the localized name of this Timeline to use in UI
-         */
-        private int resId;
-        /**
-         * Name of the column in the {@link User} table. The column contains position
-         * of the latest downloaded timeline item 
-         * E.g. the "timeline item" is a "message" for Twitter and an "Activity" for Pump.Io.  
-         */
-        private String columnNameLatestTimelinePosition;
-        private String columnNameLatestTimelineItemDate;
-        /**
-         * Name of the column in the {@link User} table. The column contains the date when 
-         * last time this timeline was retrieved.
-         */
-        private String columnNameTimelineDate;
-        /**
-         * Api routine to download this timeline
-         */
-        private Connection.ApiRoutineEnum connectionApiRoutine;
-        
-        public String columnNameLatestTimelinePosition() {
-            return columnNameLatestTimelinePosition;
-        }
-
-        public String columnNameLatestTimelineItemDate() {
-            return columnNameLatestTimelineItemDate;
-        }
-        
-        public String columnNameTimelineDate() {
-            return columnNameTimelineDate;
-        }
-        
-        private TimelineTypeEnum(String code, int resId, String columnNameLatestTimelinePosition, String columnNameLatestTimelineItemDate, String columnNameTimelineDate, Connection.ApiRoutineEnum connectionApiRoutine) {
-            this.code = code;
-            this.resId = resId;
-            this.columnNameLatestTimelinePosition = columnNameLatestTimelinePosition;
-            this.columnNameLatestTimelineItemDate = columnNameLatestTimelineItemDate;
-            this.columnNameTimelineDate = columnNameTimelineDate;
-            this.connectionApiRoutine = connectionApiRoutine;
-        }
-
-        /**
-         * String code for the Command to be used in messages
-         */
-        public String save() {
-            return code;
-        }
-        
-        /**
-         * The id of the string resource with the localized name to use in UI
-         */
-        public int resId() {
-            return resId;
-        }
-        
-        public Connection.ApiRoutineEnum getConnectionApiRoutine() {
-            return connectionApiRoutine;
-        }
-        
-        /**
-         * Returns the enum for a String action code or UNKNOWN
-         */
-        public static TimelineTypeEnum load(String strCode) {
-            for (TimelineTypeEnum tt : TimelineTypeEnum.values()) {
-                if (tt.code.equals(strCode)) {
-                    return tt;
-                }
-            }
-            return UNKNOWN;
-        }
-    }
     
     public MyDatabase(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -603,7 +505,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.USERNAME + " TEXT NOT NULL," 
                 + User.REAL_NAME + " TEXT," 
                 + User.AVATAR_URL + " TEXT," 
-                + User.AVATAR_BLOB + " BLOB," 
                 + User.DESCRIPTION + " TEXT," 
                 + User.HOMEPAGE + " TEXT," 
                 + User.URL + " TEXT," 
@@ -640,7 +541,21 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + FollowingUser.USER_FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL," 
                 + " CONSTRAINT pk_followinguser PRIMARY KEY (" + FollowingUser.USER_ID + " ASC, " + FollowingUser.FOLLOWING_USER_ID + " ASC)"
                 + ");");
-        
+
+        db.execSQL("CREATE TABLE " + Avatar.TABLE_NAME + " (" 
+                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
+                + Avatar.USER_ID + " INTEGER NOT NULL," 
+                + Avatar.VALID_FROM + " INTEGER NOT NULL,"
+                + Avatar.URL + " TEXT NOT NULL," 
+                + Avatar.FILE_NAME + " TEXT," 
+                + Avatar.STATUS + " INTEGER NOT NULL DEFAULT 0," 
+                + Avatar.LOADED_DATE + " INTEGER"
+                + ");");
+
+        db.execSQL("CREATE INDEX idx_avatar_user ON " + Avatar.TABLE_NAME + " (" 
+                + Avatar.USER_ID + ", "
+                + Avatar.STATUS
+                + ");");
     }
 
     /**

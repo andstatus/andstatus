@@ -19,6 +19,8 @@ package org.andstatus.app;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import org.andstatus.app.data.AvatarDrawable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +56,7 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
     int indentLevel = 0;
     int replyLevel = 0;
     
+    AvatarDrawable avatarDrawable;
     View view = null;
     
     public ConversationOneMessage(long idIn, int replyLevelIn) {

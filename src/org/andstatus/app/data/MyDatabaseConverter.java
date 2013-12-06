@@ -17,12 +17,14 @@
 package org.andstatus.app.data;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.provider.BaseColumns;
 
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.MyContext;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.account.MyAccountConverter;
+import org.andstatus.app.data.MyDatabase.Avatar;
 import org.andstatus.app.util.MyLog;
 
 public class MyDatabaseConverter {
@@ -149,6 +151,9 @@ public class MyDatabaseConverter {
         if (currentVersion == 11) {
             currentVersion = convert11to12(db, currentVersion);
         }
+        if (currentVersion == 12) {
+            currentVersion = convert12to13(db, currentVersion);
+        }
         if ( currentVersion == newVersion) {
             MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
                     + newVersion + ".");
@@ -158,7 +163,6 @@ public class MyDatabaseConverter {
             throw new IllegalStateException("Database upgrade failed. Current database version=" + currentVersion);
         }
     }
-
 
     /**
      * @return new db version, the same as old in a case of a failure
@@ -345,6 +349,42 @@ public class MyDatabaseConverter {
         if (ok) {
             MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
             ok = ( MyAccountConverter.convert11to12(db, oldVersion) == versionTo);
+        } else {
+            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
+                    + " to version " + versionTo
+                    + " SQL='" + sql +"'");
+        }
+        return (ok ? versionTo : oldVersion) ;
+    }
+ 
+    private int convert12to13(SQLiteDatabase db, int oldVersion) {
+        final int versionTo = 13;
+        boolean ok = false;
+        String sql = "";
+        try {
+            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+
+            db.execSQL("CREATE TABLE " + Avatar.TABLE_NAME + " (" 
+                    + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
+                    + Avatar.USER_ID + " INTEGER NOT NULL," 
+                    + Avatar.VALID_FROM + " INTEGER NOT NULL,"
+                    + Avatar.URL + " TEXT NOT NULL," 
+                    + Avatar.FILE_NAME + " TEXT," 
+                    + Avatar.STATUS + " INTEGER NOT NULL DEFAULT 0," 
+                    + Avatar.LOADED_DATE + " INTEGER"
+                    + ");");
+
+            db.execSQL("CREATE INDEX idx_avatar_user ON " + Avatar.TABLE_NAME + " (" 
+                    + Avatar.USER_ID + ", "
+                    + Avatar.STATUS
+                    + ");");
+                        
+            ok = true;
+        } catch (Exception e) {
+            MyLog.e(this, e);
+        }
+        if (ok) {
+            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
         } else {
             MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
                     + " to version " + versionTo

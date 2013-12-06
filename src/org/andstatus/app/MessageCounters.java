@@ -3,7 +3,7 @@ package org.andstatus.app;
 import android.content.Context;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineTypeEnum;
 
 public class MessageCounters {
     public MyAccount ma;

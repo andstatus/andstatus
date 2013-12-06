@@ -32,7 +32,7 @@ import org.andstatus.app.MyServiceListener;
 import org.andstatus.app.MyServiceReceiver;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.MyServiceManager;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Timer;

@@ -24,7 +24,7 @@ import android.text.TextUtils;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -44,7 +44,7 @@ public class CommandData {
     /**
      * Timeline type used for the {@link CommandEnum#FETCH_TIMELINE} command 
      */
-    public MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
+    public TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
     
     /**
      * This is: 

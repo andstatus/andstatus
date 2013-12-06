@@ -28,15 +28,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.ImageView.ScaleType;
 
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.MyDatabase.Avatar;
+import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -55,6 +60,7 @@ public class ConversationViewLoader {
             Msg.IN_REPLY_TO_MSG_ID,
             Msg.AUTHOR_ID,
             User.AUTHOR_NAME,
+            Avatar.FILE_NAME,
             Msg.SENDER_ID,
             Msg.BODY,
             Msg.VIA,
@@ -66,6 +72,7 @@ public class ConversationViewLoader {
             MsgOfUser.REBLOGGED,
             MsgOfUser.FAVORITED
     };
+    private static final int MAX_INDENT_LEVEL = 19;
     
     private Context context;
     private MyAccount ma;
@@ -130,6 +137,9 @@ public class ConversationViewLoader {
                         oMsg.author = cursor.getString(cursor.getColumnIndex(User.AUTHOR_NAME));
                         oMsg.body = cursor.getString(cursor.getColumnIndex(Msg.BODY));
                         oMsg.via = Html.fromHtml(cursor.getString(cursor.getColumnIndex(Msg.VIA))).toString().trim();
+                        if (MyPreferences.showAvatars()) {
+                            oMsg.avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Avatar.FILE_NAME)));
+                        }
                         int colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
                         if (colIndex > -1) {
                             oMsg.inReplyToName = cursor.getString(colIndex);
@@ -274,7 +284,9 @@ public class ConversationViewLoader {
         oMsg.listOrder = order.list--;
         oMsg.indentLevel = indent;
         if (oMsg.nReplies > 1 || oMsg.nParentReplies > 1 ) {
-            indent++;
+            if (indent < MAX_INDENT_LEVEL) {
+                indent++;
+            }
         }
         for (int ind = oMsgs.size() - 1; ind >= 0; ind--) {
            ConversationOneMessage reply = oMsgs.get(ind);
@@ -306,23 +318,43 @@ public class ConversationViewLoader {
         View messageView = inflater.inflate(layoutResource, null);
         messageView.setOnCreateContextMenuListener(contextMenu);
 
+        float displayDensity = context.getResources().getDisplayMetrics().density;
         // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
-        int indent0 = (int)( 10 * context.getResources().getDisplayMetrics().density);
+        int indent0 = (int)( 10 * displayDensity);
         int indentPixels = indent0 * oMsg.indentLevel;
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
         if (oMsg.id == selectedMessageId && oMsgs.size() > 1) {
             messageIndented.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.message_current_background));
         }
-        messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
 
+        int viewToTheLeftId = 0;
         if (oMsg.indentLevel > 0) {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                MyLog.v(this,"density=" + context.getResources().getDisplayMetrics().density);
+                MyLog.v(this,"density=" + displayDensity);
             }
+            viewToTheLeftId = 2;
             ImageView indentView = new ConversationIndentImageView(context, messageIndented, indentPixels);
+            indentView.setId(viewToTheLeftId);
             ((ViewGroup) messageIndented.getParent()).addView(indentView);
         }
+
+        if (MyPreferences.showAvatars()) {
+            ImageView avatarView = new ImageView(context);
+            int size = Math.round(AvatarDrawable.AVATAR_SIZE_DIP * displayDensity);
+            avatarView.setScaleType(ScaleType.FIT_CENTER);
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(size, size);
+            if (viewToTheLeftId == 0) {
+                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+            } else {
+                layoutParams.addRule(RelativeLayout.RIGHT_OF, viewToTheLeftId);
+            }
+            avatarView.setLayoutParams(layoutParams);
+            avatarView.setImageDrawable(oMsg.avatarDrawable.getDrawable());
+            indentPixels += size;
+            ((ViewGroup) messageIndented.getParent()).addView(avatarView);
+        }
+        messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
         
         TextView id = (TextView) messageView.findViewById(R.id.id);
         id.setText(Long.toString(oMsg.id));

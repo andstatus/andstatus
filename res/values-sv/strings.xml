@@ -129,8 +129,8 @@
 	<string name="summary_preference_storage">Where to store data and images</string>
 	<string name="summary_preference_storage_external_off">Store data in Internal Memory</string>
 	<string name="summary_preference_storage_external_on">Store data on External Memory</string>
-	<string name="summary_preference_use_avatars_off">User avatars will not be displayed</string>
-	<string name="summary_preference_use_avatars_on">User avatars will be displayed</string>
+	<string name="summary_preference_show_avatars_off">User avatars will not be displayed</string>
+	<string name="summary_preference_show_avatars_on">User avatars will be displayed</string>
 	<string name="summary_preference_username">Your Twitter username</string>
 	<string name="summary_preference_vibration">Vibrate on incoming message</string>
 	<string name="summary_preference_vibration_off">Vibration turned off</string>
@@ -151,7 +151,7 @@
 	<string name="title_preference_storage_external">Använd extern lagring</string>
 	<string name="title_preference_theme_color">Tema</string>
 	<string name="title_preference_username">Användarnamn</string>
-	<string name="title_preference_use_avatars">Display Avatars</string>
+	<string name="title_preference_show_avatars">Display Avatars</string>
 	<string name="title_preference_vibration">Vibration</string>
 	<string name="message_source_from">från %1$s</string>
 	<string name="message_source_in_reply_to">in reply to %1$s</string>

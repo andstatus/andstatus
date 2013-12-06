@@ -186,6 +186,7 @@ public class TestSuite extends TestCase {
     
     public static final OriginEnum CONVERSATION_ACCOUNT_ORIGIN = OriginEnum.PUMPIO;
     public static final String CONVERSATION_ACCOUNT_NAME = "testerofandstatus@identi.ca/pump.io";
+    public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/andstatus/images/AndStatus_logo.png";
     public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + System.nanoTime();
     
     private static void setSuccessfulAccountAsCurrent() {

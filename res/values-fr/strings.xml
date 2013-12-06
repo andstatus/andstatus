@@ -200,8 +200,8 @@
     <string name="summary_preference_storage">Quelles informations et où les enregistrer</string>
 	<string name="summary_preference_storage_external_off">Enregistre les données sur la mémoire interne</string>
 	<string name="summary_preference_storage_external_on">Enregistre les données sur la mémoire externe</string>
-	<string name="summary_preference_use_avatars_off">Les avatars ne seront pas affichés</string>
-	<string name="summary_preference_use_avatars_on">Les avatars seront affichés</string>
+	<string name="summary_preference_show_avatars_off">Les avatars ne seront pas affichés</string>
+	<string name="summary_preference_show_avatars_on">Les avatars seront affichés</string>
 	<string name="summary_preference_username">Votre identifiant Twitter</string>
     <string name="summary_preference_verify_credentials">Ce compte utilisateur est vérifié et activé. Appuyez isi pour vérifier à nouveau les identifiants.</string>
     <string name="summary_preference_verify_credentials_failed">Vérification échouée. Appuyez ici pour vérifier les identifiants et activer ce compte.</string>
@@ -232,7 +232,7 @@
 	<string name="title_preference_storage_external">Utiliser un support externe</string>
 	<string name="title_preference_theme_color">Thème</string>
 	<string name="title_preference_username">Identifiant</string>
-	<string name="title_preference_use_avatars">Afficher les avatars</string>
+	<string name="title_preference_show_avatars">Afficher les avatars</string>
     <string name="title_preference_verify_credentials">Revérifier les identifiants</string>
 	<string name="title_preference_verify_credentials_failed">Vérifier les identifiants</string>
 	<string name="title_preference_vibration">Vibration</string>

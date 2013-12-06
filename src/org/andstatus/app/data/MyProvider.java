@@ -39,13 +39,16 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 
+import org.andstatus.app.CommandData;
 import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.MyServiceManager;
+import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.MyDatabase.Avatar;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -288,7 +291,6 @@ public class MyProvider extends ContentProvider {
                     nullColumnHack = User.USERNAME;
                     contentUri = User.CONTENT_URI;
                     values.put(User.INS_DATE, now);
-
                     followingUserValues = FollowingUserValues.valueOf(accountUserId, 0, values);
                     break;
 
@@ -299,6 +301,8 @@ public class MyProvider extends ContentProvider {
             rowId = db.insert(table, nullColumnHack, values);
             if (rowId == -1) {
                 throw new SQLException("Failed to insert row into " + uri);
+            } else if ( MyDatabase.USER_TABLE_NAME.equals(table)) {
+                loadAvatar(rowId, values);
             }
             
             if (msgOfUserValues != null) {
@@ -324,6 +328,12 @@ public class MyProvider extends ContentProvider {
           MyLog.e(this, "Insert", e);
         }
         return newUri;
+    }
+
+    private void loadAvatar(long rowId, ContentValues values) {
+        if (MyPreferences.showAvatars() && values.containsKey(User.AVATAR_URL)) {
+            MyServiceManager.sendCommand(new CommandData(CommandEnum.FETCH_AVATAR, null, rowId));
+        }
     }
 
     /**
@@ -561,7 +571,7 @@ public class MyProvider extends ContentProvider {
      * @return String for {@link SQLiteQueryBuilder#setTables(String)}
      */
     private static String tablesForTimeline(Uri uri, String[] projection) {
-        MyDatabase.TimelineTypeEnum tt = uriToTimelineType(uri);
+        TimelineTypeEnum tt = uriToTimelineType(uri);
         boolean isCombined = uriToIsCombined(uri);
         AccountUserIds userIds = new AccountUserIds(isCombined, uriToAccountUserId(uri));
 
@@ -570,6 +580,7 @@ public class MyProvider extends ContentProvider {
         String tables = MyDatabase.MSG_TABLE_NAME;
         boolean linkedUserDefined = false;
         boolean authorNameDefined = false;
+        String authorTableName = "";
         switch (tt) {
             case FOLLOWING_USER:
                 tables = "(SELECT " + FollowingUser.FOLLOWING_USER_ID + ", "
@@ -582,11 +593,12 @@ public class MyProvider extends ContentProvider {
                 String userTable = MyDatabase.USER_TABLE_NAME;
                 if (!authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME)) {
                     userTable = "(SELECT "
-                            + BaseColumns._ID + ", " + MyDatabase.User.USERNAME + " AS "
-                            + MyDatabase.User.AUTHOR_NAME
+                            + BaseColumns._ID + ", " 
+                            + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME
                             + ", " + MyDatabase.User.USER_MSG_ID
                             + " FROM " + MyDatabase.USER_TABLE_NAME + ")";
                     authorNameDefined = true;
+                    authorTableName = "u1";
                 }
                 tables += " INNER JOIN " + userTable + " as u1"
                         + " ON (" + FollowingUser.FOLLOWING_USER_ID + "=u1." + BaseColumns._ID + ")";
@@ -643,11 +655,24 @@ public class MyProvider extends ContentProvider {
 
         if (!authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + BaseColumns._ID + ", " + MyDatabase.User.USERNAME + " AS "
-                    + MyDatabase.User.AUTHOR_NAME
+                    + BaseColumns._ID + ", " 
+                    + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME
                     + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS author ON "
                     + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
+            authorNameDefined = true;
+            authorTableName = "author";
+        }
+        if (authorNameDefined && columns.contains(MyDatabase.Avatar.FILE_NAME)) {
+            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
+                    + MyDatabase.Avatar.USER_ID + ", "
+                    + MyDatabase.Avatar.STATUS + ", "
+                    + MyDatabase.Avatar.FILE_NAME
+                    + " FROM " + MyDatabase.Avatar.TABLE_NAME + ") AS av ON "
+                    + "av." + Avatar.STATUS 
+                    + "=" + AvatarStatus.LOADED.save() + " AND " 
+                    + "av." + MyDatabase.Avatar.USER_ID 
+                    + "=" + authorTableName + "." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.SENDER_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
@@ -761,7 +786,6 @@ public class MyProvider extends ContentProvider {
             case USERS:
                 count = db.update(MyDatabase.USER_TABLE_NAME, values, selection, selectionArgs);
                 break;
-
             case USER_ID:
                 accountUserId = uriToAccountUserId(uri);
                 long selectedUserId = uriToUserId(uri);
@@ -770,6 +794,7 @@ public class MyProvider extends ContentProvider {
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
                 followingUserValues.update(db);
+                loadAvatar(selectedUserId, values);
                 break;
 
             default:
@@ -815,6 +840,8 @@ public class MyProvider extends ContentProvider {
         msgProjectionMap.put(Msg.MSG_OID, Msg.MSG_OID);
         msgProjectionMap.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
         msgProjectionMap.put(User.AUTHOR_NAME, User.AUTHOR_NAME);
+        msgProjectionMap.put(Avatar.FILE_NAME, Avatar.FILE_NAME);
+        msgProjectionMap.put(Avatar.STATUS, Avatar.STATUS);
         msgProjectionMap.put(Msg.SENDER_ID, Msg.SENDER_ID);
         msgProjectionMap.put(User.SENDER_NAME, User.SENDER_NAME);
         msgProjectionMap.put(Msg.BODY, Msg.BODY);
@@ -842,7 +869,7 @@ public class MyProvider extends ContentProvider {
         userProjectionMap.put(User.USER_OID, User.USER_OID);
         userProjectionMap.put(User.ORIGIN_ID, User.ORIGIN_ID);
         userProjectionMap.put(User.USERNAME, User.USERNAME);
-        userProjectionMap.put(User.AVATAR_BLOB, User.AVATAR_BLOB);
+        userProjectionMap.put(User.AVATAR_URL, User.AVATAR_URL);
         userProjectionMap.put(User.URL, User.URL);
         userProjectionMap.put(User.CREATED_DATE, User.CREATED_DATE);
         userProjectionMap.put(User.INS_DATE, User.INS_DATE);
@@ -1244,7 +1271,7 @@ public class MyProvider extends ContentProvider {
      * @param isCombined true for a Combined Timeline
      * @return
      */
-    public static Uri getTimelineUri(long accountUserId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined) {
+    public static Uri getTimelineUri(long accountUserId, TimelineTypeEnum timelineType, boolean isCombined) {
         Uri uri = ContentUris.withAppendedId(TIMELINE_URI, accountUserId);
         uri = Uri.withAppendedPath(uri, "tt/" + timelineType.save());
         uri = Uri.withAppendedPath(uri, "combined/" + (isCombined ? "1" : "0"));
@@ -1257,11 +1284,11 @@ public class MyProvider extends ContentProvider {
      * @param isCombined Combined timeline?
      * @return Uri for the message in the account's <u>HOME</u> timeline
      */
-    public static Uri getTimelineMsgUri(long accountUserId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined, long msgId) {
+    public static Uri getTimelineMsgUri(long accountUserId, TimelineTypeEnum timelineType, boolean isCombined, long msgId) {
         return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(accountUserId, timelineType, isCombined), MyDatabase.MSG_TABLE_NAME), msgId);
     }
     
-    public static Uri getTimelineSearchUri(long accountUserId, MyDatabase.TimelineTypeEnum timelineType, boolean isCombined, String queryString) {
+    public static Uri getTimelineSearchUri(long accountUserId, TimelineTypeEnum timelineType, boolean isCombined, String queryString) {
         Uri uri = Uri.withAppendedPath(getTimelineUri(accountUserId, timelineType, isCombined), SEARCH_SEGMENT);
         if (!TextUtils.isEmpty(queryString)) {
             uri = Uri.withAppendedPath(uri, Uri.encode(queryString));
@@ -1309,15 +1336,15 @@ public class MyProvider extends ContentProvider {
      * @param uri URI to decode, e.g. the one built by {@link MyProvider#getTimelineUri(long, boolean)}
      * @return The timeline combined. 
      */
-    public static MyDatabase.TimelineTypeEnum uriToTimelineType(Uri uri) {
-        MyDatabase.TimelineTypeEnum tt = MyDatabase.TimelineTypeEnum.UNKNOWN;
+    public static TimelineTypeEnum uriToTimelineType(Uri uri) {
+        TimelineTypeEnum tt = TimelineTypeEnum.UNKNOWN;
         try {
             int matchedCode = URI_MATCHER.match(uri);
             switch (matchedCode) {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
                 case TIMELINE_MSG_ID:
-                    tt = MyDatabase.TimelineTypeEnum.load(uri.getPathSegments().get(3));
+                    tt = TimelineTypeEnum.load(uri.getPathSegments().get(3));
                     break;
                 default:
                     break;

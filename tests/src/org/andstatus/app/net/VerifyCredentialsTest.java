@@ -29,7 +29,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.Origin.OriginEnum;

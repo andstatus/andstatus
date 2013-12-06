@@ -50,9 +50,9 @@ import android.widget.TextView;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Locale;
@@ -404,7 +404,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             case FOLLOWING_USER:
                 break;
             default:
-                timelineType = MyDatabase.TimelineTypeEnum.HOME;
+                timelineType = TimelineTypeEnum.HOME;
                 break;
         }
         // Actually we use one Activity for all timelines...

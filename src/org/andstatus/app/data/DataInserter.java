@@ -24,7 +24,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
@@ -295,7 +294,7 @@ public class DataInserter {
                 }
                 if (rowId == 0) {
                     // There was no such row so add the new one
-                    msgUri = mContentResolver.insert(MyProvider.getTimelineUri(counters.ma.getUserId(), MyDatabase.TimelineTypeEnum.HOME, false), values);
+                    msgUri = mContentResolver.insert(MyProvider.getTimelineUri(counters.ma.getUserId(), TimelineTypeEnum.HOME, false), values);
                     rowId = MyProvider.uriToMessageId(msgUri);
                 } else {
                   mContentResolver.update(msgUri, values, null, null);

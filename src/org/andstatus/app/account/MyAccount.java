@@ -35,7 +35,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionException.StatusCode;
@@ -61,7 +61,6 @@ public final class MyAccount implements AccountDataReader {
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
     public static final class Builder implements Parcelable, AccountDataWriter {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
-
 
         //------------------------------------------------------------
         // Key names for MyAccount preferences are below:
@@ -188,13 +187,13 @@ public final class MyAccount implements AccountDataReader {
             myAccount.userOid = myAccount.getDataString(KEY_USER_OID, "");
             myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0);
             
-            if (myAccount.version == MyDatabase.DATABASE_VERSION) {
+            if (myAccount.version == MyAccount.ACCOUNT_VERSION) {
                 fixMyAccount();
             }
 
             setConnection();
             
-            if (myAccount.version == MyDatabase.DATABASE_VERSION 
+            if (myAccount.version == MyAccount.ACCOUNT_VERSION 
                     && !myAccount.getCredentialsPresent()) {
                 if (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                     MyLog.e(this, "User's credentials were lost?! Fixing...");
@@ -740,7 +739,8 @@ public final class MyAccount implements AccountDataReader {
     private boolean isOAuth = true;
 
     private long syncFrequencySeconds = 0;
-    private int version = MyDatabase.DATABASE_VERSION;
+    private int version = MyAccount.ACCOUNT_VERSION;
+    public static final int ACCOUNT_VERSION = 12;
     
     public enum CredentialsVerificationStatus {
         /** 
@@ -939,7 +939,7 @@ public final class MyAccount implements AccountDataReader {
     }
 
     boolean isValid() {
-        return version  == MyDatabase.DATABASE_VERSION && oAccountName.isValid() 
+        return (version == MyAccount.ACCOUNT_VERSION) && oAccountName.isValid() 
                 && !TextUtils.isEmpty(userOid)
                 && userId != 0
                 && connection != null;

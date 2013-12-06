@@ -23,13 +23,14 @@ import java.util.concurrent.ArrayBlockingQueue;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
+import org.andstatus.app.data.AvatarLoader;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionException.StatusCode;
@@ -139,6 +140,11 @@ public class MyService extends Service {
          */
         FETCH_TIMELINE("fetch-timeline"),
 
+        /**
+         * Fetch avatar for the specified user and URL 
+         */
+        FETCH_AVATAR("fetch-avatar"),
+        
         CREATE_FAVORITE("create-favorite"), DESTROY_FAVORITE("destroy-favorite"),
 
         FOLLOW_USER("follow-user"), STOP_FOLLOWING_USER("stop-following-user"),
@@ -189,6 +195,8 @@ public class MyService extends Service {
          * Broadcast back state of {@link MyService}
          */
         BROADCAST_SERVICE_STATE("broadcast-service-state"),
+        
+        
         
         /**
          * Save SharePreverence. We try to use it because sometimes Android
@@ -850,6 +858,9 @@ public class MyService extends Service {
                 case RATE_LIMIT_STATUS:
                     rateLimitStatus(commandData);
                     break;
+                case FETCH_AVATAR:
+                    new AvatarLoader(commandData.itemId).load(commandData);
+                    break;
                 default:
                     MyLog.e(this, "Unexpected command here " + commandData);
                     break;
@@ -1474,7 +1485,7 @@ public class MyService extends Service {
                     messageTitle = R.string.notification_title_mentions;
                     intent = new Intent(getApplicationContext(), TimelineActivity.class);
                     intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
-                            MyDatabase.TimelineTypeEnum.MENTIONS.save());
+                            TimelineTypeEnum.MENTIONS.save());
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
                     break;
@@ -1487,7 +1498,7 @@ public class MyService extends Service {
                     messageTitle = R.string.notification_title_messages;
                     intent = new Intent(getApplicationContext(), TimelineActivity.class);
                     intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
-                            MyDatabase.TimelineTypeEnum.DIRECT.save());
+                            TimelineTypeEnum.DIRECT.save());
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
                     break;
@@ -1502,7 +1513,7 @@ public class MyService extends Service {
                     messageTitle = R.string.notification_title;
                     intent = new Intent(getApplicationContext(), TimelineActivity.class);
                     intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
-                            MyDatabase.TimelineTypeEnum.HOME.save());
+                            TimelineTypeEnum.HOME.save());
                     contentIntent = PendingIntent.getActivity(getApplicationContext(), numTweets,
                             intent, 0);
                     break;

@@ -33,9 +33,8 @@ import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.MyService;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -334,13 +333,13 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 			// When user clicks on widget, launch main AndStatus activity,
 			//   Open timeline, where there are new messages, or "Home" timeline
 			Intent intent;
-			MyDatabase.TimelineTypeEnum timeLineType = TimelineTypeEnum.HOME;
+			TimelineTypeEnum timeLineType = TimelineTypeEnum.HOME;
             intent = new Intent(context, TimelineActivity.class);
 			if (data.numDirectMessages > 0) {
-			    timeLineType = MyDatabase.TimelineTypeEnum.DIRECT;
+			    timeLineType = TimelineTypeEnum.DIRECT;
 			} else {
 			    if (data.numMentions > 0) {
-	                timeLineType = MyDatabase.TimelineTypeEnum.MENTIONS;
+	                timeLineType = TimelineTypeEnum.MENTIONS;
 			    }
 			}
             intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,

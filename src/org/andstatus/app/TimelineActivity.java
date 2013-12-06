@@ -65,9 +65,9 @@ import org.andstatus.app.data.AccountUserIds;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.TweetBinder;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.InstanceId;
@@ -139,9 +139,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private long mCurrentMyAccountUserId = 0;
     
     /**
-     * Selected User for the {@link MyDatabase.TimelineTypeEnum#USER} timeline.
+     * Selected User for the {@link TimelineTypeEnum#USER} timeline.
      * This is either User Id of current account OR user id of any other selected user.
-     * So it's never == 0 for the {@link MyDatabase.TimelineTypeEnum#USER} timeline
+     * So it's never == 0 for the {@link TimelineTypeEnum#USER} timeline
      */
     private long mSelectedUserId = 0;
     
@@ -615,12 +615,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.dialog_title_select_timeline);
         String[] timelines = {
-                getString(MyDatabase.TimelineTypeEnum.HOME.resId()),
-                getString(MyDatabase.TimelineTypeEnum.FAVORITES.resId()),
-                getString(MyDatabase.TimelineTypeEnum.MENTIONS.resId()),
-                getString(MyDatabase.TimelineTypeEnum.DIRECT.resId()),
-                getString(MyDatabase.TimelineTypeEnum.USER.resId()),
-                getString(MyDatabase.TimelineTypeEnum.FOLLOWING_USER.resId())
+                getString(TimelineTypeEnum.HOME.resId()),
+                getString(TimelineTypeEnum.FAVORITES.resId()),
+                getString(TimelineTypeEnum.MENTIONS.resId()),
+                getString(TimelineTypeEnum.DIRECT.resId()),
+                getString(TimelineTypeEnum.USER.resId()),
+                getString(TimelineTypeEnum.FOLLOWING_USER.resId())
         };
         builder.setItems(timelines, new DialogInterface.OnClickListener() {
             @Override
@@ -628,27 +628,27 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 // The 'which' argument contains the index position of the selected item
                 switch (which) {
                     case 0:
-                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.HOME, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        contextMenu.switchTimelineActivity(TimelineTypeEnum.HOME, mIsTimelineCombined, mCurrentMyAccountUserId);
                         break;
 
                     case 1:
-                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.FAVORITES, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        contextMenu.switchTimelineActivity(TimelineTypeEnum.FAVORITES, mIsTimelineCombined, mCurrentMyAccountUserId);
                         break;
 
                     case 2:
-                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.MENTIONS, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        contextMenu.switchTimelineActivity(TimelineTypeEnum.MENTIONS, mIsTimelineCombined, mCurrentMyAccountUserId);
                         break;
 
                     case 3:
-                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.DIRECT, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        contextMenu.switchTimelineActivity(TimelineTypeEnum.DIRECT, mIsTimelineCombined, mCurrentMyAccountUserId);
                         break;
 
                     case 4:
-                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.USER, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        contextMenu.switchTimelineActivity(TimelineTypeEnum.USER, mIsTimelineCombined, mCurrentMyAccountUserId);
                         break;
 
                     case 5:
-                        contextMenu.switchTimelineActivity(MyDatabase.TimelineTypeEnum.FOLLOWING_USER, mIsTimelineCombined, mCurrentMyAccountUserId);
+                        contextMenu.switchTimelineActivity(TimelineTypeEnum.FOLLOWING_USER, mIsTimelineCombined, mCurrentMyAccountUserId);
                         break;
                     default:
                         break;
@@ -1248,7 +1248,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     protected void manualReload(boolean allTimelineTypes) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mCurrentMyAccountUserId);
-        MyDatabase.TimelineTypeEnum timelineType = TimelineTypeEnum.HOME;
+        TimelineTypeEnum timelineType = TimelineTypeEnum.HOME;
         long userId = 0;
         switch (mTimelineType) {
             case DIRECT:
@@ -1357,8 +1357,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     private void createAdapters() {
         int listItemId = R.layout.message_basic;
-        if (MyPreferences.getDefaultSharedPreferences().getBoolean("appearance_use_avatars", false)) {
-            listItemId = R.layout.message_avatar;
+        if (MyPreferences.showAvatars()) {
+            // listItemId = R.layout.message_conversation;
         }
         PagedCursorAdapter tweetsAdapter = new PagedCursorAdapter(TimelineActivity.this,
                 listItemId, mCursor, new String[] {

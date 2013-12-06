@@ -26,6 +26,10 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         MyLog.i(this, "setUp started");
         TestSuite.initialize(this);
         TestSuite.enshureDataAdded();
+
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
+        assertTrue(ma != null);
+        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         
         mActivity = getActivity();
         waitForListLoaded(mActivity);

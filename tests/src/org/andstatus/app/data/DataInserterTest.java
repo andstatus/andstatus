@@ -17,7 +17,6 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionPumpio;
 import org.andstatus.app.net.MbMessage;
@@ -52,6 +51,7 @@ public class DataInserterTest extends InstrumentationTestCase {
 
         String userOid = "acct:" + TestSuite.CONVERSATION_ACCOUNT_NAME.substring(0, TestSuite.CONVERSATION_ACCOUNT_NAME.indexOf('/'));
         accountMbUser = userFromPumpioOid(userOid);
+        accountMbUser.avatarUrl = TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL;
         ma = addPumpIoAccount(userOid);
         
         MyPreferences.onPreferencesChanged();
@@ -279,6 +279,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Only PumpIo supported in this test", OriginEnum.PUMPIO, TestSuite.CONVERSATION_ACCOUNT_ORIGIN  );
         
         MbUser author1 = userFromPumpioOid("acct:firstAuthor@pumpity.net");
+        author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/res/drawable/splash_logo.png";
         MbUser author2 = userFromPumpioOid("acct:second@identi.ca");
         MbUser author3 = userFromPumpioOid("acct:third@pump.example.com");
         

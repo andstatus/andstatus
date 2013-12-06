@@ -37,9 +37,9 @@ import android.widget.TextView;
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 

@@ -149,8 +149,8 @@
 	<string name="summary_preference_storage_external_off">Internen Speicher verwenden</string>
 	<string name="summary_preference_storage_external_on">Externen Speicher verwenden</string>
 	<string name="summary_preference_theme_color">Standard/Das helle Design wird benutzt.</string>
-	<string name="summary_preference_use_avatars_off">Benutzeravatare werden nicht angezeigt</string>
-	<string name="summary_preference_use_avatars_on">Benutzeravatare werden angezeigt</string>
+	<string name="summary_preference_show_avatars_off">Benutzeravatare werden nicht angezeigt</string>
+	<string name="summary_preference_show_avatars_on">Benutzeravatare werden angezeigt</string>
 	<string name="summary_preference_username">Dein Twitter Benutzername</string>
 	<string name="summary_preference_vibration">Bei neuen Nachrichten vibrieren</string>
 	<string name="summary_preference_vibration_off">Vibration ist ausgeschaltet</string>
@@ -170,7 +170,7 @@
 	<string name="title_preference_storage_external">Externen Speicher verwenden</string>
 	<string name="title_preference_theme_size">Design</string>
 	<string name="title_preference_username">Benutzername</string>
-	<string name="title_preference_use_avatars">Avatare anzeigen</string>
+	<string name="title_preference_show_avatars">Avatare anzeigen</string>
 	<string name="title_preference_vibration">Vibration</string>
 	<string name="message_source_from">von %1$s</string>
 	<string name="message_source_in_reply_to">als Antwort auf %1$s</string>

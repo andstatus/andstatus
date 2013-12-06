@@ -21,7 +21,6 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.data.MyDatabase.TimelineTypeEnum;
 import org.andstatus.app.net.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 
