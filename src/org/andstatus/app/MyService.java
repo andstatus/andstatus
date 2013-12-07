@@ -429,7 +429,7 @@ public class MyService extends Service {
                     dontStop = false;
                 }
             }
-            desideIfStopTheService(false);
+            decideIfStopTheService(false);
         }
     }
     
@@ -515,7 +515,7 @@ public class MyService extends Service {
         return MyPreferences.getSharedPreferences(TAG);
     }
 
-    private void desideIfStopTheService(boolean calledFromExecutor) {
+    private void decideIfStopTheService(boolean calledFromExecutor) {
         synchronized(serviceStateLock) {
             boolean isStopping = false;
             if (!mInitialized) {
@@ -523,7 +523,7 @@ public class MyService extends Service {
                 return;
             }
             if (dontStop) {
-                MyLog.v(this, "desideIfStopTheService: dontStop flag");
+                MyLog.v(this, "decideIfStopTheService: dontStop flag");
                 return;
             }
             isStopping = isStopping();
@@ -537,9 +537,9 @@ public class MyService extends Service {
             }
             if (this.mIsStopping != isStopping) {
                 if (isStopping) {
-                    MyLog.v(this, "Desided to continue; startId=" + lastProcessedStartId);
+                    MyLog.v(this, "Decided to continue; startId=" + lastProcessedStartId);
                 } else {
-                    MyLog.v(this, "Desided to stop; startId=" + lastProcessedStartId 
+                    MyLog.v(this, "Decided to stop; startId=" + lastProcessedStartId 
                             + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
                             );
                 }
@@ -903,13 +903,13 @@ public class MyService extends Service {
          */
         @Override
         protected void onPostExecute(Boolean notUsed) {
-            desideIfStopTheService(true);
+            decideIfStopTheService(true);
         }
 
         @Override
         protected void onCancelled(Boolean result) {
             MyLog.v(this, "Executor was cancelled, result=" + result);
-            desideIfStopTheService(true);
+            decideIfStopTheService(true);
         }
         
         /**

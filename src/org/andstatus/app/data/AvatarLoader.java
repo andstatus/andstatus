@@ -177,15 +177,18 @@ public class AvatarLoader {
            try {
                rowId = MyContextHolder.get().getDatabase().getReadableDatabase()
                        .insert(Avatar.TABLE_NAME, null, values);
-               break;
-           } catch (SQLiteException e) {
-               rowId = -1;
-               MyLog.i(this, "update, Database is locked, pass=" + pass, e);
-               try {
-                   Thread.sleep(Math.round((Math.random() + 1) * 200));
-               } catch (InterruptedException e2) {
-                   MyLog.e(this, e2);
+               if (rowId != -1) {
+                   break;
                }
+               MyLog.v(this, "Error inserting row, pass=" + pass);
+           } catch (SQLiteException e) {
+               MyLog.i(this, "update, Database is locked, pass=" + pass, e);
+               rowId = -1;
+           }
+           try {
+               Thread.sleep(Math.round((Math.random() + 1) * 200));
+           } catch (InterruptedException e) {
+               MyLog.e(this, e);
            }
        }
        if (rowId == -1) {
