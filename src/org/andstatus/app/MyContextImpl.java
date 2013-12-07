@@ -52,6 +52,8 @@ public final class MyContextImpl implements MyContext {
     private MyDatabase db;
     PersistentAccounts persistentAccounts ;
     
+    private volatile boolean isExpired = false;
+    
     private MyContextImpl() {
     }
 
@@ -180,5 +182,15 @@ public final class MyContextImpl implements MyContext {
      */
     @Override
     public void put(AssersionData data) {
+    }
+
+    @Override
+    public boolean isExpired() {
+        return isExpired;
+    }
+
+    @Override
+    public void setExpired() {
+        isExpired = true;
     }
 }

@@ -51,8 +51,8 @@ public class TestSuite extends TestCase {
             MyLog.d(TAG, "Already initialized");
             return context;
         }
-        for (int iter=0; iter<5; iter++) {
-            MyLog.d(TAG, "Initializing Test Suite");
+        for (int iter=1; iter<6; iter++) {
+            MyLog.d(TAG, "Initializing Test Suite, iteration=" + iter);
             context = testCase.getInstrumentation().getTargetContext();
             if (context == null) {
                 MyLog.e(TAG, "targetContext is null.");
@@ -66,7 +66,7 @@ public class TestSuite extends TestCase {
                 MyLog.d(TAG, "After MyContextHolder.initialize " + iter);
                 break;
             } catch (IllegalStateException e) {
-                MyLog.w(TAG, "Error caught " + iter);
+                MyLog.i(TAG, "Error caught, iteration=" + iter, e);
             }
             try {
                 Thread.sleep(100);
@@ -74,6 +74,7 @@ public class TestSuite extends TestCase {
                 Thread.currentThread().interrupt();
             }
         }
+        MyLog.d(TAG, "After Initializing Test Suite loop");
         assertTrue("MyContext state=" + MyContextHolder.get().state(), MyContextHolder.get().state() != MyContextState.EMPTY);
         
         if (MyPreferences.shouldSetDefaultValues()) {

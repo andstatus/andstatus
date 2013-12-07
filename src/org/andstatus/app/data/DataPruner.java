@@ -22,6 +22,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 
+import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
@@ -57,8 +59,8 @@ public class DataPruner {
 
         // Don't delete messages which are favorited by any user
         String sqlNotFavorited = "NOT EXISTS ("
-                + "SELECT * FROM " + MyDatabase.MSGOFUSER_TABLE_NAME + " AS gnf WHERE "
-                + MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + "=gnf." + MyDatabase.MsgOfUser.MSG_ID
+                + "SELECT * FROM " + MsgOfUser.TABLE_NAME + " AS gnf WHERE "
+                + Msg.TABLE_NAME + "." + BaseColumns._ID + "=gnf." + MyDatabase.MsgOfUser.MSG_ID
                 + " AND gnf." + MyDatabase.MsgOfUser.FAVORITED + "=1" 
                 + ")";
         
@@ -74,7 +76,7 @@ public class DataPruner {
             if (maxDays > 0) {
                 sinceTimestamp = System.currentTimeMillis() - maxDays * (1000L * 60 * 60 * 24);
                 SelectionAndArgs sa = new SelectionAndArgs();
-                sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <  ?", new String[] {
+                sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <  ?", new String[] {
                     String.valueOf(sinceTimestamp)
                 });
                 sa.selection += " AND " + sqlNotFavorited;
@@ -101,7 +103,7 @@ public class DataPruner {
                     cursor.close();
                     if (sinceTimestampSize > 0) {
                         SelectionAndArgs sa = new SelectionAndArgs();
-                        sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <=  ?", new String[] {
+                        sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <=  ?", new String[] {
                             String.valueOf(sinceTimestampSize)
                         });
                         sa.selection += " AND " + sqlNotFavorited;

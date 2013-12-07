@@ -178,17 +178,17 @@ public class MyProvider extends ContentProvider {
                 try {
                     // Delete all related records from MyDatabase.MsgOfUser for these messages
                     String selectionG = " EXISTS ("
-                            + "SELECT * FROM " + MyDatabase.MSG_TABLE_NAME + " WHERE ("
-                            + MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + "=" + MyDatabase.MSGOFUSER_TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
+                            + "SELECT * FROM " + Msg.TABLE_NAME + " WHERE ("
+                            + Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + MsgOfUser.TABLE_NAME + "." + MyDatabase.MsgOfUser.MSG_ID
                             + ") AND ("
                             + selection
                             + "))";
                     String descSuffix = "; args=" + Arrays.toString(selectionArgs);
                     sqlDesc = selectionG + descSuffix;
-                    count = db.delete(MyDatabase.MSGOFUSER_TABLE_NAME, selectionG, selectionArgs);
+                    count = db.delete(MsgOfUser.TABLE_NAME, selectionG, selectionArgs);
                     // Now delete messages themselves
                     sqlDesc = selection + descSuffix;
-                    count = db.delete(MyDatabase.MSG_TABLE_NAME, selection, selectionArgs);
+                    count = db.delete(Msg.TABLE_NAME, selection, selectionArgs);
                     /*
                     if (count > 0) {
                         // Now delete all related records from MyDatabase.MsgOfUser which don't have their messages
@@ -210,13 +210,13 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case USERS:
-                count = db.delete(MyDatabase.USER_TABLE_NAME, selection, selectionArgs);
+                count = db.delete(User.TABLE_NAME, selection, selectionArgs);
                 break;
 
             case USER_ID:
                 // TODO: Delete related records also... 
                 long userId = uriToUserId(uri);
-                count = db.delete(MyDatabase.USER_TABLE_NAME, BaseColumns._ID + "=" + userId
+                count = db.delete(User.TABLE_NAME, BaseColumns._ID + "=" + userId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
                 break;
@@ -263,7 +263,7 @@ public class MyProvider extends ContentProvider {
                 case TIMELINE:
                     accountUserId = uriToAccountUserId(uri);
                     
-                    table = MyDatabase.MSG_TABLE_NAME;
+                    table = Msg.TABLE_NAME;
                     nullColumnHack = Msg.BODY;
                     contentUri = TIMELINE_URI;
                     /**
@@ -287,7 +287,7 @@ public class MyProvider extends ContentProvider {
 
                 case USER_ID:
                     accountUserId = uriToAccountUserId(uri);
-                    table = MyDatabase.USER_TABLE_NAME;
+                    table = User.TABLE_NAME;
                     nullColumnHack = User.USERNAME;
                     contentUri = User.CONTENT_URI;
                     values.put(User.INS_DATE, now);
@@ -301,16 +301,16 @@ public class MyProvider extends ContentProvider {
             rowId = db.insert(table, nullColumnHack, values);
             if (rowId == -1) {
                 throw new SQLException("Failed to insert row into " + uri);
-            } else if ( MyDatabase.USER_TABLE_NAME.equals(table)) {
+            } else if ( User.TABLE_NAME.equals(table)) {
                 loadAvatar(rowId, values);
             }
             
             if (msgOfUserValues != null) {
                 // We need to insert the row:
                 msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
-                long msgOfUserRowId = db.insert(MyDatabase.MSGOFUSER_TABLE_NAME, MsgOfUser.MSG_ID, msgOfUserValues);
+                long msgOfUserRowId = db.insert(MsgOfUser.TABLE_NAME, MsgOfUser.MSG_ID, msgOfUserValues);
                 if (msgOfUserRowId == -1) {
-                    throw new SQLException("Failed to insert row into " + MyDatabase.MSGOFUSER_TABLE_NAME);
+                    throw new SQLException("Failed to insert row into " + MsgOfUser.TABLE_NAME);
                 }
             }
             if (followingUserValues != null) {
@@ -429,7 +429,7 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case MSG_COUNT:
-                sql = "SELECT count(*) FROM " + MyDatabase.MSG_TABLE_NAME;
+                sql = "SELECT count(*) FROM " + Msg.TABLE_NAME;
                 if (selection != null && selection.length() > 0) {
                     sql += " WHERE " + selection;
                 }
@@ -438,7 +438,7 @@ public class MyProvider extends ContentProvider {
             case TIMELINE_MSG_ID:
                 qb.setTables(tablesForTimeline(uri, projection));
                 qb.setProjectionMap(msgProjectionMap);
-                qb.appendWhere(MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + "=" + uriToMessageId(uri));
+                qb.appendWhere(Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + uriToMessageId(uri));
                 break;
 
             case TIMELINE_SEARCH:
@@ -473,17 +473,17 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case MSG:
-                qb.setTables(MyDatabase.MSG_TABLE_NAME);
+                qb.setTables(Msg.TABLE_NAME);
                 qb.setProjectionMap(msgProjectionMap);
                 break;
 
             case USERS:
-                qb.setTables(MyDatabase.USER_TABLE_NAME);
+                qb.setTables(User.TABLE_NAME);
                 qb.setProjectionMap(userProjectionMap);
                 break;
 
             case USER_ID:
-                qb.setTables(MyDatabase.USER_TABLE_NAME);
+                qb.setTables(User.TABLE_NAME);
                 qb.setProjectionMap(userProjectionMap);
                 qb.appendWhere(BaseColumns._ID + "=" + uriToUserId(uri));
                 break;
@@ -577,7 +577,7 @@ public class MyProvider extends ContentProvider {
 
         Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
 
-        String tables = MyDatabase.MSG_TABLE_NAME;
+        String tables = Msg.TABLE_NAME;
         boolean linkedUserDefined = false;
         boolean authorNameDefined = false;
         String authorTableName = "";
@@ -586,17 +586,17 @@ public class MyProvider extends ContentProvider {
                 tables = "(SELECT " + FollowingUser.FOLLOWING_USER_ID + ", "
                         + MyDatabase.FollowingUser.USER_FOLLOWED + ", "
                         + FollowingUser.USER_ID + " AS " + User.LINKED_USER_ID
-                        + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME
+                        + " FROM " + FollowingUser.TABLE_NAME
                         + " WHERE (" + MyDatabase.User.LINKED_USER_ID + userIds.getSqlUserIds()
                         + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1 )"
                         + ") as fuser";
-                String userTable = MyDatabase.USER_TABLE_NAME;
+                String userTable = User.TABLE_NAME;
                 if (!authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME)) {
                     userTable = "(SELECT "
                             + BaseColumns._ID + ", " 
                             + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME
                             + ", " + MyDatabase.User.USER_MSG_ID
-                            + " FROM " + MyDatabase.USER_TABLE_NAME + ")";
+                            + " FROM " + User.TABLE_NAME + ")";
                     authorNameDefined = true;
                     authorTableName = "u1";
                 }
@@ -607,7 +607,7 @@ public class MyProvider extends ContentProvider {
                  * Select only the latest message from each following User's
                  * timeline
                  */
-                tables  += " LEFT JOIN " + MyDatabase.MSG_TABLE_NAME
+                tables  += " LEFT JOIN " + Msg.TABLE_NAME
                         + " ON (" 
                         + "msg." + MyDatabase.Msg.SENDER_ID 
                         + "=fuser." + MyDatabase.FollowingUser.FOLLOWING_USER_ID 
@@ -618,7 +618,7 @@ public class MyProvider extends ContentProvider {
             case MESSAGESTOACT:
                 if (userIds.getnIds() == 1) {
                     tables = "(SELECT " + userIds.getAccountUserId() + " AS " + MyDatabase.User.LINKED_USER_ID
-                            + ", * FROM " + MyDatabase.MSG_TABLE_NAME + ") AS msg";
+                            + ", * FROM " + Msg.TABLE_NAME + ") AS msg";
                     linkedUserDefined = true;
                 }
                 break;
@@ -632,8 +632,8 @@ public class MyProvider extends ContentProvider {
             String tbl = "(SELECT *" 
                     + (linkedUserDefined ? "" : ", " + MyDatabase.MsgOfUser.USER_ID + " AS " 
                     + MyDatabase.User.LINKED_USER_ID)   
-                    + " FROM " +  MyDatabase.MSGOFUSER_TABLE_NAME + ") AS mou ON "
-                    + MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + "="
+                    + " FROM " +  MsgOfUser.TABLE_NAME + ") AS mou ON "
+                    + Msg.TABLE_NAME + "." + BaseColumns._ID + "="
                     + "mou." + MyDatabase.MsgOfUser.MSG_ID;
             switch (tt) {
                 case FOLLOWING_USER:
@@ -657,8 +657,8 @@ public class MyProvider extends ContentProvider {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + BaseColumns._ID + ", " 
                     + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME
-                    + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS author ON "
-                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
+                    + " FROM " + User.TABLE_NAME + ") AS author ON "
+                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
             authorNameDefined = true;
             authorTableName = "author";
@@ -677,22 +677,22 @@ public class MyProvider extends ContentProvider {
         if (columns.contains(MyDatabase.User.SENDER_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.SENDER_NAME
-                    + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS sender ON "
-                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID + "=sender."
+                    + " FROM " + User.TABLE_NAME + ") AS sender ON "
+                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID + "=sender."
                     + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
-                    + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS prevauthor ON "
-                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
+                    + " FROM " + User.TABLE_NAME + ") AS prevauthor ON "
+                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
                     + "=prevauthor." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.RECIPIENT_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.RECIPIENT_NAME
-                    + " FROM " + MyDatabase.USER_TABLE_NAME + ") AS recipient ON "
-                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
+                    + " FROM " + User.TABLE_NAME + ") AS recipient ON "
+                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
                     + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) {
@@ -701,10 +701,10 @@ public class MyProvider extends ContentProvider {
                     + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
                     + MyDatabase.FollowingUser.USER_FOLLOWED + " AS "
                     + MyDatabase.FollowingUser.AUTHOR_FOLLOWED
-                    + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + ") AS followingauthor ON ("
+                    + " FROM " + FollowingUser.TABLE_NAME + ") AS followingauthor ON ("
                     + "followingauthor." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
-                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID
+                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID
                     + "=followingauthor." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
                     + ")";
         }
@@ -714,10 +714,10 @@ public class MyProvider extends ContentProvider {
                     + MyDatabase.FollowingUser.FOLLOWING_USER_ID + ", "
                     + MyDatabase.FollowingUser.USER_FOLLOWED + " AS "
                     + MyDatabase.FollowingUser.SENDER_FOLLOWED
-                    + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + ") AS followingsender ON ("
+                    + " FROM " + FollowingUser.TABLE_NAME + ") AS followingsender ON ("
                     + "followingsender." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
-                    + MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID
+                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID
                     + "=followingsender." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
                     + ")";
         }
@@ -751,7 +751,7 @@ public class MyProvider extends ContentProvider {
         int matchedCode = URI_MATCHER.match(uri);
         switch (matchedCode) {
             case MSG:
-                count = db.update(MyDatabase.MSG_TABLE_NAME, values, selection, selectionArgs);
+                count = db.update(Msg.TABLE_NAME, values, selection, selectionArgs);
                 break;
 
             case TIMELINE_MSG_ID:
@@ -759,7 +759,7 @@ public class MyProvider extends ContentProvider {
                 long rowId = uriToMessageId(uri);
                 ContentValues msgOfUserValues = prepareMsgOfUserValues(accountUserId, values);
                 if (values.size() > 0) {
-                    count = db.update(MyDatabase.MSG_TABLE_NAME, values, BaseColumns._ID + "=" + rowId
+                    count = db.update(Msg.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
                             + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
@@ -767,30 +767,30 @@ public class MyProvider extends ContentProvider {
                     String where = "(" + MsgOfUser.MSG_ID + "=" + rowId + " AND "
                             + MsgOfUser.USER_ID + "="
                             + accountUserId + ")";
-                    String sql = "SELECT * FROM " + MyDatabase.MSGOFUSER_TABLE_NAME + " WHERE "
+                    String sql = "SELECT * FROM " + MsgOfUser.TABLE_NAME + " WHERE "
                             + where;
                     Cursor c = db.rawQuery(sql, null);
                     if (c == null || c.getCount() == 0) {
                         // There was no such row
                         msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
-                        count += db.insert(MyDatabase.MSGOFUSER_TABLE_NAME, MsgOfUser.MSG_ID,
+                        count += db.insert(MsgOfUser.TABLE_NAME, MsgOfUser.MSG_ID,
                                 msgOfUserValues);
                     } else {
                         c.close();
-                        count += db.update(MyDatabase.MSGOFUSER_TABLE_NAME, msgOfUserValues, where,
+                        count += db.update(MsgOfUser.TABLE_NAME, msgOfUserValues, where,
                                 null);
                     }
                 }
                 break;
 
             case USERS:
-                count = db.update(MyDatabase.USER_TABLE_NAME, values, selection, selectionArgs);
+                count = db.update(User.TABLE_NAME, values, selection, selectionArgs);
                 break;
             case USER_ID:
                 accountUserId = uriToAccountUserId(uri);
                 long selectedUserId = uriToUserId(uri);
                 FollowingUserValues followingUserValues = FollowingUserValues.valueOf(accountUserId, selectedUserId, values);
-                count = db.update(MyDatabase.USER_TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
+                count = db.update(User.TABLE_NAME, values, BaseColumns._ID + "=" + selectedUserId
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
                 followingUserValues.update(db);
@@ -819,23 +819,23 @@ public class MyProvider extends ContentProvider {
          * 6 - 7. MyDatabase.MSG_TABLE_NAME + "/" + MSG_ID  (optional, used to access specific Message)
          */
         URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/search/*", TIMELINE_SEARCH);
-        URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/" + MyDatabase.MSG_TABLE_NAME + "/#", TIMELINE_MSG_ID);
+        URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/" + Msg.TABLE_NAME + "/#", TIMELINE_MSG_ID);
         URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#", TIMELINE);
 
-        URI_MATCHER.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME + "/count", MSG_COUNT);
-        URI_MATCHER.addURI(AUTHORITY, MyDatabase.MSG_TABLE_NAME, MSG);
+        URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME + "/count", MSG_COUNT);
+        URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME, MSG);
 
         /** 
          * The order of PathSegments in the URI
          * 1. MyAccount USER_ID is the first parameter (so we can add 'following' information...)
          * 2 - 3. "su/" + USER_ID  (optional, used to access specific User)
          */
-        URI_MATCHER.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#/su/#", USER_ID);
-        URI_MATCHER.addURI(AUTHORITY, MyDatabase.USER_TABLE_NAME + "/#", USERS);
+        URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#/su/#", USER_ID);
+        URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#", USERS);
 
         msgProjectionMap = new HashMap<String, String>();
-        msgProjectionMap.put(BaseColumns._ID, MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        msgProjectionMap.put(Msg.MSG_ID, MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + " AS " + Msg.MSG_ID);
+        msgProjectionMap.put(BaseColumns._ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        msgProjectionMap.put(Msg.MSG_ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + Msg.MSG_ID);
         msgProjectionMap.put(Msg.ORIGIN_ID, Msg.ORIGIN_ID);
         msgProjectionMap.put(Msg.MSG_OID, Msg.MSG_OID);
         msgProjectionMap.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
@@ -852,7 +852,7 @@ public class MyProvider extends ContentProvider {
         msgProjectionMap.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);
         msgProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
         msgProjectionMap.put(User.LINKED_USER_ID, User.LINKED_USER_ID);
-        msgProjectionMap.put(MsgOfUser.USER_ID, MyDatabase.MSGOFUSER_TABLE_NAME + "." + MsgOfUser.USER_ID + " AS " + MsgOfUser.USER_ID);
+        msgProjectionMap.put(MsgOfUser.USER_ID, MsgOfUser.TABLE_NAME + "." + MsgOfUser.USER_ID + " AS " + MsgOfUser.USER_ID);
         msgProjectionMap.put(MsgOfUser.DIRECTED, MsgOfUser.DIRECTED);
         msgProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
         msgProjectionMap.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
@@ -864,8 +864,8 @@ public class MyProvider extends ContentProvider {
         msgProjectionMap.put(FollowingUser.SENDER_FOLLOWED, FollowingUser.SENDER_FOLLOWED);
 
         userProjectionMap = new HashMap<String, String>();
-        userProjectionMap.put(BaseColumns._ID, MyDatabase.USER_TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        userProjectionMap.put(User.USER_ID, MyDatabase.USER_TABLE_NAME + "." + BaseColumns._ID + " AS " + User.USER_ID);
+        userProjectionMap.put(BaseColumns._ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        userProjectionMap.put(User.USER_ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + User.USER_ID);
         userProjectionMap.put(User.USER_OID, User.USER_OID);
         userProjectionMap.put(User.ORIGIN_ID, User.ORIGIN_ID);
         userProjectionMap.put(User.USERNAME, User.USERNAME);
@@ -904,13 +904,13 @@ public class MyProvider extends ContentProvider {
         try {
             switch (oidEnum) {
                 case MSG_OID:
-                    sql = "SELECT " + BaseColumns._ID + " FROM " + MyDatabase.MSG_TABLE_NAME
+                    sql = "SELECT " + BaseColumns._ID + " FROM " + Msg.TABLE_NAME
                             + " WHERE " + Msg.ORIGIN_ID + "=" + originId + " AND " + Msg.MSG_OID
                             + "=" + quoteIfNotQuoted(oid);
                     break;
 
                 case USER_OID:
-                    sql = "SELECT " + BaseColumns._ID + " FROM " + MyDatabase.USER_TABLE_NAME
+                    sql = "SELECT " + BaseColumns._ID + " FROM " + User.TABLE_NAME
                             + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USER_OID
                             + "=" + quoteIfNotQuoted(oid);
                     break;
@@ -974,6 +974,7 @@ public class MyProvider extends ContentProvider {
     public static String idToOid(OidEnum oe, long entityId, long rebloggerUserId) {
         MyDatabase myDb = MyContextHolder.get().getDatabase();
         if (myDb == null) {
+            MyLog.v(TAG, "idToOid: MyDatabase is null, oe=" + oe + " id=" + entityId);
             return "";
         } else {
             SQLiteDatabase db = myDb.getReadableDatabase();
@@ -992,6 +993,7 @@ public class MyProvider extends ContentProvider {
      *         {@link MyDatabase.Msg#MSG_OID} empty string in case of an error
      */
     public static String idToOid(SQLiteDatabase db, OidEnum oe, long entityId, long rebloggerUserId) {
+        String method = "idToOid";
         String oid = "";
         SQLiteStatement prog = null;
         String sql = "";
@@ -1001,27 +1003,27 @@ public class MyProvider extends ContentProvider {
                 switch (oe) {
                     case MSG_OID:
                         sql = "SELECT " + MyDatabase.Msg.MSG_OID + " FROM "
-                                + MyDatabase.MSG_TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId;
+                                + Msg.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId;
                         break;
 
                     case USER_OID:
                         sql = "SELECT " + MyDatabase.User.USER_OID + " FROM "
-                                + MyDatabase.USER_TABLE_NAME + " WHERE " + BaseColumns._ID + "="
+                                + User.TABLE_NAME + " WHERE " + BaseColumns._ID + "="
                                 + entityId;
                         break;
 
                     case REBLOG_OID:
                         if (rebloggerUserId == 0) {
-                            MyLog.e(TAG, "idToOid: userId was not defined");
+                            MyLog.e(TAG, method + ": userId was not defined");
                         }
                         sql = "SELECT " + MyDatabase.MsgOfUser.REBLOG_OID + " FROM "
-                                + MyDatabase.MSGOFUSER_TABLE_NAME + " WHERE " 
+                                + MsgOfUser.TABLE_NAME + " WHERE " 
                                 + MsgOfUser.MSG_ID + "=" + entityId + " AND "
                                 + MsgOfUser.USER_ID + "=" + rebloggerUserId;
                         break;
 
                     default:
-                        throw new IllegalArgumentException("idToOid; Unknown parameter: " + oe);
+                        throw new IllegalArgumentException(method + "; Unknown parameter: " + oe);
                 }
                 prog = db.compileStatement(sql);
                 oid = prog.simpleQueryForString();
@@ -1033,14 +1035,14 @@ public class MyProvider extends ContentProvider {
                 }
                 
             } catch (SQLiteDoneException e) {
-                MyLog.v(TAG, e);
+                MyLog.v(TAG, method, e);
                 oid = "";
             } catch (Exception e) {
-                MyLog.e(TAG, "idToOid", e);
+                MyLog.e(TAG, method, e);
                 return "";
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "idToOid: " + oe + " + " + entityId + " -> " + oid);
+                MyLog.v(TAG, method + ": " + oe + " + " + entityId + " -> " + oid);
             }
         }
         return oid;
@@ -1056,10 +1058,10 @@ public class MyProvider extends ContentProvider {
                         msgUserColumnName.contentEquals(MyDatabase.Msg.AUTHOR_ID) ||
                         msgUserColumnName.contentEquals(MyDatabase.Msg.IN_REPLY_TO_USER_ID) ||
                         msgUserColumnName.contentEquals(MyDatabase.Msg.RECIPIENT_ID)) {
-                    sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + MyDatabase.USER_TABLE_NAME
-                            + " INNER JOIN " + MyDatabase.MSG_TABLE_NAME + " ON "
-                            + MyDatabase.MSG_TABLE_NAME + "." + msgUserColumnName + "=" + MyDatabase.USER_TABLE_NAME + "." + BaseColumns._ID
-                            + " WHERE " + MyDatabase.MSG_TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
+                    sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + User.TABLE_NAME
+                            + " INNER JOIN " + Msg.TABLE_NAME + " ON "
+                            + Msg.TABLE_NAME + "." + msgUserColumnName + "=" + User.TABLE_NAME + "." + BaseColumns._ID
+                            + " WHERE " + Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + messageId;
                 } else {
                     throw new IllegalArgumentException("msgIdToUsername; Unknown name \"" + msgUserColumnName);
                 }
@@ -1088,8 +1090,8 @@ public class MyProvider extends ContentProvider {
             SQLiteStatement prog = null;
             String sql = "";
             try {
-                sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + MyDatabase.USER_TABLE_NAME
-                        + " WHERE " + MyDatabase.USER_TABLE_NAME + "." + BaseColumns._ID + "=" + userId;
+                sql = "SELECT " + MyDatabase.User.USERNAME + " FROM " + User.TABLE_NAME
+                        + " WHERE " + User.TABLE_NAME + "." + BaseColumns._ID + "=" + userId;
                 SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
@@ -1115,20 +1117,21 @@ public class MyProvider extends ContentProvider {
      * @return 0 in case not found or error
      */
     public static long userIdToLongColumnValue(String columnName, long systemId) {
-        return idToLongColumnValue(MyDatabase.USER_TABLE_NAME, columnName, systemId);
+        return idToLongColumnValue(User.TABLE_NAME, columnName, systemId);
     }
 
     /**
      * Convenience method to get long column value from the 'tableName' table
-     * @param tableName e.g. {@link MyDatabase#MSG_TABLE_NAME} 
+     * @param tableName e.g. {@link Msg#TABLE_NAME} 
      * @param columnName without table name
      * @param systemId tableName._id
      * @return 0 in case not found or error or systemId==0
      */
     private static long idToLongColumnValue(String tableName, String columnName, long systemId) {
+        String method = "idToLongColumnValue";
         long columnValue = 0;
         if (TextUtils.isEmpty(tableName) || TextUtils.isEmpty(columnName)) {
-            throw new IllegalArgumentException("idToLongColumnValue; tableName or columnName are empty");
+            throw new IllegalArgumentException(method + " tableName or columnName are empty");
         } else if (systemId != 0) {
             SQLiteStatement prog = null;
             String sql = "";
@@ -1144,36 +1147,37 @@ public class MyProvider extends ContentProvider {
                 MyLog.v(TAG, e);
                 columnValue = 0;
             } catch (Exception e) {
-                MyLog.e(TAG, "idToLongColumnValue table='" + tableName 
+                MyLog.e(TAG, method + " table='" + tableName 
                         + "', column='" + columnName + "'", e);
                 return 0;
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "idToLongColumnValue table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
+                MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
             }
         }
         return columnValue;
     }
     
     public static String msgIdToStringColumnValue(String columnName, long systemId) {
-        return idToStringColumnValue(MyDatabase.MSG_TABLE_NAME, columnName, systemId);
+        return idToStringColumnValue(Msg.TABLE_NAME, columnName, systemId);
     }
     
     public static String userIdToStringColumnValue(String columnName, long systemId) {
-        return idToStringColumnValue(MyDatabase.USER_TABLE_NAME, columnName, systemId);
+        return idToStringColumnValue(User.TABLE_NAME, columnName, systemId);
     }
     
     /**
      * Convenience method to get String column value from the 'tableName' table
-     * @param tableName e.g. {@link MyDatabase#MSG_TABLE_NAME} 
+     * @param tableName e.g. {@link Msg#TABLE_NAME} 
      * @param columnName without table name
      * @param systemId tableName._id
      * @return "" in case not found or error or systemId==0
      */
     private static String idToStringColumnValue(String tableName, String columnName, long systemId) {
+        String method = "idToStringColumnValue";
         String columnValue = "";
         if (TextUtils.isEmpty(tableName) || TextUtils.isEmpty(columnName)) {
-            throw new IllegalArgumentException("idToLongColumnValue; tableName or columnName are empty");
+            throw new IllegalArgumentException(method + " tableName or columnName are empty");
         } else if (systemId != 0) {
             SQLiteStatement prog = null;
             String sql = "";
@@ -1189,12 +1193,12 @@ public class MyProvider extends ContentProvider {
                 MyLog.v(TAG, e);
                 columnValue = "";
             } catch (Exception e) {
-                MyLog.e(TAG, "idToLongColumnValue table='" + tableName 
+                MyLog.e(TAG, method + " table='" + tableName 
                         + "', column='" + columnName + "'", e);
                 return "";
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "idToLongColumnValue table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
+                MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
             }
         }
         return columnValue;
@@ -1225,7 +1229,7 @@ public class MyProvider extends ContentProvider {
      * @return 0 in case not found or error
      */
     public static long msgIdToLongColumnValue(String columnName, long systemId) {
-        return idToLongColumnValue(MyDatabase.MSG_TABLE_NAME, columnName, systemId);
+        return idToLongColumnValue(Msg.TABLE_NAME, columnName, systemId);
     }
     
     /**
@@ -1246,7 +1250,7 @@ public class MyProvider extends ContentProvider {
         SQLiteStatement prog = null;
         String sql = "";
         try {
-            sql = "SELECT " + BaseColumns._ID + " FROM " + MyDatabase.USER_TABLE_NAME
+            sql = "SELECT " + BaseColumns._ID + " FROM " + User.TABLE_NAME
                     + " WHERE " + User.ORIGIN_ID + "=" + originId + " AND " + User.USERNAME + "='"
                     + userName + "'";
             prog = db.compileStatement(sql);
@@ -1285,7 +1289,7 @@ public class MyProvider extends ContentProvider {
      * @return Uri for the message in the account's <u>HOME</u> timeline
      */
     public static Uri getTimelineMsgUri(long accountUserId, TimelineTypeEnum timelineType, boolean isCombined, long msgId) {
-        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(accountUserId, timelineType, isCombined), MyDatabase.MSG_TABLE_NAME), msgId);
+        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(accountUserId, timelineType, isCombined), Msg.TABLE_NAME), msgId);
     }
     
     public static Uri getTimelineSearchUri(long accountUserId, TimelineTypeEnum timelineType, boolean isCombined, String queryString) {
@@ -1419,7 +1423,7 @@ public class MyProvider extends ContentProvider {
         String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
                 + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1";
         String sql = "SELECT " + MyDatabase.FollowingUser.FOLLOWING_USER_ID 
-                + " FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME 
+                + " FROM " + FollowingUser.TABLE_NAME 
                 + " WHERE " + where;
         
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
@@ -1443,7 +1447,7 @@ public class MyProvider extends ContentProvider {
     public static List<Long> getReplyIds(long msgId) {
         List<Long> replies = new ArrayList<Long>();
         String sql = "SELECT " + MyDatabase.Msg._ID 
-                + " FROM " + MyDatabase.MSG_TABLE_NAME 
+                + " FROM " + Msg.TABLE_NAME 
                 + " WHERE " + MyDatabase.Msg.IN_REPLY_TO_MSG_ID + "=" + msgId
                 + " ORDER BY " + Msg.CREATED_DATE + " DESC";
         

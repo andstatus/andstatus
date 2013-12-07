@@ -27,8 +27,6 @@ import org.andstatus.app.util.MyLog;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 /**
  * Holds globally cached state of the application: {@link MyContext}  
@@ -45,7 +43,7 @@ public final class MyContextHolder {
     @GuardedBy("CONTEXT_LOCK")
     private static volatile MyContext myInitializedContext = null;
     @GuardedBy("CONTEXT_LOCK")
-    private static volatile Future<MyContext> myFutureContext = null;
+    private static volatile MyFutureTaskExpirable<MyContext> myFutureContext = null;
 
     private MyContextHolder() {
     }
@@ -92,20 +90,23 @@ public final class MyContextHolder {
                 if (get().initialized() && arePreferencesChanged()) {
                     long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
                     if (get().preferencesChangeTime() != preferencesChangeTimeLast) {
-                        MyLog.v(TAG, "Preferences changed " + (java.lang.System.currentTimeMillis() - preferencesChangeTimeLast)/1000 +  " seconds ago, refreshing...");
-                        release();
+                        MyLog.v(TAG, "Preferences changed " + (java.lang.System.currentTimeMillis() - preferencesChangeTimeLast)/1000 
+                                +  " seconds ago, refreshing...");
+                        get().setExpired();
                     }
                 }
             }
         }
-        if (get().initialized()) {
+        if (get().initialized() && !get().isExpired()) {
             MyLog.v(TAG, "Already initialized by " + get().initializedBy() +  " (called by: " + initializedBy + ")");
         }
         try {
             return getBlocking(context, initializedBy).preferencesChangeTime();
         } catch (InterruptedException e) {
             MyLog.d(TAG, "Initialize was interrupted, releasing resources...", e);
-            release();
+            synchronized(CONTEXT_LOCK) {
+                get().setExpired();
+            }
             Thread.currentThread().interrupt();
             return 0;
         }
@@ -118,36 +119,38 @@ public final class MyContextHolder {
     /**
      *  Wait till the MyContext instance is available. Start the initialization if necessary. 
      */
-    public static MyContext getBlocking(Context context, Object initializedBy) throws InterruptedException {
-        MyContext myContext = myInitializedContext;
-        while (myContext == null || !myContext.initialized()) {
-            if (myFutureContext == null) {
-                myContext = createMyFutureContext(context, initializedBy, myContext);
+    public static MyContext getBlocking(Context context, Object calledBy) throws InterruptedException {
+        MyContext myContext =  myInitializedContext;
+        while (myContext == null || !myContext.initialized() || myContext.isExpired()) {
+            if (myFutureContext == null || myFutureContext.isExpired()) {
+                myContext = createMyFutureContext(context, calledBy, myContext);
             } else {
-                myContext = waitForMyFutureContext(myContext);
+                myContext = waitForMyFutureContext(myContext, calledBy);
             }
         }
         return myContext;
     }
 
-    private static MyContext createMyFutureContext(Context contextIn, Object initializedBy,
+    private static MyContext createMyFutureContext(Context contextIn, Object calledBy,
             MyContext myContextIn) {
+        String method = "createMyFutureContext";
         MyContext myContextOut = myContextIn;
-        final String initializerName = MyLog.objTagToString(initializedBy) ;
-        storeContextIfNotPresent(contextIn, initializedBy);
+        final String callerName = MyLog.objTagToString(calledBy) ;
+        MyLog.v(TAG, method + " entered by " + callerName);
+        storeContextIfNotPresent(contextIn, calledBy);
         final Context contextForCallable = myContextCreator.context();
         Callable<MyContext> callable = new Callable<MyContext>() {
             @Override
             public MyContext call() {
-                return myContextCreator.newInitialized(contextForCallable, initializerName);
+                return myContextCreator.newInitialized(contextForCallable, callerName);
             }
         };
-        FutureTask<MyContext> futureTask = new FutureTask<MyContext>(callable);
+        MyFutureTaskExpirable<MyContext> futureTask = new MyFutureTaskExpirable<MyContext>(callable);
         synchronized (CONTEXT_LOCK) {
             if (myInitializedContext != null) {
                 myContextOut = myInitializedContext;
             }
-            if (myFutureContext == null) {
+            if (myFutureContext == null || myFutureContext.isExpired()) {
                 myFutureContext = futureTask;
                 futureTask.run();
             }
@@ -155,23 +158,37 @@ public final class MyContextHolder {
         return myContextOut;
     }
 
-    private static MyContext waitForMyFutureContext(MyContext myContextIn)
+    private static MyContext waitForMyFutureContext(MyContext myContextIn, Object calledBy)
             throws InterruptedException {
+        String method = "waitForMyFutureContext";
+        final String callerName = MyLog.objTagToString(calledBy) ;
         MyContext myContextOut = myContextIn;
         try {
-            MyLog.v(TAG, "May block at myFutureContext.get()");
+            MyLog.v(TAG, method + " may block at Future.get: " + callerName);
             myContextOut = myFutureContext.get();
-            MyLog.v(TAG, "Passed myFutureContext.get()");
+            MyLog.v(TAG, method + " passed Future.get: " + callerName);
             synchronized (CONTEXT_LOCK) {
-                if (myInitializedContext != null) {
-                    myContextOut = myInitializedContext;
-                } else {
+                if (myFutureContext == null || myFutureContext.isExpired()) {
+                    MyLog.i(TAG, method + " myFutureContext is null or expired " + callerName);
+                    myContextOut = null;
+                } else if (myContextOut.isExpired()) {
+                    MyLog.i(TAG, method + " myContextOut is expired " + callerName);
+                    myFutureContext.setExpired();
+                    myContextOut = null;
+                } else if (myContextOut.initialized()) {
+                    if (myInitializedContext != null && myInitializedContext.initialized()) {
+                        myInitializedContext.release();
+                    }
                     myInitializedContext = myContextOut;
+                } else {
+                    MyLog.i(TAG, method + " myContextOut is NOT initialized " + callerName);
+                    myFutureContext.setExpired();
+                    myContextOut = null;
                 }
             }
         } catch (ExecutionException e) {
-            MyLog.v(TAG, e);
-            myFutureContext = null;
+            MyLog.v(TAG, method + " by " + callerName, e);
+            myFutureContext.setExpired();
         }
         return myContextOut;
     }
@@ -200,10 +217,11 @@ public final class MyContextHolder {
         MyLog.d(TAG, "Releasing resources");
         synchronized(CONTEXT_LOCK) {
             if (myInitializedContext != null) {
-                myInitializedContext.release();
-                myInitializedContext = null;
+                myInitializedContext.setExpired();
             }
-            myFutureContext = null;
+            if (myFutureContext != null) {
+                myFutureContext.setExpired();;
+            }
         }
     }
     

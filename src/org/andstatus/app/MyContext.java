@@ -36,4 +36,6 @@ public interface MyContext {
     PersistentAccounts persistentAccounts();
     void put(AssersionData data);
     void release();
+    boolean isExpired();
+    void setExpired();
 }

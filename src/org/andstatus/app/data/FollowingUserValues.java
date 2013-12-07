@@ -72,50 +72,53 @@ public class FollowingUserValues {
             // Don't change anything as there is no information
             return;
         }
-        String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
-                + " AND " + MyDatabase.FollowingUser.FOLLOWING_USER_ID + "=" + followingUserId;
-        String sql = "SELECT * FROM " + MyDatabase.FOLLOWING_USER_TABLE_NAME + " WHERE " + where;
-        
-        for (int pass=0; pass<3; pass++) {
+        for (int pass=0; pass<5; pass++) {
             try {
-                // TODO: create universal dExists method...
-                Cursor c = null;
-                boolean exists = false;
-                try {
-                    c = db.rawQuery(sql, null);
-                    if (c != null && c.getCount() > 0) {
-                        exists = true;
-                    }
-                } finally {
-                    if (c != null) {
-                        c.close();
-                    }
-                }
-
-                if (exists) {
-                    db.update(MyDatabase.FOLLOWING_USER_TABLE_NAME, contentValues, where,
-                            null);
-                } else if (followed) {
-                    // There was no such row
-                    ContentValues cv = new ContentValues(contentValues);
-                    // Add Key fields
-                    cv.put(FollowingUser.USER_ID, userId);
-                    cv.put(FollowingUser.FOLLOWING_USER_ID, followingUserId);
-                    
-                    db.insert(MyDatabase.FOLLOWING_USER_TABLE_NAME, null, cv);
-                }
+                tryToUpdate(db, followed);
                 break;
        // This is since API 11, see http://developer.android.com/reference/android/database/sqlite/SQLiteDatabaseLockedException.html
        //     } catch (SQLiteDatabaseLockedException e) {
             } catch (SQLiteException e) {
                 MyLog.i(this, "update, Database is locked, pass=" + pass, e);
                 try {
-                    // If the problem persists, maybe we will implement object locking...
-                    Thread.sleep(300);
+                    Thread.sleep(Math.round((Math.random() + 1) * 200));
                 } catch (InterruptedException e2) {
                     MyLog.e(this, e2);
                 }
             }
+        }
+    }
+
+    private void tryToUpdate(SQLiteDatabase db, boolean followed) {
+        // TODO: create universal dExists method...
+        String where = MyDatabase.FollowingUser.USER_ID + "=" + userId
+                + " AND " + MyDatabase.FollowingUser.FOLLOWING_USER_ID + "=" + followingUserId;
+        String sql = "SELECT * FROM " + FollowingUser.TABLE_NAME + " WHERE " + where;
+
+        Cursor c = null;
+        boolean exists = false;
+        try {
+            c = db.rawQuery(sql, null);
+            if (c != null && c.getCount() > 0) {
+                exists = true;
+            }
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+
+        if (exists) {
+            db.update(FollowingUser.TABLE_NAME, contentValues, where,
+                    null);
+        } else if (followed) {
+            // There was no such row
+            ContentValues cv = new ContentValues(contentValues);
+            // Add Key fields
+            cv.put(FollowingUser.USER_ID, userId);
+            cv.put(FollowingUser.FOLLOWING_USER_ID, followingUserId);
+            
+            db.insert(FollowingUser.TABLE_NAME, null, cv);
         }
     }
 }

@@ -3,6 +3,7 @@ package org.andstatus.app.data;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.text.TextUtils;
 
 import org.andstatus.app.CommandData;
@@ -23,6 +24,7 @@ import java.net.URL;
 public class AvatarLoader {
     private long userId;
     private long rowId = 0;
+
     private boolean hardError = false;
     private boolean softError = false;
     private URL url = null;
@@ -30,6 +32,8 @@ public class AvatarLoader {
     private String fileName = "";
     private File fileNew = null;
     private AvatarStatus status = AvatarStatus.ABSENT; 
+
+    protected boolean mockNetworkError = false;
     
     public AvatarLoader(long userIdIn) {
         userId = userIdIn;
@@ -105,6 +109,9 @@ public class AvatarLoader {
                 OutputStream out = null;
                 out = new BufferedOutputStream(new FileOutputStream(fileTemp));
                 try {
+                    if (mockNetworkError) {
+                        throw new IOException("Mocked IO exception");
+                    }
                     while ((length = is.read(buffer))>0) {
                         out.write(buffer, 0, length);
                       }
@@ -123,6 +130,7 @@ public class AvatarLoader {
         saveToDatabase(fileTemp);
         if (!isError()) {
             removeOld();
+            MyLog.v(this, "Loaded avatar userId=" + userId);
         }
     }
 
@@ -165,8 +173,21 @@ public class AvatarLoader {
        values.put(Avatar.FILE_NAME, fileName);
        values.put(Avatar.LOADED_DATE, loadTime);
 
-       rowId = MyContextHolder.get().getDatabase().getReadableDatabase()
-               .insert(Avatar.TABLE_NAME, null, values);
+       for (int pass=0; pass<5; pass++) {
+           try {
+               rowId = MyContextHolder.get().getDatabase().getReadableDatabase()
+                       .insert(Avatar.TABLE_NAME, null, values);
+               break;
+           } catch (SQLiteException e) {
+               rowId = -1;
+               MyLog.i(this, "update, Database is locked, pass=" + pass, e);
+               try {
+                   Thread.sleep(Math.round((Math.random() + 1) * 200));
+               } catch (InterruptedException e2) {
+                   MyLog.e(this, e2);
+               }
+           }
+       }
        if (rowId == -1) {
            logError("Failed to insert row", null);
            hardError = true;
@@ -178,8 +199,30 @@ public class AvatarLoader {
     }
     
     private void update() {
-        // TODO Auto-generated method stub
-        
+        ContentValues values = new ContentValues();
+        values.put(Avatar.STATUS, status.save());
+        values.put(Avatar.FILE_NAME, fileName);
+        values.put(Avatar.LOADED_DATE, loadTime);
+
+        int rowsUpdated = 0;
+        for (int pass=0; pass<5; pass++) {
+            try {
+                rowsUpdated = MyContextHolder.get().getDatabase().getReadableDatabase()
+                        .update(Avatar.TABLE_NAME, values, Avatar._ID + "=" + Long.toString(rowId), null);
+                break;
+            } catch (SQLiteException e) {
+                MyLog.i(this, "update, Database is locked, pass=" + pass, e);
+                try {
+                    Thread.sleep(Math.round((Math.random() + 1) * 200));
+                } catch (InterruptedException e2) {
+                    MyLog.e(this, e2);
+                }
+            }
+        }
+        if (rowsUpdated != 1) {
+            logError("Failed to update rowId=" + rowId + " updated " + rowsUpdated + " rows", null);
+            hardError = true;
+        }
     }
     
     private void deleteFileSilently(File file) {
@@ -218,7 +261,7 @@ public class AvatarLoader {
                     AvatarDrawable avatarDrawable = new AvatarDrawable(userId, fileNameOld);
                     deleteFileSilently(avatarDrawable.getFile());
                 }
-                sql = "DELETE * FROM " + Avatar.TABLE_NAME 
+                sql = "DELETE FROM " + Avatar.TABLE_NAME 
                         + " WHERE " + Avatar._ID + "=" + Long.toString(rowIdOld);
                 db.execSQL(sql);
             }
@@ -231,5 +274,9 @@ public class AvatarLoader {
 
     protected String getFileName() {
         return fileName;
+    }
+    
+    protected long getRowId() {
+        return rowId;
     }
 }

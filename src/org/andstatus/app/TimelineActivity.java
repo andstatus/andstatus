@@ -66,13 +66,16 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
-import org.andstatus.app.data.TweetBinder;
+import org.andstatus.app.data.TimelineViewBinder;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author yvolk@yurivolkov.com, torgny.bjers
@@ -164,16 +167,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     private MessageContextMenu contextMenu;
     private MessageEditor messageEditor;
- 
-    /** 
-     * Table columns to use for the messages content
-     */
-    private static final String[] PROJECTION = new String[] {
-            Msg._ID, User.AUTHOR_NAME, Msg.BODY, Msg.IN_REPLY_TO_MSG_ID, User.IN_REPLY_TO_NAME,
-            User.RECIPIENT_NAME,
-            MsgOfUser.FAVORITED, Msg.CREATED_DATE,
-            User.LINKED_USER_ID
-    };
 
     boolean isLoading() {
         return loadingLayout.getVisibility() == View.VISIBLE;
@@ -1125,7 +1118,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 }
 
                 if (lastItemId > 0) {
-                    sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg.SENT_DATE + " >= ?",
+                    sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.SENT_DATE + " >= ?",
                             new String[] {
                                 String.valueOf(MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.SENT_DATE, lastItemId))
                             });
@@ -1143,7 +1136,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             protected Void doInBackground(Void... params) {
                 for (int attempt=0; attempt<3; attempt++) {
                     try {
-                        cursor = getContentResolver().query(contentUri, PROJECTION, sa.selection,
+                        cursor = getContentResolver().query(contentUri, getProjection(), sa.selection,
                                 sa.selectionArgs, sortOrder);
                         break;
                     } catch (IllegalStateException e) {
@@ -1185,7 +1178,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                             mCursor.close();
                         }
                         mCursor = cursor;
-                        createAdapters();
+                        createListAdapter();
                     }
                 }
                 
@@ -1239,6 +1232,27 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             MyLog.e(this, "Error during AsyncQueryListData", e);
             queryListDataEnded(!loadOneMorePage);
         }
+    }
+    
+    /** 
+     * Table columns to use for the messages content
+     */
+    protected String[] getProjection() {
+        List<String> columnNames = new ArrayList<String>();
+        columnNames.add(Msg._ID);
+        columnNames.add(User.AUTHOR_NAME);
+        columnNames.add(Msg.BODY);
+        columnNames.add(Msg.IN_REPLY_TO_MSG_ID);
+        columnNames.add(User.IN_REPLY_TO_NAME);
+        columnNames.add(User.RECIPIENT_NAME);
+        columnNames.add(MsgOfUser.FAVORITED);
+        columnNames.add(Msg.CREATED_DATE);
+        columnNames.add(User.LINKED_USER_ID);
+        if (MyPreferences.showAvatars()) {
+            columnNames.add(Msg.AUTHOR_ID);
+            columnNames.add(MyDatabase.Avatar.FILE_NAME);
+        }
+        return columnNames.toArray(new String[]{});
     }
     
     /**
@@ -1351,25 +1365,40 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
     }
 
-
-    /**
-     * Create adapters
-     */
-    private void createAdapters() {
+    private void createListAdapter() {
+        List<String> columnNames = new ArrayList<String>();
+        List<Integer> viewIds = new ArrayList<Integer>();
+        columnNames.add(MyDatabase.User.AUTHOR_NAME);
+        viewIds.add(R.id.message_author);
+        columnNames.add(MyDatabase.Msg.BODY);
+        viewIds.add(R.id.message_body);
+        columnNames.add(MyDatabase.Msg.CREATED_DATE);
+        viewIds.add(R.id.message_details);
+        columnNames.add(MyDatabase.MsgOfUser.FAVORITED);
+        viewIds.add(R.id.message_favorited);
         int listItemId = R.layout.message_basic;
         if (MyPreferences.showAvatars()) {
-            // listItemId = R.layout.message_conversation;
+            listItemId = R.layout.message_avatar;
+            columnNames.add(MyDatabase.Avatar.FILE_NAME);
+            viewIds.add(R.id.avatar_image);
         }
-        PagedCursorAdapter tweetsAdapter = new PagedCursorAdapter(TimelineActivity.this,
-                listItemId, mCursor, new String[] {
-                MyDatabase.User.AUTHOR_NAME, MyDatabase.Msg.BODY, MyDatabase.Msg.CREATED_DATE, MyDatabase.MsgOfUser.FAVORITED
-                }, new int[] {
-                        R.id.message_author, R.id.message_body, R.id.message_details,
-                        R.id.message_favorited
-                }, getIntent().getData(), PROJECTION, MyDatabase.Msg.DEFAULT_SORT_ORDER);
-        tweetsAdapter.setViewBinder(new TweetBinder());
+        PagedCursorAdapter messageAdapter = new PagedCursorAdapter(TimelineActivity.this,
+                listItemId, mCursor, columnNames.toArray(new String[]{}),
+                toIntArray(viewIds), 
+                getIntent().getData(), getProjection(), MyDatabase.Msg.DEFAULT_SORT_ORDER);
+        messageAdapter.setViewBinder(new TimelineViewBinder());
 
-        setListAdapter(tweetsAdapter);
+        setListAdapter(messageAdapter);
+    }
+    
+    /**
+     * See http://stackoverflow.com/questions/960431/how-to-convert-listinteger-to-int-in-java
+     */
+    public static int[] toIntArray(List<Integer> list){
+        int[] ret = new int[list.size()];
+        for(int i = 0;i < ret.length;i++)
+          ret[i] = list.get(i);
+        return ret;
     }
 
     /**

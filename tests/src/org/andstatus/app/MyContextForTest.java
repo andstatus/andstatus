@@ -130,4 +130,14 @@ public class MyContextForTest implements MyContext {
         }
         return dataOut;
     }
+
+    @Override
+    public boolean isExpired() {
+        return myContext.isExpired();
+    }
+
+    @Override
+    public void setExpired() {
+        myContext.setExpired();
+    }
 }

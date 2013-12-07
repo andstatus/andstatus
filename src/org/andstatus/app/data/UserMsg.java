@@ -143,7 +143,7 @@ public final class UserMsg {
             sql += User.USER_MSG_ID + "=" + lastMsgId;
             sql += ", " + User.USER_MSG_DATE + "=" + lastMsgDate;
 
-            sql = "UPDATE " + MyDatabase.USER_TABLE_NAME + " SET " + sql 
+            sql = "UPDATE " + User.TABLE_NAME + " SET " + sql 
                     + " WHERE " + BaseColumns._ID + "=" + userId;
 
             SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();

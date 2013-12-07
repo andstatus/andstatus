@@ -35,7 +35,7 @@ import org.andstatus.app.util.RelativeTime;
  * Construct/format values of the rows for a Message item in a Timeline list
  * @author torgny.bjers
  */
-public class TweetBinder implements ViewBinder {
+public class TimelineViewBinder implements ViewBinder {
 	/**
 	 * @see android.widget.SimpleCursorAdapter.ViewBinder#setViewValue(android.view.View, android.database.Cursor, int)
 	 * 
@@ -51,7 +51,10 @@ public class TweetBinder implements ViewBinder {
     	            setMessageDetails(cursor, columnIndex, (TextView) view);
     		    }
     			return true;
-    		case R.id.tweet_avatar_image:
+    		case R.id.avatar_image:
+                if ( view instanceof ImageView) {
+                    setAvatar(cursor, columnIndex, (ImageView) view);
+                }
     			return true;
     		case R.id.message_favorited:
     		    if ( view instanceof ImageView) {
@@ -90,11 +93,26 @@ public class TweetBinder implements ViewBinder {
         }
         view.setText(messageDetails);
     }
+
+    private void setAvatar(Cursor cursor, int columnIndex, ImageView view) {
+        int authorIdColumnIndex = cursor.getColumnIndex(Msg.AUTHOR_ID);
+        long authorId = 0;
+        if (authorIdColumnIndex > -1) {
+            authorId = cursor.getLong(authorIdColumnIndex);
+        }
+        //int columnIndex = cursor.getColumnIndex(Avatar.FILE_NAME);
+        String fileName = null;
+        if (columnIndex > -1) {
+            fileName = cursor.getString(columnIndex);
+        }
+        AvatarDrawable avatarDrawable = new AvatarDrawable(authorId, fileName);
+        view.setImageDrawable(avatarDrawable.getDrawable());
+    }
     
     private void setFavorited(Cursor cursor, ImageView view) {
-        int colIndex = cursor.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED);
-        if (colIndex > -1) {
-            if (cursor.getInt(colIndex) == 1) {
+        int columnIndex = cursor.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED);
+        if (columnIndex > -1) {
+            if (cursor.getInt(columnIndex) == 1) {
                 view.setImageResource(android.R.drawable.star_on);
             } else {
                 view.setImageResource(android.R.drawable.star_off);

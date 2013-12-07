@@ -56,6 +56,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         
         MyPreferences.onPreferencesChanged();
         MyContextHolder.initialize(context, this);
+        assertTrue(MyContextHolder.get().initialized());
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         
         MyServiceManager.setServiceUnavailable();
@@ -137,7 +138,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         long messageIdOld = MyProvider.oidToId(OidEnum.MSG_OID, originId, messageOid);
         if (messageIdOld != 0) {
             SelectionAndArgs sa = new SelectionAndArgs();
-            sa.addSelection(MyDatabase.MSG_TABLE_NAME + "." + MyDatabase.Msg._ID + " = ?", new String[] {
+            sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg._ID + " = ?", new String[] {
                 String.valueOf(messageIdOld)
             });
             int deleted = context.getContentResolver().delete(MyDatabase.Msg.CONTENT_URI, sa.selection,
@@ -363,6 +364,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
 
     private MyAccount addPumpIoAccount(MbUser mbUser) throws ConnectionException {
+        assertTrue(MyContextHolder.get().initialized());
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(mbUser.userName + "/" + Origin.OriginEnum.PUMPIO.getName(), TriState.TRUE);
         builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.userName, "sampleUserSecretFor" + mbUser.userName);
         assertTrue("Credentials of " + mbUser.userName + " are present", builder.getAccount().getCredentialsPresent());

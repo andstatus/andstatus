@@ -53,29 +53,26 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     public static final int DATABASE_VERSION = 13;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
-	public static final String MSG_TABLE_NAME = Msg.class.getSimpleName().toLowerCase(Locale.US);
-	public static final String MSGOFUSER_TABLE_NAME = MsgOfUser.class.getSimpleName().toLowerCase(Locale.US);
-	public static final String USER_TABLE_NAME = User.class.getSimpleName().toLowerCase(Locale.US);
-    public static final String FOLLOWING_USER_TABLE_NAME = FollowingUser.class.getSimpleName().toLowerCase(Locale.US);
-	
 	/**
 	 * Table for both public and direct messages 
 	 * i.e. for tweets, dents, notices 
 	 * and also for "direct messages", "direct dents" etc.
 	 */
 	public static final class Msg implements BaseColumns {
-	    private Msg() {
+	    public static final String TABLE_NAME = Msg.class.getSimpleName().toLowerCase(Locale.US);
+
+        private Msg() {
 	    }
 	    /**
 	     * These are in fact definitions for Timelines based on the table, 
 	     * not for the Msg table itself.
 	     * Because we always filter the table by current MyAccount (USER_ID joined through {@link MsgOfUser} ) etc.
 	     */
-		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + MSG_TABLE_NAME);
-        public static final Uri CONTENT_COUNT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + MSG_TABLE_NAME + "/count");
+		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + Msg.TABLE_NAME);
+        public static final Uri CONTENT_COUNT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + Msg.TABLE_NAME + "/count");
         /* like in AndroidManifest.xml */
-		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.andstatus.provider." + MSG_TABLE_NAME;
-		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.andstatus.provider." + MSG_TABLE_NAME;
+		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.andstatus.provider." + Msg.TABLE_NAME;
+		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.andstatus.provider." + Msg.TABLE_NAME;
 		
 		// Table columns are below:
         /*
@@ -170,6 +167,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This table is used to filter User's timelines (based on flags: SUBSCRIBED etc.) 
      */
     public static final class MsgOfUser {
+        public static final String TABLE_NAME = MsgOfUser.class.getSimpleName().toLowerCase(Locale.US);
         private MsgOfUser() {
         }
         
@@ -221,12 +219,14 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 	 * see {@link MyAccount#getUserId()}
 	 */
 	public static final class User implements BaseColumns {
-	    private User() {
+	    public static final String TABLE_NAME = User.class.getSimpleName().toLowerCase(Locale.US);
+
+        private User() {
 	    }
-		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + USER_TABLE_NAME);
+		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + User.TABLE_NAME);
 		/* like in AndroidManifest.xml */
-		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.andstatus.provider." + USER_TABLE_NAME;
-		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.andstatus.provider." + USER_TABLE_NAME;
+		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.andstatus.provider." + User.TABLE_NAME;
+		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.andstatus.provider." + User.TABLE_NAME;
 
         // Table columns
         /* {@link BaseColumns#_ID} is primary key in this database  */
@@ -348,6 +348,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * (by {@link FollowingUser#USER_ID}) user is following (otherwise known as their "friends"). 
      */
     public static final class FollowingUser {
+        public static final String TABLE_NAME = FollowingUser.class.getSimpleName().toLowerCase(Locale.US);
         private FollowingUser() {
         }
         
@@ -463,7 +464,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     @Override
     public void onCreate(SQLiteDatabase db) {
         MyLog.i(this, "Creating tables");
-        db.execSQL("CREATE TABLE " + MSG_TABLE_NAME + " (" 
+        db.execSQL("CREATE TABLE " + Msg.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + Msg.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ENUM_DEFAULT.getId() + " NOT NULL," 
                 + Msg.MSG_OID + " STRING," 
@@ -480,12 +481,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Msg.INS_DATE + " INTEGER NOT NULL"
                 + ");");
 
-        db.execSQL("CREATE UNIQUE INDEX idx_msg_origin ON " + MSG_TABLE_NAME + " (" 
+        db.execSQL("CREATE UNIQUE INDEX idx_msg_origin ON " + Msg.TABLE_NAME + " (" 
                 + Msg.ORIGIN_ID + ", "
                 + Msg.MSG_OID
                 + ");");
         
-        db.execSQL("CREATE TABLE " + MSGOFUSER_TABLE_NAME + " (" 
+        db.execSQL("CREATE TABLE " + MsgOfUser.TABLE_NAME + " (" 
                 + MsgOfUser.USER_ID + " INTEGER NOT NULL," 
                 + MsgOfUser.MSG_ID + " INTEGER NOT NULL," 
                 + MsgOfUser.SUBSCRIBED + " BOOLEAN DEFAULT 0 NOT NULL," 
@@ -498,7 +499,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + " CONSTRAINT pk_msgofuser PRIMARY KEY (" + MsgOfUser.USER_ID + " ASC, " + MsgOfUser.MSG_ID + " ASC)"
                 + ");");
         
-        db.execSQL("CREATE TABLE " + USER_TABLE_NAME + " (" 
+        db.execSQL("CREATE TABLE " + User.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + User.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ENUM_DEFAULT.getId() + " NOT NULL," 
                 + User.USER_OID + " TEXT," 
@@ -530,12 +531,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL" 
                 + ");");
 
-        db.execSQL("CREATE UNIQUE INDEX idx_username ON " + USER_TABLE_NAME + " (" 
+        db.execSQL("CREATE UNIQUE INDEX idx_username ON " + User.TABLE_NAME + " (" 
                 + User.ORIGIN_ID + ", "
                 + User.USERNAME  
                 + ");");
 
-        db.execSQL("CREATE TABLE " + FOLLOWING_USER_TABLE_NAME + " (" 
+        db.execSQL("CREATE TABLE " + FollowingUser.TABLE_NAME + " (" 
                 + FollowingUser.USER_ID + " INTEGER NOT NULL," 
                 + FollowingUser.FOLLOWING_USER_ID + " INTEGER NOT NULL," 
                 + FollowingUser.USER_FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL," 
