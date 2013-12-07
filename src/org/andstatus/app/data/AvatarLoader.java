@@ -14,6 +14,7 @@ import org.andstatus.app.util.MyLog;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -122,6 +123,10 @@ public class AvatarLoader {
                 is.close();
             }
             
+        } catch (FileNotFoundException e) {
+            logError("File not found loading url", e);
+            deleteFileSilently(fileTemp);
+            hardError = true;
         } catch (IOException e) {
             logError("Loading url", e);
             deleteFileSilently(fileTemp);
@@ -186,7 +191,7 @@ public class AvatarLoader {
                rowId = -1;
            }
            try {
-               Thread.sleep(Math.round((Math.random() + 1) * 200));
+               Thread.sleep(Math.round((Math.random() + 2) * 200));
            } catch (InterruptedException e) {
                MyLog.e(this, e);
            }

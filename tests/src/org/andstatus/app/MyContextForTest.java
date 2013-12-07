@@ -24,6 +24,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -139,5 +140,10 @@ public class MyContextForTest implements MyContext {
     @Override
     public void setExpired() {
         myContext.setExpired();
+    }
+
+    @Override
+    public Locale getLocale() {
+        return myContext.getLocale();
     }
 }

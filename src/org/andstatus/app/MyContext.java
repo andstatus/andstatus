@@ -22,12 +22,15 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 
+import java.util.Locale;
+
 public interface MyContext {
     MyContext newInitialized(Context context, String initializerName);
     MyContext newCreator(Context context, String initializerName);
     boolean initialized();
     boolean isReady();
     boolean isTestRun();
+    Locale getLocale();
     MyContextState state();
     Context context();
     String initializedBy();

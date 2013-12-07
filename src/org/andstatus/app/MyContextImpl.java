@@ -27,6 +27,8 @@ import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
+import java.util.Locale;
+
 /**
  * Contains global state of the application
  * The objects are effectively immutable
@@ -53,6 +55,8 @@ public final class MyContextImpl implements MyContext {
     PersistentAccounts persistentAccounts ;
     
     private volatile boolean isExpired = false;
+
+    private final Locale locale = Locale.getDefault();
     
     private MyContextImpl() {
     }
@@ -192,5 +196,10 @@ public final class MyContextImpl implements MyContext {
     @Override
     public void setExpired() {
         isExpired = true;
+    }
+
+    @Override
+    public Locale getLocale() {
+        return locale;
     }
 }

@@ -364,20 +364,18 @@ public class MyDatabaseConverter {
         try {
             MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
 
-            db.execSQL("CREATE TABLE " + Avatar.TABLE_NAME + " (" 
-                    + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                    + Avatar.USER_ID + " INTEGER NOT NULL," 
-                    + Avatar.VALID_FROM + " INTEGER NOT NULL,"
-                    + Avatar.URL + " TEXT NOT NULL," 
-                    + Avatar.FILE_NAME + " TEXT," 
-                    + Avatar.STATUS + " INTEGER NOT NULL DEFAULT 0," 
-                    + Avatar.LOADED_DATE + " INTEGER"
-                    + ");");
+            db.execSQL("CREATE TABLE avatar (_id INTEGER PRIMARY KEY AUTOINCREMENT," 
+                    + "user_id INTEGER NOT NULL," 
+                    + "avatar_valid_from INTEGER NOT NULL," 
+                    + "avatar_url TEXT NOT NULL," 
+                    + "avatar_file_name TEXT," 
+                    + "avatar_status INTEGER NOT NULL DEFAULT 0," 
+                    + "avatar_loaded_date INTEGER)");
 
-            db.execSQL("CREATE INDEX idx_avatar_user ON " + Avatar.TABLE_NAME + " (" 
-                    + Avatar.USER_ID + ", "
-                    + Avatar.STATUS
-                    + ");");
+            db.execSQL("CREATE INDEX idx_avatar_user ON avatar (" 
+                    + "user_id, "
+                    + "avatar_status"
+                    + ")");
                         
             ok = true;
         } catch (Exception e) {

@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.User;
@@ -81,14 +82,14 @@ public class TimelineViewBinder implements ViewBinder {
                 if (TextUtils.isEmpty(replyToName)) {
                     replyToName = "...";
                 }
-                messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.message_source_in_reply_to).toString(), replyToName);
+                messageDetails += " " + String.format(MyContextHolder.get().getLocale(), view.getContext().getText(R.string.message_source_in_reply_to).toString(), replyToName);
             }
         }
         columnIndex2 = cursor.getColumnIndex(User.RECIPIENT_NAME);
         if (columnIndex2 > -1) {
             String recipientName = cursor.getString(columnIndex2);
             if (!TextUtils.isEmpty(recipientName)) {
-                messageDetails += " " + String.format(Locale.getDefault(), view.getContext().getText(R.string.message_source_to).toString(), recipientName);
+                messageDetails += " " + String.format(MyContextHolder.get().getLocale(), view.getContext().getText(R.string.message_source_to).toString(), recipientName);
             }
         }
         view.setText(messageDetails);

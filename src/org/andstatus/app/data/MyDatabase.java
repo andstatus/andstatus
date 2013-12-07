@@ -479,12 +479,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Msg.CREATED_DATE + " INTEGER,"
                 + Msg.SENT_DATE + " INTEGER,"
                 + Msg.INS_DATE + " INTEGER NOT NULL"
-                + ");");
+                + ")");
 
         db.execSQL("CREATE UNIQUE INDEX idx_msg_origin ON " + Msg.TABLE_NAME + " (" 
                 + Msg.ORIGIN_ID + ", "
                 + Msg.MSG_OID
-                + ");");
+                + ")");
         
         db.execSQL("CREATE TABLE " + MsgOfUser.TABLE_NAME + " (" 
                 + MsgOfUser.USER_ID + " INTEGER NOT NULL," 
@@ -497,7 +497,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + MsgOfUser.REPLIED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + MsgOfUser.DIRECTED + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + " CONSTRAINT pk_msgofuser PRIMARY KEY (" + MsgOfUser.USER_ID + " ASC, " + MsgOfUser.MSG_ID + " ASC)"
-                + ");");
+                + ")");
         
         db.execSQL("CREATE TABLE " + User.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
@@ -529,19 +529,19 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.FOLLOWING_USER_DATE + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.USER_MSG_ID + " INTEGER DEFAULT 0 NOT NULL," 
                 + User.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL" 
-                + ");");
+                + ")");
 
         db.execSQL("CREATE UNIQUE INDEX idx_username ON " + User.TABLE_NAME + " (" 
                 + User.ORIGIN_ID + ", "
                 + User.USERNAME  
-                + ");");
+                + ")");
 
         db.execSQL("CREATE TABLE " + FollowingUser.TABLE_NAME + " (" 
                 + FollowingUser.USER_ID + " INTEGER NOT NULL," 
                 + FollowingUser.FOLLOWING_USER_ID + " INTEGER NOT NULL," 
                 + FollowingUser.USER_FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL," 
                 + " CONSTRAINT pk_followinguser PRIMARY KEY (" + FollowingUser.USER_ID + " ASC, " + FollowingUser.FOLLOWING_USER_ID + " ASC)"
-                + ");");
+                + ")");
 
         db.execSQL("CREATE TABLE " + Avatar.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
@@ -551,12 +551,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Avatar.FILE_NAME + " TEXT," 
                 + Avatar.STATUS + " INTEGER NOT NULL DEFAULT 0," 
                 + Avatar.LOADED_DATE + " INTEGER"
-                + ");");
+                + ")");
 
         db.execSQL("CREATE INDEX idx_avatar_user ON " + Avatar.TABLE_NAME + " (" 
                 + Avatar.USER_ID + ", "
                 + Avatar.STATUS
-                + ");");
+                + ")");
     }
 
     /**

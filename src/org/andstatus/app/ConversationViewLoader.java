@@ -380,7 +380,7 @@ public class ConversationViewLoader {
         String messageDetails = RelativeTime.getDifference(context, oMsg.createdDate);
         if (!SharedPreferencesUtil.isEmpty(oMsg.via)) {
             messageDetails += " " + String.format(
-                    Locale.getDefault(),
+                    MyContextHolder.get().getLocale(),
                     context.getText(R.string.message_source_from).toString(),
                     oMsg.via);
         }
@@ -390,7 +390,7 @@ public class ConversationViewLoader {
                 inReplyToName = "...";
             }
             messageDetails += " "
-                    + String.format(Locale.getDefault(),
+                    + String.format(MyContextHolder.get().getLocale(),
                             context.getText(R.string.message_source_in_reply_to).toString(),
                             oMsg.inReplyToName)
                     + " (" + msgIdToHistoryOrder(oMsg.inReplyToMsgId) + ")";
@@ -401,13 +401,13 @@ public class ConversationViewLoader {
                     messageDetails += ";";
                 }
                 messageDetails += " "
-                        + String.format(Locale.getDefault(), context.getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
+                        + String.format(MyContextHolder.get().getLocale(), context.getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
                                 .toString(), oMsg.rebloggersString);
             }
         }
         if (!SharedPreferencesUtil.isEmpty(oMsg.recipientName)) {
             messageDetails += " "
-                    + String.format(Locale.getDefault(), context.getText(R.string.message_source_to)
+                    + String.format(MyContextHolder.get().getLocale(), context.getText(R.string.message_source_to)
                             .toString(), oMsg.recipientName);
         }
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {

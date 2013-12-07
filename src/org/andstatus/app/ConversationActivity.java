@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -75,6 +76,11 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     @GuardedBy("messagesLock")
     private List<ConversationOneMessage> messages = new ArrayList<ConversationOneMessage>();
 
+    private final Object LOADER_LOCK = new Object();
+    @GuardedBy("LOADER_LOCK")
+    private ContentLoader contentLoader = new ContentLoader();
+    private boolean isPaused = false;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);    // Before loading the content view
@@ -125,29 +131,51 @@ public class ConversationActivity extends Activity implements MyServiceListener,
 
     protected void showConversation() {
         MyLog.v(this, "showConversation, instanceId=" + instanceId);
-        if (selectedMessageId != 0) {
-            new ContentLoader().execute();
+        synchronized (LOADER_LOCK) {
+            if (selectedMessageId != 0 && contentLoader.getStatus() != Status.RUNNING) {
+                if (contentLoader.getStatus() == Status.FINISHED) {
+                    contentLoader = new ContentLoader();
+                }
+                contentLoader.execute();
+            }
         }
     }
 
     private class ContentLoader extends AsyncTask<Void, Void, ConversationViewLoader> {
+        private long timeStarted = 0;
+        private long timeLoaded = 0;
+        private long timeCompleted = 0;
 
         @Override
         protected ConversationViewLoader doInBackground(Void... params) {
+            timeStarted = System.currentTimeMillis();
             ConversationViewLoader loader = new ConversationViewLoader(
                     ConversationActivity.this, ma, selectedMessageId, contextMenu);
             loader.load();
+            timeLoaded = System.currentTimeMillis();
             return loader;
         }
         
         @Override
         protected void onPostExecute(ConversationViewLoader loader) {
-            recreateTheConversationView(loader);
+            try {
+                if (!isPaused) {
+                    loader.createViews();
+                }
+                if (!isPaused) {
+                    recreateTheConversationView(loader);
+                }
+            } catch (Exception e) {
+                MyLog.i(this,"on Recreating view", e);
+            }
+            timeCompleted = System.currentTimeMillis();
+            long timeTotal = timeCompleted - timeStarted;
+            MyLog.v(this, "ContentLoader completed " + timeTotal + "ms total, " 
+            + (timeCompleted - timeLoaded) + "ms in the foreground");
         }
     }
     
     private void recreateTheConversationView(ConversationViewLoader loader) {
-        loader.createViews();
         List<ConversationOneMessage> oMsgs = loader.getMsgs();
         TextView titleText = (TextView) findViewById(R.id.titleText);
         titleText.setText( oMsgs.size() > 1 ? R.string.label_conversation : R.string.message);
@@ -216,12 +244,14 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     
     @Override
     protected void onResume() {
+        isPaused = false;
         super.onResume();
         myServiceReceiver.registerReceiver(this);
     }
 
     @Override
     protected void onPause() {
+        isPaused = true;
         super.onPause();
         myServiceReceiver.unregisterReceiver(this);
     }

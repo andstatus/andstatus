@@ -271,12 +271,12 @@ class MessageEditor {
                         textInitial2 += " ";
                     }
                     textInitial2 = "@" + replyToName + " ";
-                    messageDetails += " " + String.format(Locale.getDefault(), MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), replyToName);
+                    messageDetails += " " + String.format(MyContextHolder.get().getLocale(), MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), replyToName);
                 }
             } else {
                 String recipientName = MyProvider.userIdToName(recipientId);
                 if (!TextUtils.isEmpty(recipientName)) {
-                    messageDetails += " " + String.format(Locale.getDefault(), MyContextHolder.get().context().getText(R.string.message_source_to).toString(), recipientName);
+                    messageDetails += " " + String.format(MyContextHolder.get().getLocale(), MyContextHolder.get().context().getText(R.string.message_source_to).toString(), recipientName);
                 }
             }
             mEditText.setText(textInitial2);
