@@ -220,7 +220,7 @@ public final class MyContextHolder {
                 myInitializedContext.setExpired();
             }
             if (myFutureContext != null) {
-                myFutureContext.setExpired();;
+                myFutureContext.setExpired();
             }
         }
     }

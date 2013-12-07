@@ -76,8 +76,8 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     @GuardedBy("messagesLock")
     private List<ConversationOneMessage> messages = new ArrayList<ConversationOneMessage>();
 
-    private final Object LOADER_LOCK = new Object();
-    @GuardedBy("LOADER_LOCK")
+    private final Object loaderLock = new Object();
+    @GuardedBy("loaderLock")
     private ContentLoader contentLoader = new ContentLoader();
     private boolean isPaused = false;
     
@@ -131,7 +131,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
 
     protected void showConversation() {
         MyLog.v(this, "showConversation, instanceId=" + instanceId);
-        synchronized (LOADER_LOCK) {
+        synchronized (loaderLock) {
             if (selectedMessageId != 0 && contentLoader.getStatus() != Status.RUNNING) {
                 if (contentLoader.getStatus() == Status.FINISHED) {
                     contentLoader = new ContentLoader();

@@ -17,14 +17,12 @@
 package org.andstatus.app.data;
 
 import android.database.sqlite.SQLiteDatabase;
-import android.provider.BaseColumns;
 
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.MyContext;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.account.MyAccountConverter;
-import org.andstatus.app.data.MyDatabase.Avatar;
 import org.andstatus.app.util.MyLog;
 
 public class MyDatabaseConverter {
@@ -354,7 +352,7 @@ public class MyDatabaseConverter {
                     + " to version " + versionTo
                     + " SQL='" + sql +"'");
         }
-        return (ok ? versionTo : oldVersion) ;
+        return ok ? versionTo : oldVersion;
     }
  
     private int convert12to13(SQLiteDatabase db, int oldVersion) {
@@ -364,6 +362,8 @@ public class MyDatabaseConverter {
         try {
             MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
 
+            MyPreferences.getDefaultSharedPreferences().edit().putBoolean(MyPreferences.KEY_SHOW_AVATARS, false).commit();
+            
             db.execSQL("CREATE TABLE avatar (_id INTEGER PRIMARY KEY AUTOINCREMENT," 
                     + "user_id INTEGER NOT NULL," 
                     + "avatar_valid_from INTEGER NOT NULL," 
@@ -388,7 +388,7 @@ public class MyDatabaseConverter {
                     + " to version " + versionTo
                     + " SQL='" + sql +"'");
         }
-        return (ok ? versionTo : oldVersion) ;
+        return ok ? versionTo : oldVersion;
     }
     
 }

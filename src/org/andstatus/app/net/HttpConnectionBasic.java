@@ -18,10 +18,9 @@
 package org.andstatus.app.net;
 
 import android.text.TextUtils;
-import android.util.Log;
+import android.util.Base64;
 
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.util.Base64;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -221,7 +220,9 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
      * @return String
      */
     private String getCredentials() {
-        return new String(Base64.encodeBytes((data.accountUsername + ":" + mPassword).getBytes()));
+        return Base64.encodeToString(
+                (data.accountUsername + ":" + mPassword).getBytes(),
+                Base64.DEFAULT);
     }
 
     @Override

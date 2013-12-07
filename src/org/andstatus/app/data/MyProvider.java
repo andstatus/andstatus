@@ -121,6 +121,26 @@ public class MyProvider extends ContentProvider {
      * Matched code for the User
      */
     private static final int USER_ID = 6;
+
+    private static final String CONTENT_URI_PREFIX = "content://" + AUTHORITY + "/";
+    /**
+     * These are in fact definitions for Timelines based on the Msg table, 
+     * not for the Msg table itself.
+     * Because we always filter the table by current MyAccount (USER_ID joined through {@link MsgOfUser} ) etc.
+     */
+    public static final Uri MSG_CONTENT_URI = Uri.parse(CONTENT_URI_PREFIX + Msg.TABLE_NAME);
+    public static final Uri MSG_CONTENT_COUNT_URI = Uri.parse(CONTENT_URI_PREFIX + Msg.TABLE_NAME + "/count");
+    public static final Uri USER_CONTENT_URI = Uri.parse(CONTENT_URI_PREFIX + User.TABLE_NAME);
+    
+    /**
+     *  Content types should be like in AndroidManifest.xml
+     */
+    private static final String CONTENT_TYPE_PREFIX = "vnd.android.cursor.dir/org.andstatus.provider.";
+    private static final String CONTENT_ITEM_TYPE_PREFIX = "vnd.android.cursor.item/org.andstatus.provider.";
+    public static final String MSG_CONTENT_TYPE = CONTENT_TYPE_PREFIX + Msg.TABLE_NAME;
+    public static final String MSG_CONTENT_ITEM_TYPE = CONTENT_ITEM_TYPE_PREFIX + Msg.TABLE_NAME;
+    public static final String USER_CONTENT_TYPE = CONTENT_TYPE_PREFIX + User.TABLE_NAME;
+    public static final String USER_CONTENT_ITEM_TYPE = CONTENT_ITEM_TYPE_PREFIX + User.TABLE_NAME;
     
     /**
      * @see android.content.ContentProvider#onCreate()
@@ -144,16 +164,16 @@ public class MyProvider extends ContentProvider {
             case TIMELINE:
             case TIMELINE_SEARCH:
             case MSG_COUNT:
-                type = Msg.CONTENT_TYPE;
+                type = MyProvider.MSG_CONTENT_TYPE;
                 break;
             case TIMELINE_MSG_ID:
-                type = Msg.CONTENT_ITEM_TYPE;
+                type = MyProvider.MSG_CONTENT_ITEM_TYPE;
                 break;
             case USERS:
-                type = User.CONTENT_TYPE;
+                type = MyProvider.USER_CONTENT_TYPE;
                 break;
             case USER_ID:
-                type = User.CONTENT_ITEM_TYPE;
+                type = MyProvider.USER_CONTENT_ITEM_TYPE;
                 break;
             default:
                 break;
@@ -289,7 +309,7 @@ public class MyProvider extends ContentProvider {
                     accountUserId = uriToAccountUserId(uri);
                     table = User.TABLE_NAME;
                     nullColumnHack = User.USERNAME;
-                    contentUri = User.CONTENT_URI;
+                    contentUri = MyProvider.USER_CONTENT_URI;
                     values.put(User.INS_DATE, now);
                     followingUserValues = FollowingUserValues.valueOf(accountUserId, 0, values);
                     break;
@@ -1306,7 +1326,7 @@ public class MyProvider extends ContentProvider {
      * @param selectedUserId ID of the selected User; 0 - if the User doesn't exist
      */
     public static Uri getUserUri(long accountUserId, long selectedUserId) {
-        Uri uri = ContentUris.withAppendedId(MyDatabase.User.CONTENT_URI, accountUserId);
+        Uri uri = ContentUris.withAppendedId(MyProvider.USER_CONTENT_URI, accountUserId);
         uri = Uri.withAppendedPath(uri, "su");
         uri = ContentUris.withAppendedId(uri, selectedUserId);
         return uri;

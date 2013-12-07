@@ -30,9 +30,9 @@ import org.andstatus.app.util.MyLog;
 public class ConversationIndentImageView extends ImageView {
     private View referencedView;
     private int widthPixels;
-    private final static int MIN_HEIGH = 80;
+    private static final int MIN_HEIGH = 80;
     /** It's a height of the underlying bitmap (not cropped) */
-    private final static int MAX_HEIGH = 1000;
+    private static final int MAX_HEIGH = 1000;
     
     public ConversationIndentImageView(Context contextIn, View referencedViewIn, int widthPixelsIn) {
         super(contextIn);
@@ -73,22 +73,20 @@ public class ConversationIndentImageView extends ImageView {
      * so we copy-pasted it here for compatibility with API 8 
      */
     private static int myResolveSizeAndState(int size, int measureSpec, int childMeasuredState) {
-        int result = size;
         int specMode = MeasureSpec.getMode(measureSpec);
         int specSize =  MeasureSpec.getSize(measureSpec);
+        int result = size;
         switch (specMode) {
-        case MeasureSpec.UNSPECIFIED:
-            result = size;
-            break;
         case MeasureSpec.AT_MOST:
             if (specSize < size) {
                 result = specSize | MEASURED_STATE_TOO_SMALL;
-            } else {
-                result = size;
             }
             break;
         case MeasureSpec.EXACTLY:
             result = specSize;
+            break;
+        case MeasureSpec.UNSPECIFIED:
+        default:
             break;
         }
         return result | (childMeasuredState&MEASURED_STATE_MASK);

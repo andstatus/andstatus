@@ -31,7 +31,6 @@ public class AvatarLoader {
     private URL url = null;
     private long loadTime = 0;
     private String fileName = "";
-    private File fileNew = null;
     private AvatarStatus status = AvatarStatus.ABSENT; 
 
     protected boolean mockNetworkError = false;
@@ -73,7 +72,7 @@ public class AvatarLoader {
     }
 
     protected AvatarStatus getStatusAndRowId(URL url) {
-        AvatarStatus status = AvatarStatus.UNKNOWN;
+        AvatarStatus statusLocal = AvatarStatus.UNKNOWN;
         String where = Avatar.USER_ID + "=" + userId
                 + " AND " + Avatar.URL + "=" + MyProvider.quoteIfNotQuoted(url.toExternalForm()) ;
         String sql = "SELECT " + Avatar.STATUS + ", " 
@@ -85,9 +84,9 @@ public class AvatarLoader {
         Cursor c = null;
         try {
             c = db.rawQuery(sql, null);
-            status = AvatarStatus.ABSENT;
+            statusLocal = AvatarStatus.ABSENT;
             while (c.moveToNext()) {
-                status = AvatarStatus.load(c.getInt(0));
+                statusLocal = AvatarStatus.load(c.getInt(0));
                 rowId = c.getLong(1);
             }
         } finally {
@@ -95,7 +94,7 @@ public class AvatarLoader {
                 c.close();
             }
         }
-        return status;
+        return statusLocal;
     }
 
     private void loadUrl() {
@@ -140,7 +139,7 @@ public class AvatarLoader {
     }
 
     private void saveToDatabase(File fileTemp) {
-        fileNew = new AvatarDrawable(userId, fileName).getFile();
+        File fileNew = new AvatarDrawable(userId, fileName).getFile();
         deleteFileSilently(fileNew);
         if (!fileTemp.renameTo(fileNew)) {
             MyLog.v(this, "Couldn't rename file " + fileTemp + " to " + fileNew);

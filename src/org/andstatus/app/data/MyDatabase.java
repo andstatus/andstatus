@@ -26,7 +26,6 @@ import java.util.Locale;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.net.Uri;
 import android.provider.BaseColumns;
 
 /**
@@ -63,16 +62,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 
         private Msg() {
 	    }
-	    /**
-	     * These are in fact definitions for Timelines based on the table, 
-	     * not for the Msg table itself.
-	     * Because we always filter the table by current MyAccount (USER_ID joined through {@link MsgOfUser} ) etc.
-	     */
-		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + Msg.TABLE_NAME);
-        public static final Uri CONTENT_COUNT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + Msg.TABLE_NAME + "/count");
-        /* like in AndroidManifest.xml */
-		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.andstatus.provider." + Msg.TABLE_NAME;
-		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.andstatus.provider." + Msg.TABLE_NAME;
 		
 		// Table columns are below:
         /*
@@ -223,10 +212,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 
         private User() {
 	    }
-		public static final Uri CONTENT_URI = Uri.parse("content://" + MyProvider.AUTHORITY + "/" + User.TABLE_NAME);
-		/* like in AndroidManifest.xml */
-		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/org.andstatus.provider." + User.TABLE_NAME;
-		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/org.andstatus.provider." + User.TABLE_NAME;
 
         // Table columns
         /* {@link BaseColumns#_ID} is primary key in this database  */

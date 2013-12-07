@@ -141,7 +141,7 @@ public class DataInserterTest extends InstrumentationTestCase {
             sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg._ID + " = ?", new String[] {
                 String.valueOf(messageIdOld)
             });
-            int deleted = context.getContentResolver().delete(MyDatabase.Msg.CONTENT_URI, sa.selection,
+            int deleted = context.getContentResolver().delete(MyProvider.MSG_CONTENT_URI, sa.selection,
                     sa.selectionArgs);
             assertEquals( "Old message id=" + messageIdOld + " deleted", 1, deleted);
         }

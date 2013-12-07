@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,8 +16,6 @@
  */
 
 package org.andstatus.app.data;
-
-import java.util.Locale;
 
 import android.database.Cursor;
 import android.text.TextUtils;
@@ -37,36 +35,36 @@ import org.andstatus.app.util.RelativeTime;
  * @author torgny.bjers
  */
 public class TimelineViewBinder implements ViewBinder {
-	/**
-	 * @see android.widget.SimpleCursorAdapter.ViewBinder#setViewValue(android.view.View, android.database.Cursor, int)
-	 * 
-	 * To avoid BC_UNCONFIRMED_CAST warning instanceof is used before casting. 
-	 * Unfortunately, findbugs doesn't understand isAssignableFrom
-	 * see http://osdir.com/ml/java-findbugs-general/2010-03/msg00001.html
-	 */
-	@Override
+    /**
+     * @see android.widget.SimpleCursorAdapter.ViewBinder#setViewValue(android.view.View, android.database.Cursor, int)
+     * 
+     * To avoid BC_UNCONFIRMED_CAST warning instanceof is used before casting. 
+     * Unfortunately, findbugs doesn't understand isAssignableFrom
+     * see http://osdir.com/ml/java-findbugs-general/2010-03/msg00001.html
+     */
+    @Override
     public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-		switch (view.getId()) {
-    		case R.id.message_details:
+        switch (view.getId()) {
+            case R.id.message_details:
                 if ( view instanceof TextView) {
-    	            setMessageDetails(cursor, columnIndex, (TextView) view);
-    		    }
-    			return true;
-    		case R.id.avatar_image:
+                    setMessageDetails(cursor, columnIndex, (TextView) view);
+                }
+                return true;
+            case R.id.avatar_image:
                 if ( view instanceof ImageView) {
                     setAvatar(cursor, columnIndex, (ImageView) view);
                 }
-    			return true;
-    		case R.id.message_favorited:
-    		    if ( view instanceof ImageView) {
-    		        setFavorited(cursor, (ImageView) view);
+                return true;
+            case R.id.message_favorited:
+                if ( view instanceof ImageView) {
+                    setFavorited(cursor, (ImageView) view);
                 }
-    			return true;
-    		default:
-    		    break;
-		}
-		return false;
-	}
+                return true;
+            default:
+                break;
+        }
+        return false;
+    }
 
     private void setMessageDetails(Cursor cursor, int columnIndex, TextView view) {
         String messageDetails = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
@@ -101,7 +99,6 @@ public class TimelineViewBinder implements ViewBinder {
         if (authorIdColumnIndex > -1) {
             authorId = cursor.getLong(authorIdColumnIndex);
         }
-        //int columnIndex = cursor.getColumnIndex(Avatar.FILE_NAME);
         String fileName = null;
         if (columnIndex > -1) {
             fileName = cursor.getString(columnIndex);

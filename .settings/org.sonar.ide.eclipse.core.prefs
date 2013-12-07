@@ -1,6 +1,6 @@
 eclipse.preferences.version=1
 extraProperties=sonar.exclusions\=**/R.java
-lastAnalysisDate=1385494689751
+lastAnalysisDate=1386446751484
 projectKey=org.andstatus.app
 serverUrl=http\://localhost\:9000
 version=2

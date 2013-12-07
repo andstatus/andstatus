@@ -345,6 +345,6 @@ public class MyPreferences {
     }
 
     public static boolean showAvatars() {
-        return getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_SHOW_AVATARS, false);
+        return getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_SHOW_AVATARS, true);
     }
 }

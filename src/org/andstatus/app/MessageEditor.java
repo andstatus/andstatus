@@ -25,8 +25,6 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 
-import java.util.Locale;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;

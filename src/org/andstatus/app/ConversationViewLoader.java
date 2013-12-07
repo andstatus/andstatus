@@ -46,12 +46,12 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 public class ConversationViewLoader {
@@ -236,7 +236,9 @@ public class ConversationViewLoader {
         }
     }
 
-    private class ReplyLevelComparator implements Comparator<ConversationOneMessage> {
+    private static class ReplyLevelComparator implements Comparator<ConversationOneMessage>, Serializable {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public int compare(ConversationOneMessage lhs, ConversationOneMessage rhs) {
             int compared = rhs.replyLevel - lhs.replyLevel;
@@ -255,7 +257,7 @@ public class ConversationViewLoader {
         }
     }
 
-    private class OrderCounters {
+    private static class OrderCounters {
         int list = -1;
         int history = 1;
     }
@@ -283,10 +285,9 @@ public class ConversationViewLoader {
         oMsg.historyOrder = order.history++;
         oMsg.listOrder = order.list--;
         oMsg.indentLevel = indent;
-        if (oMsg.nReplies > 1 || oMsg.nParentReplies > 1 ) {
-            if (indent < MAX_INDENT_LEVEL) {
-                indent++;
-            }
+        if ((oMsg.nReplies > 1 || oMsg.nParentReplies > 1)
+                && indent < MAX_INDENT_LEVEL) {
+            indent++;
         }
         for (int ind = oMsgs.size() - 1; ind >= 0; ind--) {
            ConversationOneMessage reply = oMsgs.get(ind);
@@ -395,15 +396,15 @@ public class ConversationViewLoader {
                             oMsg.inReplyToName)
                     + " (" + msgIdToHistoryOrder(oMsg.inReplyToMsgId) + ")";
         }
-        if (!SharedPreferencesUtil.isEmpty(oMsg.rebloggersString)) {
-            if (!oMsg.rebloggersString.equals(oMsg.author)) {
-                if (!SharedPreferencesUtil.isEmpty(oMsg.inReplyToName)) {
-                    messageDetails += ";";
-                }
-                messageDetails += " "
-                        + String.format(MyContextHolder.get().getLocale(), context.getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
-                                .toString(), oMsg.rebloggersString);
+        if (!SharedPreferencesUtil.isEmpty(oMsg.rebloggersString)
+                && !oMsg.rebloggersString.equals(oMsg.author)) {
+            if (!SharedPreferencesUtil.isEmpty(oMsg.inReplyToName)) {
+                messageDetails += ";";
             }
+            messageDetails += " "
+                    + String.format(MyContextHolder.get().getLocale(),
+                            context.getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
+                                    .toString(), oMsg.rebloggersString);
         }
         if (!SharedPreferencesUtil.isEmpty(oMsg.recipientName)) {
             messageDetails += " "

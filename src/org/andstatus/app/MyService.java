@@ -1067,7 +1067,7 @@ public class MyService extends Service {
                 try {
                     // TODO: Maybe we should use Timeline Uri...
                     MyService.this.getApplicationContext().getContentResolver()
-                            .delete(MyDatabase.Msg.CONTENT_URI, BaseColumns._ID + " = " + msgId, 
+                            .delete(MyProvider.MSG_CONTENT_URI, BaseColumns._ID + " = " + msgId, 
                                     null);
                 } catch (Exception e) {
                     MyLog.e(this, "Error destroying status locally", e);

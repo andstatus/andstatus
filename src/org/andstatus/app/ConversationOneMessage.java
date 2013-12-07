@@ -17,12 +17,8 @@
 package org.andstatus.app;
 
 import android.view.View;
-import android.widget.LinearLayout;
 
 import org.andstatus.app.data.AvatarDrawable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * One message row

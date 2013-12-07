@@ -73,7 +73,7 @@
 					android:summary="@string/summary_preference_theme_size"
 					android:dialogTitle="@string/dialog_title_preference_theme_size" />
 				<CheckBoxPreference android:key="show_avatars"
-                    android:defaultValue="false"
+                    android:defaultValue="true"
 					android:title="@string/title_preference_show_avatars"
 					android:summaryOff="@string/summary_preference_show_avatars_off"
 					android:summaryOn="@string/summary_preference_show_avatars_on" />

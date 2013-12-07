@@ -28,12 +28,8 @@ import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Handles connection to the API of the Microblogging System (i.e. to the {@link Origin})

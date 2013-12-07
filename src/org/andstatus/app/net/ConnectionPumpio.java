@@ -130,6 +130,7 @@ public class ConnectionPumpio extends Connection {
         return user;
     }
     
+    private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY);
     /**
      * Simple solution based on:
      * http://stackoverflow.com/questions/2201925/converting-iso8601-compliant-string-to-java-util-date
@@ -145,9 +146,8 @@ public class ConnectionPumpio extends Connection {
             } else {
                 datePrepared = stringDate.replaceAll("\\+0([0-9]){1}\\:00", "+0$100");
             }
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.GERMANY);
             try {
-                unixDate = df.parse(datePrepared).getTime();
+                unixDate = dateFormat.parse(datePrepared).getTime();
             } catch (ParseException e) {
                 MyLog.e(this, "Failed to parse the date: '" + stringDate +"'", e);
             }
