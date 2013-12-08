@@ -52,12 +52,15 @@ public class DataInserterTest extends InstrumentationTestCase {
         String userOid = "acct:" + TestSuite.CONVERSATION_ACCOUNT_NAME.substring(0, TestSuite.CONVERSATION_ACCOUNT_NAME.indexOf('/'));
         accountMbUser = userFromPumpioOid(userOid);
         accountMbUser.avatarUrl = TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL;
-        ma = addPumpIoAccount(userOid);
+        MyAccount ma1 = addPumpIoAccount(userOid);
         
         MyPreferences.onPreferencesChanged();
         MyContextHolder.initialize(context, this);
         assertTrue(MyContextHolder.get().initialized());
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(ma1.getAccountName()); 
+        assertTrue(ma1.getAccountName(), ma != null);
+        assertEquals(ma1.getAccountName(), ma1.getUserId(), ma.getUserId());
         
         MyServiceManager.setServiceUnavailable();
     }
@@ -282,7 +285,10 @@ public class DataInserterTest extends InstrumentationTestCase {
         MbUser author1 = userFromPumpioOid("acct:firstAuthor@pumpity.net");
         author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/res/drawable/splash_logo.png";
         MbUser author2 = userFromPumpioOid("acct:second@identi.ca");
+        author2.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/girl-android-sh.gif";
         MbUser author3 = userFromPumpioOid("acct:third@pump.example.com");
+        author3.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif";
+        MbUser author4 = userFromPumpioOid("acct:fourthWithoutAvatar@pump.example.com");
         
         MbMessage minus1 = buildPumpIoMessage(author2, "Older one message", null, null);
         MbMessage selected = buildPumpIoMessage(author1, "Selected message", minus1, TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
@@ -293,16 +299,16 @@ public class DataInserterTest extends InstrumentationTestCase {
         addMessage(reply3);
         addMessage(reply1);
         addMessage(reply2);
-        MbMessage reply4 = buildPumpIoMessage(author1, "Reply 4 to Reply 1 other author", reply1, null);
+        MbMessage reply4 = buildPumpIoMessage(author4, "Reply 4 to Reply 1 other author", reply1, null);
         addMessage(reply4);
         addMessage(buildPumpIoMessage(author2, "Reply 5 to Reply 4", reply4, null));
         addMessage(buildPumpIoMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
         MbMessage reply7 = buildPumpIoMessage(author1, "Reply 7 to Reply 2", reply2, null);
-        MbMessage reply8 = buildPumpIoMessage(author1, "Reply 8 to Reply 7", reply7, null);
-        MbMessage reply9 = buildPumpIoMessage(author1, "Reply 9 to Reply 7", reply7, null);
+        MbMessage reply8 = buildPumpIoMessage(author4, "Reply 8 to Reply 7", reply7, null);
+        MbMessage reply9 = buildPumpIoMessage(author2, "Reply 9 to Reply 7", reply7, null);
         addMessage(reply9);
-        MbMessage reply10 = buildPumpIoMessage(author1, "Reply 10 to Reply 8", reply8, null);
+        MbMessage reply10 = buildPumpIoMessage(author3, "Reply 10 to Reply 8", reply8, null);
         addMessage(reply10);
     }
 
@@ -353,10 +359,11 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     private MbUser userFromPumpioOid(String userOid) {
-        String userName = ConnectionPumpio.userOidToUsername(userOid);
+        ConnectionPumpio connection = new ConnectionPumpio();
+        String userName = connection.userOidToUsername(userOid);
         MbUser mbUser = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), userOid);
         mbUser.userName = userName;
-        mbUser.url = "http://" + ConnectionPumpio.usernameToHost(userName)  + "/" + ConnectionPumpio.userOidToNickname(userOid);
+        mbUser.url = "http://" + connection.usernameToHost(userName)  + "/" + ConnectionPumpio.userOidToNickname(userOid);
         if (accountMbUser != null) {
             mbUser.actor = accountMbUser;
         }

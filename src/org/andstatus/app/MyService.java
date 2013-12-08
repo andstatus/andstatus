@@ -341,13 +341,13 @@ public class MyService extends Service {
     public void onCreate() {
         preferencesChangeTime = MyContextHolder.initialize(this, this);
         preferencesExamineTime = getMyServicePreferences().getLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, 0);
-        MyLog.d(TAG, "Service created, preferencesChangeTime=" + preferencesChangeTime + ", examined=" + preferencesExamineTime);
+        MyLog.d(this, "Service created, preferencesChangeTime=" + preferencesChangeTime + ", examined=" + preferencesExamineTime);
 
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        MyLog.d(TAG, "onStartCommand: startid=" + startId);
+        MyLog.d(this, "onStartCommand: startid=" + startId);
         receiveCommand(intent, startId);
         return START_NOT_STICKY;
     }
@@ -410,7 +410,7 @@ public class MyService extends Service {
                 if ( commandData.command == CommandEnum.EMPTY) {
                     // Nothing to do
                 } else if (mainCommandQueue.contains(commandData)) {
-                    MyLog.d(TAG, "Duplicated " + commandData);
+                    MyLog.d(this, "Duplicated " + commandData);
                     // Reset retries counter on receiving duplicated command
                     for (CommandData cd:mainCommandQueue) {
                         if (cd.equals(commandData)) {
@@ -419,7 +419,7 @@ public class MyService extends Service {
                         }
                     }
                 } else {
-                    MyLog.d(TAG, "Adding to the queue " + commandData);
+                    MyLog.d(this, "Adding to the queue " + commandData);
                     if (!mainCommandQueue.offer(commandData)) {
                         MyLog.e(this, "mCommands is full?");
                     }
@@ -446,9 +446,9 @@ public class MyService extends Service {
             if (!mInitialized) {
                 int count = 0;
                 // Restore Queues
-                count += restoreQueue(mainCommandQueue, TAG + "_" + "mCommands");
-                count += restoreQueue(retryCommandQueue, TAG + "_" + "mRetryQueue");
-                MyLog.d(TAG, "State restored, " + (count>0 ? Integer.toString(count) : "no") + " msg in the Queues");
+                count += restoreQueue(mainCommandQueue, this + "_" + "mCommands");
+                count += restoreQueue(retryCommandQueue, this + "_" + "mRetryQueue");
+                MyLog.d(this, "State restored, " + (count>0 ? Integer.toString(count) : "no") + " msg in the Queues");
 
                 registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
 
@@ -465,11 +465,11 @@ public class MyService extends Service {
             // Preferences changed...
             
             if (preferencesChangeTimeNew > preferencesExamineTime) {
-                MyLog.d(TAG, "Examine at=" + preferencesExamineTimeNew + " Preferences changed at=" + preferencesChangeTimeNew);
+                MyLog.d(this, "Examine at=" + preferencesExamineTimeNew + " Preferences changed at=" + preferencesChangeTimeNew);
             } else if (preferencesChangeTimeNew > preferencesChangeTime) {
-                MyLog.d(TAG, "Preferences changed at=" + preferencesChangeTimeNew);
+                MyLog.d(this, "Preferences changed at=" + preferencesChangeTimeNew);
             } else if (preferencesChangeTimeNew == preferencesChangeTime) {
-                MyLog.d(TAG, "Preferences didn't change, still at=" + preferencesChangeTimeNew);
+                MyLog.d(this, "Preferences didn't change, still at=" + preferencesChangeTimeNew);
             } else {
                 MyLog.e(this, "Preferences change time error, time=" + preferencesChangeTimeNew);
             }
@@ -501,7 +501,7 @@ public class MyService extends Service {
             sp = null;
             // Delete this saved queue
             SharedPreferencesUtil.delete(context, prefsFileName);
-            MyLog.d(TAG, "Queue restored from " + prefsFileName  + ", " + count + " msgs");
+            MyLog.d(this, "Queue restored from " + prefsFileName  + ", " + count + " msgs");
         }
         return count;
     }
@@ -589,7 +589,7 @@ public class MyService extends Service {
     private void acquireWakeLock() {
         synchronized(wakeLockLock) {
             if (wakeLock == null) {
-                MyLog.d(TAG, "Acquiring wakelock");
+                MyLog.d(this, "Acquiring wakelock");
                 PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
                 wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
                 wakeLock.acquire();
@@ -603,9 +603,9 @@ public class MyService extends Service {
     
     @Override
     public void onDestroy() {
-        MyLog.v(TAG, "onDestroy");
+        MyLog.v(this, "onDestroy");
         stopDelayed(true);
-        MyLog.d(TAG, "Service destroyed");
+        MyLog.d(this, "Service destroyed");
     }
     
     /**
@@ -626,7 +626,7 @@ public class MyService extends Service {
                 mIsStopping = false;
                 return;
             }
-            boolean mayStop = executor == null || executor.getStatus() == Status.FINISHED;
+            boolean mayStop = executor == null || executor.getStatus() != Status.RUNNING;
             if (!mayStop) {
                 if (forceNow) {
                     MyLog.d(this, "stopDelayed: Forced to stop now, cancelling Executor");
@@ -644,9 +644,9 @@ public class MyService extends Service {
                     notifyOfQueue();
                     int count = 0;
                     // Save Queues
-                    count += persistQueue(mainCommandQueue, TAG + "_" + "mCommands");
-                    count += persistQueue(retryCommandQueue, TAG + "_" + "mRetryQueue");
-                    MyLog.d(TAG, "State saved, " + (count>0 ? Integer.toString(count) : "no ") + " msg in the Queues");
+                    count += persistQueue(mainCommandQueue, this + "_" + "mCommands");
+                    count += persistQueue(retryCommandQueue, this + "_" + "mRetryQueue");
+                    MyLog.d(this, "State saved, " + (count>0 ? Integer.toString(count) : "no ") + " msg in the Queues");
     
                     relealeWakeLock();
                     stopSelfResult(lastProcessedStartId);
@@ -674,7 +674,7 @@ public class MyService extends Service {
                 MyLog.v(this, "Command saved: " + cd.toString());
                 count += 1;
             }
-            MyLog.d(TAG, "Queue saved to " + prefsFileName  + ", " + count + " msgs");
+            MyLog.d(this, "Queue saved to " + prefsFileName  + ", " + count + " msgs");
         }
         return count;
     }
@@ -682,7 +682,7 @@ public class MyService extends Service {
     private void relealeWakeLock() {
         synchronized(wakeLockLock) {
             if (wakeLock != null) {
-                MyLog.d(TAG, "Releasing wakelock");
+                MyLog.d(this, "Releasing wakelock");
                 wakeLock.release();
                 wakeLock = null;
             }
@@ -700,10 +700,10 @@ public class MyService extends Service {
             clearNotifications();
         } else if (mNotificationsEnabled && MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFICATIONS_QUEUE, false)) {
             if (!retryCommandQueue.isEmpty()) {
-                MyLog.d(TAG, retryCommandQueue.size() + " commands in Retry Queue.");
+                MyLog.d(this, retryCommandQueue.size() + " commands in Retry Queue.");
             }
             if (!mainCommandQueue.isEmpty()) {
-                MyLog.d(TAG, mainCommandQueue.size() + " commands in Main Queue.");
+                MyLog.d(this, mainCommandQueue.size() + " commands in Main Queue.");
             }
 
             // Set up the notification to display to the user
@@ -780,7 +780,7 @@ public class MyService extends Service {
 
         @Override
         protected Boolean doInBackground(Void... arg0) {
-            MyLog.d(TAG, "CommandExecutor, " + mainCommandQueue.size() + " commands to process");
+            MyLog.d(this, "CommandExecutor, " + mainCommandQueue.size() + " commands to process");
 
             do {
                 if (isStopping()) {
@@ -805,7 +805,7 @@ public class MyService extends Service {
                         }
                     }        
                 }
-                MyLog.d(TAG, (commandData.commandResult.hasError() 
+                MyLog.d(this, (commandData.commandResult.hasError() 
                         ? (commandData.commandResult.willRetry ? "Will retry" : "Failed") 
                                 : "Succeeded") 
                         + " " + commandData);
@@ -819,7 +819,7 @@ public class MyService extends Service {
         }
 
         private void executeOneCommand(CommandData commandData) {
-            MyLog.d(TAG, "Executing " + commandData);
+            MyLog.d(this, "Executing " + commandData);
             switch (commandData.command) {
                 case AUTOMATIC_UPDATE:
                 case FETCH_TIMELINE:
@@ -903,12 +903,13 @@ public class MyService extends Service {
          */
         @Override
         protected void onPostExecute(Boolean notUsed) {
+            MyLog.v(this, "onPostExecute");
             decideIfStopTheService(true);
         }
 
         @Override
         protected void onCancelled(Boolean result) {
-            MyLog.v(this, "Executor was cancelled, result=" + result);
+            MyLog.v(this, "onCancelled, result=" + result);
             decideIfStopTheService(true);
         }
         
@@ -953,7 +954,7 @@ public class MyService extends Service {
                         // the flag manually.
                         message.favoritedByActor = TriState.fromBoolean(create);
 
-                        MyLog.d(TAG,
+                        MyLog.d(this,
                                 (create ? "create" : "destroy")
                                         + ". Favorited flag didn't change yet.");
 
@@ -982,7 +983,7 @@ public class MyService extends Service {
                 }
             }
             setSoftErrorIfNotOk(commandData, ok);
-            MyLog.d(TAG, (create ? "Creating" : "Destroying") + " favorite "
+            MyLog.d(this, (create ? "Creating" : "Destroying") + " favorite "
                     + (ok ? "succeded" : "failed") + ", id=" + msgId);
         }
 
@@ -1015,7 +1016,7 @@ public class MyService extends Service {
                         // Act just like for creating favorite...
                         user.followedByActor = TriState.fromBoolean(follow);
 
-                        MyLog.d(TAG,
+                        MyLog.d(this,
                                 (follow ? "Follow" : "Stop following") + " User. 'following' flag didn't change yet.");
 
                         // Let's try to assume that everything was
@@ -1036,7 +1037,7 @@ public class MyService extends Service {
                 }
             }
             setSoftErrorIfNotOk(commandData, ok);
-            MyLog.d(TAG, (follow ? "Follow" : "Stop following") + " User "
+            MyLog.d(this, (follow ? "Follow" : "Stop following") + " User "
                     + (ok ? "succeded" : "failed") + ", id=" + userId);
         }
         
@@ -1074,7 +1075,7 @@ public class MyService extends Service {
                 }
             }
             setSoftErrorIfNotOk(commandData, ok);
-            MyLog.d(TAG, "Destroying status " + (ok ? "succeded" : "failed") + ", id=" + msgId);
+            MyLog.d(this, "Destroying status " + (ok ? "succeded" : "failed") + ", id=" + msgId);
         }
 
 
@@ -1113,7 +1114,7 @@ public class MyService extends Service {
                 }
             }
             setSoftErrorIfNotOk(commandData, ok);
-            MyLog.d(TAG, "Destroying reblog " + (ok ? "succeded" : "failed") + ", id=" + msgId);
+            MyLog.d(this, "Destroying reblog " + (ok ? "succeded" : "failed") + ", id=" + msgId);
         }
 
         private void getStatus(CommandData commandData) {
@@ -1144,7 +1145,7 @@ public class MyService extends Service {
                 logConnectionException(e, commandData, "getStatus Exception");
             }
             setSoftErrorIfNotOk(commandData, ok);
-            MyLog.d(TAG, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + commandData.itemId);
+            MyLog.d(this, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + commandData.itemId);
         }
         
         /**
@@ -1295,7 +1296,7 @@ public class MyService extends Service {
                         }
                         pass++;
                         ind = 0; // Start from beginning
-                        MyLog.d(TAG, "Second pass of loading timeline");
+                        MyLog.d(this, "Second pass of loading timeline");
                     }
                     if (pass > 1) {
                         // Find next error index
@@ -1313,7 +1314,7 @@ public class MyService extends Service {
                     ok = true;
                     TimelineTypeEnum timelineType = atl[ind];
                     if (acc.getConnection().isApiSupported(timelineType.getConnectionApiRoutine())) {
-                        MyLog.d(TAG, "Getting " + timelineType.save() + " for "
+                        MyLog.d(this, "Getting " + timelineType.save() + " for "
                                 + acc.getAccountName());
                         TimelineDownloader fl = null;
                         descr = "loading " + timelineType.save();
@@ -1373,7 +1374,7 @@ public class MyService extends Service {
             
             message += " getting " + commandData.timelineType.save()
                     + " for " + acc.getAccountName() + counters.accumulatedToString();
-            MyLog.d(TAG, message);
+            MyLog.d(this, message);
         }
         
         /**
@@ -1404,7 +1405,7 @@ public class MyService extends Service {
          * @param numHomeTimeline
          */
         private void notifyOfNewTweets(int numTweets, CommandEnum msgType) {
-            MyLog.d(TAG, "notifyOfNewTweets n=" + numTweets + "; msgType=" + msgType);
+            MyLog.d(this, "notifyOfNewTweets n=" + numTweets + "; msgType=" + msgType);
 
             if (updateWidgetsOnEveryUpdate) {
                 // Notify widgets even about the fact, that update occurred

@@ -3,6 +3,7 @@
 	<name>AndStatus</name>
 	<comment></comment>
 	<projects>
+		<project>AndStatusTests</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -40,7 +40,7 @@ public class AvatarDrawable {
     public AvatarDrawable(long userIdIn, String fileName) {
         userId = userIdIn;
         if (!TextUtils.isEmpty(fileName)) {
-            file = new File(MyPreferences.getDataFilesDir("avatars", null), fileName);
+            file = new File(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS, null), fileName);
         }
     }
     
@@ -55,20 +55,15 @@ public class AvatarDrawable {
     }
 
     public Drawable getDrawable() {
-        if (isLoaded()) {
-            try {
-                String pathName = file.getCanonicalPath();
-                return Drawable.createFromPath(pathName);
-            } catch (IOException e) {
-                MyLog.e(this, "File for userId=" + userId, e);
-            }
+        if (exists()) {
+            return Drawable.createFromPath(file.getAbsolutePath());
         }
         MyServiceManager.sendCommand(new CommandData(CommandEnum.FETCH_AVATAR, null, userId));
         return defaultAvatar;
     }
 
-    public boolean isLoaded() {
-        return file != null && file.exists();
+    public boolean exists() {
+        return file != null && file.exists() && file.isFile();
     }
     
     public File getFile() {

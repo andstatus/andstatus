@@ -43,6 +43,8 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
+import net.jcip.annotations.GuardedBy;
+
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
@@ -241,7 +243,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (somethingIsBeingChanging) {
+        if (dataIsBeingMoved) {
             return;
         }
         if (onSharedPreferenceChangedIsBusy || !MyContextHolder.get().initialized()) {
@@ -383,11 +385,13 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         }
     }
 
+    private final Object moveLock = new Object();
     /**
      * This semaphore helps to avoid ripple effect: changes in MyAccount cause
      * changes in this activity ...
      */
-    private volatile boolean somethingIsBeingChanging = false;
+    @GuardedBy("moveLock")
+    private volatile boolean dataIsBeingMoved = false;
      
     /**
      * Move Data to/from External Storage
@@ -412,16 +416,10 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             JSONObject jso = null;
             boolean done = false;
             boolean succeeded = false;
-            String message = "";
+            StringBuilder messageToAppend = new StringBuilder();
 
-            File dbFileOld = null;
-            File dbFileNew = null;
             /**
-             * Did we actually copied database?
-             */
-            boolean copied = false;
-            /**
-             * Did we lock mSomethingIsBeingProcessed ?
+             * Did we acquired the lock?
              */
             boolean locked = false;
 
@@ -430,27 +428,168 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             boolean useExternalStorageNew = MyPreferenceActivity.this.mUseExternalStorage
                     .isChecked();
 
-            try {
-                MyLog.d(TAG, "About to move data from " + useExternalStorageOld + " to "
-                        + useExternalStorageNew);
+            MyLog.d(TAG, "About to move data from " + useExternalStorageOld + " to "
+                    + useExternalStorageNew);
 
-                if (useExternalStorageNew == useExternalStorageOld) {
-                    message = message + "Nothing to do. ";
-                    done = true;
-                    succeeded = true;
-                }
-
-                if (!done) {
-                    synchronized (MyPreferenceActivity.this) {
-                        if (somethingIsBeingChanging) {
+            if (useExternalStorageNew == useExternalStorageOld) {
+                messageToAppend.append(" Nothing to do.");
+                done = true;
+                succeeded = true;
+            }
+            if (!done) {
+                try {
+                    synchronized (moveLock) {
+                        if (dataIsBeingMoved) {
                             done = true;
-                            message = "skipped";
+                            messageToAppend.append(" skipped");
                         } else {
-                            somethingIsBeingChanging = true;
+                            dataIsBeingMoved = true;
                             locked = true;
                         }
                     }
+                    if (!done) {
+                        succeeded = moveDatabase(useExternalStorageOld, useExternalStorageNew, messageToAppend);
+                        if (succeeded) {
+                            moveAvatars(useExternalStorageOld, useExternalStorageNew, messageToAppend);
+                        }
+                    }
+                } finally {
+                    if (succeeded && ( useExternalStorageOld != useExternalStorageNew)) {
+                        saveNewSettings(useExternalStorageNew, messageToAppend);
+                    }
+                    
+                    if (locked) {
+                        synchronized (moveLock) {
+                            dataIsBeingMoved = false;
+                        }
+                    }
                 }
+            }
+            messageToAppend.insert(0, " Move " + (succeeded ? "succeeded" : "failed"));
+            MyLog.v(this, messageToAppend.toString());
+
+            try {
+                jso = new JSONObject();
+                jso.put("succeeded", succeeded);
+                jso.put("message", messageToAppend.toString());
+            } catch (JSONException e) {
+                MyLog.e(this, e);
+            }
+            return jso;
+        }
+
+        private void moveAvatars(boolean useExternalStorageOld, boolean useExternalStorageNew,
+                StringBuilder messageToAppend) {
+            String method = "moveAvatars";
+            boolean succeeded = false;
+            boolean done = false;
+            /**
+             * Did we actually copied anything?
+             */
+            boolean copied = false;
+            File dirOld = null;
+            File dirNew = null;
+            try {
+
+                if (!done) {
+                    dirOld = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS, null);
+                    dirNew = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS, useExternalStorageNew);
+                    if (dirOld == null || !dirOld.exists()) {
+                        messageToAppend.append("No old avatars. ");
+                        done = true;
+                        succeeded = true;
+                    }
+                    if (dirNew == null) {
+                        messageToAppend.append("No directory for new avatars?! ");
+                        done = true;
+                    }                    
+                }
+                if (!done) {
+                    if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                        MyLog.v(this, method + " from: " + dirOld.getPath());
+                        MyLog.v(this, method + " to: " + dirNew.getPath());
+                    }
+                    String fileName = "";
+                    try {
+                        for (File fileOld : dirOld.listFiles()) {
+                            if (fileOld.isFile()) {
+                                fileName = fileOld.getName();
+                                File fileNew = new File(dirNew, fileName);
+                                if (copyFile(fileOld, fileNew)) {
+                                    copied = true;
+                                }
+                            }
+                        }
+                        succeeded = true;
+                    } catch (Exception e) {
+                        String logMsg = method + " couldn't copy'" + fileName + "'";
+                        MyLog.v(this, logMsg, e);
+                        messageToAppend.insert(0, logMsg + ": " + e.getMessage());
+                    }
+                    done = true;
+                }
+            } catch (Exception e) {
+                MyLog.v(this, e);
+                messageToAppend.append(method + " error: " + e.getMessage() + ". ");
+                succeeded = false;
+            } finally {
+                // Delete unnecessary files
+                try {
+                    if (succeeded) {
+                        if (copied) {
+                            for (File fileOld : dirOld.listFiles()) {
+                                if (fileOld.isFile()) {
+                                    if (!fileOld.delete()) {
+                                        messageToAppend.append(method + " couldn't delete old file " + fileOld.getName());
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (dirNew != null && dirNew.exists()) {
+                            for (File fileNew : dirNew.listFiles()) {
+                                if (fileNew.isFile()) {
+                                    if (!fileNew.delete()) {
+                                        messageToAppend.append(method + " couldn't delete new file " + fileNew.getName());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    String logMsg = method + " deleting unnecessary files";
+                    MyLog.v(this, logMsg, e);
+                    messageToAppend.append(logMsg + ": " + e.getMessage());
+                }
+            }
+            MyLog.d(this, method  + " " + (succeeded ? "succeeded" : "failed"));
+        }
+
+        private void saveNewSettings(boolean useExternalStorageNew, StringBuilder messageToAppend) {
+            try {
+                MyPreferences
+                .getDefaultSharedPreferences()
+                .edit()
+                .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,
+                        useExternalStorageNew).commit();
+                MyPreferences.onPreferencesChanged();
+            } catch (Exception e) {
+                MyLog.v(this, "Save new settings", e);
+                messageToAppend.append("Couldn't save new settings. " + e.getMessage());
+            }
+        }
+
+        private boolean moveDatabase(boolean useExternalStorageOld, boolean useExternalStorageNew, StringBuilder messageToAppend) {
+            String method = "moveDatabase";
+            boolean succeeded = false;
+            boolean done = false;
+            /**
+             * Did we actually copied database?
+             */
+            boolean copied = false;
+            File dbFileOld = null;
+            File dbFileNew = null;
+            try {
 
                 if (!done) {
                     dbFileOld = MyContextHolder.get().context().getDatabasePath(
@@ -458,24 +597,23 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                     dbFileNew = MyPreferences.getDatabasePath(
                             MyDatabase.DATABASE_NAME, useExternalStorageNew);
                     if (dbFileOld == null) {
-                        message = message + "No old database. ";
+                        messageToAppend.append("No old database. ");
                         done = true;
                     }
                 }
                 if (!done) {
                     if (dbFileNew == null) {
-                        message = message + "No new database. ";
+                        messageToAppend.append("No new database. ");
                         done = true;
                     } else {
                         if (!dbFileOld.exists()) {
-                            message = message + "No old database. ";
+                            messageToAppend.append("No old database. ");
                             done = true;
                             succeeded = true;
                         } else if (dbFileNew.exists()) {
-                            message = "Database already exists. " + message;
+                            messageToAppend.insert(0, "Database already exists. ");
                             if (!dbFileNew.delete()) {
-                                message = "Couldn't delete already existed files. "
-                                        + message;
+                                messageToAppend.insert(0, "Couldn't delete already existed files. ");
                                 done = true;
                             }
                         }
@@ -483,50 +621,32 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                 }
                 if (!done) {
                     if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                        MyLog.v(this, "from: " + dbFileOld.getPath());
-                        MyLog.v(this, "to: " + dbFileNew.getPath());
+                        MyLog.v(this, method + " from: " + dbFileOld.getPath());
+                        MyLog.v(this, method + " to: " + dbFileNew.getPath());
                     }
                     try {
-                        dbFileNew.createNewFile();
-                        if (this.copyFile(dbFileOld, dbFileNew)) {
+                        if (copyFile(dbFileOld, dbFileNew)) {
                             copied = true;
                             succeeded = true;
                         }
                     } catch (Exception e) {
                         MyLog.v(this, "Copy database", e);
-                        message = "Couldn't copy database: " + e.getMessage() + ". "
-                                + message;
+                        messageToAppend.insert(0, "Couldn't copy database: " + e.getMessage() + ". ");
                     }
                     done = true;
                 }
             } catch (Exception e) {
                 MyLog.v(this, e);
-                message = "Error: " + e.getMessage() + ". " + message;
+                messageToAppend.append(method + " error: " + e.getMessage() + ". ");
                 succeeded = false;
             } finally {
-                // Save new settings
-                if (succeeded && ( useExternalStorageOld != useExternalStorageNew)) {
-                    try {
-                        MyPreferences
-                        .getDefaultSharedPreferences()
-                        .edit()
-                        .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,
-                                useExternalStorageNew).commit();
-                        MyContextHolder.initialize(MyPreferenceActivity.this, this);
-                    } catch (Exception e) {
-                        MyLog.v(this, "Save new settings", e);
-                        message = "Couldn't save new settings. " + e.getMessage()
-                                + message;
-                    }
-                }
-    
                 // Delete unnecessary files
                 try {
                     if (succeeded) {
                         if (copied && dbFileOld != null) {
                             if (dbFileOld.exists()) {
                                 if (!dbFileOld.delete()) {
-                                    message = "Couldn't delete old files. " + message;
+                                    messageToAppend.append(method + " couldn't delete old files. ");
                                 }
                             }
                         }
@@ -534,33 +654,20 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                         if (dbFileNew != null) {
                             if (dbFileNew.exists()) {
                                 if (!dbFileNew.delete()) {
-                                    message = "Couldn't delete new files. " + message;
+                                    messageToAppend.append(method + " Couldn't delete new files. ");
                                 }
                             }
                         }
                     }
                 } catch (Exception e) {
-                    MyLog.v(this, "Delete old file", e);
-                    message = "Couldn't delete old files. " + e.getMessage() + ". "
-                            + message;
-                }
-                
-                if (locked) {
-                    somethingIsBeingChanging = false;
+                    MyLog.v(this, method + " Delete old file", e);
+                    messageToAppend.append(method + " couldn't delete old files. " + e.getMessage() + ". ");
                 }
             }
-            MyLog.v(this, "Move: " + message);
-
-            try {
-                jso = new JSONObject();
-                jso.put("succeeded", succeeded);
-                jso.put("message", message);
-            } catch (JSONException e) {
-                MyLog.e(this, e);
-            }
-            return jso;
+            MyLog.d(this, method  + " " + (succeeded ? "succeeded" : "failed"));
+            return succeeded;
         }
-
+        
         /**
          * Based on <a href="http://www.screaming-penguin.com/node/7749">Backing
          * up your Android SQLite database to the SD card</a>
@@ -576,6 +683,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             boolean ok = false;
             if (src != null) {
                 if (src.exists()) {
+                    dst.createNewFile();
                     sizeIn = src.length();
                     if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
                         MyLog.d(TAG, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
@@ -613,19 +721,15 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                     boolean succeeded = jso.getBoolean("succeeded");
                     String message = jso.getString("message");
 
-                    MyLog.d(TAG, message);
                     MyLog.d(TAG, this.getClass().getSimpleName() + " ended, "
                             + (succeeded ? "moved" : "move failed"));
                     
                     if (!succeeded) {
                         String message2 = MyPreferenceActivity.this
                         .getString(R.string.error);
-                        if (message != null && message.length() > 0) {
-                            message2 = message2 + ": " + message;
-                            MyLog.d(TAG, message);
-                        }
-                        Toast.makeText(MyPreferenceActivity.this, message2, Toast.LENGTH_LONG).show();
+                         message = message2 + ": " + message;
                     }
+                    Toast.makeText(MyPreferenceActivity.this, message, Toast.LENGTH_LONG).show();
                     MyPreferenceActivity.this.showUseExternalStorage();
                     
                 } catch (JSONException e) {
