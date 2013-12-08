@@ -222,7 +222,7 @@ class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
     private String getCredentials() {
         return Base64.encodeToString(
                 (data.accountUsername + ":" + mPassword).getBytes(),
-                Base64.DEFAULT);
+                Base64.NO_WRAP + Base64.NO_PADDING);
     }
 
     @Override
