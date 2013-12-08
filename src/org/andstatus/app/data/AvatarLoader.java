@@ -78,10 +78,9 @@ public class AvatarLoader {
                 c.close();
             }
         }
-        if (AvatarStatus.LOADED.equals(status)) {
-           if (! new AvatarDrawable(userId, fileNameStored).exists()) {
-               status = AvatarStatus.ABSENT;
-           }
+        if (AvatarStatus.LOADED.equals(status) 
+                && !new AvatarDrawable(userId, fileNameStored).exists()) {
+           status = AvatarStatus.ABSENT;
         }
     }
     

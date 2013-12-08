@@ -448,9 +448,9 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                         }
                     }
                     if (!done) {
-                        succeeded = moveDatabase(useExternalStorageOld, useExternalStorageNew, messageToAppend);
+                        succeeded = moveDatabase(useExternalStorageNew, messageToAppend);
                         if (succeeded) {
-                            moveAvatars(useExternalStorageOld, useExternalStorageNew, messageToAppend);
+                            moveAvatars(useExternalStorageNew, messageToAppend);
                         }
                     }
                 } finally {
@@ -478,8 +478,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             return jso;
         }
 
-        private void moveAvatars(boolean useExternalStorageOld, boolean useExternalStorageNew,
-                StringBuilder messageToAppend) {
+        private void moveAvatars(boolean useExternalStorageNew, StringBuilder messageToAppend) {
             String method = "moveAvatars";
             boolean succeeded = false;
             boolean done = false;
@@ -538,20 +537,16 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                     if (succeeded) {
                         if (copied) {
                             for (File fileOld : dirOld.listFiles()) {
-                                if (fileOld.isFile()) {
-                                    if (!fileOld.delete()) {
-                                        messageToAppend.append(method + " couldn't delete old file " + fileOld.getName());
-                                    }
+                                if (fileOld.isFile() && !fileOld.delete()) {
+                                    messageToAppend.append(method + " couldn't delete old file " + fileOld.getName());
                                 }
                             }
                         }
                     } else {
                         if (dirNew != null && dirNew.exists()) {
                             for (File fileNew : dirNew.listFiles()) {
-                                if (fileNew.isFile()) {
-                                    if (!fileNew.delete()) {
-                                        messageToAppend.append(method + " couldn't delete new file " + fileNew.getName());
-                                    }
+                                if (fileNew.isFile() && !fileNew.delete()) {
+                                    messageToAppend.append(method + " couldn't delete new file " + fileNew.getName());
                                 }
                             }
                         }
@@ -579,7 +574,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             }
         }
 
-        private boolean moveDatabase(boolean useExternalStorageOld, boolean useExternalStorageNew, StringBuilder messageToAppend) {
+        private boolean moveDatabase(boolean useExternalStorageNew, StringBuilder messageToAppend) {
             String method = "moveDatabase";
             boolean succeeded = false;
             boolean done = false;

@@ -285,7 +285,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         MbUser author1 = userFromPumpioOid("acct:firstAuthor@pumpity.net");
         author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/res/drawable/splash_logo.png";
         MbUser author2 = userFromPumpioOid("acct:second@identi.ca");
-        author2.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/girl-android-sh.gif";
+        author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
         MbUser author3 = userFromPumpioOid("acct:third@pump.example.com");
         author3.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif";
         MbUser author4 = userFromPumpioOid("acct:fourthWithoutAvatar@pump.example.com");
