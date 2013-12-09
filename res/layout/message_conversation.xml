@@ -21,6 +21,13 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal" >
 
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_alignParentLeft="true"
+        android:background="@android:color/darker_gray"/>
+    
     <LinearLayout
         android:id="@+id/message_indented"
         android:layout_width="match_parent"
@@ -31,11 +38,6 @@
         android:paddingLeft="6dip"
         android:paddingRight="6dip"
         android:paddingTop="2dip" >
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1px"
-            android:background="@android:color/darker_gray" />
 
         <RelativeLayout
             android:layout_width="match_parent"

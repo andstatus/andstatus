@@ -85,11 +85,14 @@
             android:layout_height="wrap_content"
             android:visibility="gone" />
     </LinearLayout>
+
     <ImageView
         android:id="@+id/avatar_image"
-        android:layout_width="48dip"
-        android:layout_height="48dip"
+        android:layout_width="49dip"
+        android:layout_height="50dip"
         android:layout_alignParentLeft="true"
-        android:scaleType="fitCenter"
-        />
+        android:paddingTop="2dp"
+        android:paddingLeft="1dp"
+        android:scaleType="fitCenter" />
+
 </RelativeLayout>

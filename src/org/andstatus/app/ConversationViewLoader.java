@@ -331,6 +331,11 @@ public class ConversationViewLoader {
 
         int viewToTheLeftId = 0;
         if (oMsg.indentLevel > 0) {
+            View divider = messageView.findViewById(R.id.divider);
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1);
+            layoutParams.leftMargin = indentPixels - 4;
+            divider.setLayoutParams(layoutParams);
+            
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
                 MyLog.v(this,"density=" + displayDensity);
             }
@@ -345,6 +350,10 @@ public class ConversationViewLoader {
             int size = Math.round(AvatarDrawable.AVATAR_SIZE_DIP * displayDensity);
             avatarView.setScaleType(ScaleType.FIT_CENTER);
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(size, size);
+            layoutParams.topMargin = 3;
+            if (oMsg.indentLevel > 0) {
+                layoutParams.leftMargin = 1;
+            }
             if (viewToTheLeftId == 0) {
                 layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
             } else {

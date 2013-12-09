@@ -221,11 +221,13 @@ public class MyProvider extends ContentProvider {
                     }
                     */
                     db.setTransactionSuccessful();
-                    getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
                 } catch(Exception e) {
                     MyLog.d(TAG, "; SQL='" + sqlDesc + "'", e);
                 } finally {
                     db.endTransaction();
+                }
+                if (count > 0) {
+                    getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
                 }
                 break;
 

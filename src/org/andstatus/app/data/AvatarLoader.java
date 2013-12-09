@@ -176,6 +176,7 @@ public class AvatarLoader {
     }
 
     private void addNew() {
+        String method = "addNew";
        ContentValues values = new ContentValues();
        values.put(Avatar.USER_ID, userId);
        values.put(Avatar.VALID_FROM, loadTimeNew);
@@ -191,9 +192,9 @@ public class AvatarLoader {
                if (rowId != -1) {
                    break;
                }
-               MyLog.v(this, "Error inserting row, pass=" + pass);
+               MyLog.v(this, method + " Error inserting row, pass=" + pass);
            } catch (SQLiteException e) {
-               MyLog.i(this, "update, Database is locked, pass=" + pass, e);
+               MyLog.i(this, method + " Database is locked, pass=" + pass, e);
                rowId = -1;
            }
            try {
@@ -203,7 +204,7 @@ public class AvatarLoader {
            }
        }
        if (rowId == -1) {
-           logError("Failed to insert row", null);
+           logError(method + " Failed to insert row", null);
            softError = true;
        }
     }
@@ -213,6 +214,7 @@ public class AvatarLoader {
     }
     
     private void update() {
+        String method = "update";
         ContentValues values = new ContentValues();
         values.put(Avatar.STATUS, status.save());
         if (!isError()) {
@@ -227,7 +229,7 @@ public class AvatarLoader {
                         .update(Avatar.TABLE_NAME, values, Avatar._ID + "=" + Long.toString(rowId), null);
                 break;
             } catch (SQLiteException e) {
-                MyLog.i(this, "update, Database is locked, pass=" + pass, e);
+                MyLog.i(this, method + " Database is locked, pass=" + pass, e);
                 try {
                     Thread.sleep(Math.round((Math.random() + 1) * 500));
                 } catch (InterruptedException e2) {
@@ -236,7 +238,7 @@ public class AvatarLoader {
             }
         }
         if (rowsUpdated != 1) {
-            logError("Failed to update rowId=" + rowId + " updated " + rowsUpdated + " rows", null);
+            logError(method + " Failed to update rowId=" + rowId + " updated " + rowsUpdated + " rows", null);
             softError = true;
         }
         if (!isError() && !TextUtils.isEmpty(fileNameStored)) {
@@ -269,26 +271,37 @@ public class AvatarLoader {
                 + Avatar.FILE_NAME
                 + " FROM " + Avatar.TABLE_NAME 
                 + " WHERE " + where;
+        boolean done = false;
         
-        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
-        Cursor c = null;
-        try {
-            c = db.rawQuery(sql, null);
-            while (c.moveToNext()) {
-                long rowIdOld = c.getLong(0);
-                String fileNameOld = c.getString(1);
-                if (!TextUtils.isEmpty(fileNameOld)) {
-                    AvatarDrawable avatarDrawable = new AvatarDrawable(userId, fileNameOld);
-                    deleteFileSilently(avatarDrawable.getFile());
+        for (int pass=0; pass<3; pass++) {
+            SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+            Cursor c = null;
+            try {
+                c = db.rawQuery(sql, null);
+                while (c.moveToNext()) {
+                    long rowIdOld = c.getLong(0);
+                    String fileNameOld = c.getString(1);
+                    if (!TextUtils.isEmpty(fileNameOld)) {
+                        AvatarDrawable avatarDrawable = new AvatarDrawable(userId, fileNameOld);
+                        deleteFileSilently(avatarDrawable.getFile());
+                    }
+                    rowsDeleted += db.delete(Avatar.TABLE_NAME, Avatar._ID + "=" + Long.toString(rowIdOld), null);
                 }
-                rowsDeleted += db.delete(Avatar.TABLE_NAME, Avatar._ID + "=" + Long.toString(rowIdOld), null);
+                break;
+            } catch (SQLiteException e) {
+                MyLog.i(this, method + ", Database is locked, pass=" + pass, e);
+            } finally {
+                if (c != null) {
+                    c.close();
+                }
             }
-        } finally {
-            if (c != null) {
-                c.close();
+            try {
+                Thread.sleep(Math.round((Math.random() + 1) * 500));
+            } catch (InterruptedException e) {
+                MyLog.e(this, e);
             }
         }
-        MyLog.v(this, method + " deleted " + rowsDeleted + " old rows");
+        MyLog.v(this, method + (done ? " succeeded" : " failed") + "; deleted " + rowsDeleted + " old rows");
     }
 
     protected String getFileName() {

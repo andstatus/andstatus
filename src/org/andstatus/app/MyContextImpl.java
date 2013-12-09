@@ -160,14 +160,11 @@ public final class MyContextImpl implements MyContext {
     }
 
     @Override
+    /**
+     * 2013-12-09 After getting the error "java.lang.IllegalStateException: attempt to re-open an already-closed object: SQLiteDatabase"
+     * and reading Inet, I decided NOT to db.close here.
+     */
     public void release() {
-        if (db != null) {
-            try {
-                db.close();
-            } catch (Exception e) {
-                MyLog.e(this, "Error closing database", e);
-            }
-        }
         MyLog.forget();
     }
 

@@ -51,7 +51,7 @@
         </LinearLayout>
 
         <Button android:layout_width="wrap_content" android:text="@string/button_send"
-            android:layout_height="match_parent" android:id="@+id/messageEditSendButton"
+            android:layout_height="wrap_content" android:id="@+id/messageEditSendButton"
             android:paddingLeft="16dip" android:paddingRight="16dip" />
     </LinearLayout>
 </LinearLayout>
