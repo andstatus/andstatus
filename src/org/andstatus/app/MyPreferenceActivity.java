@@ -231,7 +231,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     }
     
     protected void showUseExternalStorage() {
-        boolean use = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false);
+        boolean use = MyPreferences.isStorageExternal(null);
         if (use != mUseExternalStorage.isChecked()) {
             MyPreferences.getDefaultSharedPreferences().edit().putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW, use).commit();
             mUseExternalStorage.setChecked(use);
@@ -423,8 +423,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
              */
             boolean locked = false;
 
-            boolean useExternalStorageOld = MyPreferences.getDefaultSharedPreferences()
-                    .getBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false);
+            boolean useExternalStorageOld = MyPreferences.isStorageExternal(null);
             boolean useExternalStorageNew = MyPreferenceActivity.this.mUseExternalStorage
                     .isChecked();
 

@@ -28,6 +28,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -223,40 +224,29 @@ public class MyPreferences {
      * @see <a href="http://developer.android.com/guide/topics/data/data-storage.html#filesExternal">filesExternal</a>
      */
     public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage) {
-        File baseDir = null;
-        String pathToAppend = "";
         File dir = null;
         String textToLog = null;
-        boolean useExternalStorage = false;
         MyContext myContext = MyContextHolder.get();
         if (myContext.context() == null) {
             textToLog = "getDataFilesDir - no android.content.Context yet";
         } else {
-            if (forcedUseExternalStorage == null) {
-                useExternalStorage = getDefaultSharedPreferences().getBoolean(KEY_USE_EXTERNAL_STORAGE, false); 
-            } else {
-                useExternalStorage = forcedUseExternalStorage;
-            }
-            if (useExternalStorage) {
+            if (isStorageExternal(forcedUseExternalStorage)) {
                 String state = Environment.getExternalStorageState();
                 if (Environment.MEDIA_MOUNTED.equals(state)) {    
                     // We can read and write the media
-                    baseDir = Environment.getExternalStorageDirectory();
-                    pathToAppend = "Android/data/" + myContext.context().getPackageName() + "/files";
+                    dir = myContext.context().getExternalFilesDir(type);
                 } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
                     textToLog = "getDataFilesDir - We can only read External storage";
                 } else {    
                     textToLog = "getDataFilesDir - error accessing External storage";
                 }                
             } else {
-                baseDir = Environment.getDataDirectory();
-                pathToAppend = "data/" + myContext.context().getPackageName();
-            }
-            if (baseDir != null) {
-                if (type != null) {
-                    pathToAppend = pathToAppend + "/" + type;
+                dir = myContext.context().getFilesDir();
+                if (!TextUtils.isEmpty(type)) {
+                    dir = new File(dir, type);
                 }
-                dir = new File(baseDir, pathToAppend);
+            }
+            if (dir != null) {
                 if (!dir.exists()) {
                     try {
                         dir.mkdirs();
@@ -271,17 +261,27 @@ public class MyPreferences {
                 }
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, (useExternalStorage ? "External" : "Internal") + " path: '" 
-                + ( (dir == null) ? "(null)" 
-                + "; baseDir=" + baseDir
-                + "; path to append=" + pathToAppend: dir.getPath()) + "'");
+                MyLog.v(TAG, (isStorageExternal(forcedUseExternalStorage) ? "External" : "Internal") 
+                        + " path: '" + ( (dir == null) ? "(null)" : dir ) + "'");
             }
         }
         if (textToLog != null) {
             MyLog.i(TAG, textToLog);
         }
-        
         return dir;
+    }
+
+    public static boolean isStorageExternal(Boolean forcedUseExternalStorage) {
+        boolean useExternalStorage = false;
+        if (forcedUseExternalStorage == null) {
+            SharedPreferences sp = getDefaultSharedPreferences();
+            if (sp != null) {
+                useExternalStorage = getDefaultSharedPreferences().getBoolean(KEY_USE_EXTERNAL_STORAGE, false); 
+            }
+        } else {
+            useExternalStorage  = forcedUseExternalStorage;
+        }
+        return useExternalStorage;
     }
 
     /**
