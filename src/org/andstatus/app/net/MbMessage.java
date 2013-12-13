@@ -16,8 +16,10 @@
 
 package org.andstatus.app.net;
 
+import android.text.Html;
 import android.text.TextUtils;
 
+import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.TriState;
 
 /**
@@ -31,7 +33,8 @@ public class MbMessage {
     public long sentDate = 0;
     public MbUser sender = null;
     public MbUser recipient = null; //TODO: Multiple recipients needed?!
-    public String body = "";
+    private String body = "";
+
     public MbMessage rebloggedMessage = null;
     public MbMessage inReplyToMessage = null;
     public String via = "";
@@ -66,7 +69,29 @@ public class MbMessage {
     
     private MbMessage() {}
     
+    public String getBody() {
+        return body;
+    }
+    public void setBody(String body) {
+        if (TextUtils.isEmpty(body)) {
+            this.body = "";
+        } else if (MyPreferences.getHtmlContentEnabled()) {
+            this.body = body.trim();
+        } else {
+            this.body = stripHtml(body);
+        }
+    }
+    
     public boolean isEmpty() {
         return this.isEmpty || TextUtils.isEmpty(oid) || originId==0;
+    }
+    
+    public static String stripHtml(String text) {
+        if (TextUtils.isEmpty(text)) {
+            return "";
+        } else {
+            // Double conversion removes extra lines!
+            return Html.fromHtml(Html.fromHtml(text.trim()).toString()).toString().trim();
+        }
     }
 }

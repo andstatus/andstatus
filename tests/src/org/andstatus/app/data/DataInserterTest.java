@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
+import android.text.Html;
 import android.text.TextUtils;
 
 import org.andstatus.app.MessageCounters;
@@ -31,7 +32,7 @@ import org.andstatus.app.util.TriState;
 import java.util.Set;
 
 public class DataInserterTest extends InstrumentationTestCase {
-    private static int iteration = 0;
+    private static volatile int iteration = 0;
     private Context context;
 
     private MbUser accountMbUser;
@@ -88,7 +89,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertFalse( "User " + username + " is not followed", followedIds.contains(somebodyId));
 
         MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), messageOid);
-        message.body = "The test message by Somebody";
+        message.setBody("The test message by Somebody");
         message.sentDate = 13312696000L;
         message.via = "MyCoolClient";
         message.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
@@ -164,7 +165,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         firstReader.actor = accountMbUser;
         
         MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED");
-        message.body = "The test message by Anybody from http://pumpity.net";
+        message.setBody("The test message by Anybody from http://pumpity.net");
         message.sentDate = 13312697000L;
         message.via = "SomeOtherClient";
         message.sender = author;
@@ -204,7 +205,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         author.actor = accountMbUser;
 
         MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123");
-        message.body = "The test message by Example from the http://pumpity.net";
+        message.setBody("The test message by Example from the http://pumpity.net");
         message.sentDate = 13312795000L;
         message.via = "UnknownClient";
         message.sender = author;
@@ -246,16 +247,13 @@ public class DataInserterTest extends InstrumentationTestCase {
         author.actor = accountMbUser;
         
         MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), messageOid);
-        message.body = "Hello, this is a test Direct message by your namesake from http://pumpity.net";
+        message.setBody("Hello, this is a test Direct message by your namesake from http://pumpity.net");
         message.sentDate = 13312699000L;
         message.via = "AnyOtherClient";
         message.sender = author;
         message.actor = accountMbUser;
         message.recipient = accountMbUser;
-
-        DataInserter di = new DataInserter(ma, context, TimelineTypeEnum.HOME);
-        long messageId = di.insertOrUpdateMsg(message);
-        assertTrue( "Message added", messageId != 0);
+        long messageId = addMessage(message);
         
         Uri contentUri = MyProvider.getTimelineUri(ma.getUserId(), TimelineTypeEnum.HOME, false);
         SelectionAndArgs sa = new SelectionAndArgs();
@@ -305,7 +303,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         addMessage(buildPumpIoMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
         MbMessage reply7 = buildPumpIoMessage(author1, "Reply 7 to Reply 2", reply2, null);
-        MbMessage reply8 = buildPumpIoMessage(author4, "Reply 8 to Reply 7", reply7, null);
+        MbMessage reply8 = buildPumpIoMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
         MbMessage reply9 = buildPumpIoMessage(author2, "Reply 9 to Reply 7", reply7, null);
         addMessage(reply9);
         MbMessage reply10 = buildPumpIoMessage(author3, "Reply 10 to Reply 8", reply8, null);
@@ -318,7 +316,7 @@ public class DataInserterTest extends InstrumentationTestCase {
             messageOid = author.url  + "/" + (inReplyToMessage == null ? "note" : "comment") + "thisisfakeuri" + System.nanoTime();
         }
         MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), messageOid);
-        message.body = body + " it" + iteration;
+        message.setBody(body + (inReplyToMessage != null ? " it" + iteration : "" ));
         message.sentDate = System.currentTimeMillis();
         message.via = "AndStatus";
         message.sender = author;
@@ -389,5 +387,34 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Account name", mbUser.userName + "/" + Origin.OriginEnum.PUMPIO.getName(), ma.getAccountName());
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
         return ma;
+    }
+    
+    public void testHtmlContent() {
+        boolean htmlEnabledStored = MyPreferences.getHtmlContentEnabled(); 
+
+        MbUser author1 = userFromPumpioOid("acct:firstAuthor@pumpity.net");
+        String body0 = "<h4>This is a message with HTML content</h4>" 
+                + "<p>This is a second line, <b>Bold</b> formatting." 
+                + "<br /><i>This is italics</i>. <b>And this is bold</b> <u>The text is underlined</u>.</p>"
+                + "<p>A separate paragraph.</p>";
+
+        assertFalse("HTML removed", MbMessage.stripHtml(body0).contains("<"));
+        
+        MyPreferences.setHhmlContentEnabled(true);
+        MbMessage msg = buildPumpIoMessage(author1, body0, null, null);
+        long msgId = addMessage(msg);
+        String body = MyProvider.msgIdToStringColumnValue(Msg.BODY, msgId);
+        assertEquals("HTML preserved", body0, body);
+
+        MyPreferences.setHhmlContentEnabled(false);
+        MbMessage msg2 = buildPumpIoMessage(author1, body0, null, null);
+        long msgId2 = addMessage(msg2);
+        String body2 = MyProvider.msgIdToStringColumnValue(Msg.BODY, msgId2);
+        assertEquals("HTML removed", MbMessage.stripHtml(body0), body2);
+        
+        if (htmlEnabledStored != MyPreferences.getHtmlContentEnabled()) {
+            // Restore the setting
+            MyPreferences.setHhmlContentEnabled(htmlEnabledStored);
+        }
     }
 }

@@ -21,9 +21,6 @@ import android.test.ActivityTestCase;
 
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
-import org.andstatus.app.R.array;
-import org.andstatus.app.R.string;
-import org.andstatus.app.util.*;
 
 public class MyUtilTest extends ActivityTestCase {
     /**

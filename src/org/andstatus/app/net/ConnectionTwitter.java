@@ -266,9 +266,8 @@ public abstract class ConnectionTwitter extends Connection {
                 message.rebloggedMessage = messageFromJson(rebloggedMessage);
             }
             if (jso.has("text")) {
-                message.body = Html.fromHtml(jso.getString("text")).toString().trim();
+                message.setBody(jso.getString("text"));
             }
-
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
                 message.recipient = userFromJson(recipient);

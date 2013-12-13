@@ -23,7 +23,7 @@
 	    "verb": "post",
 	    "object": {
 	        "objectType": "comment",
-	        "content": "Congrats on the one point oh release. :D<br>",
+	        "content": "Congrats on the <i>one</i> point oh release. :D<br>",
 	        "inReplyTo": {
 	            "content": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\"> <p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">It's out! Not with everything I wanted, but close enough!</p> <p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p> <p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><img src=\"http://jancoding.files.wordpress.com/2013/10/dianara-v1-0-release-2.png\" /></p> <p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; text-decoration: underline; color:#0088cc;\"><br /></p> <p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"http://jancoding.wordpress.com/2013/10/29/dianara-pump-io-app-v1-0-is-out/\"><span style=\" text-decoration: underline; color:#0088cc;\">http://jancoding.wordpress.com/2013/10/29/dianara-pump-io-app-v1-0-is-out/</span></a> </p> <p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p> <p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Coming soon<span style=\" font-style:italic;\">(-ish)</span> to a distribution near you, thanks to some lovely people ;)</p>",
 	            "displayName": "Dianara 1.0 is out, finally!",
@@ -1221,7 +1221,7 @@
     },
     "object": {
         "objectType": "note",
-        "content": "My new Firefox OS phone arrived today, wife took it in to get the sim card for it. So when I get home it is time to play. <br>",
+        "content": "My new <b>Firefox</b> OS phone arrived today, wife took it in to get the sim card for it. So when I get home it is time to play. <br>",
         "published": "2013-09-20T20:04:22Z",
         "updated": "2013-09-20T20:04:22Z",
         "links": {

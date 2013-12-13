@@ -184,7 +184,7 @@ public class DataInserter {
                     countIt = true;
                 }
                 
-                String body = message.body;
+                String body = message.getBody();
 
                 if (isNew) {
                     values.put(MyDatabase.Msg.CREATED_DATE, createdDate);

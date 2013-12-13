@@ -18,6 +18,7 @@
 package org.andstatus.app.data;
 
 import android.database.Cursor;
+import android.text.Html;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -44,28 +45,41 @@ public class TimelineViewBinder implements ViewBinder {
      */
     @Override
     public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+        boolean processed = true;
         switch (view.getId()) {
+            case R.id.message_body:
+                if ( view instanceof TextView) {
+                    setMessageBody(cursor, columnIndex, (TextView) view);
+                }
+                break;
             case R.id.message_details:
                 if ( view instanceof TextView) {
                     setMessageDetails(cursor, columnIndex, (TextView) view);
                 }
-                return true;
+                break;
             case R.id.avatar_image:
                 if ( view instanceof ImageView) {
                     setAvatar(cursor, columnIndex, (ImageView) view);
                 }
-                return true;
+                break;
             case R.id.message_favorited:
                 if ( view instanceof ImageView) {
                     setFavorited(cursor, (ImageView) view);
                 }
-                return true;
+                break;
             default:
+                processed = false;
                 break;
         }
-        return false;
+        return processed;
     }
 
+    private void setMessageBody(Cursor cursor, int columnIndex, TextView view) {
+        if (columnIndex > -1) {
+            view.setText(Html.fromHtml(cursor.getString(columnIndex)));
+        }
+    }
+    
     private void setMessageDetails(Cursor cursor, int columnIndex, TextView view) {
         String messageDetails = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
         int columnIndex2 = cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID);

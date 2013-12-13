@@ -21,7 +21,6 @@ import android.text.format.Time;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.MyService;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;

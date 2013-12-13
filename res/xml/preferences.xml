@@ -77,6 +77,9 @@
 					android:title="@string/title_preference_show_avatars"
 					android:summaryOff="@string/summary_preference_show_avatars_off"
 					android:summaryOn="@string/summary_preference_show_avatars_on" />
+                <CheckBoxPreference android:key="enable_html_content"
+                    android:defaultValue="false"
+                    android:title="@string/title_preference_enable_html_content" />
 			</PreferenceCategory>
 		</PreferenceScreen>
 

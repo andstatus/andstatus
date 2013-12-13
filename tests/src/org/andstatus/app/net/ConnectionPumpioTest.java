@@ -129,7 +129,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         int ind = 0;
         assertEquals("Posting image", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
-        assertTrue("trailing linebreaks trimmed: '" + mbMessage.body + "'", mbMessage.body.endsWith("Link"));
+        assertTrue("trailing linebreaks trimmed: '" + mbMessage.getBody() + "'", mbMessage.getBody().endsWith("Link"));
         assertEquals("Message sent date: " + mbMessage.sentDate, TestSuite.gmtTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 32).getTime(), mbMessage.sentDate);
 
         ind++;

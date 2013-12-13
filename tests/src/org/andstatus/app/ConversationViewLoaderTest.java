@@ -5,7 +5,6 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.util.MyLog;
 

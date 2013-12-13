@@ -383,7 +383,7 @@ public class ConversationViewLoader {
         body.setLinksClickable(true);
         body.setFocusable(true);
         body.setFocusableInTouchMode(true);
-        body.setText(oMsg.body);
+        body.setText(Html.fromHtml(oMsg.body));
         Linkify.addLinks(body, Linkify.ALL);
 
         // Everything else goes to messageDetails

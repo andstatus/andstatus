@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.text.Html;
 import android.text.TextUtils;
 
+import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
@@ -501,7 +502,7 @@ public class ConnectionPumpio extends Connection {
                 }
             }
             if (jso.has("content")) {
-                message.body = Html.fromHtml(jso.getString("content")).toString().trim();
+                message.setBody(jso.getString("content"));
             }
             message.sentDate = dateFromJson(jso, "published");
 

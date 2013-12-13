@@ -106,7 +106,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("Reply to the message by userOid", "144771645", mbMessage.inReplyToMessage.sender.oid);
         assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
         String startsWith = "@t131t";
-        assertEquals("Body of this message starts with", startsWith, mbMessage.body.substring(0, startsWith.length()));
+        assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
@@ -117,9 +117,9 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("Reblog of the message by userOid", "442756884", mbMessage.rebloggedMessage.sender.oid);
         assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
         startsWith = "RT @AndStatus1: This AndStatus application";
-        assertEquals("Body of this message starts with", startsWith, mbMessage.body.substring(0, startsWith.length()));
+        assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
         startsWith = "This AndStatus application";
-        assertEquals("Body of reblogged message starts with", startsWith, mbMessage.rebloggedMessage.body.substring(0, startsWith.length()));
+        assertEquals("Body of reblogged message starts with", startsWith, mbMessage.rebloggedMessage.getBody().substring(0, startsWith.length()));
         Date date = TestSuite.gmtTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 05);
         assertEquals("This message created at Thu Sep 26 18:23:05 +0000 2013 (" + date.toString() + ")", date.getTime(), mbMessage.sentDate);
         date = TestSuite.gmtTime(2013, Calendar.MARCH, 22, 13, 13, 7);
@@ -133,7 +133,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
         assertEquals("Author's oid is user oid of this account", connectionData.accountUserOid, mbMessage.sender.oid);
         startsWith = "And this is";
-        assertEquals("Body of this message starts with", startsWith, mbMessage.body.substring(0, startsWith.length()));
+        assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
     }
     
     public void testParseDate() {

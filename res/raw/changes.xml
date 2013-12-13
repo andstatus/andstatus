@@ -36,8 +36,18 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     <header>
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
-    <release android:versionName="5.0" android:versionCode="88"
-        versionDate="2013-12-08"
+    
+    <release android:versionName="6.0" android:versionCode="89"
+        versionDate="2013-12-13"
+        versionTitle="Enable HTML content">
+        <changes>
+            <change>Added "Enable HTML content" option, which allows to see formatted message content.
+                Pump.io and Friendi.ca support HTML formating in messages. 
+                <a href="https://github.com/andstatus/andstatus/issues/60" >Issue #60</a>.</change>
+        </changes>
+    </release>
+    <release android:versionName="5.1" android:versionCode="89"
+        versionDate="2013-12-09"
         versionTitle="Option to show avatars added">
         <changes>
             <change>Avatars are displayed by default for new installations, 

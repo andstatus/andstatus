@@ -263,6 +263,7 @@
     <string name="title_preference_appearance">Appearance</string>
 	<string name="title_preference_change_log">Change Log</string>
 	<string name="title_preference_contact_developer">Contact Developer</string>
+    <string name="title_preference_enable_html_content">Enable HTML content</string>
 	<string name="title_preference_frequency">Sync frequency</string>
 	<string name="title_preference_history_size">History Size</string>
 	<string name="title_preference_history_time">History Time</string>

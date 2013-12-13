@@ -10,7 +10,6 @@ import android.widget.ListView;
 
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.DataInserterTest;
 import org.andstatus.app.util.MyLog;
 
 /**

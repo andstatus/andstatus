@@ -273,6 +273,7 @@
     <string name="title_preference_appearance">Внешний вид</string>
 	<string name="title_preference_change_log">Журнал изменений</string>
 	<string name="title_preference_contact_developer">Свяжитесь с разработчиками</string>
+    <string name="title_preference_enable_html_content">Разрешить HTML контент</string>
 	<string name="title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="title_preference_history_size">Размер истории</string>
 	<string name="title_preference_history_time">Длительность хранения истории</string>
