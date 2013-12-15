@@ -280,7 +280,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     public void testConversation() throws ConnectionException {
         assertEquals("Only PumpIo supported in this test", OriginEnum.PUMPIO, TestSuite.CONVERSATION_ACCOUNT_ORIGIN  );
         
-        MbUser author1 = userFromPumpioOid("acct:firstAuthor@pumpity.net");
+        MbUser author1 = userFromPumpioOid("acct:first@example.net");
         author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/res/drawable/splash_logo.png";
         MbUser author2 = userFromPumpioOid("acct:second@identi.ca");
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
@@ -391,30 +391,36 @@ public class DataInserterTest extends InstrumentationTestCase {
     
     public void testHtmlContent() {
         boolean htmlEnabledStored = MyPreferences.getHtmlContentEnabled(); 
+        MbUser author1 = userFromPumpioOid("acct:html@example.com");
+        author1.avatarUrl = "http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png";
 
-        MbUser author1 = userFromPumpioOid("acct:firstAuthor@pumpity.net");
-        String body0 = "<h4>This is a message with HTML content</h4>" 
+        String bodyString = "<h4>This is a message with HTML content</h4>" 
                 + "<p>This is a second line, <b>Bold</b> formatting." 
                 + "<br /><i>This is italics</i>. <b>And this is bold</b> <u>The text is underlined</u>.</p>"
                 + "<p>A separate paragraph.</p>";
+        assertFalse("HTML removed", MbMessage.stripHtml(bodyString).contains("<"));
+        assertHtmlMessage(author1, bodyString);
 
-        assertFalse("HTML removed", MbMessage.stripHtml(body0).contains("<"));
+        String bodyImgString = "A message with <b>HTML</b> <i>img</i> tag: " 
+                + "<img src='http://static.fsf.org/dbd/hollyweb.jpeg' alt='Stop DRM in HTML5' />"
+                + ", <a href='http://www.fsf.org/'>the link in 'a' tag</a> <br/>" 
+                + "and a plain text link to the issue 60: https://github.com/andstatus/andstatus/issues/60";
+        assertHtmlMessage(author1, bodyImgString);
         
+        MyPreferences.setHhmlContentEnabled(htmlEnabledStored);
+    }
+    
+    private void assertHtmlMessage(MbUser author, String bodyString) {
         MyPreferences.setHhmlContentEnabled(true);
-        MbMessage msg = buildPumpIoMessage(author1, body0, null, null);
-        long msgId = addMessage(msg);
-        String body = MyProvider.msgIdToStringColumnValue(Msg.BODY, msgId);
-        assertEquals("HTML preserved", body0, body);
-
+        MbMessage msg1 = buildPumpIoMessage(author, bodyString, null, null);
+        long msgId1 = addMessage(msg1);
+        String body1 = MyProvider.msgIdToStringColumnValue(Msg.BODY, msgId1);
+        assertEquals("HTML preserved", bodyString, body1);
+        
         MyPreferences.setHhmlContentEnabled(false);
-        MbMessage msg2 = buildPumpIoMessage(author1, body0, null, null);
+        MbMessage msg2 = buildPumpIoMessage(author, bodyString, null, null);
         long msgId2 = addMessage(msg2);
         String body2 = MyProvider.msgIdToStringColumnValue(Msg.BODY, msgId2);
-        assertEquals("HTML removed", MbMessage.stripHtml(body0), body2);
-        
-        if (htmlEnabledStored != MyPreferences.getHtmlContentEnabled()) {
-            // Restore the setting
-            MyPreferences.setHhmlContentEnabled(htmlEnabledStored);
-        }
+        assertEquals("HTML removed", MbMessage.stripHtml(bodyString), body2);
     }
 }
