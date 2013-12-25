@@ -25,7 +25,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import org.andstatus.app.R;
-import org.andstatus.app.origin.Origin;
+import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.util.MyLog;
 
 public class AccountSettingsWebActivity extends Activity {
@@ -67,7 +67,7 @@ public class AccountSettingsWebActivity extends Activity {
         private boolean isThisCallback(String url) {
             boolean isCallback = false;
             Uri uri = Uri.parse(url);
-            if (uri != null && Origin.CALLBACK_URI.getHost().equals(uri.getHost())) {
+            if (uri != null && HttpConnection.CALLBACK_URI.getHost().equals(uri.getHost())) {
                 isCallback = true;
                 MyLog.d(TAG, "Callback to: " + url);
                 if (!isFinishing) {

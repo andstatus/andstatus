@@ -76,7 +76,10 @@ public class TimelineViewBinder implements ViewBinder {
 
     private void setMessageBody(Cursor cursor, int columnIndex, TextView view) {
         if (columnIndex > -1) {
-            view.setText(Html.fromHtml(cursor.getString(columnIndex)));
+            String body = cursor.getString(columnIndex);
+            if (body != null) {
+                view.setText(Html.fromHtml(body));
+            }
         }
     }
     

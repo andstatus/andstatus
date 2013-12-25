@@ -23,7 +23,7 @@ import org.andstatus.app.util.MyLog;
 
 /**
  * These are the keys for the AndStatus application (a "Client" of the Microblogging system)
- * Keys are per Microblogging System (i.e. per the {@link Origin} )
+ * Keys are per Microblogging System (i.e. per the "Origin")
  * 
  * You may use this application:
  * 1. With application OAuth keys provided in the public repository and stored in the {@link OAuthClientKeysOpenSource} class

@@ -19,19 +19,8 @@ package org.andstatus.app.origin;
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.net.ConnectionPumpio;
-import org.andstatus.app.util.TriState;
 
 class OriginPumpio extends Origin {
-    protected OriginPumpio() {
-        isOAuthDefault = true;  
-        canChangeOAuth = false;
-        shouldSetNewUsernameManuallyIfOAuth = true;
-        shouldSetNewUsernameManuallyNoOAuth = false;
-        usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
-        textLimit = 5000; // TODO: This is not a hard limit, just for convenience.
-    }
-
     @Override
     public int alternativeTermForResourceId(int resId) {
         int resIdOut;
@@ -61,15 +50,4 @@ class OriginPumpio extends Origin {
     public boolean isUsernameValidToStartAddingNewAccount(String username, boolean isOAuthUser) {
         return isUsernameValid(username);
     }
-
-    @Override
-    public OriginConnectionData getConnectionData(TriState triState) {
-        OriginConnectionData connectionData = super.getConnectionData(triState);
-        connectionData.isHttps = true;
-        connectionData.basicPath = "api";
-        connectionData.oauthPath = "oauth";
-        connectionData.connectionClass = ConnectionPumpio.class;
-        return connectionData;
-    }
-    
 }

@@ -18,14 +18,16 @@ package org.andstatus.app;
 
 import junit.framework.TestCase;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
+import android.view.ViewGroup;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.DataInserterTest;
 import org.andstatus.app.data.MyPreferences;
-import org.andstatus.app.origin.Origin.OriginEnum;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Calendar;
@@ -185,7 +187,7 @@ public class TestSuite extends TestCase {
         MyLog.v(TAG, "enshureDataAdded ended");
     }
     
-    public static final OriginEnum CONVERSATION_ACCOUNT_ORIGIN = OriginEnum.PUMPIO;
+    public static final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
     public static final String CONVERSATION_ACCOUNT_NAME = "testerofandstatus@identi.ca/pump.io";
     public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/andstatus/images/AndStatus_logo.png";
     public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + System.nanoTime();
@@ -211,10 +213,23 @@ public class TestSuite extends TestCase {
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
     }
     
-    public static Date gmtTime(int year, int month, int day, int hour, int minute, int second) {
-        GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+    public static Date utcTime(int year, int month, int day, int hour, int minute, int second) {
+        GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
         cal.set(year, month, day, hour, minute, second);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();        
+    }
+
+    public static void waitForListLoaded(Activity activity) throws InterruptedException {
+        final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
+        assertTrue(list != null);
+        for (int ind=0; ind<200; ind++) {
+            if (list.getChildCount() > 0) {
+                break;
+            }
+            Thread.sleep(400);
+        }
+        assertTrue("There are items in the list of " + activity.getClass().getSimpleName(), 
+                list.getChildCount() > 0);
     }
 }

@@ -45,10 +45,15 @@
 
 	<string name="authentication_never">Пока не аутентифицирован</string>
 	<string name="authentication_successful">Успешная аутентификация (проверка логина и пароля…)!</string>
-    <string name="button_create_message">Блог</string>
+    <string name="button_add">Добавить</string>
+    <string name="button_add_origin">Добавить новую систему</string>
+	<string name="button_create_message">Блог</string>
     <string name="button_create_message_twitter">Твит</string>
-	<string name="button_hide">Скрыть</string>
-	<string name="button_send">Отправить</string>
+    <string name="button_delete">Удалить</string>
+    <string name="button_discard">Отмена</string>
+    <string name="button_hide">Скрыть</string>
+    <string name="button_save">Сохранить</string>
+    <string name="button_send">Отправить</string>
     <string name="cannot_send_empty_message">Невозможно отправить пустое сообщение.</string>
 	<string name="category_title_preference_appearance">Внешний вид</string>
 	<string name="category_title_preference_credentials">Имя пользователя и пароль</string>
@@ -81,9 +86,7 @@
 	<string name="dialog_title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="dialog_title_preference_history_size">Количество сообщений в истории</string>
 	<string name="dialog_title_preference_history_time">Время хранения истории</string>
-	<string name="dialog_title_preference_host">Хост</string>
     <string name="dialog_title_preference_min_log_level">Минимальный уровень журналирования</string>
-    <string name="dialog_title_preference_origin_system">Система микроблогов</string>
     <string name="dialog_title_preference_password">Пароль</string>
     <string name="dialog_title_preference_theme_color">Выберите тему</string>
     <string name="dialog_title_preference_theme_size">Выберите размер</string>
@@ -108,6 +111,11 @@
     <string name="id_of_this_message_was_not_specified">Идентификатор этого сообщения не был указан</string>
 	<string name="label_accountselector">Выберите аккаунт</string>
     <string name="label_conversation">Обсуждение</string>
+    <string name="label_host">Хост</string>
+    <string name="label_manage_origin_systems">Управление системами микроблогов</string>
+    <string name="label_origin_system">Система микроблогов</string>
+    <string name="label_origin_list">Система микроблогов</string>
+    <string name="label_origin_name">Имя системы микроблогов (уникальное и неизменное)</string>
     <string name="loading">Загрузка…</string>
     <string name="message">Сообщение</string>
     <string name="message_twitter">Сообщение</string>
@@ -249,7 +257,7 @@
 	<string name="summary_preference_notifications_timeline_on">Вы будете уведомлены о новых сообщениях</string>
 	<string name="summary_preference_oauth_off">Базовая аутентификация</string>
 	<string name="summary_preference_oauth_on">OAuth (защищённая аутентификация)</string>
-    <string name="summary_preference_origin_system">{0}</string>
+    <string name="summary_preference_origin_system">Тип: {0}</string>
     <string name="summary_preference_password">Ваш пароль в Системе микроблогов</string>
 	<string name="summary_preference_ssl_off">без SSL</string>
 	<string name="summary_preference_ssl_on">SSL включён</string>
@@ -277,7 +285,6 @@
 	<string name="title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="title_preference_history_size">Размер истории</string>
 	<string name="title_preference_history_time">Длительность хранения истории</string>
-	<string name="title_preference_host">Хост</string>
     <string name="title_preference_min_log_level">Минимальный уровень журналирования</string>
 	<string name="title_preference_notification_sound">Мелодия звонка для уведомлений</string>
 	<string name="title_preference_notifications">Уведомления</string>

@@ -57,7 +57,7 @@ public class MyAppWidgetConfigure extends Activity {
 		mAppWidgetTitle = (EditText) findViewById(R.id.appwidget_title);
 
 		// Bind the action for the save button.
-		findViewById(R.id.save_button).setOnClickListener(mOnClickListener);
+		findViewById(R.id.ok_button).setOnClickListener(mOnClickListener);
 
 		// Find the widget id from the intent.
 		Intent intent = getIntent();

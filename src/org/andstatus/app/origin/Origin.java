@@ -16,12 +16,17 @@
 
 package org.andstatus.app.origin;
 
-import android.net.Uri;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.provider.BaseColumns;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 
+import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection.ApiEnum;
 import org.andstatus.app.net.MbConfig;
@@ -29,170 +34,43 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 /**
- *  Microblogging system (twitter.com, identi.ca, ... ) where messages are being created
- *  (it's the "Origin" of the messages). 
- *  TODO: Currently the class is almost a stub and serves for several predefined origins only :-)
+ * Microblogging system (twitter.com, identi.ca, ... ) where messages are being
+ * created (it's the "Origin" of the messages). TODO: Currently the class is
+ * almost a stub and serves for several predefined origins only :-)
+ * 
  * @author yvolk@yurivolkov.com
- *
  */
 public class Origin {
+    private static final String TAG = Origin.class.getSimpleName();
 
-    public enum OriginEnum {
-        /**
-         * Predefined Origin for Twitter system 
-         * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
-         */
-        TWITTER(1, "twitter", ApiEnum.TWITTER1P1, OriginTwitter.class),
-        /**
-         * Predefined Origin for the pump.io system 
-         * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
-         * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
-         * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
-         */
-        PUMPIO(2, "pump.io", ApiEnum.PUMPIO, OriginPumpio.class),
-        STATUSNET(3, "status.net", ApiEnum.STATUSNET_TWITTER, OriginStatusNet.class),
-        UNKNOWN(0,"unknownMbSystem", ApiEnum.UNKNOWN_API, Origin.class);
-        
-        private long id;
-        private String name;
-        private ApiEnum api;
-        private Class<? extends Origin> originClass;
-        
-        private OriginEnum(long id, String name, ApiEnum api, Class<? extends Origin> originClass) {
-            this.id = id;
-            this.name = name;
-            this.api = api;
-            this.originClass = originClass;
-        }
-
-        public long getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public ApiEnum getApi() {
-            return api;
-        }
-
-        public Origin newOrigin() {
-            Origin origin = null;
-            try {
-                origin = originClass.newInstance();
-                origin.id = getId();
-                origin.name = getName();
-                origin.api = getApi();
-                if (origin.canSetHostOfOrigin()) {
-                    origin.host = MyPreferences.getDefaultSharedPreferences().getString(origin.keyOf(KEY_HOST_OF_ORIGIN),"");
-                }
-                if (origin.canChangeSsl()) {
-                    origin.ssl = MyPreferences.getDefaultSharedPreferences().getBoolean(origin.keyOf(KEY_SSL), true);
-                }
-                if (origin.shortUrlLength == 0) {
-                    origin.shortUrlLength = MyPreferences.getDefaultSharedPreferences().getInt(origin.keyOf(KEY_SHORTURLLENGTH), 0);
-                }
-                if (origin.textLimit == 0) {
-                    origin.textLimit = MyPreferences.getDefaultSharedPreferences().getInt(origin.keyOf(KEY_TEXT_LIMIT), TEXT_LIMIT_DEFAULT);
-                }
-            } catch (Exception e) {
-                MyLog.e(this, e);
-            }
-            return origin;        
-        }
-        
-        @Override
-        public String toString() {
-            return id + "-" + name;
-        }
-        
-        public static OriginEnum fromId( long id) {
-            OriginEnum originEnum = UNKNOWN;
-            for(OriginEnum oe : values()) {
-                if (oe.id == id) {
-                    originEnum = oe;
-                    break;
-                }
-            }
-            return originEnum;
-        }
-
-        public static OriginEnum fromName( String name) {
-            OriginEnum originEnum = UNKNOWN;
-            for(OriginEnum oe : values()) {
-                if (oe.name.equalsIgnoreCase(name)) {
-                    originEnum = oe;
-                    break;
-                }
-            }
-            return originEnum;
-        }
-    }
-    
-    /**
-     * Default Originating system
-     * TODO: Create a table of these "Origins" ?!
-     */
-    public static OriginEnum ORIGIN_ENUM_DEFAULT = OriginEnum.TWITTER;
-
-    /** 
-     * The URI is consistent with "scheme" and "host" in AndroidManifest
-     * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"
-     */
-    public static final Uri CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org");
-    
-    /**
-     * Length of the link after changing to the shortened link
-     * 0 means that length doesn't change
-     * For Twitter.com see <a href="https://dev.twitter.com/docs/api/1.1/get/help/configuration">GET help/configuration</a>
-     */
+    /** See {@link OriginType#shortUrlLengthDefault} */
     protected int shortUrlLength = 0;
-    private static final String KEY_SHORTURLLENGTH = "shorturllength";
-    
-    protected String name = OriginEnum.UNKNOWN.getName();
-    protected long id = 0;
-    protected ApiEnum api = ApiEnum.UNKNOWN_API;
 
-    /**
-     * Default OAuth setting
-     */
-    protected boolean isOAuthDefault = true;
-    /**
-     * Can OAuth connection setting can be turned on/off from the default setting
-     */
-    protected boolean canChangeOAuth = false;
-    protected boolean shouldSetNewUsernameManuallyIfOAuth = false;
-    /**
-     * Can user set username for the new user manually?
-     * This is only for no OAuth
-     */
-    protected boolean shouldSetNewUsernameManuallyNoOAuth = false;
-    
+    protected OriginType originType = OriginType.UNKNOWN;
+    public static final String KEY_ORIGIN_TYPE = "origin_type";
+
+    protected String name = "";
+    public static final String KEY_ORIGIN_NAME = "origin_name";
+
+    protected long id = 0;
+
     protected String host = "";
-    public final static String KEY_HOST_OF_ORIGIN = "host_of_origin"; 
-    protected boolean canSetHostOfOrigin = false;
+    public final static String KEY_HOST_OF_ORIGIN = "host_of_origin";
 
     protected boolean ssl = true;
-    public final static String KEY_SSL = "ssl"; 
-    protected boolean canChangeSsl = false;
-    
-    public static int TEXT_LIMIT_DEFAULT = 140;
-    public final static String KEY_TEXT_LIMIT = "textlimit"; 
+    public final static String KEY_SSL = "ssl";
+
+    private boolean allowHtml = false;
+
     /**
      * Maximum number of characters in the message
      */
     protected int textLimit = 0;
-    protected String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
-    
-    public static Origin toExistingOrigin(String originNameIn) {
-        Origin origin = fromOriginName(originNameIn);
-        if (origin.getId() == 0) {
-            origin = fromOriginId(ORIGIN_ENUM_DEFAULT.getId());
-        }
-        return origin;
+
+    public OriginType getOriginType() {
+        return originType;
     }
-    
+
     /**
      * @return the Origin name, unique in the application
      */
@@ -201,14 +79,15 @@ public class Origin {
     }
 
     /**
-     * @return the OriginId in MyDatabase. 0 means that this system doesn't exist
+     * @return the OriginId in MyDatabase. 0 means that this system doesn't
+     *         exist
      */
     public long getId() {
         return id;
     }
 
     public ApiEnum getApi() {
-        return api;
+        return originType.getApi();
     }
 
     /**
@@ -217,58 +96,64 @@ public class Origin {
     public boolean isPersistent() {
         return getId() != 0;
     }
-    
+
+    public boolean isValid() {
+        return originType != OriginType.UNKNOWN
+                && isNameValid()
+                && hostIsValid()
+                && (isSsl() == originType.sslDefault || originType.canChangeSsl);
+    }
+
     public boolean isOAuthDefault() {
-        return isOAuthDefault;
+        return originType.isOAuthDefault;
     }
 
     /**
-     * @return the Can OAuth connection setting can be turned on/off from the default setting
+     * @return the Can OAuth connection setting can be turned on/off from the
+     *         default setting
      */
     public boolean canChangeOAuth() {
-        return canChangeOAuth;
+        return originType.canChangeOAuth;
     }
 
     public boolean isUsernameValid(String username) {
         boolean ok = false;
         if (username != null && (username.length() > 0)) {
-            ok = username.matches(usernameRegEx);
+            ok = username.matches(originType.usernameRegEx);
             if (!ok && MyLog.isLoggable(this, MyLog.INFO)) {
                 MyLog.i(this, "The Username is not valid: \"" + username + "\" in " + name);
             }
         }
         return ok;
     }
-    
-    public boolean isUsernameValidToStartAddingNewAccount(String username, boolean isOAuthUser) {
-        return false;
-    }
-    
-    public static Origin fromOriginId(long id) {
-        return OriginEnum.fromId(id).newOrigin();
-    }
 
-    public static Origin fromOriginName(String name) {
-        return OriginEnum.fromName(name).newOrigin();
+    public boolean isUsernameValidToStartAddingNewAccount(String username, boolean isOAuthUser) {
+        // Name doesn't matter at this step
+        if (isOAuthUser) {
+            return true;
+        } else {
+            return isUsernameValid(username);
+        }
     }
 
     /**
-     * Calculates number of Characters left for this message
-     * taking shortened URL's length into account.
+     * Calculates number of Characters left for this message taking shortened
+     * URL's length into account.
+     * 
      * @author yvolk@yurivolkov.com
      */
     public int charactersLeftForMessage(String message) {
         int messageLength = 0;
         if (!TextUtils.isEmpty(message)) {
             messageLength = message.length();
-            
+
             if (shortUrlLength > 0) {
                 // Now try to adjust the length taking links into account
                 SpannableString ss = SpannableString.valueOf(message);
                 Linkify.addLinks(ss, Linkify.WEB_URLS);
                 URLSpan[] spans = ss.getSpans(0, messageLength, URLSpan.class);
                 long nLinks = spans.length;
-                for (int ind1=0; ind1 < nLinks; ind1++) {
+                for (int ind1 = 0; ind1 < nLinks; ind1++) {
                     int start = ss.getSpanStart(spans[ind1]);
                     int end = ss.getSpanEnd(spans[ind1]);
                     messageLength += shortUrlLength - (end - start);
@@ -277,103 +162,282 @@ public class Origin {
         }
         return textLimit - messageLength;
     }
-    
+
     public int alternativeTermForResourceId(int resId) {
         return resId;
     }
-    
+
     public String messagePermalink(String userName, long messageId) {
         return "";
     }
 
-    public OriginConnectionData getConnectionData(TriState triState) {
+    public OriginConnectionData getConnectionData(TriState triStateOAuth) {
         OriginConnectionData connectionData = new OriginConnectionData();
-        connectionData.host = host;
-        connectionData.api = api;
-        connectionData.originId = id;
-        connectionData.isOAuth = triState.toBoolean(isOAuthDefault);
-        if (connectionData.isOAuth != isOAuthDefault) {
-            if (!canChangeOAuth) {
-                connectionData.isOAuth = isOAuthDefault;
-            }
-        }
+        connectionData.host = getHost();
+        connectionData.basicPath = originType.basicPath;
+        connectionData.oauthPath = originType.oauthPath;
+        connectionData.isSsl = isSsl();
+        connectionData.api = originType.getApi();
+        connectionData.originId = getId();
+        connectionData.isOAuth = originType.fixIsOAuth(triStateOAuth);
+        connectionData.connectionClass = originType.getConnectionClass();
+        connectionData.httpConnectionClass = originType
+                .getHttpConnectionClass(connectionData.isOAuth);
         return connectionData;
     }
-    
-    
+
     public boolean canSetHostOfOrigin() {
-        return canSetHostOfOrigin;
+        return originType.canSetHostOfOrigin();
+    }
+
+    public boolean isNameValid() {
+        return isNameValid(name);
+    }
+
+    public boolean isNameValid(String originNameToCheck) {
+        boolean ok = false;
+        if (originNameToCheck != null) {
+            String validOriginNameRegex = "[a-zA-Z_0-9/\\.\\-]+";
+            ok = originNameToCheck.matches(validOriginNameRegex);
+        }
+        return ok;
     }
 
     public String getHost() {
         return host;
     }
 
-    public void setHost(String hostOfOrigin) {    
-        if (!canSetHostOfOrigin) { 
-            throw new IllegalStateException("The " + name  +" origin doesn' allow setting it's host");
-        }
-        host = hostOfOrigin;
-    }
-
     public boolean hostIsValid() {
-        return hostIsValid(host);
+        if (originType.canSetHostOfOrigin()) {
+            return hostIsValid(host);
+        } else {
+            return true;
+        }
     }
 
     public boolean hostIsValid(String host) {
         boolean ok = false;
         if (host != null) {
-            // From http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
+            // From
+            // http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
             String validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
             ok = host.matches(validHostnameRegex);
         }
         return ok;
     }
-    
+
     public boolean canChangeSsl() {
-        return canChangeSsl;
+        return originType.canChangeSsl;
     }
 
     public boolean isSsl() {
         return ssl;
     }
 
-    public void setSsl(boolean ssl) {
-        if (canChangeSsl) {
-            this.ssl = ssl;
-        }
+    String keyOf(String keyRoot) {
+        return keyRoot + Long.toString(id);
     }
 
-    public void save(MbConfig config) {
-        shortUrlLength = config.shortUrlLength;
-        textLimit = config.textLimit;
-        save();
+    public boolean isHtmlAllowed() {
+        return allowHtml;
+    }
+
+    public boolean hasChildren() {
+        long count = 0;
+        try {
+            String sql = "SELECT Count(*) FROM " + MyDatabase.Msg.TABLE_NAME + " WHERE "
+                    + MyDatabase.Msg.ORIGIN_ID + "=" + id;
+            Cursor c = MyContextHolder.get().getDatabase().getWritableDatabase().rawQuery(sql, null);
+            if (c.moveToNext()) {
+                count = c.getLong(0);
+            }
+            c.close();
+            if (count == 0) {
+                sql = "SELECT Count(*) FROM " + MyDatabase.User.TABLE_NAME + " WHERE "
+                        + MyDatabase.User.ORIGIN_ID + "=" + id;
+                c = MyContextHolder.get().getDatabase().getWritableDatabase().rawQuery(sql, null);
+                if (c.moveToNext()) {
+                    count = c.getLong(0);
+                }
+                c.close();
+            }
+            MyLog.v(this, this.toString() + " has " + count + " children");
+        } catch (Exception e) {
+            MyLog.e(this, "Error counting children", e);
+        }
+        return count != 0;
     }
     
-    public void save() {
-        if (canSetHostOfOrigin()) {
-            String hostOld = MyPreferences.getDefaultSharedPreferences().getString(keyOf(KEY_HOST_OF_ORIGIN),"");
-            if (!hostOld.equals(host)) {
-                MyPreferences.getDefaultSharedPreferences().edit().putString(keyOf(KEY_HOST_OF_ORIGIN), host).commit();
-            }
+    public static Origin getEmpty(OriginType originType) {
+        Origin origin;
+        try {
+            origin = originType.getOriginClass().newInstance();
+            origin.originType = originType;
+        } catch (Exception e) {
+            MyLog.e(TAG, originType.getTitle(), e);
+            origin = new Origin();
+            origin.originType = OriginType.UNKNOWN;
         }
-        if (canChangeSsl()) {
-            boolean sslOld = MyPreferences.getDefaultSharedPreferences().getBoolean(keyOf(KEY_SSL), true);
-            if ( sslOld != ssl) {
-                MyPreferences.getDefaultSharedPreferences().edit().putBoolean(keyOf(KEY_SSL), ssl).commit();
-            }
-        }
-        int shortUrlLengthOld = MyPreferences.getDefaultSharedPreferences().getInt(keyOf(KEY_SHORTURLLENGTH), 0);
-        if ( shortUrlLengthOld != shortUrlLength) {
-            MyPreferences.getDefaultSharedPreferences().edit().putInt(keyOf(KEY_SHORTURLLENGTH), shortUrlLength).commit();
-        }
-        int textLimitOld = MyPreferences.getDefaultSharedPreferences().getInt(keyOf(KEY_TEXT_LIMIT), TEXT_LIMIT_DEFAULT);
-        if ( textLimitOld != textLimit) {
-            MyPreferences.getDefaultSharedPreferences().edit().putInt(keyOf(KEY_TEXT_LIMIT), textLimit).commit();
-        }
+        origin.host = origin.originType.hostDefault;
+        origin.ssl = origin.originType.sslDefault;
+        origin.allowHtml = origin.originType.allowHtmlDefault;
+        origin.shortUrlLength = origin.originType.shortUrlLengthDefault;
+        origin.textLimit = origin.originType.textLimitDefault;
+        return origin;
     }
-    
-    private String keyOf(String keyRoot) {
-        return keyRoot + Long.toString(id);
+
+    @Override
+    public String toString() {
+        return "Origin [name:" + getName() + "; host:" + getHost() + "; type:"
+                + originType.toString() + "]";
+    }
+
+    public static final class Builder {
+        private final Origin origin;
+
+        public static Origin getUnknown() {
+            return getEmpty(OriginType.UNKNOWN);
+        }
+
+        public Builder(OriginType originType) {
+            origin = getEmpty(originType);
+        }
+
+        /**
+         * Loading persistent Origin
+         */
+        public Builder(Cursor c) {
+            OriginType originType = OriginType.fromId(c.getLong(c
+                    .getColumnIndex(MyDatabase.Origin.ORIGIN_TYPE_ID)));
+            origin = getEmpty(originType);
+
+            origin.id = c.getLong(c.getColumnIndex(MyDatabase.Origin._ID));
+            origin.name = c.getString(c.getColumnIndex(MyDatabase.Origin.ORIGIN_NAME));
+            if (originType.canSetHostOfOrigin()) {
+                String host = c.getString(c.getColumnIndex(MyDatabase.Origin.HOST));
+                if (origin.hostIsValid(host)) {
+                    origin.host = host;
+                }
+            }
+            if (originType.canChangeSsl) {
+                origin.ssl = (c.getInt(c.getColumnIndex(MyDatabase.Origin.SSL)) != 0);
+            }
+            origin.allowHtml = (c.getInt(c.getColumnIndex(MyDatabase.Origin.ALLOW_HTML)) != 0);
+            if (originType.shortUrlLengthDefault == 0) {
+                origin.shortUrlLength = c.getInt(c
+                        .getColumnIndex(MyDatabase.Origin.SHORT_URL_LENGTH));
+            }
+            if (originType.textLimitDefault == 0) {
+                origin.textLimit = c.getInt(c.getColumnIndex(MyDatabase.Origin.TEXT_LIMIT));
+            }
+        }
+
+        public Builder(Origin original) {
+            origin = clone(original);
+        }
+
+        private Origin clone(Origin original) {
+            Origin cloned = getEmpty(original.originType);
+            cloned.id = original.id;
+            cloned.name = original.name;
+            cloned.host = original.host;
+            cloned.ssl = original.ssl;
+            cloned.allowHtml = original.allowHtml;
+            cloned.shortUrlLength = original.shortUrlLength;
+            cloned.textLimit = original.textLimit;
+            return cloned;
+        }
+
+        public Origin build() {
+            return clone(origin);
+        }
+
+        public Builder setName(String name) {
+            if (!origin.isPersistent() && origin.isNameValid(name)) {
+                origin.name = name;
+            }
+            return this;
+        }
+
+        public Builder setHost(String hostOfOrigin) {
+            if (origin.originType.canSetHostOfOrigin()
+                    && origin.hostIsValid(hostOfOrigin)) {
+                origin.host = hostOfOrigin;
+            }
+            return this;
+        }
+
+        public Builder setSsl(boolean ssl) {
+            if (origin.originType.canChangeSsl) {
+                origin.ssl = ssl;
+            }
+            return this;
+        }
+
+        public void setAllowHtml(boolean allowHtml) {
+            origin.allowHtml = allowHtml;
+        }
+
+        public Builder save(MbConfig config) {
+            origin.shortUrlLength = config.shortUrlLength;
+            origin.textLimit = config.textLimit;
+            save();
+            return this;
+        }
+
+        public Builder save() {
+            if (!origin.isValid()) {
+                MyLog.v(this, "Is not valid: " + origin.toString());
+                return this;
+            }
+            if (origin.id == 0) {
+                Origin existing = MyContextHolder.get().persistentOrigins()
+                        .fromName(origin.getName());
+                if (existing.isPersistent()) {
+                    if (origin.originType != existing.originType) {
+                        MyLog.e(this, "Origin with this name and other type already exists " + existing.toString());
+                        return this;
+                    }
+                    origin.id = existing.getId();
+                }
+            }
+
+            ContentValues values = new ContentValues();
+            values.put(MyDatabase.Origin.HOST, origin.host);
+            values.put(MyDatabase.Origin.SSL, origin.ssl);
+            values.put(MyDatabase.Origin.ALLOW_HTML, origin.allowHtml);
+            values.put(MyDatabase.Origin.SHORT_URL_LENGTH, origin.shortUrlLength);
+            values.put(MyDatabase.Origin.TEXT_LIMIT, origin.textLimit);
+
+            boolean changed = false;
+            if (origin.id == 0) {
+                values.put(MyDatabase.Origin.ORIGIN_NAME, origin.name);
+                values.put(MyDatabase.Origin.ORIGIN_TYPE_ID, origin.originType.getId());
+                origin.id = DbUtils.addRowWithRetry(MyDatabase.Origin.TABLE_NAME, values, 3);
+                changed = origin.isPersistent();
+            } else {
+                changed = (DbUtils.updateRowWithRetry(MyDatabase.Origin.TABLE_NAME, origin.id,
+                        values, 3) != 0);
+            }
+            if (changed && MyContextHolder.get().isReady()) {
+                MyPreferences.onPreferencesChanged();
+            }
+            return this;
+        }
+
+        public boolean delete() {
+            boolean deleted = false;
+            if (!origin.hasChildren()) {
+                try {
+                    String sql = "DELETE FROM " + MyDatabase.Origin.TABLE_NAME + " WHERE "
+                            + BaseColumns._ID + "=" + origin.id;
+                    MyContextHolder.get().getDatabase().getWritableDatabase().execSQL(sql);
+                    deleted = true;
+                } catch (Exception e) {
+                    MyLog.e(this, "Error deleting Origin", e);
+                }
+            }
+            return deleted;
+        }
     }
 }

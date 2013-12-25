@@ -23,7 +23,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
@@ -111,16 +111,16 @@ class StateOfAccountChangeProcess {
                 state.useThisState = true;
             }
             
-            android.accounts.Account ac = null;
+            android.accounts.Account androidAccount = null;
             if (android.os.Build.VERSION.SDK_INT < 16 ) {  // before Jelly Bean
                 // Starting with Jelly Bean (16) there is only one link for the the setting of all AndStatus accounts
                 // So we must select account in our code
-                ac = (android.accounts.Account) intent
+                androidAccount = (android.accounts.Account) intent
                         .getParcelableExtra(EXTRA_ACCOUNT_MANAGER_ACCOUNT);
             }
-            if (ac != null) {
+            if (androidAccount != null) {
                 // We have persistent account in the intent
-                state.builder = new MyAccount.Builder(ac);
+                state.builder = MyAccount.Builder.fromAndroidAccount(MyContextHolder.get(), androidAccount);
                 state.useThisState = true;
             } else {
                 // Maybe we received MyAccount name as as parameter?!
@@ -143,7 +143,7 @@ class StateOfAccountChangeProcess {
         
         if (state.builder == null) {
             if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName(AccountName.ORIGIN_SEPARATOR + Origin.ORIGIN_ENUM_DEFAULT.getName(), TriState.UNKNOWN);
+                state.builder = MyAccount.Builder.newOrExistingFromAccountName(AccountName.ORIGIN_SEPARATOR + MyContextHolder.get().persistentOrigins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT), TriState.UNKNOWN);
             } else {
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get().persistentAccounts().getCurrentAccountName(), TriState.UNKNOWN);
             }

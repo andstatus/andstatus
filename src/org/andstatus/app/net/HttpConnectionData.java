@@ -18,11 +18,12 @@ package org.andstatus.app.net;
 
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.util.MyLog;
 
-class HttpConnectionData {
+class HttpConnectionData implements Cloneable {
     public long originId;
 
-    public boolean isHttps;
+    public boolean isSsl;
     public String basicPath;
     public String oauthPath;
     public String accountUsername;
@@ -39,7 +40,7 @@ class HttpConnectionData {
     static HttpConnectionData fromConnectionData(OriginConnectionData oConnectionData) {
         HttpConnectionData data = new HttpConnectionData();
         data.originId = oConnectionData.originId;
-        data.isHttps = oConnectionData.isHttps;
+        data.isSsl = oConnectionData.isSsl;
         data.basicPath = oConnectionData.basicPath;
         data.oauthPath = oConnectionData.oauthPath;
         data.accountUsername = oConnectionData.accountUsername;
@@ -49,16 +50,13 @@ class HttpConnectionData {
         return data;
     }
 
-    public HttpConnectionData newCopy() {
-        HttpConnectionData data = new HttpConnectionData();
-        data.originId = originId;
-        data.isHttps = isHttps;
-        data.basicPath = basicPath;
-        data.oauthPath = oauthPath;
-        data.accountUsername = accountUsername;
-        data.host = host;
-        data.hostForUserToken = hostForUserToken;
-        data.dataReader = dataReader;
-        return data;
+    @Override
+    public HttpConnectionData clone() {
+        try {
+            return (HttpConnectionData) super.clone();
+        } catch (CloneNotSupportedException e) {
+            MyLog.e(this, "Clone failed", e);
+            return new HttpConnectionData();
+        }
     }
 }

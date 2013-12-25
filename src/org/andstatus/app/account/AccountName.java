@@ -16,8 +16,10 @@
 
 package org.andstatus.app.account;
 
+import org.andstatus.app.MyContext;
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.origin.Origin;
-
+import org.andstatus.app.origin.OriginType;
 
 /**
  * Account name, unique for this application and suitable for {@link android.accounts.AccountManager}
@@ -42,7 +44,7 @@ class AccountName {
      */
     private String username;
 
-    static String accountNameToOriginName(String accountName) {
+    protected static String accountNameToOriginName(String accountName) {
         accountName = AccountName.fixAccountName(accountName);
         int indSeparator = accountName.lastIndexOf(ORIGIN_SEPARATOR);
         String originName = "";
@@ -82,14 +84,21 @@ class AccountName {
         return accountName;
     }
 
-    static AccountName fromOriginAndUserNames(String originName, String username) {
+    protected static AccountName getEmpty() {
         AccountName accountName = new AccountName();
-        accountName.origin = Origin.fromOriginName(fixOriginName(originName));
+        accountName.origin = Origin.getEmpty(OriginType.UNKNOWN);
+        accountName.username = "";
+        return accountName;
+    }
+
+    protected static AccountName fromOriginAndUserNames(String originName, String username) {
+        AccountName accountName = new AccountName();
+        accountName.origin = MyContextHolder.get().persistentOrigins().fromName(fixOriginName(originName));
         accountName.username = accountName.fixUsername(username);
         return accountName;
     }
 
-    static String fixOriginName(String originNameIn) {
+    protected static String fixOriginName(String originNameIn) {
         String originName = "";
         if (originNameIn != null) {
             originName = originNameIn.trim();
@@ -97,9 +106,9 @@ class AccountName {
         return originName;
     }
     
-    static AccountName fromAccountName(String accountNameString) {
+    protected static AccountName fromAccountName(MyContext myContext, String accountNameString) {
         AccountName accountName = new AccountName();
-        accountName.origin = Origin.fromOriginName(accountNameToOriginName(accountNameString));
+        accountName.origin = myContext.persistentOrigins().fromName(accountNameToOriginName(accountNameString));
         accountName.username = accountName.accountNameToUsername(accountNameString);
         return accountName;
     }

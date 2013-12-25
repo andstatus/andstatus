@@ -20,6 +20,8 @@ package org.andstatus.app;
 public enum ActivityRequestCode {
     SELECT_ACCOUNT(1),
     SELECT_ACCOUNT_TO_ACT_AS(2),
+    SELECT_ORIGIN(3),
+    EDIT_ORIGIN(4),
     UNKNOWN(100);
 
     public final int id;

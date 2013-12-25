@@ -21,6 +21,7 @@ import android.content.Context;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.origin.PersistentOrigins;
 
 import java.util.Locale;
 
@@ -37,6 +38,7 @@ public interface MyContext {
     long preferencesChangeTime();
     MyDatabase getDatabase();
     PersistentAccounts persistentAccounts();
+    PersistentOrigins persistentOrigins();
     void put(AssersionData data);
     void release();
     boolean isExpired();

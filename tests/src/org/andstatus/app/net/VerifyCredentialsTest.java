@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.account.MyAccount;
@@ -32,7 +33,7 @@ import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
-import org.andstatus.app.origin.Origin.OriginEnum;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
@@ -52,7 +53,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         super.setUp();
         context = TestSuite.initialize(this);
 
-        Origin origin = OriginEnum.TWITTER.newOrigin();
+        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
         connectionData.dataReader = new AccountDataReaderEmpty();
         connection = connectionData.connectionClass.newInstance();
@@ -87,7 +88,8 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         MbUser mbUser = connection.verifyCredentials();
         assertEquals("User's oid is user oid of this account", "144771645", mbUser.oid);
         
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName("/" + Origin.OriginEnum.TWITTER.getName(), TriState.TRUE);
+        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName("/" + origin.getName(), TriState.TRUE);
         builder.onCredentialsVerified(mbUser, null);
         assertTrue("Account is persistent", builder.isPersistent());
         long userId = builder.getAccount().getUserId();

@@ -20,12 +20,13 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
-import org.andstatus.app.origin.Origin.OriginEnum;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
 
@@ -48,7 +49,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         super.setUp();
         context = TestSuite.initialize(this);
 
-        Origin origin = OriginEnum.TWITTER.newOrigin();
+        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
         connectionData.accountUserOid = "144771645";
         connectionData.accountUsername = "t131t";
@@ -120,9 +121,9 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
         startsWith = "This AndStatus application";
         assertEquals("Body of reblogged message starts with", startsWith, mbMessage.rebloggedMessage.getBody().substring(0, startsWith.length()));
-        Date date = TestSuite.gmtTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 05);
+        Date date = TestSuite.utcTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 05);
         assertEquals("This message created at Thu Sep 26 18:23:05 +0000 2013 (" + date.toString() + ")", date.getTime(), mbMessage.sentDate);
-        date = TestSuite.gmtTime(2013, Calendar.MARCH, 22, 13, 13, 7);
+        date = TestSuite.utcTime(2013, Calendar.MARCH, 22, 13, 13, 7);
         assertEquals("Reblogged message created at Fri Mar 22 13:13:07 +0000 2013 (" + date.toString() + ")", date.getTime(), mbMessage.rebloggedMessage.sentDate);
 
         ind++;
@@ -139,7 +140,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
     public void testParseDate() {
         String stringDate = "Wed Nov 27 09:27:01 -0300 2013";
         assertEquals("Bad date shouldn't throw (" + stringDate + ")", 0, connection.parseDate(stringDate) );
-        Date date = TestSuite.gmtTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 05);
+        Date date = TestSuite.utcTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 05);
         stringDate = "Thu Sep 26 22:23:05 GMT+04:00 2013";   // date.toString gives wrong value!!!
         long parsed = connection.parseDate(stringDate);
         assertEquals("Testing the date: Thu Sep 26 18:23:05 +0000 2013 (" + stringDate + " vs " + new Date(parsed).toString() + ")", date.getTime(), parsed);

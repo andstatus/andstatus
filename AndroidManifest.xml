@@ -19,7 +19,7 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="5.1" android:versionCode="89"
+	android:versionName="6.0" android:versionCode="90"
 	android:installLocation="internalOnly">
 
 	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="10" />
@@ -198,6 +198,14 @@
             android:name=".account.AccountSettingsWebActivity" 
             android:noHistory="true">
         </activity>
-        
+
+        <activity android:name=".origin.OriginList"
+            android:theme="@style/DialogThemeSelector"
+            android:label="@string/label_origin_list">
+        </activity>
+
+        <activity android:name=".origin.OriginEditor"
+            android:label="@string/label_origin_system">
+        </activity>
 	</application>
 </manifest>

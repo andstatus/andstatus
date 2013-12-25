@@ -46,7 +46,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApacheRequest {
+public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApacheRequest {
     private static final String NULL_JSON = "(null)";
     private static final String TAG = HttpConnectionOAuth.class.getSimpleName();
     private HttpClient mClient;

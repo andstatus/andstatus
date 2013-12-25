@@ -48,6 +48,7 @@ import net.jcip.annotations.GuardedBy;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.origin.OriginList;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -114,6 +115,16 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 AccountSettingsActivity.startManageAccountsActivity(MyPreferenceActivity.this);
+                return false;
+            }
+        });
+        
+        myPref = findPreference("manage_origin_systems");
+        myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(MyPreferenceActivity.this, OriginList.class);
+                startActivity(intent);
                 return false;
             }
         });

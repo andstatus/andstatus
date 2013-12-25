@@ -19,21 +19,8 @@ package org.andstatus.app.origin;
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.net.ConnectionTwitter1p1;
-import org.andstatus.app.util.TriState;
 
 class OriginTwitter extends Origin {
-
-    protected OriginTwitter() {
-        host = "api.twitter.com";
-        isOAuthDefault = true;
-        canChangeOAuth = false;  // Starting from 2010-09 twitter.com allows OAuth only
-        shouldSetNewUsernameManuallyIfOAuth = false;
-        shouldSetNewUsernameManuallyNoOAuth = true;
-        usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
-        shortUrlLength = 23; // TODO: Read from Config
-        textLimit = 140;
-    }
 
     /**
      * In order to comply with Twitter's "Developer Display Requirements" 
@@ -66,16 +53,6 @@ class OriginTwitter extends Origin {
         }
         return resIdOut;
     }
-    
-    @Override
-    public OriginConnectionData getConnectionData(TriState triState) {
-        OriginConnectionData connectionData = super.getConnectionData(triState);
-        connectionData.isHttps = false;
-        connectionData.basicPath = "1.1";
-        connectionData.oauthPath = "oauth";
-        connectionData.connectionClass = ConnectionTwitter1p1.class;
-        return connectionData;
-    }
 
     @Override
     public String messagePermalink(String userName, long messageId) {
@@ -84,14 +61,5 @@ class OriginTwitter extends Origin {
                     + "/status/"
                     + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId);
         return url;
-    }
-
-    @Override
-    public boolean isUsernameValidToStartAddingNewAccount(String username, boolean isOAuthUser) {
-        if (isOAuthUser) {
-            return true;  // Name doesn't matter at this step
-        } else {
-            return isUsernameValid(username);
-        }
     }
 }

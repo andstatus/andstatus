@@ -39,16 +39,6 @@ import java.util.List;
 public abstract class ConnectionTwitter extends Connection {
     private static final String TAG = ConnectionTwitter.class.getSimpleName();
 
-    @Override
-    public void enrichConnectionData(OriginConnectionData connectionData) {
-        super.enrichConnectionData(connectionData);
-        if (connectionData.isOAuth) {
-            connectionData.httpConnectionClass = HttpConnectionOAuthApache.class;
-        } else {
-            connectionData.httpConnectionClass = HttpConnectionBasic.class;
-        }
-    }
-
     /**
      * URL of the API. Not logged
      * @param routine

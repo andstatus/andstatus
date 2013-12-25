@@ -75,7 +75,6 @@
 	<string name="dialog_title_preference_history_size">Taille de l\'historique</string>
 	<string name="dialog_title_preference_history_time">Durée de l\'historique</string>
     <string name="dialog_title_preference_min_log_level">Niveau de journalisation</string>
-    <string name="dialog_title_preference_origin_system">Système de microblogage</string>
     <string name="dialog_title_preference_password">Mot de passe</string>
 	<string name="dialog_title_preference_theme_color">Choisir un thème</string>
 	<string name="dialog_title_preference_username">Identifiant</string>
@@ -97,6 +96,7 @@
     <string name="id_of_this_message_was_not_specified">Id du message non spécifié</string>
 	<string name="label_accountselector">Choisir un compte</string>
     <string name="label_conversation">Conversation</string>
+    <string name="label_origin_system">Système de microblogage</string>
     <string name="loading">Chargement…</string>
     <string name="message">Message</string>
     <string name="message_twitter">Tweet</string>

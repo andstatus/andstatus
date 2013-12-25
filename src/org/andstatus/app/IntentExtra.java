@@ -44,6 +44,7 @@ public enum IntentExtra{
      * Account name, see {@link MyAccount#getAccountName()}
      */
     EXTRA_ACCOUNT_NAME("ACCOUNT_NAME"),
+    EXTRA_ORIGIN_NAME("ORIGIN_NAME"),
     /**
      * Do we need to show the account?
      */

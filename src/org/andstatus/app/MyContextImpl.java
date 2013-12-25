@@ -25,6 +25,7 @@ import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Locale;
@@ -52,7 +53,8 @@ public final class MyContextImpl implements MyContext {
      */
     private long preferencesChangeTime = 0;
     private MyDatabase db;
-    PersistentAccounts persistentAccounts ;
+    private PersistentAccounts persistentAccounts;
+    private PersistentOrigins persistentOrigins;
     
     private volatile boolean isExpired = false;
 
@@ -72,10 +74,10 @@ public final class MyContextImpl implements MyContext {
             switch (newMyContext.state) {
                 case READY:
                     newMyContext.db = newDb;
-                    newMyContext.persistentAccounts = PersistentAccounts.initialize(newMyContext.context);
+                    newMyContext.persistentOrigins.initialize(newMyContext);
+                    newMyContext.persistentAccounts.initialize(newMyContext);
                     break;
                 default: 
-                    newMyContext.persistentAccounts = PersistentAccounts.getEmpty();
                     break;
             }
         }
@@ -121,6 +123,7 @@ public final class MyContextImpl implements MyContext {
     public static MyContextImpl getEmpty() {
         MyContextImpl myContext = new MyContextImpl();
         myContext.persistentAccounts = PersistentAccounts.getEmpty();
+        myContext.persistentOrigins = PersistentOrigins.getEmpty();
         return myContext;
     }
 
@@ -198,5 +201,10 @@ public final class MyContextImpl implements MyContext {
     @Override
     public Locale getLocale() {
         return locale;
+    }
+
+    @Override
+    public PersistentOrigins persistentOrigins() {
+        return persistentOrigins;
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-	Copyright (C) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
+	Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -28,16 +28,11 @@
         android:title="@string/title_preference_verify_credentials" />
 
     <PreferenceCategory android:title="@string/category_title_preference_origin" >
-	    <!-- We really don't need android:persistent="true" but we need onSharedPreferenceChanged... -->        
-	    <ListPreference 
+	    <Preference 
 	        android:key="origin_name"
-	        android:persistent="true"
+	        android:persistent="false"
 	        android:summary="@string/summary_preference_origin_system"
-	        android:title="@string/title_preference_origin_system" 
-	        android:entries="@array/origin_system_entries"
-	        android:entryValues="@array/origin_system_entries"
-	        android:dialogTitle="@string/dialog_title_preference_origin_system"
-	        android:defaultValue="Twitter" />
+	        android:title="@string/title_preference_origin_system"  />
 	
 	    <CheckBoxPreference
 	        android:defaultValue="true"
@@ -46,21 +41,6 @@
 	        android:summaryOff="@string/summary_preference_oauth_off"
 	        android:summaryOn="@string/summary_preference_oauth_on"
 	        android:title="@string/title_preference_oauth" />
-        
-    	<EditTextPreference
-            android:dialogTitle="@string/dialog_title_preference_host"
-            android:key="host_of_origin"
-            android:persistent="true"
-            android:singleLine="true"
-            android:summary="@string/summary_preference_host"
-            android:title="@string/title_preference_host" />
-	    <CheckBoxPreference
-	        android:defaultValue="true"
-	        android:key="ssl"
-	        android:persistent="true"
-	        android:summaryOff="@string/summary_preference_ssl_off"
-	        android:summaryOn="@string/summary_preference_ssl_on"
-	        android:title="@string/title_preference_ssl" />
     </PreferenceCategory>
     
     <!-- USER CREDENTIALS -->

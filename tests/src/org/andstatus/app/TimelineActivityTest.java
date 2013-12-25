@@ -4,12 +4,12 @@ import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.app.ListActivity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -29,27 +29,16 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma != null);
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+        // In order to shorten opening of activity in a case of large database
+        MyPreferences.getDefaultSharedPreferences().edit().putBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false).commit();
         
         mActivity = getActivity();
-        waitForListLoaded(mActivity);
+        TestSuite.waitForListLoaded(mActivity);
 
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
     }
 
-    private void waitForListLoaded(Activity activity) throws InterruptedException {
-        final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
-        assertTrue(list != null);
-        for (int ind=0; ind<200; ind++) {
-            if (list.getChildCount() > 0) {
-                break;
-            }
-            Thread.sleep(400);
-        }
-        assertTrue("There are items in the list of " + activity.getClass().getSimpleName(), 
-                list.getChildCount() > 0);
-    }
-    
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -60,6 +49,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     }
 
     public void testBlogButton() throws InterruptedException {
+        final String method = "testBlogButton";
         final Button createMessageButton = (Button) mActivity.findViewById(R.id.createMessageButton);
         assertTrue(createMessageButton != null);
         assertTrue("Blog button is visible", createMessageButton.getVisibility() == android.view.View.VISIBLE);
@@ -72,34 +62,35 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         Runnable clicker = new Runnable() {
             @Override
             public void run() {
-                MyLog.v(this, "testBlogButton-Log before click");
+                MyLog.v(this, method + "-Log before click");
                 createMessageButton.performClick();
             }
           };
         
-        MyLog.v(this, "testBlogButton-Log before run clicker 1");
+        MyLog.v(this, method + "-Log before run clicker 1");
         mActivity.runOnUiThread(clicker);
         Thread.sleep(5000);
         assertTrue("Editor appeared", editorView.getVisibility() == android.view.View.VISIBLE);
 
-        MyLog.v(this, "testBlogButton-Log before run clicker 2");
+        MyLog.v(this, method + "-Log before run clicker 2");
         mActivity.runOnUiThread(clicker);
         Thread.sleep(5000);
         assertFalse("Editor hidden again", editorView.getVisibility() == android.view.View.VISIBLE);
     }
     
     public void testOpeningConversationActivity() throws InterruptedException {
+        final String method = "testOpeningConversationActivity";
         ActivityMonitor activityMonitor = getInstrumentation().addMonitor(ConversationActivity.class.getName(), null, false);
 
         final ListView listView = (ListView) mActivity.findViewById(android.R.id.list);
-        MyLog.v(this, "testOpeningConversationActivity-Log setSelection");
+        MyLog.v(this, method + "-Log setSelection");
         mActivity.runOnUiThread(new Runnable() {
           // See http://stackoverflow.com/questions/8094268/android-listview-performitemclick
           @Override
           public void run() {
               int position = 0;
               listView.setSelection(position);
-              MyLog.v(this, "testOpeningConversationActivity-Log performClick");
+              MyLog.v(this, method + "-Log performClick");
               listView.performItemClick(
                       listView.getAdapter().getView(position, null, null), 
                       position, 
@@ -108,15 +99,16 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         });
 
         Activity nextActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 30000);
-        MyLog.v(this, "testOpeningConversationActivity-Log after waitForMonitor: " 
+        MyLog.v(this, method + "-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        waitForListLoaded(nextActivity);
+        TestSuite.waitForListLoaded(nextActivity);
         Thread.sleep(500);
         nextActivity.finish();        
     }
     
     public void testOpeningAccountSelector() throws InterruptedException {
+        final String method = "testOpeningAccountSelector";
         ActivityMonitor activityMonitor = getInstrumentation().addMonitor(AccountSelector.class.getName(), null, false);
 
         final Button accountButton = (Button) mActivity.findViewById(R.id.selectAccountButton);
@@ -125,19 +117,19 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         Runnable clicker = new Runnable() {
             @Override
             public void run() {
-                MyLog.v(this, "testOpeningAccountSelector-Log before click");
+                MyLog.v(this, method + "-Log before click");
                 accountButton.performClick();
             }
           };
     
-        MyLog.v(this, "testOpeningAccountSelector-Log before run clicker 1");
+        MyLog.v(this, method + "-Log before run clicker 1");
         mActivity.runOnUiThread(clicker);
           
         Activity nextActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 15000);
-        MyLog.v(this, "testOpeningAccountSelector-Log after waitForMonitor: " 
+        MyLog.v(this, method + "-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        waitForListLoaded(nextActivity);
+        TestSuite.waitForListLoaded(nextActivity);
         Thread.sleep(500);
         nextActivity.finish();        
     }

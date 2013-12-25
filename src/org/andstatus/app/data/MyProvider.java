@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import android.content.ContentProvider;
@@ -49,6 +50,7 @@ import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.data.MyDatabase.Origin;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -61,7 +63,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
  * 
  */
 public class MyProvider extends ContentProvider {
-
     private static final String TAG = MyProvider.class.getSimpleName();
 
     /**
@@ -69,11 +70,66 @@ public class MyProvider extends ContentProvider {
      * Projection map for the {@link MyDatabase.Msg} table
      * @see android.database.sqlite.SQLiteQueryBuilder#setProjectionMap
      */
-    private static HashMap<String, String> msgProjectionMap;
+    private static final Map<String, String> msgProjectionMap = new HashMap<String, String>();
+    static {
+        msgProjectionMap.put(BaseColumns._ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        msgProjectionMap.put(Msg.MSG_ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + Msg.MSG_ID);
+        msgProjectionMap.put(Msg.ORIGIN_ID, Msg.ORIGIN_ID);
+        msgProjectionMap.put(Msg.MSG_OID, Msg.MSG_OID);
+        msgProjectionMap.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
+        msgProjectionMap.put(User.AUTHOR_NAME, User.AUTHOR_NAME);
+        msgProjectionMap.put(Avatar.FILE_NAME, Avatar.FILE_NAME);
+        msgProjectionMap.put(Avatar.STATUS, Avatar.STATUS);
+        msgProjectionMap.put(Msg.SENDER_ID, Msg.SENDER_ID);
+        msgProjectionMap.put(User.SENDER_NAME, User.SENDER_NAME);
+        msgProjectionMap.put(Msg.BODY, Msg.BODY);
+        msgProjectionMap.put(Msg.VIA, Msg.VIA);
+        msgProjectionMap.put(Msg.URL, Msg.URL);
+        msgProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
+        msgProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
+        msgProjectionMap.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);
+        msgProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
+        msgProjectionMap.put(User.LINKED_USER_ID, User.LINKED_USER_ID);
+        msgProjectionMap.put(MsgOfUser.USER_ID, MsgOfUser.TABLE_NAME + "." + MsgOfUser.USER_ID + " AS " + MsgOfUser.USER_ID);
+        msgProjectionMap.put(MsgOfUser.DIRECTED, MsgOfUser.DIRECTED);
+        msgProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
+        msgProjectionMap.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
+        msgProjectionMap.put(MsgOfUser.REBLOG_OID, MsgOfUser.REBLOG_OID);
+        msgProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
+        msgProjectionMap.put(Msg.SENT_DATE, Msg.SENT_DATE);
+        msgProjectionMap.put(Msg.INS_DATE, Msg.INS_DATE);
+        msgProjectionMap.put(FollowingUser.AUTHOR_FOLLOWED, FollowingUser.AUTHOR_FOLLOWED);
+        msgProjectionMap.put(FollowingUser.SENDER_FOLLOWED, FollowingUser.SENDER_FOLLOWED);
+    }
+
     /**
      * Projection map for the {@link MyDatabase.User} table
      */
-    private static HashMap<String, String> userProjectionMap;
+    private static final Map<String, String> userProjectionMap = new HashMap<String, String>();
+    static {
+        userProjectionMap.put(BaseColumns._ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        userProjectionMap.put(User.USER_ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + User.USER_ID);
+        userProjectionMap.put(User.USER_OID, User.USER_OID);
+        userProjectionMap.put(User.ORIGIN_ID, User.ORIGIN_ID);
+        userProjectionMap.put(User.USERNAME, User.USERNAME);
+        userProjectionMap.put(User.AVATAR_URL, User.AVATAR_URL);
+        userProjectionMap.put(User.URL, User.URL);
+        userProjectionMap.put(User.CREATED_DATE, User.CREATED_DATE);
+        userProjectionMap.put(User.INS_DATE, User.INS_DATE);
+        
+        userProjectionMap.put(User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_POSITION);
+        userProjectionMap.put(User.HOME_TIMELINE_DATE, User.HOME_TIMELINE_DATE);
+        userProjectionMap.put(User.FAVORITES_TIMELINE_POSITION, User.FAVORITES_TIMELINE_POSITION);
+        userProjectionMap.put(User.FAVORITES_TIMELINE_DATE, User.FAVORITES_TIMELINE_DATE);
+        userProjectionMap.put(User.DIRECT_TIMELINE_POSITION, User.DIRECT_TIMELINE_POSITION);
+        userProjectionMap.put(User.DIRECT_TIMELINE_DATE, User.DIRECT_TIMELINE_DATE);
+        userProjectionMap.put(User.MENTIONS_TIMELINE_POSITION, User.MENTIONS_TIMELINE_POSITION);
+        userProjectionMap.put(User.MENTIONS_TIMELINE_DATE, User.MENTIONS_TIMELINE_DATE);
+        userProjectionMap.put(User.USER_TIMELINE_POSITION, User.USER_TIMELINE_POSITION);
+        userProjectionMap.put(User.USER_TIMELINE_DATE, User.USER_TIMELINE_DATE);
+        userProjectionMap.put(User.USER_MSG_ID, User.USER_MSG_ID);
+        userProjectionMap.put(User.USER_MSG_DATE, User.USER_MSG_DATE);
+    }
     
     /**
      * "Authority", represented by this ContentProvider subclass 
@@ -97,30 +153,75 @@ public class MyProvider extends ContentProvider {
      */
     public static final String SEARCH_SEGMENT = "search";
 
-    private static final UriMatcher URI_MATCHER;
+    private static final UriMatcher URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
+    static {
+        /** 
+         * The order of PathSegments (parameters of timelines) in the URI
+         * 1. MyAccount USER_ID is the first parameter (this is his timeline of the type specified below!)
+         * 2 - 3. "tt/" +  {@link MyDatabase.TimelineTypeEnum.save()} - The timeline type 
+         * 4 - 5. "combined/" +  0 or 1  (1 for combined timeline) 
+         * 6 - 7. MyDatabase.MSG_TABLE_NAME + "/" + MSG_ID  (optional, used to access specific Message)
+         */
+        URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/search/*", MatchedUri.TIMELINE_SEARCH.code);
+        URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/" + Msg.TABLE_NAME + "/#", MatchedUri.TIMELINE_MSG_ID.code);
+        URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#", MatchedUri.TIMELINE.code);
+
+        URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME + "/count", MatchedUri.MSG_COUNT.code);
+        URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME, MatchedUri.MSG.code);
+
+        URI_MATCHER.addURI(AUTHORITY, Origin.TABLE_NAME, MatchedUri.ORIGIN.code);
+        
+        /** 
+         * The order of PathSegments in the URI
+         * 1. MyAccount USER_ID is the first parameter (so we can add 'following' information...)
+         * 2 - 3. "su/" + USER_ID  (optional, used to access specific User)
+         */
+        URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#/su/#", MatchedUri.USER.code);
+        URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#", MatchedUri.USERS.code);
+    }
+    
     /**
      * Matched codes, returned by {@link UriMatcher#match(Uri)}
      * This first member is for a Timeline of selected User (Account) (or all timelines...) and it corresponds to the {@link #TIMELINE_URI}
      */
-    private static final int TIMELINE = 1;
-    /**
-     * Operations on {@link MyDatabase.Msg} table itself
-     */
-    private static final int MSG = 7;
-    private static final int MSG_COUNT = 2;
-    private static final int TIMELINE_SEARCH = 3;
-    /**
-     * The Timeline URI contains Message id 
-     */
-    private static final int TIMELINE_MSG_ID = 4;
-    /**
-     * Matched code for the list of Users
-     */
-    private static final int USERS = 5;
-    /**
-     * Matched code for the User
-     */
-    private static final int USER_ID = 6;
+    private enum MatchedUri {
+        TIMELINE(1),
+        /**
+         * Operations on {@link MyDatabase.Msg} table itself
+         */
+        MSG(7),
+        MSG_COUNT(2),
+        TIMELINE_SEARCH(3),
+        /**
+         * The Timeline URI contains Message id 
+         */
+        TIMELINE_MSG_ID(4),
+        ORIGIN(8),
+        /**
+         * Matched code for the list of Users
+         */
+        USERS(5),
+        /**
+         * Matched code for the User
+         */
+        USER(6),
+        
+        UNKNOWN(0);
+        
+        private int code = 0;
+        private MatchedUri(int codeIn) {
+            code = codeIn;
+        }
+        
+        private static MatchedUri fromInt(int codeIn) {
+            for (MatchedUri matched : MatchedUri.values()) {
+                if (matched.code == codeIn) {
+                    return matched;
+                }
+            }
+            return UNKNOWN;
+        }
+    }
 
     private static final String CONTENT_URI_PREFIX = "content://" + AUTHORITY + "/";
     /**
@@ -130,6 +231,7 @@ public class MyProvider extends ContentProvider {
      */
     public static final Uri MSG_CONTENT_URI = Uri.parse(CONTENT_URI_PREFIX + Msg.TABLE_NAME);
     public static final Uri MSG_CONTENT_COUNT_URI = Uri.parse(CONTENT_URI_PREFIX + Msg.TABLE_NAME + "/count");
+    public static final Uri ORIGIN_CONTENT_URI = Uri.parse(CONTENT_URI_PREFIX + Origin.TABLE_NAME);
     public static final Uri USER_CONTENT_URI = Uri.parse(CONTENT_URI_PREFIX + User.TABLE_NAME);
     
     /**
@@ -139,6 +241,8 @@ public class MyProvider extends ContentProvider {
     private static final String CONTENT_ITEM_TYPE_PREFIX = "vnd.android.cursor.item/org.andstatus.provider.";
     public static final String MSG_CONTENT_TYPE = CONTENT_TYPE_PREFIX + Msg.TABLE_NAME;
     public static final String MSG_CONTENT_ITEM_TYPE = CONTENT_ITEM_TYPE_PREFIX + Msg.TABLE_NAME;
+    public static final String ORIGIN_CONTENT_TYPE = CONTENT_TYPE_PREFIX + Origin.TABLE_NAME;
+    public static final String ORIGIN_CONTENT_ITEM_TYPE = CONTENT_ITEM_TYPE_PREFIX + Origin.TABLE_NAME;
     public static final String USER_CONTENT_TYPE = CONTENT_TYPE_PREFIX + User.TABLE_NAME;
     public static final String USER_CONTENT_ITEM_TYPE = CONTENT_ITEM_TYPE_PREFIX + User.TABLE_NAME;
     
@@ -159,7 +263,7 @@ public class MyProvider extends ContentProvider {
     @Override
     public String getType(Uri uri) {
         String type = null;
-        switch (URI_MATCHER.match(uri)) {
+        switch (MatchedUri.fromInt(URI_MATCHER.match(uri))) {
             case MSG:
             case TIMELINE:
             case TIMELINE_SEARCH:
@@ -169,10 +273,13 @@ public class MyProvider extends ContentProvider {
             case TIMELINE_MSG_ID:
                 type = MyProvider.MSG_CONTENT_ITEM_TYPE;
                 break;
+            case ORIGIN:
+                type = MyProvider.ORIGIN_CONTENT_ITEM_TYPE;
+                break;
             case USERS:
                 type = MyProvider.USER_CONTENT_TYPE;
                 break;
-            case USER_ID:
+            case USER:
                 type = MyProvider.USER_CONTENT_ITEM_TYPE;
                 break;
             default:
@@ -192,7 +299,7 @@ public class MyProvider extends ContentProvider {
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         String sqlDesc = "";
         int count = 0;
-        switch (URI_MATCHER.match(uri)) {
+        switch (MatchedUri.fromInt(URI_MATCHER.match(uri))) {
             case MSG:
                 db.beginTransaction();
                 try {
@@ -235,7 +342,7 @@ public class MyProvider extends ContentProvider {
                 count = db.delete(User.TABLE_NAME, selection, selectionArgs);
                 break;
 
-            case USER_ID:
+            case USER:
                 // TODO: Delete related records also... 
                 long userId = uriToUserId(uri);
                 count = db.delete(User.TABLE_NAME, BaseColumns._ID + "=" + userId
@@ -272,8 +379,6 @@ public class MyProvider extends ContentProvider {
             SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
 
             String table;
-            String nullColumnHack;
-            Uri contentUri;
 
             if (initialValues != null) {
                 values = new ContentValues(initialValues);
@@ -281,13 +386,12 @@ public class MyProvider extends ContentProvider {
                 values = new ContentValues();
             }
 
-            switch (URI_MATCHER.match(uri)) {
+            MatchedUri matchedUri = MatchedUri.fromInt(URI_MATCHER.match(uri));
+            switch (matchedUri) {
                 case TIMELINE:
                     accountUserId = uriToAccountUserId(uri);
                     
                     table = Msg.TABLE_NAME;
-                    nullColumnHack = Msg.BODY;
-                    contentUri = TIMELINE_URI;
                     /**
                      * Add default values for missed required fields
                      */
@@ -306,21 +410,23 @@ public class MyProvider extends ContentProvider {
                     
                     msgOfUserValues = prepareMsgOfUserValues(accountUserId, values);
                     break;
-
-                case USER_ID:
-                    accountUserId = uriToAccountUserId(uri);
-                    table = User.TABLE_NAME;
-                    nullColumnHack = User.USERNAME;
-                    contentUri = MyProvider.USER_CONTENT_URI;
-                    values.put(User.INS_DATE, now);
-                    followingUserValues = FollowingUserValues.valueOf(accountUserId, 0, values);
+                    
+                case ORIGIN:
+                    table = Origin.TABLE_NAME;
                     break;
 
+                case USER:
+                    table = User.TABLE_NAME;
+                    values.put(User.INS_DATE, now);
+                    accountUserId = uriToAccountUserId(uri);
+                    followingUserValues = FollowingUserValues.valueOf(accountUserId, 0, values);
+                    break;
+                    
                 default:
                     throw new IllegalArgumentException("Unknown URI " + uri);
             }
 
-            rowId = db.insert(table, nullColumnHack, values);
+            rowId = db.insert(table, null, values);
             if (rowId == -1) {
                 throw new SQLException("Failed to insert row into " + uri);
             } else if ( User.TABLE_NAME.equals(table)) {
@@ -340,16 +446,28 @@ public class MyProvider extends ContentProvider {
                 followingUserValues.update(db);
             }
 
-            if (contentUri.compareTo(TIMELINE_URI) == 0) {
-                // The resulted Uri has several parameters...
-                newUri = MyProvider.getTimelineMsgUri(accountUserId, TimelineTypeEnum.HOME , true, rowId);
-            } else {
-                newUri = MyProvider.getUserUri(accountUserId, rowId);
+            switch (matchedUri) {
+                case TIMELINE:
+                    // The resulted Uri has several parameters...
+                    newUri = MyProvider.getTimelineMsgUri(accountUserId, TimelineTypeEnum.HOME , true, rowId);
+                    break;
+                case USER:
+                    newUri = MyProvider.getUserUri(accountUserId, rowId);
+                    break;
+                case ORIGIN:
+                    newUri = MyProvider.getOriginUri(rowId);
+                    break;
+                default:
+                    break;
             }
         } catch (Exception e) {
           MyLog.e(this, "Insert", e);
         }
         return newUri;
+    }
+
+    public static Uri getOriginUri(long rowId) {
+        return ContentUris.withAppendedId(MyProvider.ORIGIN_CONTENT_URI, rowId);
     }
 
     private void loadAvatar(long rowId, ContentValues values) {
@@ -442,8 +560,8 @@ public class MyProvider extends ContentProvider {
         boolean built = false;
         String sql = "";
 
-        int matchedCode = URI_MATCHER.match(uri);
-        switch (matchedCode) {
+        MatchedUri matchedUri = MatchedUri.fromInt(URI_MATCHER.match(uri));
+        switch (matchedUri) {
             case TIMELINE:
                 qb.setDistinct(true);
                 qb.setTables(tablesForTimeline(uri, projection));
@@ -504,21 +622,21 @@ public class MyProvider extends ContentProvider {
                 qb.setProjectionMap(userProjectionMap);
                 break;
 
-            case USER_ID:
+            case USER:
                 qb.setTables(User.TABLE_NAME);
                 qb.setProjectionMap(userProjectionMap);
                 qb.appendWhere(BaseColumns._ID + "=" + uriToUserId(uri));
                 break;
 
             default:
-                throw new IllegalArgumentException("Unknown URI \"" + uri + "\"; matchedCode="
-                        + matchedCode);
+                throw new IllegalArgumentException("Unknown URI \"" + uri + "\"; matchedUri="
+                        + matchedUri);
         }
 
         // If no sort order is specified use the default
         String orderBy;
         if (TextUtils.isEmpty(sortOrder)) {
-            switch (matchedCode) {
+            switch (matchedUri) {
                 case TIMELINE:
                 case TIMELINE_MSG_ID:
                     orderBy = Msg.DEFAULT_SORT_ORDER;
@@ -529,13 +647,13 @@ public class MyProvider extends ContentProvider {
                     break;
 
                 case USERS:
-                case USER_ID:
+                case USER:
                     orderBy = User.DEFAULT_SORT_ORDER;
                     break;
 
                 default:
                     throw new IllegalArgumentException("Unknown URI \"" + uri + "\"; matchedCode="
-                            + matchedCode);
+                            + matchedUri);
             }
         } else {
             orderBy = sortOrder;
@@ -770,8 +888,8 @@ public class MyProvider extends ContentProvider {
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         int count = 0;
         long accountUserId = 0;
-        int matchedCode = URI_MATCHER.match(uri);
-        switch (matchedCode) {
+        MatchedUri matchedUri = MatchedUri.fromInt(URI_MATCHER.match(uri));
+        switch (matchedUri) {
             case MSG:
                 count = db.update(Msg.TABLE_NAME, values, selection, selectionArgs);
                 break;
@@ -795,8 +913,7 @@ public class MyProvider extends ContentProvider {
                     if (c == null || c.getCount() == 0) {
                         // There was no such row
                         msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
-                        count += db.insert(MsgOfUser.TABLE_NAME, MsgOfUser.MSG_ID,
-                                msgOfUserValues);
+                        count += db.insert(MsgOfUser.TABLE_NAME, null, msgOfUserValues);
                     } else {
                         c.close();
                         count += db.update(MsgOfUser.TABLE_NAME, msgOfUserValues, where,
@@ -808,7 +925,7 @@ public class MyProvider extends ContentProvider {
             case USERS:
                 count = db.update(User.TABLE_NAME, values, selection, selectionArgs);
                 break;
-            case USER_ID:
+            case USER:
                 accountUserId = uriToAccountUserId(uri);
                 long selectedUserId = uriToUserId(uri);
                 FollowingUserValues followingUserValues = FollowingUserValues.valueOf(accountUserId, selectedUserId, values);
@@ -821,93 +938,10 @@ public class MyProvider extends ContentProvider {
 
             default:
                 throw new IllegalArgumentException("Unknown URI \"" + uri + "\"; matchedCode="
-                        + matchedCode);
+                        + matchedUri);
         }
 
         return count;
-    }
-
-    /**
-     *  Static Definitions for UriMatcher and Projection Maps
-     */
-    static {
-        URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
-
-        /** 
-         * The order of PathSegments (parameters of timelines) in the URI
-         * 1. MyAccount USER_ID is the first parameter (this is his timeline of the type specified below!)
-         * 2 - 3. "tt/" +  {@link MyDatabase.TimelineTypeEnum.save()} - The timeline type 
-         * 4 - 5. "combined/" +  0 or 1  (1 for combined timeline) 
-         * 6 - 7. MyDatabase.MSG_TABLE_NAME + "/" + MSG_ID  (optional, used to access specific Message)
-         */
-        URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/search/*", TIMELINE_SEARCH);
-        URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#/" + Msg.TABLE_NAME + "/#", TIMELINE_MSG_ID);
-        URI_MATCHER.addURI(AUTHORITY, TIMELINE_PATH + "/#/tt/*/combined/#", TIMELINE);
-
-        URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME + "/count", MSG_COUNT);
-        URI_MATCHER.addURI(AUTHORITY, Msg.TABLE_NAME, MSG);
-
-        /** 
-         * The order of PathSegments in the URI
-         * 1. MyAccount USER_ID is the first parameter (so we can add 'following' information...)
-         * 2 - 3. "su/" + USER_ID  (optional, used to access specific User)
-         */
-        URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#/su/#", USER_ID);
-        URI_MATCHER.addURI(AUTHORITY, User.TABLE_NAME + "/#", USERS);
-
-        msgProjectionMap = new HashMap<String, String>();
-        msgProjectionMap.put(BaseColumns._ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        msgProjectionMap.put(Msg.MSG_ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + Msg.MSG_ID);
-        msgProjectionMap.put(Msg.ORIGIN_ID, Msg.ORIGIN_ID);
-        msgProjectionMap.put(Msg.MSG_OID, Msg.MSG_OID);
-        msgProjectionMap.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
-        msgProjectionMap.put(User.AUTHOR_NAME, User.AUTHOR_NAME);
-        msgProjectionMap.put(Avatar.FILE_NAME, Avatar.FILE_NAME);
-        msgProjectionMap.put(Avatar.STATUS, Avatar.STATUS);
-        msgProjectionMap.put(Msg.SENDER_ID, Msg.SENDER_ID);
-        msgProjectionMap.put(User.SENDER_NAME, User.SENDER_NAME);
-        msgProjectionMap.put(Msg.BODY, Msg.BODY);
-        msgProjectionMap.put(Msg.VIA, Msg.VIA);
-        msgProjectionMap.put(Msg.URL, Msg.URL);
-        msgProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
-        msgProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
-        msgProjectionMap.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);
-        msgProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
-        msgProjectionMap.put(User.LINKED_USER_ID, User.LINKED_USER_ID);
-        msgProjectionMap.put(MsgOfUser.USER_ID, MsgOfUser.TABLE_NAME + "." + MsgOfUser.USER_ID + " AS " + MsgOfUser.USER_ID);
-        msgProjectionMap.put(MsgOfUser.DIRECTED, MsgOfUser.DIRECTED);
-        msgProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
-        msgProjectionMap.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
-        msgProjectionMap.put(MsgOfUser.REBLOG_OID, MsgOfUser.REBLOG_OID);
-        msgProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
-        msgProjectionMap.put(Msg.SENT_DATE, Msg.SENT_DATE);
-        msgProjectionMap.put(Msg.INS_DATE, Msg.INS_DATE);
-        msgProjectionMap.put(FollowingUser.AUTHOR_FOLLOWED, FollowingUser.AUTHOR_FOLLOWED);
-        msgProjectionMap.put(FollowingUser.SENDER_FOLLOWED, FollowingUser.SENDER_FOLLOWED);
-
-        userProjectionMap = new HashMap<String, String>();
-        userProjectionMap.put(BaseColumns._ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        userProjectionMap.put(User.USER_ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + User.USER_ID);
-        userProjectionMap.put(User.USER_OID, User.USER_OID);
-        userProjectionMap.put(User.ORIGIN_ID, User.ORIGIN_ID);
-        userProjectionMap.put(User.USERNAME, User.USERNAME);
-        userProjectionMap.put(User.AVATAR_URL, User.AVATAR_URL);
-        userProjectionMap.put(User.URL, User.URL);
-        userProjectionMap.put(User.CREATED_DATE, User.CREATED_DATE);
-        userProjectionMap.put(User.INS_DATE, User.INS_DATE);
-        
-        userProjectionMap.put(User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_POSITION);
-        userProjectionMap.put(User.HOME_TIMELINE_DATE, User.HOME_TIMELINE_DATE);
-        userProjectionMap.put(User.FAVORITES_TIMELINE_POSITION, User.FAVORITES_TIMELINE_POSITION);
-        userProjectionMap.put(User.FAVORITES_TIMELINE_DATE, User.FAVORITES_TIMELINE_DATE);
-        userProjectionMap.put(User.DIRECT_TIMELINE_POSITION, User.DIRECT_TIMELINE_POSITION);
-        userProjectionMap.put(User.DIRECT_TIMELINE_DATE, User.DIRECT_TIMELINE_DATE);
-        userProjectionMap.put(User.MENTIONS_TIMELINE_POSITION, User.MENTIONS_TIMELINE_POSITION);
-        userProjectionMap.put(User.MENTIONS_TIMELINE_DATE, User.MENTIONS_TIMELINE_DATE);
-        userProjectionMap.put(User.USER_TIMELINE_POSITION, User.USER_TIMELINE_POSITION);
-        userProjectionMap.put(User.USER_TIMELINE_DATE, User.USER_TIMELINE_DATE);
-        userProjectionMap.put(User.USER_MSG_ID, User.USER_MSG_ID);
-        userProjectionMap.put(User.USER_MSG_DATE, User.USER_MSG_DATE);
     }
     
     /**
@@ -1341,8 +1375,7 @@ public class MyProvider extends ContentProvider {
     public static boolean uriToIsCombined(Uri uri) {
         boolean isCombined = false;
         try {
-            int matchedCode = URI_MATCHER.match(uri);
-            switch (matchedCode) {
+            switch (MatchedUri.fromInt(URI_MATCHER.match(uri))) {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
                 case TIMELINE_MSG_ID:
@@ -1365,8 +1398,7 @@ public class MyProvider extends ContentProvider {
     public static TimelineTypeEnum uriToTimelineType(Uri uri) {
         TimelineTypeEnum tt = TimelineTypeEnum.UNKNOWN;
         try {
-            int matchedCode = URI_MATCHER.match(uri);
-            switch (matchedCode) {
+            switch (MatchedUri.fromInt(URI_MATCHER.match(uri))) {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
                 case TIMELINE_MSG_ID:
@@ -1384,8 +1416,7 @@ public class MyProvider extends ContentProvider {
     public static long uriToMessageId(Uri uri) {
         long messageId = 0;
         try {
-            int matchedCode = URI_MATCHER.match(uri);
-            switch (matchedCode) {
+            switch (MatchedUri.fromInt(URI_MATCHER.match(uri))) {
                 case TIMELINE_MSG_ID:
                     messageId = Long.parseLong(uri.getPathSegments().get(7));
                     break;
@@ -1401,13 +1432,12 @@ public class MyProvider extends ContentProvider {
     public static long uriToAccountUserId(Uri uri) {
         long accountUserId = 0;
         try {
-            int matchedCode = URI_MATCHER.match(uri);
-            switch (matchedCode) {
+            switch (MatchedUri.fromInt(URI_MATCHER.match(uri))) {
                 case TIMELINE:
                 case TIMELINE_SEARCH:
                 case TIMELINE_MSG_ID:
                 case USERS:
-                case USER_ID:
+                case USER:
                     accountUserId = Long.parseLong(uri.getPathSegments().get(1));
                     break;
                 default:
@@ -1422,9 +1452,8 @@ public class MyProvider extends ContentProvider {
     public static long uriToUserId(Uri uri) {
         long userId = 0;
         try {
-            int matchedCode = URI_MATCHER.match(uri);
-            switch (matchedCode) {
-                case USER_ID:
+            switch (MatchedUri.fromInt(URI_MATCHER.match(uri))) {
+                case USER:
                     userId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
                 default:

@@ -40,7 +40,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
-class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
+public class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
     protected String mPassword;
 
     @Override

@@ -21,6 +21,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.text.Html;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
@@ -42,6 +43,7 @@ import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -136,7 +138,10 @@ public class ConversationViewLoader {
                         oMsg.createdDate = cursor.getLong(cursor.getColumnIndex(Msg.CREATED_DATE));
                         oMsg.author = cursor.getString(cursor.getColumnIndex(User.AUTHOR_NAME));
                         oMsg.body = cursor.getString(cursor.getColumnIndex(Msg.BODY));
-                        oMsg.via = Html.fromHtml(cursor.getString(cursor.getColumnIndex(Msg.VIA))).toString().trim();
+                        String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));
+                        if (!TextUtils.isEmpty(via)) {
+                            oMsg.via = Html.fromHtml(via).toString().trim();
+                        }
                         if (MyPreferences.showAvatars()) {
                             oMsg.avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Avatar.FILE_NAME)));
                         }
@@ -380,11 +385,17 @@ public class ConversationViewLoader {
         TextView number = (TextView) messageView.findViewById(R.id.message_number);
         number.setText(Integer.toString(oMsg.historyOrder));
         
-        body.setLinksClickable(true);
-        body.setFocusable(true);
-        body.setFocusableInTouchMode(true);
-        body.setText(Html.fromHtml(oMsg.body));
-        Linkify.addLinks(body, Linkify.ALL);
+        if (!TextUtils.isEmpty(oMsg.body)) {
+            body.setLinksClickable(true);
+            body.setFocusable(true);
+            body.setFocusableInTouchMode(true);
+            Spanned spanned = Html.fromHtml(oMsg.body);
+            body.setText(spanned);
+            // Linkify.addLinks removes existing links, this is why we don't use it
+            if (!MbMessage.hasUrlSpans(spanned)) {
+                Linkify.addLinks(body, Linkify.ALL);
+            }
+        }
 
         // Everything else goes to messageDetails
         String messageDetails = RelativeTime.getDifference(context, oMsg.createdDate);

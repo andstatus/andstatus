@@ -24,7 +24,7 @@ import org.andstatus.app.net.HttpConnectionEmpty;
 public class OriginConnectionData {
     public ApiEnum api = ApiEnum.UNKNOWN_API;
     public long originId = 0;
-    public boolean isHttps = true;
+    public boolean isSsl = true;
     public boolean isOAuth = true;
     public String host = "";
     public String basicPath = "";

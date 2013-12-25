@@ -16,6 +16,7 @@
 
 package org.andstatus.app.account;
 
+import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.PeriodicSync;
@@ -27,6 +28,7 @@ import android.text.TextUtils;
 
 import java.util.List;
 
+import org.andstatus.app.MyContext;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
 import org.andstatus.app.data.DataInserter;
@@ -86,10 +88,6 @@ public final class MyAccount implements AccountDataReader {
          */
         public static final String KEY_USERNAME_NEW = "username_new";
         /**
-         *  Unique originating (source) system (twitter.com, identi.ca, ... )
-         */
-        public static final String KEY_ORIGIN_NAME = "origin_name";
-        /**
          * {@link MyDatabase.User#_ID} in our System.
          */
         public static final String KEY_USER_ID = "user_id";
@@ -107,6 +105,11 @@ public final class MyAccount implements AccountDataReader {
          * Storing version of the account data
          */
         public static final String KEY_VERSION = "myversion";
+
+        /**
+         * This account is in the process of deletion and should be ignored...
+         */
+        public static final String KEY_DELETED = "deleted";
         
         /**
          * Factory of Builder-s
@@ -123,38 +126,24 @@ public final class MyAccount implements AccountDataReader {
                 // Create temporary MyAccount.Builder
                 mab = new Builder(accountName, isOAuth);
             } else {
-                mab = new Builder(myAccount);
+                mab = Builder.fromMyAccount(myAccount);
             }
             return mab;
         }
         
         private MyAccount myAccount;
 
-        private Builder(Parcel source) {
-            myAccount = new MyAccount();
-            boolean isPersistent = myAccount.getDataBoolean(KEY_PERSISTENT, false);
-            myAccount.userData = source.readBundle();
-            
-            // Load as if the account is not persisted to force loading everything from userData
-            loadFromUserData();
-
-            // Do this as a last step
-            if (isPersistent) {
-                myAccount.androidAccount = myAccount.userData.getParcelable(KEY_ACCOUNT);
-                if (myAccount.androidAccount == null) {
-                    MyLog.e(this, "The account was marked as persistent:" + this);
-                }
-            }
+        private Builder() {
         }
         
         /**
          * Creates new account, which is not Persistent yet
          * @param accountName
          */
-        private Builder (String accountName, TriState isOAuth) {
+        private Builder (String accountName, TriState isOAuthTriState) {
             myAccount = new MyAccount();
-            myAccount.oAccountName = AccountName.fromAccountName(accountName);
-            setOAuth(isOAuth.toBoolean(myAccount.oAccountName.getOrigin().isOAuthDefault()));
+            myAccount.oAccountName = AccountName.fromAccountName(MyContextHolder.get(), accountName);
+            setOAuth(isOAuthTriState);
             myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
             setConnection();
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
@@ -162,70 +151,66 @@ public final class MyAccount implements AccountDataReader {
             }
         }
 
-        Builder (MyAccount ma) {
-            this.myAccount = ma;
+        protected static Builder fromMyAccount(MyAccount ma) {
+            Builder builder = new Builder(); 
+            builder.myAccount = ma;
+            return builder;
         }
         
         /**
          * Loads existing account from Persistence 
+         * @param myContext 
          * @param account should not be null
          */
-        Builder(android.accounts.Account account) {
-            myAccount = new MyAccount();
+        protected static Builder fromAndroidAccount(MyContext myContext, android.accounts.Account account) {
+            String method = "fromAndroidAccount";
             if (account == null) {
-                throw new IllegalArgumentException(TAG + " null account is not allowed in the constructor");
+                throw new IllegalArgumentException(TAG + " null account");
             }
-            myAccount.androidAccount = account;
-            myAccount.version = myAccount.getDataInt(KEY_VERSION, 0);
-
-            myAccount.oAccountName = AccountName.fromAccountName(myAccount.androidAccount.name);
-            
-            // Load stored data for the User
-            myAccount.credentialsVerified = CredentialsVerificationStatus.load(myAccount);
-            setOAuth(myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuthDefault()));
-            myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
-            myAccount.userOid = myAccount.getDataString(KEY_USER_OID, "");
-            myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0);
-            
-            if (myAccount.version == MyAccount.ACCOUNT_VERSION) {
-                fixMyAccount();
-            }
-
-            setConnection();
-            
-            if (myAccount.version == MyAccount.ACCOUNT_VERSION 
-                    && !myAccount.getCredentialsPresent()) {
-                if (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
-                    MyLog.e(this, "User's credentials were lost?! Fixing...");
-                    setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
-                    save();
-                }
-            }
-            
-            if (myAccount.isValid()) { 
-                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                    MyLog.v(TAG, "Loaded " + this.toString());
-                }
-            } else {
-                MyLog.i(this, "Loaded Invalid account; version=" + myAccount.version + "; " + this.toString());
-            }
+            Builder builder = fromMyAccount(new MyAccount());
+            builder.loadNameFromAndroidAccount(myContext, account);
+            builder.loadOtherStoredData();
+            builder.setConnection();
+            builder.fixInconsistenciesWithChangedEnvironmentSilently(true);
+            builder.logLoadResult(method);
+            return builder;
         }
 
-        private void setOAuth(boolean isOAuth) {
-            Origin origin = myAccount.oAccountName.getOrigin();
-            if (isOAuth != origin.isOAuthDefault() && !origin.canChangeOAuth()) {
-                isOAuth = origin.isOAuthDefault();
-            }
-            myAccount.isOAuth = isOAuth;
+        private void loadNameFromAndroidAccount(MyContext myContext, Account account) {
+            myAccount.androidAccount = account;
+            myAccount.oAccountName = AccountName.fromAccountName(myContext, myAccount.androidAccount.name);
         }
         
-        /** Fix inconsistencies with changed environment... */
-        private void fixMyAccount() {
+        private void loadOtherStoredData() {
+            myAccount.version = myAccount.getDataInt(KEY_VERSION, 0);
+            myAccount.deleted = myAccount.getDataBoolean(KEY_DELETED, false);
+            setOAuth(TriState.UNKNOWN);
+            myAccount.credentialsVerified = CredentialsVerificationStatus.load(myAccount);
+            myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0);
+            myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
+            myAccount.userOid = myAccount.getDataString(KEY_USER_OID, "");
+        }
+
+        private void setOAuth(TriState isOAuthTriState) {
+            Origin origin = myAccount.oAccountName.getOrigin();
+            boolean isOAuth = true;
+            if (isOAuthTriState == TriState.UNKNOWN) {
+                isOAuth = myAccount.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault());
+            } else {
+                isOAuth = isOAuthTriState.toBoolean(origin.isOAuthDefault());
+            }
+            myAccount.isOAuth = origin.getOriginType().fixIsOAuth(isOAuth);
+        }
+        
+        private void fixInconsistenciesWithChangedEnvironmentSilently(boolean saveChanges) {
+            if (myAccount.version != MyAccount.ACCOUNT_VERSION) {
+                return;
+            }
             boolean changed = false;
-            if (myAccount.userId==0) {
+            if (isPersistent() && myAccount.userId==0) {
                 changed = true;
                 assignUserId();
-                MyLog.e(this, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
+                MyLog.e(TAG, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
             }
             if (myAccount.syncFrequencySeconds==0) {
                 myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
@@ -233,9 +218,52 @@ public final class MyAccount implements AccountDataReader {
                 ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
                 changed = true;
             }
-            if (changed) {
+            if (!myAccount.getCredentialsPresent()
+                    && myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
+                MyLog.e(TAG, "User's credentials were lost?! Fixing...");
+                setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
+                save();
+            }
+            if (changed && saveChanges) {
                 saveSilently();
             }
+        }
+
+        private void logLoadResult(String method) {
+            if (myAccount.isValid()) { 
+                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                    MyLog.v(TAG, method + " Loaded " + this.toString());
+                }
+            } else {
+                MyLog.i(TAG, method + "Loaded Invalid account; version=" + myAccount.version + "; " + this.toString());
+            }
+        }
+        
+        private Builder(Parcel source) {
+            String method = "construct from Parcel";
+            myAccount = new MyAccount();
+            
+            // Load as if the account is not persisted to force loading everything from userData
+            loadNameFromUserData(source.readBundle());
+            loadOtherStoredData();
+            setConnection();
+            fixInconsistenciesWithChangedEnvironmentSilently(false);
+
+            // Do this as a last step
+            if (myAccount.getDataBoolean(KEY_PERSISTENT, false)) {
+                myAccount.androidAccount = myAccount.userData.getParcelable(KEY_ACCOUNT);
+                if (myAccount.androidAccount == null) {
+                    MyLog.e(TAG, "The account was marked as persistent:" + this);
+                }
+            }
+            logLoadResult(method);
+        }
+
+        private void loadNameFromUserData(Bundle userDataIn) {
+            myAccount.userData = userDataIn;
+            myAccount.oAccountName = AccountName.fromOriginAndUserNames(
+                    myAccount.getDataString(Origin.KEY_ORIGIN_NAME, ""),
+                    myAccount.getDataString(KEY_USERNAME, ""));
         }
         
         public MyAccount getAccount() {
@@ -262,47 +290,22 @@ public final class MyAccount implements AccountDataReader {
             if (isPersistent()) {
                 if (myAccount.userId != 0) {
                     // TODO: Delete databases for this User
-                    
                     myAccount.userId = 0;
                 }
 
+                setAndroidAccountDeleted();
                 // We don't delete Account from Account Manager here
                 myAccount.androidAccount = null;
             }
             return ok;
         }
-
-        /**
-         * Loads account from userData 
-         */
-        private void loadFromUserData() {
-            String originName = Origin.ORIGIN_ENUM_DEFAULT.getName();
-            String username = "";
+        
+        private void setAndroidAccountDeleted() {
             if (isPersistent()) {
-                myAccount.oAccountName = AccountName.fromAccountName(myAccount.androidAccount.name);
-            } else {
-                originName = myAccount.getDataString(KEY_ORIGIN_NAME, originName);
-                username = myAccount.getDataString(KEY_USERNAME, "");
-                myAccount.oAccountName = AccountName.fromOriginAndUserNames(originName, username);
-            }
-            
-            // Load stored data for the MyAccount
-            myAccount.credentialsVerified = CredentialsVerificationStatus.load(myAccount);
-            setOAuth(myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuthDefault()));
-            myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
-            myAccount.userOid = myAccount.getDataString(KEY_USER_OID, "");
-            myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0L);
-            setConnection();
-            
-            if (isPersistent() && myAccount.userId==0) {
-                assignUserId();
-                MyLog.e(this, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
-            }
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "Loaded " + this.toString());
+                setDataBoolean(KEY_DELETED, true);
             }
         }
-        
+
         @Override
         public void setDataString(String key, String value) {
             try {
@@ -317,7 +320,7 @@ public final class MyAccount implements AccountDataReader {
                     }
                 }
             } catch (Exception e) {
-                MyLog.v(this, e);
+                MyLog.v(TAG, e);
             }
         }
 
@@ -326,7 +329,7 @@ public final class MyAccount implements AccountDataReader {
             try {
                 setDataString(key, Integer.toString(value));
             } catch (Exception e) {
-                MyLog.v(this, e);
+                MyLog.v(TAG, e);
             }
         }
 
@@ -345,7 +348,7 @@ public final class MyAccount implements AccountDataReader {
                     setDataString(key, Long.toString(value));
                 }
             } catch (Exception e) {
-                MyLog.v(this, e);
+                MyLog.v(TAG, e);
             }
         }
         
@@ -353,7 +356,7 @@ public final class MyAccount implements AccountDataReader {
             try {
                 setDataString(key, Boolean.toString(value));
             } catch (Exception e) {
-                MyLog.v(this, e);
+                MyLog.v(TAG, e);
             }
         }
 
@@ -377,10 +380,10 @@ public final class MyAccount implements AccountDataReader {
             
             try {
                 if (!myAccount.isValid()) {
-                    MyLog.v(this, "Didn't save invalid account: " + myAccount);
+                    MyLog.v(TAG, "Didn't save invalid account: " + myAccount);
                     return false;
                 }
-                changed = addAndroidAccount(changed);
+                changed = addAndroidAccountIfNecessary(changed);
                 if (myAccount.getDataString(KEY_USERNAME, "").compareTo(myAccount.oAccountName.getUsername()) !=0 ) {
                     setDataString(KEY_USERNAME, myAccount.oAccountName.getUsername());
                     changed = true;
@@ -389,8 +392,8 @@ public final class MyAccount implements AccountDataReader {
                     setDataString(KEY_USER_OID, myAccount.userOid);
                     changed = true;
                 }
-                if (myAccount.oAccountName.getOriginName().compareTo(myAccount.getDataString(KEY_ORIGIN_NAME, Origin.ORIGIN_ENUM_DEFAULT.getName())) != 0) {
-                    setDataString(KEY_ORIGIN_NAME, myAccount.oAccountName.getOriginName());
+                if (myAccount.oAccountName.getOriginName().compareTo(myAccount.getDataString(Origin.KEY_ORIGIN_NAME, "")) != 0) {
+                    setDataString(Origin.KEY_ORIGIN_NAME, myAccount.oAccountName.getOriginName());
                     changed = true;
                 }
                 if (myAccount.credentialsVerified != CredentialsVerificationStatus.load(myAccount)) {
@@ -421,22 +424,22 @@ public final class MyAccount implements AccountDataReader {
                     changed = true;
                 }
 
-                MyLog.v(this, "Saved " + (changed ? " changed " : " no changes " ) + this);
+                MyLog.v(TAG, "Saved " + (changed ? " changed " : " no changes " ) + this);
             } catch (Exception e) {
-                MyLog.e(this, "saving " + myAccount.getAccountName(), e);
+                MyLog.e(TAG, "saving " + myAccount.getAccountName(), e);
                 changed = false;
             }
             return changed;
         }
 
-        private boolean addAndroidAccount(boolean changedIn) {
+        private boolean addAndroidAccountIfNecessary(boolean changedIn) {
             boolean changed = changedIn;
             if (!isPersistent()) {
                 // Let's check if there is such an Android Account already
                 android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
                 android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
                 for (android.accounts.Account account : aa) {
-                    if (myAccount.getAccountName().equalsIgnoreCase(account.name)) {
+                    if (myAccount.getAccountName().equals(account.name)) {
                         changed = true;
                         myAccount.androidAccount = account;
                         break;
@@ -464,9 +467,9 @@ public final class MyAccount implements AccountDataReader {
                         // SyncManager(865): can't find a sync adapter for SyncAdapterType Key 
                         // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, removing settings for it
                         
-                        MyLog.v(this, "Persisted " + myAccount.getAccountName());
+                        MyLog.v(TAG, "Persisted " + myAccount.getAccountName());
                     } catch (Exception e) {
-                        MyLog.e(this, "Adding Account to AccountManager", e);
+                        MyLog.e(TAG, "Adding Account to AccountManager", e);
                         myAccount.androidAccount = null;
                     }
                 }
@@ -482,7 +485,8 @@ public final class MyAccount implements AccountDataReader {
                     config = myAccount.getConnection().getConfig();
                     ok = (!config.isEmpty());
                     if (ok) {
-                       Origin.fromOriginId(myAccount.getOriginId()).save(config);
+                        Origin.Builder originBuilder = new Origin.Builder(MyContextHolder.get().persistentOrigins().fromId(myAccount.getOriginId())); 
+                        originBuilder.save(config);
                     }
                 } finally {
                     MyLog.v(this, "Get Origin config " + (ok ? "succeeded" : "failed"));
@@ -526,7 +530,7 @@ public final class MyAccount implements AccountDataReader {
             boolean errorSettingUsername = false;
             if (ok) {
                 newName = user.userName;
-                Origin origin = Origin.fromOriginId(user.originId);
+                Origin origin = MyContextHolder.get().persistentOrigins().fromId(user.originId);
                 ok = origin.isUsernameValid(newName);
                 errorSettingUsername = !ok;
             }
@@ -544,7 +548,7 @@ public final class MyAccount implements AccountDataReader {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
                 myAccount.userOid = user.oid;
                 if (MyDatabaseConverter.isUpgrading()) {
-                    MyLog.v(this, "Upgrade in progress");
+                    MyLog.v(TAG, "Upgrade in progress");
                     myAccount.userId = myAccount.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
                     DataInserter di = new DataInserter(myAccount, MyContextHolder.get().context(), TimelineTypeEnum.ALL);
@@ -569,13 +573,13 @@ public final class MyAccount implements AccountDataReader {
                 throw ce;
             }
             if (credentialsOfOtherUser) {
-                MyLog.e(this, MyContextHolder.get().context().getText(R.string.error_credentials_of_other_user) + ": "
+                MyLog.e(TAG, MyContextHolder.get().context().getText(R.string.error_credentials_of_other_user) + ": "
                         + newName);
                 throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, newName);
             }
             if (errorSettingUsername) {
                 String msg = MyContextHolder.get().context().getText(R.string.error_set_username) + newName;
-                MyLog.e(this, msg);
+                MyLog.e(TAG, msg);
                 throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
             }
             return ok;
@@ -595,7 +599,7 @@ public final class MyAccount implements AccountDataReader {
         }
 
         public void registerClient() throws ConnectionException {
-            MyLog.v(this, "Registering client application for " + myAccount.getUsername());
+            MyLog.v(TAG, "Registering client application for " + myAccount.getUsername());
             setConnection();
             myAccount.connection.registerClientForAccount();
         }
@@ -611,9 +615,9 @@ public final class MyAccount implements AccountDataReader {
                 myAccount.connection.enrichConnectionData(connectionData);
                 myAccount.connection.setAccountData(connectionData);
             } catch (InstantiationException e) {
-                MyLog.i(this, e);
+                MyLog.i(TAG, e);
             } catch (IllegalAccessException e) {
-                MyLog.i(this, e);
+                MyLog.i(TAG, e);
             }
         }
 
@@ -642,7 +646,7 @@ public final class MyAccount implements AccountDataReader {
                     myAccount.userId = di.insertOrUpdateUser(mbUser, lum);
                     lum.save();
                 } catch (Exception e) {
-                    MyLog.e(this, "Construct user", e);
+                    MyLog.e(TAG, "Construct user", e);
                 }
             }
         }
@@ -701,13 +705,35 @@ public final class MyAccount implements AccountDataReader {
         protected int getVersion() {
             return myAccount.version;
         }
+        
+        protected void setVersion(int versionNew) {
+            myAccount.version = versionNew;
+        }
 
         void setSyncFrequency(long syncFrequencySeconds) {
             myAccount.syncFrequencySeconds = syncFrequencySeconds;
         }
+        
+        /**
+         * @return true if the old Android Account should be deleted
+         */
+        public boolean onOriginNameChanged(String originNameNew) {
+            if (myAccount.oAccountName.getOriginName().equals(originNameNew) 
+                    || TextUtils.isEmpty(originNameNew)) {
+                return false;
+            }
+            MyLog.i(TAG, "renaming origin of " + myAccount.getAccountName() + " to " + originNameNew );
+            setAndroidAccountDeleted();
+            myAccount.androidAccount = null;
+            myAccount.oAccountName = AccountName.fromOriginAndUserNames(
+                    originNameNew,
+                    myAccount.oAccountName.getUsername());
+            saveSilently();
+            return true;
+        }
     }
     
-    private AccountName oAccountName = AccountName.fromAccountName("");
+    private AccountName oAccountName = AccountName.getEmpty();
     private String userOid = "";
     private Connection connection = null;
     
@@ -740,7 +766,8 @@ public final class MyAccount implements AccountDataReader {
 
     private long syncFrequencySeconds = 0;
     private int version = MyAccount.ACCOUNT_VERSION;
-    public static final int ACCOUNT_VERSION = 12;
+    public static final int ACCOUNT_VERSION = 14;
+    private boolean deleted = false;
     
     public enum CredentialsVerificationStatus {
         /** 
@@ -939,7 +966,9 @@ public final class MyAccount implements AccountDataReader {
     }
 
     boolean isValid() {
-        return (version == MyAccount.ACCOUNT_VERSION) && oAccountName.isValid() 
+        return (!deleted
+                && version == MyAccount.ACCOUNT_VERSION) 
+                && oAccountName.isValid()
                 && !TextUtils.isEmpty(userOid)
                 && userId != 0
                 && connection != null;
@@ -1040,7 +1069,7 @@ public final class MyAccount implements AccountDataReader {
     }
     
     /**
-     * This is defined by tweet server
+     * This is defined by Microblogging system
      * Starting from 2010-09 twitter.com allows OAuth only
      */
     public boolean canChangeOAuth() {
@@ -1076,6 +1105,12 @@ public final class MyAccount implements AccountDataReader {
             }
             if (connection == null) {
                 members += "; no connection";
+            }
+            if (deleted) {
+                members += "; deleted";
+            }
+            if (version != ACCOUNT_VERSION) {
+                members += "; version=" + version;
             }
         } catch (Exception e) {
             MyLog.v(this, members, e);

@@ -311,7 +311,7 @@ public class MyPreferences {
     /**
      * Load the theme according to the preferences.
      */
-    public static void loadTheme(String tag, Context context) {
+    public static void loadTheme(Object tag, Context context) {
         String themeColor = getDefaultSharedPreferences().getString(KEY_THEME_COLOR, "DeviceDefault");
         StringBuilder themeName = new StringBuilder("Theme.");
         themeName.append(themeColor);

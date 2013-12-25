@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net;
 
+import android.net.Uri;
+
 import org.andstatus.app.account.AccountDataWriter;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,6 +29,11 @@ public abstract class HttpConnection {
     protected HttpConnectionData data;
 
     static final String USER_AGENT = "AndStatus";
+    /** 
+     * The URI is consistent with "scheme" and "host" in AndroidManifest
+     * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"
+     */
+    public static final Uri CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org");
  
     public void registerClient(String path) throws ConnectionException {}
     
@@ -40,7 +47,7 @@ public abstract class HttpConnection {
         if (path.contains("://")) {
             return path;
         } else {
-            return "http" + (data.isHttps ? "s" : "")
+            return "http" + (data.isSsl ? "s" : "")
                     + "://" + data.host
                     + "/" + path;
         }

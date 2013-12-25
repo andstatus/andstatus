@@ -32,7 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Handles connection to the API of the Microblogging System (i.e. to the {@link Origin})
+ * Handles connection to the API of the Microblogging System (i.e. to the "Origin")
  * Authenticated User info (User account in the Microblogging system) and connection properties 
  * are provided in the constructor.
  * 

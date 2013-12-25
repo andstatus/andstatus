@@ -22,13 +22,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.data.MyDatabaseConverter;
-import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.net.MbUser;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,61 +35,37 @@ public class MyAccountConverter {
 
     private MyAccountConverter() {
     }
-    
-    public static int convert11to12(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 12;
+
+    public static int convert12to14(SQLiteDatabase db, int oldVersion, String twitterName,
+            String statusNetSystemName) {
+        final int versionTo = 14;
         boolean ok = false;
-        String step = "";
         try {
             MyLog.i(TAG, "Accounts upgrading step from version " + oldVersion + " to version " + versionTo );
             Context context = MyContextHolder.get().context();
+            MyContextHolder.get().persistentOrigins().initialize(db);
             
             android.accounts.AccountManager am = AccountManager.get(context);
             android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
             Collection<android.accounts.Account> accountsToRemove = new ArrayList<android.accounts.Account>(); 
             for (android.accounts.Account account : aa) {
                 MyDatabaseConverter.stillUpgrading();
-                MyAccount.Builder builderOld = new MyAccount.Builder(account);
+                MyAccount.Builder builderOld = MyAccount.Builder.fromAndroidAccount(MyContextHolder.get(), account);
                 if (builderOld.getVersion() == versionTo) {
                     MyLog.i(TAG, "Account " + account.name + " already converted?!");
                 } else {
-                    // Structure of the account name changed!
-                    long originId = Origin.OriginEnum.TWITTER.getId();
-                    String originName = "twitter";
-                    String username = account.name;
-                    int indSlash = account.name.indexOf("/");
-                    if (indSlash >= 0) {
-                        originName = account.name.substring(0, indSlash);
-                        if (indSlash < account.name.length()-1) {
-                            username = account.name.substring(indSlash + 1);
+                    builderOld.setVersion(versionTo);
+                    String originNameOld = AccountName.accountNameToOriginName(account.name);
+                    if (originNameOld.equals("twitter")) {
+                        if (builderOld.onOriginNameChanged(twitterName)) {
+                            accountsToRemove.add(account);
+                        }
+                    } else if (originNameOld.equals("status.net")) {
+                        if (builderOld.onOriginNameChanged(statusNetSystemName)) {
+                            accountsToRemove.add(account);
                         }
                     }
-                    String prefsFileNameOld = "user_" + originName + "-" + username;
-                    if ("identi.ca".equalsIgnoreCase(originName)) {
-                        username += "@identi.ca";
-                        originName = "pump.io";
-                        originId = Origin.OriginEnum.PUMPIO.getId();
-                    } else if ("twitter".equalsIgnoreCase(originName)) {
-                        originName = "twitter";
-                    }
-                    long userId = MyProvider.userNameToId(db, originId, username);
-                    String userOid = MyProvider.idToOid(db, OidEnum.USER_OID, userId, 0);
-                    AccountName accountNameNew = AccountName.fromOriginAndUserNames(originName, username);
-                    MyLog.i(TAG, "Upgrading account " + account.name + " to " + username + "; oid=" + userOid + "; id=" + userId);
-
-                    MbUser accountMbUser = MbUser.fromOriginAndUserOid(originId, userOid);
-                    accountMbUser.userName = username;
-                    MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName("/" + originName, TriState.TRUE);
-                    
-                    String userToken = builderOld.getAccount().getDataString("user_token", "");
-                    String userSecret = builderOld.getAccount().getDataString("user_secret", "");
-                    
-                    builder.setUserTokenWithSecret(userToken, userSecret);
-                    builder.setDataLong(MyAccount.Builder.KEY_USER_ID, userId);
-                    SharedPreferencesUtil.rename(context, prefsFileNameOld, accountNameNew.prefsFileName());
-                    builder.onCredentialsVerified(accountMbUser, null);
-                    
-                    accountsToRemove.add(account);
+                    builderOld.saveSilently();
                 }
             }
             MyLog.i(TAG, "Removing old accounts");
@@ -110,10 +80,8 @@ public class MyAccountConverter {
         if (ok) {
             MyLog.i(TAG, "Accounts upgrading step successfully upgraded accounts from " + oldVersion + " to version " + versionTo);
         } else {
-            MyLog.e(TAG, "Error upgrading accounts from " + oldVersion + " to version " + versionTo
-                    + " step='" + step +"'");
+            MyLog.e(TAG, "Error upgrading accounts from " + oldVersion + " to version " + versionTo);
         }
         return ok ? versionTo : oldVersion;
     }
-
 }

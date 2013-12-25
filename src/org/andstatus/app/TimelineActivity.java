@@ -239,8 +239,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         mCurrentMyAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         serviceConnector = new MyServiceReceiver(this);
         
-        MyPreferences.loadTheme(TAG, this);
-
+        MyPreferences.loadTheme(this, this);
         setContentView(R.layout.timeline);
 
         ViewGroup messageListParent = (ViewGroup) findViewById(R.id.messageListParent);

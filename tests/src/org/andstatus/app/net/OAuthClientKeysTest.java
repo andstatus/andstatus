@@ -18,9 +18,10 @@ package org.andstatus.app.net;
 
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.net.OAuthClientKeys;
-import org.andstatus.app.origin.Origin.OriginEnum;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 
 public class OAuthClientKeysTest extends InstrumentationTestCase {
@@ -34,7 +35,8 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
 
     public void testKeysSave() {
        HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
-               OriginEnum.PUMPIO.newOrigin().getConnectionData(TriState.UNKNOWN));
+               MyContextHolder.get().persistentOrigins().firstOfType(OriginType.PUMPIO)
+               .getConnectionData(TriState.UNKNOWN));
        final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
        final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
 
@@ -56,7 +58,8 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
 
     public static void insertTestKeys() {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
-                OriginEnum.PUMPIO.newOrigin().getConnectionData(TriState.UNKNOWN));
+                MyContextHolder.get().persistentOrigins().firstOfType(OriginType.PUMPIO)
+                .getConnectionData(TriState.UNKNOWN));
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
         // Saving

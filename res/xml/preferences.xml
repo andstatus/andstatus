@@ -29,6 +29,11 @@
 			android:title="@string/title_preference_frequency" android:key="fetch_frequency"
 			android:defaultValue="900" />
         </PreferenceCategory>
+        <Preference
+            android:key="manage_origin_systems"
+            android:persistent="false"
+            android:title="@string/label_manage_origin_systems" >
+        </Preference>
     
     <!-- SETTINGS -->
 	<PreferenceCategory android:title="@string/category_title_preference_settings">

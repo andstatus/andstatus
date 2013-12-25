@@ -17,7 +17,7 @@
 package org.andstatus.app.net;
 
 /**
- * Default keys for OAuth {@link org.andstatus.app.origin.Origin} 
+ * Default keys for OAuth 
  * @author yvolk@yurivolkov.com
  */
 public interface OAuthClientKeysStrategy {

@@ -4,6 +4,7 @@ import android.accounts.AccountManager;
 import android.content.Context;
 import android.text.TextUtils;
 
+import org.andstatus.app.MyContext;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.account.MyAccount.Builder;
 import org.andstatus.app.data.MyDatabase;
@@ -15,8 +16,6 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PersistentAccounts {
-    private static final String TAG = PersistentAccounts.class.getSimpleName();
-
     /**
      * Persistence key for the Name of the default account
      */
@@ -51,13 +50,17 @@ public class PersistentAccounts {
         return persistentAccounts.size();
     }
 
-    public PersistentAccounts reRead(Context context) {
+    public PersistentAccounts initialize() {
+        return initialize(MyContextHolder.get());
+    }
+    
+    public PersistentAccounts initialize(MyContext myContext) {
         defaultAccountName = MyPreferences.getDefaultSharedPreferences().getString(KEY_DEFAULT_ACCOUNT_NAME, "");
         persistentAccounts.clear();
-        android.accounts.AccountManager am = AccountManager.get(context);
+        android.accounts.AccountManager am = AccountManager.get(myContext.context());
         android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
         for (android.accounts.Account account : aa) {
-            MyAccount ma = new Builder(account).getAccount();
+            MyAccount ma = Builder.fromAndroidAccount(myContext, account).getAccount();
             if (ma.isValid()) {
                 persistentAccounts.put(ma.getAccountName(), ma);
             } else {
@@ -66,10 +69,6 @@ public class PersistentAccounts {
         }
         MyLog.v(this, "Account list initialized, " + persistentAccounts.size() + " accounts");
         return this;
-    }
-    
-    public static PersistentAccounts initialize(Context context) {
-        return getEmpty().reRead(context);
     }
     
     public static PersistentAccounts getEmpty() {
@@ -94,7 +93,7 @@ public class PersistentAccounts {
             }
         }
         if (found) {
-            new MyAccount.Builder(ma).deleteData();
+            MyAccount.Builder.fromMyAccount(ma).deleteData();
 
             // And delete the object from the list
             persistentAccounts.remove(ma.getAccountName());
@@ -113,7 +112,7 @@ public class PersistentAccounts {
      */
     public MyAccount fromAccountName(String accountNameIn) {
         MyAccount myAccount = null;
-        AccountName accountName = AccountName.fromAccountName(accountNameIn);
+        AccountName accountName = AccountName.fromAccountName(MyContextHolder.get(), accountNameIn);
         if (TextUtils.isEmpty(accountName.getUsername())) {
             return myAccount;
         }
@@ -132,7 +131,7 @@ public class PersistentAccounts {
                         AuthenticatorService.ANDROID_ACCOUNT_TYPE);
                 for (android.accounts.Account androidAccount : androidAccounts) {
                     if (accountName.compareTo(androidAccount.name) == 0) {
-                        myAccount = new Builder(androidAccount).getAccount();
+                        myAccount = Builder.fromAndroidAccount(MyContextHolder.get(), androidAccount).getAccount();
                         persistentAccounts.put(myAccount.getAccountName(), myAccount);
                         MyPreferences.onPreferencesChanged();
                         break;
@@ -256,8 +255,8 @@ public class PersistentAccounts {
         if (ma == null || originId != ma.getOriginId()) {
            ma = findFirstMyAccountByOriginId(originId); 
         }
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "getMyAccountLinkedToThisMessage msgId=" + messageId +"; userId=" + userIdForThisMessage 
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, "getMyAccountLinkedToThisMessage msgId=" + messageId +"; userId=" + userIdForThisMessage 
                     + " -> account=" + (ma==null ? "null" : ma.getAccountName()));
         }
         return ma;
@@ -287,11 +286,10 @@ public class PersistentAccounts {
     
     public void onMyPreferencesChanged() {
         long syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
-        for (MyAccount persistentAccount : persistentAccounts.values()) {
-            Builder builder = new Builder(persistentAccount);
+        for (MyAccount ma : persistentAccounts.values()) {
+            Builder builder = Builder.fromMyAccount(ma);
             builder.setSyncFrequency(syncFrequencySeconds);
             builder.save();
         }
     }
-    
 }

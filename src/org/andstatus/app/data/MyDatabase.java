@@ -18,7 +18,7 @@ package org.andstatus.app.data;
 
 import org.andstatus.app.MyContextState;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Locale;
@@ -39,6 +39,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
+     * v.14 2013-12-15 yvolk. Origin table added
      * v.13 2013-12-06 yvolk. Avatar table added
      * v.12 2013-08-30 yvolk. Adapting for Pump.Io
      * v.11 2013-05-18 yvolk. FollowingUser table added. User table extended with a column
@@ -49,7 +50,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    public static final int DATABASE_VERSION = 13;
+    public static final int DATABASE_VERSION = 14;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
 	/**
@@ -72,7 +73,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 
         /**
          * ID of the originating (source) system (twitter.com, identi.ca, ... ) where the row was created
-         * 2012-02-26 Currently defaults to the "1" since we have only one system (twitter.com) yet
+         * See {@link Origin#_ID}
          */
         public static final String ORIGIN_ID =  "origin_id";
 	    /**
@@ -391,6 +392,22 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String AVATAR_ID = "avatar_id";
     }
 
+    public static final class Origin implements BaseColumns {
+        public static final String TABLE_NAME = Origin.class.getSimpleName().toLowerCase(Locale.US);
+        private Origin() {
+        }
+        /**
+         * Reference to {@link OriginType#getId()}
+         */
+        public static final String ORIGIN_TYPE_ID = "origin_type_id";
+        public static final String ORIGIN_NAME = "origin_name";
+        public static final String HOST = "host";
+        public static final String SSL = "ssl";
+        public static final String ALLOW_HTML = "allow_html";
+        public static final String TEXT_LIMIT = "text_limit";
+        public static final String SHORT_URL_LENGTH = "short_url_length";
+    }
+    
     /**
      * ids in originating system
      */
@@ -433,7 +450,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 state = MyContextState.UPGRADING;
             }
         } catch (Exception e) {
-            MyLog.e(this, e);
+            MyLog.d(this, "Error during checkState", e);
         } finally {
             if (db != null && db.isOpen()) {
                 db.close();
@@ -451,7 +468,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         MyLog.i(this, "Creating tables");
         db.execSQL("CREATE TABLE " + Msg.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                + Msg.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ENUM_DEFAULT.getId() + " NOT NULL," 
+                + Msg.ORIGIN_ID + " INTEGER NOT NULL," 
                 + Msg.MSG_OID + " STRING," 
                 + Msg.AUTHOR_ID + " INTEGER," 
                 + Msg.SENDER_ID + " INTEGER," 
@@ -486,7 +503,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         
         db.execSQL("CREATE TABLE " + User.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                + User.ORIGIN_ID + " INTEGER DEFAULT " + Origin.ORIGIN_ENUM_DEFAULT.getId() + " NOT NULL," 
+                + User.ORIGIN_ID + " INTEGER NOT NULL," 
                 + User.USER_OID + " TEXT," 
                 + User.USERNAME + " TEXT NOT NULL," 
                 + User.REAL_NAME + " TEXT," 
@@ -542,6 +559,44 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Avatar.USER_ID + ", "
                 + Avatar.STATUS
                 + ")");
+
+        db.execSQL("CREATE TABLE " + Origin.TABLE_NAME + " (" 
+                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
+                + Origin.ORIGIN_TYPE_ID + " INTEGER NOT NULL," 
+                + Origin.ORIGIN_NAME + " TEXT NOT NULL," 
+                + Origin.HOST + " TEXT NOT NULL," 
+                + Origin.SSL + " BOOLEAN DEFAULT 0 NOT NULL," 
+                + Origin.ALLOW_HTML + " BOOLEAN DEFAULT 0 NOT NULL," 
+                + Origin.TEXT_LIMIT + " INTEGER NOT NULL,"
+                + Origin.SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0" 
+                + ")");
+        
+        db.execSQL("CREATE UNIQUE INDEX idx_origin_name ON " + Origin.TABLE_NAME + " (" 
+                + Origin.ORIGIN_NAME
+                + ")");
+        
+        String sqlIns = "INSERT INTO " + Origin.TABLE_NAME + " ("
+                + BaseColumns._ID + "," 
+                + Origin.ORIGIN_TYPE_ID + "," 
+                + Origin.ORIGIN_NAME + "," 
+                + Origin.HOST + "," 
+                + Origin.SSL + "," 
+                + Origin.ALLOW_HTML + "," 
+                + Origin.TEXT_LIMIT + ","
+                + Origin.SHORT_URL_LENGTH
+                + ") VALUES ("
+                + "%s"
+                + ")";
+        String[] values = {
+                "1, 1, 'Twitter', 'api.twitter.com', 1, 0,  140, 23",
+                "2, 2, 'pump.io', '',                1, 1, 5000,  0",
+                "3, 3, 'Quitter', 'quitter.se',      1, 0,  140,  0",
+                "4, 3, 'Friendica', 'friendi.ca',    1, 1,  140,  0"
+        };
+        for (String value : values) {
+            db.execSQL(sqlIns.replace("%s", value));
+        }
+        
     }
 
     /**

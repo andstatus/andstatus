@@ -20,12 +20,13 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
-import org.andstatus.app.origin.Origin.OriginEnum;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,7 +49,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         super.setUp();
         context = TestSuite.initialize(this);
 
-        Origin origin = OriginEnum.PUMPIO.newOrigin();
+        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.PUMPIO);
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
         connectionData.dataReader = new AccountDataReaderEmpty();
         connection = (ConnectionPumpio) connectionData.connectionClass.newInstance();
@@ -130,7 +131,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Posting image", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertTrue("trailing linebreaks trimmed: '" + mbMessage.getBody() + "'", mbMessage.getBody().endsWith("Link"));
-        assertEquals("Message sent date: " + mbMessage.sentDate, TestSuite.gmtTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 32).getTime(), mbMessage.sentDate);
+        assertEquals("Message sent date: " + mbMessage.sentDate, TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 32).getTime(), mbMessage.sentDate);
 
         ind++;
         assertEquals("Other User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());

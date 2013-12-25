@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2010-2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2013 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2010 Brion N. Emde, "BLOA" example, http://github.com/brione/Brion-Learns-OAuth 
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,8 +28,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
-import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -56,7 +56,9 @@ import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginList;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -96,19 +98,16 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     
     private StateOfAccountChangeProcess state = null;
 
+    private Preference originPreference;
+    private Origin originOfUser;
+    
     private CheckBoxPreference oAuthCheckBox;
 
     private EditTextPreference usernameText;
 
     private EditTextPreference passwordText;
     
-    private ListPreference originNameList;
-
     private Preference addAccountOrVerifyCredentials;
-
-    private EditTextPreference hostText;
-
-    private CheckBoxPreference sslCheckBox;
     
     private boolean onSharedPreferenceChangedIsBusy = false;
     
@@ -129,17 +128,29 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         
         addPreferencesFromResource(R.xml.account_settings);
         
-        originNameList = (ListPreference) findPreference(MyAccount.Builder.KEY_ORIGIN_NAME);
+        originPreference = findPreference(Origin.KEY_ORIGIN_NAME);
+        originPreference.setOnPreferenceClickListener( new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                return onOriginClick();
+            }
+        });
+        
         addAccountOrVerifyCredentials = findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
         oAuthCheckBox = (CheckBoxPreference) findPreference(MyAccount.Builder.KEY_OAUTH);
         usernameText = (EditTextPreference) findPreference(MyAccount.Builder.KEY_USERNAME_NEW);
         passwordText = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
-        hostText = (EditTextPreference) findPreference(Origin.KEY_HOST_OF_ORIGIN);
-        sslCheckBox = (CheckBoxPreference) findPreference(Origin.KEY_SSL);
 
         restoreState(getIntent(), "onCreate");
     }
 
+    protected boolean onOriginClick() {
+        Intent i = new Intent(AccountSettingsActivity.this, OriginList.class);
+        i.setAction(Intent.ACTION_PICK);
+        startActivityForResult(i, ActivityRequestCode.SELECT_ORIGIN.id);
+        return true;
+    }
+    
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -187,6 +198,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             case SELECT_ACCOUNT:
                 onAccountSelected(resultCode, data);
                 break;
+            case SELECT_ORIGIN:
+                onOriginSelected(resultCode, data);
             default:
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
@@ -213,6 +226,23 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         }
     }
 
+    private void onOriginSelected(int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            Origin origin = MyContextHolder.get().persistentOrigins().fromName(data.getStringExtra(IntentExtra.EXTRA_ORIGIN_NAME.key));
+            if (origin.isPersistent()) {
+                if ( state.getAccount().getOriginId() != origin.getId()) {
+                    // If we have changed the System, we should recreate the Account
+                    originOfUser = origin;
+                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                            AccountName.fromOriginAndUserNames(originOfUser.getName(),
+                                    state.getAccount().getUsername()).toString(),
+                                    TriState.fromBoolean(state.getAccount().isOAuth()));
+                    showUserPreferences();
+                }
+            }
+        }
+    }
+    
     /**
      * Show values of all preferences in the "summaries".
      * @see <a href="http://stackoverflow.com/questions/531427/how-do-i-display-the-current-value-of-an-android-preference-in-the-preference-sum"> 
@@ -224,10 +254,12 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     private void showUserPreferences() {
         MyAccount ma = state.getAccount();
         
-        originNameList.setValue(ma.getOriginName());
-        SharedPreferencesUtil.showListPreference(this, MyAccount.Builder.KEY_ORIGIN_NAME, R.array.origin_system_entries, R.array.origin_system_entries, R.string.summary_preference_origin_system);
+        originOfUser = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
+        originPreference.setTitle(originOfUser.getName());
+        originPreference.setSummary(this.getText(R.string.summary_preference_origin_system)
+                .toString().replace("{0}", originOfUser.getOriginType().getTitle()));
 
-        originNameList.setEnabled(!state.builder.isPersistent() && TextUtils.isEmpty(ma.getUsername()));
+        originPreference.setEnabled(!state.builder.isPersistent() && TextUtils.isEmpty(ma.getUsername()));
         
         if (usernameText.getText() == null
                 || ma.getUsername().compareTo(usernameText.getText()) != 0) {
@@ -279,39 +311,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         passwordText.setEnabled(isNeeded 
                 && (ma.getCredentialsVerified()!=CredentialsVerificationStatus.SUCCEEDED));
 
-        Origin origin = Origin.fromOriginId(ma.getOriginId());
-        isNeeded = Origin.fromOriginId(ma.getOriginId()).canSetHostOfOrigin();
-        boolean isEnabled = isNeeded && (!origin.hostIsValid() || (ma.accountsOfThisOrigin() == 0) 
-                && !state.builder.isPersistent());
-        boolean originParametersPresent = true;
-        hostText.setEnabled(isEnabled);
-        if (isNeeded) {
-            hostText.setTitle(R.string.title_preference_host);
-            if (origin.hostIsValid()) {
-                hostText.setSummary(origin.getHost());
-            } else {
-                hostText.setSummary(R.string.summary_preference_host);
-                originParametersPresent = false;
-            }
-            hostText.setText(origin.getHost());
-        } else {
-            hostText.setTitle("");
-            hostText.setSummary("");
-        }
-
-        isNeeded = origin.canChangeSsl();
-        if (origin.isSsl() != sslCheckBox.isChecked()) {
-            sslCheckBox.setChecked(origin.isSsl());
-        }
-        isEnabled = isNeeded && (ma.accountsOfThisOrigin() == 0) && !state.builder.isPersistent();
-        sslCheckBox.setEnabled(isEnabled);
-        if (isNeeded) {
-            sslCheckBox.setTitle(R.string.title_preference_ssl);
-            sslCheckBox.setSummary(origin.isSsl() ? R.string.summary_preference_ssl_on : R.string.summary_preference_ssl_off);
-        } else {
-            sslCheckBox.setTitle("");
-            sslCheckBox.setSummary("");
-        }
+        Origin origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
+        boolean originParametersPresent = origin.isPersistent();
         
         int titleResId;
         boolean addAccountOrVerifyCredentialsEnabled = (ma.isOAuth() || ma.getCredentialsPresent()) 
@@ -363,7 +364,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
                 MyLog.d(TAG, "uri=" + uri.toString());
             }
-            if (Origin.CALLBACK_URI.getScheme().equals(uri.getScheme())) {
+            if (HttpConnection.CALLBACK_URI.getScheme().equals(uri.getScheme())) {
                 // To prevent repeating of this task
                 getIntent().setData(null);
                 // This activity was started by Twitter ("Service Provider")
@@ -452,20 +453,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             // Check if there are changes to avoid "ripples": don't set new
             // value if no changes
 
-            if (key.equals(MyAccount.Builder.KEY_ORIGIN_NAME)
-                    && state.getAccount().getOriginName()
-                    .compareToIgnoreCase(originNameList.getValue()) != 0) {
-                // If we have changed the System, we should recreate the Account
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                        AccountName.fromOriginAndUserNames(originNameList.getValue(),
-                                state.getAccount().getUsername()).toString(),
-                                TriState.fromBoolean(state.getAccount().isOAuth()));
-                showUserPreferences();
-            }
             if (key.equals(MyAccount.Builder.KEY_OAUTH)
                 && state.getAccount().isOAuth() != oAuthCheckBox.isChecked()) {
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                        AccountName.fromOriginAndUserNames(originNameList.getValue(),
+                        AccountName.fromOriginAndUserNames(originOfUser.getName(),
                                 state.getAccount().getUsername()).toString(),
                                 TriState.fromBoolean(oAuthCheckBox.isChecked()));
                 showUserPreferences();
@@ -485,37 +476,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     && state.getAccount().getPassword().compareTo(passwordText.getText()) != 0) {
                 state.builder.setPassword(passwordText.getText());
                 showUserPreferences();
-            }
-            if (key.equals(Origin.KEY_HOST_OF_ORIGIN)) {
-                Origin origin = Origin.fromOriginId(state.getAccount().getOriginId());
-                if (origin.canSetHostOfOrigin()) {
-                    String host = hostText.getText();
-                    if (origin.hostIsValid(host)
-                            && !origin.getHost().equalsIgnoreCase(host)) {
-                        origin.setHost(host);
-                        origin.save();
-                        state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                                AccountName.fromOriginAndUserNames(originNameList.getValue(),
-                                        state.getAccount().getUsername()).toString(),
-                                        TriState.fromBoolean(state.getAccount().isOAuth()));
-                        showUserPreferences();
-                    }
-                }
-            }
-            if (key.equals(Origin.KEY_SSL)) {
-                Origin origin = Origin.fromOriginId(state.getAccount().getOriginId());
-                if (origin.canChangeSsl()) {
-                    boolean isSsl = sslCheckBox.isChecked();
-                    if (origin.isSsl() != isSsl) {
-                        origin.setSsl(isSsl);
-                        origin.save();
-                        state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                                AccountName.fromOriginAndUserNames(originNameList.getValue(),
-                                        state.getAccount().getUsername()).toString(),
-                                        TriState.fromBoolean(state.getAccount().isOAuth()));
-                        showUserPreferences();
-                    }
-                }
             }
         } finally {
             onSharedPreferenceChangedIsBusy = false;
@@ -663,7 +623,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      */
     public static void startManageAccountsActivity(android.content.Context context) {
         Intent intent;
-        if (android.os.Build.VERSION.SDK_INT < 16 ) {  // before Jelly Bean
+        // before Jelly Bean
+        if (android.os.Build.VERSION.SDK_INT < 16 ) {  
             intent = new Intent(android.provider.Settings.ACTION_SYNC_SETTINGS);
             // This gives some unstable results on v.4.0.x so I got rid of it:
             // intent.putExtra(android.provider.Settings.EXTRA_AUTHORITIES, new String[] {MyProvider.AUTHORITY}); NOSONAR
@@ -686,9 +647,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         protected void onPreExecute() {
             dlg = ProgressDialog.show(AccountSettingsActivity.this,
                     getText(R.string.dialog_title_registering_client),
-                    getText(R.string.dialog_summary_registering_client), true, // indeterminate
-                    // duration
-                    false); // not cancel-able
+                    getText(R.string.dialog_summary_registering_client),
+                // duration indeterminate
+                    true, 
+                // not cancel-able
+                    false); 
         }
 
         @Override
@@ -742,7 +705,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
 
                     if (succeeded) {
                         String accountName = state.getAccount().getAccountName();
-                        MyContextHolder.get().persistentAccounts().reRead(MyContextHolder.get().context());
+                        MyContextHolder.get().persistentAccounts().initialize();
                         state.builder = MyAccount.Builder.newOrExistingFromAccountName(accountName, TriState.TRUE);
                         showUserPreferences();
                         new OAuthAcquireRequestTokenTask().execute();
@@ -814,7 +777,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 // null as the callback Uri in this function call. Then
                 // Twitter will correctly process your callback redirection
                 String authUrl = state.getAccount().getOAuthConsumerAndProvider().getProvider()
-                        .retrieveRequestToken(consumer, Origin.CALLBACK_URI.toString());
+                        .retrieveRequestToken(consumer, HttpConnection.CALLBACK_URI.toString());
                 state.setRequestTokenWithSecret(consumer.getToken(), consumer.getTokenSecret());
 
                 // This is needed in order to complete the process after redirect
@@ -937,7 +900,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 // the state
 
                 Uri uri = uris[0];
-                if (uri != null && Origin.CALLBACK_URI.getHost().equals(uri.getHost())) {
+                if (uri != null && HttpConnection.CALLBACK_URI.getHost().equals(uri.getHost())) {
                     String token = state.getRequestToken();
                     String secret = state.getRequestSecret();
 

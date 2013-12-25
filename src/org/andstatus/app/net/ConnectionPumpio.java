@@ -49,11 +49,6 @@ public class ConnectionPumpio extends Connection {
         if (!TextUtils.isEmpty(connectionData.accountUsername)) {
             connectionData.host = usernameToHost(connectionData.accountUsername);
         }
-        if (connectionData.isOAuth) {
-            connectionData.httpConnectionClass = HttpConnectionOAuthJavaNet.class;
-        } else {
-            throw new IllegalArgumentException(TAG + " basic OAuth is not supported");
-        }
     }
     
     @Override
@@ -269,7 +264,7 @@ public class ConnectionPumpio extends Connection {
             throw new IllegalArgumentException(apiRoutine + ": host is empty for the userId=" + userId);
         } else if (host.compareToIgnoreCase(http.data.host) != 0) {
             MyLog.v(this, "Requesting data from the host: " + host);
-            HttpConnectionData connectionData1 = http.data.newCopy();
+            HttpConnectionData connectionData1 = http.data.clone();
             connectionData1.oauthClientKeys = null;
             connectionData1.host = host;
             try {

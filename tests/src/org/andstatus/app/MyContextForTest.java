@@ -23,6 +23,7 @@ import org.andstatus.app.MyContextState;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.origin.PersistentOrigins;
 
 import java.util.Locale;
 import java.util.Set;
@@ -145,5 +146,10 @@ public class MyContextForTest implements MyContext {
     @Override
     public Locale getLocale() {
         return myContext.getLocale();
+    }
+
+    @Override
+    public PersistentOrigins persistentOrigins() {
+        return myContext.persistentOrigins();
     }
 }

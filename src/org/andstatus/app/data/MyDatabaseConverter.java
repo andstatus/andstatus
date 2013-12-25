@@ -17,6 +17,8 @@
 package org.andstatus.app.data;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.provider.BaseColumns;
+import android.text.TextUtils;
 
 import net.jcip.annotations.GuardedBy;
 
@@ -137,20 +139,14 @@ public class MyDatabaseConverter {
         int currentVersion = oldVersion;
         stillUpgrading();
         MyLog.i(this, "Upgrading database from version " + oldVersion + " to version " + newVersion);
-        if (oldVersion < 9) {
+        if (oldVersion < 12) {
             throw new IllegalArgumentException("Upgrade from this database version is not supported. Please reinstall the application");
         } 
-        if (currentVersion == 9) {
-            currentVersion = convert9to10(db, currentVersion);
-        }
-        if (currentVersion == 10) {
-            currentVersion = convert10to11(db, currentVersion);
-        }
-        if (currentVersion == 11) {
-            currentVersion = convert11to12(db, currentVersion);
-        }
         if (currentVersion == 12) {
             currentVersion = convert12to13(db, currentVersion);
+        }
+        if (currentVersion == 13) {
+            currentVersion = convert13to14(db, currentVersion);
         }
         if ( currentVersion == newVersion) {
             MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
@@ -160,199 +156,6 @@ public class MyDatabaseConverter {
                     + newVersion + ". Current database version=" + currentVersion);
             throw new IllegalStateException("Database upgrade failed. Current database version=" + currentVersion);
         }
-    }
-
-    /**
-     * @return new db version, the same as old in a case of a failure
-     */
-    private int convert9to10(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 10;
-        boolean ok = false;
-        String sql = "";
-        try {
-            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
-            String[] columns = {"home_timeline_msg_id", "home_timeline_date", 
-                    "favorites_timeline_msg_id", "favorites_timeline_date",
-                    "direct_timeline_msg_id", "direct_timeline_date", 
-                    "mentions_timeline_msg_id", "mentions_timeline_date", 
-                    "user_timeline_msg_id", "user_timeline_date"};
-            for ( String column: columns ) {
-                sql = "ALTER TABLE user ADD COLUMN " + column + " INTEGER DEFAULT 0 NOT NULL";
-                db.execSQL(sql);
-            }
-            
-            sql = "ALTER TABLE msgofuser ADD COLUMN reblog_oid STRING";
-            db.execSQL(sql);
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(this, e);
-        }
-        if (ok) {
-            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
-        } else {
-            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
-                    + " to version " + versionTo
-                    + " SQL='" + sql +"'");
-        }
-        return ok ? versionTo : oldVersion;
-    }
-
-    /**
-     * @return new db version, the same as old in a case of a failure
-     */
-    private int convert10to11(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 11;
-        boolean ok = false;
-        String sql = "";
-        try {
-            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
-
-            String[] columns = {"following_user_date",
-                    "user_msg_id", "user_msg_date"};
-            for ( String column: columns ) {
-                sql = "ALTER TABLE user ADD COLUMN " + column + " INTEGER DEFAULT 0 NOT NULL";
-                db.execSQL(sql);
-            }
-            
-            sql = "CREATE TABLE " + "followinguser" + " (" 
-                    + "user_id" + " INTEGER NOT NULL," 
-                    + "following_user_id" + " INTEGER NOT NULL," 
-                    + "user_followed" + " BOOLEAN DEFAULT 1 NOT NULL," 
-                    + " CONSTRAINT pk_followinguser PRIMARY KEY (" + "user_id" + " ASC, " + "following_user_id" + " ASC)"
-                    + ");";
-            db.execSQL(sql);
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(this, e);
-        }
-        if (ok) {
-            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
-        } else {
-            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
-                    + " to version " + versionTo
-                    + " SQL='" + sql +"'");
-        }
-        return ok ? versionTo : oldVersion;
-    }
-
-    /**
-     * @return new db version, the same as old in a case of a failure
-     */
-    private int convert11to12(SQLiteDatabase db, int oldVersion) {
-        final int versionTo = 12;
-        boolean ok = false;
-        String sql = "";
-        try {
-            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
-
-            sql = "ALTER TABLE msg ADD COLUMN url TEXT";
-            db.execSQL(sql);
-            
-            sql = "ALTER TABLE msgofuser ADD COLUMN reblogged INTEGER DEFAULT 0 NOT NULL";
-            db.execSQL(sql);
-            sql = "UPDATE msgofuser SET reblogged = retweeted";
-            db.execSQL(sql);
-            // DROP COLUMN is not supported so we have to recreate table
-            sql = "ALTER TABLE msgofuser RENAME TO msgofuser_old";
-            db.execSQL(sql);
-            sql = "CREATE TABLE msgofuser (user_id INTEGER NOT NULL,msg_id INTEGER NOT NULL,subscribed BOOLEAN DEFAULT 0 NOT NULL,"
-                    + "favorited BOOLEAN DEFAULT 0 NOT NULL,reblogged BOOLEAN DEFAULT 0 NOT NULL,reblog_oid TEXT,"
-                    + "mentioned BOOLEAN DEFAULT 0 NOT NULL,replied BOOLEAN DEFAULT 0 NOT NULL,directed BOOLEAN DEFAULT 0 NOT NULL,"
-                    + " CONSTRAINT pk_msgofuser PRIMARY KEY (user_id ASC, msg_id ASC))";
-            db.execSQL(sql);
-            sql = "INSERT INTO msgofuser (user_id, msg_id, subscribed, favorited, reblogged, reblog_oid, mentioned, replied, directed)"
-                    + " SELECT user_id, msg_id, subscribed, favorited, reblogged, reblog_oid, mentioned, replied, directed FROM msgofuser_old";
-            db.execSQL(sql);
-            sql = "DROP TABLE msgofuser_old";
-            db.execSQL(sql);
-            
-            sql = "UPDATE user SET username = username || '@identi.ca'"
-                    + " WHERE origin_id=2";
-            db.execSQL(sql);
-            
-            sql = "UPDATE user SET user_oid = 'acct:' || username"
-                    + " WHERE origin_id=2";
-            db.execSQL(sql);
-            
-            sql = "UPDATE msg SET msg_oid='http://identi.ca/notice/' || msg_oid"
-                    + " WHERE origin_id=2";
-            db.execSQL(sql);
-            
-            String[] columnsOld = {
-                    "home_timeline_msg_id", "favorites_timeline_msg_id", 
-                    "direct_timeline_msg_id", "mentions_timeline_msg_id", "user_timeline_msg_id"
-            };
-            String[] columnsNew = {
-                    "home_timeline_position", "favorites_timeline_position", 
-                    "direct_timeline_position", "mentions_timeline_position", "user_timeline_position"
-            };
-            String[] columnsItemDate = {
-                    "home_timeline_item_date", "favorites_timeline_item_date", 
-                    "direct_timeline_item_date", "mentions_timeline_item_date", "user_timeline_item_date"
-            };
-            for (int index=0; index < columnsNew.length; index++ ) {
-                sql = "UPDATE user SET " + columnsOld[index] + "=''" + " WHERE origin_id=2";
-                db.execSQL(sql);
-                sql = "ALTER TABLE user ADD COLUMN " + columnsNew[index] + " TEXT DEFAULT '' NOT NULL";
-                db.execSQL(sql);
-                sql = "UPDATE user SET " + columnsNew[index] + "=" + columnsOld[index];
-                db.execSQL(sql);
-                sql = "ALTER TABLE user ADD COLUMN " + columnsItemDate[index] + " INTEGER DEFAULT 0 NOT NULL";
-                db.execSQL(sql);
-            }
-
-            sql = "ALTER TABLE user RENAME TO user_old";
-            db.execSQL(sql);
-            sql="CREATE TABLE user (_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + "origin_id INTEGER DEFAULT 1 NOT NULL,user_oid TEXT,username TEXT NOT NULL,"
-                    + "real_name TEXT,avatar_url TEXT,avatar_blob BLOB,user_description TEXT,"
-                    + "homepage TEXT,url TEXT,user_created_date INTEGER,user_ins_date INTEGER NOT NULL,"
-                    + "home_timeline_position TEXT DEFAULT '' NOT NULL,home_timeline_item_date INTEGER DEFAULT 0 NOT NULL,"
-                    + "home_timeline_date INTEGER DEFAULT 0 NOT NULL,"
-                    + "favorites_timeline_position TEXT DEFAULT '' NOT NULL,favorites_timeline_item_date INTEGER DEFAULT 0 NOT NULL,"
-                    + "favorites_timeline_date INTEGER DEFAULT 0 NOT NULL,"
-                    + "direct_timeline_position TEXT DEFAULT '' NOT NULL,direct_timeline_item_date INTEGER DEFAULT 0 NOT NULL,"
-                    + "direct_timeline_date INTEGER DEFAULT 0 NOT NULL,"
-                    + "mentions_timeline_position TEXT DEFAULT '' NOT NULL,mentions_timeline_item_date INTEGER DEFAULT 0 NOT NULL,"
-                    + "mentions_timeline_date INTEGER DEFAULT 0 NOT NULL,"
-                    + "user_timeline_position TEXT DEFAULT '' NOT NULL,user_timeline_item_date INTEGER DEFAULT 0 NOT NULL,"
-                    + "user_timeline_date INTEGER DEFAULT 0 NOT NULL,"
-                    + "following_user_date INTEGER DEFAULT 0 NOT NULL,user_msg_id INTEGER DEFAULT 0 NOT NULL,"
-                    + "user_msg_date INTEGER DEFAULT 0 NOT NULL)";
-            db.execSQL(sql);
-            sql = "INSERT INTO user (_id, origin_id, user_oid, username, real_name, avatar_url, avatar_blob, user_description,"
-                    + "homepage, user_created_date, user_ins_date,"
-                    + "home_timeline_position, home_timeline_item_date, home_timeline_date,"
-                    + "favorites_timeline_position, favorites_timeline_item_date, favorites_timeline_date,"
-                    + "direct_timeline_position, direct_timeline_item_date, direct_timeline_date,"
-                    + "mentions_timeline_position, mentions_timeline_item_date, mentions_timeline_date,"
-                    + "user_timeline_position, user_timeline_item_date, user_timeline_date,"
-                    + "following_user_date, user_msg_id, user_msg_date)"
-                    + " SELECT _id, origin_id, user_oid, username, real_name, avatar_url, avatar_blob, user_description,"
-                    + "homepage, user_created_date, user_ins_date,"
-                    + "home_timeline_position, home_timeline_item_date, home_timeline_date,"
-                    + "favorites_timeline_position, favorites_timeline_item_date, favorites_timeline_date,"
-                    + "direct_timeline_position, direct_timeline_item_date, direct_timeline_date,"
-                    + "mentions_timeline_position, mentions_timeline_item_date, mentions_timeline_date,"
-                    + "user_timeline_position, user_timeline_item_date, user_timeline_date,"
-                    + "following_user_date, user_msg_id, user_msg_date FROM user_old";
-            db.execSQL(sql);
-            sql = "DROP TABLE user_old";
-            db.execSQL(sql);
-                        
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(this, e);
-        }
-        if (ok) {
-            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
-            ok = ( MyAccountConverter.convert11to12(db, oldVersion) == versionTo);
-        } else {
-            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
-                    + " to version " + versionTo
-                    + " SQL='" + sql +"'");
-        }
-        return ok ? versionTo : oldVersion;
     }
  
     private int convert12to13(SQLiteDatabase db, int oldVersion) {
@@ -390,5 +193,92 @@ public class MyDatabaseConverter {
         }
         return ok ? versionTo : oldVersion;
     }
-    
+
+    private int convert13to14(SQLiteDatabase db, int oldVersion) {
+        final int versionTo = 14;
+        boolean ok = false;
+        String sql = "";
+        String twitterName = "Twitter";
+        String statusNetSystemName = "";
+        try {
+            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+
+            sql = "CREATE TABLE origin (" 
+                    + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
+                    + "origin_type_id INTEGER NOT NULL," 
+                    + "origin_name TEXT NOT NULL," 
+                    + "host TEXT NOT NULL," 
+                    + "ssl BOOLEAN DEFAULT 0 NOT NULL," 
+                    + "allow_html BOOLEAN DEFAULT 0 NOT NULL," 
+                    + "text_limit INTEGER NOT NULL,"
+                    + "short_url_length INTEGER NOT NULL DEFAULT 0" 
+                    + ")";
+            db.execSQL(sql);
+
+            sql = "CREATE UNIQUE INDEX idx_origin_name ON origin (" 
+                    + "origin_name"
+                    + ")";
+            db.execSQL(sql);
+            
+            String statusNetHost = MyPreferences.getDefaultSharedPreferences().getString("host_of_origin3","");
+            statusNetSystemName = (TextUtils.isEmpty(statusNetHost) ? "StatusNet" : statusNetHost);
+            if (statusNetHost.equalsIgnoreCase("quitter.se")) {
+                statusNetSystemName = "Quitter";
+            } else if (statusNetHost.equalsIgnoreCase("friendi.ca")) {
+                statusNetSystemName = "Friendica";
+            }
+
+            boolean statusNetSsl = MyPreferences.getDefaultSharedPreferences().getBoolean("ssl3", true);
+            int statusNetTextLimit = MyPreferences.getDefaultSharedPreferences().getInt("textlimit3", 0);
+            
+            String sqlIns = "INSERT INTO origin (" 
+                    + "_id, origin_type_id, origin_name, host, ssl, allow_html, text_limit, short_url_length"
+                    + ") VALUES ("
+                    + "%s"
+                    + ")";
+            String[] values = {
+                    "1, 1, '" + twitterName + "', 'api.twitter.com', 1, 0,  140, 23",
+                    "6, 1, 'twitter',   'api.twitter.com.old', 1, 0,  140, 23",
+                    "2, 2, 'pump.io',   '',                1, 0, 5000,  0",
+                    "3, 3, '" + statusNetSystemName + "','" + statusNetHost + "', " + (statusNetSsl ? "1" : "0" ) + ", 0, " + Integer.toString(statusNetTextLimit) + ", 0",
+                    "7, 3, 'status.net','',                1, 0,  140,  0",
+                    "4, 3, 'Quitter',   'quitter.se',      1, 1,  140,  0",
+                    "5, 3, 'Friendica', 'friendi.ca',      1, 1,  140,  0"
+            };
+            boolean quitterFound = false;
+            boolean friendiCaFound = false;
+            for (String value : values) {
+                boolean quitter = value.contains("quitter.se");
+                boolean friendiCa = value.contains("friendi.ca");
+                boolean skip = false;
+                if (quitter) {
+                    skip = quitterFound;
+                    quitterFound = true;
+                }
+                if (friendiCa) {
+                    skip = friendiCaFound;
+                    friendiCaFound = true;
+                }
+                if (!skip) {
+                    sql = sqlIns.replace("%s", value);
+                    db.execSQL(sql);
+                }
+            }
+            ok = ( MyAccountConverter.convert12to14(db, oldVersion, twitterName, statusNetSystemName) == versionTo);
+            if (ok) {
+                sql = "DELETE FROM Origin WHERE _ID IN(6, 7)";
+                db.execSQL(sql);
+            }
+        } catch (Exception e) {
+            MyLog.e(this, e);
+        }
+        if (ok) {
+            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
+        } else {
+            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
+                    + " to version " + versionTo
+                    + " SQL='" + sql +"'");
+        }
+        return ok ? versionTo : oldVersion;
+    }
 }

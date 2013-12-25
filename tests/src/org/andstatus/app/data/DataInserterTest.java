@@ -4,7 +4,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
-import android.text.Html;
 import android.text.TextUtils;
 
 import org.andstatus.app.MessageCounters;
@@ -24,7 +23,7 @@ import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.net.OAuthClientKeysTest;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.Origin.OriginEnum;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
@@ -69,26 +68,26 @@ public class DataInserterTest extends InstrumentationTestCase {
     public void testFollowingUser() throws ConnectionException {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
-        deleteOldMessage(Origin.OriginEnum.PUMPIO.getId(), messageOid);
+        deleteOldMessage(OriginType.PUMPIO.getId(), messageOid);
         
         MessageCounters counters = new MessageCounters(ma, context, TimelineTypeEnum.HOME);
         DataInserter di = new DataInserter(counters);
         String username = "somebody@identi.ca";
         String userOid =  "acct:" + username;
-        MbUser somebody = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), userOid);
+        MbUser somebody = MbUser.fromOriginAndUserOid(OriginType.PUMPIO.getId(), userOid);
         somebody.userName = username;
         somebody.actor = accountMbUser;
         somebody.followedByActor = TriState.FALSE;
         somebody.url = "http://identi.ca/somebody";
         di.insertOrUpdateUser(somebody);
 
-        long somebodyId = MyProvider.oidToId(OidEnum.USER_OID, Origin.OriginEnum.PUMPIO.getId(), userOid);
+        long somebodyId = MyProvider.oidToId(OidEnum.USER_OID, OriginType.PUMPIO.getId(), userOid);
         assertTrue( "User " + username + " added", somebodyId != 0);
         
         Set<Long> followedIds = MyProvider.getIdsOfUsersFollowedBy(ma.getUserId());
         assertFalse( "User " + username + " is not followed", followedIds.contains(somebodyId));
 
-        MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), messageOid);
+        MbMessage message = MbMessage.fromOriginAndOid(OriginType.PUMPIO.getId(), messageOid);
         message.setBody("The test message by Somebody");
         message.sentDate = 13312696000L;
         message.via = "MyCoolClient";
@@ -155,16 +154,16 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
 
         String username = "anybody@pumpity.net";
-        MbUser author = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), "acct:" + username);
+        MbUser author = MbUser.fromOriginAndUserOid(OriginType.PUMPIO.getId(), "acct:" + username);
         author.userName = username;
         author.actor = accountMbUser;
 
         username = "firstreader@identi.ca";
-        MbUser firstReader = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), "acct:" + username);
+        MbUser firstReader = MbUser.fromOriginAndUserOid(OriginType.PUMPIO.getId(), "acct:" + username);
         firstReader.userName = username;
         firstReader.actor = accountMbUser;
         
-        MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED");
+        MbMessage message = MbMessage.fromOriginAndOid(OriginType.PUMPIO.getId(), "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED");
         message.setBody("The test message by Anybody from http://pumpity.net");
         message.sentDate = 13312697000L;
         message.via = "SomeOtherClient";
@@ -200,11 +199,11 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
 
         String username = "example@pumpity.net";
-        MbUser author = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), "acct:" + username);
+        MbUser author = MbUser.fromOriginAndUserOid(OriginType.PUMPIO.getId(), "acct:" + username);
         author.userName = username;
         author.actor = accountMbUser;
 
-        MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123");
+        MbMessage message = MbMessage.fromOriginAndOid(OriginType.PUMPIO.getId(), "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123");
         message.setBody("The test message by Example from the http://pumpity.net");
         message.sentDate = 13312795000L;
         message.via = "UnknownClient";
@@ -239,14 +238,14 @@ public class DataInserterTest extends InstrumentationTestCase {
     public void testDirectMessageToMyAccount() throws ConnectionException {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ";
-        deleteOldMessage(Origin.OriginEnum.PUMPIO.getId(), messageOid);
+        deleteOldMessage(OriginType.PUMPIO.getId(), messageOid);
 
         String username = "t131t@pumpity.net";
-        MbUser author = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), "acct:" + username);
+        MbUser author = MbUser.fromOriginAndUserOid(OriginType.PUMPIO.getId(), "acct:" + username);
         author.userName = username;
         author.actor = accountMbUser;
         
-        MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), messageOid);
+        MbMessage message = MbMessage.fromOriginAndOid(OriginType.PUMPIO.getId(), messageOid);
         message.setBody("Hello, this is a test Direct message by your namesake from http://pumpity.net");
         message.sentDate = 13312699000L;
         message.via = "AnyOtherClient";
@@ -278,7 +277,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     public void testConversation() throws ConnectionException {
-        assertEquals("Only PumpIo supported in this test", OriginEnum.PUMPIO, TestSuite.CONVERSATION_ACCOUNT_ORIGIN  );
+        assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, TestSuite.CONVERSATION_ORIGIN_TYPE  );
         
         MbUser author1 = userFromPumpioOid("acct:first@example.net");
         author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/res/drawable/splash_logo.png";
@@ -315,7 +314,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         if (TextUtils.isEmpty(messageOid)) {
             messageOid = author.url  + "/" + (inReplyToMessage == null ? "note" : "comment") + "thisisfakeuri" + System.nanoTime();
         }
-        MbMessage message = MbMessage.fromOriginAndOid(Origin.OriginEnum.PUMPIO.getId(), messageOid);
+        MbMessage message = MbMessage.fromOriginAndOid(OriginType.PUMPIO.getId(), messageOid);
         message.setBody(body + (inReplyToMessage != null ? " it" + iteration : "" ));
         message.sentDate = System.currentTimeMillis();
         message.via = "AndStatus";
@@ -340,7 +339,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     private MyAccount addPumpIoAccount(String userOid) throws ConnectionException {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
 
-        Origin origin = OriginEnum.PUMPIO.newOrigin();
+        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.PUMPIO);
         long accountUserId_existing = MyProvider.oidToId(OidEnum.USER_OID, origin.getId(), userOid);
         MbUser mbUser = userFromPumpioOid(userOid);
         MyAccount ma = addPumpIoAccount(mbUser);
@@ -359,7 +358,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     private MbUser userFromPumpioOid(String userOid) {
         ConnectionPumpio connection = new ConnectionPumpio();
         String userName = connection.userOidToUsername(userOid);
-        MbUser mbUser = MbUser.fromOriginAndUserOid(Origin.OriginEnum.PUMPIO.getId(), userOid);
+        MbUser mbUser = MbUser.fromOriginAndUserOid(OriginType.PUMPIO.getId(), userOid);
         mbUser.userName = userName;
         mbUser.url = "http://" + connection.usernameToHost(userName)  + "/" + ConnectionPumpio.userOidToNickname(userOid);
         if (accountMbUser != null) {
@@ -370,7 +369,8 @@ public class DataInserterTest extends InstrumentationTestCase {
 
     private MyAccount addPumpIoAccount(MbUser mbUser) throws ConnectionException {
         assertTrue(MyContextHolder.get().initialized());
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(mbUser.userName + "/" + Origin.OriginEnum.PUMPIO.getName(), TriState.TRUE);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromId(mbUser.originId);
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(mbUser.userName + "/" + origin.getName(), TriState.TRUE);
         builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.userName, "sampleUserSecretFor" + mbUser.userName);
         assertTrue("Credentials of " + mbUser.userName + " are present", builder.getAccount().getCredentialsPresent());
         builder.onCredentialsVerified(mbUser, null);
@@ -384,7 +384,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertEquals("User in the database for id=" + userId, 
                 mbUser.oid,
                 MyProvider.idToOid(OidEnum.USER_OID, userId, 0));
-        assertEquals("Account name", mbUser.userName + "/" + Origin.OriginEnum.PUMPIO.getName(), ma.getAccountName());
+        assertEquals("Account name", mbUser.userName + "/" + origin.getName(), ma.getAccountName());
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
         return ma;
     }

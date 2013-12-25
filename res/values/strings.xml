@@ -45,10 +45,15 @@
 
 	<string name="authentication_never">Didn\'t authenticate yet</string>
 	<string name="authentication_successful">Authentication successful!</string>
-    <string name="button_create_message">Blog</string>
+    <string name="button_add">Add</string>
+	<string name="button_add_origin">Add new system</string>
+	<string name="button_create_message">Blog</string>
     <string name="button_create_message_twitter">Tweet</string>
-	<string name="button_hide">Hide</string>
-    <string name="button_send">Send</string>
+    <string name="button_delete">Delete</string>
+    <string name="button_discard">Discard</string>
+    <string name="button_hide">Hide</string>
+    <string name="button_save">Save</string>
+	<string name="button_send">Send</string>
     <string name="cannot_send_empty_message">Cannot send empty message.</string>
 	<string name="category_title_preference_appearance">Appearance</string>
 	<string name="category_title_preference_credentials">User Credentials</string>
@@ -81,9 +86,7 @@
 	<string name="dialog_title_preference_frequency">Sync frequency</string>
 	<string name="dialog_title_preference_history_size">History Size</string>
 	<string name="dialog_title_preference_history_time">History Time</string>
-	<string name="dialog_title_preference_host">Host</string>
 	<string name="dialog_title_preference_min_log_level">Minimum logging level</string>
-    <string name="dialog_title_preference_origin_system">Microblogging system</string>
     <string name="dialog_title_preference_password">Password</string>
     <string name="dialog_title_preference_theme_color">Select a Color Theme</string>
     <string name="dialog_title_preference_theme_size">Select a Size</string>
@@ -108,6 +111,12 @@
     <string name="id_of_this_message_was_not_specified">Id of this message was not specified</string>
 	<string name="label_accountselector">Select an Account</string>
     <string name="label_conversation">Conversation</string>
+    <string name="label_host">Host</string>
+    <string name="label_manage_origin_systems">Manage microblogging systems</string>
+    <string name="label_origin_list">Microblogging systems</string>
+    <string name="label_origin_name">Name of Microblogging system (unique and not changeable)</string>
+    <string name="label_origin_system">Microblogging system</string>
+    <string name="label_origin_type">Type of Microblogging system</string>
     <string name="loading">Loading…</string>
     <string name="message">Message</string>
     <string name="message_twitter">Tweet</string>
@@ -156,6 +165,7 @@
 	<string name="options_menu_reload">Reload</string>
 	<string name="options_menu_mentions">Mentions</string>
 	<string name="options_menu_search">Search</string>
+	<string name="origin_settings_action">Microblogging system</string>
 	<string name="reltime_just_now">just now</string>
 	<string name="reltime_years_ago">more than a year ago</string>
 	<string name="resolve_view">View Message</string>
@@ -240,7 +250,7 @@
 	<string name="summary_preference_notifications_timeline_on">You will be notified of new Home messages</string>
 	<string name="summary_preference_oauth_off">Basic authentication</string>
 	<string name="summary_preference_oauth_on">OAuth (secure authentication) is on</string>
-    <string name="summary_preference_origin_system">{0}</string>
+    <string name="summary_preference_origin_system">Type: {0}</string>
     <string name="summary_preference_password">Your password in the Microblogging system</string>
 	<string name="summary_preference_ssl_off">No SSL</string>
 	<string name="summary_preference_ssl_on">SSL is on</string>
@@ -267,7 +277,6 @@
 	<string name="title_preference_frequency">Sync frequency</string>
 	<string name="title_preference_history_size">History Size</string>
 	<string name="title_preference_history_time">History Time</string>
-	<string name="title_preference_host">Host</string>
 	<string name="title_preference_theme_color">Color Theme</string>
     <string name="title_preference_min_log_level">Minimum logging level</string>
 	<string name="title_preference_notification_sound">Notification Ringtone</string>

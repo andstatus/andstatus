@@ -28,7 +28,6 @@ import oauth.signpost.exception.OAuthMessageSignerException;
 
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionException.StatusCode;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,7 +42,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 
-class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
+public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     private static final String NON_JSON_RESPONSE = ", non-JSON response: '";
     private static final String ERROR_GETTING = "Error getting '";
     private static final String COMMA_STATUS = "', status=";
@@ -65,7 +64,7 @@ class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             HashMap<String, String> params = new HashMap<String, String>();
             params.put("type", "client_associate");
             params.put("application_type", "native");
-            params.put("redirect_uris", Origin.CALLBACK_URI.toString());
+            params.put("redirect_uris", HttpConnection.CALLBACK_URI.toString());
             params.put("client_name", HttpConnection.USER_AGENT);
             params.put("application_name", HttpConnection.USER_AGENT);
             String requestBody = HttpJavaNetUtils.encode(params);

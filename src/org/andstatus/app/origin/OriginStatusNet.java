@@ -18,30 +18,8 @@ package org.andstatus.app.origin;
 
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.net.ConnectionTwitterStatusNet;
-import org.andstatus.app.util.TriState;
 
 class OriginStatusNet extends Origin {
-
-    protected OriginStatusNet() {
-        isOAuthDefault = false;
-        canChangeOAuth = false; 
-        shouldSetNewUsernameManuallyIfOAuth = false;
-        shouldSetNewUsernameManuallyNoOAuth = true;
-        canSetHostOfOrigin = true;
-        canChangeSsl = true;
-        usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
-    }
-
-    @Override
-    public OriginConnectionData getConnectionData(TriState triState) {
-        OriginConnectionData connectionData = super.getConnectionData(triState);
-        connectionData.isHttps = false;
-        connectionData.basicPath = "api";
-        connectionData.oauthPath = "api";
-        connectionData.connectionClass = ConnectionTwitterStatusNet.class;
-        return connectionData;
-    }
 
     @Override
     public String messagePermalink(String userName, long messageId) {
@@ -49,14 +27,5 @@ class OriginStatusNet extends Origin {
                     + "/notice/"
                     + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId);
         return url;
-    }
-    
-    @Override
-    public boolean isUsernameValidToStartAddingNewAccount(String username, boolean isOAuthUser) {
-        if (isOAuthUser) {
-            return true;  // Name doesn't matter at this step
-        } else {
-            return isUsernameValid(username);
-        }
     }
 }
