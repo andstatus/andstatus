@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.net.OAuthClientKeys;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 
@@ -56,10 +57,9 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
        assertEquals("Keys are cleared", false, keys3.areKeysPresent());
     }
 
-    public static void insertTestKeys() {
+    public static void insertTestKeys(Origin origin) {
         HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
-                MyContextHolder.get().persistentOrigins().firstOfType(OriginType.PUMPIO)
-                .getConnectionData(TriState.UNKNOWN));
+                origin.getConnectionData(TriState.UNKNOWN));
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
         // Saving

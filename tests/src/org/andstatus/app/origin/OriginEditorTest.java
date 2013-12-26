@@ -117,6 +117,6 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
             assertEquals(host, origin.getHost());
         }
         assertEquals(isSsl, origin.isSsl());
-        assertEquals(allowHtml, origin.isHtmlAllowed());
+        assertEquals(allowHtml, origin.isHtmlContentAllowed());
     }
 }

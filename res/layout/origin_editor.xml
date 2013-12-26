@@ -91,6 +91,6 @@
         android:id="@+id/allow_html"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/title_preference_enable_html_content" />
+        android:text="@string/label_allow_html_content" />
 
 </LinearLayout>

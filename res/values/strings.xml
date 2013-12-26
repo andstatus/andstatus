@@ -110,7 +110,8 @@
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
     <string name="id_of_this_message_was_not_specified">Id of this message was not specified</string>
 	<string name="label_accountselector">Select an Account</string>
-    <string name="label_conversation">Conversation</string>
+    <string name="label_allow_html_content">Allow HTML content</string>
+	<string name="label_conversation">Conversation</string>
     <string name="label_host">Host</string>
     <string name="label_manage_origin_systems">Manage microblogging systems</string>
     <string name="label_origin_list">Microblogging systems</string>
@@ -273,7 +274,6 @@
     <string name="title_preference_appearance">Appearance</string>
 	<string name="title_preference_change_log">Change Log</string>
 	<string name="title_preference_contact_developer">Contact Developer</string>
-    <string name="title_preference_enable_html_content">Enable HTML content</string>
 	<string name="title_preference_frequency">Sync frequency</string>
 	<string name="title_preference_history_size">History Size</string>
 	<string name="title_preference_history_time">History Time</string>

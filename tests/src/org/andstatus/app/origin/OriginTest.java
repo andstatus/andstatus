@@ -58,14 +58,14 @@ public class OriginTest  extends InstrumentationTestCase {
             assertEquals("New origin has no children", false, origin.hasChildren());
             assertEquals("Origin deleted", true, builder.delete());
         }
-
-        private Builder createOneOrigin(OriginType originType, String originName, String host,
+        
+        public static Builder createOneOrigin(OriginType originType, String originName, String host,
                 boolean isSsl, boolean allowHtml) {
             Origin.Builder builder = new Origin.Builder(originType);
             builder.setName(originName);
             builder.setHost(host);
             builder.setSsl(isSsl);
-            builder.setAllowHtml(allowHtml);
+            builder.setHtmlContentAllowed(allowHtml);
             builder.save();
             Origin origin = builder.build();
             checkAttributes(originName, host, isSsl, allowHtml, origin);
@@ -77,12 +77,16 @@ public class OriginTest  extends InstrumentationTestCase {
             return builder;
         }
 
-        private void checkAttributes(String originName, String host, boolean isSsl,
+        private static void checkAttributes(String originName, String host, boolean isSsl,
                 boolean allowHtml, Origin origin) {
             assertTrue("Origin " + originName + " added", origin.isPersistent());
             assertEquals(originName, origin.getName());
-            assertEquals(host, origin.getHost());
+            if (origin.canSetHostOfOrigin()) {
+                assertEquals(host, origin.getHost());
+            } else {
+                assertEquals(origin.getOriginType().hostDefault, origin.getHost());
+            }
             assertEquals(isSsl, origin.isSsl());
-            assertEquals(allowHtml, origin.isHtmlAllowed());
+            assertEquals(allowHtml, origin.isHtmlContentAllowed());
         }
 }

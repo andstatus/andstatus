@@ -70,7 +70,6 @@ public class MyPreferences {
     public static final String KEY_THEME_SIZE = "theme_size";
     public static final String KEY_THEME_COLOR = "theme_color";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
-    private static final String KEY_ENABLE_HTML_CONTENT = "enable_html_content";
 
     /**
      * Use this dir: http://developer.android.com/reference/android/content/Context.html#getExternalFilesDir(java.lang.String)
@@ -360,15 +359,5 @@ public class MyPreferences {
 
     public static boolean showAvatars() {
         return getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_SHOW_AVATARS, true);
-    }
-
-    public static boolean getHtmlContentEnabled() {
-        return getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_ENABLE_HTML_CONTENT, false);
-    }
-
-    public static void setHhmlContentEnabled(boolean enabled) {
-        if (getHtmlContentEnabled() != enabled) {
-            getDefaultSharedPreferences().edit().putBoolean(KEY_ENABLE_HTML_CONTENT, enabled).commit();
-        }
     }
 }

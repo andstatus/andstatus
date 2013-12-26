@@ -238,7 +238,7 @@ public class Origin {
         return keyRoot + Long.toString(id);
     }
 
-    public boolean isHtmlAllowed() {
+    public boolean isHtmlContentAllowed() {
         return allowHtml;
     }
 
@@ -374,8 +374,9 @@ public class Origin {
             return this;
         }
 
-        public void setAllowHtml(boolean allowHtml) {
+        public Builder setHtmlContentAllowed(boolean allowHtml) {
             origin.allowHtml = allowHtml;
+            return this;
         }
 
         public Builder save(MbConfig config) {

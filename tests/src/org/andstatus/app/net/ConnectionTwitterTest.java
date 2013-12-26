@@ -26,6 +26,7 @@ import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.origin.OriginTest;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
@@ -49,10 +50,11 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         super.setUp();
         context = TestSuite.initialize(this);
 
-        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
+        
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
-        connectionData.accountUserOid = "144771645";
-        connectionData.accountUsername = "t131t";
+        connectionData.accountUserOid = TestSuite.TWITTER_TEST_ACCOUNT_USER_OID;
+        connectionData.accountUsername = TestSuite.TWITTER_TEST_ACCOUNT_USERNAME;
         connectionData.dataReader = new AccountDataReaderEmpty();
         connection = connectionData.connectionClass.newInstance();
         connection.enrichConnectionData(connectionData);

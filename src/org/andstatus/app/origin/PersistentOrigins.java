@@ -108,4 +108,9 @@ public class PersistentOrigins {
     public Collection<Origin> list() {
         return persistentOrigins.values();
     }
+    
+    public boolean isHtmlContentAllowed(long originId) {
+        return fromId(originId).isHtmlContentAllowed();
+    }
+    
 }

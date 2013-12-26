@@ -21,6 +21,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.TriState;
 
@@ -77,7 +78,7 @@ public class MbMessage {
     public void setBody(String body) {
         if (TextUtils.isEmpty(body)) {
             this.body = "";
-        } else if (MyPreferences.getHtmlContentEnabled()) {
+        } else if (MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(originId)) {
             this.body = body.trim();
         } else {
             this.body = stripHtml(body);

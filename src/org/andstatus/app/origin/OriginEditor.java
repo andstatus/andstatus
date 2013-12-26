@@ -104,7 +104,7 @@ public class OriginEditor extends Activity {
         editTextOriginName.setText(origin.getName());
         editTextHost.setText(origin.getHost());
         checkBoxIsSsl.setChecked(origin.isSsl());
-        checkBoxAllowHtml.setChecked(origin.isHtmlAllowed());
+        checkBoxAllowHtml.setChecked(origin.isHtmlContentAllowed());
         
         buttonDelete.setVisibility(origin.hasChildren() ? View.GONE : View.VISIBLE);
     }
@@ -134,7 +134,7 @@ public class OriginEditor extends Activity {
     private void saveOthers() {
         builder.setHost(editTextHost.getText().toString());
         builder.setSsl(checkBoxIsSsl.isChecked());
-        builder.setAllowHtml(checkBoxAllowHtml.isChecked());
+        builder.setHtmlContentAllowed(checkBoxAllowHtml.isChecked());
         builder.save();
         MyLog.v(this, "After save: " + builder.build().toString());
         MyContextHolder.get().persistentOrigins().initialize();

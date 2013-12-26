@@ -110,7 +110,8 @@
 	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
     <string name="id_of_this_message_was_not_specified">Идентификатор этого сообщения не был указан</string>
 	<string name="label_accountselector">Выберите аккаунт</string>
-    <string name="label_conversation">Обсуждение</string>
+    <string name="label_allow_html_content">Разрешить HTML форматирование</string>
+	<string name="label_conversation">Обсуждение</string>
     <string name="label_host">Хост</string>
     <string name="label_manage_origin_systems">Управление системами микроблогов</string>
     <string name="label_origin_system">Система микроблогов</string>
@@ -281,7 +282,6 @@
     <string name="title_preference_appearance">Внешний вид</string>
 	<string name="title_preference_change_log">Журнал изменений</string>
 	<string name="title_preference_contact_developer">Свяжитесь с разработчиками</string>
-    <string name="title_preference_enable_html_content">Разрешить HTML контент</string>
 	<string name="title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="title_preference_history_size">Размер истории</string>
 	<string name="title_preference_history_time">Длительность хранения истории</string>

@@ -188,9 +188,13 @@ public class TestSuite extends TestCase {
     }
     
     public static final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
-    public static final String CONVERSATION_ACCOUNT_NAME = "testerofandstatus@identi.ca/pump.io";
+    public static final String CONVERSATION_ORIGIN_NAME = "PumpioTest";
+    public static final String CONVERSATION_ACCOUNT_NAME = "testerofandstatus@identi.ca/" + CONVERSATION_ORIGIN_NAME;
     public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/andstatus/images/AndStatus_logo.png";
     public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + System.nanoTime();
+    public static final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
+    public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
+    public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
     
     private static void setSuccessfulAccountAsCurrent() {
         MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().persistentAccounts().size());
