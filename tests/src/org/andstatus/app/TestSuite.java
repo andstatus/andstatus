@@ -107,7 +107,7 @@ public class TestSuite extends TestCase {
         MyLog.v("TestSuite", "Test Suite initialized, MyContext state=" + MyContextHolder.get().state() 
                 + "; databasePath=" + dataPath);
         
-        if (MyPreferences.checkAndUpdateLastOpenedAppVersion(MyContextHolder.get().context())) {
+        if (MyPreferences.checkAndUpdateLastOpenedAppVersion(MyContextHolder.get().context(), true)) {
             MyLog.i(TAG, "New version of application is running");
         }
         

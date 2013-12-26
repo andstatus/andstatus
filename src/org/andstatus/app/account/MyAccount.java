@@ -51,7 +51,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
 /**
- * Immutable class that holds MyAccount-specific information including: 
+ * Immutable class that holds "AndStatus account"-specific information including: 
  * a Microblogging System (twitter.com, identi.ca etc.), 
  * Username in that system and {@link Connection} to it.
  * 

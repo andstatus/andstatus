@@ -32,11 +32,10 @@ import org.andstatus.app.MyServiceListener;
 import org.andstatus.app.MyServiceReceiver;
 import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.MyServiceManager;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * SyncAdapter implementation. Its only purpose for now is to properly initialize {@link MyService}.
@@ -60,22 +59,34 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
             ContentProviderClient provider, SyncResult syncResult) {
+        String method = "onPerformSync";
         if (!MyServiceManager.isServiceAvailable()) {
             syncResult.stats.numIoExceptions++;
-            MyLog.d(this, "onPerformSync Service not available, account=" + account.name);
+            MyLog.d(this, method + " Service not available, account=" + account.name);
             return;
         }
         MyContextHolder.initialize(context, this);
         if (!MyContextHolder.get().isReady()) {
             syncResult.stats.numIoExceptions++;
-            MyLog.d(this, "onPerformSync Context is not ready, account=" + account.name);
+            MyLog.d(this, method + " Context is not ready, account=" + account.name);
             return;
+        }
+        {
+            MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(account.name);
+            if (ma == null) {
+                MyLog.d(this, method + " The account was not loaded, account=" + account.name);
+                return;
+                
+            } else if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
+                MyLog.d(this, method + " Credentials failed, skipping; account=" + account.name);
+                return;
+            }
         }
         intentReceiver = new MyServiceReceiver(this);
         syncCompleted = false;
         try {
             this.syncResult = syncResult;
-            MyLog.d(this, "onPerformSync started, account=" + account.name);
+            MyLog.d(this, method + " started, account=" + account.name);
             intentReceiver.registerReceiver(context);
             commandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
                     TimelineTypeEnum.ALL, 0);
@@ -88,9 +99,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
                     syncLock.wait(java.util.concurrent.TimeUnit.SECONDS.toMillis(30));
                 }
             }
-            MyLog.d(this, "onPerformSync ended, " + (syncResult.hasError() ? "has error" : "ok"));
+            MyLog.d(this, method + " ended, " + (syncResult.hasError() ? "has error" : "ok"));
         } catch (InterruptedException e) {
-            MyLog.d(this, "onPerformSync interrupted", e);
+            MyLog.d(this, method + " interrupted", e);
         } finally {
             intentReceiver.unregisterReceiver(context);            
         }

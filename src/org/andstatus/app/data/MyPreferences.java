@@ -331,7 +331,13 @@ public class MyPreferences {
         context.setTheme(themeId);
     }
 
-    public static boolean checkAndUpdateLastOpenedAppVersion(Context context)
+    /**
+     * @param context
+     * @param update
+     * @return true if we opened previous version
+     * @throws NameNotFoundException
+     */
+    public static boolean checkAndUpdateLastOpenedAppVersion(Context context, boolean update)
             throws NameNotFoundException {
         boolean changed = false;
         int versionCodeLast =  getDefaultSharedPreferences().getInt(KEY_VERSION_CODE_LAST, 0);
@@ -341,8 +347,13 @@ public class MyPreferences {
         if (versionCodeLast < versionCode) {
             // Even if the User will see only the first page of the Help activity,
             // count this as showing the Change Log
+            MyLog.v(TAG, "Last opened version=" + versionCodeLast + ", current is " + versionCode
+                    + (update ? ", updating" : "")
+                    );
             changed = true;
-            getDefaultSharedPreferences().edit().putInt(KEY_VERSION_CODE_LAST, versionCode).commit();
+            if ( update && MyContextHolder.get().isReady()) {
+                getDefaultSharedPreferences().edit().putInt(KEY_VERSION_CODE_LAST, versionCode).commit();
+            }
         }
         return changed;
     }

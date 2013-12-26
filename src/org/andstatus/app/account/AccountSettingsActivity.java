@@ -61,7 +61,6 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginList;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -124,6 +123,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         MyContextHolder.upgradeIfNeeded(this);
         if (!MyContextHolder.get().isReady()) {
             HelpActivity.startFromActivity(this, true, false);
+            finish();
+            return;
         }
         
         addPreferencesFromResource(R.xml.account_settings);

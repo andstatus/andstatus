@@ -205,8 +205,5 @@ public class HelpActivity extends Activity implements SwipeInterface {
             intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
         }
         activity.startActivity(intent);
-        if (helpAsFirstActivity) {
-            activity.finish();
-        }
     }
 }

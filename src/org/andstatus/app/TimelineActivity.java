@@ -124,7 +124,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     /**
      * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
      */
-    private boolean mIsFinishing = false;
+    private volatile boolean mIsFinishing = false;
 
     /**
      * Timeline type
@@ -202,7 +202,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         MyContextHolder.upgradeIfNeeded(this);
         
         if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-            MyLog.d(TAG, "onCreate instanceId=" + instanceId + " , preferencesChangeTime=" + preferencesChangeTime);
+            MyLog.d(TAG, "onCreate instanceId=" + instanceId 
+                    + " , preferencesChangeTime=" + preferencesChangeTime
+                    + (MyContextHolder.get().isReady() ? "" : ", MyContext is not ready")
+                    );
         }
 
         if (!mIsFinishing) {
@@ -221,7 +224,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             
             // Show Change Log after update
             try {
-                if (MyPreferences.checkAndUpdateLastOpenedAppVersion(this)) {
+                if (MyPreferences.checkAndUpdateLastOpenedAppVersion(this, true)) {
                     showChangeLog = true;                    
                 }
             } catch (NameNotFoundException e) {
@@ -230,6 +233,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
             if (helpAsFirstActivity || showChangeLog) {
                 HelpActivity.startFromActivity(this, helpAsFirstActivity, showChangeLog);
+                finish();
             }
         }
         if (mIsFinishing) {
@@ -340,18 +344,19 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     protected void onResume() {
+        String method = "onResume";
         super.onResume();
-        MyLog.v(this, "onResume, instanceId=" + instanceId);
+        MyLog.v(this, method + ", instanceId=" + instanceId);
         if (!mIsFinishing) {
             if (MyContextHolder.get().persistentAccounts().getCurrentAccount() != null) {
                 long preferencesChangeTimeNew = MyContextHolder.initialize(this, this);
                 if (preferencesChangeTimeNew != preferencesChangeTime) {
-                    MyLog.v(this, "Restarting this Activity to apply all new changes of preferences");
+                    MyLog.v(this, method + "; Restarting this Activity to apply all new changes of preferences");
                     finish();
                     contextMenu.switchTimelineActivity(mTimelineType, mIsTimelineCombined, mSelectedUserId);
                 }
             } else { 
-                MyLog.v(this, "Finishing this Activity because there is no Account selected");
+                MyLog.v(this, method + "; Finishing this Activity because there is no Account selected");
                 finish();
             }
         }
@@ -523,17 +528,17 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     public void onContentChanged() {
-        super.onContentChanged();
         if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-            MyLog.d(TAG, "Content changed");
+            MyLog.d(this, "onContentChanged started");
         }
+        super.onContentChanged();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "onPause, instanceId=" + instanceId);
+            MyLog.v(this, "onPause, instanceId=" + instanceId);
         }
         serviceConnector.unregisterReceiver(this);
 
@@ -585,7 +590,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     public void finish() {
-        MyLog.v(this,"Finish requested" + (mIsFinishing ? ", already finishing" : "") + ", instanceId=" + instanceId);
+        MyLog.v(this, "Finish requested" + (mIsFinishing ? ", already finishing" : "") 
+                + ", instanceId=" + instanceId);
         if (!mIsFinishing) {
             mIsFinishing = true;
         }
@@ -856,11 +862,17 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     protected void onNewIntent(Intent intent) {
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "onNewIntent, instanceId=" + instanceId
+                    + (mIsFinishing ? ", Is finishing" : "")
+                    );
+        }
+        if (mIsFinishing) {
+            finish();
+            return;
+        }
         super.onNewIntent(intent);
         MyContextHolder.initialize(this, this);
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "onNewIntent, instanceId=" + instanceId);
-        }
         processNewIntent(intent);
         updateThisOnChangedParameters();
     }
