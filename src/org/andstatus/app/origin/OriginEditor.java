@@ -17,7 +17,11 @@
 package org.andstatus.app.origin;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -107,6 +111,12 @@ public class OriginEditor extends Activity {
         checkBoxAllowHtml.setChecked(origin.isHtmlContentAllowed());
         
         buttonDelete.setVisibility(origin.hasChildren() ? View.GONE : View.VISIBLE);
+
+        String title = getText(R.string.label_origin_system).toString();
+        if (origin.isPersistent()) {
+            title = origin.getName() + " - " + title;
+        }
+        setTitle(title);
     }
     
     @Override
@@ -136,9 +146,24 @@ public class OriginEditor extends Activity {
         builder.setSsl(checkBoxIsSsl.isChecked());
         builder.setHtmlContentAllowed(checkBoxAllowHtml.isChecked());
         builder.save();
-        MyLog.v(this, "After save: " + builder.build().toString());
-        MyContextHolder.get().persistentOrigins().initialize();
-        setResult(RESULT_OK);
-        finish();
+        MyLog.v(this, (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());
+        if (builder.isSaved()) {
+            MyContextHolder.get().persistentOrigins().initialize();
+            setResult(RESULT_OK);
+            finish();
+        } else {
+            beep(this);
+        }
+    }
+    
+    /**
+     * See http://stackoverflow.com/questions/4441334/how-to-play-an-android-notification-sound/9622040
+     */
+    private static void beep(Context context) {
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(context, notification);
+            r.play();
+        } catch (Exception e) {}        
     }
 }

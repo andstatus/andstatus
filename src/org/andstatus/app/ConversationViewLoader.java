@@ -23,6 +23,7 @@ import android.net.Uri;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -387,11 +388,11 @@ public class ConversationViewLoader {
         
         if (!TextUtils.isEmpty(oMsg.body)) {
             body.setLinksClickable(true);
+            body.setMovementMethod(LinkMovementMethod.getInstance());                
             body.setFocusable(true);
             body.setFocusableInTouchMode(true);
             Spanned spanned = Html.fromHtml(oMsg.body);
             body.setText(spanned);
-            // Linkify.addLinks removes existing links, this is why we don't use it
             if (!MbMessage.hasUrlSpans(spanned)) {
                 Linkify.addLinks(body, Linkify.ALL);
             }

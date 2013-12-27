@@ -347,6 +347,12 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         addAccountOrVerifyCredentials.setTitle(titleResId);
         addAccountOrVerifyCredentials.setSummary(summary);
         addAccountOrVerifyCredentials.setEnabled(addAccountOrVerifyCredentialsEnabled);
+        
+        String title = getText(R.string.settings_activity_title).toString();
+        if (ma.isValid()) {
+            title = ma.getAccountName() + " - " + title;
+        }
+        setTitle(title);
     }
 
     @Override

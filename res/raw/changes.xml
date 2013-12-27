@@ -38,7 +38,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
     
     <release android:versionName="6.0" android:versionCode="90"
-        versionDate="2013-12-22"
+        versionDate="2013-12-27"
         versionTitle="Multiple instancies of Microblogging systems">
         <changes>
             <change>"Type of Microblogging system" ("twitter" / "pump.io" / "status.net" ) separated
@@ -49,15 +49,17 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 Now User may create any number of "Microblogging systems" of the three existing types. 
                 In practice, this is mostly useful for the "status.net" sites, including
                 <a href="https://quitter.se" >Quitter</a> and 
-                <a href="https://github.com/andstatus/andstatus/issues/55" >Friendica</a>.  
+                <a href="https://github.com/andstatus/andstatus/issues/55" >Friendica</a>.
+                See ""Preferences"-"Manage Microblogging Systems" menu item.   
                 </change>    
-            <change>Implemented "More than one StatusNet server" <a href="https://github.com/andstatus/andstatus/issues/58" >Issue #58</a></change>
-            <change>Added "Enable HTML content" option for each Microblogging system, 
+            <change>Implemented "More than one StatusNet server" 
+                <a href="https://github.com/andstatus/andstatus/issues/58" >Issue #58</a></change>
+            <change>Added "Allow HTML content" option for each Microblogging system, 
                 which allows to see formatted message content.
                 Pump.io and Friendi.ca support HTML formating in messages. 
                 <a href="https://github.com/andstatus/andstatus/issues/60" >Issue #60</a>.</change>
             <change>Host of each Microblogging system may be configured. This may allow, for example, 
-                connection to the Twitter sites through proxy server. On the other site,
+                connection to the Twitter sites through proxy server. On the other hand,
                 this may be not exactly what <a href="https://github.com/andstatus/andstatus/issues/43" >Issue 
                 #43 "Implement Connection via proxy"</a> mean.</change>
         </changes>

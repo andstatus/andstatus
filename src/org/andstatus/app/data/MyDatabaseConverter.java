@@ -238,12 +238,11 @@ public class MyDatabaseConverter {
                     + ")";
             String[] values = {
                     "1, 1, '" + twitterName + "', 'api.twitter.com', 1, 0,  140, 23",
-                    "6, 1, 'twitter',   'api.twitter.com.old', 1, 0,  140, 23",
+                    "6, 1, 'twitter',   'api.twitter.com', 1, 0,  140, 23",
                     "2, 2, 'pump.io',   '',                1, 0, 5000,  0",
                     "3, 3, '" + statusNetSystemName + "','" + statusNetHost + "', " + (statusNetSsl ? "1" : "0" ) + ", 0, " + Integer.toString(statusNetTextLimit) + ", 0",
                     "7, 3, 'status.net','',                1, 0,  140,  0",
-                    "4, 3, 'Quitter',   'quitter.se',      1, 1,  140,  0",
-                    "5, 3, 'Friendica', 'friendi.ca',      1, 1,  140,  0"
+                    "4, 3, 'Quitter',   'quitter.se',      1, 1,  140,  0"
             };
             boolean quitterFound = false;
             boolean friendiCaFound = false;

@@ -590,8 +590,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         String[] values = {
                 "1, 1, 'Twitter', 'api.twitter.com', 1, 0,  140, 23",
                 "2, 2, 'pump.io', '',                1, 1, 5000,  0",
-                "3, 3, 'Quitter', 'quitter.se',      1, 0,  140,  0",
-                "4, 3, 'Friendica', 'friendi.ca',    1, 1,  140,  0"
+                "3, 3, 'Quitter', 'quitter.se',      1, 0,  140,  0"
         };
         for (String value : values) {
             db.execSQL(sqlIns.replace("%s", value));

@@ -69,7 +69,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         
         MyPreferences.onPreferencesChanged();
         MyContextHolder.initialize(context, this);
-        assertTrue(MyContextHolder.get().initialized());
+        assertTrue("Context is ready", MyContextHolder.get().isReady());
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(ma1.getAccountName()); 
         assertTrue(ma1.getAccountName(), ma != null);

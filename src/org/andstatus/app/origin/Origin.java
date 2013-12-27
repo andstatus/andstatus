@@ -294,6 +294,14 @@ public class Origin {
 
     public static final class Builder {
         private final Origin origin;
+        /*
+         * Result of the last "save" action
+         */
+        private boolean saved = false;
+
+        public boolean isSaved() {
+            return saved;
+        }
 
         public static Origin getUnknown() {
             return getEmpty(OriginType.UNKNOWN);
@@ -387,6 +395,7 @@ public class Origin {
         }
 
         public Builder save() {
+            saved = false;
             if (!origin.isValid()) {
                 MyLog.v(this, "Is not valid: " + origin.toString());
                 return this;
@@ -423,6 +432,7 @@ public class Origin {
             if (changed && MyContextHolder.get().isReady()) {
                 MyPreferences.onPreferencesChanged();
             }
+            saved = changed;
             return this;
         }
 
