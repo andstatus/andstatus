@@ -255,9 +255,7 @@ public abstract class ConnectionTwitter extends Connection {
                 JSONObject rebloggedMessage = jso.getJSONObject("retweeted_status");
                 message.rebloggedMessage = messageFromJson(rebloggedMessage);
             }
-            if (jso.has("text")) {
-                message.setBody(jso.getString("text"));
-            }
+            setMessageBodyFromJson(message, jso);
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
                 message.recipient = userFromJson(recipient);
@@ -317,6 +315,12 @@ public abstract class ConnectionTwitter extends Connection {
         return message;
     }
 
+    protected void setMessageBodyFromJson(MbMessage message, JSONObject jso) throws JSONException {
+        if (jso.has("text")) {
+            message.setBody(jso.getString("text"));
+        }
+    }
+    
     private MbUser userFromJson(JSONObject jso) throws ConnectionException {
         if (jso == null) {
             return MbUser.getEmpty();

@@ -19,6 +19,7 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -101,5 +102,20 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
             }
         }
         return config;
+    }
+
+    @Override
+    protected void setMessageBodyFromJson(MbMessage message, JSONObject jso) throws JSONException {
+        final String BODY_FIELD_NAME = "statusnet_html";
+        boolean bodyFound = false;
+        if (MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(data.originId)) {
+            if (jso.has(BODY_FIELD_NAME)) {
+                message.setBody(jso.getString(BODY_FIELD_NAME));
+                bodyFound = true;
+            }
+        }
+        if (!bodyFound) {
+            super.setMessageBodyFromJson(message, jso);
+        }
     }
 }

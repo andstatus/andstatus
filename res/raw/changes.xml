@@ -37,9 +37,9 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
     
-    <release android:versionName="6.0" android:versionCode="90"
+    <release android:versionName="6.1" android:versionCode="91"
         versionDate="2013-12-27"
-        versionTitle="Multiple instancies of Microblogging systems">
+        versionTitle="Multiple instances of Microblogging systems">
         <changes>
             <change>"Type of Microblogging system" ("twitter" / "pump.io" / "status.net" ) separated
                 from the "Microblogging System" of one of these types. 

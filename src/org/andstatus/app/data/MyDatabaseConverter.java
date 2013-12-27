@@ -224,8 +224,8 @@ public class MyDatabaseConverter {
             statusNetSystemName = (TextUtils.isEmpty(statusNetHost) ? "StatusNet" : statusNetHost);
             if (statusNetHost.equalsIgnoreCase("quitter.se")) {
                 statusNetSystemName = "Quitter";
-            } else if (statusNetHost.equalsIgnoreCase("friendi.ca")) {
-                statusNetSystemName = "Friendica";
+            } else if (!TextUtils.isEmpty(statusNetHost)) {
+                statusNetSystemName = statusNetHost;
             }
 
             boolean statusNetSsl = MyPreferences.getDefaultSharedPreferences().getBoolean("ssl3", true);
