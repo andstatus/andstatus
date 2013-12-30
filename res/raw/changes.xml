@@ -56,7 +56,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 <a href="https://github.com/andstatus/andstatus/issues/58" >Issue #58</a></change>
             <change>Added "Allow HTML content" option for each Microblogging system, 
                 which allows to see formatted message content.
-                Pump.io and Friendi.ca support HTML formating in messages. 
+                Pump.io and StatusNet/Friendica support HTML formatting in messages. 
                 <a href="https://github.com/andstatus/andstatus/issues/60" >Issue #60</a>.</change>
             <change>Host of each Microblogging system may be configured. This may allow, for example, 
                 connection to the Twitter sites through proxy server. On the other hand,
