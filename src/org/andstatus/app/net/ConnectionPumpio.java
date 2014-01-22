@@ -17,10 +17,8 @@
 package org.andstatus.app.net;
 
 import android.net.Uri;
-import android.text.Html;
 import android.text.TextUtils;
 
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
@@ -254,11 +252,12 @@ public class ConnectionPumpio extends Connection {
         if (TextUtils.isEmpty(userId)) {
             throw new IllegalArgumentException(apiRoutine + ": userId is required");
         }
-        String nickname = userOidToNickname(userId);
+        String username = userOidToUsername(userId);
+        String nickname = usernameToNickname(username);
         if (TextUtils.isEmpty(nickname)) {
             throw new IllegalArgumentException(apiRoutine + ": wrong userId=" + userId);
         }
-        String host = usernameToHost(userOidToUsername(userId));
+        String host = usernameToHost(username);
         conu.httpConnection = http;
         if (TextUtils.isEmpty(host)) {
             throw new IllegalArgumentException(apiRoutine + ": host is empty for the userId=" + userId);
@@ -537,24 +536,28 @@ public class ConnectionPumpio extends Connection {
         return message;
     }
     
+    /**
+     * 2014-01-22 According to the crash reports, userId may not have "acct:" prefix
+     */
     public String userOidToUsername(String userId) {
         String username = "";
         if (!TextUtils.isEmpty(userId)) {
             int indexOfColon = userId.indexOf(':');
-            if (indexOfColon > 0) {
+            if (indexOfColon >= 0) {
                 username = userId.substring(indexOfColon+1);
+            } else {
+                username = userId;
             }
         }
         return username;
     }
     
-    public static String userOidToNickname(String userId) {
+    public String usernameToNickname(String username) {
         String nickname = "";
-        if (!TextUtils.isEmpty(userId)) {
-            int indexOfColon = userId.indexOf(':');
-            int indexOfAt = userId.indexOf('@');
-            if (indexOfColon > 0 && indexOfAt > indexOfColon) {
-                nickname = userId.substring(indexOfColon+1, indexOfAt);
+        if (!TextUtils.isEmpty(username)) {
+            int indexOfAt = username.indexOf('@');
+            if (indexOfAt > 0) {
+                nickname = username.substring(0, indexOfAt);
             }
         }
         return nickname;

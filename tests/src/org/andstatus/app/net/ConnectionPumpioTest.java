@@ -24,9 +24,9 @@ import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
-import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -111,6 +111,20 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
                 "somewhere.com"};
         for (int ind=0; ind < usernames.length; ind++) {
             assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], connection.usernameToHost(usernames[ind]));
+        }
+    }
+    
+    public void testGetConnectionAndUrl() throws ConnectionException {
+        String userOids[] = {"acct:t131t@identi.ca", 
+                "somebody@identi.ca"};
+        String urls[] = {"api/user/t131t/profile", 
+                "api/user/somebody/profile"};
+        String hosts[] = {"identi.ca", 
+                "identi.ca"};
+        for (int ind=0; ind < userOids.length; ind++) {
+            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_USER, userOids[ind]);
+            assertEquals("Expecting '" + urls[ind] + "'", urls[ind], conu.url);
+            assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.host);
         }
     }
     

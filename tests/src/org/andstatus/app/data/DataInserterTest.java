@@ -371,7 +371,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         String userName = connection.userOidToUsername(userOid);
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
         mbUser.userName = userName;
-        mbUser.url = "http://" + connection.usernameToHost(userName)  + "/" + ConnectionPumpio.userOidToNickname(userOid);
+        mbUser.url = "http://" + connection.usernameToHost(userName)  + "/" + connection.usernameToNickname(userName);
         if (accountMbUser != null) {
             mbUser.actor = accountMbUser;
         }
