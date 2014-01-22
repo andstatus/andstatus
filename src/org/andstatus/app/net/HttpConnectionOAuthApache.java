@@ -23,24 +23,11 @@ import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
 
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
-import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
-import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,28 +41,8 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
     @Override
     protected void setConnectionData(HttpConnectionData connectionData) {
         super.setConnectionData(connectionData);
-
-        HttpParams parameters = getHttpParams();
-
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-        ClientConnectionManager clientConnectionManager = new ThreadSafeClientConnManager(parameters, schemeRegistry);
-        
-        mClient = new DefaultHttpClient(clientConnectionManager, parameters);
+        mClient = HttpApacheUtils.getHttpClient();
     }  
-
-    private HttpParams getHttpParams() {
-        HttpParams params = new BasicHttpParams();
-        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-        HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
-        HttpConnectionParams.setStaleCheckingEnabled(params, true);
-
-        HttpProtocolParams.setUseExpectContinue(params, false);
-        HttpConnectionParams.setSoTimeout(params, 30000);
-        HttpConnectionParams.setSocketBufferSize(params, 2*8192);
-        return params;
-    }
 
     @Override
     public OAuthProvider getProvider() {

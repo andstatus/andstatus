@@ -27,8 +27,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
@@ -64,7 +62,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         JSONObject jObj = null;
         int statusCode = 0;
         try {
-            HttpClient client = new DefaultHttpClient(new BasicHttpParams());
+            HttpClient client = HttpApacheUtils.getHttpClient();
             postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
             if (getCredentialsPresent()) {
                 postMethod.addHeader("Authorization", "Basic " + getCredentials());
@@ -120,7 +118,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         String response = null;
         boolean ok = false;
         int statusCode = 0;
-        HttpClient client = new DefaultHttpClient(new BasicHttpParams());
+        HttpClient client = HttpApacheUtils.getHttpClient();
         try {
             getMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
             getMethod.addHeader("Authorization", "Basic " + getCredentials());
