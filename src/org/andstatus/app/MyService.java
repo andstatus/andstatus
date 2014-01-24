@@ -71,6 +71,8 @@ import net.jcip.annotations.GuardedBy;
  */
 public class MyService extends Service {
     private static final String TAG = MyService.class.getSimpleName();
+    private static final String COMMANDS_QUEUE_FILENAME = TAG + "-commands-queue";
+    private static final String RETRY_QUEUE_FILENAME = TAG + "-retry-queue";
 
     static final String PACKAGE_NAME = MyService.class.getPackage().getName();
 
@@ -445,9 +447,8 @@ public class MyService extends Service {
         synchronized (serviceStateLock) {
             if (!mInitialized) {
                 int count = 0;
-                // Restore Queues
-                count += restoreQueue(mainCommandQueue, this + "_" + "mCommands");
-                count += restoreQueue(retryCommandQueue, this + "_" + "mRetryQueue");
+                count += restoreQueue(mainCommandQueue, COMMANDS_QUEUE_FILENAME);
+                count += restoreQueue(retryCommandQueue, RETRY_QUEUE_FILENAME);
                 MyLog.d(this, "State restored, " + (count>0 ? Integer.toString(count) : "no") + " msg in the Queues");
 
                 registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
@@ -643,9 +644,8 @@ public class MyService extends Service {
     
                     notifyOfQueue();
                     int count = 0;
-                    // Save Queues
-                    count += persistQueue(mainCommandQueue, this + "_" + "mCommands");
-                    count += persistQueue(retryCommandQueue, this + "_" + "mRetryQueue");
+                    count += persistQueue(mainCommandQueue, COMMANDS_QUEUE_FILENAME);
+                    count += persistQueue(retryCommandQueue, RETRY_QUEUE_FILENAME);
                     MyLog.d(this, "State saved, " + (count>0 ? Integer.toString(count) : "no ") + " msg in the Queues");
     
                     relealeWakeLock();
