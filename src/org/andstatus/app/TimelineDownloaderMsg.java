@@ -34,6 +34,7 @@ import java.util.List;
 
 public class TimelineDownloaderMsg extends TimelineDownloader {
     private static final String TAG = TimelineDownloaderMsg.class.getSimpleName();
+    private static final int MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD = 200;
 
     @Override
     public void download() throws ConnectionException {
@@ -53,38 +54,36 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
         if (TextUtils.isEmpty(userOid)) {
             throw new ConnectionException("User oId is not found for id=" + userId);
         }
-        
-        int toDownload = 200;
+        int toDownload = MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD;
         TimelinePosition lastPosition = latestTimelineItem.getPosition();
         LatestUserMessages latestUserMessages = new LatestUserMessages();
         latestTimelineItem.onTimelineDownloaded();
-        for (boolean done = false; !done || toDownload > 0; ) {
+        DataInserter di = new DataInserter(counters);
+        for (boolean done = false; !done; ) {
             try {
                 int limit = counters.ma.getConnection().fixedDownloadLimitForApiRoutine(toDownload, 
                         counters.timelineType.getConnectionApiRoutine()); 
                 List<MbTimelineItem> messages = counters.ma.getConnection().getTimeline(
                         counters.timelineType.getConnectionApiRoutine(), lastPosition, limit, userOid);
-                if (messages.size() < 2) {  // We may assume that we downloaded the same message...
-                    toDownload = 0;
-                }
-                if (!messages.isEmpty()) {
-                    toDownload -= messages.size();
-                    DataInserter di = new DataInserter(counters);
-                    for (MbTimelineItem item : messages) {
-                        latestTimelineItem.onNewMsg(item.timelineItemPosition, item.timelineItemDate);
-                        switch (item.getType()) {
-                            case MESSAGE:
-                                di.insertOrUpdateMsg(item.mbMessage, latestUserMessages);
-                                break;
-                            case USER:
-                                di.insertOrUpdateUser(item.mbUser);
-                                break;
-                            default:
-                        }
+                for (MbTimelineItem item : messages) {
+                    toDownload--;
+                    latestTimelineItem.onNewMsg(item.timelineItemPosition, item.timelineItemDate);
+                    switch (item.getType()) {
+                        case MESSAGE:
+                            di.insertOrUpdateMsg(item.mbMessage, latestUserMessages);
+                            break;
+                        case USER:
+                            di.insertOrUpdateUser(item.mbUser);
+                            break;
+                        default:
                     }
+                }
+                if (toDownload <= 0
+                        || lastPosition == latestTimelineItem.getPosition()) {
+                    done = true;
+                } else {
                     lastPosition = latestTimelineItem.getPosition();
                 }
-                done = true;
             } catch (ConnectionException e) {
                 if (e.getStatusCode() != StatusCode.NOT_FOUND) {
                     throw e;

@@ -17,10 +17,8 @@
 package org.andstatus.app.net;
 
 import android.net.Uri;
-import android.text.Html;
 import android.text.TextUtils;
 
-import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -29,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -153,8 +150,8 @@ public abstract class ConnectionTwitter extends Connection {
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
-        JSONObject jso = http.getRequest(builder.build().toString());
         List<String> list = new ArrayList<String>();
+        JSONObject jso = http.getRequest(builder.build().toString());
         if (jso != null) {
             try {
                 JSONArray jArr = jso.getJSONArray("ids");

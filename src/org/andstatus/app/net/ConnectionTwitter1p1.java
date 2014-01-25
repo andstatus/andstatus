@@ -38,6 +38,11 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
             case CREATE_FAVORITE:
                 url = "favorites/create" + EXTENSION;
                 break;
+            // TODO: see https://dev.twitter.com/docs/api/1.1/get/friends/list
+            //   url will be: "friends/list" + EXTENSION
+            case GET_FRIENDS:
+                url = ""; 
+                break;
             case DESTROY_FAVORITE:
                 url = "favorites/destroy" + EXTENSION;
                 break;

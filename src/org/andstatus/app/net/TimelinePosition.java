@@ -49,5 +49,17 @@ public class TimelinePosition {
     public boolean isEmpty() {
         return TextUtils.isEmpty(position);
     }
-    
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof TimelinePosition)) {
+            return false;
+        }
+        return hashCode() == ((TimelinePosition) o).hashCode();
+    }
+
+    @Override
+    public int hashCode() {
+        return position.hashCode();
+    }
 }
