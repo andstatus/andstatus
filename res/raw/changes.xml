@@ -36,8 +36,16 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     <header>
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
-    
-    <release android:versionName="6.1" android:versionCode="91"
+
+    <release android:versionName="6.3" android:versionCode="93"
+        versionDate="2014-01-26"
+        versionTitle="Bugfixes and cleaning">
+        <changes>
+            <change>Fixed sending messages offline.</change>
+            <change>Fixed too many requests to the server in some cases.</change>
+        </changes>
+    </release>
+    <release android:versionName="6" android:versionCode="91"
         versionDate="2013-12-27"
         versionTitle="Multiple instances of Microblogging systems">
         <changes>

@@ -86,18 +86,18 @@ public class TimelineDownloaderUser extends TimelineDownloader {
             if (friendId != 0) {
                 followedIdsOld.remove(friendId);
                 msgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
-                // The Friend doesn't have any messages sent, so let's download the latest
             }
+            // The Friend doesn't have any messages sent, so let's download the latest
             if (msgId == 0) {
                 try {
+                    // Download the Users's info + optionally his latest message
                     if (friendId == 0 || counters.ma.getConnection().userObjectHasMessage()) {
-                        // This User is new, let's download his info
                         MbUser mbUser = counters.ma.getConnection().getUser(followedUserOid);
                         friendId = di.insertOrUpdateUser(mbUser, lum);
                         msgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
                     } 
                     if (friendId != 0 && msgId == 0) {
-                        downloadOneMessageBy(followedUserOid,lum);
+                        downloadOneMessageBy(followedUserOid, lum);
                     }
                 } catch (ConnectionException e) {
                     MyLog.i(TAG, "Failed to download the User object or his message for oid=" + followedUserOid, e);
@@ -124,7 +124,7 @@ public class TimelineDownloaderUser extends TimelineDownloader {
     private void downloadOneMessageBy(String userOid, LatestUserMessages lum) throws ConnectionException {
         counters.timelineType = TimelineTypeEnum.USER;
         List<MbTimelineItem> messages = counters.ma.getConnection().getTimeline(
-                counters.timelineType.getConnectionApiRoutine(), TimelinePosition.getEmpty(), 200, userOid);
+                counters.timelineType.getConnectionApiRoutine(), TimelinePosition.getEmpty(), 1, userOid);
         DataInserter di = new DataInserter(counters);
         for (MbTimelineItem item : messages) {
             if (item.getType() == ItemType.MESSAGE) {
