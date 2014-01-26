@@ -164,6 +164,8 @@ public class OriginEditor extends Activity {
             Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             Ringtone r = RingtoneManager.getRingtone(context, notification);
             r.play();
-        } catch (Exception e) {}        
+        } catch (Exception e) {
+            MyLog.e("beep", e);
+        }        
     }
 }

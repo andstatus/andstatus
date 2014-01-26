@@ -26,8 +26,6 @@ import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
-import org.andstatus.app.origin.OriginTest;
-import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
 

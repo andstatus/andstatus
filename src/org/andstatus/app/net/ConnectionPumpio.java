@@ -484,11 +484,9 @@ public class ConnectionPumpio extends Connection {
     private void parseComment(MbMessage message, JSONObject jso) throws ConnectionException {
         try {
             String oid = jso.optString("id");
-            if (!TextUtils.isEmpty(oid)) {
-                if (!message.oid.equalsIgnoreCase(oid)) {
-                    message.oid = oid;
-                }
-            } 
+            if (!TextUtils.isEmpty(oid) && !message.oid.equalsIgnoreCase(oid)) {
+                message.oid = oid;
+            }
             if (jso.has("author")) {
                 MbUser author = userFromJson(jso.getJSONObject("author"));
                 if (!author.isEmpty()) {

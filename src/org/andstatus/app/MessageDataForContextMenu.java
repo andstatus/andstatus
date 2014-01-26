@@ -93,17 +93,14 @@ class MessageDataForContextMenu {
 
                 body = c.getString(c.getColumnIndex(MyDatabase.Msg.BODY));
 
-                if ( timelineType != TimelineTypeEnum.FOLLOWING_USER) {
-                    if (!isDirect && !favorited && !reblogged && !isSender && !senderFollowed && !authorFollowed
-                            && ma.getUserId() != preferredOtherUserId) {
-                        MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(preferredOtherUserId);
-                        if (ma2 != null && ma.getOriginId() == ma2.getOriginId()) {
-                            canUseSecondAccountInsteadOfFirst = true;
-                        }
+                if ( timelineType != TimelineTypeEnum.FOLLOWING_USER 
+                        && !isDirect && !favorited && !reblogged && !isSender && !senderFollowed && !authorFollowed
+                        && ma.getUserId() != preferredOtherUserId) {
+                    MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(preferredOtherUserId);
+                    if (ma2 != null && ma.getOriginId() == ma2.getOriginId()) {
+                        canUseSecondAccountInsteadOfFirst = true;
                     }
-                    
                 }
-                
             }
         } finally {
             if (c != null && !c.isClosed()) {

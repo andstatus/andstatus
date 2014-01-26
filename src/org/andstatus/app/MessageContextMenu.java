@@ -431,10 +431,9 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
     }
     
     public void loadState(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(IntentExtra.EXTRA_ITEMID.key)) {
-                mCurrentMsgId = savedInstanceState.getLong(IntentExtra.EXTRA_ITEMID.key);
-            }
+        if (savedInstanceState != null 
+                && savedInstanceState.containsKey(IntentExtra.EXTRA_ITEMID.key)) {
+            mCurrentMsgId = savedInstanceState.getLong(IntentExtra.EXTRA_ITEMID.key);
         }
     }
     

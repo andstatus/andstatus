@@ -193,13 +193,13 @@ public final class MyAccount implements AccountDataReader {
 
         private void setOAuth(TriState isOAuthTriState) {
             Origin origin = myAccount.oAccountName.getOrigin();
-            boolean isOAuth = true;
+            boolean isOAuthBoolean = true;
             if (isOAuthTriState == TriState.UNKNOWN) {
-                isOAuth = myAccount.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault());
+                isOAuthBoolean = myAccount.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault());
             } else {
-                isOAuth = isOAuthTriState.toBoolean(origin.isOAuthDefault());
+                isOAuthBoolean = isOAuthTriState.toBoolean(origin.isOAuthDefault());
             }
-            myAccount.isOAuth = origin.getOriginType().fixIsOAuth(isOAuth);
+            myAccount.isOAuth = origin.getOriginType().fixIsOAuth(isOAuthBoolean);
         }
         
         private void fixInconsistenciesWithChangedEnvironmentSilently(boolean saveChanges) {
@@ -505,10 +505,8 @@ public final class MyAccount implements AccountDataReader {
          */
         public boolean verifyCredentials(boolean reVerify) throws ConnectionException {
             boolean ok = false;
-            if (!reVerify) {
-                if (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
-                    ok = true;
-                }
+            if (!reVerify && myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
+                ok = true;
             }
             if (!ok) {
                 try {
@@ -535,14 +533,13 @@ public final class MyAccount implements AccountDataReader {
                 errorSettingUsername = !ok;
             }
             boolean credentialsOfOtherUser = false;
-            if (ok) {
-                // We are comparing user names ignoring case, but we fix correct case
-                // as the Originating system tells us. 
-                if (!TextUtils.isEmpty(myAccount.getUsername()) && myAccount.getUsername().compareToIgnoreCase(newName) != 0) {
-                    // Credentials belong to other User ??
-                    ok = false;
-                    credentialsOfOtherUser = true;
-                }
+            // We are comparing user names ignoring case, but we fix correct case
+            // as the Originating system tells us. 
+            if (ok  && !TextUtils.isEmpty(myAccount.getUsername()) 
+                    && myAccount.getUsername().compareToIgnoreCase(newName) != 0) {
+                // Credentials belong to other User ??
+                ok = false;
+                credentialsOfOtherUser = true;
             }
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
@@ -591,10 +588,9 @@ public final class MyAccount implements AccountDataReader {
 
         public void setCredentialsVerificationStatus(CredentialsVerificationStatus cv) {
             myAccount.credentialsVerified = cv;
-            if (cv != CredentialsVerificationStatus.SUCCEEDED) {
-                if (myAccount.connection != null) {
-                    myAccount.connection.clearAuthInformation();
-                }
+            if (cv != CredentialsVerificationStatus.SUCCEEDED 
+                    && myAccount.connection != null) {
+                myAccount.connection.clearAuthInformation();
             }
         }
 
@@ -932,11 +928,10 @@ public final class MyAccount implements AccountDataReader {
         boolean found = false;
         String possiblyUnique = getUsername();
         for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
-            if (!persistentAccount.toString().equalsIgnoreCase(toString()) ) {
-                if (persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique) ) {
-                    found = true;
-                    break;
-                }
+            if (!persistentAccount.toString().equalsIgnoreCase(toString()) 
+                    && persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique) ) {
+                found = true;
+                break;
             }
         }
         if (!found) {
@@ -1133,10 +1128,9 @@ public final class MyAccount implements AccountDataReader {
      */
     public MyAccount firstOtherAccountOfThisOrigin() {
         for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
-            if (persistentAccount.getOriginId() == this.getOriginId()) {
-                if (persistentAccount != this) {
-                    return persistentAccount;
-                }
+            if (persistentAccount.getOriginId() == this.getOriginId() 
+                    && persistentAccount != this) {
+                return persistentAccount;
             }
         }
         return this;

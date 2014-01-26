@@ -243,7 +243,7 @@ public class MyService extends Service {
      * Send broadcast to Widgets even if there are no new tweets
      */
     // TODO: Maybe this should be additional setting...
-    public static boolean updateWidgetsOnEveryUpdate = true;
+    public static final boolean updateWidgetsOnEveryUpdate = true;
 
     private volatile boolean mNotificationsEnabled;
     private volatile boolean mNotificationsVibrate;
@@ -402,10 +402,9 @@ public class MyService extends Service {
                     // This is a good place to send commands from retry Queue
                     while (!retryCommandQueue.isEmpty()) {
                         CommandData cd = retryCommandQueue.poll();
-                        if (!mainCommandQueue.contains(cd)) {
-                            if (!mainCommandQueue.offer(cd)) {
-                                MyLog.e(this, "mCommands is full?");
-                            }
+                        if (!mainCommandQueue.contains(cd) 
+                                && !mainCommandQueue.offer(cd)) {
+                            MyLog.e(this, "mCommands is full?");
                         }
                     }
                 }
@@ -722,13 +721,6 @@ public class MyService extends Service {
             notification.tickerText = aMessage;
 
             /**
-             * Set the latest event information and send the notification
-             * Actually don't start any intent
-             * @see <a href="http://stackoverflow.com/questions/4232006/android-notification-pendingintent-problem">android-notification-pendingintent-problem</a>
-             */
-            // PendingIntent pi = PendingIntent.getActivity(this, 0, null, 0);
-
-            /**
              * Kick the commands queue by sending empty command
              * This Intent will be sent upon a User tapping the notification 
              */
@@ -798,10 +790,9 @@ public class MyService extends Service {
                 if (shouldWeRetry(commandData)) {
                     synchronized(MyService.this) {
                         // Put the command to the retry queue
-                        if (!retryCommandQueue.contains(commandData)) {
-                            if (!retryCommandQueue.offer(commandData)) {
-                                MyLog.e(this, "mRetryQueue is full?");
-                            }
+                        if (!retryCommandQueue.contains(commandData) 
+                                && !retryCommandQueue.offer(commandData)) {
+                            MyLog.e(this, "mRetryQueue is full?");
                         }
                     }        
                 }
@@ -1126,15 +1117,7 @@ public class MyService extends Service {
             try {
                 MbMessage message = commandData.getAccount().getConnection().getMessage(oid);
                 if (!message.isEmpty()) {
-                    // And add the message to the local storage
-                    try {
-                        new DataInserter(commandData.getAccount(),
-                                MyService.this.getApplicationContext(),
-                                TimelineTypeEnum.ALL).insertOrUpdateMsg(message);
-                        ok = true;
-                    } catch (Exception e) {
-                        MyLog.e(this, "Error inserting status", e);
-                    }
+                    ok = addMessageToLocalStorage(commandData, message);
                 }
             } catch (ConnectionException e) {
                 if (e.getStatusCode() == StatusCode.NOT_FOUND) {
@@ -1146,6 +1129,19 @@ public class MyService extends Service {
             }
             setSoftErrorIfNotOk(commandData, ok);
             MyLog.d(this, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + commandData.itemId);
+        }
+
+        private boolean addMessageToLocalStorage(CommandData commandData, MbMessage message) {
+            boolean ok = false;
+            try {
+                new DataInserter(commandData.getAccount(),
+                        MyService.this.getApplicationContext(),
+                        TimelineTypeEnum.ALL).insertOrUpdateMsg(message);
+                ok = true;
+            } catch (Exception e) {
+                MyLog.e(this, "Error inserting status", e);
+            }
+            return ok;
         }
         
         /**

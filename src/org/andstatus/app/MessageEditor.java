@@ -162,10 +162,8 @@ class MessageEditor {
         mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (event != null) {
-                    if (event.isAltPressed()) {
-                        return false;
-                    }
+                if (event != null && event.isAltPressed()) {
+                    return false;
                 }
                 updateStatus();
                 return true;
@@ -343,34 +341,30 @@ class MessageEditor {
     
     public void saveState(Bundle outState) {
         mIsStateLoaded = false;
-        if (outState != null) {
-            if (mEditText != null && mAccount != null) {
-                String status = mEditText.getText().toString();
-                if (!TextUtils.isEmpty(status)) {
-                    outState.putString(IntentExtra.EXTRA_STATUS.key, status);
-                    outState.putLong(IntentExtra.EXTRA_INREPLYTOID.key, mReplyToId);
-                    outState.putLong(IntentExtra.EXTRA_RECIPIENTID.key, mRecipientId);
-                    outState.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, mAccount.getAccountName());
-                    outState.putBoolean(IntentExtra.EXTRA_SHOW_ACCOUNT.key, mShowAccount);
-                }
+        if (outState != null && mEditText != null && mAccount != null) {
+            String status = mEditText.getText().toString();
+            if (!TextUtils.isEmpty(status)) {
+                outState.putString(IntentExtra.EXTRA_STATUS.key, status);
+                outState.putLong(IntentExtra.EXTRA_INREPLYTOID.key, mReplyToId);
+                outState.putLong(IntentExtra.EXTRA_RECIPIENTID.key, mRecipientId);
+                outState.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, mAccount.getAccountName());
+                outState.putBoolean(IntentExtra.EXTRA_SHOW_ACCOUNT.key, mShowAccount);
             }
         }
     }
     
     public void loadState(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(IntentExtra.EXTRA_INREPLYTOID.key)) {
-                if (savedInstanceState.containsKey(IntentExtra.EXTRA_STATUS.key)) {
-                    String status = savedInstanceState.getString(IntentExtra.EXTRA_STATUS.key);
-                    if (!TextUtils.isEmpty(status)) {
-                        statusRestored = status;
-                        replyToIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
-                        recipientIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
-                        accountGuidRestored = savedInstanceState.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
-                        showAccountRestored = savedInstanceState.getBoolean(IntentExtra.EXTRA_SHOW_ACCOUNT.key);
-                        mIsStateLoaded = true;
-                    }
-                }
+        if (savedInstanceState != null 
+                && savedInstanceState.containsKey(IntentExtra.EXTRA_INREPLYTOID.key) 
+                && savedInstanceState.containsKey(IntentExtra.EXTRA_STATUS.key)) {
+            String status = savedInstanceState.getString(IntentExtra.EXTRA_STATUS.key);
+            if (!TextUtils.isEmpty(status)) {
+                statusRestored = status;
+                replyToIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
+                recipientIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
+                accountGuidRestored = savedInstanceState.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
+                showAccountRestored = savedInstanceState.getBoolean(IntentExtra.EXTRA_SHOW_ACCOUNT.key);
+                mIsStateLoaded = true;
             }
         }
     }

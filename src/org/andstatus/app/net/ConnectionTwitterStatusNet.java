@@ -98,7 +98,7 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
             if (site != null) {
                 int textLimit = site.optInt("textlimit");
                 config = MbConfig.fromTextLimit(textLimit);
-                //Not used: status.shortUrlLength = site.optInt("shorturllength");
+                // "shorturllength" is not used
             }
         }
         return config;
@@ -108,11 +108,10 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
     protected void setMessageBodyFromJson(MbMessage message, JSONObject jso) throws JSONException {
         final String BODY_FIELD_NAME = "statusnet_html";
         boolean bodyFound = false;
-        if (MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(data.originId)) {
-            if (jso.has(BODY_FIELD_NAME)) {
-                message.setBody(jso.getString(BODY_FIELD_NAME));
-                bodyFound = true;
-            }
+        if (MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(data.originId)
+                && jso.has(BODY_FIELD_NAME)) {
+            message.setBody(jso.getString(BODY_FIELD_NAME));
+            bodyFound = true;
         }
         if (!bodyFound) {
             super.setMessageBodyFromJson(message, jso);

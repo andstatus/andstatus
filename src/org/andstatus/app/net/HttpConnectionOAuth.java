@@ -56,10 +56,10 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
     @Override
     public boolean getCredentialsPresent() {
         boolean yes = false;
-        if (data.oauthClientKeys.areKeysPresent()) {
-            if (!TextUtils.isEmpty(userToken) && !TextUtils.isEmpty(userSecret)) {
+        if (data.oauthClientKeys.areKeysPresent() 
+            && !TextUtils.isEmpty(userToken) 
+            && !TextUtils.isEmpty(userSecret)) {
                 yes = true;
-            }
         }
         MyLog.v(this, "Credentials present?: clientKeys=" + data.oauthClientKeys.areKeysPresent() + " user keys:" + !TextUtils.isEmpty(userToken) + ", " + !TextUtils.isEmpty(userSecret));
         return yes;

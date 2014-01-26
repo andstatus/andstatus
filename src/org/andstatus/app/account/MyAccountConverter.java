@@ -60,10 +60,9 @@ public class MyAccountConverter {
                         if (builderOld.onOriginNameChanged(twitterName)) {
                             accountsToRemove.add(account);
                         }
-                    } else if (originNameOld.equals("status.net")) {
-                        if (builderOld.onOriginNameChanged(statusNetSystemName)) {
-                            accountsToRemove.add(account);
-                        }
+                    } else if (originNameOld.equals("status.net") 
+                            && builderOld.onOriginNameChanged(statusNetSystemName)) {
+                        accountsToRemove.add(account);
                     }
                     builderOld.saveSilently();
                 }

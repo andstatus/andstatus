@@ -228,12 +228,18 @@ public class DataInserter {
                 if (!TextUtils.isEmpty(message.url)) {
                     values.put(MyDatabase.Msg.URL, message.url);
                 }
-                if (message.favoritedByActor != TriState.UNKNOWN) {
-                    if (actorId != 0 && actorId == counters.ma.getUserId()) {
-                        values.put(MyDatabase.MsgOfUser.FAVORITED, SharedPreferencesUtil.isTrue(message.favoritedByActor));
-                        MyLog.v(this, "Message '" + message.oid + "' " + (message.favoritedByActor.toBoolean(false) ? "favorited" : "unfavorited") 
-                                + " by " + counters.ma.getAccountName());
-                    }
+                if (message.favoritedByActor != TriState.UNKNOWN
+                        && actorId != 0
+                        && actorId == counters.ma.getUserId()) {
+                    values.put(MyDatabase.MsgOfUser.FAVORITED,
+                            SharedPreferencesUtil.isTrue(message.favoritedByActor));
+                    MyLog.v(this,
+                            "Message '"
+                                    + message.oid
+                                    + "' "
+                                    + (message.favoritedByActor.toBoolean(false) ? "favorited"
+                                            : "unfavorited")
+                                    + " by " + counters.ma.getAccountName());
                 }
 
                 if (message.inReplyToMessage != null) {
@@ -266,15 +272,11 @@ public class DataInserter {
                 if (countIt) { 
                     counters.newMessagesCount++;
                     }
-                if (body.length() > 0) {
-                    if (!mentioned) {
-                        // Check if current user was mentioned in the text of the message
-                        if (body.length() > 0) {
-                            if (body.contains("@" + counters.ma.getUsername())) {
-                                mentioned = true;
-                            }
-                        }
-                    }
+                // Check if current user was mentioned in the text of the message
+                if (body.length() > 0 
+                        && !mentioned 
+                        && body.contains("@" + counters.ma.getUsername())) {
+                    mentioned = true;
                 }
                 if (mentioned) {
                     if (countIt) { 
@@ -386,17 +388,17 @@ public class DataInserter {
             }
             if (mbUser.createdDate > 0) {
                 values.put(MyDatabase.User.CREATED_DATE, mbUser.createdDate);
-            } else if ( userId == 0) {
-                if (mbUser.updatedDate > 0) {
-                    values.put(MyDatabase.User.CREATED_DATE, mbUser.updatedDate);
-                }
+            } else if ( userId == 0 && mbUser.updatedDate > 0) {
+                values.put(MyDatabase.User.CREATED_DATE, mbUser.updatedDate);
             }
-            if (mbUser.followedByActor != TriState.UNKNOWN ) {
-                if (readerId == counters.ma.getUserId()) {
-                    values.put(MyDatabase.FollowingUser.USER_FOLLOWED, mbUser.followedByActor.toBoolean(false));
-                    MyLog.v(this, "User '" + userName + "' is " + (mbUser.followedByActor.toBoolean(false) ? "" : "not ") 
-                            + "followed by " + counters.ma.getAccountName() );
-                }
+            if (mbUser.followedByActor != TriState.UNKNOWN
+                    && readerId == counters.ma.getUserId()) {
+                values.put(MyDatabase.FollowingUser.USER_FOLLOWED,
+                        mbUser.followedByActor.toBoolean(false));
+                MyLog.v(this,
+                        "User '" + userName + "' is "
+                                + (mbUser.followedByActor.toBoolean(false) ? "" : "not ")
+                                + "followed by " + counters.ma.getAccountName());
             }
             
             // Construct the Uri to the User

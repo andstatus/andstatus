@@ -201,6 +201,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 break;
             case SELECT_ORIGIN:
                 onOriginSelected(resultCode, data);
+                break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
@@ -229,17 +230,17 @@ public class AccountSettingsActivity extends PreferenceActivity implements
 
     private void onOriginSelected(int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            Origin origin = MyContextHolder.get().persistentOrigins().fromName(data.getStringExtra(IntentExtra.EXTRA_ORIGIN_NAME.key));
-            if (origin.isPersistent()) {
-                if ( state.getAccount().getOriginId() != origin.getId()) {
-                    // If we have changed the System, we should recreate the Account
-                    originOfUser = origin;
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                            AccountName.fromOriginAndUserNames(originOfUser.getName(),
-                                    state.getAccount().getUsername()).toString(),
-                                    TriState.fromBoolean(state.getAccount().isOAuth()));
-                    showUserPreferences();
-                }
+            Origin origin = MyContextHolder.get().persistentOrigins()
+                    .fromName(data.getStringExtra(IntentExtra.EXTRA_ORIGIN_NAME.key));
+            if (origin.isPersistent()
+                    && state.getAccount().getOriginId() != origin.getId()) {
+                // If we have changed the System, we should recreate the Account
+                originOfUser = origin;
+                state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                        AccountName.fromOriginAndUserNames(originOfUser.getName(),
+                                state.getAccount().getUsername()).toString(),
+                        TriState.fromBoolean(state.getAccount().isOAuth()));
+                showUserPreferences();
             }
         }
     }

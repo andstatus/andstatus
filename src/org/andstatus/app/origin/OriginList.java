@@ -137,6 +137,7 @@ public class OriginList extends ListActivity {
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
+                break;
         }
     }
 
