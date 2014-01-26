@@ -22,8 +22,10 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 
+import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
@@ -32,8 +34,6 @@ import org.andstatus.app.util.SelectionAndArgs;
  * currently only old Messages are being deleted 
  */
 public class DataPruner {
-    private static final String TAG = DataPruner.class.getSimpleName();
-
     private ContentResolver mContentResolver;
     private int mDeleted = 0;
     
@@ -58,10 +58,18 @@ public class DataPruner {
                 .getDefaultSharedPreferences();
 
         // Don't delete messages which are favorited by any user
-        String sqlNotFavorited = "NOT EXISTS ("
+        String sqlNotFavoritedMessage = "NOT EXISTS ("
                 + "SELECT * FROM " + MsgOfUser.TABLE_NAME + " AS gnf WHERE "
-                + Msg.TABLE_NAME + "." + BaseColumns._ID + "=gnf." + MyDatabase.MsgOfUser.MSG_ID
+                + Msg.TABLE_NAME + "." + Msg._ID + "=gnf." + MyDatabase.MsgOfUser.MSG_ID
                 + " AND gnf." + MyDatabase.MsgOfUser.FAVORITED + "=1" 
+                + ")";
+        String sqlNotLatestMessageByFollowedUser = Msg.TABLE_NAME + "." + Msg._ID + " NOT IN("
+                + "SELECT " + User.USER_MSG_ID 
+                + " FROM " + User.TABLE_NAME + " AS userf"
+                + " INNER JOIN " + FollowingUser.TABLE_NAME 
+                + " ON" 
+                + " userf." + User._ID + "=" + FollowingUser.TABLE_NAME + "." + FollowingUser.FOLLOWING_USER_ID
+                + " AND " + FollowingUser.TABLE_NAME + "." + FollowingUser.USER_FOLLOWED + "=1"
                 + ")";
         
         int maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
@@ -79,7 +87,8 @@ public class DataPruner {
                 sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <  ?", new String[] {
                     String.valueOf(sinceTimestamp)
                 });
-                sa.selection += " AND " + sqlNotFavorited;
+                sa.selection += " AND " + sqlNotFavoritedMessage;
+                sa.selection += " AND " + sqlNotLatestMessageByFollowedUser;
                 nDeletedTime = mContentResolver.delete(MyProvider.MSG_CONTENT_URI, sa.selection, sa.selectionArgs);
             }
 
@@ -106,7 +115,8 @@ public class DataPruner {
                         sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <=  ?", new String[] {
                             String.valueOf(sinceTimestampSize)
                         });
-                        sa.selection += " AND " + sqlNotFavorited;
+                        sa.selection += " AND " + sqlNotFavoritedMessage;
+                        sa.selection += " AND " + sqlNotLatestMessageByFollowedUser;
                         nDeletedSize = mContentResolver.delete(MyProvider.MSG_CONTENT_URI, sa.selection,
                                 sa.selectionArgs);
                     }
@@ -116,11 +126,11 @@ public class DataPruner {
             MyLog.e(this, "pruneOldRecords failed", e);
         }
         mDeleted = nDeletedTime + nDeletedSize;
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG,
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this,
                     "pruneOldRecords; History time=" + maxDays + " days; deleted " + nDeletedTime
                             + " , since " + sinceTimestamp + ", now=" + System.currentTimeMillis());
-            MyLog.v(TAG, "pruneOldRecords; History size=" + maxSize + " messages; deleted "
+            MyLog.v(this, "pruneOldRecords; History size=" + maxSize + " messages; deleted "
                     + nDeletedSize + " of " + nTweets + " messages, since " + sinceTimestampSize);
         }
         
