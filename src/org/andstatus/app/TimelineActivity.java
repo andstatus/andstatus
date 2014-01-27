@@ -28,7 +28,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -842,22 +841,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     protected void setSavedText(CharSequence text) {
         ((EditText) findViewById(R.id.messageBodyEditText)).setText(text);
-    }
-
-    /**
-     * Check to see if the system has a hardware keyboard.
-     * 
-     * @return
-     */
-    protected boolean hasHardwareKeyboard() {
-        Configuration c = getResources().getConfiguration();
-        switch (c.keyboard) {
-            case Configuration.KEYBOARD_12KEY:
-            case Configuration.KEYBOARD_QWERTY:
-                return true;
-            default:
-                return false;
-        }
     }
 
     @Override

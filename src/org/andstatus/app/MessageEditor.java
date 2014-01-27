@@ -26,6 +26,7 @@ import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -207,6 +208,25 @@ class MessageEditor {
         updateCreateMessageButton();
         
         mEditText.requestFocus();
+        if (!isHardwareKeyboardAttached()) {
+            openSoftKeyboard();
+        }
+    }
+    
+    private boolean isHardwareKeyboardAttached() {
+        Configuration c = messageList.getActivity().getResources().getConfiguration();
+        switch (c.keyboard) {
+            case Configuration.KEYBOARD_12KEY:
+            case Configuration.KEYBOARD_QWERTY:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private void openSoftKeyboard() {
+        InputMethodManager inputMethodManager = (InputMethodManager) messageList.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.toggleSoftInputFromWindow(mEditText.getWindowToken(), InputMethodManager.SHOW_FORCED, 0);        
     }
     
     public void updateCreateMessageButton() {
@@ -228,7 +248,13 @@ class MessageEditor {
     
     public void hide() {
         editorView.setVisibility(View.GONE);
+        closeSoftKeyboard();
         updateCreateMessageButton();
+    }
+
+    private void closeSoftKeyboard() {
+        InputMethodManager inputMethodManager = (InputMethodManager) messageList.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
     }
     
     public boolean isVisible() {
@@ -293,7 +319,6 @@ class MessageEditor {
         show();
     }
     
-
     /**
      * Send the message asynchronously
      */
@@ -317,7 +342,6 @@ class MessageEditor {
                 commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key, mRecipientId);
             }
             MyServiceManager.sendCommand(commandData);
-            closeSoftKeyboard();
 
             // Let's assume that everything will be Ok
             // so we may clear the text box with the sent message text...
@@ -329,14 +353,6 @@ class MessageEditor {
 
             hide();
         }
-    }
-
-    /**
-     * Close the on-screen keyboard.
-     */
-    private void closeSoftKeyboard() {
-        InputMethodManager inputMethodManager = (InputMethodManager) messageList.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
     }
     
     public void saveState(Bundle outState) {
