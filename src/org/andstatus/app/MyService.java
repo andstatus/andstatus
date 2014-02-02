@@ -243,7 +243,7 @@ public class MyService extends Service {
      * Send broadcast to Widgets even if there are no new tweets
      */
     // TODO: Maybe this should be additional setting...
-    public static final boolean updateWidgetsOnEveryUpdate = true;
+    public static final boolean UPDATE_WIDGETS_ON_EVERY_UPDATE = true;
 
     private volatile boolean mNotificationsEnabled;
     private volatile boolean mNotificationsVibrate;
@@ -1221,7 +1221,7 @@ public class MyService extends Service {
          */
         private void loadTimeline(CommandData commandData) {
             if (commandData.getAccount() == null) {
-                for (MyAccount acc : MyContextHolder.get().persistentAccounts().list()) {
+                for (MyAccount acc : MyContextHolder.get().persistentAccounts().collection()) {
                     loadTimelineAccount(commandData, acc);
                     if (isStopping()) {
                         setSoftErrorIfNotOk(commandData, false);
@@ -1403,7 +1403,7 @@ public class MyService extends Service {
         private void notifyOfNewTweets(int numTweets, CommandEnum msgType) {
             MyLog.d(this, "notifyOfNewTweets n=" + numTweets + "; msgType=" + msgType);
 
-            if (updateWidgetsOnEveryUpdate) {
+            if (UPDATE_WIDGETS_ON_EVERY_UPDATE) {
                 // Notify widgets even about the fact, that update occurred
                 // even if there was nothing new
                 updateWidgets(numTweets, msgType);

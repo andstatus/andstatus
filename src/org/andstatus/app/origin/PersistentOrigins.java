@@ -63,8 +63,7 @@ public class PersistentOrigins {
     }
     
     public static PersistentOrigins getEmpty() {
-        PersistentOrigins pa = new PersistentOrigins();
-        return pa;
+        return new PersistentOrigins();
     }
 
     /**
@@ -105,7 +104,7 @@ public class PersistentOrigins {
         return Origin.Builder.getUnknown();
     }
 
-    public Collection<Origin> list() {
+    public Collection<Origin> collection() {
         return persistentOrigins.values();
     }
     

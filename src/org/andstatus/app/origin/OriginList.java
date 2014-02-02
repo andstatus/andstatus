@@ -36,6 +36,7 @@ import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,8 +47,7 @@ public class OriginList extends ListActivity {
     private static final String KEY_VISIBLE_NAME = "visible_name";
     private static final String KEY_NAME = "name";
     
-    private boolean actionPick = false;
-    private final ArrayList<Map<String, String>> data = new ArrayList<Map<String, String>>();
+    private final List<Map<String, String>> data = new ArrayList<Map<String, String>>();
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,8 +73,8 @@ public class OriginList extends ListActivity {
      * @param intentNew
      */
     private void processNewIntent(Intent intentNew) {
-        String action = getIntent().getAction();
-        actionPick = action!=null && action.equals(Intent.ACTION_PICK);
+        String action = intentNew.getAction();
+        boolean actionPick = action!=null && action.equals(Intent.ACTION_PICK);
         Button buttonAdd = (Button) findViewById(R.id.button_add);
         if (actionPick) {
             getListView().setOnItemClickListener(new Picker());
@@ -89,7 +89,7 @@ public class OriginList extends ListActivity {
 
     private void fillList() {
         data.clear();
-        for (Origin origin : MyContextHolder.get().persistentOrigins().list()) {
+        for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
             HashMap<String, String> map = new HashMap<String, String>();
             String visibleName = origin.getName();
             map.put(KEY_VISIBLE_NAME, visibleName);

@@ -222,7 +222,7 @@ public class MyDatabaseConverter {
             
             String statusNetHost = MyPreferences.getDefaultSharedPreferences().getString("host_of_origin3","");
             statusNetSystemName = (TextUtils.isEmpty(statusNetHost) ? "StatusNet" : statusNetHost);
-            if (statusNetHost.equalsIgnoreCase("quitter.se")) {
+            if ("quitter.se".equalsIgnoreCase(statusNetHost)) {
                 statusNetSystemName = "Quitter";
             } else if (!TextUtils.isEmpty(statusNetHost)) {
                 statusNetSystemName = statusNetHost;

@@ -28,20 +28,54 @@ public class MyActionBar {
             viewGroup.addView(actionsView, 0);
         } else {
             if (android.os.Build.VERSION.SDK_INT >= 16 ) {
-                viewGroup = findChildViewGroup(ListView.class, (ViewGroup) container.getActivity().findViewById(android.R.id.content), 2);
-                if (ListView.class.isAssignableFrom(viewGroup.getClass())) {
-                    if (PreferenceActivity.class.isAssignableFrom(container.getActivity().getClass())) {
-                        // Ugly but better than nothing
-                        ((ListView) viewGroup).addFooterView(actionsView);
-                    } else {
-                        ((ListView) viewGroup).addHeaderView(actionsView);
+                attachToListView(actionsView);
+            }
+        }
+        attachUpNavigationListener();
+    }
+
+    /**
+     * @return Tries to return a child of the viewClassToFind but may return any ViewGroup if not found
+     */
+    private ViewGroup findChildViewGroup(Class<? extends ViewGroup> viewClassToFind, ViewGroup parentViewGroup, int minLevelsToCheck) {
+        ViewGroup viewFound = parentViewGroup;
+        for (int index = 0; index < parentViewGroup.getChildCount(); index++) {
+            View view = parentViewGroup.getChildAt(index);
+            if (viewClassToFind.isAssignableFrom(view.getClass())) {
+                viewFound = (ViewGroup) view;
+                break;
+            }
+        }
+        if ((minLevelsToCheck > 0) || !(viewClassToFind.isAssignableFrom(viewFound.getClass()))) {
+            for (int index = 0; index < parentViewGroup.getChildCount(); index++) {
+                View view = parentViewGroup.getChildAt(index);
+                if (ViewGroup.class.isAssignableFrom(view.getClass())) {
+                    ViewGroup viewGroup = findChildViewGroup(viewClassToFind, (ViewGroup) view, minLevelsToCheck-1);
+                    if (viewClassToFind.isAssignableFrom(viewGroup.getClass())) {
+                        viewFound = viewGroup;
+                        break;
                     }
-                } else {
-                    viewGroup.addView(actionsView, 0);
                 }
             }
         }
+        return viewFound;
+    }
 
+    private void attachToListView(ViewGroup actionsView) {
+        ViewGroup viewGroup = findChildViewGroup(ListView.class, (ViewGroup) container.getActivity().findViewById(android.R.id.content), 2);
+        if (ListView.class.isAssignableFrom(viewGroup.getClass())) {
+            if (PreferenceActivity.class.isAssignableFrom(container.getActivity().getClass())) {
+                // Ugly but better than nothing
+                ((ListView) viewGroup).addFooterView(actionsView);
+            } else {
+                ((ListView) viewGroup).addHeaderView(actionsView);
+            }
+        } else {
+            viewGroup.addView(actionsView, 0);
+        }
+    }
+
+    private void attachUpNavigationListener() {
         OnClickListener listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -52,31 +86,6 @@ public class MyActionBar {
         if (view != null) {
             view.setOnClickListener(listener);
         }
-    }
-
-    private ViewGroup findChildViewGroup(Class<? extends ViewGroup> viewClass, ViewGroup viewGroupIn, int minLevelsToCheck) {
-        ViewGroup parentViewGroup = viewGroupIn;
-        ViewGroup foundView = parentViewGroup;
-        for (int index = 0; index < parentViewGroup.getChildCount(); index++) {
-            View view = parentViewGroup.getChildAt(index);
-            if (viewClass.isAssignableFrom(view.getClass())) {
-                foundView = (ViewGroup) view;
-                break;
-            }
-        }
-        if ((minLevelsToCheck > 0) || !(LinearLayout.class.isAssignableFrom(foundView.getClass()))) {
-            for (int index = 0; index < parentViewGroup.getChildCount(); index++) {
-                View view = parentViewGroup.getChildAt(index);
-                if (ViewGroup.class.isAssignableFrom(view.getClass())) {
-                    ViewGroup viewGroup = findChildViewGroup(viewClass, (ViewGroup) view, (minLevelsToCheck-1));
-                    if (viewClass.isAssignableFrom(viewGroup.getClass())) {
-                        foundView = viewGroup;
-                        break;
-                    }
-                }
-            }
-        }
-        return foundView;
     }
     
     public void setTitle(int resId) {

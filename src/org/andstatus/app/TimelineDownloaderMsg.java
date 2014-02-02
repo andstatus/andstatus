@@ -76,6 +76,7 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
                             di.insertOrUpdateUser(item.mbUser);
                             break;
                         default:
+                            break;
                     }
                 }
                 if (toDownload <= 0

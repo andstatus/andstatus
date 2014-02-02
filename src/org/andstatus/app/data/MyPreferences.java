@@ -247,17 +247,15 @@ public class MyPreferences {
                     dir = new File(dir, type);
                 }
             }
-            if (dir != null) {
-                if (!dir.exists()) {
-                    try {
-                        dir.mkdirs();
-                    } catch (Exception e) {
-                        MyLog.e(TAG, "Error creating directory", e);
-                    } finally {
-                        if (!dir.exists()) {
-                            textToLog = "getDataFilesDir - Could not create '" + dir.getPath() + "'";
-                            dir = null;
-                        }
+            if (dir != null && !dir.exists()) {
+                try {
+                    dir.mkdirs();
+                } catch (Exception e) {
+                    MyLog.e(TAG, "Error creating directory", e);
+                } finally {
+                    if (!dir.exists()) {
+                        textToLog = "getDataFilesDir - Could not create '" + dir.getPath() + "'";
+                        dir = null;
                     }
                 }
             }

@@ -435,7 +435,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     private void returnToOurActivity() {
         Class<? extends Activity> ourActivity;
         MyContextHolder.initialize(this, this);
-        if (MyContextHolder.get().persistentAccounts().size() > 1) {
+        if (MyContextHolder.get().persistentAccounts().isEmpty() > 1) {
             ourActivity = MyPreferenceActivity.class;
         } else {
             ourActivity = TimelineActivity.class;
@@ -461,7 +461,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         onSharedPreferenceChangedIsBusy = true;
 
         try {
-            logSharedPreferencesValue(sharedPreferences, key);
+            MyLog.logSharedPreferencesValue(this, sharedPreferences, key);
 
             // Here and below:
             // Check if there are changes to avoid "ripples": don't set new
@@ -494,25 +494,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         } finally {
             onSharedPreferenceChangedIsBusy = false;
         }
-    }
-
-    private void logSharedPreferencesValue(SharedPreferences sharedPreferences, String key) {
-        if (!MyLog.isLoggable(this, MyLog.DEBUG )) {
-            return;
-        }
-        String value = "(not set)";
-        if (sharedPreferences.contains(key)) {
-            try {
-                value = sharedPreferences.getString(key, "");
-            } catch (ClassCastException e) {  // NOSONAR
-                try {
-                    value = Boolean.toString(sharedPreferences.getBoolean(key, false));
-                } catch (ClassCastException e2) { // NOSONAR
-                    value = "??";
-                }
-            }
-        }
-        MyLog.d(TAG, "onSharedPreferenceChanged: " + key + "='" + value + "'");
     }
 
     @Override
@@ -707,9 +688,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         // This is in the UI thread, so we can mess with the UI
         @Override
         protected void onPostExecute(JSONObject jso) {
-            try {
-                dlg.dismiss();
-            } catch (Exception ignored) {} // NOSONAR
+            DialogFactory.dismissSafely(dlg);
             if (jso != null) {
                 try {
                     boolean succeeded = jso.getBoolean("succeeded");
@@ -844,9 +823,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         // This is in the UI thread, so we can mess with the UI
         @Override
         protected void onPostExecute(JSONObject jso) {
-            try {
-                dlg.dismiss();
-            } catch (Exception ignored) {} // NOSONAR
+            DialogFactory.dismissSafely(dlg);
             if (jso != null) {
                 try {
                     boolean succeeded = jso.getBoolean("succeeded");
@@ -975,9 +952,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         // This is in the UI thread, so we can mess with the UI
         @Override
         protected void onPostExecute(JSONObject jso) {
-            try {
-                dlg.dismiss();
-            } catch (Exception ignored) {} // NOSONAR
+            DialogFactory.dismissSafely(dlg);
             if (jso != null) {
                 try {
                     boolean succeeded = jso.getBoolean("succeeded");
@@ -1082,9 +1057,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
          */
         @Override
         protected void onPostExecute(JSONObject jso) {
-            try {
-                dlg.dismiss();
-            } catch (Exception ignored) {} // NOSONAR
+            DialogFactory.dismissSafely(dlg);
             boolean succeeded = false;
             if (jso != null) {
                 try {

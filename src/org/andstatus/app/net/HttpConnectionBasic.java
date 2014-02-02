@@ -206,7 +206,9 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
             if (inputStreamReader != null) {
                 try {
                     inputStreamReader.close();
-                } catch (IOException ignored) {} // NOSONAR
+                } catch (IOException ignored) {
+                    MyLog.ignored(this, ignored);
+                }
             }
         }
         return stringBuffer.toString();

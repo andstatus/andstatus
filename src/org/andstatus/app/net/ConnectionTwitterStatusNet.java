@@ -104,9 +104,9 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
         return config;
     }
 
+    private final static String BODY_FIELD_NAME = "statusnet_html";
     @Override
     protected void setMessageBodyFromJson(MbMessage message, JSONObject jso) throws JSONException {
-        final String BODY_FIELD_NAME = "statusnet_html";
         boolean bodyFound = false;
         if (MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(data.originId)
                 && jso.has(BODY_FIELD_NAME)) {

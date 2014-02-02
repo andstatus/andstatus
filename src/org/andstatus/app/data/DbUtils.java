@@ -47,11 +47,7 @@ public final class DbUtils {
                 MyLog.i(method, " Database is locked, pass=" + pass, e);
                 rowId = -1;
             }
-            try {
-                Thread.sleep(Math.round((Math.random() + 1) * MS_BETWEEN_RETRIES));
-            } catch (InterruptedException e) {
-                MyLog.e(method, e);
-            }
+            waitBetweenRetries(method);
         }
         if (rowId == -1) {
             MyLog.e(method, "Failed to insert row into " + tableName + "; values=" + values.toString(), null);
@@ -72,17 +68,21 @@ public final class DbUtils {
                 break;
             } catch (SQLiteException e) {
                 MyLog.i(method, " Database is locked, pass=" + pass, e);
-                try {
-                    Thread.sleep(Math.round((Math.random() + 1) * MS_BETWEEN_RETRIES));
-                } catch (InterruptedException e2) {
-                    MyLog.e(method, e2);
-                }
             }
+            waitBetweenRetries(method);
         }
         if (rowsUpdated != 1) {
             MyLog.e(method, " Failed to update rowId=" + rowId + " updated " + rowsUpdated + " rows", null);
         }
         return rowsUpdated;
+    }
+
+    private static void waitBetweenRetries(String method) {
+        try {
+            Thread.sleep(Math.round((Math.random() + 1) * MS_BETWEEN_RETRIES));
+        } catch (InterruptedException e2) {
+            MyLog.e(method, e2);
+        }
     }
 
 }

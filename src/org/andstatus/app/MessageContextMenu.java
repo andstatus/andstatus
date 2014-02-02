@@ -127,7 +127,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         int menuItemId = 0;
         // Create the Context menu
         try {
-            menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().size() > 1 ? md.ma.shortestUniqueAccountName() + ": " : "")
+            menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().isEmpty() > 1 ? md.ma.shortestUniqueAccountName() + ": " : "")
                     + md.body);
 
             // Add menu items

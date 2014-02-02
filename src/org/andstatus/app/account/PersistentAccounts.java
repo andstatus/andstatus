@@ -1,7 +1,6 @@
 package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
-import android.content.Context;
 import android.text.TextUtils;
 
 import org.andstatus.app.MyContext;
@@ -40,13 +39,13 @@ public class PersistentAccounts {
      * {@link #getCredentialsVerified()} is the main differentiator.
      * 
      * @param context
-     * @return Array of users, not null 
+     * @return not null 
      */
-    public Collection<MyAccount> list() {
+    public Collection<MyAccount> collection() {
         return persistentAccounts.values();
     }
     
-    public int size() {
+    public int isEmpty() {
         return persistentAccounts.size();
     }
 
@@ -72,8 +71,7 @@ public class PersistentAccounts {
     }
     
     public static PersistentAccounts getEmpty() {
-        PersistentAccounts pa = new PersistentAccounts();
-        return pa;
+        return new PersistentAccounts();
     }
     
     /**

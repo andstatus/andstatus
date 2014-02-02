@@ -179,7 +179,7 @@ public class TestSuite extends TestCase {
             dataInserter.testConversation();
         }
 
-        if (MyContextHolder.get().persistentAccounts().size() == 0) {
+        if (MyContextHolder.get().persistentAccounts().isEmpty() == 0) {
             fail("No persistent accounts");
         }
         setSuccessfulAccountAsCurrent();
@@ -197,11 +197,11 @@ public class TestSuite extends TestCase {
     public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
     
     private static void setSuccessfulAccountAsCurrent() {
-        MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().persistentAccounts().size());
+        MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().persistentAccounts().isEmpty());
         boolean found = (MyContextHolder.get().persistentAccounts().getCurrentAccount().getCredentialsVerified() 
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
         if (!found) {
-            for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
+            for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
                 MyLog.i(TAG, ma.toString());
                 if (ma.getCredentialsVerified() 
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED) {

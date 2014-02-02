@@ -63,7 +63,9 @@ public class ConnectionException extends Exception {
                 String strJso = jso.toString(2);
                 MyLog.writeStringToFile(strJso, "loggedErrorJson.json");
                 MyLog.v(objTag, "jso: " + strJso);
-            } catch (JSONException ignored) {} // NOSONAR
+            } catch (JSONException ignored) {
+                MyLog.ignored(objTag, ignored);
+            }
         }
         return new ConnectionException(detailMessage);
     }

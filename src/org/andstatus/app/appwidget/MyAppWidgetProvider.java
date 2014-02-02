@@ -216,7 +216,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 						appWidgetId);
 				data.load();
 
-		        if (MyService.updateWidgetsOnEveryUpdate || (numSomethingReceived != 0)) {
+		        if (MyService.UPDATE_WIDGETS_ON_EVERY_UPDATE || (numSomethingReceived != 0)) {
                     data.changed = true;
 		        }
 				// Calculate new values
@@ -241,7 +241,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 					break;
 		
 				default:
-					// change nothing
+					break;
 				}
 				if (data.changed) {
 					data.save();
@@ -349,7 +349,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                 // TODO: We don't mention MyAccount in the intent 
                 // On the other hand the Widget is also is not Account aware yet,
                 //   so for now this is correct.
-                if (MyContextHolder.get().persistentAccounts().size() > 1) {
+                if (MyContextHolder.get().persistentAccounts().isEmpty() > 1) {
                     // There are more than one account, 
                     // so turn Combined timeline on in order to show all new messages.
                     intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, true);

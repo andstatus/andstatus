@@ -70,65 +70,65 @@ public class MyProvider extends ContentProvider {
      * Projection map for the {@link MyDatabase.Msg} table
      * @see android.database.sqlite.SQLiteQueryBuilder#setProjectionMap
      */
-    private static final Map<String, String> msgProjectionMap = new HashMap<String, String>();
+    private static final Map<String, String> MSG_PROJECTION_MAP = new HashMap<String, String>();
     static {
-        msgProjectionMap.put(BaseColumns._ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        msgProjectionMap.put(Msg.MSG_ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + Msg.MSG_ID);
-        msgProjectionMap.put(Msg.ORIGIN_ID, Msg.ORIGIN_ID);
-        msgProjectionMap.put(Msg.MSG_OID, Msg.MSG_OID);
-        msgProjectionMap.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
-        msgProjectionMap.put(User.AUTHOR_NAME, User.AUTHOR_NAME);
-        msgProjectionMap.put(Avatar.FILE_NAME, Avatar.FILE_NAME);
-        msgProjectionMap.put(Avatar.STATUS, Avatar.STATUS);
-        msgProjectionMap.put(Msg.SENDER_ID, Msg.SENDER_ID);
-        msgProjectionMap.put(User.SENDER_NAME, User.SENDER_NAME);
-        msgProjectionMap.put(Msg.BODY, Msg.BODY);
-        msgProjectionMap.put(Msg.VIA, Msg.VIA);
-        msgProjectionMap.put(Msg.URL, Msg.URL);
-        msgProjectionMap.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
-        msgProjectionMap.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
-        msgProjectionMap.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);
-        msgProjectionMap.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
-        msgProjectionMap.put(User.LINKED_USER_ID, User.LINKED_USER_ID);
-        msgProjectionMap.put(MsgOfUser.USER_ID, MsgOfUser.TABLE_NAME + "." + MsgOfUser.USER_ID + " AS " + MsgOfUser.USER_ID);
-        msgProjectionMap.put(MsgOfUser.DIRECTED, MsgOfUser.DIRECTED);
-        msgProjectionMap.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
-        msgProjectionMap.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
-        msgProjectionMap.put(MsgOfUser.REBLOG_OID, MsgOfUser.REBLOG_OID);
-        msgProjectionMap.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
-        msgProjectionMap.put(Msg.SENT_DATE, Msg.SENT_DATE);
-        msgProjectionMap.put(Msg.INS_DATE, Msg.INS_DATE);
-        msgProjectionMap.put(FollowingUser.AUTHOR_FOLLOWED, FollowingUser.AUTHOR_FOLLOWED);
-        msgProjectionMap.put(FollowingUser.SENDER_FOLLOWED, FollowingUser.SENDER_FOLLOWED);
+        MSG_PROJECTION_MAP.put(BaseColumns._ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        MSG_PROJECTION_MAP.put(Msg.MSG_ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + Msg.MSG_ID);
+        MSG_PROJECTION_MAP.put(Msg.ORIGIN_ID, Msg.ORIGIN_ID);
+        MSG_PROJECTION_MAP.put(Msg.MSG_OID, Msg.MSG_OID);
+        MSG_PROJECTION_MAP.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
+        MSG_PROJECTION_MAP.put(User.AUTHOR_NAME, User.AUTHOR_NAME);
+        MSG_PROJECTION_MAP.put(Avatar.FILE_NAME, Avatar.FILE_NAME);
+        MSG_PROJECTION_MAP.put(Avatar.STATUS, Avatar.STATUS);
+        MSG_PROJECTION_MAP.put(Msg.SENDER_ID, Msg.SENDER_ID);
+        MSG_PROJECTION_MAP.put(User.SENDER_NAME, User.SENDER_NAME);
+        MSG_PROJECTION_MAP.put(Msg.BODY, Msg.BODY);
+        MSG_PROJECTION_MAP.put(Msg.VIA, Msg.VIA);
+        MSG_PROJECTION_MAP.put(Msg.URL, Msg.URL);
+        MSG_PROJECTION_MAP.put(Msg.IN_REPLY_TO_MSG_ID, Msg.IN_REPLY_TO_MSG_ID);
+        MSG_PROJECTION_MAP.put(User.IN_REPLY_TO_NAME, User.IN_REPLY_TO_NAME);
+        MSG_PROJECTION_MAP.put(Msg.RECIPIENT_ID, Msg.RECIPIENT_ID);
+        MSG_PROJECTION_MAP.put(User.RECIPIENT_NAME, User.RECIPIENT_NAME);
+        MSG_PROJECTION_MAP.put(User.LINKED_USER_ID, User.LINKED_USER_ID);
+        MSG_PROJECTION_MAP.put(MsgOfUser.USER_ID, MsgOfUser.TABLE_NAME + "." + MsgOfUser.USER_ID + " AS " + MsgOfUser.USER_ID);
+        MSG_PROJECTION_MAP.put(MsgOfUser.DIRECTED, MsgOfUser.DIRECTED);
+        MSG_PROJECTION_MAP.put(MsgOfUser.FAVORITED, MsgOfUser.FAVORITED);
+        MSG_PROJECTION_MAP.put(MsgOfUser.REBLOGGED, MsgOfUser.REBLOGGED);
+        MSG_PROJECTION_MAP.put(MsgOfUser.REBLOG_OID, MsgOfUser.REBLOG_OID);
+        MSG_PROJECTION_MAP.put(Msg.CREATED_DATE, Msg.CREATED_DATE);
+        MSG_PROJECTION_MAP.put(Msg.SENT_DATE, Msg.SENT_DATE);
+        MSG_PROJECTION_MAP.put(Msg.INS_DATE, Msg.INS_DATE);
+        MSG_PROJECTION_MAP.put(FollowingUser.AUTHOR_FOLLOWED, FollowingUser.AUTHOR_FOLLOWED);
+        MSG_PROJECTION_MAP.put(FollowingUser.SENDER_FOLLOWED, FollowingUser.SENDER_FOLLOWED);
     }
 
     /**
      * Projection map for the {@link MyDatabase.User} table
      */
-    private static final Map<String, String> userProjectionMap = new HashMap<String, String>();
+    private static final Map<String, String> USER_PROJECTION_MAP = new HashMap<String, String>();
     static {
-        userProjectionMap.put(BaseColumns._ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        userProjectionMap.put(User.USER_ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + User.USER_ID);
-        userProjectionMap.put(User.USER_OID, User.USER_OID);
-        userProjectionMap.put(User.ORIGIN_ID, User.ORIGIN_ID);
-        userProjectionMap.put(User.USERNAME, User.USERNAME);
-        userProjectionMap.put(User.AVATAR_URL, User.AVATAR_URL);
-        userProjectionMap.put(User.URL, User.URL);
-        userProjectionMap.put(User.CREATED_DATE, User.CREATED_DATE);
-        userProjectionMap.put(User.INS_DATE, User.INS_DATE);
+        USER_PROJECTION_MAP.put(BaseColumns._ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        USER_PROJECTION_MAP.put(User.USER_ID, User.TABLE_NAME + "." + BaseColumns._ID + " AS " + User.USER_ID);
+        USER_PROJECTION_MAP.put(User.USER_OID, User.USER_OID);
+        USER_PROJECTION_MAP.put(User.ORIGIN_ID, User.ORIGIN_ID);
+        USER_PROJECTION_MAP.put(User.USERNAME, User.USERNAME);
+        USER_PROJECTION_MAP.put(User.AVATAR_URL, User.AVATAR_URL);
+        USER_PROJECTION_MAP.put(User.URL, User.URL);
+        USER_PROJECTION_MAP.put(User.CREATED_DATE, User.CREATED_DATE);
+        USER_PROJECTION_MAP.put(User.INS_DATE, User.INS_DATE);
         
-        userProjectionMap.put(User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_POSITION);
-        userProjectionMap.put(User.HOME_TIMELINE_DATE, User.HOME_TIMELINE_DATE);
-        userProjectionMap.put(User.FAVORITES_TIMELINE_POSITION, User.FAVORITES_TIMELINE_POSITION);
-        userProjectionMap.put(User.FAVORITES_TIMELINE_DATE, User.FAVORITES_TIMELINE_DATE);
-        userProjectionMap.put(User.DIRECT_TIMELINE_POSITION, User.DIRECT_TIMELINE_POSITION);
-        userProjectionMap.put(User.DIRECT_TIMELINE_DATE, User.DIRECT_TIMELINE_DATE);
-        userProjectionMap.put(User.MENTIONS_TIMELINE_POSITION, User.MENTIONS_TIMELINE_POSITION);
-        userProjectionMap.put(User.MENTIONS_TIMELINE_DATE, User.MENTIONS_TIMELINE_DATE);
-        userProjectionMap.put(User.USER_TIMELINE_POSITION, User.USER_TIMELINE_POSITION);
-        userProjectionMap.put(User.USER_TIMELINE_DATE, User.USER_TIMELINE_DATE);
-        userProjectionMap.put(User.USER_MSG_ID, User.USER_MSG_ID);
-        userProjectionMap.put(User.USER_MSG_DATE, User.USER_MSG_DATE);
+        USER_PROJECTION_MAP.put(User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_POSITION);
+        USER_PROJECTION_MAP.put(User.HOME_TIMELINE_DATE, User.HOME_TIMELINE_DATE);
+        USER_PROJECTION_MAP.put(User.FAVORITES_TIMELINE_POSITION, User.FAVORITES_TIMELINE_POSITION);
+        USER_PROJECTION_MAP.put(User.FAVORITES_TIMELINE_DATE, User.FAVORITES_TIMELINE_DATE);
+        USER_PROJECTION_MAP.put(User.DIRECT_TIMELINE_POSITION, User.DIRECT_TIMELINE_POSITION);
+        USER_PROJECTION_MAP.put(User.DIRECT_TIMELINE_DATE, User.DIRECT_TIMELINE_DATE);
+        USER_PROJECTION_MAP.put(User.MENTIONS_TIMELINE_POSITION, User.MENTIONS_TIMELINE_POSITION);
+        USER_PROJECTION_MAP.put(User.MENTIONS_TIMELINE_DATE, User.MENTIONS_TIMELINE_DATE);
+        USER_PROJECTION_MAP.put(User.USER_TIMELINE_POSITION, User.USER_TIMELINE_POSITION);
+        USER_PROJECTION_MAP.put(User.USER_TIMELINE_DATE, User.USER_TIMELINE_DATE);
+        USER_PROJECTION_MAP.put(User.USER_MSG_ID, User.USER_MSG_ID);
+        USER_PROJECTION_MAP.put(User.USER_MSG_DATE, User.USER_MSG_DATE);
     }
     
     /**
@@ -565,7 +565,7 @@ public class MyProvider extends ContentProvider {
             case TIMELINE:
                 qb.setDistinct(true);
                 qb.setTables(tablesForTimeline(uri, projection));
-                qb.setProjectionMap(msgProjectionMap);
+                qb.setProjectionMap(MSG_PROJECTION_MAP);
                 break;
 
             case MSG_COUNT:
@@ -577,13 +577,13 @@ public class MyProvider extends ContentProvider {
 
             case TIMELINE_MSG_ID:
                 qb.setTables(tablesForTimeline(uri, projection));
-                qb.setProjectionMap(msgProjectionMap);
+                qb.setProjectionMap(MSG_PROJECTION_MAP);
                 qb.appendWhere(Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + uriToMessageId(uri));
                 break;
 
             case TIMELINE_SEARCH:
                 qb.setTables(tablesForTimeline(uri, projection));
-                qb.setProjectionMap(msgProjectionMap);
+                qb.setProjectionMap(MSG_PROJECTION_MAP);
                 String s1 = uri.getLastPathSegment();
                 if (s1 != null) {
                     // These two lines don't work:
@@ -614,17 +614,17 @@ public class MyProvider extends ContentProvider {
 
             case MSG:
                 qb.setTables(Msg.TABLE_NAME);
-                qb.setProjectionMap(msgProjectionMap);
+                qb.setProjectionMap(MSG_PROJECTION_MAP);
                 break;
 
             case USERS:
                 qb.setTables(User.TABLE_NAME);
-                qb.setProjectionMap(userProjectionMap);
+                qb.setProjectionMap(USER_PROJECTION_MAP);
                 break;
 
             case USER:
                 qb.setTables(User.TABLE_NAME);
-                qb.setProjectionMap(userProjectionMap);
+                qb.setProjectionMap(USER_PROJECTION_MAP);
                 qb.appendWhere(BaseColumns._ID + "=" + uriToUserId(uri));
                 break;
 

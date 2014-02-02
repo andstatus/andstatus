@@ -927,7 +927,7 @@ public final class MyAccount implements AccountDataReader {
 
         boolean found = false;
         String possiblyUnique = getUsername();
-        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
+        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().collection()) {
             if (!persistentAccount.toString().equalsIgnoreCase(toString()) 
                     && persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique) ) {
                 found = true;
@@ -939,7 +939,7 @@ public final class MyAccount implements AccountDataReader {
             int indAt = uniqueName.indexOf('@');
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt);
-                for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
+                for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().collection()) {
                     if (!persistentAccount.toString().equalsIgnoreCase(toString()) ) {
                         String toCompareWith = persistentAccount.getUsername();
                         indAt = toCompareWith.indexOf('@');
@@ -1115,7 +1115,7 @@ public final class MyAccount implements AccountDataReader {
     
     public int accountsOfThisOrigin() {
         int count = 0;
-        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
+        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().collection()) {
             if (persistentAccount.getOriginId() == this.getOriginId()) {
                 count++;
             }
@@ -1127,7 +1127,7 @@ public final class MyAccount implements AccountDataReader {
      * @return this account if there are no others
      */
     public MyAccount firstOtherAccountOfThisOrigin() {
-        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().list()) {
+        for (MyAccount persistentAccount : MyContextHolder.get().persistentAccounts().collection()) {
             if (persistentAccount.getOriginId() == this.getOriginId() 
                     && persistentAccount != this) {
                 return persistentAccount;

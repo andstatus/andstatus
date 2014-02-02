@@ -50,7 +50,7 @@ public class I18n {
 			int quantityOfSomething, int arrayPatterns, int arrayFormats) {
 		String submessage = "";
 		String message = "";
-		String toMatch = Integer.valueOf(quantityOfSomething).toString();
+		String toMatch = Integer.toString(quantityOfSomething);
 		String[] p = context.getResources().getStringArray(arrayPatterns);
 		String[] f = context.getResources().getStringArray(arrayFormats);
 		String subformat = "{0} ???";

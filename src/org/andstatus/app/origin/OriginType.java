@@ -27,6 +27,9 @@ public enum OriginType {
     STATUSNET(3, "StatusNet", ApiEnum.STATUSNET_TWITTER),
     UNKNOWN(0, "?", ApiEnum.UNKNOWN_API);
 
+    private static final String BASIC_PATH_DEFAULT = "api";
+    private static final String OAUTH_PATH_DEFAULT = "oauth";
+    private static final String USERNAME_REGEX_DEFAULT = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     public static final OriginType ORIGIN_TYPE_DEFAULT = TWITTER;
 
     private long id;
@@ -56,7 +59,7 @@ public enum OriginType {
      * This is only for no OAuth
      */
     protected boolean shouldSetNewUsernameManuallyNoOAuth = false;
-    protected String usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
+    protected String usernameRegEx = USERNAME_REGEX_DEFAULT;
     /**
      * Length of the link after changing to the shortened link
      * 0 means that length doesn't change
@@ -73,8 +76,8 @@ public enum OriginType {
      */
     protected int textLimitDefault = 0;
     protected String hostDefault = "";
-    protected String basicPath = "api";
-    protected String oauthPath = "oauth";
+    protected String basicPath = BASIC_PATH_DEFAULT;
+    protected String oauthPath = OAUTH_PATH_DEFAULT;
     
     private OriginType(long id, String title, ApiEnum api) {
         this.id = id;
@@ -83,17 +86,18 @@ public enum OriginType {
         switch (api) {
             case TWITTER1P1:
                 isOAuthDefault = true;
-                canChangeOAuth = false;  // Starting from 2010-09 twitter.com allows OAuth only
+                // Starting from 2010-09 twitter.com allows OAuth only
+                canChangeOAuth = false;  
                 canSetHostOfOrigin = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 // TODO: Read from Config
                 shortUrlLengthDefault = 23; 
-                usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
+                usernameRegEx = USERNAME_REGEX_DEFAULT;
                 textLimitDefault = 140;
                 hostDefault = "api.twitter.com";
                 basicPath = "1.1";
-                oauthPath = "oauth";
+                oauthPath = OAUTH_PATH_DEFAULT;
                 originClass = OriginTwitter.class;
                 connectionClass = ConnectionTwitter1p1.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
@@ -109,8 +113,8 @@ public enum OriginType {
                 allowHtmlDefault = true;
                 // This is not a hard limit, just for convenience
                 textLimitDefault = 5000;
-                basicPath = "api";
-                oauthPath = "oauth";
+                basicPath = BASIC_PATH_DEFAULT;
+                oauthPath = OAUTH_PATH_DEFAULT;
                 originClass = OriginPumpio.class;
                 connectionClass = ConnectionPumpio.class;
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet.class;
@@ -121,10 +125,10 @@ public enum OriginType {
                 canSetHostOfOrigin = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
-                usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
+                usernameRegEx = USERNAME_REGEX_DEFAULT;
                 canChangeSsl = true;
-                basicPath = "api";
-                oauthPath = "api";
+                basicPath = BASIC_PATH_DEFAULT;
+                oauthPath = BASIC_PATH_DEFAULT;
                 originClass = OriginStatusNet.class;
                 connectionClass = ConnectionTwitterStatusNet.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
@@ -182,10 +186,8 @@ public enum OriginType {
 
     public boolean fixIsOAuth(boolean isOAuthIn) {
         boolean fixed = isOAuthIn;
-        if (fixed != isOAuthDefault) {
-            if (!canChangeOAuth) {
-                fixed = isOAuthDefault;
-            }
+        if (fixed != isOAuthDefault && !canChangeOAuth) {
+            fixed = isOAuthDefault;
         }
         return fixed;
     }

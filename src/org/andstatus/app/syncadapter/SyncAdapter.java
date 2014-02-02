@@ -71,16 +71,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
             MyLog.d(this, method + " Context is not ready, account=" + account.name);
             return;
         }
-        {
-            MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(account.name);
-            if (ma == null) {
-                MyLog.d(this, method + " The account was not loaded, account=" + account.name);
-                return;
-                
-            } else if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-                MyLog.d(this, method + " Credentials failed, skipping; account=" + account.name);
-                return;
-            }
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(account.name);
+        if (ma == null) {
+            MyLog.d(this, method + " The account was not loaded, account=" + account.name);
+            return;
+            
+        } else if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
+            MyLog.d(this, method + " Credentials failed, skipping; account=" + account.name);
+            return;
         }
         intentReceiver = new MyServiceReceiver(this);
         syncCompleted = false;

@@ -68,6 +68,7 @@ public class MyLog {
     public static final int DEBUG = Log.DEBUG;
     public static final int VERBOSE = Log.VERBOSE;
     public static final int INFO = Log.INFO;
+    private static final int IGNORED = VERBOSE - 1;
     
     private static Object lock = new Object();
     @GuardedBy("lock")
@@ -80,6 +81,27 @@ public class MyLog {
 
     private MyLog() {
         
+    }
+
+    public static void logSharedPreferencesValue(Object objTag, SharedPreferences sharedPreferences, String key) {
+        if (!isLoggable(objTag, DEBUG )) {
+            return;
+        }
+        String value = "(not set)";
+        if (sharedPreferences.contains(key)) {
+            try {
+                value = sharedPreferences.getString(key, "");
+            } catch (ClassCastException e1) {
+                MyLog.ignored(objTag, e1);
+                try {
+                    value = Boolean.toString(sharedPreferences.getBoolean(key, false));
+                } catch (ClassCastException e2) {
+                    MyLog.ignored(objTag, e2);
+                    value = "??";
+                }
+            }
+        }
+        d(objTag, "SharedPreference: " + key + "='" + value + "'");
     }
     
     public static int e(Object objTag, String msg, Throwable tr) {
@@ -171,6 +193,18 @@ public class MyLog {
         return i;
     }
 
+    /**
+     * This will be ignored
+     */
+    public static int ignored(Object objTag, Throwable tr) {
+        String tag = objTagToString(objTag);
+        int i = 0;
+        if (isLoggable(tag, IGNORED)) {
+            i = Log.v(tag, "", tr);
+        }
+        return i;
+    }
+    
     public static String objTagToString(Object objTag) {
         String tag = "";
         if (objTag == null) {
@@ -192,12 +226,14 @@ public class MyLog {
      * @return
      */
     public static boolean isLoggable(Object objTag, int level) {
-        String tag = objTagToString(objTag);
         boolean is = false;
         checkInit();
-        if (level >= minLogLevel) {
+        if (level < VERBOSE) {
+            is = false;
+        } else if (level >= minLogLevel) {
             is = true;
         } else {
+            String tag = objTagToString(objTag);
             if (TextUtils.isEmpty(tag)) {
                 tag = APPTAG;
             }

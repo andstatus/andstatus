@@ -41,7 +41,6 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class OriginEditor extends Activity {
-    private String editorAction = Intent.ACTION_DEFAULT;
     private Origin.Builder builder;
 
     private Button buttonSave;
@@ -88,7 +87,7 @@ public class OriginEditor extends Activity {
     }
 
     private void processNewIntent(Intent intentNew) {
-        editorAction = intentNew.getAction();
+        String editorAction = intentNew.getAction();
         
         if (Intent.ACTION_INSERT.equals(editorAction)) {
             buttonSave.setOnClickListener(new AddOrigin());

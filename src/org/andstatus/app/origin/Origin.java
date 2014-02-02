@@ -315,27 +315,27 @@ public class Origin {
          * Loading persistent Origin
          */
         public Builder(Cursor c) {
-            OriginType originType = OriginType.fromId(c.getLong(c
+            OriginType originType1 = OriginType.fromId(c.getLong(c
                     .getColumnIndex(MyDatabase.Origin.ORIGIN_TYPE_ID)));
-            origin = getEmpty(originType);
+            origin = getEmpty(originType1);
 
             origin.id = c.getLong(c.getColumnIndex(MyDatabase.Origin._ID));
             origin.name = c.getString(c.getColumnIndex(MyDatabase.Origin.ORIGIN_NAME));
-            if (originType.canSetHostOfOrigin()) {
-                String host = c.getString(c.getColumnIndex(MyDatabase.Origin.HOST));
-                if (origin.hostIsValid(host)) {
-                    origin.host = host;
+            if (originType1.canSetHostOfOrigin()) {
+                String host1 = c.getString(c.getColumnIndex(MyDatabase.Origin.HOST));
+                if (origin.hostIsValid(host1)) {
+                    origin.host = host1;
                 }
             }
-            if (originType.canChangeSsl) {
+            if (originType1.canChangeSsl) {
                 origin.ssl = (c.getInt(c.getColumnIndex(MyDatabase.Origin.SSL)) != 0);
             }
             origin.allowHtml = (c.getInt(c.getColumnIndex(MyDatabase.Origin.ALLOW_HTML)) != 0);
-            if (originType.shortUrlLengthDefault == 0) {
+            if (originType1.shortUrlLengthDefault == 0) {
                 origin.shortUrlLength = c.getInt(c
                         .getColumnIndex(MyDatabase.Origin.SHORT_URL_LENGTH));
             }
-            if (originType.textLimitDefault == 0) {
+            if (originType1.textLimitDefault == 0) {
                 origin.textLimit = c.getInt(c.getColumnIndex(MyDatabase.Origin.TEXT_LIMIT));
             }
         }

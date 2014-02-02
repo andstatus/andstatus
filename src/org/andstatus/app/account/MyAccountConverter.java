@@ -56,11 +56,11 @@ public class MyAccountConverter {
                 } else {
                     builderOld.setVersion(versionTo);
                     String originNameOld = AccountName.accountNameToOriginName(account.name);
-                    if (originNameOld.equals("twitter")) {
+                    if ("twitter".equals(originNameOld)) {
                         if (builderOld.onOriginNameChanged(twitterName)) {
                             accountsToRemove.add(account);
                         }
-                    } else if (originNameOld.equals("status.net") 
+                    } else if ("status.net".equals(originNameOld) 
                             && builderOld.onOriginNameChanged(statusNetSystemName)) {
                         accountsToRemove.add(account);
                     }

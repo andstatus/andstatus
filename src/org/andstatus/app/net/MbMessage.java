@@ -22,7 +22,6 @@ import android.text.TextUtils;
 import android.text.style.URLSpan;
 
 import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.TriState;
 
 /**

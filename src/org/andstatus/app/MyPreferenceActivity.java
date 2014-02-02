@@ -202,8 +202,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         
         Preference myPref = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
         CharSequence summary;
-        if (MyContextHolder.get().persistentAccounts().size() > 0) {
-            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().size();
+        if (MyContextHolder.get().persistentAccounts().isEmpty() > 0) {
+            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().isEmpty();
         } else {
             summary = getText(R.string.summary_preference_accounts_absent);
         }
@@ -270,10 +270,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         onSharedPreferenceChangedIsBusy = true;
 
         try {
-            if (MyLog.isLoggable(this, MyLog.DEBUG)) {
-                logKeyValue(sharedPreferences, key);
-            }
-
+            MyLog.logSharedPreferencesValue(this, sharedPreferences, key);
             MyPreferences.onPreferencesChanged();
             
             if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY)) {
@@ -302,23 +299,6 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             onSharedPreferenceChangedIsBusy = false;
         }
     }
-
-    @SuppressWarnings("all")
-    private void logKeyValue(SharedPreferences sharedPreferences, String key) {
-        String value = "(not set)";
-        if (sharedPreferences.contains(key)) {
-            try {
-                value = sharedPreferences.getString(key, "");
-            } catch (ClassCastException e) {
-                try {
-                    value = Boolean.toString(sharedPreferences.getBoolean(key, false));
-                } catch (ClassCastException e2) {
-                    value = "??";
-                }
-            }
-        }
-        MyLog.d(TAG, "onSharedPreferenceChanged: " + key + "='" + value + "'");
-    };
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -755,7 +735,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if (MyContextHolder.get().persistentAccounts().size() > 0) {
+            if (MyContextHolder.get().persistentAccounts().isEmpty() > 0) {
                 closeAndGoBack();
                 return true;    
             }

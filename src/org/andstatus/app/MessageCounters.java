@@ -46,6 +46,7 @@ public class MessageCounters {
                 // Don't count anything for now...
                 break;
             default:
+                break;
         }
         newMessagesCount = 0;
         newMentionsCount = 0;

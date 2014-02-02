@@ -45,7 +45,7 @@ public class AccountUserIds {
         // Allows to link to one or more accounts
         if (isCombined && isAccount || selectedUserId == 0) {
             StringBuilder sb = new StringBuilder();
-            for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
+            for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
                 if (sb.length() > 0) {
                     sb.append(", ");
                     nIds += 1;

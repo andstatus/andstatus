@@ -270,7 +270,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         accountButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (MyContextHolder.get().persistentAccounts().size() > 1) {
+                if (MyContextHolder.get().persistentAccounts().isEmpty() > 1) {
                     Intent i = new Intent(TimelineActivity.this, AccountSelector.class);
                     startActivityForResult(i, ActivityRequestCode.SELECT_ACCOUNT.id);
                 }

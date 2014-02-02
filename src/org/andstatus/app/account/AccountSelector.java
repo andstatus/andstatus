@@ -57,7 +57,7 @@ public class AccountSelector extends ListActivity {
         
         long originId = getIntent().getLongExtra(IntentExtra.ORIGIN_ID.key, 0);
         SortedMap<String, MyAccount> accounts = new TreeMap<String, MyAccount>();  
-        for (MyAccount ma : MyContextHolder.get().persistentAccounts().list()) {
+        for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
             if (originId==0 || ma.getOriginId() == originId) {
                 accounts.put(ma.getAccountName(), ma);
             }
