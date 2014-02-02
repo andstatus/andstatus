@@ -20,6 +20,7 @@ package org.andstatus.app;
 import java.io.File;
 import java.io.IOException;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -60,7 +61,10 @@ import org.json.JSONObject;
  * 
  */
 public class MyPreferenceActivity extends PreferenceActivity implements
-        OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
+        OnSharedPreferenceChangeListener, OnPreferenceChangeListener, MyActionBarContainer {
+
+    private static final String KEY_ADD_NEW_ACCOUNT = "add_new_account";
+    private static final String KEY_MANAGE_EXISTING_ACCOUNTS = "manage_existing_accounts";
 
     private static final String TAG = MyPreferenceActivity.class.getSimpleName();
 
@@ -86,35 +90,36 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     private RingtonePreference mNotificationRingtone;
 
     private boolean onSharedPreferenceChangedIsBusy = false;
+    private MyActionBar actionBar;
 
     private boolean startTimelineActivity = false;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        actionBar = new MyActionBar(this);
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
-        if (MyPreferences.shouldSetDefaultValues()) {
-            // Default values for the preferences will be set only once
-            // and in one place: here
-            MyPreferences.setDefaultValues(R.xml.preferences, false);
-            if (MyPreferences.shouldSetDefaultValues()) {
-                MyLog.e(this, "Default values were not set?!");   
-            } else {
-                MyLog.i(this, "Default values has been set");   
-            }
-        }
         addPreferencesFromResource(R.xml.preferences);
         
         mNotificationRingtone = (RingtonePreference) findPreference(MyPreferences.KEY_RINGTONE_PREFERENCE);
         mUseExternalStorage = (CheckBoxPreference) getPreferenceScreen().findPreference(
                 MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
         
-        Preference myPref = findPreference("manage_accounts");
+        Preference myPref = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                AccountSettingsActivity.startManageAccountsActivity(MyPreferenceActivity.this);
+                AccountSettingsActivity.startManageExistingAccounts(MyPreferenceActivity.this);
+                return false;
+            }
+        });
+        
+        myPref = findPreference(KEY_ADD_NEW_ACCOUNT);
+        myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                AccountSettingsActivity.startAddNewAccount(MyPreferenceActivity.this);
                 return false;
             }
         });
@@ -150,6 +155,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             }
         });
         
+        actionBar.attach();
+        actionBar.setTitle(R.string.settings_activity_title);
     }
 
     @Override
@@ -193,7 +200,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         showMinLogLevel();
         showUseExternalStorage();
         
-        Preference myPref = findPreference("manage_accounts");
+        Preference myPref = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
         CharSequence summary;
         if (MyContextHolder.get().persistentAccounts().size() > 0) {
             summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().size();
@@ -749,12 +756,22 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             if (MyContextHolder.get().persistentAccounts().size() > 0) {
-                MyLog.v(this, "Going back to the Timeline");
-                finish();
-                startTimelineActivity = true;
+                closeAndGoBack();
                 return true;    
             }
         }        
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public Activity getActivity() {
+        return this;
+    }
+
+    @Override
+    public void closeAndGoBack() {
+        MyLog.v(this, "Going back to the Timeline");
+        finish();
+        startTimelineActivity = true;
     }
 }

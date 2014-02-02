@@ -18,6 +18,7 @@
 package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -44,14 +45,17 @@ import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 
+import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyActionBar;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.MyPreferenceActivity;
 import org.andstatus.app.MyService;
 import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.R;
+import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection;
@@ -71,7 +75,7 @@ import org.json.JSONObject;
  * @author yvolk@yurivolkov.com
  */
 public class AccountSettingsActivity extends PreferenceActivity implements
-        OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
+        OnSharedPreferenceChangeListener, OnPreferenceChangeListener, MyActionBarContainer {
     private static final String TAG = AccountSettingsActivity.class.getSimpleName();
 
     /**
@@ -93,37 +97,26 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      * We are going to finish/restart this Activity
      */
     private boolean mIsFinishing = false;
-    private boolean startPreferencesActivity = false;
+    private boolean overrideBackActivity = false;
     
     private StateOfAccountChangeProcess state = null;
-
     private Preference originPreference;
     private Origin originOfUser;
-    
     private CheckBoxPreference oAuthCheckBox;
-
     private EditTextPreference usernameText;
-
     private EditTextPreference passwordText;
-    
     private Preference addAccountOrVerifyCredentials;
-    
     private boolean onSharedPreferenceChangedIsBusy = false;
-    
-    /**
-     * Use this flag to return from this activity to “Accounts & Sync settings” screen
-     */
-    private boolean overrideBackButton = false;
+    private MyActionBar actionBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        actionBar = new MyActionBar(this);
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
         MyContextHolder.upgradeIfNeeded(this);
-        if (!MyContextHolder.get().isReady()) {
-            HelpActivity.startFromActivity(this, true, false);
-            finish();
+        if (HelpActivity.startFromActivity(this)) {
             return;
         }
         
@@ -142,9 +135,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         usernameText = (EditTextPreference) findPreference(MyAccount.Builder.KEY_USERNAME_NEW);
         passwordText = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
 
+        actionBar.attach();
+        
         restoreState(getIntent(), "onCreate");
     }
-
+    
     protected boolean onOriginClick() {
         Intent i = new Intent(AccountSettingsActivity.this, OriginList.class);
         i.setAction(Intent.ACTION_PICK);
@@ -349,11 +344,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         addAccountOrVerifyCredentials.setSummary(summary);
         addAccountOrVerifyCredentials.setEnabled(addAccountOrVerifyCredentialsEnabled);
         
-        String title = getText(R.string.settings_activity_title).toString();
+        String title = getText(R.string.account_settings_activity_title).toString();
         if (ma.isValid()) {
-            title = ma.getAccountName() + " - " + title;
+            title += " - " + ma.getAccountName();
         }
-        setTitle(title);
+        actionBar.setTitle(title);
     }
 
     @Override
@@ -379,7 +374,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 // so start second step of OAuth Authentication process
                 new OAuthAcquireAccessTokenTask().execute(uri);
                 // and return back to default screen
-                overrideBackButton = true;
+                overrideBackActivity = true;
             }
         }
     }
@@ -415,7 +410,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     } else {
                         new OAuthAcquireRequestTokenTask().execute();
                         // and return back to default screen
-                        overrideBackButton = true;
+                        overrideBackActivity = true;
                     }
                 }
             }
@@ -431,14 +426,25 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 this);
         if (mIsFinishing) {
             MyContextHolder.release();
-            if (startPreferencesActivity) {
-                MyLog.v(this, "Returning to our Preferences Activity");
-                // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-                Intent i = new Intent(this, MyPreferenceActivity.class);
-                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(i);
+            if (overrideBackActivity) {
+                returnToOurActivity();
             }
         }
+    }
+
+    private void returnToOurActivity() {
+        Class<? extends Activity> ourActivity;
+        MyContextHolder.initialize(this, this);
+        if (MyContextHolder.get().persistentAccounts().size() > 1) {
+            ourActivity = MyPreferenceActivity.class;
+        } else {
+            ourActivity = TimelineActivity.class;
+        }
+        MyLog.v(this, "Returning to " + ourActivity.getSimpleName());
+        Intent i = new Intent(this, ourActivity);
+        // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(i);
     }
 
     /**
@@ -560,15 +566,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            // Explicitly save MyAccount only on "Back key" 
-            state.builder.save();
             closeAndGoBack();
+            return true;
         }
-        if (mIsFinishing) {
-            return true;    
-        } else {
-            return super.onKeyDown(keyCode, event);
-        }
+        return super.onKeyDown(keyCode, event);
     }
 
     /** 
@@ -578,15 +579,18 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      * 
      * @return
      */
-    private boolean closeAndGoBack() {
-        boolean doFinish = false;
+    @Override
+    public void closeAndGoBack() {
+        // Explicitly save MyAccount only on "Back key" 
+        state.builder.save();
         String message = "";
         state.actionCompleted = true;
+        overrideBackActivity = true;
         if (state.authenticatiorResponse != null) {
             // We should return result back to AccountManager
+            overrideBackActivity = false;
             if (state.actionSucceeded) {
                 if (state.builder.isPersistent()) {
-                    doFinish = true;
                     // Pass the new/edited account back to the account manager
                     Bundle result = new Bundle();
                     result.putString(AccountManager.KEY_ACCOUNT_NAME, state.getAccount().getAccountName());
@@ -601,18 +605,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         }
         // Forget old state
         state.forget();
-        if (overrideBackButton) {
-            doFinish = true;
-        }
-        if (doFinish) {
+        if (!mIsFinishing) {
             MyLog.v(this, "finish: action=" + state.getAccountAction() + "; " + message);
             mIsFinishing = true;
             finish();
         }
-        if (overrideBackButton) {
-            startPreferencesActivity = true;
-        }
-        return mIsFinishing;
     }
 
     @Override
@@ -629,7 +626,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      * For versions prior to Jelly Bean see <a href="http://stackoverflow.com/questions/3010103/android-how-to-create-intent-to-open-the-activity-that-displays-the-accounts">
      *  Android - How to Create Intent to open the activity that displays the “Accounts & Sync settings” screen</a>
      */
-    public static void startManageAccountsActivity(android.content.Context context) {
+    public static void startManageExistingAccounts(android.content.Context context) {
         Intent intent;
         // before Jelly Bean
         if (android.os.Build.VERSION.SDK_INT < 16 ) {  
@@ -637,12 +634,19 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             // This gives some unstable results on v.4.0.x so I got rid of it:
             // intent.putExtra(android.provider.Settings.EXTRA_AUTHORITIES, new String[] {MyProvider.AUTHORITY}); NOSONAR
         } else {
-            intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
+            intent = new Intent(context, AccountSettingsActivity.class);
+            // intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
             // TODO: Figure out some more specific intent...
         }
         context.startActivity(intent);
     }
     
+    public static void startAddNewAccount(android.content.Context context) {
+        Intent intent;
+        intent = new Intent(context, AccountSettingsActivity.class);
+        intent.setAction(Intent.ACTION_INSERT);
+        context.startActivity(intent);
+    }
     
     /**
      * Step 1 of 3 of the OAuth Authentication
@@ -718,7 +722,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                         showUserPreferences();
                         new OAuthAcquireRequestTokenTask().execute();
                         // and return back to default screen
-                        overrideBackButton = true;
+                        overrideBackActivity = true;
                     } else {
                         Toast.makeText(AccountSettingsActivity.this, message, Toast.LENGTH_LONG).show();
 
@@ -1126,5 +1130,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             }
             showUserPreferences();
         }
+    }
+
+    @Override
+    public Activity getActivity() {
+        return this;
     }
 }

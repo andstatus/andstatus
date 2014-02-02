@@ -20,7 +20,7 @@
 			android:alphabeticShortcut="r" android:icon="@drawable/ic_menu_reload"></item>
 		<item android:title="@string/options_menu_search" android:id="@+id/search_menu_id"
 			android:icon="@drawable/ic_menu_search" android:alphabeticShortcut="s"></item>
-		<item android:title="@string/options_menu_preferences" android:id="@+id/preferences_menu_id"
+		<item android:title="@string/settings_action" android:id="@+id/preferences_menu_id"
 			android:alphabeticShortcut="p" android:icon="@drawable/ic_menu_preferences"></item>
 	</group>
 </menu>

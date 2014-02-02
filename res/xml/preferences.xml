@@ -19,11 +19,16 @@
     <!-- Manage Accounts -->
     <PreferenceCategory android:title="@string/header_manage_accounts" >
         <Preference
-            android:key="manage_accounts"
+            android:key="manage_existing_accounts"
             android:persistent="false"
-            android:title="@string/header_manage_accounts" >
+            android:title="@string/header_manage_existing_accounts" >
         </Preference>
-		<ListPreference android:entryValues="@array/fetch_frequency_values"
+        <Preference
+            android:key="add_new_account"
+            android:persistent="false"
+            android:title="@string/header_add_new_account" >
+        </Preference>
+        <ListPreference android:entryValues="@array/fetch_frequency_values"
 			android:entries="@array/fetch_frequency_entries" android:summary="@string/summary_preference_frequency"
 			android:dialogTitle="@string/dialog_title_preference_frequency"
 			android:title="@string/title_preference_frequency" android:key="fetch_frequency"

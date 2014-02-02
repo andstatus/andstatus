@@ -18,7 +18,11 @@ public class OriginTest  extends InstrumentationTestCase {
         public void testTextLimit() {
             String message = "I set \"Shorten URL with: QTTR.AT\" URL longer than 25 Text longer than 140. Will this be shortened: https://github.com/andstatus/andstatus/issues/41";
 
-            Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
+            Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
+            assertEquals(origin.originType, OriginType.TWITTER); 
+
+            origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
+            assertEquals(origin.originType, OriginType.TWITTER); 
             int textLimit = 140;
             assertEquals("Textlimit", textLimit, origin.textLimit);
             assertEquals("Short URL length", 23, origin.shortUrlLength);

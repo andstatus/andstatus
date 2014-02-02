@@ -206,36 +206,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     + (MyContextHolder.get().isReady() ? "" : ", MyContext is not ready")
                     );
         }
-
-        if (!mIsFinishing) {
-            boolean helpAsFirstActivity = false;
-            boolean showChangeLog = false;
-            if (!MyContextHolder.get().isReady()) {
-                MyLog.i(this, "Context is not ready");
-                helpAsFirstActivity = true;
-            } else if (MyPreferences.shouldSetDefaultValues()) {
-                MyLog.i(this, "We are running the Application for the very first time?");
-                helpAsFirstActivity = true;
-            } else if (MyContextHolder.get().persistentAccounts().getCurrentAccount() == null) {
-                MyLog.i(this, "No current MyAccount");
-                helpAsFirstActivity = true;
-            } 
-            
-            // Show Change Log after update
-            try {
-                if (MyPreferences.checkAndUpdateLastOpenedAppVersion(this, true)) {
-                    showChangeLog = true;                    
-                }
-            } catch (NameNotFoundException e) {
-                MyLog.e(this, "Unable to obtain package information", e);
-            }
-
-            if (helpAsFirstActivity || showChangeLog) {
-                HelpActivity.startFromActivity(this, helpAsFirstActivity, showChangeLog);
-                finish();
-            }
-        }
-        if (mIsFinishing) {
+        if (HelpActivity.startFromActivity(this)) {
             return;
         }
 
@@ -299,8 +270,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         accountButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(TimelineActivity.this, AccountSelector.class);
-                startActivityForResult(i, ActivityRequestCode.SELECT_ACCOUNT.id);
+                if (MyContextHolder.get().persistentAccounts().size() > 1) {
+                    Intent i = new Intent(TimelineActivity.this, AccountSelector.class);
+                    startActivityForResult(i, ActivityRequestCode.SELECT_ACCOUNT.id);
+                }
             }
         });
 

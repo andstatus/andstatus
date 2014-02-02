@@ -19,7 +19,7 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="6.3" android:versionCode="93"
+	android:versionName="7.0" android:versionCode="94"
 	android:installLocation="internalOnly">
 
 	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="10" />
@@ -102,6 +102,7 @@
 		</activity>
 
         <activity android:name=".MyPreferenceActivity"
+            android:label="@string/settings_activity_title"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -164,7 +165,7 @@
         
         <activity
             android:name=".account.AccountSettingsActivity"
-            android:label="@string/settings_activity_title"
+            android:label="@string/account_settings_activity_title"
             android:alwaysRetainTaskState="True"
             android:launchMode="singleTask"
             >

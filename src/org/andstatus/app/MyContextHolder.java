@@ -151,8 +151,12 @@ public final class MyContextHolder {
                 myContextOut = myInitializedContext;
             }
             if (myFutureContext == null || myFutureContext.isExpired()) {
-                myFutureContext = futureTask;
-                futureTask.run();
+                try {
+                    futureTask.run();
+                    myFutureContext = futureTask;
+                } catch (Exception e) {
+                    MyLog.e(TAG, method + " exception on futureTask.run", e);
+                }
             }
         }
         return myContextOut;

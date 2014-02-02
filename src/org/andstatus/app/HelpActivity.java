@@ -17,6 +17,7 @@
 
 package org.andstatus.app;
 
+import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.MyLog;
@@ -76,8 +77,19 @@ public class HelpActivity extends Activity implements SwipeInterface {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        MyLog.d(TAG, "onCreate");
-		
+
+		MyContextHolder.initialize(this, this);
+        if (MyPreferences.shouldSetDefaultValues()) {
+            // Default values for the preferences will be set only once
+            // and in one place: here
+            MyPreferences.setDefaultValues(R.xml.preferences, false);
+            if (MyPreferences.shouldSetDefaultValues()) {
+                MyLog.e(this, "Default values were not set?!");   
+            } else {
+                MyLog.i(this, "Default values has been set");   
+            }
+        }
+        
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 		setContentView(R.layout.help);
@@ -118,8 +130,8 @@ public class HelpActivity extends Activity implements SwipeInterface {
         getStarted.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (MyContextHolder.get().persistentAccounts().getCurrentAccount() == null || MyPreferences.shouldSetDefaultValues()) {
-                    startActivity(new Intent(HelpActivity.this, MyPreferenceActivity.class));
+                if (MyContextHolder.get().persistentAccounts().getCurrentAccount() == null) {
+                    startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
                 } else {
                     startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
                 }
@@ -169,8 +181,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
 		super.onResume();
 		// We assume that user pressed back after adding first account
         if ( wasPaused && mIsFirstActivity 
-                &&  MyContextHolder.get().persistentAccounts().getCurrentAccount() != null 
-                && !MyPreferences.shouldSetDefaultValues() ) {
+                &&  MyContextHolder.get().persistentAccounts().getCurrentAccount() != null ) {
 			Intent intent = new Intent(this, TimelineActivity.class);
 			startActivity(intent);
 			finish();
@@ -197,13 +208,45 @@ public class HelpActivity extends Activity implements SwipeInterface {
         }
     }
     
-    public static void startFromActivity(Activity activity, boolean helpAsFirstActivity, boolean showChangeLog) {
-        Intent intent = new Intent(activity, HelpActivity.class);
-        if (helpAsFirstActivity) {
-            intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
-        } else if (showChangeLog) {
-            intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
+    /**
+     * @return true if calling Activity is being finishing
+     */
+    public static boolean startFromActivity(Activity activity) {
+        boolean helpAsFirstActivity = false;
+        boolean showChangeLog = false;
+        if (!MyContextHolder.get().isReady()) {
+            MyLog.i(activity, "Context is not ready");
+            helpAsFirstActivity = true;
+        } else if (MyPreferences.shouldSetDefaultValues()) {
+            MyLog.i(activity, "We are running the Application for the very first time?");
+            helpAsFirstActivity = true;
+        } else if (MyContextHolder.get().persistentAccounts().getCurrentAccount() == null) {
+            MyLog.i(activity, "No current MyAccount");
+            if (!(activity instanceof AccountSettingsActivity)) {
+                helpAsFirstActivity = true;
+            }
+        } 
+        
+        // Show Change Log after update
+        try {
+            if (MyPreferences.checkAndUpdateLastOpenedAppVersion(activity, true)) {
+                showChangeLog = true;                    
+            }
+        } catch (NameNotFoundException e) {
+            MyLog.e(activity, "Unable to obtain package information", e);
         }
-        activity.startActivity(intent);
+
+        boolean doFinish = helpAsFirstActivity || showChangeLog;
+        if (doFinish) {
+            Intent intent = new Intent(activity, HelpActivity.class);
+            if (helpAsFirstActivity) {
+                intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
+            } else if (showChangeLog) {
+                intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
+            }
+            activity.startActivity(intent);
+            activity.finish();
+        }
+        return doFinish;
     }
 }

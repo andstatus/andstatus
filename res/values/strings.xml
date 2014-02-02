@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (C) 2013 Yuri Volkov, yvolk@yurivolkov.com
+    Copyright (C) 2010-2014 Yuri Volkov, yvolk@yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +18,9 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<string name="app_name">AndStatus</string>
 
-    <!-- Menu item / Window title -->
+    <!-- Menu item -->
     <string name="account_settings_action">AndStatus account settings</string>
+    <string name="account_settings_activity_title">Account</string>
     <!-- On Settings screen, summary line when called via AccountManager [CHAR LIMIT=50] -->
     <string name="account_settings_summary">Sync frequency, notifications, etc.</string>
 
@@ -104,10 +105,11 @@
 	<string name="error_credentials_of_other_user">These are credentials of other user</string>
 	<string name="favorite_created">Favorite created.</string>
 	<string name="favorite_destroyed">Message unfavorited.</string>
-    <!-- Accounts & Synchronization settings --><skip/>
-    <!-- Header title for list of accounts on Accounts & Synchronization settings -->
+    <string name="header_add_new_account">Add new account</string>    
+	<!-- Header title for list of accounts on Accounts & Synchronization settings -->
     <string name="header_manage_accounts">Manage accounts</string>    
-	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
+    <string name="header_manage_existing_accounts">Manage existing accounts</string>    
+    <string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
     <string name="id_of_this_message_was_not_specified">Id of this message was not specified</string>
 	<string name="label_accountselector">Select an Account</string>
     <string name="label_allow_html_content">Allow HTML content</string>
@@ -162,7 +164,6 @@
 	<string name="options_menu_home_timeline">Home Timeline</string>
 	<string name="options_menu_home_timeline_cond">Home</string>
 	<string name="options_menu_help">Help</string>
-	<string name="options_menu_preferences">Preferences</string>
 	<string name="options_menu_reload">Reload</string>
 	<string name="options_menu_mentions">Mentions</string>
 	<string name="options_menu_search">Search</string>
@@ -173,54 +174,61 @@
 	<string name="splash_button_learn_more">Learn More</string>
 	<string name="splash_button_get_started">Get Started</string>
 	<string name="splash_payoff_line">Light-Weight Twitter, pump.io and StatusNet Client for Android™</string>
-	<string name="splash_text_learn_more_1"><h1><b>AndStatus User Guide</b></h1>\n\n
+	<string name="user_manual_page_1"><h1><b>AndStatus User Guide</b></h1>\n\n
         <h2><b>1. Getting started</b></h2>\n\n
-        In order to start using the application, you must add at least one \"AndStatus\" 
-        account to your device the same way you add Google accounts.\n
-        Press \"Get Started\" button below and select the \"Manage accounts\" option
-        in the AndStatus preferences <i>or</i> simply go to the \"Settings\" of Your device, 
-        select \"Add account\" option and add an account of the \"AndStatus\" type.\n
-        You will be prompted to select desired Microblogging system 
-        (twitter, pump.io or StatusNet) 
-        and authorise the AndStatus application\'s access to it
-        at the Microblogging system\'s web site.\n 
-        Please note that currently for \"StatusNet\" only \"Basic auhentication\" works; i.e. no OAuth.\n
-        After successful creation of the account please launch AndStatus application again. 
-        This time you will be presented with the Change Log. 
-        Press the \"Get Started\" button below - and you will get to the main AndStatus window.\n
+        Tap \"Get Started\" button below: screen to add new account will be opened.\n
+        You may change default Microblogging system (\"Twitter\") to some other 
+        (pump.io and StatusNet, in addition to Twitter, are preconfiigured).\n
+        For Twitter you are allowed to press \"Add this account\" immediately. 
+        For other systems you will be prompted to type your Username and Password before
+        the \"Add this account\" gets enabled.\n
+        After successful creation of the account please tap \"left arrow\" on an 
+        \"Action Bar\" or \"Back\" button on your device. 
+        This time Home time line will be opened and will start to load...\n 
         Congratulations! Read below what you can do further.\n\n
         And don\'t forget to add AndStatus widget to the Home screen: 
-        the widget will inform you about new messages and may be used to launch AndStatus.\n\n        
+        the widget will inform you about new messages and may be used to launch AndStatus.\n\n
         <h2><b>2. AndStatus BASICS</b></h2>\n\n
         The first view of AndStatus contains the Home timeline.\n
         In order to perform an action on a message in the list you should <b>hold down</b>
         on it to get a context menu.\n
         You may <b>click</b> on a message to get more details on it or to see
-        a conversation thread to which the message belongs.\n
-        Press the <b>Home</b> button on the \"Action bar\" to switch to the other views.\n\n
+        a conversation tree to which the message belongs.\n
+        Tap the <b>Home</b> button on the \"Action bar\" to switch to the other views.\n\n
         <h2><b>3. SENDING AND REPLYING</b></h2>\n\n
-        In order to update your status, press the \"Blog\" button (\"Tweet\" for Twitter),
-        type in a text into the text area at the bottom of the screen and click <b>Send</b>.\n
+        In order to update your status, tap the \"Blog\" button (\"Tweet\" for Twitter),
+        type in a text into the text area at the bottom of the screen and tap <b>Send</b>.\n
         In order to reply, <b>hold down</b> a message and select <b>Reply</b>,
         type in your reply at the bottom.\n
-        To abort a reply, simply press the \"Blog/Tweet\" button to hide the text area.\n\n
+        To abort a reply, simply tap the \"Hide\" button to hide the text area.
+	</string>
+    <string name="user_manual_page_2">
         <h2><b>4. DIRECT MESSAGES</b></h2>\n\n
-        Click <b>Home</b> (Timeline type) button and select <b>Direct Messages</b>.\n
-        In order to <b>delete</b> a direct message, <b>hold down</b> on it
-        and select <b>Delete</b>.\n
-        New messages are fetched if you have turned on <b>Automatic Updates</b>
-        in Preferences. In any case you may always get updates from the Internet
-        manually using \"Reload\" command in the Menu.\n\n
-        <h2><b>5. LISTING MENTIONS</b></h2>\n\n
-        Click <b>Home</b> and then <b>Mentions</b>.\n
-        Mentions will list every message that mentions your <b>@username</b>.\n\n
+        Tap the <b>Home</b> (Timeline type) button 
+        and select <b>Direct Messages</b> from the list.\n
+        In order to <b>delete</b> your direct message (or your public message), 
+        <b>hold down</b> on it and select <b>Delete</b>.\n\n
+        New messages are fetched to timelines if you have turned on <b>Automatic sync</b>
+        in Android Account and Sync settings for this Account. 
+        In any case you may always get updates from the Internet
+        manually using \"Reload\" command in the Options Menu.\n\n
+        <h2><b>5. MENTIONS</b></h2>\n\n
+        Tap <b>Home</b> and then select <b>Mentions</b>.\n
+        Mentions will list every message that mentions your <b>@username</b>
+        (or even mentions of all your AndStatus accounts for a \"combined\" timeline).\n\n
         <h2><b>6. SEARCHING</b></h2>\n\n
-        Click <b>Menu</b> and then <b>Search</b>, or you can click the <b>Search</b> button
-        on your phone.\n
-        A search will find any text contained within a message. 
-        If you wish to show messages from a specific user, search for \"<b>username</b>.\"\n
-        To see mentions of a specific user, search for \"<b>@username</b>\".\n\n
-        </string>
+        Click \"Menu\" to open the Options Menu and then <b>Search</b> 
+        or you can click the <b>Search</b> button on your device.\n
+        If you wish to show messages from a specific user, search for \"username\".\n
+        To see mentions of a specific user, search for \"@username\".\n
+        A search will find any text contained within a message. This simple search
+        searches among messages already loaded from the Internet 
+        (Global Search is in works now...)\n\n
+        Please note that you may request messages from the Internet by any user 
+        (an Author or a Sender of the message) selecting 
+        \"Messages by UserName\" from the context menu of the message. This is also a sort of Global Search
+        which is already implemented. 
+    </string>
 	<string name="search_timeline_label">Search messages, users, and hashtags</string>
 	<string name="search_timeline_hint">Enter a username/phrase</string>
 	<string name="search_direct_messages_label">Search direct messages</string>
@@ -262,7 +270,7 @@
 	<string name="summary_preference_show_avatars_off">User avatars will not be displayed</string>
 	<string name="summary_preference_show_avatars_on">User avatars will be displayed</string>
 	<string name="summary_preference_username">Your username in the Microblogging system</string>
-	<string name="summary_preference_username_pumpio">Enter your ID on your pump.io site. It looks like an email address, with your username then \"@\" then your server; e.g. andstatus@identi.ca</string>
+	<string name="summary_preference_username_pumpio">Enter your ID on your pump.io site. It looks like an email address, with your username then \"@\" then your server; e.g.: andstatus@identi.ca</string>
 	<string name="summary_preference_verify_credentials">This User account is verified and enabled. Tap here to verify the user\'s credentials again.</string>
     <string name="summary_preference_verify_credentials_failed">Verification failed. Tap here to verify credentials and enable this User Account</string>
 	<string name="summary_preference_vibration_off">Vibration is turned off</string>
@@ -270,7 +278,7 @@
     <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
     <string name="timeline_reloaded">Timeline has been reloaded.</string>
 	<string name="title_preference_about_application">About AndStatus</string>
-    <string name="title_preference_add_account">Add an account</string>
+    <string name="title_preference_add_account">Add this account</string>
     <string name="title_preference_appearance">Appearance</string>
 	<string name="title_preference_change_log">Change Log</string>
 	<string name="title_preference_contact_developer">Contact Developer</string>

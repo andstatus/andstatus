@@ -83,7 +83,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        requestWindowFeature(Window.FEATURE_NO_TITLE);    // Before loading the content view
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
 
         if (instanceId == 0) {

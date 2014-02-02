@@ -17,7 +17,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<string name="app_name">AndStatus</string>
 
-    <!-- Menu item / Window title -->
+    <!-- Menu item -->
     <string name="account_settings_action">AndStatus paramétrages de compte</string>
     <!-- On Settings screen, summary line when called via AccountManager [CHAR LIMIT=50] -->
     <string name="account_settings_summary">Fréquence de synchronisation, notifications, etc.</string>
@@ -136,7 +136,6 @@
 	<string name="options_menu_home_timeline">Timeline principale</string>
 	<string name="options_menu_home_timeline_cond">Accueil</string>
 	<string name="options_menu_help">Aide</string>
-	<string name="options_menu_preferences">Préférences</string>
 	<string name="options_menu_reload">Rafraîchir</string>
 	<string name="options_menu_mentions">Mentions</string>
 	<string name="options_menu_search">Rechercher</string>
@@ -146,7 +145,7 @@
 	<string name="splash_button_learn_more">En savoir plus</string>
 	<string name="splash_button_get_started">Commencer</string>
 	<string name="splash_payoff_line">Client de microblogage Twitter et identi.ca léger pour Android™</string>
-	<string name="splash_text_learn_more_1"><h1><b>1. Les BASES d\'AndStatus</b></h1>\n\n
+	<string name="user_manual_page_1"><h1><b>1. Les BASES d\'AndStatus</b></h1>\n\n
         Le premier écran d\'AndStatus affiche votre timeline.\n
         Pour effectuer une action sur un message de la liste, effectuez un <b>appui long</b> sur celui-ci pour faire apparaître un menu.\n
         Vous pouvez <b>cliquer</b> sur un message pour afficher plus de détails.\n

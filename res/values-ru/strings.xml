@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-	Copyright (C) 2010-2013 Yuri Volkov, yvolk@yurivolkov.com
-	
+	Copyright (C) 2010-2014 Yuri Volkov, yvolk@yurivolkov.com
+
     
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<string name="app_name">AndStatus</string>
 
-    <!-- Menu item / Window title -->
+    <!-- Menu item -->
     <string name="account_settings_action">Настройки Учётных записей (Аккаунтов)</string>
+    <string name="account_settings_activity_title">Аккаунт</string>
     <!-- On Settings screen, summary line when called via AccountManager [CHAR LIMIT=50] -->
     <string name="account_settings_summary">Частота синхронизации, уведомления и др.</string>
 
@@ -104,19 +105,20 @@
 	<string name="error_credentials_of_other_user">Идентифицирован ДРУГОЙ пользователь?!</string>
 	<string name="favorite_created">Сообщение добавлено в избранное.</string>
 	<string name="favorite_destroyed">Сообщение удалено из избранного.</string>
-    <!-- Accounts & Synchronization settings --><skip/>
-    <!-- Header title for list of accounts on Accounts & Synchronization settings -->
+    <string name="header_add_new_account">Добавить новый аккаунт</string>    
+	<!-- Header title for list of accounts on Accounts & Synchronization settings -->
     <string name="header_manage_accounts">Управление аккаунтами</string>    
-	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
+    <string name="header_manage_existing_accounts">Управление существующими аккаунтами</string>    
+    <string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
     <string name="id_of_this_message_was_not_specified">Идентификатор этого сообщения не был указан</string>
 	<string name="label_accountselector">Выберите аккаунт</string>
     <string name="label_allow_html_content">Разрешить HTML форматирование</string>
 	<string name="label_conversation">Обсуждение</string>
     <string name="label_host">Хост</string>
     <string name="label_manage_origin_systems">Управление системами микроблогов</string>
-    <string name="label_origin_system">Система микроблогов</string>
     <string name="label_origin_list">Система микроблогов</string>
     <string name="label_origin_name">Имя системы микроблогов (уникальное и неизменное)</string>
+    <string name="label_origin_system">Система микроблогов</string>
     <string name="loading">Загрузка…</string>
     <string name="message">Сообщение</string>
     <string name="message_twitter">Сообщение</string>
@@ -161,7 +163,6 @@
 	<string name="options_menu_home_timeline">Домашняя линия времени</string>
 	<string name="options_menu_home_timeline_cond">Дом</string>
 	<string name="options_menu_help">Помощь</string>
-	<string name="options_menu_preferences">Настройки</string>
 	<string name="options_menu_reload">Загрузка</string>
 	<string name="options_menu_mentions">Упоминания</string>
 	<string name="options_menu_search">Поиск</string>
@@ -171,64 +172,75 @@
 	<string name="splash_button_learn_more">Узнать больше</string>
 	<string name="splash_button_get_started">Начать работу</string>
 	<string name="splash_payoff_line">Лёгкий клиент Твиттера, pump.io и StatusNet для Андроида™</string>
-	<string name="splash_text_learn_more_1"><h1><b>Руководство пользователя приложения AndStatus</b></h1>\n\n
+	<string name="user_manual_page_1"><h1><b>Руководство пользователя приложения AndStatus</b></h1>\n\n
         <h2><b>1. Начало работы</b></h2>\n\n
-        Для того, чтобы начать пользоваться данным приложением, Вам необходимо добавить
-        хотя бы одну учётную запись (\"аккаунт\") типа \"AndStatus\" точно таким же способом,
-        как Вы добавляете Google-аккаунты. Для этого перейдите в Настройки Вашего устройства
-        <i>или</i> нажмите кнопку \"Начать работу\" внизу данного окна, а далее выберите
-        \"Управление аккаунтами\" в Настройках AndStatus-а.
-        В открывшемся интерфейсе Вашего устройства выберите опцию \"Добавить аккаунт\".\n
-        Вам будет предложено выбрать \"Систему микроблогов\" (twitter, pump.io или StatusNet) 
+        Нажмите кнопку \"Начать работу\" внизу данного окна:
+        откроется экран добавления нового аккаунта.\n
+        Вы можете изменить \"Систему микроблогов\" \"Twitter\", 
+        выбранную по умолчанию, на какую-либо другую (заранее сконфигурированы pump.io и
+        StatusNet, - в дополнение к Твиттеру).\n
+        Для Твиттера Вы можете сразу нажать \"Добавить этот аккаунт\", 
         а далее - авторизовать доступ приложения AndStatus к этой системе 
         на сайте Системы микроблогов.\n
-        Обратите внимание на то, что в настоящее время для StatusNet работает только 
-        \"Базовая аутентификация\" (т.е. нет OAuth).\n
-        После успешного создания аккаунта, пожалуйста, запустите AndStatus повторно. Вам
-        будет представлен Журнал изменений (англоязычный), а та же кнопка 
-        \"Начать работу\" приведёт Вас на главное окно AndStatus-а. 
+        Для других систем необходимо сначала указать ваши Имя пользователя и Пароль
+        прежде, чем кнопка \"Добавить этот аккаунт\" станет доступна.\n
+        После успешного создания аккаунта нажмите \"стрелку влево\" 
+        на Верхней панели (\"Action Bar\") или кнопку \"Назад\" на вашем устройстве.
+        - И Вы попадёте на главное окно AndStatus-а: \"Домашнюю ленту времени\". 
         Что делать дальше - читайте ниже.\n\n
         И не забудьте установить Виджет AndStatus-а на Домашний экран Вашего устройства!
         Виджет будет информировать Вас о новых сообщениях и может быть использован
-        для быстрого запуска данного приложения.\n\n 
+        для быстрого запуска данного приложения.\n\n
         <h2><b>2. АЗЫ ПРОГРАММЫ AndStatus</b></h2>\n\n
-        Первая страница AndStatus-а содержит Домашнюю ленту времени (т.е. статусы/сообщения
-        тех, за кем Вы следуете - follow).\n
+        Первая страница AndStatus-а содержит \"Домашнюю ленту времени\" 
+        (т.е. статусы/сообщения тех, за кем Вы следуете - follow).\n
         Для того, чтобы произвести какое-либо действие над отдельным сообщением из этой
         ленты-списка, Вам нужно <b>длительно нажать</b> на него для появления
         контекстного меню.\n
         Вы можете также <b>кратко нажать</b> на сообщение для того, чтобы получить более
-        подробную информацию о нём, а также для того, чтобы увидеть нить обсуждения,
+        подробную информацию о нём, а также для того, чтобы увидеть дерево обсуждения,
         в котором участвует данное сообщение.\n
-        Нажмите кнопку <b>Дом</b> на верхней полосе экрана для переключения на другие \"Ленты времени\".\n\n
+        Нажмите кнопку <b>Дом</b> на верхней полосе экрана для переключения 
+        на другие \"Ленты времени\".\n\n
         <h2><b>3. ОТПРАВКА СООБЩЕНИЙ И ОТВЕТЫ НА СООБЩЕНИЯ</b></h2>\n\n
         Для обновления Вашего статуса (для сообщения о том, что происходит…) нажмите кнопку
         \"Блог\", наберите текст в открывшемся поле внизу окна
         и нажмите кнопку <b>Отправить</b>.\n
-        Для того, чтобы ответить, <b>длительно нажмите</b> на сообщение,
+        Для того, чтобы ответить на сообщение, <b>длительно нажмите</b> на него,
         выберите <b>Ответить</b>
-        в контекстном меню и введите свой ответ в текстовом поле внизу страницы.\n
-        Для отмены ответа достаточно нажать на кнопку \"Блог\"
-        и скрыть текстовое поле внизу страницы.\n\n
+        в контекстном меню и введите свой ответ в текстовом поле внизу экрана.\n
+        Для отмены ответа достаточно нажать на кнопку \"Скрыть\"
+        и скрыть текстовое поле ввода.
+	</string>
+    <string name="user_manual_page_2">
         <h2><b>4. ЛИЧНЫЕ СООБЩЕНИЯ</b></h2>\n\n
         Нажмите <b>Дом</b> (кнопку выбора Ленты времени), а далее - <b>Личные сообщения</b>.\n
-        Для <b>удаления</b> личного сообщения, <b>длительно нажмите</b> на него
-        и выберите <b>Удалить</b>.\n
-        Новые сообщения появляются, если Вы включили <b>Автоматические обновления</b>
-        в Настройках. Если нет, то через Меню выполните команду \"Загрузка\" 
-        для загрузки новых сообщений из Интернета.\n\n
+        Для <b>удаления</b> Вашего личного (или публичного) сообщения, 
+        <b>длительно нажмите</b> на него и выберите <b>Удалить</b>.\n
+        Новые сообщения появляются, если Вы включили <b>Автоматическую синхронизацию</b>
+        в Системных Настройках Андроида для данного аккаунта. 
+        Вы можете также запросить немедленную загрузку сообщений из интернета
+        через Меню, команду \"Загрузка\".\n\n
         <h2><b>5. СПИСОК УПОМИНАНИЙ</b></h2>\n\n
         Нажмите <b>Дом</b>, а далее - <b>Упоминания</b>.\n
         В списке упоминаний будут показаны все сообщения, 
-        в которых упоминается Ваше <b>@имяпользователя</b>.\n\n
+        в которых упоминается Ваше <b>@имяпользователя</b> 
+        (или имена пользователей всех Ваши аккаунтов для \"объединённой\" ленты времени:
+        \"все\").\n\n
         <h2><b>6. ПОИСК</b></h2>\n\n
-        Нажмите <b>Меню</b>, а далее <b>Поиск</b>; или Вы можете нажать кнопку <b>Поиск</b>
-        Вашего устройства.\n
-        Поиск будет производиться по всему тексту сообщений. Если Вы хотите увидеть
+        Нажмите <b>Меню</b>, а далее <b>Поиск</b> 
+        или просто кнопку <b>Поиск</b> вашего устройства.\n
+        Поиск будет производиться по всему тексту сообщений, ранее загруженных из Интернета
+        (Глобальный поиск скоро тоже появится...). Если Вы хотите увидеть
         только сообщения определённого пользователя, 
         то ищите \"<b>имяпользователя</b>.\"\n
         Для того, чтобы найти упоминания определённого пользователя, 
-        ищите \"<b>@имяпользователя</b>\".</string>
+        ищите \"@имяпользователя\".\n\n
+        Обратите внимание на то, что Вы уже сейчас можете запросить из Интернета 
+        список сообщений пользователя (автора или отправителя сообщения), 
+        выбрав в Контекстном меню сообщения пункт \"Сообщения ИмяПользователя\" 
+        - это тоже, в некотором смысле, Глобальный Поиск, который уже реализован.  
+    </string>
 	<string name="search_timeline_label">Поиск сообщений, людей и тем</string>
 	<string name="search_timeline_hint">Введите имя или фразу</string>
 	<string name="search_direct_messages_label">Поиск личных сообщений</string>
@@ -270,7 +282,7 @@
 	<string name="summary_preference_show_avatars_off">Аватары пользователей не будут показаны</string>
 	<string name="summary_preference_show_avatars_on">Аватары пользователей будут показаны</string>
 	<string name="summary_preference_username">Ваше имя пользователя в Системе микроблогов</string>
-	<string name="summary_preference_username_pumpio">Введите Ваш ID на Вашем pump.io сайте. Он выглядит как email: имя пользователя, а потом \"@\" и имя сервера; например: andstatus@identi.ca</string>
+	<string name="summary_preference_username_pumpio">Введите Ваш ID на Вашем pump.io сайте. Он выглядит как email: пользователя \"@\" имя сервера; например: andstatus@identi.ca</string>
 	<string name="summary_preference_verify_credentials">Данная учётная запись пользователя успешно аутентифицирована (проверена) и включёна. Щёлкните здесь для повторной проверки</string>
     <string name="summary_preference_verify_credentials_failed">Проверка завершилась неудачно. Щёлкните здесь для аутентификации пользователя и включения данной учётной записи</string>
 	<string name="summary_preference_vibration_off">Виброзвонок отключён</string>
@@ -278,7 +290,7 @@
     <string name="system_is_busy_try_later">Система сейчас занята. Пожалуйста, попробуйте попозже.</string>
     <string name="timeline_reloaded">Лента времени обновлена.</string>
 	<string name="title_preference_about_application">О программе AndStatus</string>
-    <string name="title_preference_add_account">Добавить учётную запись</string>
+    <string name="title_preference_add_account">Добавить эту учётную запись</string>
     <string name="title_preference_appearance">Внешний вид</string>
 	<string name="title_preference_change_log">Журнал изменений</string>
 	<string name="title_preference_contact_developer">Свяжитесь с разработчиками</string>

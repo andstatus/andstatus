@@ -92,7 +92,6 @@
 	<string name="options_menu_home_timeline">Chronik der Freunde</string>
 	<string name="options_menu_home_timeline_cond">Freunde</string>
 	<string name="options_menu_help">Hilfe</string>
-	<string name="options_menu_preferences">Einstellungen</string>
 	<string name="options_menu_reload">Aktualisieren</string>
 	<string name="options_menu_mentions">Erwähnungen</string>
 	<string name="options_menu_search">Suche</string>
@@ -102,7 +101,7 @@
 	<string name="splash_button_learn_more">Mehr Informationen</string>
 	<string name="splash_button_get_started">Los gehts</string>
 	<string name="splash_payoff_line">schlanker Twitter Client für Android™</string>
-	<string name="splash_text_learn_more_1"><h1><b>1. AndStatus EINFÜHRUNG</b></h1>\n\n
+	<string name="user_manual_page_1"><h1><b>1. AndStatus EINFÜHRUNG</b></h1>\n\n
         Die erste Ansicht von AndStatus zeigt die Chronik deiner Freunde.\n
         Um eine Aktion zu einem bestimmten Tweet in der Liste durchzuführen, kannst du ihn <b>lange halten</b> um zu einem Menü zu gelangen.\n
         <b>Klicke</b> auf einen Tweet für mehr Informationen zu erhalten.\n

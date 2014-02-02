@@ -91,7 +91,6 @@
 	<string name="options_menu_home_timeline">Home Timeline</string>
 	<string name="options_menu_home_timeline_cond">Vänner</string>
 	<string name="options_menu_help">Hjälp</string>
-	<string name="options_menu_preferences">Inställningar</string>
 	<string name="options_menu_reload">Reload</string>
 	<string name="options_menu_mentions">Mentions</string>
 	<string name="options_menu_search">Sök</string>
@@ -101,7 +100,7 @@
 	<string name="splash_button_learn_more">Learn More</string>
 	<string name="splash_button_get_started">Get Started</string>
 	<string name="splash_payoff_line">Light-Weight Twitter and identi.ca Client for Android™</string>
-    <string name="splash_text_learn_more_1">(To be translated)</string>
+    <string name="user_manual_page_1">(To be translated)</string>
 	<string name="search_timeline_label">Search tweets, users, and hashtags</string>
 	<string name="search_timeline_hint">Enter a username/phrase</string>
 	<string name="search_direct_messages_label">Search direct messages</string>

@@ -133,17 +133,28 @@ class StateOfAccountChangeProcess {
         }
 
         if (state.builder == null && !state.getAccountAction().equals(Intent.ACTION_INSERT)) {
+            // This case occurs if we're changing account settings from Settings -> Accounts
             if (state.getAccountAction().equals(ACTION_ACCOUNT_MANAGER_ENTRY) && android.os.Build.VERSION.SDK_INT < 16) {
-                // This case occurs if we're changing account settings from Settings -> Accounts
                 state.setAccountAction(Intent.ACTION_INSERT);
             } else {
-                state.accountShouldBeSelected = true;
+                switch(MyContextHolder.get().persistentAccounts().size()) {
+                    case 0:
+                        state.setAccountAction(Intent.ACTION_INSERT);
+                        break;
+                    case 1:
+                        state.builder = MyAccount.Builder.fromMyAccount(MyContextHolder.get().persistentAccounts().getCurrentAccount());
+                        break;
+                    default:
+                        state.accountShouldBeSelected = true;
+                        break;
+                }
             }
         }
         
         if (state.builder == null) {
             if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-                state.builder = MyAccount.Builder.newOrExistingFromAccountName(AccountName.ORIGIN_SEPARATOR + MyContextHolder.get().persistentOrigins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT), TriState.UNKNOWN);
+                state.builder = MyAccount.Builder.newOrExistingFromAccountName(AccountName.ORIGIN_SEPARATOR 
+                        + MyContextHolder.get().persistentOrigins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT).getName(), TriState.UNKNOWN);
             } else {
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get().persistentAccounts().getCurrentAccountName(), TriState.UNKNOWN);
             }

@@ -37,16 +37,26 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
-    <release android:versionName="6.3" android:versionCode="93"
-        versionDate="2014-01-26"
-        versionTitle="Bugfixes and cleaning">
+    <release android:versionName="7.0" android:versionCode="94"
+        versionDate="2014-02-02"
+        versionTitle="Design for the Novice">
         <changes>
-            <change>Fixed sending messages offline.</change>
-            <change>Fixed too many requests to the server in some cases.</change>
+            <change>Getting started with AndStatus simplified, including creation of the first user account. 
+                See <a href="https://github.com/andstatus/andstatus/issues/75" >Issue #75</a></change>
+            <change>Action bar added to the "Settings" and "Account" screens (for Android 4.x+) in 
+                order to show a "Way back" to a User. These screens have new, more common names.</change>
+            <changes>"Manage accounts" link in AndStatus Settings now leads directly to the list of accounts
+                avoiding long Android's "System Settings" list. This simplifies working with existing accounts.
+                In order to add the second and firther accounts an additional button created. 
+                Note: In order to delete an account a User still has to go 
+                to the native Android interface: System Settings-&gt;Accounts.</changes>
+            <change>A User Guide updated (English and Russian translations). 
+                The User Guide is available by tapping the "Learn more" button 
+                on the "About AndStatus" screen.</change>
         </changes>
     </release>
-    <release android:versionName="6" android:versionCode="91"
-        versionDate="2013-12-27"
+    <release android:versionName="6.3" android:versionCode="93"
+        versionDate="2014-01-26"
         versionTitle="Multiple instances of Microblogging systems">
         <changes>
             <change>"Type of Microblogging system" ("twitter" / "pump.io" / "status.net" ) separated
@@ -70,6 +80,8 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 connection to the Twitter sites through proxy server. On the other hand,
                 this may be not exactly what <a href="https://github.com/andstatus/andstatus/issues/43" >Issue 
                 #43 "Implement Connection via proxy"</a> mean.</change>
+            <change>Fixed sending messages offline.</change>
+            <change>Fixed too many requests to the server in some cases.</change>
         </changes>
     </release>
     <release android:versionName="5.1" android:versionCode="89"
