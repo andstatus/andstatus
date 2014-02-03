@@ -271,7 +271,7 @@
 	<string name="summary_preference_show_avatars_on">User avatars will be displayed</string>
 	<string name="summary_preference_username">Your username in the Microblogging system</string>
 	<string name="summary_preference_username_pumpio">Enter your ID on your pump.io site. It looks like an email address, with your username then \"@\" then your server; e.g.: andstatus@identi.ca</string>
-	<string name="summary_preference_verify_credentials">This User account is verified and enabled. Tap here to verify the user\'s credentials again.</string>
+	<string name="summary_preference_verify_credentials">This Account is verified and enabled. Tap Back (&lt;) to continue or tap here to verify the user\'s credentials again.</string>
     <string name="summary_preference_verify_credentials_failed">Verification failed. Tap here to verify credentials and enable this User Account</string>
 	<string name="summary_preference_vibration_off">Vibration is turned off</string>
 	<string name="summary_preference_vibration_on">Vibrate on incoming message</string>
