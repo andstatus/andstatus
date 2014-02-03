@@ -47,7 +47,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 order to show a "Way back" to a User. These screens have new, more common names.</change>
             <changes>"Manage accounts" link in AndStatus Settings now leads directly to the list of accounts
                 avoiding long Android's "System Settings" list. This simplifies working with existing accounts.
-                In order to add the second and firther accounts an additional button created. 
+                In order to add the second and further accounts an additional button created. 
                 Note: In order to delete an account a User still has to go 
                 to the native Android interface: System Settings-&gt;Accounts.</changes>
             <change>A User Guide updated (English and Russian translations). 
