@@ -10,6 +10,7 @@ import org.andstatus.app.CommandData;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.data.MyDatabase.Avatar;
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.net.HttpJavaNetUtils;
 import org.andstatus.app.util.MyLog;
 
 import java.io.BufferedOutputStream;
@@ -108,9 +109,19 @@ public class AvatarLoader {
     private void loadUrl() {
         loadTimeNew =  System.currentTimeMillis();
         fileNameNew =  Long.toString(userId) + "_" + Long.toString(loadTimeNew);
+        downloadAvatarFile();
+        saveToDatabase();
+        if (!isError()) {
+            removeOld();
+            MyLog.v(this, "Loaded avatar userId=" + userId);
+        }
+    }
+
+    private void downloadAvatarFile() {
+        String method = "downloadAvatarFile";
         File fileTemp = new AvatarDrawable(userId, "temp_" + fileNameNew).getFile();
         try {
-            InputStream is = url.openStream();
+            InputStream is = HttpJavaNetUtils.urlOpenStream(url);
             try {
                 byte[] buffer = new byte[1024];
                 int length;
@@ -118,7 +129,7 @@ public class AvatarLoader {
                 out = new BufferedOutputStream(new FileOutputStream(fileTemp));
                 try {
                     if (mockNetworkError) {
-                        throw new IOException("Mocked IO exception");
+                        throw new IOException(method + ", Mocked IO exception");
                     }
                     while ((length = is.read(buffer))>0) {
                         out.write(buffer, 0, length);
@@ -129,30 +140,35 @@ public class AvatarLoader {
             } finally {
                 is.close();
             }
-            
         } catch (FileNotFoundException e) {
-            logError("File not found loading url", e);
-            deleteFileSilently(fileTemp);
+            logError(method + ", File not found", e);
             hardError = true;
         } catch (IOException e) {
-            logError("Loading url", e);
-            deleteFileSilently(fileTemp);
+            logError(method, e);
             softError = true;
         }
-        saveToDatabase(fileTemp);
-        if (!isError()) {
-            removeOld();
-            MyLog.v(this, "Loaded avatar userId=" + userId);
+        if (isError()) {
+            deleteFileLogged(fileTemp);
+        }
+        File fileNew = new AvatarDrawable(userId, fileNameNew).getFile();
+        deleteFileLogged(fileNew);
+        if (!isError() && !fileTemp.renameTo(fileNew)) {
+            MyLog.v(this, method + ", Couldn't rename file " + fileTemp + " to " + fileNew);
+            softError = true;
         }
     }
 
-    private void saveToDatabase(File fileTemp) {
-        File fileNew = new AvatarDrawable(userId, fileNameNew).getFile();
-        deleteFileSilently(fileNew);
-        if (!isError() && !fileTemp.renameTo(fileNew)) {
-            MyLog.v(this, "Couldn't rename file " + fileTemp + " to " + fileNew);
-            softError = true;
+    private void deleteFileLogged(File file) {
+        if(file.exists()) {
+            if (file.delete()) {
+                MyLog.v(this, "Deleted file " + file.toString());
+            } else {
+                MyLog.e(this, "Couldn't delete file " + file.toString());
+            }
         }
+    }
+    
+    private void saveToDatabase() {
         if (hardError) {
             status = AvatarStatus.HARD_ERROR;
         } else if (softError) {
@@ -205,18 +221,15 @@ public class AvatarLoader {
         if (DbUtils.updateRowWithRetry(Avatar.TABLE_NAME, rowId, values, 3) != 1) {
             softError = true;
         }
-        if (!isError() && !TextUtils.isEmpty(fileNameStored)) {
-            deleteFileSilently( new AvatarDrawable(userId, fileNameStored).getFile());
+        if (!isError()) {
+            deleteAvatarByFileName(fileNameStored);
         }
     }
 
-    private void deleteFileSilently(File file) {
-        if(file.exists()) {
-            if (file.delete()) {
-                MyLog.v(this, "Deleted file " + file.toString());
-            } else {
-                MyLog.e(this, "Couldn't delete file " + file.toString());
-            }
+    private void deleteAvatarByFileName(String fileNameToDelete) {
+        AvatarDrawable avatarDrawable = new AvatarDrawable(userId, fileNameToDelete);
+        if (avatarDrawable.exists()) {
+            deleteFileLogged(avatarDrawable.getFile());
         }
     }
     
@@ -236,33 +249,30 @@ public class AvatarLoader {
                 + " FROM " + Avatar.TABLE_NAME 
                 + " WHERE " + where;
         boolean done = false;
-        
-        for (int pass=0; pass<3; pass++) {
+        for (int pass=0; !done && pass<3; pass++) {
             SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
             Cursor c = null;
             try {
                 c = db.rawQuery(sql, null);
                 while (c.moveToNext()) {
                     long rowIdOld = c.getLong(0);
-                    String fileNameOld = c.getString(1);
-                    if (!TextUtils.isEmpty(fileNameOld)) {
-                        AvatarDrawable avatarDrawable = new AvatarDrawable(userId, fileNameOld);
-                        deleteFileSilently(avatarDrawable.getFile());
-                    }
+                    deleteAvatarByFileName(c.getString(1));
                     rowsDeleted += db.delete(Avatar.TABLE_NAME, Avatar._ID + "=" + Long.toString(rowIdOld), null);
                 }
-                break;
+                done = true;
             } catch (SQLiteException e) {
-                MyLog.i(this, method + ", Database is locked, pass=" + pass, e);
+                MyLog.i(this, method + ", Database is locked, pass=" + pass + "; sql='" + sql + "'", e);
             } finally {
                 if (c != null) {
                     c.close();
                 }
             }
-            try {
-                Thread.sleep(Math.round((Math.random() + 1) * 500));
-            } catch (InterruptedException e) {
-                MyLog.e(this, e);
+            if (!done) {
+                try {
+                    Thread.sleep(Math.round((Math.random() + 1) * 500));
+                } catch (InterruptedException e) {
+                    MyLog.e(this, e);
+                }
             }
         }
         MyLog.v(this, method + (done ? " succeeded" : " failed") + "; deleted " + rowsDeleted + " old rows");

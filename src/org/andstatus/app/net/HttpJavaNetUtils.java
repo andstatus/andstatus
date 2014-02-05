@@ -21,10 +21,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Map;
 
-class HttpJavaNetUtils {
+public class HttpJavaNetUtils {
+    private static int CONNECTION_TIMEOUT_MS = 5000;
+
     private HttpJavaNetUtils() {
     }
     
@@ -60,4 +64,11 @@ class HttpJavaNetUtils {
         return bld.toString();
     }
 
+    public static InputStream urlOpenStream(URL url) throws IOException {
+        URLConnection con = url.openConnection();
+        con.setConnectTimeout(CONNECTION_TIMEOUT_MS);
+        con.setReadTimeout(CONNECTION_TIMEOUT_MS);
+        InputStream is = con.getInputStream();
+        return is;
+    }
 }
