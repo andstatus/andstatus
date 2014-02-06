@@ -383,54 +383,84 @@ public class MyService extends Service {
     }
 
     private void receiveOtherCommand(CommandData commandData, int startId) {
-        boolean isStopping = false;
-        synchronized(serviceStateLock) {
-            isStopping = isStopping();
-            if (!isStopping) {
-                dontStop = true;
-                if (startId != 0) {
-                    lastProcessedStartId = startId;
-                }
-            }
-        }
-        if (isStopping) {
-            MyLog.v(this, "The Service is stopping: ignoring the command: " +  commandData.command);
-        } else {
+        if (setDontStop(startId)) {
             try {
                 initialize();
                 if (mainCommandQueue.isEmpty()) {
-                    // This is a good place to send commands from retry Queue
-                    while (!retryCommandQueue.isEmpty()) {
-                        CommandData cd = retryCommandQueue.poll();
-                        if (!mainCommandQueue.contains(cd) 
-                                && !mainCommandQueue.offer(cd)) {
-                            MyLog.e(this, "mCommands is full?");
-                        }
-                    }
+                    moveCommandsFromRetryToMainQueue();
                 }
-                if ( commandData.command == CommandEnum.EMPTY) {
-                    // Nothing to do
-                } else if (mainCommandQueue.contains(commandData)) {
-                    MyLog.d(this, "Duplicated " + commandData);
-                    // Reset retries counter on receiving duplicated command
-                    for (CommandData cd:mainCommandQueue) {
-                        if (cd.equals(commandData)) {
-                            cd.retriesLeft = 0;
-                            break;
-                        }
-                    }
-                } else {
-                    MyLog.d(this, "Adding to the queue " + commandData);
-                    if (!mainCommandQueue.offer(commandData)) {
-                        MyLog.e(this, "mCommands is full?");
-                    }
-                }
+                addToTheQueue(commandData);
             } finally {
                 synchronized(serviceStateLock) {
                     dontStop = false;
                 }
             }
             decideIfStopTheService(false);
+        } else {
+            addToTheQueueWhileStopping(commandData);
+        }
+    }
+
+    private boolean setDontStop(int startId) {
+        boolean ok = false;
+        synchronized(serviceStateLock) {
+            if (!isStopping()) {
+                ok = true;
+                dontStop = true;
+                if (startId != 0) {
+                    lastProcessedStartId = startId;
+                }
+            }
+        }
+        return ok;
+    }
+    
+    private void addToTheQueueWhileStopping(CommandData commandData) {
+        boolean ok = false;
+        synchronized (serviceStateLock) {
+            if (mInitialized) {
+                ok = addToTheQueue(commandData);
+            }
+        }
+        if (!ok) {
+            MyLog.e(this, "The Service is stopping, the command was lost: "
+                    + commandData.command);
+        }
+    }
+
+    private boolean addToTheQueue(CommandData commandData) {
+        boolean ok = true;
+        if ( commandData.command == CommandEnum.EMPTY) {
+            // Nothing to do
+        } else if (mainCommandQueue.contains(commandData)) {
+            MyLog.d(this, "Duplicated " + commandData);
+            // Reset retries counter on receiving duplicated command
+            for (CommandData cd:mainCommandQueue) {
+                if (cd.equals(commandData)) {
+                    cd.retriesLeft = 0;
+                    break;
+                }
+            }
+        } else {
+            MyLog.d(this, "Adding to the queue " + commandData);
+            if (!mainCommandQueue.offer(commandData)) {
+                MyLog.e(this, "Couldn't add to the main queue, size=" + mainCommandQueue.size());
+                ok = false;
+            }
+        }
+        return ok;
+    }
+
+    private void moveCommandsFromRetryToMainQueue() {
+        while (!retryCommandQueue.isEmpty()) {
+            CommandData cd = retryCommandQueue.poll();
+            if (!addToTheQueue(cd)) {
+                if (!retryCommandQueue.offer(cd)) {
+                    MyLog.e(this, "Couldn't return to the retry Queue, size=" + retryCommandQueue.size()
+                            + " command=" + cd);
+                }
+                break;
+            }
         }
     }
     
@@ -615,10 +645,11 @@ public class MyService extends Service {
      * @param boolean forceNow 
      */
     private void stopDelayed(boolean forceNow) {
+        String method = "stopDelayed";
         synchronized (serviceStateLock) {
             if (mInitialized) {
                 if (dontStop) {
-                    MyLog.d(this, "stopDelayed: dontStop flag");
+                    MyLog.d(this, method + ": dontStop flag");
                     return;
                 }
                 mIsStopping = true;
@@ -629,10 +660,10 @@ public class MyService extends Service {
             boolean mayStop = executor == null || executor.getStatus() != Status.RUNNING;
             if (!mayStop) {
                 if (forceNow) {
-                    MyLog.d(this, "stopDelayed: Forced to stop now, cancelling Executor");
+                    MyLog.d(this, method + ": Forced to stop now, cancelling Executor");
                     executor.cancel(true);
                 } else {
-                    MyLog.v(this, "stopDelayed: Cannot stop now, executor is working");
+                    MyLog.v(this, method + ": Cannot stop now, executor is working");
                     broadcastState(null);
                     return;
                 }
