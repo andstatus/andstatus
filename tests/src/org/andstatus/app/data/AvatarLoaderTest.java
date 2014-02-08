@@ -24,7 +24,7 @@ public class AvatarLoaderTest extends InstrumentationTestCase {
         TestSuite.initialize(this);
         TestSuite.enshureDataAdded();
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
-        assertTrue(ma != null);
+        assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma != null);
         MyLog.i(this, "setUp ended");
     }
 

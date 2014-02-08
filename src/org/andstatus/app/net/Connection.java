@@ -95,6 +95,8 @@ public abstract class Connection {
          * not the same user. 
          */
         STATUSES_USER_TIMELINE,
+        PUBLIC_TIMELINE,
+
         STATUSES_SHOW,
         STATUSES_UPDATE,
         STOP_FOLLOWING_USER,

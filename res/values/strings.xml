@@ -28,14 +28,6 @@
     <string name="settings_action">Settings</string>
     <!-- Settings activity title [CHAR LIMIT=40]-->
     <string name="settings_activity_title">Settings</string>
-    	
-    <string name="timeline_title_direct_messages">Direct messages</string>
-	<string name="timeline_title_favorites">Favorites</string>
-    <string name="timeline_title_following_user">Following</string>
-    <string name="timeline_title_mentions">Mentions</string>
-	<string name="timeline_title_home">Home</string>
-    <string name="timeline_title_replies">Replies</string>
-	<string name="timeline_title_user">User</string>
 	
     <string name="appwidget_configure_instructions">Customize AndStatus Widget message, shown in a case there is nothing new:</string>
     <string name="appwidget_nothingnew_default">Nothing new since:</string>
@@ -277,6 +269,16 @@
 	<string name="summary_preference_vibration_on">Vibrate on incoming message</string>
     <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
     <string name="timeline_reloaded">Timeline has been reloaded.</string>
+    
+    <string name="timeline_title_direct_messages">Direct messages</string>
+    <string name="timeline_title_favorites">Favorites</string>
+    <string name="timeline_title_following_user">Following</string>
+    <string name="timeline_title_home">Home</string>
+    <string name="timeline_title_mentions">Mentions</string>
+    <string name="timeline_title_public">Public</string>
+    <string name="timeline_title_replies">Replies</string>
+    <string name="timeline_title_user">User</string>
+    
 	<string name="title_preference_about_application">About AndStatus</string>
     <string name="title_preference_add_account">Add this account</string>
     <string name="title_preference_appearance">Appearance</string>

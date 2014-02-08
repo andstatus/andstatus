@@ -69,6 +69,7 @@ public enum TimelineTypeEnum {
      * Replies
      */
     REPLIES("replies", R.string.timeline_title_replies, User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
+    PUBLIC("public", R.string.timeline_title_public, "", "", "", Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
     /**
      * All timelines (e.g. for download of all timelines. 
      * This is generally done after addition of the new MyAccount).

@@ -29,14 +29,6 @@
     <!-- Settings activity title [CHAR LIMIT=40]-->
     <string name="settings_activity_title">Настройки</string>
     
-	<string name="timeline_title_direct_messages">Личные сообщения</string>
-	<string name="timeline_title_favorites">Избранное</string>
-    <string name="timeline_title_following_user">Следуем за</string>
-    <string name="timeline_title_mentions">Упоминания</string>
-	<string name="timeline_title_home">Дом</string>
-    <string name="timeline_title_replies">Ответы</string>
-	<string name="timeline_title_user">Пользователь</string>
-    
     <string name="appwidget_configure_instructions">Настройте сообщение Виджета, которое показывается в том случае, если нет ничего нового:</string>
     <string name="appwidget_nothingnew_default">Ничего нового после:</string>
 	<string name="appwidget_new_tweet_format">{0}</string>
@@ -289,7 +281,17 @@
 	<string name="summary_preference_vibration_on">Виброзвонок при входящем сообщении включён</string>
     <string name="system_is_busy_try_later">Система сейчас занята. Пожалуйста, попробуйте попозже.</string>
     <string name="timeline_reloaded">Лента времени обновлена.</string>
-	<string name="title_preference_about_application">О программе AndStatus</string>
+    
+    <string name="timeline_title_direct_messages">Личные сообщения</string>
+    <string name="timeline_title_favorites">Избранное</string>
+    <string name="timeline_title_following_user">Следуем за</string>
+    <string name="timeline_title_home">Дом</string>
+    <string name="timeline_title_mentions">Упоминания</string>
+    <string name="timeline_title_public">Публичные</string>
+    <string name="timeline_title_replies">Ответы</string>
+    <string name="timeline_title_user">Пользователь</string>
+    
+    <string name="title_preference_about_application">О программе AndStatus</string>
     <string name="title_preference_add_account">Добавить эту учётную запись</string>
     <string name="title_preference_appearance">Внешний вид</string>
 	<string name="title_preference_change_log">Журнал изменений</string>

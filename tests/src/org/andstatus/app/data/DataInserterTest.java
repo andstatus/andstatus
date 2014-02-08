@@ -8,24 +8,18 @@ import android.text.TextUtils;
 
 import org.andstatus.app.MessageCounters;
 import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionPumpio;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
-import org.andstatus.app.net.OAuthClientKeysTest;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginTest;
 import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 
@@ -39,43 +33,26 @@ public class DataInserterTest extends InstrumentationTestCase {
     private MyAccount ma;
     private Origin origin;
 
+    public void insert() throws Exception {
+        setUp();
+        testFollowingUser();
+        testMessageFavoritedByOtherUser();
+        testMessageFavoritedByAccountUser();
+        testDirectMessageToMyAccount();
+        testConversation();
+    }
+    
     @Override
     public void setUp() throws Exception {
         super.setUp();
         iteration++;
         context = TestSuite.initialize(this);
-        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-
-
-        OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME, TestSuite.TWITTER_TEST_ORIGIN_NAME + ".example.com", true, true);
-        OriginTest.createOneOrigin(TestSuite.CONVERSATION_ORIGIN_TYPE, TestSuite.CONVERSATION_ORIGIN_NAME, TestSuite.CONVERSATION_ORIGIN_NAME + ".example.com", true, true);
-        MyContextHolder.get().persistentOrigins().initialize();
-
-        Origin twitterOrigin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
-        assertEquals("Twitter test origin created", twitterOrigin.getOriginType(), OriginType.TWITTER);
-        
         origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
-        assertEquals("Origin for conversation created", origin.getOriginType(), TestSuite.CONVERSATION_ORIGIN_TYPE);
-        
-        OAuthClientKeysTest.insertTestKeys(origin);
-        
-        addPumpIoAccount("acct:firstTestUser@identi.ca");
-        addPumpIoAccount("acct:t131t@identi.ca");
-
-        String userOid = "acct:" + TestSuite.CONVERSATION_ACCOUNT_NAME.substring(0, TestSuite.CONVERSATION_ACCOUNT_NAME.indexOf('/'));
-        accountMbUser = userFromPumpioOid(userOid);
+        assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME); 
+        assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma != null);
+        accountMbUser = userFromPumpioOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
         accountMbUser.avatarUrl = TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL;
-        MyAccount ma1 = addPumpIoAccount(userOid);
-        
-        MyPreferences.onPreferencesChanged();
-        MyContextHolder.initialize(context, this);
-        assertTrue("Context is ready", MyContextHolder.get().isReady());
-        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(ma1.getAccountName()); 
-        assertTrue(ma1.getAccountName(), ma != null);
-        assertEquals(ma1.getAccountName(), ma1.getUserId(), ma.getUserId());
-        
-        MyServiceManager.setServiceUnavailable();
     }
     
     public void testFollowingUser() throws ConnectionException {
@@ -321,7 +298,19 @@ public class DataInserterTest extends InstrumentationTestCase {
         MbMessage reply10 = buildPumpIoMessage(author3, "Reply 10 to Reply 8", reply8, null);
         addMessage(reply10);
     }
-
+    
+    private MbUser userFromPumpioOid(String userOid) {
+        ConnectionPumpio connection = new ConnectionPumpio();
+        String userName = connection.userOidToUsername(userOid);
+        MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
+        mbUser.userName = userName;
+        mbUser.url = "http://" + connection.usernameToHost(userName)  + "/" + connection.usernameToNickname(userName);
+        if (accountMbUser != null) {
+            mbUser.actor = accountMbUser;
+        }
+        return mbUser;
+    }
+    
     private MbMessage buildPumpIoMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid)) {
@@ -348,57 +337,6 @@ public class DataInserterTest extends InstrumentationTestCase {
         return messageId;
     }
     
-    
-    private MyAccount addPumpIoAccount(String userOid) throws ConnectionException {
-        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-        long accountUserId_existing = MyProvider.oidToId(OidEnum.USER_OID, origin.getId(), userOid);
-        MbUser mbUser = userFromPumpioOid(userOid);
-        MyAccount ma = addAccountFromMbUser(mbUser);
-        long accountUserId = ma.getUserId();
-        if (accountUserId_existing == 0 && !userOid.contains("firstTestUser")) {
-            assertTrue("AccountUserId != 1", accountUserId != 1);
-        } else {
-            assertTrue("AccountUserId != 0", accountUserId != 0);
-        }
-        assertTrue("Account " + userOid + " is persistent", ma != null);
-        assertTrue("Account UserOid", ma.getUserOid().equalsIgnoreCase(userOid));
-        assertTrue("Account is successfully verified", ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
-        return ma;
-    }
-    
-    private MbUser userFromPumpioOid(String userOid) {
-        ConnectionPumpio connection = new ConnectionPumpio();
-        String userName = connection.userOidToUsername(userOid);
-        MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
-        mbUser.userName = userName;
-        mbUser.url = "http://" + connection.usernameToHost(userName)  + "/" + connection.usernameToNickname(userName);
-        if (accountMbUser != null) {
-            mbUser.actor = accountMbUser;
-        }
-        return mbUser;
-    }
-
-    private MyAccount addAccountFromMbUser(MbUser mbUser) throws ConnectionException {
-        assertTrue(MyContextHolder.get().initialized());
-        Origin origin = MyContextHolder.get().persistentOrigins().fromId(mbUser.originId);
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(mbUser.userName + "/" + origin.getName(), TriState.TRUE);
-        builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.userName, "sampleUserSecretFor" + mbUser.userName);
-        assertTrue("Credentials of " + mbUser.userName + " are present", builder.getAccount().getCredentialsPresent());
-        builder.onCredentialsVerified(mbUser, null);
-        assertTrue("Account is persistent", builder.isPersistent());
-        MyAccount ma = builder.getAccount();
-        assertEquals("Credentials of " + mbUser.userName + " successfully verified", 
-                CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
-        long userId = ma.getUserId();
-        assertTrue("Account " + mbUser.userName + " has UserId", userId != 0);
-        assertEquals("Account UserOid", ma.getUserOid(), mbUser.oid);
-        assertEquals("User in the database for id=" + userId, 
-                mbUser.oid,
-                MyProvider.idToOid(OidEnum.USER_OID, userId, 0));
-        assertEquals("Account name", mbUser.userName + "/" + origin.getName(), ma.getAccountName());
-        MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
-        return ma;
-    }
     
     public void testHtmlContent() {
         boolean isHtmlContentAllowedStored = origin.isHtmlContentAllowed(); 

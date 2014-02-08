@@ -27,6 +27,8 @@ import android.view.ViewGroup;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.DataInserterTest;
 import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.data.OriginsAndAccountsInserter;
+import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 
@@ -48,7 +50,7 @@ public class TestSuite extends TestCase {
         return initialized;
     }
     
-    public static synchronized Context initialize(InstrumentationTestCase testCase) throws NameNotFoundException {
+    public static synchronized Context initialize(InstrumentationTestCase testCase) throws NameNotFoundException, ConnectionException {
         if (initialized) {
             MyLog.d(TAG, "Already initialized");
             return context;
@@ -110,7 +112,6 @@ public class TestSuite extends TestCase {
         if (MyPreferences.checkAndUpdateLastOpenedAppVersion(MyContextHolder.get().context(), true)) {
             MyLog.i(TAG, "New version of application is running");
         }
-        
         return context;
     }
 
@@ -170,13 +171,8 @@ public class TestSuite extends TestCase {
         MyLog.v(TAG, "enshureDataAdded started");
         if (!dataAdded) {
             dataAdded = true;
-            DataInserterTest dataInserter = new DataInserterTest();
-            dataInserter.setUp();
-            dataInserter.testFollowingUser();
-            dataInserter.testMessageFavoritedByOtherUser();
-            dataInserter.testMessageFavoritedByAccountUser();
-            dataInserter.testDirectMessageToMyAccount();
-            dataInserter.testConversation();
+            new OriginsAndAccountsInserter().insert();
+            new DataInserterTest().insert();
         }
 
         if (MyContextHolder.get().persistentAccounts().isEmpty() == 0) {
@@ -189,9 +185,13 @@ public class TestSuite extends TestCase {
     
     public static final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
     public static final String CONVERSATION_ORIGIN_NAME = "PumpioTest";
-    public static final String CONVERSATION_ACCOUNT_NAME = "testerofandstatus@identi.ca/" + CONVERSATION_ORIGIN_NAME;
+    private static final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@identi.ca";
+    public static final String CONVERSATION_ACCOUNT_NAME = CONVERSATION_ACCOUNT_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
+    public static final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
     public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/andstatus/images/AndStatus_logo.png";
     public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + System.nanoTime();
+    public static final String STATUSNET_TEST_ORIGIN_NAME = "StatusnetTest";
+    public static final String STATUSNET_TEST_ACCOUNT_USERNAME = "snTester";
     public static final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
     public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
     public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
