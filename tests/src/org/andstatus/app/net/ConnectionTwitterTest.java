@@ -18,7 +18,6 @@ package org.andstatus.app.net;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
-import android.text.TextUtils;
 
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TestSuite;
@@ -39,9 +38,6 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
     String host = "twitter.com";
     HttpConnectionMock httpConnection;
     OriginConnectionData connectionData;
-
-    String keyStored;
-    String secretStored;
     
     @Override
     protected void setUp() throws Exception {
@@ -62,19 +58,9 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
 
         httpConnection.data.host = host;
         httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
-        keyStored = httpConnection.data.oauthClientKeys.getConsumerKey();
-        secretStored = httpConnection.data.oauthClientKeys.getConsumerSecret();
 
         if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {
             httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232");
-        }
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        if (!TextUtils.isEmpty(keyStored)) {
-            httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
         }
     }
 

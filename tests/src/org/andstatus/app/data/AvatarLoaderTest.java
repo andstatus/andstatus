@@ -22,7 +22,7 @@ public class AvatarLoaderTest extends InstrumentationTestCase {
         super.setUp();
         MyLog.i(this, "setUp started");
         TestSuite.initialize(this);
-        TestSuite.enshureDataAdded();
+        TestSuite.ensureDataAdded();
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma != null);
         MyLog.i(this, "setUp ended");
@@ -92,12 +92,12 @@ public class AvatarLoaderTest extends InstrumentationTestCase {
         loader.load(commandData);
         AvatarDrawable avatarDrawable = new AvatarDrawable(ma.getUserId(), loader.getFileName());
         if (AvatarStatus.LOADED.equals(status)) {
-            assertFalse(commandData.commandResult.hasError());
+            assertFalse("Loaded " + urlString, commandData.commandResult.hasError());
             assertEquals("Loaded " + urlString, status, loader.getStatus());
-            assertTrue(urlString, avatarDrawable.exists());
+            assertTrue("Exists avatar " + urlString, avatarDrawable.exists());
         } else {
-            assertTrue(commandData.commandResult.hasError());
-            assertFalse(avatarDrawable.exists());
+            assertTrue("Error loading " + urlString, commandData.commandResult.hasError());
+            assertFalse("Doesn't exist avatar " + urlString, avatarDrawable.exists());
         }
         return loader.getRowId();
     }

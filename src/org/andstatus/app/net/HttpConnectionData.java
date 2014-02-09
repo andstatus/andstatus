@@ -18,10 +18,11 @@ package org.andstatus.app.net;
 
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 
 class HttpConnectionData implements Cloneable {
-    public long originId;
+    public OriginType originType;
 
     public boolean isSsl;
     public String basicPath;
@@ -39,7 +40,7 @@ class HttpConnectionData implements Cloneable {
     
     static HttpConnectionData fromConnectionData(OriginConnectionData oConnectionData) {
         HttpConnectionData data = new HttpConnectionData();
-        data.originId = oConnectionData.originId;
+        data.originType = oConnectionData.originType;
         data.isSsl = oConnectionData.isSsl;
         data.basicPath = oConnectionData.basicPath;
         data.oauthPath = oConnectionData.oauthPath;

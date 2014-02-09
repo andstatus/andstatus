@@ -45,7 +45,7 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
     protected void setUp() throws Exception {
         super.setUp();
         TestSuite.initialize(this);
-        TestSuite.enshureDataAdded();
+        TestSuite.ensureDataAdded();
         
         ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
         if (ma == null) {

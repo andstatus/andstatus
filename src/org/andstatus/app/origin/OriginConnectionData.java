@@ -22,6 +22,7 @@ import org.andstatus.app.net.ConnectionEmpty;
 import org.andstatus.app.net.HttpConnectionEmpty;
 
 public class OriginConnectionData {
+    public OriginType originType;
     public ApiEnum api = ApiEnum.UNKNOWN_API;
     public long originId = 0;
     public boolean isSsl = true;

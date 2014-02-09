@@ -11,7 +11,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.ConnectionPumpio;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.net.OAuthClientKeysTest;
 import org.andstatus.app.origin.Origin;
@@ -21,7 +20,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 public class OriginsAndAccountsInserter extends InstrumentationTestCase {
-    private Origin pumpioOrigin;
     
     public void insert() throws NameNotFoundException, ConnectionException {
         Context context = TestSuite.getMyContextForTest().context();
@@ -29,20 +27,25 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
 
         OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME, TestSuite.TWITTER_TEST_ORIGIN_NAME + ".example.com", true, true);
         OriginTest.createOneOrigin(TestSuite.CONVERSATION_ORIGIN_TYPE, TestSuite.CONVERSATION_ORIGIN_NAME, TestSuite.CONVERSATION_ORIGIN_NAME + ".example.com", true, true);
+        OriginTest.createOneOrigin(OriginType.STATUSNET, TestSuite.STATUSNET_TEST_ORIGIN_NAME, TestSuite.STATUSNET_TEST_ORIGIN_NAME + ".example.com", true, true);
         MyContextHolder.get().persistentOrigins().initialize();
+        
+        Origin pumpioOrigin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
+        assertEquals("Origin for conversation created", pumpioOrigin.getOriginType(), TestSuite.CONVERSATION_ORIGIN_TYPE);
+        OAuthClientKeysTest.insertTestKeys(pumpioOrigin);
+        
+        addAccount(pumpioOrigin, "acct:firstTestUser@identi.ca", "firstTestUser@identi.ca", "");
+        addAccount(pumpioOrigin, "acct:t131t@identi.ca", "t131t@identi.ca", "");
+        addAccount(pumpioOrigin, TestSuite.CONVERSATION_ACCOUNT_USER_OID, TestSuite.CONVERSATION_ACCOUNT_USERNAME, TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
 
         Origin twitterOrigin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
         assertEquals("Twitter test origin created", twitterOrigin.getOriginType(), OriginType.TWITTER);
+        addAccount(twitterOrigin, TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, TestSuite.TWITTER_TEST_ACCOUNT_USERNAME, "");
         
-        pumpioOrigin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
-        assertEquals("Origin for conversation created", pumpioOrigin.getOriginType(), TestSuite.CONVERSATION_ORIGIN_TYPE);
+        Origin statusNetOrigin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.STATUSNET_TEST_ORIGIN_NAME);
+        assertEquals("StatusNetOrigin created", statusNetOrigin.getOriginType(), OriginType.STATUSNET);
+        addAccount(statusNetOrigin, TestSuite.STATUSNET_TEST_ACCOUNT_USER_OID, TestSuite.STATUSNET_TEST_ACCOUNT_USERNAME, "");
         
-        OAuthClientKeysTest.insertTestKeys(pumpioOrigin);
-        
-        addPumpIoAccount("acct:firstTestUser@identi.ca", "");
-        addPumpIoAccount("acct:t131t@identi.ca", "");
-        addPumpIoAccount(TestSuite.CONVERSATION_ACCOUNT_USER_OID, TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL);
-
         MyPreferences.onPreferencesChanged();
         MyContextHolder.initialize(context, this);
         MyServiceManager.setServiceUnavailable();
@@ -50,10 +53,11 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
     }
     
-    private MyAccount addPumpIoAccount(String userOid, String avatarUrl) throws ConnectionException {
+    private MyAccount addAccount(Origin origin, String userOid, String username, String avatarUrl) throws ConnectionException {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-        long accountUserId_existing = MyProvider.oidToId(OidEnum.USER_OID, pumpioOrigin.getId(), userOid);
-        MbUser mbUser = userFromPumpioOid(userOid);
+        long accountUserId_existing = MyProvider.oidToId(OidEnum.USER_OID, origin.getId(), userOid);
+        MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
+        mbUser.userName = username;
         mbUser.avatarUrl = avatarUrl;
         MyAccount ma = addAccountFromMbUser(mbUser);
         long accountUserId = ma.getUserId();
@@ -67,22 +71,17 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         assertTrue("Account is successfully verified", ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
         return ma;
     }
-    
-    private MbUser userFromPumpioOid(String userOid) {
-        ConnectionPumpio connection = new ConnectionPumpio();
-        String userName = connection.userOidToUsername(userOid);
-        MbUser mbUser = MbUser.fromOriginAndUserOid(pumpioOrigin.getId(), userOid);
-        mbUser.userName = userName;
-        mbUser.url = "http://" + connection.usernameToHost(userName)  + "/" + connection.usernameToNickname(userName);
-        return mbUser;
-    }
 
     private MyAccount addAccountFromMbUser(MbUser mbUser) throws ConnectionException {
         assertTrue(MyContextHolder.get().initialized());
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(mbUser.originId);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(mbUser.userName + "/" + origin.getName(), TriState.TRUE);
-        builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.userName, "sampleUserSecretFor" + mbUser.userName);
-        assertTrue("Credentials of " + mbUser.userName + " are present", builder.getAccount().getCredentialsPresent());
+        if (builder.getAccount().isOAuth()) {
+            builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.userName, "sampleUserSecretFor" + mbUser.userName);
+        } else {
+            builder.setPassword("samplePasswordFor" + mbUser.userName);
+        }
+        assertTrue("Credentials of " + mbUser + " are present (origin name=" + origin.getName() + ")", builder.getAccount().getCredentialsPresent());
         builder.onCredentialsVerified(mbUser, null);
         assertTrue("Account is persistent", builder.isPersistent());
         MyAccount ma = builder.getAccount();

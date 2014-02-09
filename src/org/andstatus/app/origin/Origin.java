@@ -178,6 +178,7 @@ public class Origin {
         connectionData.oauthPath = originType.oauthPath;
         connectionData.isSsl = isSsl();
         connectionData.api = originType.getApi();
+        connectionData.originType = getOriginType();
         connectionData.originId = getId();
         connectionData.isOAuth = originType.fixIsOAuth(triStateOAuth);
         connectionData.connectionClass = originType.getConnectionClass();

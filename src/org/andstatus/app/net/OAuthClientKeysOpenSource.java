@@ -23,16 +23,16 @@ import org.andstatus.app.origin.OriginType;
  * @author yvolk@yurivolkov.com
  */
 public class OAuthClientKeysOpenSource implements OAuthClientKeysStrategy {
-    private long originId = 0;
+    private OriginType originType = OriginType.UNKNOWN;
 
     @Override
     public void initialize(HttpConnectionData connectionData) {
-        originId = connectionData.originId;
+        originType = connectionData.originType;
     }
 
     @Override
     public String getConsumerKey() {
-        if(originId == OriginType.TWITTER.getId()) {
+        if(originType == OriginType.TWITTER) {
             return "XPHj81OgjphGlN6Jb55Kmg";
         } else {
             return "";
@@ -41,7 +41,7 @@ public class OAuthClientKeysOpenSource implements OAuthClientKeysStrategy {
     
     @Override
     public String getConsumerSecret() {
-        if(originId == OriginType.TWITTER.getId()) {  
+        if(originType == OriginType.TWITTER) {  
             return "o2E5AYoDQhZf9qT7ctHLGihpq2ibc5bC4iFAOHURxw";
         } else {
             return "";

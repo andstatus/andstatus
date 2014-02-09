@@ -167,8 +167,9 @@ public class TestSuite extends TestCase {
      * This method mimics execution of one test case before another
      * @throws Exception 
      */
-    public static void enshureDataAdded() throws Exception {
-        MyLog.v(TAG, "enshureDataAdded started");
+    public static void ensureDataAdded() throws Exception {
+        String method = "ensureDataAdded";
+        MyLog.v(TAG, method + ": started");
         if (!dataAdded) {
             dataAdded = true;
             new OriginsAndAccountsInserter().insert();
@@ -180,18 +181,19 @@ public class TestSuite extends TestCase {
         }
         setSuccessfulAccountAsCurrent();
         
-        MyLog.v(TAG, "enshureDataAdded ended");
+        MyLog.v(TAG, method + ": ended");
     }
     
     public static final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
     public static final String CONVERSATION_ORIGIN_NAME = "PumpioTest";
-    private static final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@identi.ca";
+    public static final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@identi.ca";
     public static final String CONVERSATION_ACCOUNT_NAME = CONVERSATION_ACCOUNT_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
     public static final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
     public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/andstatus/images/AndStatus_logo.png";
     public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + System.nanoTime();
     public static final String STATUSNET_TEST_ORIGIN_NAME = "StatusnetTest";
-    public static final String STATUSNET_TEST_ACCOUNT_USERNAME = "snTester";
+    public static final String STATUSNET_TEST_ACCOUNT_USERNAME = "t131t";
+    public static final String STATUSNET_TEST_ACCOUNT_USER_OID = "115391";
     public static final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
     public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
     public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
