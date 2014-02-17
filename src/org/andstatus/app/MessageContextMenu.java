@@ -395,22 +395,10 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, "switchTimelineActivity; type=\"" + timelineType.save() + "\"; isCombined=" + (isTimelineCombined ? "yes" : "no"));
         }
-        switch (timelineType) {
-            case MENTIONS:
-            case FAVORITES:
-            case HOME:
-            case DIRECT:
-            case USER:
-            case FOLLOWING_USER:
-                break;
-            default:
-                timelineType = TimelineTypeEnum.HOME;
-                break;
-        }
+        
         // Actually we use one Activity for all timelines...
         intent = new Intent(getContext(), TimelineActivity.class);
-        intent.removeExtra(SearchManager.QUERY);
-        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
+        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, TimelineTypeSelector.selectableType(timelineType).save());
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, isTimelineCombined);
         intent.putExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, selectedUserId);
         // We don't use Intent.ACTION_SEARCH action anywhere, so there is no need it setting it.

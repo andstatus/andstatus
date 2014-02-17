@@ -16,21 +16,14 @@
 
 <!-- package name must be unique so suffix with "tests" so package loader doesn't ignore us -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.andstatus.app.tests" android:versionName="1.0.2" android:versionCode="3">
+    package="org.andstatus.app.tests" android:versionName="8.1" android:versionCode="6">
 
 	<uses-sdk android:minSdkVersion="8"/>
 
-    <application>
+    <application android:label="AndStatus tests" android:icon="@drawable/icon">
         <uses-library android:name="android.test.runner" />
     </application>
    
-    <!--
-    The test delcared in this instrumentation will be run along with tests declared by
-    all other applications via the command: "adb shell itr".
-    The "itr" command will find all tests declared by all applications. If you want to run just these
-    tests on their own then use the command:
-    "adb shell am instrument -w org.andstatus.app.tests/android.test.InstrumentationTestRunner"
-    -->
     <instrumentation android:name="android.test.InstrumentationTestRunner"
                      android:targetPackage="org.andstatus.app"
                      android:label="AndStatus tests"/>

@@ -154,6 +154,7 @@
 	<string name="options_menu_favorites_timeline_cond">Избранное</string>
 	<string name="options_menu_home_timeline">Домашняя линия времени</string>
 	<string name="options_menu_home_timeline_cond">Дом</string>
+    <string name="options_menu_global_search">Глобальный поиск</string>
 	<string name="options_menu_help">Помощь</string>
 	<string name="options_menu_reload">Загрузка</string>
 	<string name="options_menu_mentions">Упоминания</string>

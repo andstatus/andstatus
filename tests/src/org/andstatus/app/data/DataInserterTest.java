@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.data;
 
 import android.content.Context;
@@ -33,26 +49,27 @@ public class DataInserterTest extends InstrumentationTestCase {
     private MyAccount ma;
     private Origin origin;
 
-    public void insert() throws Exception {
-        setUp();
-        testFollowingUser();
-        testMessageFavoritedByOtherUser();
-        testMessageFavoritedByAccountUser();
-        testDirectMessageToMyAccount();
+    public void insertData() throws Exception {
+        mySetup();
         testConversation();
     }
     
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
+    private void mySetup() throws Exception {
         iteration++;
-        context = TestSuite.initialize(this);
+        context = TestSuite.getMyContextForTest().context();
         origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
         assertTrue(TestSuite.CONVERSATION_ORIGIN_NAME + " exists", origin != null);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME); 
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma != null);
         accountMbUser = userFromPumpioOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
         accountMbUser.avatarUrl = TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL;
+    }
+    
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        TestSuite.initializeWithData(this);
+        mySetup();
     }
     
     public void testFollowingUser() throws ConnectionException {
@@ -280,7 +297,8 @@ public class DataInserterTest extends InstrumentationTestCase {
         MbMessage minus1 = buildPumpIoMessage(author2, "Older one message", null, null);
         MbMessage selected = buildPumpIoMessage(author1, "Selected message", minus1, TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
         MbMessage reply1 = buildPumpIoMessage(author3, "Reply 1 to selected", selected, null);
-        MbMessage reply2 = buildPumpIoMessage(author2, "Reply 2 to selected", selected, null);
+        MbMessage reply2 = buildPumpIoMessage(author2, "Reply 2 to selected is public", selected, null);
+        addPublicMessage(reply2, true);
         MbMessage reply3 = buildPumpIoMessage(author1, "Reply 3 to selected by the same author", selected, null);
         addMessage(selected);
         addMessage(reply3);
@@ -288,17 +306,30 @@ public class DataInserterTest extends InstrumentationTestCase {
         addMessage(reply2);
         MbMessage reply4 = buildPumpIoMessage(author4, "Reply 4 to Reply 1 other author", reply1, null);
         addMessage(reply4);
+        addPublicMessage(reply4, false);
         addMessage(buildPumpIoMessage(author2, "Reply 5 to Reply 4", reply4, null));
         addMessage(buildPumpIoMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
-        MbMessage reply7 = buildPumpIoMessage(author1, "Reply 7 to Reply 2", reply2, null);
+        MbMessage reply7 = buildPumpIoMessage(author1, "Reply 7 to Reply 2 is about " 
+        + TestSuite.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
+        addPublicMessage(reply7, true);
+        
         MbMessage reply8 = buildPumpIoMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
         MbMessage reply9 = buildPumpIoMessage(author2, "Reply 9 to Reply 7", reply7, null);
         addMessage(reply9);
         MbMessage reply10 = buildPumpIoMessage(author3, "Reply 10 to Reply 8", reply8, null);
         addMessage(reply10);
+        MbMessage reply11 = buildPumpIoMessage(author2, "Reply 11 to Reply 7 with " + TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
+        addPublicMessage(reply11, true);
     }
     
+    private void addPublicMessage(MbMessage message, boolean isPublic) {
+        message.setPublic(isPublic);
+        long id = addMessage(message);
+        long storedPublic = MyProvider.msgIdToLongColumnValue(Msg.PUBLIC, id);
+        assertTrue("Message is " + (isPublic ? "public" : "private" )+ ": " + message.getBody(), (isPublic == ( storedPublic != 0)));
+    }
+
     private MbUser userFromPumpioOid(String userOid) {
         ConnectionPumpio connection = new ConnectionPumpio();
         String userName = connection.userOidToUsername(userOid);

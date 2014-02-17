@@ -18,8 +18,7 @@ public class ConversationViewLoaderTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         MyLog.i(this, "setUp started");
-        TestSuite.initialize(this);
-        TestSuite.ensureDataAdded();
+        TestSuite.initializeWithData(this);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma != null);
         selectedMessageId = MyProvider.oidToId(OidEnum.MSG_OID, ma.getOriginId(), TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);

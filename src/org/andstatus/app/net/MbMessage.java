@@ -41,6 +41,15 @@ public class MbMessage {
     public MbMessage inReplyToMessage = null;
     public String via = "";
     public String url="";
+    private boolean isPublic = false;
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
 
     /**
      * Some additional attributes may appear from the Reader's

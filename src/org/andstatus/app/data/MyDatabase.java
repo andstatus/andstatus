@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
+     * v.15 2014-02-16 yvolk. Public timeline added
      * v.14 2013-12-15 yvolk. Origin table added
      * v.13 2013-12-06 yvolk. Avatar table added
      * v.12 2013-08-30 yvolk. Adapting for Pump.Io
@@ -50,7 +51,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    public static final int DATABASE_VERSION = 14;
+    public static final int DATABASE_VERSION = 15;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
 	/**
@@ -138,6 +139,10 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 		 * Date and time the row was inserted into this database
 		 */
         public static final String INS_DATE = "msg_ins_date";
+        /**
+         * The Msg is public
+         */
+        public static final String PUBLIC = "public";
 
         /*
          * Derived columns (they are not stored in this table but are result of joins and aliasing)
@@ -480,7 +485,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Msg.IN_REPLY_TO_USER_ID + " INTEGER," 
                 + Msg.CREATED_DATE + " INTEGER,"
                 + Msg.SENT_DATE + " INTEGER,"
-                + Msg.INS_DATE + " INTEGER NOT NULL"
+                + Msg.INS_DATE + " INTEGER NOT NULL,"
+                + Msg.PUBLIC + " BOOLEAN DEFAULT 0 NOT NULL" 
                 + ")");
 
         db.execSQL("CREATE UNIQUE INDEX idx_msg_origin ON " + Msg.TABLE_NAME + " (" 

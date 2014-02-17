@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
+    Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +21,8 @@
 			android:alphabeticShortcut="r" android:icon="@drawable/ic_menu_reload"></item>
 		<item android:title="@string/options_menu_search" android:id="@+id/search_menu_id"
 			android:icon="@drawable/ic_menu_search" android:alphabeticShortcut="s"></item>
+        <item android:title="@string/options_menu_global_search" android:id="@+id/global_search_menu_id"
+            android:icon="@drawable/ic_menu_global_search" android:alphabeticShortcut="g" android:visible="false" android:enabled="false"></item>
 		<item android:title="@string/settings_action" android:id="@+id/preferences_menu_id"
 			android:alphabeticShortcut="p" android:icon="@drawable/ic_menu_preferences"></item>
 	</group>

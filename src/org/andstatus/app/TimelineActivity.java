@@ -306,14 +306,21 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     @Override
     public boolean onSearchRequested() {
+        return onSearchRequested(false);
+    }
+
+    public boolean onSearchRequested(boolean appGlobalSearch) {
+        final String method = "onSearchRequested";
         Bundle appSearchData = new Bundle();
         appSearchData.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, mTimelineType.save());
         appSearchData.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mIsTimelineCombined);
         appSearchData.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
+        appSearchData.putBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, appGlobalSearch);
+        MyLog.v(this, method  + ": " + appSearchData);
         startSearch(null, false, appSearchData, false);
         return true;
     }
-
+    
     @Override
     protected void onResume() {
         String method = "onResume";
@@ -584,44 +591,16 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private AlertDialog newTimelinetypeSelector() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.dialog_title_select_timeline);
-        String[] timelines = {
-                getString(TimelineTypeEnum.HOME.resId()),
-                getString(TimelineTypeEnum.FAVORITES.resId()),
-                getString(TimelineTypeEnum.MENTIONS.resId()),
-                getString(TimelineTypeEnum.DIRECT.resId()),
-                getString(TimelineTypeEnum.USER.resId()),
-                getString(TimelineTypeEnum.FOLLOWING_USER.resId())
-        };
-        builder.setItems(timelines, new DialogInterface.OnClickListener() {
+        final TimelineTypeSelector selector = new TimelineTypeSelector(this);
+        builder.setItems(selector.getTitles(), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // The 'which' argument contains the index position of the selected item
-                switch (which) {
-                    case 0:
-                        contextMenu.switchTimelineActivity(TimelineTypeEnum.HOME, mIsTimelineCombined, mCurrentMyAccountUserId);
-                        break;
-
-                    case 1:
-                        contextMenu.switchTimelineActivity(TimelineTypeEnum.FAVORITES, mIsTimelineCombined, mCurrentMyAccountUserId);
-                        break;
-
-                    case 2:
-                        contextMenu.switchTimelineActivity(TimelineTypeEnum.MENTIONS, mIsTimelineCombined, mCurrentMyAccountUserId);
-                        break;
-
-                    case 3:
-                        contextMenu.switchTimelineActivity(TimelineTypeEnum.DIRECT, mIsTimelineCombined, mCurrentMyAccountUserId);
-                        break;
-
-                    case 4:
-                        contextMenu.switchTimelineActivity(TimelineTypeEnum.USER, mIsTimelineCombined, mCurrentMyAccountUserId);
-                        break;
-
-                    case 5:
-                        contextMenu.switchTimelineActivity(TimelineTypeEnum.FOLLOWING_USER, mIsTimelineCombined, mCurrentMyAccountUserId);
-                        break;
-                    default:
-                        break;
+                // The 'which' argument contains the index position of the
+                // selected item
+                TimelineTypeEnum type = selector.positionToType(which);
+                if (type != TimelineTypeEnum.UNKNOWN) {
+                    contextMenu.switchTimelineActivity(type,
+                            mIsTimelineCombined, mCurrentMyAccountUserId);
                 }
             }
         });
@@ -634,18 +613,30 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.timeline, menu);
+        return true;
+    }
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
         Intent intent = new Intent(null, getIntent().getData());
         intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
         menu.addIntentOptions(Menu.CATEGORY_ALTERNATIVE, 0, 0, new ComponentName(this,
                 TimelineActivity.class), null, intent, 0, null);
         MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
-        if (ma != null && ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-            MenuItem item = menu.findItem(R.id.reload_menu_item);
-            item.setEnabled(false);
-            item.setVisible(false);
-        }
-        return true;
+        
+        boolean enableReload = ma != null
+                && ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED;
+        MenuItem item = menu.findItem(R.id.reload_menu_item);
+        item.setEnabled(enableReload);
+        item.setVisible(enableReload);
+
+        boolean enableGlobalSearch = TimelineTypeEnum.PUBLIC == getTimelineType() && ma != null
+                && ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED;
+        item = menu.findItem(R.id.global_search_menu_id);
+        item.setEnabled(enableGlobalSearch);
+        item.setVisible(enableGlobalSearch);
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -666,6 +657,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 break;
             case R.id.reload_menu_item:
                 manualReload(false);
+                break;
+            case R.id.global_search_menu_id:
+                onSearchRequested(true);
                 break;
             default:
                 break;
@@ -770,6 +764,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
     }
 
+    public void updateActionBar() {
+         updateActionBar("");
+    }
+    
     /**
      * Updates the activity title.
      * Sets the title with a left and right title.
@@ -777,7 +775,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * @param rightText Right title part
      */
     public void updateActionBar(String rightText) {
-        String timelinename = getString(mTimelineType.resId());
+        String timelinename = getString(mTimelineType.getTitleResId());
         Button timelineTypeButton = (Button) findViewById(R.id.timelineTypeButton);
         timelineTypeButton.setText(timelinename + (mIsSearchMode ? " *" : ""));
         
@@ -792,10 +790,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         
         TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
         rightTitle.setText(rightText);
-    }
-
-   public void updateActionBar() {
-        updateActionBar("");
     }
 
     /**

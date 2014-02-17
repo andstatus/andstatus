@@ -63,6 +63,10 @@ public enum IntentExtra{
      */
     EXTRA_RECIPIENTID("RECIPIENTID"),
     /**
+     * boolean. "true" means search in Internet, i.e. sending requests to Microblogging systems  
+     */
+    EXTRA_GLOBAL_SEARCH("GLOBAL_SEARCH"),
+    /**
      * Selected User. E.g. the User whose messages we are seeing  
      */
     EXTRA_SELECTEDUSERID("SELECTEDUSERID"),

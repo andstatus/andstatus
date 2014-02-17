@@ -83,7 +83,7 @@ public enum TimelineTypeEnum {
     /**
      * The id of the string resource with the localized name of this Timeline to use in UI
      */
-    private int resId;
+    private int titleResId;
     /**
      * Name of the column in the {@link User} table. The column contains position
      * of the latest downloaded timeline item 
@@ -115,7 +115,7 @@ public enum TimelineTypeEnum {
     
     private TimelineTypeEnum(String code, int resId, String columnNameLatestTimelinePosition, String columnNameLatestTimelineItemDate, String columnNameTimelineDate, Connection.ApiRoutineEnum connectionApiRoutine) {
         this.code = code;
-        this.resId = resId;
+        this.titleResId = resId;
         this.columnNameLatestTimelinePosition = columnNameLatestTimelinePosition;
         this.columnNameLatestTimelineItemDate = columnNameLatestTimelineItemDate;
         this.columnNameTimelineDate = columnNameTimelineDate;
@@ -132,8 +132,8 @@ public enum TimelineTypeEnum {
     /**
      * The id of the string resource with the localized name to use in UI
      */
-    public int resId() {
-        return resId;
+    public int getTitleResId() {
+        return titleResId;
     }
     
     public Connection.ApiRoutineEnum getConnectionApiRoutine() {

@@ -268,6 +268,9 @@ public class DataInserter {
                 if (inReplyToMessageId != 0) {
                     values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
                 }
+                if (message.isPublic()) {
+                    values.put(MyDatabase.Msg.PUBLIC, 1);
+                }
                 
                 if (countIt) { 
                     counters.newMessagesCount++;

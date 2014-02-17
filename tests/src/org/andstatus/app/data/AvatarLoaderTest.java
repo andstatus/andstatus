@@ -21,8 +21,7 @@ public class AvatarLoaderTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         MyLog.i(this, "setUp started");
-        TestSuite.initialize(this);
-        TestSuite.ensureDataAdded();
+        TestSuite.initializeWithData(this);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma != null);
         MyLog.i(this, "setUp ended");

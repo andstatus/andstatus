@@ -28,6 +28,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.DataInserterTest;
 import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.OriginsAndAccountsInserter;
+import org.andstatus.app.data.StatusNetMessagesInserter;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
@@ -48,6 +49,12 @@ public class TestSuite extends TestCase {
     
     public static boolean isInitialized() {
         return initialized;
+    }
+
+    public static Context initializeWithData(InstrumentationTestCase testCase) throws Exception {
+        initialize(testCase);
+        ensureDataAdded();
+        return getMyContextForTest().context();
     }
     
     public static synchronized Context initialize(InstrumentationTestCase testCase) throws NameNotFoundException, ConnectionException {
@@ -163,6 +170,10 @@ public class TestSuite extends TestCase {
     }
     
     private static volatile boolean dataAdded = false;
+    public static boolean isDataAdded() {
+        return dataAdded;
+    }
+
     /**
      * This method mimics execution of one test case before another
      * @throws Exception 
@@ -173,7 +184,8 @@ public class TestSuite extends TestCase {
         if (!dataAdded) {
             dataAdded = true;
             new OriginsAndAccountsInserter().insert();
-            new DataInserterTest().insert();
+            new DataInserterTest().insertData();
+            new StatusNetMessagesInserter().insertData();
         }
 
         if (MyContextHolder.get().persistentAccounts().isEmpty() == 0) {
@@ -193,10 +205,13 @@ public class TestSuite extends TestCase {
     public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + System.nanoTime();
     public static final String STATUSNET_TEST_ORIGIN_NAME = "StatusnetTest";
     public static final String STATUSNET_TEST_ACCOUNT_USERNAME = "t131t";
+    public static final String STATUSNET_TEST_ACCOUNT_NAME = STATUSNET_TEST_ACCOUNT_USERNAME + "/" + STATUSNET_TEST_ORIGIN_NAME;
     public static final String STATUSNET_TEST_ACCOUNT_USER_OID = "115391";
     public static final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
     public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
     public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
+    public static final String PUBLIC_MESSAGE_TEXT = "OpenSource";
+    public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "AndStatus";
     
     private static void setSuccessfulAccountAsCurrent() {
         MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().persistentAccounts().isEmpty());

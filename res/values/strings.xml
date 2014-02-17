@@ -155,6 +155,7 @@
 	<string name="options_menu_favorites_timeline_cond">Favorites</string>
 	<string name="options_menu_home_timeline">Home Timeline</string>
 	<string name="options_menu_home_timeline_cond">Home</string>
+    <string name="options_menu_global_search">Global search</string>
 	<string name="options_menu_help">Help</string>
 	<string name="options_menu_reload">Reload</string>
 	<string name="options_menu_mentions">Mentions</string>

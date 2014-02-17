@@ -148,6 +148,9 @@ public class MyDatabaseConverter {
         if (currentVersion == 13) {
             currentVersion = convert13to14(db, currentVersion);
         }
+        if (currentVersion == 14) {
+            currentVersion = convert14to15(db, currentVersion);
+        }
         if ( currentVersion == newVersion) {
             MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
                     + newVersion + ".");
@@ -268,6 +271,32 @@ public class MyDatabaseConverter {
                 sql = "DELETE FROM Origin WHERE _ID IN(6, 7)";
                 db.execSQL(sql);
             }
+        } catch (Exception e) {
+            MyLog.e(this, e);
+        }
+        if (ok) {
+            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
+        } else {
+            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
+                    + " to version " + versionTo
+                    + " SQL='" + sql +"'");
+        }
+        return ok ? versionTo : oldVersion;
+    }
+
+    private int convert14to15(SQLiteDatabase db, int oldVersion) {
+        final int versionTo = 15;
+        boolean ok = false;
+        String sql = "";
+        try {
+            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+            
+            sql = "ALTER TABLE msg ADD COLUMN public BOOLEAN DEFAULT 0 NOT NULL";
+            db.execSQL(sql);
+            sql = "UPDATE msg SET public=0";
+            db.execSQL(sql);
+            
+            ok = true;
         } catch (Exception e) {
             MyLog.e(this, e);
         }

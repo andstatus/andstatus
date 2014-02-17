@@ -3,13 +3,14 @@ package org.andstatus.app;
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.app.ListActivity;
+import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -17,23 +18,26 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineActivityTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
-    private TimelineActivity mActivity;
+    private TimelineActivity activity;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         MyLog.i(this, "setUp started");
-        TestSuite.initialize(this);
-        TestSuite.ensureDataAdded();
+        TestSuite.initializeWithData(this);
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME);
         assertTrue(ma != null);
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-        // In order to shorten opening of activity in a case of large database
-        MyPreferences.getDefaultSharedPreferences().edit().putBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false).commit();
         
-        mActivity = getActivity();
-        TestSuite.waitForListLoaded(mActivity);
+        Intent intent = new Intent();
+        intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, TimelineTypeEnum.HOME.save());
+        // In order to shorten opening of activity in a case of large database
+        intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, false);
+        setActivityIntent(intent);
+        
+        activity = getActivity();
+        TestSuite.waitForListLoaded(activity);
 
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
@@ -50,12 +54,12 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
 
     public void testBlogButton() throws InterruptedException {
         final String method = "testBlogButton";
-        final Button createMessageButton = (Button) mActivity.findViewById(R.id.createMessageButton);
+        final Button createMessageButton = (Button) activity.findViewById(R.id.createMessageButton);
         assertTrue(createMessageButton != null);
         assertTrue("Blog button is visible", createMessageButton.getVisibility() == android.view.View.VISIBLE);
-        View editorView = mActivity.findViewById(R.id.message_editor);
+        View editorView = activity.findViewById(R.id.message_editor);
         assertTrue(editorView != null);
-        Button sendButton = (Button) mActivity.findViewById(R.id.messageEditSendButton);
+        Button sendButton = (Button) activity.findViewById(R.id.messageEditSendButton);
         assertTrue(sendButton != null);
         assertFalse(editorView.getVisibility() == android.view.View.VISIBLE);
 
@@ -68,12 +72,12 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
           };
         
         MyLog.v(this, method + "-Log before run clicker 1");
-        mActivity.runOnUiThread(clicker);
+        activity.runOnUiThread(clicker);
         Thread.sleep(5000);
         assertTrue("Editor appeared", editorView.getVisibility() == android.view.View.VISIBLE);
 
         MyLog.v(this, method + "-Log before run clicker 2");
-        mActivity.runOnUiThread(clicker);
+        activity.runOnUiThread(clicker);
         Thread.sleep(5000);
         assertFalse("Editor hidden again", editorView.getVisibility() == android.view.View.VISIBLE);
     }
@@ -82,9 +86,9 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         final String method = "testOpeningConversationActivity";
         ActivityMonitor activityMonitor = getInstrumentation().addMonitor(ConversationActivity.class.getName(), null, false);
 
-        final ListView listView = (ListView) mActivity.findViewById(android.R.id.list);
+        final ListView listView = (ListView) activity.findViewById(android.R.id.list);
         MyLog.v(this, method + "-Log setSelection");
-        mActivity.runOnUiThread(new Runnable() {
+        activity.runOnUiThread(new Runnable() {
           // See http://stackoverflow.com/questions/8094268/android-listview-performitemclick
           @Override
           public void run() {
@@ -94,7 +98,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
               listView.performItemClick(
                       listView.getAdapter().getView(position, null, null), 
                       position, 
-                      ((ListActivity) mActivity).getListAdapter().getItemId(position));              
+                      ((ListActivity) activity).getListAdapter().getItemId(position));              
           }
         });
 
@@ -111,7 +115,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         final String method = "testOpeningAccountSelector";
         ActivityMonitor activityMonitor = getInstrumentation().addMonitor(AccountSelector.class.getName(), null, false);
 
-        final Button accountButton = (Button) mActivity.findViewById(R.id.selectAccountButton);
+        final Button accountButton = (Button) activity.findViewById(R.id.selectAccountButton);
         assertTrue(accountButton != null);
         
         Runnable clicker = new Runnable() {
@@ -123,7 +127,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
           };
     
         MyLog.v(this, method + "-Log before run clicker 1");
-        mActivity.runOnUiThread(clicker);
+        activity.runOnUiThread(clicker);
           
         Activity nextActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 15000);
         MyLog.v(this, method + "-Log after waitForMonitor: " 
