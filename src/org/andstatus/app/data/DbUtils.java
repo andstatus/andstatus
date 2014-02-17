@@ -23,6 +23,9 @@ import android.provider.BaseColumns;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 public final class DbUtils {
     private static final int MS_BETWEEN_RETRIES = 500;
     
@@ -85,4 +88,13 @@ public final class DbUtils {
         }
     }
 
+    public static void closeSilently(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch ( IOException e) {
+                MyLog.ignored(closeable, e);
+            }
+        }
+    }
 }

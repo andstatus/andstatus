@@ -957,6 +957,7 @@ public class MyProvider extends ContentProvider {
         long id = 0;
         String sql = "";
 
+        SQLiteStatement prog = null;
         try {
             switch (oidEnum) {
                 case MSG_OID:
@@ -975,9 +976,8 @@ public class MyProvider extends ContentProvider {
                     throw new IllegalArgumentException("oidToId; Unknown oidEnum \"" + oidEnum);
             }
             SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
-            SQLiteStatement prog = db.compileStatement(sql);
+            prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
-            prog.releaseReference();
             if (id == 1 || id == 388) {
                 if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                     MyLog.v(TAG, "oidToId: sql='" + sql +"'");
@@ -988,7 +988,9 @@ public class MyProvider extends ContentProvider {
             id = 0;
         } catch (Exception e) {
             MyLog.e(TAG, "oidToId: sql='" + sql +"'", e);
-            return 0;
+            id = 0;
+        } finally {
+            DbUtils.closeSilently(prog);
         }
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "oidToId:" + originId + "+" + oid + " -> " + id + " oidEnum=" + oidEnum );
@@ -1083,7 +1085,6 @@ public class MyProvider extends ContentProvider {
                 }
                 prog = db.compileStatement(sql);
                 oid = prog.simpleQueryForString();
-                prog.releaseReference();
                 
                 if (TextUtils.isEmpty(oid) && oe == OidEnum.REBLOG_OID) {
                     // This not reblogged message
@@ -1095,7 +1096,9 @@ public class MyProvider extends ContentProvider {
                 oid = "";
             } catch (Exception e) {
                 MyLog.e(TAG, method, e);
-                return "";
+                oid = "";
+            } finally {
+                DbUtils.closeSilently(prog);
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, method + ": " + oe + " + " + entityId + " -> " + oid);
@@ -1124,13 +1127,14 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
-                prog.releaseReference();
             } catch (SQLiteDoneException e) {
                 MyLog.v(TAG, e);
                 userName = "";
             } catch (Exception e) {
                 MyLog.e(TAG, "msgIdToUsername", e);
-                return "";
+                userName = "";
+            } finally {
+                DbUtils.closeSilently(prog);
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "msgIdTo" + msgUserColumnName + ": " + messageId + " -> " + userName );
@@ -1151,13 +1155,14 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
-                prog.releaseReference();
             } catch (SQLiteDoneException e) {
                 MyLog.v(TAG, e);
                 userName = "";
             } catch (Exception e) {
                 MyLog.e(TAG, "userIdToName", e);
-                return "";
+                userName = "";
+            } finally {
+                DbUtils.closeSilently(prog);
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "userIdToName: " + userId + " -> " + userName );
@@ -1198,7 +1203,6 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForLong();
-                prog.releaseReference();
             } catch (SQLiteDoneException e) {
                 MyLog.v(TAG, e);
                 columnValue = 0;
@@ -1206,6 +1210,8 @@ public class MyProvider extends ContentProvider {
                 MyLog.e(TAG, method + " table='" + tableName 
                         + "', column='" + columnName + "'", e);
                 return 0;
+            } finally {
+                DbUtils.closeSilently(prog);
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
@@ -1244,7 +1250,6 @@ public class MyProvider extends ContentProvider {
                 SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForString();
-                prog.releaseReference();
             } catch (SQLiteDoneException e) {
                 MyLog.v(TAG, e);
                 columnValue = "";
@@ -1252,6 +1257,8 @@ public class MyProvider extends ContentProvider {
                 MyLog.e(TAG, method + " table='" + tableName 
                         + "', column='" + columnName + "'", e);
                 return "";
+            } finally {
+                DbUtils.closeSilently(prog);
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
@@ -1311,13 +1318,14 @@ public class MyProvider extends ContentProvider {
                     + userName + "'";
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
-            prog.releaseReference();
         } catch (SQLiteDoneException e) {
             MyLog.v(TAG, e);
             id = 0;
         } catch (Exception e) {
             MyLog.e(TAG, "userNameToId", e);
-            return 0;
+            id = 0;
+        } finally {
+            DbUtils.closeSilently(prog);
         }
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "userNameToId:" + originId + "+" + userName + " -> " + id);
