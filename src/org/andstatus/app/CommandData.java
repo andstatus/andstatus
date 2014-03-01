@@ -32,8 +32,9 @@ import org.andstatus.app.util.MyLog;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class CommandData {
+public class CommandData implements Comparable<CommandData> {
     public CommandEnum command;
+    private int priority = 0;
     
     /**
      * Unique name of {@link MyAccount} for this command. Empty string if command is not Account specific 
@@ -72,6 +73,7 @@ public class CommandData {
     
     public CommandData(CommandEnum commandIn, String accountNameIn) {
         command = commandIn;
+        priority = command.getPriority();
         if (!TextUtils.isEmpty(accountNameIn)) {
             setAccountName(accountNameIn);
         }
@@ -233,7 +235,7 @@ public class CommandData {
                 + (TextUtils.isEmpty(getAccountName()) ? "" : "; account=" + getAccountName())
                 + (timelineType == TimelineTypeEnum.UNKNOWN ? "" : "; timeline=" + timelineType.save())
                 + (itemId == 0 ? "" : "; id=" + itemId) + ", hashCode=" + hashCode()
-                + (commandResult.hasError() ? (commandResult.hasHardError() ? "; Hard Error" : "; Soft Error") : "")
+                + "; " + CommandResult.toString(commandResult)
                 + "]";
     }
 
@@ -324,5 +326,14 @@ public class CommandData {
     
     public void resetCommandResult() {
         commandResult = new CommandResult();
+    }
+
+    @Override
+    public int compareTo(CommandData another) {
+        int greater = 0;
+        if ( another != null && another.priority != this.priority) {
+            greater = this.priority > another.priority ? 1 : -1;
+        }
+        return greater;
     }
 }

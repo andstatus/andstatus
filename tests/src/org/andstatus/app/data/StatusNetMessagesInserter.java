@@ -78,7 +78,7 @@ public class StatusNetMessagesInserter extends InstrumentationTestCase {
         addMessage(reply3);
         addMessage(reply1);
         addMessage(reply2);
-        MbMessage reply4 = buildMessage(author4, "Reply 4 to Reply 1 other author", reply1, null);
+        MbMessage reply4 = buildMessage(author4, "Reply 4 to Reply 1, " + TestSuite.PUBLIC_MESSAGE_TEXT + " other author", reply1, null);
         addMessage(reply4);
         addPublicMessage(reply4, false);
         addMessage(buildMessage(author2, "Reply 5 to Reply 4", reply4, null));

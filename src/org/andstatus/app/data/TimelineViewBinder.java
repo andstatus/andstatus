@@ -67,11 +67,25 @@ public class TimelineViewBinder implements ViewBinder {
                     setFavorited(cursor, (ImageView) view);
                 }
                 break;
+            case R.id.id:
+                if ( view instanceof TextView) {
+                    setMessageId(cursor, columnIndex, (TextView) view);
+                }
+                break;
             default:
                 processed = false;
                 break;
         }
         return processed;
+    }
+
+    private void setMessageId(Cursor cursor, int columnIndex, TextView view) {
+        if (columnIndex > -1) {
+            String id = cursor.getString(columnIndex);
+            if (id != null) {
+                view.setText(id);
+            }
+        }
     }
 
     private void setMessageBody(Cursor cursor, int columnIndex, TextView view) {

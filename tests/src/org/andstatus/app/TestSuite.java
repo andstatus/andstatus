@@ -210,7 +210,7 @@ public class TestSuite extends TestCase {
     public static final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
     public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
     public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
-    public static final String PUBLIC_MESSAGE_TEXT = "OpenSource";
+    public static final String PUBLIC_MESSAGE_TEXT = "UniqueText" + System.nanoTime();
     public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "AndStatus";
     
     private static void setSuccessfulAccountAsCurrent() {

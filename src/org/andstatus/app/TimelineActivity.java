@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2011-2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2011-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,6 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -80,8 +79,6 @@ import java.util.List;
  * @author yvolk@yurivolkov.com, torgny.bjers
  */
 public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener, ActionableMessageList {
-    private static final String TAG = TimelineActivity.class.getSimpleName();
-
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
 
     private static final String KEY_IS_LOADING = "isLoading";
@@ -123,7 +120,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     /**
      * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
      */
-    private volatile boolean mIsFinishing = false;
+    private volatile boolean isFinishing = false;
 
     /**
      * Timeline type
@@ -146,12 +143,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * So it's never == 0 for the {@link TimelineTypeEnum#USER} timeline
      */
     private long mSelectedUserId = 0;
-    
-    /**
-     * True if this timeline is filtered using query string ("Mentions" are not
-     * counted here because they have separate TimelineType)
-     */
-    private boolean mIsSearchMode = false;
 
     /**
      * The string is not empty if this timeline is filtered using query string
@@ -194,14 +185,14 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (instanceId == 0) {
             instanceId = InstanceId.next();
         } else {
-            MyLog.d(TAG, "onCreate reuse the same instanceId=" + instanceId);
+            MyLog.d(this, "onCreate reuse the same instanceId=" + instanceId);
         }
 
         preferencesChangeTime = MyContextHolder.initialize(this, this);
         MyContextHolder.upgradeIfNeeded(this);
         
-        if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-            MyLog.d(TAG, "onCreate instanceId=" + instanceId 
+        if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+            MyLog.d(this, "onCreate instanceId=" + instanceId 
                     + " , preferencesChangeTime=" + preferencesChangeTime
                     + (MyContextHolder.get().isReady() ? "" : ", MyContext is not ready")
                     );
@@ -245,7 +236,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     mIsTimelineCombined = savedInstanceState.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key);
                 }
                 if (savedInstanceState.containsKey(SearchManager.QUERY)) {
-                    mQueryString = savedInstanceState.getString(SearchManager.QUERY);
+                    mQueryString = notNullString(savedInstanceState.getString(SearchManager.QUERY));
                 }
                 if (savedInstanceState.containsKey(IntentExtra.EXTRA_SELECTEDUSERID.key)) {
                     mSelectedUserId = savedInstanceState.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key);
@@ -326,7 +317,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         String method = "onResume";
         super.onResume();
         MyLog.v(this, method + ", instanceId=" + instanceId);
-        if (!mIsFinishing) {
+        if (!isFinishing) {
             if (MyContextHolder.get().persistentAccounts().getCurrentAccount() != null) {
                 long preferencesChangeTimeNew = MyContextHolder.initialize(this, this);
                 if (preferencesChangeTimeNew != preferencesChangeTime) {
@@ -339,7 +330,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 finish();
             }
         }
-        if (!mIsFinishing) {
+        if (!isFinishing) {
             serviceConnector.registerReceiver(this);
             if (!isLoading()) {
                 restoreListPosition();
@@ -359,7 +350,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         long lastRetrievedItemId = 0;
         int firstScrollPos = 0;
         int lastScrollPos = -1;
-        PositionStorage ps = new PositionStorage();
+        ListPositionStorage ps = new ListPositionStorage(this);
 
         firstScrollPos = getListView().getFirstVisiblePosition();
         android.widget.ListAdapter la = getListView().getAdapter();
@@ -388,31 +379,106 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         if (firstVisibleItemId <= 0) {
-            MyLog.v(this, "Position wasn't saved \"" + ps.accountGuid + "\"; " + ps.keyFirst);
+            MyLog.v(this, "Position wasn't saved \"" + ps.accountGuid + "\"; " + ps.keyFirst + " - no visible Item");
             return;
         }
 
-        ps.sp.edit().putLong(ps.keyFirst, firstVisibleItemId)
-                .putLong(ps.keyLast, lastRetrievedItemId).commit();
-        if (mIsSearchMode) {
-            // Remember query string for which the position was saved
-            ps.sp.edit().putString(ps.keyQueryString, mQueryString)
-                    .commit();
-        }
+        ps.put(firstVisibleItemId, lastRetrievedItemId);
 
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "Position saved    \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, "Position saved    \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
                     + firstVisibleItemId + "; index=" + firstScrollPos + "; lastId="
                     + lastRetrievedItemId + "; index=" + lastScrollPos);
         }
     }
+    
+    /**
+     * Determines where to save / retrieve position in the list
+     * Two rows are always stored for each position hence two keys. 
+     * Plus Query string is being stored for the search results.
+     * @author yvolk@yurivolkov.com
+     */
+    private static class ListPositionStorage {
+        /**
+         * MyAccount for SharedPreferences ( =="" for DefaultSharedPreferences) 
+         */
+        private String accountGuid = "";
+        /**
+         * SharePreferences to use for storage 
+         */
+        private SharedPreferences sp = null;
+        /**
+         * Key name for the first visible item
+         */
+        private String keyFirst = "";
+        /**
+         * Key for the last item we should retrieve before restoring position
+         */
+        private String keyLast = "";
+        private String queryString;
+        /**
+         * Key for the Query string
+         */
+        private String keyQueryString = "";
+        
+        private ListPositionStorage(TimelineActivity activity) {
+            queryString = activity.mQueryString; 
+            if ((activity.getTimelineType() != TimelineTypeEnum.USER) && !activity.isTimelineCombined()) {
+                MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(activity.mCurrentMyAccountUserId);
+                if (ma != null) {
+                    sp = ma.getAccountPreferences();
+                    accountGuid = ma.getAccountName();
+                } else {
+                    MyLog.e(this, "No accoount for IserId=" + activity.mCurrentMyAccountUserId);
+                }
+            }
+            if (sp == null) {
+                sp = MyPreferences.getDefaultSharedPreferences();
+            }
+            
+            keyFirst = KEY_LAST_POSITION
+                    + activity.getTimelineType().save()
+                    + (activity.getTimelineType() == TimelineTypeEnum.USER ? "_user"
+                            + Long.toString(activity.getSelectedUserId()) : "") + (TextUtils.isEmpty(queryString) ? "" : "_search");
+            keyLast = keyFirst + "_last";
+            keyQueryString = KEY_LAST_POSITION + activity.getTimelineType().save() + "_querystring";
+        }
 
-    private void forgetListPosition() {
-        PositionStorage ps = new PositionStorage();
-        ps.sp.edit().remove(ps.keyFirst).remove(ps.keyLast)
-                .remove(ps.keyQueryString).commit();
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "Position forgot   \"" + ps.accountGuid + "\"; " + ps.keyFirst);
+        private void put(long firstVisibleItemId, long lastRetrievedItemId) {
+            sp.edit().putLong(keyFirst, firstVisibleItemId)
+            .putLong(keyLast, lastRetrievedItemId)
+            .putString(keyQueryString, queryString).commit();
+        }
+
+        private final static long ID_NOT_FOUND_IN_LIST_POSITION_STORAGE = -4;
+        private final static long ID_NOT_FOUND_IN_SHARED_PREFERENCES = -1;
+        private long getFirst() {
+            long savedItemId = ID_NOT_FOUND_IN_LIST_POSITION_STORAGE;
+            if (isThisPositionStored()) {
+                savedItemId = sp.getLong(keyFirst, ID_NOT_FOUND_IN_SHARED_PREFERENCES);
+            }
+            return savedItemId;
+        }
+        
+        private boolean isThisPositionStored() {
+            return queryString.compareTo(sp.getString(
+                            keyQueryString, "")) == 0;
+        }
+
+        private long getLast() {
+            long savedItemId = ID_NOT_FOUND_IN_LIST_POSITION_STORAGE;
+            if (isThisPositionStored()) {
+                savedItemId = sp.getLong(keyLast, ID_NOT_FOUND_IN_SHARED_PREFERENCES);
+            }
+            return savedItemId;
+        }
+        
+        private void clear() {
+            sp.edit().remove(keyFirst).remove(keyLast)
+                    .remove(keyQueryString).commit();
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                MyLog.v(this, "Position forgot   \"" + accountGuid + "\"; " + keyFirst);
+            }
         }
     }
     
@@ -420,58 +486,58 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * Restore (First visible item) position saved for this user and for this type of timeline
      */
     private void restoreListPosition() {
-        PositionStorage ps = new PositionStorage();
+        ListPositionStorage ps = new ListPositionStorage(this);
         boolean loaded = false;
         long firstItemId = -3;
         try {
             int scrollPos = -1;
-            firstItemId = ps.getSavedPosition(false);
+            firstItemId = ps.getFirst();
             if (firstItemId > 0) {
                 scrollPos = listPosForId(firstItemId);
             }
             if (scrollPos >= 0) {
                 getListView().setSelectionFromTop(scrollPos, 0);
                 loaded = true;
-                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                    MyLog.v(TAG, "Position restored \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+                if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                    MyLog.v(this, "Position restored \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
                             + firstItemId +"; index=" + scrollPos);
                 }
             } else {
                 // There is no stored position
-                if (mIsSearchMode) {
+                if (TextUtils.isEmpty(mQueryString)) {
+                    scrollPos = getListView().getCount() - 2;
+                } else {
                     // In search mode start from the most recent tweet!
                     scrollPos = 0;
-                } else {
-                    scrollPos = getListView().getCount() - 2;
                 }
                 if (scrollPos >= 0) {
                     setSelectionAtBottom(scrollPos);
                 }
             }
         } catch (Exception e) {
-            MyLog.v(TAG, "Position error", e);
+            MyLog.v(this, "Position error", e);
             loaded = false;
         }
         if (!loaded) {
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "Didn't restore position \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                MyLog.v(this, "Didn't restore position \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
                         + firstItemId);
             }
-            forgetListPosition();
+            ps.clear();
         }
         positionRestored = true;
     }
 
     private void setSelectionAtBottom(int scrollPos) {
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "setSelectionAtBottom, 1");
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, "setSelectionAtBottom, 1");
         }
         int viewHeight = getListView().getHeight();
         int childHeight;
         childHeight = 30;
         int y = viewHeight - childHeight;
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "set position of last item to " + y + "px");
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, "set position of last item to " + y + "px");
         }
         getListView().setSelectionFromTop(scrollPos, y);
     }
@@ -488,8 +554,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         boolean itemFound = false;
         ListView lv = getListView();
         int itemCount = lv.getCount();
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "item count: " + itemCount);
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, "item count: " + itemCount);
         }
         for (listPos = 0; !itemFound && (listPos < itemCount); listPos++) {
             long itemId = lv.getItemIdAtPosition(listPos);
@@ -507,7 +573,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     public void onContentChanged() {
-        if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+        if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             MyLog.d(this, "onContentChanged started");
         }
         super.onContentChanged();
@@ -516,7 +582,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     protected void onPause() {
         super.onPause();
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, "onPause, instanceId=" + instanceId);
         }
         serviceConnector.unregisterReceiver(this);
@@ -569,10 +635,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     public void finish() {
-        MyLog.v(this, "Finish requested" + (mIsFinishing ? ", already finishing" : "") 
+        MyLog.v(this, "Finish requested" + (isFinishing ? ", already finishing" : "") 
                 + ", instanceId=" + instanceId);
-        if (!mIsFinishing) {
-            mIsFinishing = true;
+        if (!isFinishing) {
+            isFinishing = true;
         }
         super.finish();
     }
@@ -678,8 +744,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         if (id <= 0) {
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "onItemClick, position=" + position + "; id=" + id + "; view=" + view);
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                MyLog.v(this, "onItemClick, position=" + position + "; id=" + id + "; view=" + view);
             }
             return;
         }
@@ -691,20 +757,20 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             return;
         }
         
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "onItemClick, position=" + position + "; id=" + id + "; view=" + view
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, "onItemClick, position=" + position + "; id=" + id + "; view=" + view
                     + "; linkedUserId=" + linkedUserId + " account=" + ma.getAccountName());
         }
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), mTimelineType, true, id);
         String action = getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
-            if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-                MyLog.d(TAG, "onItemClick, setData=" + uri);
+            if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+                MyLog.d(this, "onItemClick, setData=" + uri);
             }
             setResult(RESULT_OK, new Intent().setData(uri));
         } else {
-            if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-                MyLog.d(TAG, "onItemClick, startActivity=" + uri);
+            if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+                MyLog.d(this, "onItemClick, startActivity=" + uri);
             }
             startActivity(new Intent(Intent.ACTION_VIEW, uri));
         }
@@ -740,7 +806,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             boolean loadMore = (visibleItemCount > 0) && (firstVisibleItem > 0)
                     && (firstVisibleItem + visibleItemCount >= totalItemCount);
             if (loadMore) {
-                MyLog.d(TAG, "Start Loading more items, rows=" + totalItemCount);
+                MyLog.d(this, "Start Loading more items, rows=" + totalItemCount);
                 saveListPosition();
                 setIsLoading(true);
                 queryListData(true);
@@ -777,7 +843,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public void updateActionBar(String rightText) {
         String timelinename = getString(mTimelineType.getTitleResId());
         Button timelineTypeButton = (Button) findViewById(R.id.timelineTypeButton);
-        timelineTypeButton.setText(timelinename + (mIsSearchMode ? " *" : ""));
+        timelineTypeButton.setText(timelinename + (TextUtils.isEmpty(mQueryString) ? "" : " *"));
         
         // Show current account info on the left button
         Button selectAccountButton = (Button) findViewById(R.id.selectAccountButton);
@@ -812,12 +878,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     protected void onNewIntent(Intent intent) {
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "onNewIntent, instanceId=" + instanceId
-                    + (mIsFinishing ? ", Is finishing" : "")
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, "onNewIntent, instanceId=" + instanceId
+                    + (isFinishing ? ", Is finishing" : "")
                     );
         }
-        if (mIsFinishing) {
+        if (isFinishing) {
             finish();
             return;
         }
@@ -839,7 +905,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
             mTimelineType = timelineTypeNew;
             mIsTimelineCombined = intentNew.getBooleanExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mIsTimelineCombined);
-            mQueryString = intentNew.getStringExtra(SearchManager.QUERY);
+            mQueryString = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
             mSelectedUserId = intentNew.getLongExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
         } else {
             Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
@@ -851,7 +917,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     mTimelineType = timelineTypeNew;
                     mIsTimelineCombined = appSearchData.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mIsTimelineCombined);
                     /* The query itself is still from the Intent */
-                    mQueryString = intentNew.getStringExtra(SearchManager.QUERY);
+                    mQueryString = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
                     mSelectedUserId = appSearchData.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
                 }
             }
@@ -887,22 +953,13 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             messageEditor.startEditingMessage(textInitial, 0, 0, MyContextHolder.get().persistentAccounts().getCurrentAccount(), mIsTimelineCombined);
         }
 
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "processNewIntent; type=\"" + mTimelineType.save() + "\"");
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, "processNewIntent; type=\"" + mTimelineType.save() + "\"");
         }
     }
 
     private void updateThisOnChangedParameters() {
         MyServiceManager.setServiceAvailable();
-        mIsSearchMode = !TextUtils.isEmpty(mQueryString);
-        if (mIsSearchMode) {
-            // Let's check if last time we saved position for the same query
-            // string
-
-        } else {
-            mQueryString = "";
-        }
-
         TextView selectedUserText = (TextView) findViewById(R.id.selectedUserText);
         ToggleButton combinedTimelineToggle = (ToggleButton) findViewById(R.id.combinedTimelineToggle);
         combinedTimelineToggle.setChecked(mIsTimelineCombined);
@@ -941,7 +998,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * Clean after successful or failed operation
      */
     private void queryListDataEnded(boolean doRestorePosition) {
-        if (!mIsFinishing) {
+        if (!isFinishing) {
             if (doRestorePosition) {
                 restoreListPosition();
             }
@@ -950,248 +1007,254 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         queryListDataInProgress = false;
     }
+    
     /**
-     * Prepare query to the ContentProvider (to the database) and load the visible List of
+     * Prepare a query to the ContentProvider (to the database) and load the visible List of
      * messages with this data
      * This is done asynchronously.
      * This method should be called from UI thread only.
      * 
-     * @param otherThread This method is being accessed from other thread
      * @param loadOneMorePage true - load one more page of messages, false - reload the same page
      */
-    protected void queryListData(boolean loadOneMorePageIn) {
-        final boolean loadOneMorePage = loadOneMorePageIn;
-
-        /**
-         * Here we do all the work 
-         * @author yvolk@yurivolkov.com
-         */
-        class AsyncQueryListData extends AsyncTask<Void, Void, Void>{
-            long startTime = System.nanoTime();
-            Uri contentUri = MyProvider.getTimelineUri(mCurrentMyAccountUserId, mTimelineType,
-                    mIsTimelineCombined);
-
-            SelectionAndArgs sa = new SelectionAndArgs();
-            String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
-            
-            Cursor cursor;
-
-            @Override
-            protected void onPreExecute() {
-                Intent intent = getIntent();
-
-                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                    MyLog.v(TAG, "queryListData; queryString=\"" + mQueryString + "\"; TimelineType="
-                            + mTimelineType.save()
-                            + "; isCombined=" + (mIsTimelineCombined ? "yes" : "no"));
-                }
-
-                // Id of the last (oldest) tweet to retrieve
-                long lastItemId = -1;
-
-                if (!TextUtils.isEmpty(mQueryString)) {
-                    // Record the query string in the recent queries
-                    // of the Suggestion Provider
-                    SearchRecentSuggestions suggestions = new SearchRecentSuggestions(TimelineActivity.this,
-                            TimelineSearchSuggestionProvider.AUTHORITY,
-                            TimelineSearchSuggestionProvider.MODE);
-                    suggestions.saveRecentQuery(mQueryString, null);
-
-                    contentUri = MyProvider.getTimelineSearchUri(mCurrentMyAccountUserId, mTimelineType,
-                            mIsTimelineCombined, mQueryString);
-                }
-
-                if (!contentUri.equals(intent.getData())) {
-                    intent.setData(contentUri);
-                }
-
-                if (sa.nArgs == 0) {
-                    // In fact this is needed every time you want to load
-                    // next page of messages
-
-                    /* TODO: Other conditions... */
-                    sa.clear();
-
-                    // TODO: Move these selections to the {@link MyProvider} ?!
-                    switch (mTimelineType) {
-                        case HOME:
-                            // In the Home of the combined timeline we see ALL loaded
-                            // messages, even those that we downloaded
-                            // not as Home timeline of any Account
-                            if (!mIsTimelineCombined) {
-                                sa.addSelection(MyDatabase.MsgOfUser.SUBSCRIBED + " = ?", new String[] {
-                                        "1"
-                                });
-                            }
-                            break;
-                        case MENTIONS:
-                            sa.addSelection(MyDatabase.MsgOfUser.MENTIONED + " = ?", new String[] {
-                                    "1"
-                            });
-                            /*
-                             * We already figured this out and set {@link MyDatabase.MsgOfUser.MENTIONED}:
-                             * sa.addSelection(MyDatabase.Msg.BODY + " LIKE ?" ...
-                             */
-                            break;
-                        case FAVORITES:
-                            sa.addSelection(MyDatabase.MsgOfUser.FAVORITED + " = ?", new String[] {
-                                    "1"
-                            });
-                            break;
-                        case DIRECT:
-                            sa.addSelection(MyDatabase.MsgOfUser.DIRECTED + " = ?", new String[] {
-                                    "1"
-                            });
-                            break;
-                        case USER:
-                            AccountUserIds userIds = new AccountUserIds(isTimelineCombined(), getSelectedUserId());
-                            // Reblogs are included also
-                            sa.addSelection(MyDatabase.Msg.AUTHOR_ID + " " + userIds.getSqlUserIds() 
-                                    + " OR "
-                                    + MyDatabase.Msg.SENDER_ID + " " + userIds.getSqlUserIds() 
-                                    + " OR " 
-                                    + "("
-                                    + User.LINKED_USER_ID + " " + userIds.getSqlUserIds() 
-                                    + " AND "
-                                    + MyDatabase.MsgOfUser.REBLOGGED + " = 1"
-                                    + ")",
-                                    null);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                if (!positionRestored) {
-                    // We have to ensure that saved position will be
-                    // loaded from database into the list
-                    lastItemId = new PositionStorage().getSavedPosition(true);
-                }
-
-                int nMessages = 0;
-                if (mCursor != null && !mCursor.isClosed()) {
-                    if (positionRestored) {
-                        // If position is NOT loaded - this cursor is from other
-                        // timeline/search
-                        // and we shouldn't care how much rows are there.
-                        nMessages = mCursor.getCount();
-                    }
-                }
-
-                if (lastItemId > 0) {
-                    sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.SENT_DATE + " >= ?",
-                            new String[] {
-                                String.valueOf(MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.SENT_DATE, lastItemId))
-                            });
-                } else {
-                    if (loadOneMorePage) {
-                        nMessages += PAGE_SIZE;
-                    } else if (nMessages < PAGE_SIZE) {
-                        nMessages = PAGE_SIZE;
-                    }
-                    sortOrder += " LIMIT 0," + nMessages;
-                }
-            }
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                for (int attempt=0; attempt<3; attempt++) {
-                    try {
-                        cursor = getContentResolver().query(contentUri, getProjection(), sa.selection,
-                                sa.selectionArgs, sortOrder);
-                        break;
-                    } catch (IllegalStateException e) {
-                        MyLog.d(TAG, "Attempt " + attempt + " to prepare cursor", e);
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e2) {
-                            MyLog.d(TAG, "Attempt " + attempt + " to prepare cursor was interrupted", e2);
-                            break;
-                        }
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                boolean doRestorePosition = true;
-                if (cursor != null && !mIsFinishing) {
-                    boolean cursorSet = false;
-                    if (positionRestored && (getListAdapter() != null)) {
-                        if (loadOneMorePage) {
-                            // This will prevent continuous loading...
-                            if (cursor.getCount() > getListAdapter().getCount()) {
-                                MyLog.v(this, "On changing Cursor");
-                                ((SimpleCursorAdapter) getListAdapter()).changeCursor(cursor);
-                                mCursor = cursor;
-                            } else {
-                                noMoreItems = true;
-                                doRestorePosition = false;
-                                // We don't need this cursor: assuming it is the same as existing
-                                cursor.close();
-                            }
-                            cursorSet = true; 
-                        }
-                    }
-                    if (!cursorSet) {
-                        if (mCursor != null && !mCursor.isClosed()) {
-                            mCursor.close();
-                        }
-                        mCursor = cursor;
-                        createListAdapter();
-                    }
-                }
-                
-                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                    String cursorInfo = "cursor - ??";
-                    if (cursor == null) {
-                        cursorInfo = "new cursor is null";
-                    } else if (mCursor == null) {
-                        cursorInfo = "cursor is null";
-                    } else if (mCursor.isClosed()) {
-                        cursorInfo = "cursor is Closed";
-                    } else {
-                        cursorInfo = mCursor.getCount() + " rows";
-                    }
-                    MyLog.v(TAG, "queryListData; ended, " + cursorInfo + ", " + Double.valueOf((System.nanoTime() - startTime)/1.0E6).longValue() + " ms");
-                }
-                
-                queryListDataEnded(doRestorePosition);
-                
-                if (!loadOneMorePage) {
-                    switch (mTimelineType) {
-                        case USER:
-                        case FOLLOWING_USER:
-                            // This timeline doesn't update automatically so let's do it now if necessary
-                            LatestTimelineItem latestTimelineItem = new LatestTimelineItem(mTimelineType, mSelectedUserId);
-                            if (latestTimelineItem.isTimeToAutoUpdate()) {
-                                manualReload(false);
-                            }
-                            break;
-                        default:
-                            if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, mCurrentMyAccountUserId) == 0) {
-                                // This is supposed to be a one time task.
-                                manualReload(true);
-                            } 
-                            break;
-                    }
-                }
-            }
-        }
-        
+    protected void queryListData(boolean loadOneMorePage) {
         if (queryListDataInProgress) {
             MyLog.v(this, "queryListData is already in progress, skipping this request");
-            return;
+        } else {
+            try {
+                queryListDataInProgress = true;
+                setIsLoading(true);
+                new AsyncQueryListData(this, loadOneMorePage).execute();
+            } catch (Exception e) {
+                MyLog.e(this, "Error during AsyncQueryListData", e);
+                queryListDataEnded(!loadOneMorePage);
+            }
+        }
+    }
+
+    /**
+     * @author yvolk@yurivolkov.com
+     */
+    private static class AsyncQueryListData extends AsyncTask<Void, Void, Void>{
+        TimelineActivity activity;
+        boolean loadOneMorePage;
+        long startTime = System.nanoTime();
+        Uri contentUri;
+
+        SelectionAndArgs sa = new SelectionAndArgs();
+        String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
+        
+        Cursor cursor;
+
+        private AsyncQueryListData(TimelineActivity activity, boolean loadOneMorePage) {
+            super();
+            this.activity = activity;
+            this.loadOneMorePage = loadOneMorePage;
+            contentUri = MyProvider.getTimelineUri(activity.mCurrentMyAccountUserId, activity.mTimelineType,
+                    activity.mIsTimelineCombined);
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            Intent intent = activity.getIntent();
+
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                MyLog.v(this, (TextUtils.isEmpty(activity.mQueryString) ? "" 
+                        : "queryString=\"" + activity.mQueryString + "\"; ") 
+                        +  "TimelineType=" + activity.mTimelineType.save()
+                        + "; isCombined=" + (activity.mIsTimelineCombined ? "yes" : "no"));
+            }
+
+            // Id of the last (oldest) tweet to retrieve
+            long lastItemId = -1;
+
+            if (!TextUtils.isEmpty(activity.mQueryString)) {
+                // Record the query string in the recent queries
+                // of the Suggestion Provider
+                SearchRecentSuggestions suggestions = new SearchRecentSuggestions(activity,
+                        TimelineSearchSuggestionProvider.AUTHORITY,
+                        TimelineSearchSuggestionProvider.MODE);
+                suggestions.saveRecentQuery(activity.mQueryString, null);
+
+                contentUri = MyProvider.getTimelineSearchUri(activity.mCurrentMyAccountUserId, activity.mTimelineType,
+                        activity.mIsTimelineCombined, activity.mQueryString);
+            }
+
+            if (!contentUri.equals(intent.getData())) {
+                intent.setData(contentUri);
+            }
+
+            if (sa.nArgs == 0) {
+                // In fact this is needed every time you want to load
+                // next page of messages
+
+                /* TODO: Other conditions... */
+                sa.clear();
+
+                // TODO: Move these selections to the {@link MyProvider} ?!
+                switch (activity.mTimelineType) {
+                    case HOME:
+                        // In the Home of the combined timeline we see ALL loaded
+                        // messages, even those that we downloaded
+                        // not as Home timeline of any Account
+                        if (!activity.isTimelineCombined()) {
+                            sa.addSelection(MyDatabase.MsgOfUser.SUBSCRIBED + " = ?", new String[] {
+                                    "1"
+                            });
+                        }
+                        break;
+                    case MENTIONS:
+                        sa.addSelection(MyDatabase.MsgOfUser.MENTIONED + " = ?", new String[] {
+                                "1"
+                        });
+                        /*
+                         * We already figured this out and set {@link MyDatabase.MsgOfUser.MENTIONED}:
+                         * sa.addSelection(MyDatabase.Msg.BODY + " LIKE ?" ...
+                         */
+                        break;
+                    case FAVORITES:
+                        sa.addSelection(MyDatabase.MsgOfUser.FAVORITED + " = ?", new String[] {
+                                "1"
+                        });
+                        break;
+                    case DIRECT:
+                        sa.addSelection(MyDatabase.MsgOfUser.DIRECTED + " = ?", new String[] {
+                                "1"
+                        });
+                        break;
+                    case USER:
+                        AccountUserIds userIds = new AccountUserIds(activity.isTimelineCombined(), activity.getSelectedUserId());
+                        // Reblogs are included also
+                        sa.addSelection(MyDatabase.Msg.AUTHOR_ID + " " + userIds.getSqlUserIds() 
+                                + " OR "
+                                + MyDatabase.Msg.SENDER_ID + " " + userIds.getSqlUserIds() 
+                                + " OR " 
+                                + "("
+                                + User.LINKED_USER_ID + " " + userIds.getSqlUserIds() 
+                                + " AND "
+                                + MyDatabase.MsgOfUser.REBLOGGED + " = 1"
+                                + ")",
+                                null);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (!activity.positionRestored) {
+                // We have to ensure that saved position will be
+                // loaded from database into the list
+                lastItemId = new ListPositionStorage(activity).getLast();
+            }
+
+            int nMessages = 0;
+            if (activity.mCursor != null && !activity.mCursor.isClosed()) {
+                if (activity.positionRestored) {
+                    // If position is NOT loaded - this cursor is from other
+                    // timeline/search
+                    // and we shouldn't care how much rows are there.
+                    nMessages = activity.mCursor.getCount();
+                }
+            }
+
+            if (lastItemId > 0) {
+                sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.SENT_DATE + " >= ?",
+                        new String[] {
+                            String.valueOf(MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.SENT_DATE, lastItemId))
+                        });
+            } else {
+                if (loadOneMorePage) {
+                    nMessages += PAGE_SIZE;
+                } else if (nMessages < PAGE_SIZE) {
+                    nMessages = PAGE_SIZE;
+                }
+                sortOrder += " LIMIT 0," + nMessages;
+            }
         }
 
-        try {
-            queryListDataInProgress = true;
-            setIsLoading(true);
-            new AsyncQueryListData().execute();
-        } catch (Exception e) {
-            MyLog.e(this, "Error during AsyncQueryListData", e);
-            queryListDataEnded(!loadOneMorePage);
+        @Override
+        protected Void doInBackground(Void... params) {
+            for (int attempt=0; attempt<3; attempt++) {
+                try {
+                    cursor = activity.getContentResolver().query(contentUri, activity.getProjection(), sa.selection,
+                            sa.selectionArgs, sortOrder);
+                    break;
+                } catch (IllegalStateException e) {
+                    MyLog.d(this, "Attempt " + attempt + " to prepare cursor", e);
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e2) {
+                        MyLog.d(this, "Attempt " + attempt + " to prepare cursor was interrupted", e2);
+                        break;
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            boolean doRestorePosition = true;
+            if (cursor != null && !activity.isFinishing) {
+                boolean cursorSet = false;
+                if (activity.positionRestored && (activity.getListAdapter() != null)) {
+                    if (loadOneMorePage) {
+                        // This will prevent continuous loading...
+                        if (cursor.getCount() > activity.getListAdapter().getCount()) {
+                            MyLog.v(this, "On changing Cursor");
+                            ((SimpleCursorAdapter) activity.getListAdapter()).changeCursor(cursor);
+                            activity.mCursor = cursor;
+                        } else {
+                            activity.noMoreItems = true;
+                            doRestorePosition = false;
+                            // We don't need this cursor: assuming it is the same as existing
+                            cursor.close();
+                        }
+                        cursorSet = true; 
+                    }
+                }
+                if (!cursorSet) {
+                    if (activity.mCursor != null && !activity.mCursor.isClosed()) {
+                        activity.mCursor.close();
+                    }
+                    activity.mCursor = cursor;
+                    activity.createListAdapter();
+                }
+            }
+            
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                String cursorInfo = "cursor - ??";
+                if (cursor == null) {
+                    cursorInfo = "new cursor is null";
+                } else if (activity.mCursor == null) {
+                    cursorInfo = "cursor is null";
+                } else if (activity.mCursor.isClosed()) {
+                    cursorInfo = "cursor is Closed";
+                } else {
+                    cursorInfo = activity.mCursor.getCount() + " rows";
+                }
+                MyLog.v(this, "ended, " + cursorInfo + ", " + Double.valueOf((System.nanoTime() - startTime)/1.0E6).longValue() + " ms");
+            }
+            
+            activity.queryListDataEnded(doRestorePosition);
+            
+            if (!loadOneMorePage) {
+                switch (activity.getTimelineType()) {
+                    case USER:
+                    case FOLLOWING_USER:
+                        // This timeline doesn't update automatically so let's do it now if necessary
+                        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(activity.getTimelineType(), activity.getSelectedUserId());
+                        if (latestTimelineItem.isTimeToAutoUpdate()) {
+                            activity.manualReload(false);
+                        }
+                        break;
+                    default:
+                        if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, activity.mCurrentMyAccountUserId) == 0) {
+                            // This is supposed to be a one time task.
+                            activity.manualReload(true);
+                        } 
+                        break;
+                }
+            }
         }
     }
     
@@ -1337,6 +1400,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         viewIds.add(R.id.message_details);
         columnNames.add(MyDatabase.MsgOfUser.FAVORITED);
         viewIds.add(R.id.message_favorited);
+        columnNames.add(MyDatabase.Msg._ID);
+        viewIds.add(R.id.id);
         int listItemId = R.layout.message_basic;
         if (MyPreferences.showAvatars()) {
             listItemId = R.layout.message_avatar;
@@ -1363,85 +1428,16 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         return ret;
     }
 
-    /**
-     * Determines where to save / retrieve position in the list
-     * Two rows are always stored for each position hence two keys. Plus Query string is being stored for the search results.
-     * @author yvolk@yurivolkov.com
-     */
-    private class PositionStorage {
-        /**
-         * MyAccount for SharedPreferences ( =="" for DefaultSharedPreferences) 
-         */
-        public String accountGuid = "";
-        /**
-         * SharePreferences to use for storage 
-         */
-        public SharedPreferences sp = null;
-        /**
-         * Key name for the first visible item
-         */
-        public String keyFirst = "";
-        /**
-         * Key for the last item we should retrieve before restoring position
-         */
-        public String keyLast = "";
-        /**
-         * Key for the Query string
-         */
-        public String keyQueryString = "";
-        
-        public PositionStorage() {
-            if ((mTimelineType != TimelineTypeEnum.USER) && !mIsTimelineCombined) {
-                MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mCurrentMyAccountUserId);
-                if (ma != null) {
-                    sp = ma.getAccountPreferences();
-                    accountGuid = ma.getAccountName();
-                } else {
-                    MyLog.e(this, "No accoount for IserId=" + mCurrentMyAccountUserId);
-                }
-            }
-            if (sp == null) {
-                sp = MyPreferences.getDefaultSharedPreferences();
-            }
-            
-            keyFirst = KEY_LAST_POSITION
-                    + mTimelineType.save()
-                    + (mTimelineType == TimelineTypeEnum.USER ? "_user"
-                            + Long.toString(mSelectedUserId) : "") + (mIsSearchMode ? "_search" : "");
-            keyLast = keyFirst + "_last";
-            keyQueryString = KEY_LAST_POSITION + mTimelineType.save() + "_querystring";
-        }
-        
-        /**
-         * @param ps
-         * @param lastRow Key for First visible row (false) or Last row that will be retrieved (true)
-         * @return Saved Tweet id or -1 or -4 if none was found.
-         */
-        protected long getSavedPosition(boolean lastRow) {
-            long savedItemId = -4;
-            if (!mIsSearchMode
-                    || (mQueryString.compareTo(sp.getString(
-                            keyQueryString, "")) == 0)) {
-                // Load saved position in Search mode only if that position was
-                // saved for the same query string
-                if (lastRow) {
-                    savedItemId = sp.getLong(keyLast, -1);
-                } else {
-                    savedItemId = sp.getLong(keyFirst, -1);
-                }
-            }
-            return savedItemId;
-        }
-        
+    public static String notNullString(String string) {
+        return string == null ? "" : string;
     }
 
     @Override
     public void onReceive(CommandData commandData) {
+        MyLog.v(this, "onReceive: " + commandData);
         switch (commandData.command) {
             case FETCH_TIMELINE:
-                if (commandData.timelineType == mTimelineType) {
-                    setIsLoading(false);
-                }
+                setIsLoading(false);
                 break;
             case RATE_LIMIT_STATUS:
                 if (commandData.commandResult.hourlyLimit > 0) {

@@ -38,6 +38,11 @@ public class CommandResult implements Parcelable {
     public CommandResult() {
     }
     
+    @Override
+    public String toString() {
+        return hasError() ? (hasHardError() ? "Hard Error" : "Soft Error") : " no error";
+    }
+
     public CommandResult(Parcel parcel) {
         numAuthExceptions = parcel.readLong();
         numIoExceptions = parcel.readLong();
@@ -85,4 +90,8 @@ public class CommandResult implements Parcelable {
             return new CommandResult[size];
         }
     };
+
+    public static String toString(CommandResult commandResult) {
+        return commandResult == null ? "result is null" : commandResult.toString();
+    }
 }

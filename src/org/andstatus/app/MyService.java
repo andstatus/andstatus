@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2011-2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2011-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@
 package org.andstatus.app;
 
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
@@ -136,31 +136,30 @@ public class MyService extends Service {
         /**
          * The action to fetch all usual timelines in the background.
          */
-        AUTOMATIC_UPDATE("automatic-update"),
+        AUTOMATIC_UPDATE("automatic-update", -10),
         /**
          * Fetch timeline(s) of the specified type for the specified MyAccount. 
          */
-        FETCH_TIMELINE("fetch-timeline"),
+        FETCH_TIMELINE("fetch-timeline", -4),
 
         /**
          * Fetch avatar for the specified user and URL 
          */
-        FETCH_AVATAR("fetch-avatar"),
+        FETCH_AVATAR("fetch-avatar", -9),
         
         CREATE_FAVORITE("create-favorite"), DESTROY_FAVORITE("destroy-favorite"),
 
         FOLLOW_USER("follow-user"), STOP_FOLLOWING_USER("stop-following-user"),
-        UPDATE_FOLLOWING_USERS_IF_NECESSARY("update-following-users-ifnecessary"),
 
         /**
          * This command is for sending both public and direct messages
          */
-        UPDATE_STATUS("update-status"), 
-        DESTROY_STATUS("destroy-status"),
-        GET_STATUS("get-status"),
+        UPDATE_STATUS("update-status", 10), 
+        DESTROY_STATUS("destroy-status", 3),
+        GET_STATUS("get-status", 5),
         
-        REBLOG("reblog"),
-        DESTROY_REBLOG("destroy-reblog"),
+        REBLOG("reblog", 9),
+        DESTROY_REBLOG("destroy-reblog", 3),
 
         RATE_LIMIT_STATUS("rate-limit-status"),
 
@@ -198,8 +197,6 @@ public class MyService extends Service {
          */
         BROADCAST_SERVICE_STATE("broadcast-service-state"),
         
-        
-        
         /**
          * Save SharePreverence. We try to use it because sometimes Android
          * doesn't actually store these values to the disk... and the
@@ -212,10 +209,16 @@ public class MyService extends Service {
         /**
          * code of the enum that is used in messages
          */
-        private String code;
+        private final String code;
+        private final int priority;
 
-        private CommandEnum(String codeIn) {
-            code = codeIn;
+        private CommandEnum(String code) {
+            this(code, 0);
+        }
+
+        private CommandEnum(String code, int priority) {
+            this.code = code;
+            this.priority = priority;
         }
 
         /**
@@ -237,6 +240,9 @@ public class MyService extends Service {
             return UNKNOWN;
         }
 
+        public int getPriority() {
+            return priority;
+        }
     }
 
     /**
@@ -324,8 +330,8 @@ public class MyService extends Service {
     @GuardedBy("wakeLockLock")
     private PowerManager.WakeLock wakeLock = null;
 
-    private final Queue<CommandData> mainCommandQueue = new ArrayBlockingQueue<CommandData>(100, true);
-    private final Queue<CommandData> retryCommandQueue = new ArrayBlockingQueue<CommandData>(100, true);
+    private final Queue<CommandData> mainCommandQueue = new PriorityBlockingQueue<CommandData>(100);
+    private final Queue<CommandData> retryCommandQueue = new PriorityBlockingQueue<CommandData>(100);
 
     /**
      * Time when shared preferences where changed as this knows it.
