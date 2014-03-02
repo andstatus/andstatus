@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class ConnectionTwitterTest extends InstrumentationTestCase {
+public class ConnectionStatusNetTest extends InstrumentationTestCase {
     private Connection connection;
     private HttpConnectionMock httpConnection;
     private OriginConnectionData connectionData;
@@ -41,11 +41,11 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         super.setUp();
         TestSuite.initialize(this);
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.STATUSNET_TEST_ORIGIN_NAME);
         
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
-        connectionData.accountUserOid = TestSuite.TWITTER_TEST_ACCOUNT_USER_OID;
-        connectionData.accountUsername = TestSuite.TWITTER_TEST_ACCOUNT_USERNAME;
+        connectionData.accountUserOid = TestSuite.STATUSNET_TEST_ACCOUNT_USER_OID;
+        connectionData.accountUsername = TestSuite.STATUSNET_TEST_ACCOUNT_USERNAME;
         connectionData.dataReader = new AccountDataReaderEmpty();
         connection = connectionData.connectionClass.newInstance();
         connection.enrichConnectionData(connectionData);
@@ -54,19 +54,14 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         httpConnection = (HttpConnectionMock) connection.http;
 
         httpConnection.data.host = origin.getHost();
-        httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
-
-        if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {
-            httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232");
-        }
     }
 
-    public void testGetTimeline() throws ConnectionException {
+    public void testGetPublicTimeline() throws ConnectionException {
         JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.home_timeline);
         httpConnection.setResponse(jso);
         
-        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
+        List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE, 
                 new TimelinePosition("380925803053449216") , 20, connectionData.accountUserOid);
         assertNotNull("timeline returned", timeline);
         int size = 4;
@@ -75,6 +70,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         int ind = 0;
         assertEquals("Posting message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
+        assertTrue("Message is public", mbMessage.isPublic());
         assertTrue("Favorited", mbMessage.favoritedByActor.toBoolean(false));
         assertEquals("Actor", connectionData.accountUserOid, mbMessage.actor.oid);
         assertEquals("Author's oid", "221452291", mbMessage.sender.oid);
@@ -108,25 +104,6 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("This message created at Thu Sep 26 18:23:05 +0000 2013 (" + date.toString() + ")", date.getTime(), mbMessage.sentDate);
         date = TestSuite.utcTime(2013, Calendar.MARCH, 22, 13, 13, 7);
         assertEquals("Reblogged message created at Fri Mar 22 13:13:07 +0000 2013 (" + date.toString() + ")", date.getTime(), mbMessage.rebloggedMessage.sentDate);
-
-        ind++;
-        mbMessage = timeline.get(ind).mbMessage;
-        assertTrue("Does not have a recipient", mbMessage.recipient == null);
-        assertTrue("Is not a reblog", mbMessage.rebloggedMessage == null);
-        assertTrue("Is not a reply", mbMessage.inReplyToMessage == null);
-        assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
-        assertEquals("Author's oid is user oid of this account", connectionData.accountUserOid, mbMessage.sender.oid);
-        startsWith = "And this is";
-        assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
-    }
-    
-    public void testParseDate() {
-        String stringDate = "Wed Nov 27 09:27:01 -0300 2013";
-        assertEquals("Bad date shouldn't throw (" + stringDate + ")", 0, connection.parseDate(stringDate) );
-        Date date = TestSuite.utcTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 05);
-        stringDate = "Thu Sep 26 22:23:05 GMT+04:00 2013";   // date.toString gives wrong value!!!
-        long parsed = connection.parseDate(stringDate);
-        assertEquals("Testing the date: Thu Sep 26 18:23:05 +0000 2013 (" + stringDate + " vs " + new Date(parsed).toString() + ")", date.getTime(), parsed);
     }
     
 }

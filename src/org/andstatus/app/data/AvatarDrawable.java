@@ -21,10 +21,10 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
 import org.andstatus.app.CommandData;
+import org.andstatus.app.CommandEnum;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.R;
-import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;

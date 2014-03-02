@@ -16,27 +16,25 @@
 
 package org.andstatus.app.data;
 
-import java.util.Date;
-
-import org.andstatus.app.MessageCounters;
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.net.MbMessage;
-import org.andstatus.app.net.MbUser;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.TriState;
-
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.text.TextUtils;
+
+import org.andstatus.app.MessageCounters;
+import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.net.MbMessage;
+import org.andstatus.app.net.MbUser;
+import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TriState;
+
+import java.util.Date;
 
 /**
  * Stores ("inserts" -  adds or updates) messages and users
@@ -367,13 +365,6 @@ public class DataInserter {
         try {
             ContentValues values = new ContentValues();
 
-            if (!TextUtils.isEmpty(userOid)) {
-                values.put(MyDatabase.User.USER_OID, userOid);
-            }
-            values.put(MyDatabase.User.ORIGIN_ID, originId);
-            if (!SharedPreferencesUtil.isEmpty(userName)) {
-                values.put(MyDatabase.User.USERNAME, userName);
-            }
             if (!TextUtils.isEmpty(mbUser.realName)) {
                 values.put(MyDatabase.User.REAL_NAME, mbUser.realName);
             }
@@ -408,9 +399,18 @@ public class DataInserter {
             Uri userUri = MyProvider.getUserUri(counters.ma.getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
+                
+                if (!TextUtils.isEmpty(userOid)) {
+                    values.put(MyDatabase.User.USER_OID, userOid);
+                }
+                values.put(MyDatabase.User.ORIGIN_ID, originId);
+                if (!SharedPreferencesUtil.isEmpty(userName)) {
+                    values.put(MyDatabase.User.USERNAME, userName);
+                }
+                
                 userUri = mContentResolver.insert(userUri, values);
                 userId = MyProvider.uriToUserId(userUri);
-            } else {
+            } else if (values.size() > 0) {
               mContentResolver.update(userUri, values, null, null);
             }
             if (mbUser.latestMessage != null) {

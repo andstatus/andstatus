@@ -41,6 +41,9 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
             case GET_CONFIG:
                 url = "statusnet/config" + EXTENSION;
                 break;
+            case PUBLIC_TIMELINE:
+                url = "statuses/public_timeline" + EXTENSION;
+                break;
             default:
                 url = "";
                 break;

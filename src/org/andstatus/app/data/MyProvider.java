@@ -41,9 +41,9 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import org.andstatus.app.CommandData;
+import org.andstatus.app.CommandEnum;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.MyServiceManager;
-import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.Avatar;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
@@ -65,6 +65,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 public class MyProvider extends ContentProvider {
     private static final String TAG = MyProvider.class.getSimpleName();
 
+    private final static String MSG_TABLE_ALIAS = "msg1";
     /**
      * Projection map used by SQLiteQueryBuilder
      * Projection map for the {@link MyDatabase.Msg} table
@@ -72,8 +73,8 @@ public class MyProvider extends ContentProvider {
      */
     private static final Map<String, String> MSG_PROJECTION_MAP = new HashMap<String, String>();
     static {
-        MSG_PROJECTION_MAP.put(BaseColumns._ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
-        MSG_PROJECTION_MAP.put(Msg.MSG_ID, Msg.TABLE_NAME + "." + BaseColumns._ID + " AS " + Msg.MSG_ID);
+        MSG_PROJECTION_MAP.put(BaseColumns._ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + BaseColumns._ID);
+        MSG_PROJECTION_MAP.put(Msg.MSG_ID, MSG_TABLE_ALIAS + "." + BaseColumns._ID + " AS " + Msg.MSG_ID);
         MSG_PROJECTION_MAP.put(Msg.ORIGIN_ID, Msg.ORIGIN_ID);
         MSG_PROJECTION_MAP.put(Msg.MSG_OID, Msg.MSG_OID);
         MSG_PROJECTION_MAP.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
@@ -569,7 +570,7 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case MSG_COUNT:
-                sql = "SELECT count(*) FROM " + Msg.TABLE_NAME;
+                sql = "SELECT count(*) FROM " + Msg.TABLE_NAME + " AS " + MSG_TABLE_ALIAS;
                 if (selection != null && selection.length() > 0) {
                     sql += " WHERE " + selection;
                 }
@@ -578,7 +579,7 @@ public class MyProvider extends ContentProvider {
             case TIMELINE_MSG_ID:
                 qb.setTables(tablesForTimeline(uri, projection));
                 qb.setProjectionMap(MSG_PROJECTION_MAP);
-                qb.appendWhere(Msg.TABLE_NAME + "." + BaseColumns._ID + "=" + uriToMessageId(uri));
+                qb.appendWhere(MSG_TABLE_ALIAS + "." + BaseColumns._ID + "=" + uriToMessageId(uri));
                 break;
 
             case TIMELINE_SEARCH:
@@ -613,7 +614,7 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case MSG:
-                qb.setTables(Msg.TABLE_NAME);
+                qb.setTables(Msg.TABLE_NAME + " AS " + MSG_TABLE_ALIAS);
                 qb.setProjectionMap(MSG_PROJECTION_MAP);
                 break;
 
@@ -717,7 +718,7 @@ public class MyProvider extends ContentProvider {
 
         Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
 
-        String tables = Msg.TABLE_NAME;
+        String tables = Msg.TABLE_NAME + " AS " + MSG_TABLE_ALIAS;
         boolean linkedUserDefined = false;
         boolean authorNameDefined = false;
         String authorTableName = "";
@@ -747,20 +748,23 @@ public class MyProvider extends ContentProvider {
                  * Select only the latest message from each following User's
                  * timeline
                  */
-                tables  += " LEFT JOIN " + Msg.TABLE_NAME
+                tables  += " LEFT JOIN " + Msg.TABLE_NAME + " AS " + MSG_TABLE_ALIAS
                         + " ON (" 
-                        + "msg." + MyDatabase.Msg.SENDER_ID 
+                        + MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID 
                         + "=fuser." + MyDatabase.FollowingUser.FOLLOWING_USER_ID 
-                        + " AND msg." + BaseColumns._ID 
+                        + " AND " + MSG_TABLE_ALIAS + "." + BaseColumns._ID 
                         + "=u1." + MyDatabase.User.USER_MSG_ID
                         + ")";
                 break;
             case MESSAGESTOACT:
                 if (userIds.getnIds() == 1) {
                     tables = "(SELECT " + userIds.getAccountUserId() + " AS " + MyDatabase.User.LINKED_USER_ID
-                            + ", * FROM " + Msg.TABLE_NAME + ") AS msg";
+                            + ", * FROM " + Msg.TABLE_NAME + ") AS " + MSG_TABLE_ALIAS;
                     linkedUserDefined = true;
                 }
+                break;
+            case PUBLIC:
+                tables = "(SELECT * FROM " + Msg.TABLE_NAME + " WHERE public=1) AS " + MSG_TABLE_ALIAS;
                 break;
             default:
                 break;
@@ -773,7 +777,7 @@ public class MyProvider extends ContentProvider {
                     + (linkedUserDefined ? "" : ", " + MyDatabase.MsgOfUser.USER_ID + " AS " 
                     + MyDatabase.User.LINKED_USER_ID)   
                     + " FROM " +  MsgOfUser.TABLE_NAME + ") AS mou ON "
-                    + Msg.TABLE_NAME + "." + BaseColumns._ID + "="
+                    + MSG_TABLE_ALIAS + "." + BaseColumns._ID + "="
                     + "mou." + MyDatabase.MsgOfUser.MSG_ID;
             switch (tt) {
                 case FOLLOWING_USER:
@@ -798,7 +802,7 @@ public class MyProvider extends ContentProvider {
                     + BaseColumns._ID + ", " 
                     + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME
                     + " FROM " + User.TABLE_NAME + ") AS author ON "
-                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
+                    + MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
             authorNameDefined = true;
             authorTableName = "author";
@@ -818,21 +822,21 @@ public class MyProvider extends ContentProvider {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.SENDER_NAME
                     + " FROM " + User.TABLE_NAME + ") AS sender ON "
-                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID + "=sender."
+                    + MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID + "=sender."
                     + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
                     + " FROM " + User.TABLE_NAME + ") AS prevauthor ON "
-                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
+                    + MSG_TABLE_ALIAS + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
                     + "=prevauthor." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.RECIPIENT_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
                     + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.RECIPIENT_NAME
                     + " FROM " + User.TABLE_NAME + ") AS recipient ON "
-                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
+                    + MSG_TABLE_ALIAS + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
                     + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) {
@@ -844,7 +848,7 @@ public class MyProvider extends ContentProvider {
                     + " FROM " + FollowingUser.TABLE_NAME + ") AS followingauthor ON ("
                     + "followingauthor." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
-                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.AUTHOR_ID
+                    + MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID
                     + "=followingauthor." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
                     + ")";
         }
@@ -857,7 +861,7 @@ public class MyProvider extends ContentProvider {
                     + " FROM " + FollowingUser.TABLE_NAME + ") AS followingsender ON ("
                     + "followingsender." + MyDatabase.FollowingUser.USER_ID + "=" + MyDatabase.User.LINKED_USER_ID
                     + " AND "
-                    + Msg.TABLE_NAME + "." + MyDatabase.Msg.SENDER_ID
+                    + MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID
                     + "=followingsender." + MyDatabase.FollowingUser.FOLLOWING_USER_ID
                     + ")";
         }
@@ -984,7 +988,7 @@ public class MyProvider extends ContentProvider {
                 }
             }
         } catch (SQLiteDoneException e) {
-            MyLog.v(TAG, e);
+            MyLog.ignored(TAG, e);
             id = 0;
         } catch (Exception e) {
             MyLog.e(TAG, "oidToId: sql='" + sql +"'", e);

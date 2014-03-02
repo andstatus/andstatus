@@ -4,8 +4,8 @@ import android.content.ContentValues;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.CommandData;
+import org.andstatus.app.CommandEnum;
 import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.User;

@@ -28,6 +28,7 @@ import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.widget.RemoteViews;
 
+import org.andstatus.app.CommandEnum;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.MyService;
@@ -61,7 +62,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 	private static final String TAG = MyAppWidgetProvider.class
 			.getSimpleName();
 
-	private MyService.CommandEnum msgType = MyService.CommandEnum.UNKNOWN;
+	private CommandEnum msgType = CommandEnum.UNKNOWN;
 	private int numSomethingReceived = 0;
 	private static Object xlock = new Object();
 	private final int instanceId = InstanceId.next();
@@ -80,7 +81,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
             }
 			Bundle extras = intent.getExtras();
 			if (extras != null) {
-				msgType = MyService.CommandEnum.load(extras.getString(IntentExtra.EXTRA_MSGTYPE.key));
+				msgType = CommandEnum.load(extras.getString(IntentExtra.EXTRA_MSGTYPE.key));
 				numSomethingReceived = extras
 						.getInt(IntentExtra.EXTRA_NUMTWEETS.key);
 				int[] appWidgetIds = extras

@@ -41,33 +41,32 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-import android.widget.AbsListView.OnScrollListener;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ToggleButton;
 
-import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.data.AccountUserIds;
 import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.AccountUserIds;
+import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.TimelineViewBinder;
-import org.andstatus.app.data.MyDatabase.MsgOfUser;
-import org.andstatus.app.data.MyDatabase.User;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -608,13 +607,13 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             // TODO: Check if there are any notifications
             // and if none than don't waist time for this:
 
-            mNM.cancel(MyService.CommandEnum.NOTIFY_HOME_TIMELINE.ordinal());
-            mNM.cancel(MyService.CommandEnum.NOTIFY_MENTIONS.ordinal());
-            mNM.cancel(MyService.CommandEnum.NOTIFY_DIRECT_MESSAGE.ordinal());
+            mNM.cancel(CommandEnum.NOTIFY_HOME_TIMELINE.ordinal());
+            mNM.cancel(CommandEnum.NOTIFY_MENTIONS.ordinal());
+            mNM.cancel(CommandEnum.NOTIFY_DIRECT_MESSAGE.ordinal());
 
             // Reset notifications on AppWidget(s)
             Intent intent = new Intent(MyService.ACTION_APPWIDGET_UPDATE);
-            intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, MyService.CommandEnum.NOTIFY_CLEAR.save());
+            intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, CommandEnum.NOTIFY_CLEAR.save());
             sendBroadcast(intent);
         } finally {
             // Nothing yet...
@@ -908,19 +907,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             mQueryString = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
             mSelectedUserId = intentNew.getLongExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
         } else {
-            Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
-            if (appSearchData != null) {
-                // We use other packaging of the same parameters in onSearchRequested
-                timelineTypeNew = TimelineTypeEnum.load(appSearchData
-                        .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
-                if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
-                    mTimelineType = timelineTypeNew;
-                    mIsTimelineCombined = appSearchData.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mIsTimelineCombined);
-                    /* The query itself is still from the Intent */
-                    mQueryString = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
-                    mSelectedUserId = appSearchData.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
-                }
-            }
+            parseAppSearchData(intentNew);
         }
         if (mTimelineType == TimelineTypeEnum.UNKNOWN) {
             /* Set default values */
@@ -955,6 +942,35 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, "processNewIntent; type=\"" + mTimelineType.save() + "\"");
+        }
+    }
+
+    private void parseAppSearchData(Intent intentNew) {
+        Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
+        if (appSearchData != null) {
+            // We use other packaging of the same parameters in onSearchRequested
+            TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(appSearchData
+                    .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+            if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
+                mTimelineType = timelineTypeNew;
+                mIsTimelineCombined = appSearchData.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mIsTimelineCombined);
+                /* The query itself is still from the Intent */
+                mQueryString = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
+                mSelectedUserId = appSearchData.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
+                if (!TextUtils.isEmpty(mQueryString)) {
+                    if (appSearchData.getBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, false)) {
+                        MyLog.v(this, "Global search: " + mQueryString);
+                        setIsLoading(true);
+                        MyServiceManager.sendCommand(
+                                CommandData.searchCommand(
+                                        isTimelineCombined()
+                                                ? ""
+                                                : MyContextHolder.get().persistentAccounts()
+                                                        .getCurrentAccountName(),
+                                        mQueryString));
+                    }
+                }
+            }
         }
     }
 
@@ -1291,6 +1307,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         switch (mTimelineType) {
             case DIRECT:
             case MENTIONS:
+            case PUBLIC:
                 timelineType = mTimelineType;
                 break;
             case USER:
@@ -1437,6 +1454,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         MyLog.v(this, "onReceive: " + commandData);
         switch (commandData.command) {
             case FETCH_TIMELINE:
+            case SEARCH_MESSAGE:
                 setIsLoading(false);
                 break;
             case RATE_LIMIT_STATUS:

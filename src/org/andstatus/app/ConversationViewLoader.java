@@ -34,7 +34,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.ImageView.ScaleType;
 
-import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.MyDatabase.Avatar;

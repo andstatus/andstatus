@@ -17,7 +17,6 @@
 
 package org.andstatus.app;
 
-import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.MyDatabase;

@@ -148,7 +148,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         long messageIdOld = MyProvider.oidToId(OidEnum.MSG_OID, originId, messageOid);
         if (messageIdOld != 0) {
             SelectionAndArgs sa = new SelectionAndArgs();
-            sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg._ID + " = ?", new String[] {
+            sa.addSelection(MyDatabase.Msg._ID + " = ?", new String[] {
                 String.valueOf(messageIdOld)
             });
             int deleted = context.getContentResolver().delete(MyProvider.MSG_CONTENT_URI, sa.selection,

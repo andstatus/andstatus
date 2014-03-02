@@ -41,6 +41,8 @@ public class LatestTimelineItem {
      */
     private long userId = 0;
     
+    private boolean maySaveThis = false;
+    
     TimelinePosition position = TimelinePosition.getEmpty();
     /**
      * 
@@ -69,13 +71,18 @@ public class LatestTimelineItem {
         if (userId == 0) {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }
+        maySaveThis = !TextUtils.isEmpty(timelineType.columnNameTimelineDownloadedDate());
         
-        timelineDownloadedDate = MyProvider.userIdToLongColumnValue(timelineType.columnNameTimelineDate(), userId);
-        if (!TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition())) {
-            position = new TimelinePosition(MyProvider.userIdToStringColumnValue(timelineType.columnNameLatestTimelinePosition(), userId));
-            timelineItemDate = MyProvider.userIdToLongColumnValue(timelineType.columnNameLatestTimelineItemDate(), userId);
-            if (timelineItemDate == 0) {
-                position = TimelinePosition.getEmpty();
+        if (maySaveThis) {
+            timelineDownloadedDate = MyProvider.userIdToLongColumnValue(
+                    timelineType.columnNameTimelineDownloadedDate(), userId);
+            if (!TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition())) {
+                timelineItemDate = MyProvider.userIdToLongColumnValue(
+                        timelineType.columnNameLatestTimelineItemDate(), userId);
+                if (timelineItemDate != 0) {
+                    position = new TimelinePosition(MyProvider.userIdToStringColumnValue(
+                            timelineType.columnNameLatestTimelinePosition(), userId));
+                }
             }
         }
     }
@@ -101,8 +108,7 @@ public class LatestTimelineItem {
         return timelineDownloadedDate;
     }
 
-    /** New Timeline Item was downloaded
-     */
+    /** A new Timeline Item was downloaded   */
     public void onNewMsg(TimelinePosition timelineItemPosition, long timelineItemDate) {
         if (timelineItemPosition != null 
                 && !timelineItemPosition.isEmpty() 
@@ -122,24 +128,40 @@ public class LatestTimelineItem {
      * Persist the info into the Database
      */
     public void save() {
-        boolean changed = timelineDateChanged || 
-                (timelineItemChanged && !TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition()));
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(this, "Timeline " + timelineType.save() 
-                    + " for the user=" + MyProvider.userIdToName(userId) 
-                    + " downloaded at " + (new Date(getTimelineDownloadedDate()).toString())
-                    + (changed ? "" : " not changed")                    
+            MyLog.v(this, this.toString());
+        }
+        if (maySaveThis && changed()) {
+            saveChanged();
+        }
+    }
+    
+    private boolean changed() {
+        return timelineDateChanged || 
+                (timelineItemChanged && !TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition()));
+    }
+    
+    @Override
+    public String toString() {
+        return TAG + "[ Timeline " + timelineType.save() 
+                    + forTheUser() 
+                    + (getTimelineDownloadedDate() > 0 
+                            ? " downloaded at " + (new Date(getTimelineDownloadedDate()).toString()) 
+                            : " never downloaded")
+                    + (changed() ? "" : " not changed")                    
                     + " latest position=" + MyProvider.quoteIfNotQuoted(position.getPosition())
-                    );
-        }
-        if (!changed) {
-            return;
-        }
+                    + "]";
+    }
 
+    private String forTheUser() {
+        return " for the userName=" + MyProvider.userIdToName(userId);
+    }
+
+    private void saveChanged() {
         String sql = "";
         try {
             if (timelineDateChanged) {
-                sql += timelineType.columnNameTimelineDate() + "=" + timelineDownloadedDate;
+                sql += timelineType.columnNameTimelineDownloadedDate() + "=" + timelineDownloadedDate;
             }
             if (timelineItemChanged && !TextUtils.isEmpty(timelineType.columnNameLatestTimelinePosition())) {
                 if (!TextUtils.isEmpty(sql)) {
@@ -160,9 +182,8 @@ public class LatestTimelineItem {
             timelineDateChanged = false;
             timelineItemChanged = false;
         } catch (Exception e) {
-            MyLog.e(this, "save: sql=" + sql + "; error:", e);
+            MyLog.e(this, "save: sql='" + sql + "'", e);
         }
-    
     }
     
     /**
@@ -175,7 +196,7 @@ public class LatestTimelineItem {
         
         if (blnOut && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(this, "It's time to auto update " + timelineType.save() 
-                    + " for the user=" + MyProvider.userIdToName(userId)
+                    + forTheUser()
                     + ". Minutes passed=" + passedMs/1000/60);
         }
         return blnOut;

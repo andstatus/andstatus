@@ -19,10 +19,10 @@ package org.andstatus.app.appwidget;
 import android.content.Intent;
 import android.text.format.Time;
 
+import org.andstatus.app.CommandEnum;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TestSuite;
-import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
 import org.andstatus.app.util.MyLog;
 

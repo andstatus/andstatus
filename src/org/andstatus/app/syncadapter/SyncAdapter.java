@@ -26,11 +26,11 @@ import android.content.SyncResult;
 import android.os.Bundle;
 
 import org.andstatus.app.CommandData;
+import org.andstatus.app.CommandEnum;
 import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.MyService;
 import org.andstatus.app.MyServiceListener;
 import org.andstatus.app.MyServiceReceiver;
-import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;

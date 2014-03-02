@@ -1,8 +1,6 @@
 package org.andstatus.app;
 
-import android.annotation.TargetApi;
 import android.content.Intent;
-import android.os.Build;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +12,6 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.util.MyLog;
-
-import java.util.ArrayList;
 
 /**
  * @author yvolk@yurivolkov.com

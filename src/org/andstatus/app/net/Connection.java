@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2011-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException.StatusCode;
-import org.andstatus.app.origin.Origin;
+import org.andstatus.app.net.MbTimelineItem.ItemType;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONObject;
@@ -94,10 +94,10 @@ public abstract class Connection {
          * Get the User timeline for the user with the selectedUserId. We use credentials of Account which may be
          * not the same user. 
          */
-        STATUSES_USER_TIMELINE,
-        PUBLIC_TIMELINE,
+        STATUSES_USER_TIMELINE(true),
+        PUBLIC_TIMELINE(true),
 
-        STATUSES_SHOW,
+        GET_MESSAGE,
         STATUSES_UPDATE,
         STOP_FOLLOWING_USER,
         
@@ -114,7 +114,21 @@ public abstract class Connection {
         /**
          * Simply ignore this API call
          */
-        DUMMY
+        DUMMY;
+        
+        private final boolean msgPublic;
+
+        private ApiRoutineEnum() {
+            this(false);
+        }
+        
+        private ApiRoutineEnum(boolean msgPublic) {
+            this.msgPublic = msgPublic;
+        }
+
+        public boolean isMsgPublic() {
+            return msgPublic;
+        }
     }
 
     protected HttpConnection http;
@@ -244,7 +258,16 @@ public abstract class Connection {
      * Returns a single status, specified by the id parameter below.
      * The status's author will be returned inline.
      */
-    public abstract MbMessage getMessage(String statusId) throws ConnectionException;
+    public final MbMessage getMessage(String statusId) throws ConnectionException {
+        MbMessage msg = getMessage1(statusId);
+        if (msg != null) {
+            msg.setPublic(true);
+        }
+        return msg;
+    }
+
+    /** See {@link #getMessage(String)} */
+    protected abstract MbMessage getMessage1(String statusId) throws ConnectionException;
     
     /**
      * Update user status by posting to the Twitter REST API.
@@ -407,5 +430,13 @@ public abstract class Connection {
             }
         }
         return unixDate;
+    }
+
+    protected void setMessagesPublic(List<MbTimelineItem> timeline) {
+        for (MbTimelineItem item : timeline) {
+            if (item.getType() == ItemType.MESSAGE) {
+                item.mbMessage.setPublic(true);
+            }
+        }
     }
 }

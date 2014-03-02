@@ -87,7 +87,7 @@ public abstract class ConnectionTwitter extends Connection {
             case STATUSES_USER_TIMELINE:
                 url = "statuses/user_timeline" + EXTENSION;
                 break;
-            case STATUSES_SHOW:
+            case GET_MESSAGE:
                 url = "statuses/show" + EXTENSION;
                 break;
             case STATUSES_UPDATE:
@@ -175,8 +175,8 @@ public abstract class ConnectionTwitter extends Connection {
      * @throws ConnectionException
      */
     @Override
-    public MbMessage getMessage(String messageId) throws ConnectionException {
-        Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.STATUSES_SHOW));
+    public MbMessage getMessage1(String messageId) throws ConnectionException {
+        Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_MESSAGE));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("id", messageId);
         JSONObject message = http.getRequest(builder.build().toString());
@@ -212,7 +212,10 @@ public abstract class ConnectionTwitter extends Connection {
                 }
             }
         }
-        MyLog.d(TAG, "getTimeline '" + url + "' " + timeline.size() + " messages");
+        if (apiRoutine.isMsgPublic()) {
+            setMessagesPublic(timeline);
+        }
+        MyLog.d(TAG, "getTimeline '" + url + "' " + timeline.size() + " items");
         return timeline;
     }
 

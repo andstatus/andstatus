@@ -58,7 +58,7 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public MbMessage getMessage(String statusId) throws ConnectionException {
+    public MbMessage getMessage1(String statusId) throws ConnectionException {
         // TODO Auto-generated method stub
         return MbMessage.getEmpty();
     }

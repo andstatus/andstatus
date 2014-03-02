@@ -47,7 +47,6 @@ import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
-import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;

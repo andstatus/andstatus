@@ -198,7 +198,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public MbMessage getMessage(String messageId) throws ConnectionException {
+    public MbMessage getMessage1(String messageId) throws ConnectionException {
         JSONObject message = http.getRequest(messageId);
         return messageFromJson(message);
     }

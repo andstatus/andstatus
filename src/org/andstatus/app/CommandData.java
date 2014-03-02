@@ -16,12 +16,12 @@
 
 package org.andstatus.app;
 
+import android.app.SearchManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import org.andstatus.app.MyService.CommandEnum;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineTypeEnum;
@@ -137,23 +137,38 @@ public class CommandData implements Comparable<CommandData> {
      * Used to decode command from the Intent upon receiving it
      */
     public static CommandData fromIntent(Intent intent) {
-        CommandData commandData;
-        if (intent == null) {
-            commandData = EMPTY_COMMAND;
-        } else {
-            commandData = new CommandData();
-            commandData.bundle = intent.getExtras();
-            // Decode command
-            String strCommand = "(no command)";
-            if (commandData.bundle != null) {
-                strCommand = commandData.bundle.getString(IntentExtra.EXTRA_MSGTYPE.key);
-                commandData.setAccountName(commandData.bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key));
-                commandData.timelineType = TimelineTypeEnum.load(commandData.bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
-                commandData.itemId = commandData.bundle.getLong(IntentExtra.EXTRA_ITEMID.key);
-                commandData.commandResult = commandData.bundle.getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
+        CommandData commandData = EMPTY_COMMAND;
+        if (intent != null) {
+            Bundle bundle = intent.getExtras();
+            String strCommand = "";
+            if (bundle != null) {
+                strCommand = bundle.getString(IntentExtra.EXTRA_MSGTYPE.key);
             }
-            commandData.command = CommandEnum.load(strCommand);
+            CommandEnum command = CommandEnum.load(strCommand);
+            switch (command) {
+                case UNKNOWN:
+                    MyLog.w(CommandData.class, "Intent had UNKNOWN command " + strCommand + "; Intent: " + intent);
+                    break;
+                case EMPTY:
+                    break;
+                default:
+                    commandData = new CommandData();
+                    commandData.bundle = bundle;
+                    commandData.command = command;
+                    commandData.setAccountName(commandData.bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                    commandData.timelineType = TimelineTypeEnum.load(commandData.bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+                    commandData.itemId = commandData.bundle.getLong(IntentExtra.EXTRA_ITEMID.key);
+                    commandData.commandResult = commandData.bundle.getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
+                    break;
+            }
         }
+        return commandData;
+    }
+    
+    public static CommandData searchCommand(String accountName, String queryString) {
+        CommandData commandData = new CommandData(CommandEnum.SEARCH_MESSAGE, accountName);
+        commandData.timelineType = TimelineTypeEnum.PUBLIC;
+        commandData.bundle.putString(SearchManager.QUERY, queryString);
         return commandData;
     }
     
@@ -234,7 +249,7 @@ public class CommandData implements Comparable<CommandData> {
         return "CommandData [" + "command=" + command.save()
                 + (TextUtils.isEmpty(getAccountName()) ? "" : "; account=" + getAccountName())
                 + (timelineType == TimelineTypeEnum.UNKNOWN ? "" : "; timeline=" + timelineType.save())
-                + (itemId == 0 ? "" : "; id=" + itemId) + ", hashCode=" + hashCode()
+                + (itemId == 0 ? "" : "; id=" + itemId) + "; hashCode=" + hashCode()
                 + "; " + CommandResult.toString(commandResult)
                 + "]";
     }

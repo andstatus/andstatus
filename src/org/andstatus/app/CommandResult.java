@@ -40,7 +40,7 @@ public class CommandResult implements Parcelable {
     
     @Override
     public String toString() {
-        return hasError() ? (hasHardError() ? "Hard Error" : "Soft Error") : " no error";
+        return hasError() ? (hasHardError() ? "Hard Error" : "Soft Error") : " No errors";
     }
 
     public CommandResult(Parcel parcel) {
