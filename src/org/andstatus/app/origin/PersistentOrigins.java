@@ -20,8 +20,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
-import org.andstatus.app.MyContext;
-import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.util.MyLog;
 

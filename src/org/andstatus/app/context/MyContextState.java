@@ -1,4 +1,4 @@
-package org.andstatus.app;
+package org.andstatus.app.context;
 
 public enum MyContextState {
     EMPTY,

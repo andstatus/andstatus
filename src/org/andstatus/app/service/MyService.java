@@ -15,12 +15,18 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.service;
 
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.IntentExtra;
+import org.andstatus.app.R;
+import org.andstatus.app.R.array;
+import org.andstatus.app.R.drawable;
+import org.andstatus.app.R.string;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;

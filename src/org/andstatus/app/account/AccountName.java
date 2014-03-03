@@ -16,8 +16,8 @@
 
 package org.andstatus.app.account;
 
-import org.andstatus.app.MyContext;
-import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 

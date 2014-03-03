@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.service;
 
 import android.database.sqlite.SQLiteDatabase;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.FollowingUserValues;
 import org.andstatus.app.data.LatestTimelineItem;

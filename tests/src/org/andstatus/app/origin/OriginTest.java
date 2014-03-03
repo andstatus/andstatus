@@ -2,8 +2,8 @@ package org.andstatus.app.origin;
 
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.TestSuite;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.MbConfig;
 import org.andstatus.app.origin.Origin.Builder;
 

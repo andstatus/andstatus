@@ -19,14 +19,13 @@ package org.andstatus.app.appwidget;
 import android.content.Intent;
 import android.text.format.Time;
 
-import org.andstatus.app.CommandEnum;
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.TestSuite;
-import org.andstatus.app.appwidget.MyAppWidgetProvider;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.util.MyLog;
 
-import static org.andstatus.app.MyService.*;
+import static org.andstatus.app.service.MyService.*;
 
 import android.content.*;
 import android.text.format.DateUtils;

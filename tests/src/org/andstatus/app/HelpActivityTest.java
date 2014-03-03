@@ -5,7 +5,7 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
 import android.widget.ViewFlipper;
 
-import org.andstatus.app.TestSuite;
+import org.andstatus.app.context.TestSuite;
 
 public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActivity> {
     private HelpActivity mActivity;

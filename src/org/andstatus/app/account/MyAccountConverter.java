@@ -20,7 +20,7 @@ import android.accounts.AccountManager;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
-import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.util.MyLog;
 

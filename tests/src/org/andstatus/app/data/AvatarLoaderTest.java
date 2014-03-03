@@ -3,12 +3,13 @@ package org.andstatus.app.data;
 import android.content.ContentValues;
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.CommandData;
-import org.andstatus.app.CommandEnum;
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;

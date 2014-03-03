@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.service;
 
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.net.ConnectionException;

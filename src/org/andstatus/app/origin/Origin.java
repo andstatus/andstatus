@@ -24,10 +24,10 @@ import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 
-import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.net.Connection.ApiEnum;
 import org.andstatus.app.net.MbConfig;
 import org.andstatus.app.util.MyLog;

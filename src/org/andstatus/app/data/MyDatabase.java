@@ -16,8 +16,9 @@
 
 package org.andstatus.app.data;
 
-import org.andstatus.app.MyContextState;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextState;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 

@@ -4,11 +4,11 @@ import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.MyServiceManager;
-import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.MbUser;
@@ -16,6 +16,7 @@ import org.andstatus.app.net.OAuthClientKeysTest;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginTest;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 

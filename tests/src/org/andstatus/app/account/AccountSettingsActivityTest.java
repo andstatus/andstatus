@@ -23,11 +23,11 @@ import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.test.ActivityInstrumentationTestCase2;
 
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.MyServiceManager;
-import org.andstatus.app.TestSuite;
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.OriginList;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 /**

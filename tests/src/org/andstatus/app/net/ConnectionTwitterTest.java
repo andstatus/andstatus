@@ -18,9 +18,9 @@ package org.andstatus.app.net;
 
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.AccountDataReaderEmpty;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;

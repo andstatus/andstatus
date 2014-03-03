@@ -20,9 +20,9 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.MbMessage;

@@ -28,14 +28,14 @@ import android.text.TextUtils;
 
 import java.util.List;
 
-import org.andstatus.app.MyContext;
-import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverter;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.Connection;

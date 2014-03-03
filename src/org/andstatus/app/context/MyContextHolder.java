@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.context;
 
 import android.content.Context;
 
@@ -22,7 +22,6 @@ import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.data.MyDatabaseConverter;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 import java.util.concurrent.Callable;

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.service;
+
 
 public interface MyServiceListener {
     void onReceive(CommandData commandData);

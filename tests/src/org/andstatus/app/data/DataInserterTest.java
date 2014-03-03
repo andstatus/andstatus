@@ -22,10 +22,9 @@ import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
-import org.andstatus.app.MessageCounters;
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.TestSuite;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
@@ -36,6 +35,7 @@ import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.service.MessageCounters;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 

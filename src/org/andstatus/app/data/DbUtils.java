@@ -20,7 +20,7 @@ import android.content.ContentValues;
 import android.database.sqlite.SQLiteException;
 import android.provider.BaseColumns;
 
-import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
 import java.io.Closeable;

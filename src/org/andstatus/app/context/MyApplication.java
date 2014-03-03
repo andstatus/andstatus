@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.context;
 
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 import android.app.Application;

@@ -16,9 +16,9 @@
 
 package org.andstatus.app.util;
 
-import org.andstatus.app.MyContext;
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 
 import java.io.BufferedWriter;
 import java.io.File;

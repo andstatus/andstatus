@@ -22,9 +22,10 @@ import android.text.TextUtils;
 
 import net.jcip.annotations.GuardedBy;
 
-import org.andstatus.app.MyContext;
-import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.account.MyAccountConverter;
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 public class MyDatabaseConverter {

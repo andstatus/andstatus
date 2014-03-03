@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.context;
 
 import android.content.Context;
 
-import org.andstatus.app.MyContext;
-import org.andstatus.app.MyContextState;
 import org.andstatus.app.account.PersistentAccounts;
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.origin.PersistentOrigins;

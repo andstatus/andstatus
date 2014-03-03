@@ -19,9 +19,9 @@ package org.andstatus.app.appwidget;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 

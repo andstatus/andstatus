@@ -18,7 +18,7 @@ package org.andstatus.app.util;
 
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.TestSuite;
+import org.andstatus.app.context.TestSuite;
 
 public class MyLogTest  extends InstrumentationTestCase {
 

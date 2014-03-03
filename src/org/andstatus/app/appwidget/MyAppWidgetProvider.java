@@ -28,14 +28,14 @@ import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.widget.RemoteViews;
 
-import org.andstatus.app.CommandEnum;
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.MyService;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.MyService;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;

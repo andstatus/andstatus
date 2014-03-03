@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.context;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,10 +46,19 @@ import android.widget.Toast;
 
 import net.jcip.annotations.GuardedBy;
 
+import org.andstatus.app.HelpActivity;
+import org.andstatus.app.MyActionBar;
+import org.andstatus.app.MyActionBarContainer;
+import org.andstatus.app.R;
+import org.andstatus.app.TimelineActivity;
+import org.andstatus.app.R.array;
+import org.andstatus.app.R.string;
+import org.andstatus.app.R.xml;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.origin.OriginList;
+import org.andstatus.app.service.MyService;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;

@@ -43,7 +43,7 @@
         android:largeScreens="true"
         android:anyDensity="true" />
     
-	<application android:name=".MyApplication" android:label="@string/app_name" android:icon="@drawable/icon" android:allowBackup="false">
+	<application android:name=".context.MyApplication" android:label="@string/app_name" android:icon="@drawable/icon" android:allowBackup="false">
 		<meta-data android:name="android.app.default_searchable" android:value=".TimelineActivity"/>
 
 		<provider android:name=".data.MyProvider"
@@ -52,14 +52,14 @@
 		<provider android:name=".data.TimelineSearchSuggestionProvider" 
 			android:authorities="org.andstatus.app.data.TimelineSuggestionProvider"/>
 
-		<service android:process=":remote" android:name=".MyService">
+		<service android:process=":remote" android:name="org.andstatus.app.service.MyService">
 			<intent-filter>
 				<action android:name="org.andstatus.app.MyService"/>
 				<action android:name="org.andstatus.app.SERVICE"/>
 			</intent-filter>
 		</service>
 
-		<receiver android:name=".MyServiceManager">
+		<receiver android:name="org.andstatus.app.service.MyServiceManager">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
             </intent-filter>
@@ -101,7 +101,7 @@
 			</intent-filter>
 		</activity>
 
-        <activity android:name=".MyPreferenceActivity"
+        <activity android:name=".context.MyPreferenceActivity"
             android:label="@string/settings_activity_title"
             android:launchMode="singleTask">
             <intent-filter>

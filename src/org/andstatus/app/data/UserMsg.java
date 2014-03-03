@@ -19,7 +19,7 @@ package org.andstatus.app.data;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
-import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;

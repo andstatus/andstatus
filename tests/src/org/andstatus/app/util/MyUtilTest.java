@@ -19,8 +19,8 @@ package org.andstatus.app.util;
 import android.content.Context;
 import android.test.ActivityTestCase;
 
-import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContextHolder;
 
 public class MyUtilTest extends ActivityTestCase {
     /**

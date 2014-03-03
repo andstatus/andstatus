@@ -25,16 +25,16 @@ import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
 
-import org.andstatus.app.CommandData;
-import org.andstatus.app.CommandEnum;
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.MyService;
-import org.andstatus.app.MyServiceListener;
-import org.andstatus.app.MyServiceReceiver;
-import org.andstatus.app.MyServiceManager;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.MyService;
+import org.andstatus.app.service.MyServiceListener;
+import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.service.MyServiceReceiver;
 import org.andstatus.app.util.MyLog;
 
 /**

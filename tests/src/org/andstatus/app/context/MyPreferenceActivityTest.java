@@ -1,9 +1,10 @@
-package org.andstatus.app;
+package org.andstatus.app.context;
 
 import android.preference.CheckBoxPreference;
 import android.test.ActivityInstrumentationTestCase2;
 
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.service.MyServiceManager;
 
 public class MyPreferenceActivityTest extends ActivityInstrumentationTestCase2<MyPreferenceActivity> {
     private MyPreferenceActivity mActivity;

@@ -18,7 +18,9 @@
 package org.andstatus.app;
 
 import org.andstatus.app.account.AccountSettingsActivity;
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.service.MyService;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SwipeInterface;

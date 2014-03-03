@@ -38,9 +38,14 @@ import android.widget.TextView;
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.MyServiceListener;
+import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.service.MyServiceReceiver;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 

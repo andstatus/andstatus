@@ -27,9 +27,9 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.context.MyContextHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;

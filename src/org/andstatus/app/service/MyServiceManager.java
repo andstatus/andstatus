@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app;
+package org.andstatus.app.service;
 
-import org.andstatus.app.MyService.ServiceState;
+import org.andstatus.app.IntentExtra;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.service.MyService.ServiceState;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 

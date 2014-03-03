@@ -6,11 +6,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.text.TextUtils;
 
-import org.andstatus.app.CommandData;
-import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyDatabase.Avatar;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.HttpJavaNetUtils;
+import org.andstatus.app.service.CommandData;
 import org.andstatus.app.util.MyLog;
 
 import java.io.BufferedOutputStream;

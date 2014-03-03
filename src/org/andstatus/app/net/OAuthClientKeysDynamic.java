@@ -18,7 +18,7 @@ package org.andstatus.app.net;
 
 import android.text.TextUtils;
 
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.context.MyPreferences;
 
 /**
  * CLient Keys, obtained dynamically for each host and Origin.

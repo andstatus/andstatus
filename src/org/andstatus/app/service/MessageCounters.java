@@ -1,4 +1,4 @@
-package org.andstatus.app;
+package org.andstatus.app.service;
 
 import android.content.Context;
 

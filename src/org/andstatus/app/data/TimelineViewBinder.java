@@ -25,8 +25,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 
-import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.RelativeTime;

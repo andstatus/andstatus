@@ -16,8 +16,8 @@
 
 package org.andstatus.app.data;
 
-import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
 
 /**
  * Helper class to construct sql WHERE clause selecting by UserIds

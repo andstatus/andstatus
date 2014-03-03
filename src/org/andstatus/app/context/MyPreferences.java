@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.context;
 
-import org.andstatus.app.MyContext;
-import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 

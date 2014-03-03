@@ -31,9 +31,9 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.R;
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 /**

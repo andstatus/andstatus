@@ -16,8 +16,8 @@
 
 package org.andstatus.app.account;
 
-import org.andstatus.app.MyContextHolder;
-import org.andstatus.app.data.MyPreferences;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 import android.accounts.AbstractAccountAuthenticator;

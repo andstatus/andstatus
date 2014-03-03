@@ -23,13 +23,13 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import org.andstatus.app.MessageCounters;
-import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
+import org.andstatus.app.service.MessageCounters;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;

@@ -21,7 +21,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
 
-import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.TriState;
 
 /**

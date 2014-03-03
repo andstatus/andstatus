@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.context;
 
 import junit.framework.TestCase;
 
@@ -24,13 +24,17 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
 import android.view.ViewGroup;
 
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyContextState;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserterTest;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.OriginsAndAccountsInserter;
 import org.andstatus.app.data.StatusNetMessagesInserter;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Calendar;

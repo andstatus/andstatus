@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.service;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -28,14 +28,21 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import org.andstatus.app.IntentExtra;
+import org.andstatus.app.R;
+import org.andstatus.app.TimelineActivity;
+import org.andstatus.app.R.array;
+import org.andstatus.app.R.drawable;
+import org.andstatus.app.R.string;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarLoader;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.OidEnum;

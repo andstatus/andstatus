@@ -1,4 +1,4 @@
-package org.andstatus.app;
+package org.andstatus.app.context;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;

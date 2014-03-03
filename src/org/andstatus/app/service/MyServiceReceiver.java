@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package org.andstatus.app;
+package org.andstatus.app.service;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

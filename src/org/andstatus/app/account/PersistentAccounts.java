@@ -3,11 +3,11 @@ package org.andstatus.app.account;
 import android.accounts.AccountManager;
 import android.text.TextUtils;
 
-import org.andstatus.app.MyContext;
-import org.andstatus.app.MyContextHolder;
 import org.andstatus.app.account.MyAccount.Builder;
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.util.MyLog;
 

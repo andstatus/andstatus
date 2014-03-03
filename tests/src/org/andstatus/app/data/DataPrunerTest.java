@@ -2,7 +2,7 @@ package org.andstatus.app.data;
 
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.MyContextHolder;
+import org.andstatus.app.context.MyContextHolder;
 
 public class DataPrunerTest extends InstrumentationTestCase  {
     public void testPruneSqlSyntax() {
