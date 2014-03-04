@@ -44,12 +44,12 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
         
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
-        connectionData.accountUserOid = TestSuite.TWITTER_TEST_ACCOUNT_USER_OID;
-        connectionData.accountUsername = TestSuite.TWITTER_TEST_ACCOUNT_USERNAME;
-        connectionData.dataReader = new AccountDataReaderEmpty();
-        connection = connectionData.connectionClass.newInstance();
+        connectionData.setAccountUserOid(TestSuite.TWITTER_TEST_ACCOUNT_USER_OID);
+        connectionData.setAccountUsername(TestSuite.TWITTER_TEST_ACCOUNT_USERNAME);
+        connectionData.setDataReader(new AccountDataReaderEmpty());
+        connection = connectionData.getConnectionClass().newInstance();
         connection.enrichConnectionData(connectionData);
-        connectionData.httpConnectionClass = HttpConnectionMock.class;
+        connectionData.setHttpConnectionClass(HttpConnectionMock.class);
         connection.setAccountData(connectionData);
         httpConnection = (HttpConnectionMock) connection.http;
 
@@ -67,7 +67,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         httpConnection.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
-                new TimelinePosition("380925803053449216") , 20, connectionData.accountUserOid);
+                new TimelinePosition("380925803053449216") , 20, connectionData.getAccountUserOid());
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -76,7 +76,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("Posting message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertTrue("Favorited", mbMessage.favoritedByActor.toBoolean(false));
-        assertEquals("Actor", connectionData.accountUserOid, mbMessage.actor.oid);
+        assertEquals("Actor", connectionData.getAccountUserOid(), mbMessage.actor.oid);
         assertEquals("Author's oid", "221452291", mbMessage.sender.oid);
         assertEquals("Author's username", "Know", mbMessage.sender.userName);
         assertEquals("Author's Display name", "Just so you Know", mbMessage.sender.realName);
@@ -115,7 +115,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertTrue("Is not a reblog", mbMessage.rebloggedMessage == null);
         assertTrue("Is not a reply", mbMessage.inReplyToMessage == null);
         assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
-        assertEquals("Author's oid is user oid of this account", connectionData.accountUserOid, mbMessage.sender.oid);
+        assertEquals("Author's oid is user oid of this account", connectionData.getAccountUserOid(), mbMessage.sender.oid);
         startsWith = "And this is";
         assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,37 +22,37 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 
 class HttpConnectionData implements Cloneable {
-    public OriginType originType;
+    protected OriginType originType;
 
-    public boolean isSsl;
-    public String basicPath;
-    public String oauthPath;
-    public String accountUsername;
-    public String host;
-    public String hostForUserToken = "";
-    public AccountDataReader dataReader = null;
+    protected boolean isSsl;
+    protected String basicPath;
+    protected String oauthPath;
+    protected String accountUsername;
+    protected String host;
+    protected String hostForUserToken = "";
+    protected AccountDataReader dataReader = null;
 
-    public OAuthClientKeys oauthClientKeys;
+    protected OAuthClientKeys oauthClientKeys;
 
-    public boolean areOAuthClientKeysPresent() {
+    protected boolean areOAuthClientKeysPresent() {
         return oauthClientKeys != null && oauthClientKeys.areKeysPresent();
     }
     
     static HttpConnectionData fromConnectionData(OriginConnectionData oConnectionData) {
         HttpConnectionData data = new HttpConnectionData();
-        data.originType = oConnectionData.originType;
-        data.isSsl = oConnectionData.isSsl;
-        data.basicPath = oConnectionData.basicPath;
-        data.oauthPath = oConnectionData.oauthPath;
-        data.accountUsername = oConnectionData.accountUsername;
-        data.host = oConnectionData.host;
-        data.hostForUserToken = oConnectionData.host;
-        data.dataReader = oConnectionData.dataReader;
+        data.originType = oConnectionData.getOriginType();
+        data.isSsl = oConnectionData.isSsl();
+        data.basicPath = oConnectionData.getBasicPath();
+        data.oauthPath = oConnectionData.getOauthPath();
+        data.accountUsername = oConnectionData.getAccountUsername();
+        data.host = oConnectionData.getHost();
+        data.hostForUserToken = oConnectionData.getHost();
+        data.dataReader = oConnectionData.getDataReader();
         return data;
     }
 
     @Override
-    public HttpConnectionData clone() {
+    protected HttpConnectionData clone() {
         try {
             return (HttpConnectionData) super.clone();
         } catch (CloneNotSupportedException e) {

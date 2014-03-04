@@ -48,11 +48,11 @@ import android.widget.ViewFlipper;
  */
 public class HelpActivity extends Activity implements SwipeInterface {
 
-	// Constants
-	public static final String TAG = "HelpActivity";
+    // Constants
+    public static final String TAG = "HelpActivity";
 
     private static final String PACKAGE_NAME = MyService.class.getPackage().getName();
-	
+    
     /**
      * integer - Index of Help screen to show first
      */
@@ -68,19 +68,19 @@ public class HelpActivity extends Activity implements SwipeInterface {
      */
     public static final int HELP_PAGE_CHANGELOG = 2;
     
-	// Local objects
-	private ViewFlipper mFlipper;
-	/**
-	 * Stores state of {@link #EXTRA_IS_FIRST_ACTIVITY}
-	 */
-	private boolean mIsFirstActivity = false;
-	private boolean wasPaused = false;
+    // Local objects
+    private ViewFlipper mFlipper;
+    /**
+     * Stores state of {@link #EXTRA_IS_FIRST_ACTIVITY}
+     */
+    private boolean mIsFirstActivity = false;
+    private boolean wasPaused = false;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		MyContextHolder.initialize(this, this);
+        MyContextHolder.initialize(this, this);
         if (MyPreferences.shouldSetDefaultValues()) {
             // Default values for the preferences will be set only once
             // and in one place: here
@@ -92,11 +92,11 @@ public class HelpActivity extends Activity implements SwipeInterface {
             }
         }
         
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-		setContentView(R.layout.help);
+        setContentView(R.layout.help);
 
-		mFlipper = ((ViewFlipper) this.findViewById(R.id.help_flipper));
+        mFlipper = ((ViewFlipper) this.findViewById(R.id.help_flipper));
 
         if (savedInstanceState != null) {
             mIsFirstActivity = savedInstanceState.getBoolean(EXTRA_IS_FIRST_ACTIVITY, false);
@@ -115,9 +115,9 @@ public class HelpActivity extends Activity implements SwipeInterface {
         }
 
         // Show the Change log
-		Xslt.toWebView(this, R.id.help_changelog, R.raw.changes, R.raw.changesxsl);
-		
-		View splashContainer = findViewById(R.id.splash_container);
+        Xslt.toWebView(this, R.id.help_changelog, R.raw.changes, R.raw.changesxsl);
+        
+        View splashContainer = findViewById(R.id.splash_container);
         splashContainer.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,7 +128,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
         });
 
         //The button is always visible in order to avoid a User's confusion,
-		final Button getStarted = (Button) findViewById(R.id.button_help_get_started);
+        final Button getStarted = (Button) findViewById(R.id.button_help_get_started);
         getStarted.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -141,54 +141,54 @@ public class HelpActivity extends Activity implements SwipeInterface {
             }
         });
 
-		// In order to have swipe gestures we need to add listeners to every page
-		// Only in case of WebView (changelog) we need to set listener on than WebView,
-		// not on its parent: ScrollView
-		ActivitySwipeDetector swipe = new ActivitySwipeDetector(this, this);
+        // In order to have swipe gestures we need to add listeners to every page
+        // Only in case of WebView (changelog) we need to set listener on than WebView,
+        // not on its parent: ScrollView
+        ActivitySwipeDetector swipe = new ActivitySwipeDetector(this, this);
         for (int ind = 0; ind < mFlipper.getChildCount()-1; ind++ ) {
             mFlipper.getChildAt(ind).setOnTouchListener(swipe);
         }
         View view = findViewById(R.id.help_changelog);
         view.setOnTouchListener(swipe);
-		
-		final Button learnMore = (Button) findViewById(R.id.button_help_learn_more);
-		learnMore.setOnClickListener(new OnClickListener() {
-			@Override
+        
+        final Button learnMore = (Button) findViewById(R.id.button_help_learn_more);
+        learnMore.setOnClickListener(new OnClickListener() {
+            @Override
             public void onClick(View v) {
-				mFlipper.showNext();
-			}
-		});
-		
-		if (getIntent().hasExtra(EXTRA_HELP_PAGE_ID)) {
-	        int pageToStart = getIntent().getIntExtra(EXTRA_HELP_PAGE_ID, 0);
-		    if (pageToStart > 0) {
-		        mFlipper.setDisplayedChild(pageToStart);
-		    }
-		}
-		
+                mFlipper.showNext();
+            }
+        });
+        
+        if (getIntent().hasExtra(EXTRA_HELP_PAGE_ID)) {
+            int pageToStart = getIntent().getIntExtra(EXTRA_HELP_PAGE_ID, 0);
+            if (pageToStart > 0) {
+                mFlipper.setDisplayedChild(pageToStart);
+            }
+        }
+        
         
         AlphaAnimation anim = (AlphaAnimation) AnimationUtils.loadAnimation(HelpActivity.this, R.anim.fade_in);
         mFlipper.startAnimation(anim);
-		
-	}
+        
+    }
 
-	@Override
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(EXTRA_IS_FIRST_ACTIVITY, mIsFirstActivity);
     }
 
     @Override
-	protected void onResume() {
-		super.onResume();
-		// We assume that user pressed back after adding first account
+    protected void onResume() {
+        super.onResume();
+        // We assume that user pressed back after adding first account
         if ( wasPaused && mIsFirstActivity 
                 &&  MyContextHolder.get().persistentAccounts().getCurrentAccount() != null ) {
-			Intent intent = new Intent(this, TimelineActivity.class);
-			startActivity(intent);
-			finish();
-		}
-	}
+            Intent intent = new Intent(this, TimelineActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
 
     @Override
     protected void onPause() {

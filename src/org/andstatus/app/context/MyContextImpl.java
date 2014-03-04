@@ -180,11 +180,9 @@ public final class MyContextImpl implements MyContext {
         return false;
     }
 
-    /**
-     * Noop for this implementation
-     */
     @Override
     public void put(AssersionData data) {
+        // Noop for this implementation
     }
 
     @Override

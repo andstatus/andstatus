@@ -98,12 +98,13 @@ public class MyServiceManager extends BroadcastReceiver {
     public static void sendCommand(CommandData commandData) {
         if (!isServiceAvailable()) {
             // Imitate soft service error
-            commandData.commandResult.numIoExceptions++;
+            commandData.getResult().incrementNumIoExceptions();
             MyService.broadcastState(MyContextHolder.get().context(), MyService.ServiceState.STOPPED, commandData);
             return;
         }
         
-        Intent serviceIntent = new Intent(MyService.class.getName());
+        // Using explicit service intent, see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
+        Intent serviceIntent = new Intent(MyContextHolder.get().context(), MyService.class);
         if (commandData != null) {
             serviceIntent = commandData.toIntent(serviceIntent);
         }

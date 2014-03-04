@@ -55,10 +55,10 @@ public class Origin {
     protected long id = 0;
 
     protected String host = "";
-    public final static String KEY_HOST_OF_ORIGIN = "host_of_origin";
+    public static final String KEY_HOST_OF_ORIGIN = "host_of_origin";
 
     protected boolean ssl = true;
-    public final static String KEY_SSL = "ssl";
+    public static final String KEY_SSL = "ssl";
 
     private boolean allowHtml = false;
 
@@ -172,19 +172,7 @@ public class Origin {
     }
 
     public OriginConnectionData getConnectionData(TriState triStateOAuth) {
-        OriginConnectionData connectionData = new OriginConnectionData();
-        connectionData.host = getHost();
-        connectionData.basicPath = originType.basicPath;
-        connectionData.oauthPath = originType.oauthPath;
-        connectionData.isSsl = isSsl();
-        connectionData.api = originType.getApi();
-        connectionData.originType = getOriginType();
-        connectionData.originId = getId();
-        connectionData.isOAuth = originType.fixIsOAuth(triStateOAuth);
-        connectionData.connectionClass = originType.getConnectionClass();
-        connectionData.httpConnectionClass = originType
-                .getHttpConnectionClass(connectionData.isOAuth);
-        return connectionData;
+        return OriginConnectionData.fromOrigin(this, triStateOAuth);
     }
 
     public boolean canSetHostOfOrigin() {

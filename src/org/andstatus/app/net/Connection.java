@@ -358,7 +358,7 @@ public abstract class Connection {
 
     public final void setAccountData(OriginConnectionData connectionData) throws InstantiationException, IllegalAccessException {
         this.data = connectionData;
-        http = connectionData.httpConnectionClass.newInstance();
+        http = connectionData.getHttpConnectionClass().newInstance();
         http.setConnectionData(HttpConnectionData.fromConnectionData(connectionData));
     }
 
@@ -372,7 +372,7 @@ public abstract class Connection {
 
     public OAuthConsumerAndProvider getOAuthConsumerAndProvider() {
         OAuthConsumerAndProvider oa = null;
-        if (data.isOAuth) {
+        if (data.isOAuth()) {
             oa = (OAuthConsumerAndProvider) http;
         }
         return oa;

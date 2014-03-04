@@ -16,7 +16,6 @@
 
 package org.andstatus.app.net;
 
-import android.net.NetworkInfo.DetailedState;
 import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
@@ -94,9 +93,9 @@ public class ConnectionException extends Exception {
         return e;
     }
     
-	public ConnectionException(String detailMessage) {
-		super(detailMessage);
-	}
+    public ConnectionException(String detailMessage) {
+        super(detailMessage);
+    }
 
     public ConnectionException(StatusCode statusCode, final String detailMessage) {
         super(detailMessage);
@@ -118,14 +117,14 @@ public class ConnectionException extends Exception {
                 break;
         }
     }
-	
-	public ConnectionException(Throwable throwable) {
-		super(throwable);
-	}
+    
+    public ConnectionException(Throwable throwable) {
+        super(throwable);
+    }
 
-	public ConnectionException(String detailMessage, Throwable throwable) {
-		super(detailMessage, throwable);
-	}
+    public ConnectionException(String detailMessage, Throwable throwable) {
+        super(detailMessage, throwable);
+    }
     
     public StatusCode getStatusCode() {
         return this.statusCode;

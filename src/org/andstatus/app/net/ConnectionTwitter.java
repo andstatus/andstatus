@@ -236,8 +236,8 @@ public abstract class ConnectionTwitter extends Connection {
             // This is for the Status.net
             oid = jso.optString("id");
         } 
-        MbMessage message =  MbMessage.fromOriginAndOid(data.originId, oid);
-        message.actor = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
+        MbMessage message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid);
+        message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
         try {
             message.sentDate = dateFromJson(jso, "created_at");
 
@@ -341,8 +341,8 @@ public abstract class ConnectionTwitter extends Connection {
                 userName = "";
             }
         }
-        MbUser user = MbUser.fromOriginAndUserOid(data.originId, oid);
-        user.actor = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
+        MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
+        user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
         user.userName = userName;
         user.realName = jso.optString("name");
         user.avatarUrl = jso.optString("profile_image_url");
@@ -419,7 +419,7 @@ public abstract class ConnectionTwitter extends Connection {
         JSONObject result = http.getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
         MbRateLimitStatus status = new MbRateLimitStatus();
         if (result != null) {
-            switch (data.api) {
+            switch (data.getOriginType().getApi()) {
                 case TWITTER1P0:
                 case STATUSNET_TWITTER:
                     status.remaining = result.optInt("remaining_hits");

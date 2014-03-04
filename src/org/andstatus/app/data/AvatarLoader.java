@@ -99,10 +99,10 @@ public class AvatarLoader {
             }
         }
         if (hardError) {
-            commandData.commandResult.numParseExceptions++;
+            commandData.getResult().incrementParseExceptions();
         }
         if (softError) {
-            commandData.commandResult.numIoExceptions++;
+            commandData.getResult().incrementNumIoExceptions();
         }
     }
 

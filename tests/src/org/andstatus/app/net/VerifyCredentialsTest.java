@@ -55,10 +55,10 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
 
         Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
-        connectionData.dataReader = new AccountDataReaderEmpty();
-        connection = connectionData.connectionClass.newInstance();
+        connectionData.setDataReader(new AccountDataReaderEmpty());
+        connection = connectionData.getConnectionClass().newInstance();
         connection.enrichConnectionData(connectionData);
-        connectionData.httpConnectionClass = HttpConnectionMock.class;
+        connectionData.setHttpConnectionClass(HttpConnectionMock.class);
         connection.setAccountData(connectionData);
         httpConnection = (HttpConnectionMock) connection.http;
 

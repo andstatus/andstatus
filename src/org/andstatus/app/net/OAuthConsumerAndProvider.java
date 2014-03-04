@@ -26,9 +26,9 @@ public interface OAuthConsumerAndProvider {
     /**
      * @return OAuth Consumer for this connection
      */
-    public OAuthConsumer getConsumer();
+    OAuthConsumer getConsumer();
     /**
      * @return OAuth Provider for this connection
      */
-    public OAuthProvider getProvider();
+    OAuthProvider getProvider();
 }

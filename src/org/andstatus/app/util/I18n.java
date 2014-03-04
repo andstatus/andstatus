@@ -26,56 +26,56 @@ import java.util.regex.Pattern;
  * i18n - Internationalization utilities 
  */
 public class I18n {
-	private static final String TAG = I18n.class.getSimpleName();
+    private static final String TAG = I18n.class.getSimpleName();
     
     private I18n() {
     }
-	
-	/**
-	 * The function enables to have different localized message formats
-	 *  (actually, any number of them)
-	 *  for different quantities of something.
-	 *  
-	 * E.g. in Russian we need at least three different messages notifying User 
-	 *  about the number of new tweets:
-	 *  1 твит  (same for 21, 31, ...)
-	 *  2 твита ( same for 3, 4, 22, ... )
-	 *  5 твитов (same for 5, ... 11, 12, 20 ...)
-	 *  ...
-	 *  see /res/values-ru/arrays.xml (R.array.appwidget_message_patterns)
-	 * 
-	 * @author yvolk@yurivolkov.com
-	 */
-	public static String formatQuantityMessage(Context context, int messageFormat,
-			int quantityOfSomething, int arrayPatterns, int arrayFormats) {
-		String submessage = "";
-		String message = "";
-		String toMatch = Integer.toString(quantityOfSomething);
-		String[] p = context.getResources().getStringArray(arrayPatterns);
-		String[] f = context.getResources().getStringArray(arrayFormats);
-		String subformat = "{0} ???";
-		for (int i = 0; i < p.length; i++) {
-			Pattern pattern = Pattern.compile(p[i]);
-	        Matcher m = pattern.matcher(toMatch);
-	        if (m.matches()) {
-	        	subformat = f[i];
-				break;
-	        }
-		}
-		MessageFormat msf = new MessageFormat(subformat);
-		submessage = msf.format(new Object[] { quantityOfSomething });
-		
-		if (messageFormat == 0) {
+    
+    /**
+     * The function enables to have different localized message formats
+     *  (actually, any number of them)
+     *  for different quantities of something.
+     *  
+     * E.g. in Russian we need at least three different messages notifying User 
+     *  about the number of new tweets:
+     *  1 твит  (same for 21, 31, ...)
+     *  2 твита ( same for 3, 4, 22, ... )
+     *  5 твитов (same for 5, ... 11, 12, 20 ...)
+     *  ...
+     *  see /res/values-ru/arrays.xml (R.array.appwidget_message_patterns)
+     * 
+     * @author yvolk@yurivolkov.com
+     */
+    public static String formatQuantityMessage(Context context, int messageFormat,
+            int quantityOfSomething, int arrayPatterns, int arrayFormats) {
+        String submessage = "";
+        String message = "";
+        String toMatch = Integer.toString(quantityOfSomething);
+        String[] p = context.getResources().getStringArray(arrayPatterns);
+        String[] f = context.getResources().getStringArray(arrayFormats);
+        String subformat = "{0} ???";
+        for (int i = 0; i < p.length; i++) {
+            Pattern pattern = Pattern.compile(p[i]);
+            Matcher m = pattern.matcher(toMatch);
+            if (m.matches()) {
+                subformat = f[i];
+                break;
+            }
+        }
+        MessageFormat msf = new MessageFormat(subformat);
+        submessage = msf.format(new Object[] { quantityOfSomething });
+        
+        if (messageFormat == 0) {
             message = submessage;
-		} else {
-	        MessageFormat mf = new MessageFormat(context.getText(messageFormat).toString());
-	        message = mf.format(new Object[] { submessage });
-		}
+        } else {
+            MessageFormat mf = new MessageFormat(context.getText(messageFormat).toString());
+            message = mf.format(new Object[] { submessage });
+        }
 
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "formatMessage, num=" + toMatch + "; subformat=" + subformat 
-    				+ "; submessage=" + submessage + "; message=" + message);
+                    + "; submessage=" + submessage + "; message=" + message);
         }
-		return message;
-	}
+        return message;
+    }
 }

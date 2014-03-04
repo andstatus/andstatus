@@ -603,11 +603,11 @@ public final class MyAccount implements AccountDataReader {
         private void setConnection() {
             Origin origin = myAccount.oAccountName.getOrigin();
             OriginConnectionData connectionData = origin.getConnectionData(TriState.fromBoolean(myAccount.isOAuth));
-            connectionData.accountUserOid = myAccount.userOid;
-            connectionData.accountUsername = myAccount.getUsername();
-            connectionData.dataReader = myAccount;
+            connectionData.setAccountUserOid(myAccount.userOid);
+            connectionData.setAccountUsername(myAccount.getUsername());
+            connectionData.setDataReader(myAccount);
             try {
-                myAccount.connection = connectionData.connectionClass.newInstance();
+                myAccount.connection = connectionData.getConnectionClass().newInstance();
                 myAccount.connection.enrichConnectionData(connectionData);
                 myAccount.connection.setAccountData(connectionData);
             } catch (InstantiationException e) {

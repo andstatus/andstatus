@@ -246,14 +246,15 @@ public class TestSuite extends TestCase {
         return cal.getTime();        
     }
 
-    public static void waitForListLoaded(Activity activity) throws InterruptedException {
+    public static void waitForListLoaded(InstrumentationTestCase instrumentationTestCase, Activity activity) throws InterruptedException {
         final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
         assertTrue(list != null);
         for (int ind=0; ind<200; ind++) {
             if (list.getChildCount() > 0) {
                 break;
             }
-            Thread.sleep(400);
+            instrumentationTestCase.getInstrumentation().waitForIdleSync();
+            Thread.sleep(50);
         }
         assertTrue("There are items in the list of " + activity.getClass().getSimpleName(), 
                 list.getChildCount() > 0);

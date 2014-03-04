@@ -616,8 +616,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             // intent.putExtra(android.provider.Settings.EXTRA_AUTHORITIES, new String[] {MyProvider.AUTHORITY}); NOSONAR
         } else {
             intent = new Intent(context, AccountSettingsActivity.class);
-            // intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
-            // TODO: Figure out some more specific intent...
+            // Was this: intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
         }
         context.startActivity(intent);
     }

@@ -22,9 +22,6 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
-import org.andstatus.app.R.array;
-import org.andstatus.app.R.drawable;
-import org.andstatus.app.R.string;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.I18n;
@@ -57,14 +54,7 @@ public class MyService extends Service {
     private static final String TAG = MyService.class.getSimpleName();
     private static final String COMMANDS_QUEUE_FILENAME = TAG + "-commands-queue";
     private static final String RETRY_QUEUE_FILENAME = TAG + "-retry-queue";
-
-    static final String PACKAGE_NAME = MyService.class.getPackage().getName();
-
-    /**
-     * Prefix of all actions of this Service
-     */
-    private static final String ACTIONPREFIX = PACKAGE_NAME + ".action.";
-
+    
     /**
      * Intent with this action sent when it is time to update AndStatus
      * AppWidget.
@@ -84,13 +74,13 @@ public class MyService extends Service {
      * @see AppWidgetProvider#onUpdate AppWidgetProvider.onUpdate(Context
      *      context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
      */
-    public static final String ACTION_APPWIDGET_UPDATE = ACTIONPREFIX + "APPWIDGET_UPDATE";
+    public static final String ACTION_APPWIDGET_UPDATE = IntentExtra.MY_ACTION_PREFIX + "APPWIDGET_UPDATE";
 
     /**
      * Broadcast with this action is being sent by {@link MyService} to notify of its state.
      *  Actually {@link MyServiceManager} receives it.
      */
-    public static final String ACTION_SERVICE_STATE = ACTIONPREFIX + "SERVICE_STATE";
+    public static final String ACTION_SERVICE_STATE = IntentExtra.MY_ACTION_PREFIX + "SERVICE_STATE";
 
     /**
      * This action is used in any intent sent to this service. Actual command to
@@ -99,7 +89,7 @@ public class MyService extends Service {
      * 
      * @see CommandEnum
      */
-    public static final String ACTION_GO = ACTIONPREFIX + "GO";
+    public static final String ACTION_GO = IntentExtra.MY_ACTION_PREFIX + "GO";
     
     /**
      * Send broadcast to Widgets even if there are no new tweets
@@ -226,16 +216,16 @@ public class MyService extends Service {
     
     private void receiveCommand(Intent intent, int startId) {
         CommandData commandData = CommandData.fromIntent(intent);
-        switch (commandData.command) {
+        switch (commandData.getCommand()) {
             case STOP_SERVICE:
-                MyLog.v(this, "Command " + commandData.command + " received");
+                MyLog.v(this, "Command " + commandData.getCommand() + " received");
                 stopDelayed(false);
                 break;
             case BROADCAST_SERVICE_STATE:
                 broadcastState(commandData);
                 break;
             case UNKNOWN:
-                MyLog.v(this, "Command " + commandData.command + " ignored");
+                MyLog.v(this, "Command " + commandData.getCommand() + " ignored");
                 break;
             default:
                 receiveOtherCommand(commandData, startId);
@@ -285,13 +275,13 @@ public class MyService extends Service {
         }
         if (!ok) {
             MyLog.e(this, "The Service is stopping, the command was lost: "
-                    + commandData.command);
+                    + commandData.getCommand());
         }
     }
 
     private boolean addToTheQueue(CommandData commandData) {
         boolean ok = true;
-        if ( commandData.command == CommandEnum.EMPTY) {
+        if ( commandData.getCommand() == CommandEnum.EMPTY) {
             // Nothing to do
         } else if (mainCommandQueue.contains(commandData)) {
             MyLog.d(this, "Duplicated " + commandData);
@@ -377,7 +367,7 @@ public class MyService extends Service {
             SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
             do {
                 CommandData cd = new CommandData(sp, count);
-                if (cd.command == CommandEnum.UNKNOWN) {
+                if (cd.getCommand() == CommandEnum.UNKNOWN) {
                     done = true;
                 } else {
                     if ( q.offer(cd) ) {
@@ -677,7 +667,7 @@ public class MyService extends Service {
                     break;
                 }
                 commandData.resetCommandResult();
-                new OneCommandExecutor(this, commandData).execute();
+                commandData.getExecutor().setParent(this).execute();
                 if (shouldWeRetry(commandData)) {
                     synchronized(MyService.this) {
                         // Put the command to the retry queue
@@ -687,12 +677,12 @@ public class MyService extends Service {
                         }
                     }        
                 }
-                MyLog.d(this, (commandData.commandResult.hasError() 
-                        ? (commandData.commandResult.willRetry ? "Will retry" : "Failed") 
+                MyLog.d(this, (commandData.getResult().hasError() 
+                        ? (commandData.getResult().willRetry ? "Will retry" : "Failed") 
                                 : "Succeeded") 
                         + " " + commandData);
                 broadcastState(commandData);
-                if (commandData.commandResult.hasError() && !isOnline()) {
+                if (commandData.getResult().hasError() && !isOnline()) {
                     // Don't bother with other commands if we're not Online :-)
                     break;
                 }
@@ -701,21 +691,21 @@ public class MyService extends Service {
         }
 
         private boolean shouldWeRetry(CommandData commandData) {
-            commandData.commandResult.willRetry = false;
-            if (commandData.commandResult.hasError()) {
-                switch (commandData.command) {
+            commandData.getResult().willRetry = false;
+            if (commandData.getResult().hasError()) {
+                switch (commandData.getCommand()) {
                     case AUTOMATIC_UPDATE:
                     case FETCH_TIMELINE:
                     case RATE_LIMIT_STATUS:
                         break;
                     default:
-                        if (!commandData.commandResult.hasHardError()) {
-                            commandData.commandResult.willRetry = true;
+                        if (!commandData.getResult().hasHardError()) {
+                            commandData.getResult().willRetry = true;
                         }
                         break;
                 }
             }
-            if (commandData.commandResult.willRetry) {
+            if (commandData.getResult().willRetry) {
                 if (commandData.retriesLeft == 0) {
                     // This means that retriesLeft was not set yet,
                     // so let's set it to some default value, the same for
@@ -724,11 +714,11 @@ public class MyService extends Service {
                 }
                 commandData.retriesLeft -= 1;
                 if (commandData.retriesLeft == 0) {
-                    commandData.commandResult.willRetry = false;
+                    commandData.getResult().willRetry = false;
                 }
                 
             }
-            return commandData.commandResult.willRetry;
+            return commandData.getResult().willRetry;
         }
         
         /**

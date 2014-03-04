@@ -6,36 +6,62 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.TimelineTypeEnum;
 
 public class MessageCounters {
-    public MyAccount ma;
-    public Context context;
-    public TimelineTypeEnum timelineType;    
+    private MyAccount ma;
+    private Context context;
+    private TimelineTypeEnum timelineType;    
 
     // Raw counters
-    public int newMessagesCount = 0;
-    public int newMentionsCount = 0;
-    public int newRepliesCount = 0;
-    public int totalMessagesDownloaded = 0;
+    private int newMessagesCount = 0;
+    private int newMentionsCount = 0;
+    private int newDownloadedCount = 0;
 
     // Accumulated counters to use for user notifications
-    public int msgAdded = 0;
-    public int mentionsAdded = 0;
-    public int directedAdded = 0;
-    public int downloadedCount = 0;
+    private int messagesAdded = 0;
+    private int mentionsAdded = 0;
+    private int directedAdded = 0;
+    private int downloadedCount = 0;
     
     public MessageCounters(MyAccount ma, Context context, TimelineTypeEnum timelineType) {
         this.ma = ma;
         this.context = context;
         this.timelineType = timelineType;
     }
+
+    public MyAccount getMyAccount() {
+        return ma;
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
+    public TimelineTypeEnum getTimelineType() {
+        return timelineType;
+    }
+    protected void setTimelineType(TimelineTypeEnum timelineType) {
+        this.timelineType = timelineType;
+    }
+
+    public void incrementMessagesCount() {
+        newMessagesCount++;
+    }
+
+    public void incrementMentionsCount() {
+        newMentionsCount++;
+    }
+
+    public void incrementDownloadedCount() {
+        newDownloadedCount++;
+    }
     
     public void accumulate() {
-        downloadedCount  += totalMessagesDownloaded;
-        switch (timelineType) {
+        downloadedCount  += newDownloadedCount;
+        switch (getTimelineType()) {
             case MENTIONS:
                 mentionsAdded += newMentionsCount;
                 break;
             case HOME:
-                msgAdded += newMessagesCount;
+                messagesAdded += newMessagesCount;
                 mentionsAdded += newMentionsCount;
                 break;
             case DIRECT:
@@ -50,17 +76,17 @@ public class MessageCounters {
         }
         newMessagesCount = 0;
         newMentionsCount = 0;
-        newRepliesCount = 0;
-        totalMessagesDownloaded = 0;
+        newDownloadedCount = 0;
     }
     
-    public String accumulatedToString() {
+    @Override
+    public String toString() {
         String message = "";
         if (downloadedCount > 0) {
             message += ", " + downloadedCount + " downloaded";
         }
-        if (msgAdded > 0) {
-            message += ", " + msgAdded + " messages";
+        if (getMessagesAdded() > 0) {
+            message += ", " + messagesAdded + " messages";
         }
         if (mentionsAdded > 0) {
             message += ", " + mentionsAdded + " mentions";
@@ -69,5 +95,17 @@ public class MessageCounters {
             message += ", " + directedAdded + " directs";
         }
         return message;
+    }
+    
+    protected int getMessagesAdded() {
+        return messagesAdded;
+    }
+
+    protected int getMentionsAdded() {
+        return mentionsAdded;
+    }
+
+    protected int getDirectedAdded() {
+        return directedAdded;
     }
 }

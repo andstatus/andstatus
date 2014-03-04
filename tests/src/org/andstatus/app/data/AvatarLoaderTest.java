@@ -92,11 +92,11 @@ public class AvatarLoaderTest extends InstrumentationTestCase {
         loader.load(commandData);
         AvatarDrawable avatarDrawable = new AvatarDrawable(ma.getUserId(), loader.getFileName());
         if (AvatarStatus.LOADED.equals(status)) {
-            assertFalse("Loaded " + urlString, commandData.commandResult.hasError());
+            assertFalse("Loaded " + urlString, commandData.getResult().hasError());
             assertEquals("Loaded " + urlString, status, loader.getStatus());
             assertTrue("Exists avatar " + urlString, avatarDrawable.exists());
         } else {
-            assertTrue("Error loading " + urlString, commandData.commandResult.hasError());
+            assertTrue("Error loading " + urlString, commandData.getResult().hasError());
             assertFalse("Doesn't exist avatar " + urlString, avatarDrawable.exists());
         }
         return loader.getRowId();

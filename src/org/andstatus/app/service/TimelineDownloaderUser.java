@@ -48,10 +48,10 @@ public class TimelineDownloaderUser extends TimelineDownloader {
     @Override
     public void download() throws ConnectionException {
         String userOid =  MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
-        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(counters.timelineType, userId);
+        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(counters.getTimelineType(), userId);
         
         if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-            String strLog = "Loading timeline " + counters.timelineType.save() + "; account=" + counters.ma.getAccountName();
+            String strLog = "Loading timeline " + counters.getTimelineType().save() + "; account=" + counters.getMyAccount().getAccountName();
             strLog += "; user=" + MyProvider.userIdToName(userId);
             if (latestTimelineItem.getTimelineDownloadedDate() > 0) {
                 strLog += "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
@@ -65,15 +65,15 @@ public class TimelineDownloaderUser extends TimelineDownloader {
         LatestUserMessages lum = new LatestUserMessages();
         // Retrieve new list of followed users
         DataInserter di = new DataInserter(counters);
-        if (counters.ma.getConnection().isApiSupported(ApiRoutineEnum.GET_FRIENDS)) {
-            followedUsers = counters.ma.getConnection().getUsersFollowedBy(userOid);
+        if (counters.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.GET_FRIENDS)) {
+            followedUsers = counters.getMyAccount().getConnection().getUsersFollowedBy(userOid);
             followedUsersOids = new ArrayList<String>();
             for (MbUser followedUser : followedUsers) {
                 followedUsersOids.add(followedUser.oid);
                 di.insertOrUpdateUser(followedUser, lum);
             }
-        } else if (counters.ma.getConnection().isApiSupported(ApiRoutineEnum.GET_FRIENDS_IDS)) {
-            followedUsersOids = counters.ma.getConnection().getIdsOfUsersFollowedBy(userOid);
+        } else if (counters.getMyAccount().getConnection().isApiSupported(ApiRoutineEnum.GET_FRIENDS_IDS)) {
+            followedUsersOids = counters.getMyAccount().getConnection().getIdsOfUsersFollowedBy(userOid);
         } else {
             throw new ConnectionException(StatusCode.UNSUPPORTED_API, ApiRoutineEnum.GET_FRIENDS 
                     + " and " + ApiRoutineEnum.GET_FRIENDS_IDS);
@@ -82,7 +82,7 @@ public class TimelineDownloaderUser extends TimelineDownloader {
         Set<Long> followedIdsOld = MyProvider.getIdsOfUsersFollowedBy(userId);
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
         for (String followedUserOid : followedUsersOids) {
-            long friendId = MyProvider.oidToId(MyDatabase.OidEnum.USER_OID, counters.ma.getOriginId(), followedUserOid);
+            long friendId = MyProvider.oidToId(MyDatabase.OidEnum.USER_OID, counters.getMyAccount().getOriginId(), followedUserOid);
             long msgId = 0;
             if (friendId != 0) {
                 followedIdsOld.remove(friendId);
@@ -92,8 +92,8 @@ public class TimelineDownloaderUser extends TimelineDownloader {
             if (msgId == 0) {
                 try {
                     // Download the Users's info + optionally his latest message
-                    if (friendId == 0 || counters.ma.getConnection().userObjectHasMessage()) {
-                        MbUser mbUser = counters.ma.getConnection().getUser(followedUserOid);
+                    if (friendId == 0 || counters.getMyAccount().getConnection().userObjectHasMessage()) {
+                        MbUser mbUser = counters.getMyAccount().getConnection().getUser(followedUserOid);
                         friendId = di.insertOrUpdateUser(mbUser, lum);
                         msgId = MyProvider.userIdToLongColumnValue(User.USER_MSG_ID, friendId);
                     } 
@@ -123,9 +123,9 @@ public class TimelineDownloaderUser extends TimelineDownloader {
     }
 
     private void downloadOneMessageBy(String userOid, LatestUserMessages lum) throws ConnectionException {
-        counters.timelineType = TimelineTypeEnum.USER;
-        List<MbTimelineItem> messages = counters.ma.getConnection().getTimeline(
-                counters.timelineType.getConnectionApiRoutine(), TimelinePosition.getEmpty(), 1, userOid);
+        counters.setTimelineType(TimelineTypeEnum.USER);
+        List<MbTimelineItem> messages = counters.getMyAccount().getConnection().getTimeline(
+                counters.getTimelineType().getConnectionApiRoutine(), TimelinePosition.getEmpty(), 1, userOid);
         DataInserter di = new DataInserter(counters);
         for (MbTimelineItem item : messages) {
             if (item.getType() == ItemType.MESSAGE) {

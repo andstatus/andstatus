@@ -29,7 +29,6 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
-import java.io.IOException;
 
 public class AvatarDrawable {
     private long userId;

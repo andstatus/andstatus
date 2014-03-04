@@ -51,10 +51,10 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
 
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
-        connectionData.dataReader = new AccountDataReaderEmpty();
-        connection = (ConnectionPumpio) connectionData.connectionClass.newInstance();
+        connectionData.setDataReader(new AccountDataReaderEmpty());
+        connection = (ConnectionPumpio) connectionData.getConnectionClass().newInstance();
         connection.enrichConnectionData(connectionData);
-        connectionData.httpConnectionClass = HttpConnectionMock.class;
+        connectionData.setHttpConnectionClass(HttpConnectionMock.class);
         connection.setAccountData(connectionData);
         httpConnection = (HttpConnectionMock) connection.http;
 
@@ -201,7 +201,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         String body = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnection.setResponse(new JSONObject());
-        connection.data.accountUserOid = "acct:mytester@" + host;
+        connection.data.setAccountUserOid("acct:mytester@" + host);
         connection.updateStatus(body, inReplyToId);
         JSONObject activity = httpConnection.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
@@ -229,11 +229,11 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.unfollow_pumpio);
         httpConnection.setResponse(jso);
-        connection.data.accountUserOid = "acct:t131t@" + host;
+        connection.data.setAccountUserOid("acct:t131t@" + host);
         String userOid = "acct:evan@e14n.com";
         MbUser user = connection.followUser(userOid, false);
         assertTrue("User is present", !user.isEmpty());
-        assertEquals("Our account acted", connection.data.accountUserOid, user.actor.oid);
+        assertEquals("Our account acted", connection.data.getAccountUserOid(), user.actor.oid);
         assertEquals("Object of action", userOid, user.oid);
         assertEquals("Unfollowed", TriState.FALSE, user.followedByActor);
     }

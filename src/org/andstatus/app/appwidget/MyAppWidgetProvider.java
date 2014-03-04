@@ -58,291 +58,291 @@ import org.andstatus.app.util.RelativeTime;
  * @author yvolk@yurivolkov.com
  */
 public class MyAppWidgetProvider extends AppWidgetProvider {
-	// log tag
-	private static final String TAG = MyAppWidgetProvider.class
-			.getSimpleName();
+    // log tag
+    private static final String TAG = MyAppWidgetProvider.class
+            .getSimpleName();
 
-	private CommandEnum msgType = CommandEnum.UNKNOWN;
-	private int numSomethingReceived = 0;
-	private static Object xlock = new Object();
-	private final int instanceId = InstanceId.next();
+    private CommandEnum msgType = CommandEnum.UNKNOWN;
+    private int numSomethingReceived = 0;
+    private static Object xlock = new Object();
+    private final int instanceId = InstanceId.next();
 
-	@Override
-	public void onReceive(Context context, Intent intent) {
+    @Override
+    public void onReceive(Context context, Intent intent) {
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "onReceive; intent=" + intent);
         }
-		boolean done = false;
-		String action = intent.getAction();
+        boolean done = false;
+        String action = intent.getAction();
 
-		if (MyService.ACTION_APPWIDGET_UPDATE.equals(action)) {
+        if (MyService.ACTION_APPWIDGET_UPDATE.equals(action)) {
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "instanceId=" + instanceId + "; Intent from MyService received!");
             }
-			Bundle extras = intent.getExtras();
-			if (extras != null) {
-				msgType = CommandEnum.load(extras.getString(IntentExtra.EXTRA_MSGTYPE.key));
-				numSomethingReceived = extras
-						.getInt(IntentExtra.EXTRA_NUMTWEETS.key);
-				int[] appWidgetIds = extras
-						.getIntArray(AppWidgetManager.EXTRA_APPWIDGET_IDS);
-				if (appWidgetIds == null || appWidgetIds.length == 0) {
-					/**
-					 * Update All AndStatus AppWidgets
-					 * */
-					appWidgetIds = AppWidgetManager
-							.getInstance(context)
-							.getAppWidgetIds(
-									new ComponentName(context, this.getClass()));
-				}
-				if (appWidgetIds != null && appWidgetIds.length > 0) {
-					onUpdate(context, AppWidgetManager.getInstance(context),
-							appWidgetIds);
-					done = true;
-				}
-			}
-			if (!done) {
-				// This will effectively reset the Widget view
-				updateAppWidget(context, AppWidgetManager.getInstance(context),
-						AppWidgetManager.INVALID_APPWIDGET_ID);
-				done = true;
-			}
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                msgType = CommandEnum.load(extras.getString(IntentExtra.EXTRA_MSGTYPE.key));
+                numSomethingReceived = extras
+                        .getInt(IntentExtra.EXTRA_NUMTWEETS.key);
+                int[] appWidgetIds = extras
+                        .getIntArray(AppWidgetManager.EXTRA_APPWIDGET_IDS);
+                if (appWidgetIds == null || appWidgetIds.length == 0) {
+                    /**
+                     * Update All AndStatus AppWidgets
+                     * */
+                    appWidgetIds = AppWidgetManager
+                            .getInstance(context)
+                            .getAppWidgetIds(
+                                    new ComponentName(context, this.getClass()));
+                }
+                if (appWidgetIds != null && appWidgetIds.length > 0) {
+                    onUpdate(context, AppWidgetManager.getInstance(context),
+                            appWidgetIds);
+                    done = true;
+                }
+            }
+            if (!done) {
+                // This will effectively reset the Widget view
+                updateAppWidget(context, AppWidgetManager.getInstance(context),
+                        AppWidgetManager.INVALID_APPWIDGET_ID);
+                done = true;
+            }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "instanceId=" + instanceId + "; Intent from MyService processed");
             }
-		} else if (AppWidgetManager.ACTION_APPWIDGET_DELETED.equals(action)) {
+        } else if (AppWidgetManager.ACTION_APPWIDGET_DELETED.equals(action)) {
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "Action APPWIDGET_DELETED was received");
             }
-			Bundle extras = intent.getExtras();
-			if (extras != null) {
-				int[] appWidgetIds = extras
-						.getIntArray(AppWidgetManager.EXTRA_APPWIDGET_IDS);
-				if (appWidgetIds != null && appWidgetIds.length > 0) {
-					onDeleted(context, appWidgetIds);
-					done = true;
-				} else {
-					// For some reason this is required for Android v.1.5
-					int appWidgetId = extras
-							.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID);
-					if (appWidgetId != 0) {
-						int[] appWidgetIds2 = { appWidgetId };
-						onDeleted(context, appWidgetIds2);
-						done = true;
-					}
-				}
-			}
-			if (!done) {
-	            if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-	                MyLog.d(TAG, "Deletion was not done, extras='"
-	                        + extras.toString() + "'");
-	            }
-			}
-		}
-		if (!done) {
-			super.onReceive(context, intent);
-		}
-	}
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                int[] appWidgetIds = extras
+                        .getIntArray(AppWidgetManager.EXTRA_APPWIDGET_IDS);
+                if (appWidgetIds != null && appWidgetIds.length > 0) {
+                    onDeleted(context, appWidgetIds);
+                    done = true;
+                } else {
+                    // For some reason this is required for Android v.1.5
+                    int appWidgetId = extras
+                            .getInt(AppWidgetManager.EXTRA_APPWIDGET_ID);
+                    if (appWidgetId != 0) {
+                        int[] appWidgetIds2 = { appWidgetId };
+                        onDeleted(context, appWidgetIds2);
+                        done = true;
+                    }
+                }
+            }
+            if (!done) {
+                if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+                    MyLog.d(TAG, "Deletion was not done, extras='"
+                            + extras.toString() + "'");
+                }
+            }
+        }
+        if (!done) {
+            super.onReceive(context, intent);
+        }
+    }
 
-	@Override
-	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
-			int[] appWidgetIds) {
+    @Override
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager,
+            int[] appWidgetIds) {
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "onUpdate");
         }
-		// For each widget that needs an update, get the text that we should
-		// display:
-		// - Create a RemoteViews object for it
-		// - Set the text in the RemoteViews object
-		// - Tell the AppWidgetManager to show that rows object for the widget.
-		final int n = appWidgetIds.length;
-		for (int i = 0; i < n; i++) {
-			int appWidgetId = appWidgetIds[i];
-			updateAppWidget(context, appWidgetManager, appWidgetId);
-		}
-	}
+        // For each widget that needs an update, get the text that we should
+        // display:
+        // - Create a RemoteViews object for it
+        // - Set the text in the RemoteViews object
+        // - Tell the AppWidgetManager to show that rows object for the widget.
+        final int n = appWidgetIds.length;
+        for (int i = 0; i < n; i++) {
+            int appWidgetId = appWidgetIds[i];
+            updateAppWidget(context, appWidgetManager, appWidgetId);
+        }
+    }
 
-	@Override
-	public void onDeleted(Context context, int[] appWidgetIds) {
+    @Override
+    public void onDeleted(Context context, int[] appWidgetIds) {
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "onDeleted");
         }
-		// When the user deletes the widget, delete all preferences associated
-		// with it.
-		final int n = appWidgetIds.length;
-		for (int i = 0; i < n; i++) {
-			new MyAppWidgetData(context, appWidgetIds[i]).delete();
-		}
-	}
+        // When the user deletes the widget, delete all preferences associated
+        // with it.
+        final int n = appWidgetIds.length;
+        for (int i = 0; i < n; i++) {
+            new MyAppWidgetData(context, appWidgetIds[i]).delete();
+        }
+    }
 
-	@Override
-	public void onEnabled(Context context) {
+    @Override
+    public void onEnabled(Context context) {
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "onEnabled");
         }
-	}
+    }
 
-	@Override
-	public void onDisabled(Context context) {
+    @Override
+    public void onDisabled(Context context) {
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "onDisabled");
         }
 
-	}
+    }
 
-	/**
-	 * Update the AppWidget view (i.e. on the Home screen)
-	 * 
-	 * @param context
-	 * @param appWidgetManager
-	 * @param appWidgetId
-	 *            Id of the The AppWidget instance which view should be updated
-	 */
-	void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
-			int appWidgetId) {
-		boolean ok = false;
-		try {
+    /**
+     * Update the AppWidget view (i.e. on the Home screen)
+     * 
+     * @param context
+     * @param appWidgetManager
+     * @param appWidgetId
+     *            Id of the The AppWidget instance which view should be updated
+     */
+    void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
+            int appWidgetId) {
+        boolean ok = false;
+        try {
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "instanceId=" + instanceId + "; updateAppWidget appWidgetId=" + appWidgetId 
                         + "; msgType=" + msgType);
             }
 
-			// TODO: Do we need AlarmManager here?
-			// see /ApiDemos/src/com/example/android/apis/app/AlarmController.java
-			// on how to implement AlarmManager...
+            // TODO: Do we need AlarmManager here?
+            // see /ApiDemos/src/com/example/android/apis/app/AlarmController.java
+            // on how to implement AlarmManager...
 
-			MyAppWidgetData data;		
-			synchronized(xlock) {
-				data = new MyAppWidgetData(context,
-						appWidgetId);
-				data.load();
+            MyAppWidgetData data;       
+            synchronized(xlock) {
+                data = new MyAppWidgetData(context,
+                        appWidgetId);
+                data.load();
 
-		        if (MyService.UPDATE_WIDGETS_ON_EVERY_UPDATE || (numSomethingReceived != 0)) {
+                if (MyService.UPDATE_WIDGETS_ON_EVERY_UPDATE || (numSomethingReceived != 0)) {
                     data.changed = true;
-		        }
-				// Calculate new values
-				switch (msgType) {
-				case NOTIFY_MENTIONS:
-					data.numMentions += numSomethingReceived;
-					data.checked();
-					break;
-		
-				case NOTIFY_DIRECT_MESSAGE:
-					data.numDirectMessages += numSomethingReceived;
+                }
+                // Calculate new values
+                switch (msgType) {
+                case NOTIFY_MENTIONS:
+                    data.numMentions += numSomethingReceived;
                     data.checked();
-					break;
-		
-				case NOTIFY_HOME_TIMELINE:
-					data.numHomeTimeline += numSomethingReceived;
+                    break;
+        
+                case NOTIFY_DIRECT_MESSAGE:
+                    data.numDirectMessages += numSomethingReceived;
                     data.checked();
-					break;
-		
-				case NOTIFY_CLEAR:
-					data.clearCounters();
-					break;
-		
-				default:
-					break;
-				}
-				if (data.changed) {
-					data.save();
-				}
-			}
+                    break;
+        
+                case NOTIFY_HOME_TIMELINE:
+                    data.numHomeTimeline += numSomethingReceived;
+                    data.checked();
+                    break;
+        
+                case NOTIFY_CLEAR:
+                    data.clearCounters();
+                    break;
+        
+                default:
+                    break;
+                }
+                if (data.changed) {
+                    data.save();
+                }
+            }
 
-			// TODO: Widget design...
+            // TODO: Widget design...
 
-			// "Text" is what is shown in bold
-			String widgetText = "";
-			// And the "Comment" is less visible, below the "Text"
-			String widgetComment = "";
+            // "Text" is what is shown in bold
+            String widgetText = "";
+            // And the "Comment" is less visible, below the "Text"
+            String widgetComment = "";
 
-			// Construct period of counting...
-			String widgetTime = "";
-			if (data.dateChecked == 0) {
+            // Construct period of counting...
+            String widgetTime = "";
+            if (data.dateChecked == 0) {
                 MyLog.e(this, "data.dateChecked==0");
                 widgetComment = context.getString(R.string.appwidget_nodata);
-			} else {
-				widgetTime = formatWidgetTime(context, data.dateCleared, data.dateChecked);
-	            boolean isFound = false;
+            } else {
+                widgetTime = formatWidgetTime(context, data.dateCleared, data.dateChecked);
+                boolean isFound = false;
 
-	            if (data.numMentions > 0) {
-	                isFound = true;
-	                widgetText += (widgetText.length() > 0 ? "\n" : "")
-	                        + I18n.formatQuantityMessage(context,
-	                                R.string.appwidget_new_mention_format,
-	                                data.numMentions,
-	                                R.array.appwidget_mention_patterns,
-	                                R.array.appwidget_mention_formats);
-	            }
-	            if (data.numDirectMessages > 0) {
-	                isFound = true;
-	                widgetText += (widgetText.length() > 0 ? "\n" : "")
-	                        + I18n.formatQuantityMessage(context,
-	                                R.string.appwidget_new_message_format,
-	                                data.numDirectMessages,
-	                                R.array.appwidget_directmessage_patterns,
-	                                R.array.appwidget_directmessage_formats);
-	            }
-	            if (data.numHomeTimeline > 0) {
-	                isFound = true;
-	                widgetText += (widgetText.length() > 0 ? "\n" : "")
-	                        + I18n.formatQuantityMessage(context,
-	                                R.string.appwidget_new_tweet_format,
-	                                data.numHomeTimeline, R.array.appwidget_message_patterns,
-	                                R.array.appwidget_message_formats);
-	            }
-	            if (!isFound) {
-	                widgetComment = data.nothingPref;
-	            }
-			}
+                if (data.numMentions > 0) {
+                    isFound = true;
+                    widgetText += (widgetText.length() > 0 ? "\n" : "")
+                            + I18n.formatQuantityMessage(context,
+                                    R.string.appwidget_new_mention_format,
+                                    data.numMentions,
+                                    R.array.appwidget_mention_patterns,
+                                    R.array.appwidget_mention_formats);
+                }
+                if (data.numDirectMessages > 0) {
+                    isFound = true;
+                    widgetText += (widgetText.length() > 0 ? "\n" : "")
+                            + I18n.formatQuantityMessage(context,
+                                    R.string.appwidget_new_message_format,
+                                    data.numDirectMessages,
+                                    R.array.appwidget_directmessage_patterns,
+                                    R.array.appwidget_directmessage_formats);
+                }
+                if (data.numHomeTimeline > 0) {
+                    isFound = true;
+                    widgetText += (widgetText.length() > 0 ? "\n" : "")
+                            + I18n.formatQuantityMessage(context,
+                                    R.string.appwidget_new_tweet_format,
+                                    data.numHomeTimeline, R.array.appwidget_message_patterns,
+                                    R.array.appwidget_message_formats);
+                }
+                if (!isFound) {
+                    widgetComment = data.nothingPref;
+                }
+            }
 
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "updateAppWidget text=\"" + widgetText.replaceAll("\n", "; ") + "\"; comment=\""
                         + widgetComment + "\"");
             }
 
-			// Construct the RemoteViews object. It takes the package name (in our
-			// case, it's our
-			// package, but it needs this because on the other side it's the widget
-			// host inflating
-			// the layout from our package).
-			RemoteViews views = new RemoteViews(context.getPackageName(),
-					R.layout.appwidget);
+            // Construct the RemoteViews object. It takes the package name (in our
+            // case, it's our
+            // package, but it needs this because on the other side it's the widget
+            // host inflating
+            // the layout from our package).
+            RemoteViews views = new RemoteViews(context.getPackageName(),
+                    R.layout.appwidget);
 
-			if (widgetText.length() == 0) {
-				views
-						.setViewVisibility(R.id.appwidget_text,
-								android.view.View.GONE);
-			}
-			if (widgetComment.length() == 0) {
-				views.setViewVisibility(R.id.appwidget_comment,
-						android.view.View.GONE);
-			}
+            if (widgetText.length() == 0) {
+                views
+                        .setViewVisibility(R.id.appwidget_text,
+                                android.view.View.GONE);
+            }
+            if (widgetComment.length() == 0) {
+                views.setViewVisibility(R.id.appwidget_comment,
+                        android.view.View.GONE);
+            }
 
-			if (widgetText.length() > 0) {
-				views.setViewVisibility(R.id.appwidget_text,
-						android.view.View.VISIBLE);
-				views.setTextViewText(R.id.appwidget_text, widgetText);
-			}
-			if (widgetComment.length() > 0) {
-				views.setViewVisibility(R.id.appwidget_comment,
-						android.view.View.VISIBLE);
-				views.setTextViewText(R.id.appwidget_comment, widgetComment);
-			}
-			views.setTextViewText(R.id.appwidget_time, widgetTime);
+            if (widgetText.length() > 0) {
+                views.setViewVisibility(R.id.appwidget_text,
+                        android.view.View.VISIBLE);
+                views.setTextViewText(R.id.appwidget_text, widgetText);
+            }
+            if (widgetComment.length() > 0) {
+                views.setViewVisibility(R.id.appwidget_comment,
+                        android.view.View.VISIBLE);
+                views.setTextViewText(R.id.appwidget_comment, widgetComment);
+            }
+            views.setTextViewText(R.id.appwidget_time, widgetTime);
 
-			// When user clicks on widget, launch main AndStatus activity,
-			//   Open timeline, where there are new messages, or "Home" timeline
-			Intent intent;
-			TimelineTypeEnum timeLineType = TimelineTypeEnum.HOME;
+            // When user clicks on widget, launch main AndStatus activity,
+            //   Open timeline, where there are new messages, or "Home" timeline
+            Intent intent;
+            TimelineTypeEnum timeLineType = TimelineTypeEnum.HOME;
             intent = new Intent(context, TimelineActivity.class);
-			if (data.numDirectMessages > 0) {
-			    timeLineType = TimelineTypeEnum.DIRECT;
-			} else {
-			    if (data.numMentions > 0) {
-	                timeLineType = TimelineTypeEnum.MENTIONS;
-			    }
-			}
+            if (data.numDirectMessages > 0) {
+                timeLineType = TimelineTypeEnum.DIRECT;
+            } else {
+                if (data.numMentions > 0) {
+                    timeLineType = TimelineTypeEnum.MENTIONS;
+                }
+            }
             intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                     timeLineType.save());
 
@@ -360,84 +360,84 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
             // This line is necessary to actually bring Extra to the target intent
             // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
             intent.setData(android.net.Uri.parse(MyProvider.TIMELINE_URI.toString() + "#" + android.os.SystemClock.elapsedRealtime()));
-			PendingIntent pendingIntent = PendingIntent.getActivity(context,
-					0 /* no requestCode */, intent, 0 /* no flags */);
-			views.setOnClickPendingIntent(R.id.widget, pendingIntent);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context,
+                    0 /* no requestCode */, intent, 0 /* no flags */);
+            views.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
-			// Tell the widget manager
-			if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-				// TODO: Is this right?
-				// All instances will be updated
-				appWidgetManager.updateAppWidget(new ComponentName(context, this
-						.getClass()), views);
-			} else {
-				appWidgetManager.updateAppWidget(appWidgetId, views);
-			}
-			ok = true;
-		} catch (Exception e) {
-			MyLog.e(this, "instanceId=" + instanceId + "; updateAppWidget exception", e);
-			
-		} finally {
+            // Tell the widget manager
+            if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+                // TODO: Is this right?
+                // All instances will be updated
+                appWidgetManager.updateAppWidget(new ComponentName(context, this
+                        .getClass()), views);
+            } else {
+                appWidgetManager.updateAppWidget(appWidgetId, views);
+            }
+            ok = true;
+        } catch (Exception e) {
+            MyLog.e(this, "instanceId=" + instanceId + "; updateAppWidget exception", e);
+            
+        } finally {
             if ( !ok || MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, "instanceId=" + instanceId + "; updateAppWidget " + (ok ? "succeded" : "failed") );
             }
-		}
-	}
+        }
+    }
 
-	public String formatWidgetTime(Context context, long startMillis,
+    public String formatWidgetTime(Context context, long startMillis,
             long endMillis) {
-		String widgetTime = "";
-		String strStart = "";
-		String strEnd = "";
+        String widgetTime = "";
+        String strStart = "";
+        String strEnd = "";
 
-		if (endMillis == 0) {
-			widgetTime = "=0 ???";
-			MyLog.e(this, "data.dateUpdated==0");
-		} else {
-			Time timeStart = new Time();
-			timeStart.set(startMillis);
-			Time timeEnd = new Time();
-			timeEnd.set(endMillis);
-			int flags = 0;
+        if (endMillis == 0) {
+            widgetTime = "=0 ???";
+            MyLog.e(this, "data.dateUpdated==0");
+        } else {
+            Time timeStart = new Time();
+            timeStart.set(startMillis);
+            Time timeEnd = new Time();
+            timeEnd.set(endMillis);
+            int flags = 0;
 
-			if (timeStart.yearDay < timeEnd.yearDay) {
-				strStart = RelativeTime.getDifference(context, startMillis);
-				if (DateUtils.isToday(endMillis)) {
-					// End - today
-		            flags = DateUtils.FORMAT_SHOW_TIME;
-		            if (DateFormat.is24HourFormat(context)) {
-		                flags |= DateUtils.FORMAT_24HOUR;
-		            }
-					strEnd = DateUtils.formatDateTime(context, endMillis, flags);
-				} else {
-					strEnd = RelativeTime.getDifference(context, endMillis);
-				}
-			} else {
-				// Same day
-				if (DateUtils.isToday(endMillis)) {
-					// Start and end - today
-		            flags = DateUtils.FORMAT_SHOW_TIME;
-		            if (DateFormat.is24HourFormat(context)) {
-		                flags |= DateUtils.FORMAT_24HOUR;
-		            }
-					strStart = DateUtils.formatDateTime(context, startMillis, flags);
-					strEnd = DateUtils.formatDateTime(context, endMillis, flags);
+            if (timeStart.yearDay < timeEnd.yearDay) {
+                strStart = RelativeTime.getDifference(context, startMillis);
+                if (DateUtils.isToday(endMillis)) {
+                    // End - today
+                    flags = DateUtils.FORMAT_SHOW_TIME;
+                    if (DateFormat.is24HourFormat(context)) {
+                        flags |= DateUtils.FORMAT_24HOUR;
+                    }
+                    strEnd = DateUtils.formatDateTime(context, endMillis, flags);
+                } else {
+                    strEnd = RelativeTime.getDifference(context, endMillis);
+                }
+            } else {
+                // Same day
+                if (DateUtils.isToday(endMillis)) {
+                    // Start and end - today
+                    flags = DateUtils.FORMAT_SHOW_TIME;
+                    if (DateFormat.is24HourFormat(context)) {
+                        flags |= DateUtils.FORMAT_24HOUR;
+                    }
+                    strStart = DateUtils.formatDateTime(context, startMillis, flags);
+                    strEnd = DateUtils.formatDateTime(context, endMillis, flags);
 
-				} else {
-					strStart = RelativeTime.getDifference(context, endMillis);
-				}
-			}
-			widgetTime = strStart;
-			if (strEnd.length()>0) {
-				if (strEnd.compareTo(strStart) != 0) {
-					if (widgetTime.length()>0) {
-						widgetTime += " - ";
-					}
-					widgetTime += strEnd;
-				}
-			}
-		}		
-		
-		return widgetTime;
-	}
+                } else {
+                    strStart = RelativeTime.getDifference(context, endMillis);
+                }
+            }
+            widgetTime = strStart;
+            if (strEnd.length()>0) {
+                if (strEnd.compareTo(strStart) != 0) {
+                    if (widgetTime.length()>0) {
+                        widgetTime += " - ";
+                    }
+                    widgetTime += strEnd;
+                }
+            }
+        }       
+        
+        return widgetTime;
+    }
 }

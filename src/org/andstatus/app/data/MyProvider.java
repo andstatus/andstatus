@@ -66,7 +66,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 public class MyProvider extends ContentProvider {
     private static final String TAG = MyProvider.class.getSimpleName();
 
-    private final static String MSG_TABLE_ALIAS = "msg1";
+    private static final String MSG_TABLE_ALIAS = "msg1";
     /**
      * Projection map used by SQLiteQueryBuilder
      * Projection map for the {@link MyDatabase.Msg} table
@@ -874,7 +874,7 @@ public class MyProvider extends ContentProvider {
         if (array != null) {
             length = array.length;
         }
-        String ans[] = new String[length + 1];
+        String[] ans = new String[length + 1];
         if (length > 0) {
             System.arraycopy(array, 0, ans, 1, array.length);
         }

@@ -334,16 +334,7 @@ class MessageEditor {
             Toast.makeText(messageList.getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
-            CommandData commandData = new CommandData(
-                    CommandEnum.UPDATE_STATUS,
-                    mAccount.getAccountName());
-            commandData.bundle.putString(IntentExtra.EXTRA_STATUS.key, status);
-            if (mReplyToId != 0) {
-                commandData.bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key, mReplyToId);
-            }
-            if (mRecipientId != 0) {
-                commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key, mRecipientId);
-            }
+            CommandData commandData = CommandData.updateStatus(mAccount.getAccountName(), status, mReplyToId, mRecipientId);
             MyServiceManager.sendCommand(commandData);
 
             // Let's assume that everything will be Ok

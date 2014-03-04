@@ -51,9 +51,6 @@ import org.andstatus.app.MyActionBar;
 import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
-import org.andstatus.app.R.array;
-import org.andstatus.app.R.string;
-import org.andstatus.app.R.xml;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.origin.OriginList;
@@ -99,13 +96,12 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     private RingtonePreference mNotificationRingtone;
 
     private boolean onSharedPreferenceChangedIsBusy = false;
-    private MyActionBar actionBar;
 
     private boolean startTimelineActivity = false;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        actionBar = new MyActionBar(this);
+        MyActionBar actionBar = new MyActionBar(this);
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
@@ -684,9 +680,10 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             boolean ok = false;
             if (src != null) {
                 if (src.exists()) {
-                    dst.createNewFile();
                     sizeIn = src.length();
-                    if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
+                    if (!dst.createNewFile()) {
+                        MyLog.e(TAG, "New file was not created: '" + dst.getCanonicalPath() + "'");
+                    } else if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
                         MyLog.d(TAG, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
                     } else {
                         java.nio.channels.FileChannel inChannel = null;

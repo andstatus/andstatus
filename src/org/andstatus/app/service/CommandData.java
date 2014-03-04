@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010-2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class CommandData implements Comparable<CommandData> {
-    public CommandEnum command;
+    private CommandEnum command;
     private int priority = 0;
     
     /**
@@ -47,7 +47,7 @@ public class CommandData implements Comparable<CommandData> {
     /**
      * Timeline type used for the {@link CommandEnum#FETCH_TIMELINE} command 
      */
-    public TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
+    private TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
     
     /**
      * This is: 
@@ -55,21 +55,18 @@ public class CommandData implements Comparable<CommandData> {
      * 2. User ID ( {@link MyDatabase.User#USER_ID} ) for the {@link CommandEnum#FETCH_USER_TIMELINE}, 
      *      {@link CommandEnum#FOLLOW_USER}, {@link CommandEnum#STOP_FOLLOWING_USER} 
      */
-    public long itemId = 0;
+    protected long itemId = 0;
 
     /**
      * Other command parameters
      */
-    public Bundle bundle = new Bundle();
+    protected Bundle bundle = new Bundle();
 
     private int hashcode = 0;
 
-    /**
-     * Number of retries left
-     */
-    public int retriesLeft = 0;
+    protected int retriesLeft = 0;
 
-    public CommandResult commandResult = new CommandResult();
+    private CommandResult commandResult = new CommandResult();
     
     public static final CommandData EMPTY_COMMAND = new CommandData(CommandEnum.EMPTY, "");
     
@@ -89,47 +86,6 @@ public class CommandData implements Comparable<CommandData> {
     public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn, long itemIdIn) {
         this(commandIn, accountNameIn, itemIdIn);
         timelineType = timelineTypeIn;
-    }
-
-    /**
-     * Initialize command to put boolean SharedPreference
-     * 
-     * @param preferenceKey
-     * @param value
-     * @param accountNameIn - preferences for this user, or null if Global
-     *            preferences
-     */
-    public CommandData(String accountNameIn, String preferenceKey, boolean value) {
-        this(CommandEnum.PUT_BOOLEAN_PREFERENCE, accountNameIn);
-        bundle.putString(IntentExtra.EXTRA_PREFERENCE_KEY.key, preferenceKey);
-        bundle.putBoolean(IntentExtra.EXTRA_PREFERENCE_VALUE.key, value);
-    }
-
-    /**
-     * Initialize command to put long SharedPreference
-     * 
-     * @param accountNameIn - preferences for this user, or null if Global
-     *            preferences
-     * @param preferenceKey
-     * @param value
-     */
-    public CommandData(String accountNameIn, String preferenceKey, long value) {
-        this(CommandEnum.PUT_LONG_PREFERENCE, accountNameIn);
-        bundle.putString(IntentExtra.EXTRA_PREFERENCE_KEY.key, preferenceKey);
-        bundle.putLong(IntentExtra.EXTRA_PREFERENCE_VALUE.key, value);
-    }
-
-    /**
-     * Initialize command to put string SharedPreference
-     * 
-     * @param accountNameIn - preferences for this user
-     * @param preferenceKey
-     * @param value
-     */
-    public CommandData(String accountNameIn, String preferenceKey, String value) {
-        this(CommandEnum.PUT_STRING_PREFERENCE, accountNameIn);
-        bundle.putString(IntentExtra.EXTRA_PREFERENCE_KEY.key, preferenceKey);
-        bundle.putString(IntentExtra.EXTRA_PREFERENCE_VALUE.key, value);
     }
 
     private CommandData() {
@@ -171,6 +127,18 @@ public class CommandData implements Comparable<CommandData> {
         CommandData commandData = new CommandData(CommandEnum.SEARCH_MESSAGE, accountName);
         commandData.timelineType = TimelineTypeEnum.PUBLIC;
         commandData.bundle.putString(SearchManager.QUERY, queryString);
+        return commandData;
+    }
+
+    public static CommandData updateStatus(String accountName, String status, long replyToId, long recipientId) {
+        CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS, accountName);
+        commandData.bundle.putString(IntentExtra.EXTRA_STATUS.key, status);
+        if (replyToId != 0) {
+            commandData.bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key, replyToId);
+        }
+        if (recipientId != 0) {
+            commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key, recipientId);
+        }
         return commandData;
     }
     
@@ -352,5 +320,32 @@ public class CommandData implements Comparable<CommandData> {
             greater = this.priority > another.priority ? 1 : -1;
         }
         return greater;
+    }
+
+    public OneCommandExecutor getExecutor() {
+        OneCommandExecutor oneCommandExecutor;
+        switch (command) {
+            case AUTOMATIC_UPDATE:
+            case FETCH_TIMELINE:
+            case SEARCH_MESSAGE:
+                oneCommandExecutor = new LoadTimelineCommandExecutor(this);
+                break;
+        default:
+            oneCommandExecutor = new OtherCommandExecutor(this);
+            break;
+        }                
+        return oneCommandExecutor;
+    }
+
+    public CommandEnum getCommand() {
+        return command;
+    }
+
+    public TimelineTypeEnum getTimelineType() {
+        return timelineType;
+    }
+
+    public CommandResult getResult() {
+        return commandResult;
     }
 }

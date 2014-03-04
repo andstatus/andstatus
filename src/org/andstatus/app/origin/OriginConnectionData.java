@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,109 @@
 package org.andstatus.app.origin;
 
 import org.andstatus.app.account.AccountDataReader;
-import org.andstatus.app.net.Connection.ApiEnum;
 import org.andstatus.app.net.ConnectionEmpty;
 import org.andstatus.app.net.HttpConnectionEmpty;
+import org.andstatus.app.util.TriState;
 
 public class OriginConnectionData {
-    public OriginType originType;
-    public ApiEnum api = ApiEnum.UNKNOWN_API;
-    public long originId = 0;
-    public boolean isSsl = true;
-    public boolean isOAuth = true;
-    public String host = "";
-    public String basicPath = "";
-    public String oauthPath = "oauth";
+    private OriginType originType;
+    private long originId = 0;
+    private boolean isSsl = true;
+    private boolean isOAuth = true;
+    private String host = "";
+    private String basicPath = "";
+    private String oauthPath = "oauth";
     
-    public String accountUsername = "";
-    public String accountUserOid = "";
-    public AccountDataReader dataReader = null;
+    private String accountUsername = "";
+    private String accountUserOid = "";
+    private AccountDataReader dataReader = null;
     
-    public Class<? extends org.andstatus.app.net.Connection> connectionClass = ConnectionEmpty.class;
-    public Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClass = HttpConnectionEmpty.class;
+    private Class<? extends org.andstatus.app.net.Connection> connectionClass = ConnectionEmpty.class;
+    private Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClass = HttpConnectionEmpty.class;
+    
+    private OriginConnectionData() {
+    }
+        
+    protected static OriginConnectionData fromOrigin(Origin origin, TriState triStateOAuth) {
+        OriginConnectionData connectionData = new OriginConnectionData();
+        connectionData.host = origin.getHost();
+        connectionData.basicPath = origin.getOriginType().basicPath;
+        connectionData.oauthPath = origin.getOriginType().oauthPath;
+        connectionData.isSsl = origin.isSsl();
+        connectionData.originType = origin.getOriginType();
+        connectionData.originId = origin.getId();
+        connectionData.isOAuth = origin.getOriginType().fixIsOAuth(triStateOAuth);
+        connectionData.connectionClass = origin.getOriginType().getConnectionClass();
+        connectionData.httpConnectionClass = origin.getOriginType()
+                .getHttpConnectionClass(connectionData.isOAuth());
+        return connectionData;
+    }
+
+    public OriginType getOriginType() {
+        return originType;
+    }
+
+    public long getOriginId() {
+        return originId;
+    }
+
+    public boolean isSsl() {
+        return isSsl;
+    }
+
+    public boolean isOAuth() {
+        return isOAuth;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public String getBasicPath() {
+        return basicPath;
+    }
+
+    public String getOauthPath() {
+        return oauthPath;
+    }
+
+    public String getAccountUsername() {
+        return accountUsername;
+    }
+
+    public void setAccountUsername(String accountUsername) {
+        this.accountUsername = accountUsername;
+    }
+
+    public String getAccountUserOid() {
+        return accountUserOid;
+    }
+
+    public void setAccountUserOid(String accountUserOid) {
+        this.accountUserOid = accountUserOid;
+    }
+
+    public AccountDataReader getDataReader() {
+        return dataReader;
+    }
+
+    public void setDataReader(AccountDataReader dataReader) {
+        this.dataReader = dataReader;
+    }
+
+    public Class<? extends org.andstatus.app.net.Connection> getConnectionClass() {
+        return connectionClass;
+    }
+
+    public Class<? extends org.andstatus.app.net.HttpConnection> getHttpConnectionClass() {
+        return httpConnectionClass;
+    }
+
+    public void setHttpConnectionClass(Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClass) {
+        this.httpConnectionClass = httpConnectionClass;
+    }
 }

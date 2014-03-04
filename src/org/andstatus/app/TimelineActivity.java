@@ -106,7 +106,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * Msg are being loaded into the list starting from one page. More Msg
      * are being loaded in a case User scrolls down to the end of list.
      */
-    private final static int PAGE_SIZE = 100;
+    private static final int PAGE_SIZE = 100;
 
     /**
      * Is saved position restored (or some default positions set)?
@@ -457,8 +457,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             .putString(keyQueryString, queryString).commit();
         }
 
-        private final static long ID_NOT_FOUND_IN_LIST_POSITION_STORAGE = -4;
-        private final static long ID_NOT_FOUND_IN_SHARED_PREFERENCES = -1;
+        private static final long ID_NOT_FOUND_IN_LIST_POSITION_STORAGE = -4;
+        private static final long ID_NOT_FOUND_IN_SHARED_PREFERENCES = -1;
         private long getFirst() {
             long savedItemId = ID_NOT_FOUND_IN_LIST_POSITION_STORAGE;
             if (isThisPositionStored()) {
@@ -1460,15 +1460,15 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public void onReceive(CommandData commandData) {
         MyLog.v(this, "onReceive: " + commandData);
-        switch (commandData.command) {
+        switch (commandData.getCommand()) {
             case FETCH_TIMELINE:
             case SEARCH_MESSAGE:
                 setIsLoading(false);
                 break;
             case RATE_LIMIT_STATUS:
-                if (commandData.commandResult.hourlyLimit > 0) {
-                    updateActionBar(commandData.commandResult.remainingHits + "/"
-                            + commandData.commandResult.hourlyLimit);
+                if (commandData.getResult().getHourlyLimit() > 0) {
+                    updateActionBar(commandData.getResult().getRemainingHits() + "/"
+                            + commandData.getResult().getHourlyLimit());
                 }
                 break;
             default:

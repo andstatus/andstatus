@@ -54,7 +54,7 @@ public class DataInserter {
     
     public DataInserter(MessageCounters counters) {
         this.counters = counters;
-        mContentResolver = counters.context.getContentResolver();
+        mContentResolver = counters.getContext().getContentResolver();
     }
     
     public long insertOrUpdateMsg(MbMessage message, LatestUserMessages lum) throws SQLiteConstraintException {
@@ -86,14 +86,14 @@ public class DataInserter {
             long createdDate = 0;
             if (sentDate > 0) {
                 createdDate = sentDate;
-                counters.totalMessagesDownloaded += 1;
+                counters.incrementDownloadedCount();
             }
             
             long actorId = 0L;
             if (message.actor != null) {
                 actorId = insertOrUpdateUser(message.actor, lum);
             } else {
-                actorId = counters.ma.getUserId();
+                actorId = counters.getMyAccount().getUserId();
             }
             
             // Sender
@@ -115,7 +115,7 @@ public class DataInserter {
                     authorId = insertOrUpdateUser(message.rebloggedMessage.sender, lum);
                 }
 
-                if (senderId !=0 && counters.ma.getUserId() == senderId) {
+                if (senderId !=0 && counters.getMyAccount().getUserId() == senderId) {
                     // Msg was reblogged by current User (he is the Sender)
                     values.put(MyDatabase.MsgOfUser.REBLOGGED, 1);
 
@@ -163,9 +163,9 @@ public class DataInserter {
                 boolean countIt = false;
 
                 // Lookup the System's (AndStatus) id from the Originated system's id
-                rowId = MyProvider.oidToId(OidEnum.MSG_OID, counters.ma.getOriginId(), rowOid);
+                rowId = MyProvider.oidToId(OidEnum.MSG_OID, counters.getMyAccount().getOriginId(), rowOid);
                 // Construct the Uri to the Msg
-                Uri msgUri = MyProvider.getTimelineMsgUri(counters.ma.getUserId(), counters.timelineType, false, rowId);
+                Uri msgUri = MyProvider.getTimelineMsgUri(counters.getMyAccount().getUserId(), counters.getTimelineType(), false, rowId);
 
                 long sentDateStored = 0;
                 if (rowId != 0) {
@@ -194,7 +194,7 @@ public class DataInserter {
                     }
 
                     values.put(MyDatabase.Msg.MSG_OID, rowOid);
-                    values.put(MyDatabase.Msg.ORIGIN_ID, counters.ma.getOriginId());
+                    values.put(MyDatabase.Msg.ORIGIN_ID, counters.getMyAccount().getOriginId());
                     values.put(MyDatabase.Msg.BODY, body);
                 }
                 if (isNewer) {
@@ -210,14 +210,14 @@ public class DataInserter {
                 if (message.recipient != null) {
                     long recipientId = insertOrUpdateUser(message.recipient, lum);
                     values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
-                    if (recipientId == counters.ma.getUserId()) {
+                    if (recipientId == counters.getMyAccount().getUserId()) {
                         values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
                         MyLog.v(this, "Message '" + message.oid + "' is Directed to " 
-                                + counters.ma.getAccountName() );
+                                + counters.getMyAccount().getAccountName() );
                     }
                 }
-                boolean mentioned = counters.timelineType == TimelineTypeEnum.MENTIONS;
-                if (counters.timelineType == TimelineTypeEnum.HOME) {
+                boolean mentioned = counters.getTimelineType() == TimelineTypeEnum.MENTIONS;
+                if (counters.getTimelineType() == TimelineTypeEnum.HOME) {
                     values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
                 }
                 if (!TextUtils.isEmpty(message.via)) {
@@ -228,7 +228,7 @@ public class DataInserter {
                 }
                 if (message.favoritedByActor != TriState.UNKNOWN
                         && actorId != 0
-                        && actorId == counters.ma.getUserId()) {
+                        && actorId == counters.getMyAccount().getUserId()) {
                     values.put(MyDatabase.MsgOfUser.FAVORITED,
                             SharedPreferencesUtil.isTrue(message.favoritedByActor));
                     MyLog.v(this,
@@ -237,7 +237,7 @@ public class DataInserter {
                                     + "' "
                                     + (message.favoritedByActor.toBoolean(false) ? "favorited"
                                             : "unfavorited")
-                                    + " by " + counters.ma.getAccountName());
+                                    + " by " + counters.getMyAccount().getAccountName());
                 }
 
                 if (message.inReplyToMessage != null) {
@@ -253,13 +253,9 @@ public class DataInserter {
                 if (inReplyToUserId != 0) {
                     values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
 
-                    if (counters.ma.getUserId() == inReplyToUserId) {
+                    if (counters.getMyAccount().getUserId() == inReplyToUserId) {
                         values.put(MyDatabase.MsgOfUser.REPLIED, 1);
-                        if (countIt) { 
-                            counters.newRepliesCount++; 
-                            }
-                        // We consider a Reply to be a Mention also?! 
-                        // ...Yes, at least as long as we don't have "Replies" timeline type 
+                        // We count replies as Mentions 
                         mentioned = true;
                     }
                 }
@@ -271,17 +267,17 @@ public class DataInserter {
                 }
                 
                 if (countIt) { 
-                    counters.newMessagesCount++;
+                    counters.incrementMessagesCount();
                     }
                 // Check if current user was mentioned in the text of the message
                 if (body.length() > 0 
                         && !mentioned 
-                        && body.contains("@" + counters.ma.getUsername())) {
+                        && body.contains("@" + counters.getMyAccount().getUsername())) {
                     mentioned = true;
                 }
                 if (mentioned) {
                     if (countIt) { 
-                        counters.newMentionsCount++;
+                        counters.incrementMentionsCount();
                         }
                   values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
                 }
@@ -297,7 +293,7 @@ public class DataInserter {
                 }
                 if (rowId == 0) {
                     // There was no such row so add the new one
-                    msgUri = mContentResolver.insert(MyProvider.getTimelineUri(counters.ma.getUserId(), TimelineTypeEnum.HOME, false), values);
+                    msgUri = mContentResolver.insert(MyProvider.getTimelineUri(counters.getMyAccount().getUserId(), TimelineTypeEnum.HOME, false), values);
                     rowId = MyProvider.uriToMessageId(msgUri);
                 } else {
                   mContentResolver.update(msgUri, values, null, null);
@@ -344,7 +340,7 @@ public class DataInserter {
         if (mbUser.actor != null) {
             readerId = insertOrUpdateUser(mbUser.actor, lum);
         } else {
-            readerId = counters.ma.getUserId();
+            readerId = counters.getMyAccount().getUserId();
         }
         
         long userId = 0L;
@@ -386,17 +382,17 @@ public class DataInserter {
                 values.put(MyDatabase.User.CREATED_DATE, mbUser.updatedDate);
             }
             if (mbUser.followedByActor != TriState.UNKNOWN
-                    && readerId == counters.ma.getUserId()) {
+                    && readerId == counters.getMyAccount().getUserId()) {
                 values.put(MyDatabase.FollowingUser.USER_FOLLOWED,
                         mbUser.followedByActor.toBoolean(false));
                 MyLog.v(this,
                         "User '" + userName + "' is "
                                 + (mbUser.followedByActor.toBoolean(false) ? "" : "not ")
-                                + "followed by " + counters.ma.getAccountName());
+                                + "followed by " + counters.getMyAccount().getAccountName());
             }
             
             // Construct the Uri to the User
-            Uri userUri = MyProvider.getUserUri(counters.ma.getUserId(), userId);
+            Uri userUri = MyProvider.getUserUri(counters.getMyAccount().getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
                 

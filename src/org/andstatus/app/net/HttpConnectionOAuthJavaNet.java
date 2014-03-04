@@ -76,7 +76,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             w.close();
             
             if(conn.getResponseCode() != 200) {
-                String msg = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream()));
+                String msg = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
                 MyLog.e(this, "Server returned an error response: " + msg);
                 MyLog.e(this, "Server returned an error response: " + conn.getResponseMessage());
             } else {
@@ -121,12 +121,12 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Content-Type", "application/json ; charset=UTF-8");
             setAuthorization(conn, getConsumer(), false);
             
             if (jso != null) {
                 OutputStream os = conn.getOutputStream();
-                OutputStreamWriter wr = new OutputStreamWriter(os);
+                OutputStreamWriter wr = new OutputStreamWriter(os, "UTF-8");
                 String toWrite = jso.toString(); 
                 wr.write(toWrite);
                 try {

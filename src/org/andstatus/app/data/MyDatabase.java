@@ -55,18 +55,18 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     public static final int DATABASE_VERSION = 15;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
-	/**
-	 * Table for both public and direct messages 
-	 * i.e. for tweets, dents, notices 
-	 * and also for "direct messages", "direct dents" etc.
-	 */
-	public static final class Msg implements BaseColumns {
-	    public static final String TABLE_NAME = Msg.class.getSimpleName().toLowerCase(Locale.US);
+    /**
+     * Table for both public and direct messages 
+     * i.e. for tweets, dents, notices 
+     * and also for "direct messages", "direct dents" etc.
+     */
+    public static final class Msg implements BaseColumns {
+        public static final String TABLE_NAME = Msg.class.getSimpleName().toLowerCase(Locale.US);
 
         private Msg() {
-	    }
-		
-		// Table columns are below:
+        }
+        
+        // Table columns are below:
         /*
          * {@link BaseColumns#_ID} is primary key in this database
          * No, we can not rename the {@link BaseColumns#_ID}, it should always be "_id". 
@@ -78,11 +78,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * See {@link Origin#_ID}
          */
         public static final String ORIGIN_ID =  "origin_id";
-	    /**
-	     * ID in the originating system
-	     * The id is not unique for this table, because we have IDs from different systems in one column
-	     * and IDs from different systems may overlap.
-	     */
+        /**
+         * ID in the originating system
+         * The id is not unique for this table, because we have IDs from different systems in one column
+         * and IDs from different systems may overlap.
+         */
         public static final String MSG_OID = "msg_oid";
         /**
          * A link to the representation of the resource. Currently this is simply URL to the HTML 
@@ -94,26 +94,26 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * If message was "Reblogged" ("Retweeted", "Repeated", ...) this is Original author (whose message was reblogged)
          */
         public static final String AUTHOR_ID = "author_id";
-		/**
-		 * Sender of the message = User._ID
-		 */
-		public static final String SENDER_ID = "sender_id";
+        /**
+         * Sender of the message = User._ID
+         */
+        public static final String SENDER_ID = "sender_id";
         /**
          * Recipient of the message = User._ID
          * null for public messages
          * not null for direct messages
          */
         public static final String RECIPIENT_ID = "recipient_id";
-		/**
-		 * Text of the message ("TEXT" may be reserved word so it was renamed here)
-		 */
-		public static final String BODY = "body";
-		/**
-		 * String generally describing Client's software used to post this message
-		 * It's like "User Agent" string in the browsers?!: "via ..."
-		 * (This is "source" field in tweets)
-		 */
-		public static final String VIA = "via";
+        /**
+         * Text of the message ("TEXT" may be reserved word so it was renamed here)
+         */
+        public static final String BODY = "body";
+        /**
+         * String generally describing Client's software used to post this message
+         * It's like "User Agent" string in the browsers?!: "via ..."
+         * (This is "source" field in tweets)
+         */
+        public static final String VIA = "via";
         /**
          * If not null: Link to the Msg._ID in this table
          */
@@ -128,7 +128,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * We store it as long returned by {@link org.andstatus.app.net.Connection#dateFromJson(JSONObject, String) }. 
          * NULL means the row was not retrieved from the Internet yet
          */
-		public static final String CREATED_DATE = "msg_created_date";
+        public static final String CREATED_DATE = "msg_created_date";
         /**
          * Date and time when the message was sent,
          * it's not equal to {@link MyDatabase.Msg#CREATED_DATE} for reblogged messages
@@ -136,9 +136,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * or if we receive new reblog of the message
          */
         public static final String SENT_DATE = "msg_sent_date";
-		/**
-		 * Date and time the row was inserted into this database
-		 */
+        /**
+         * Date and time the row was inserted into this database
+         */
         public static final String INS_DATE = "msg_ins_date";
         /**
          * The Msg is public
@@ -154,8 +154,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String MSG_ID =  "msg_id";
         
         public static final String DEFAULT_SORT_ORDER = SENT_DATE + " DESC";
-	}
-	
+    }
+    
     /**
      * Link tables: Msg to a User.
      * This User may be not even mentioned in this message 
@@ -209,21 +209,21 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String DIRECTED = "directed";
     }
 
-	/**
-	 * Users table (they are both senders AND recipients in the {@link Msg} table)
-	 * Some of these Users are Accounts (connected to accounts in AndStatus), 
-	 * see {@link MyAccount#getUserId()}
-	 */
-	public static final class User implements BaseColumns {
-	    public static final String TABLE_NAME = User.class.getSimpleName().toLowerCase(Locale.US);
+    /**
+     * Users table (they are both senders AND recipients in the {@link Msg} table)
+     * Some of these Users are Accounts (connected to accounts in AndStatus), 
+     * see {@link MyAccount#getUserId()}
+     */
+    public static final class User implements BaseColumns {
+        public static final String TABLE_NAME = User.class.getSimpleName().toLowerCase(Locale.US);
 
         private User() {
-	    }
+        }
 
         // Table columns
         /* {@link BaseColumns#_ID} is primary key in this database  */
 
-		/**
+        /**
          * ID of the originating (source) system (twitter.com, identi.ca, ... ) where the row was created
          * 2012-02-26 Currently defaults to the "1" since we have only one system (twitter.com) yet
          */
@@ -236,14 +236,14 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         /**
          * This is called "screen_name" in Twitter API
          */
-		public static final String USERNAME = "username";
+        public static final String USERNAME = "username";
         /**
          * This is called "name" in Twitter API
          */
         public static final String REAL_NAME = "real_name";
-		/**
-		 * The latest url of the avatar 
-		 */
+        /**
+         * The latest url of the avatar 
+         */
         public static final String AVATAR_URL = "avatar_url";
         /**
          * User's description
@@ -264,7 +264,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * NULL means the row was not retrieved from the Internet yet
          * (And maybe there is no such User in the originating system...)
          */
-		public static final String CREATED_DATE = "user_created_date";
+        public static final String CREATED_DATE = "user_created_date";
         /**
          * Date and time the row was inserted into this database
          */
@@ -302,8 +302,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * Date of the latest message where this User was a Sender or an Author
          */
         public static final String USER_MSG_DATE = "user_msg_date";
-		
-		/*
+        
+        /*
          * Derived columns (they are not stored in this table but are result of joins)
          */
         /**
@@ -319,10 +319,10 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          * (e.g. in a case we need to query a Timeline for particular MyAccount (e.g. for current MyAccount) 
          */
         public static final String ACCOUNT_ID =  "account_id";
-		/**
-		 * Derived from {@link Msg#SENDER_ID}
-		 * TODO: Whether this (and other similar...) is {@link #USERNAME} or {@link #REAL_NAME}, depends on settings 
-		 */
+        /**
+         * Derived from {@link Msg#SENDER_ID}
+         * TODO: Whether this (and other similar...) is {@link #USERNAME} or {@link #REAL_NAME}, depends on settings 
+         */
         public static final String SENDER_NAME = "sender_name";
         /** Derived from {@link Msg#AUTHOR_ID} */
         public static final String AUTHOR_NAME = "author_name";
@@ -332,7 +332,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String RECIPIENT_NAME = "recipient_name";
 
         public static final String DEFAULT_SORT_ORDER = USERNAME + " ASC";
-	}
+    }
 
     /**
      * Following users for the {@link FollowingUser#USER_ID}. 
@@ -360,7 +360,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String SENDER_FOLLOWED = "sender_followed";
     }
-	
+    
     public static final class Avatar implements BaseColumns {
         public static final String TABLE_NAME = Avatar.class.getSimpleName().toLowerCase(Locale.US);
         private Avatar() {

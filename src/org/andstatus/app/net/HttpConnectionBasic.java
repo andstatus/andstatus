@@ -37,6 +37,7 @@ import org.json.JSONTokener;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 public class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
     protected String mPassword;
@@ -220,6 +221,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
      * @return String
      */
     private String getCredentials() {
+        // TODO: since API9 we will use getBytes(Charset.forName("US-ASCII"))
         return Base64.encodeToString(
                 (data.accountUsername + ":" + mPassword).getBytes(),
                 Base64.NO_WRAP + Base64.NO_PADDING);

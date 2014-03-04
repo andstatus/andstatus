@@ -39,7 +39,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         setActivityIntent(intent);
         
         activity = getActivity();
-        TestSuite.waitForListLoaded(activity);
+        TestSuite.waitForListLoaded(this, activity);
 
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");

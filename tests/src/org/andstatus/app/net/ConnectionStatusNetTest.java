@@ -44,12 +44,12 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.STATUSNET_TEST_ORIGIN_NAME);
         
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
-        connectionData.accountUserOid = TestSuite.STATUSNET_TEST_ACCOUNT_USER_OID;
-        connectionData.accountUsername = TestSuite.STATUSNET_TEST_ACCOUNT_USERNAME;
-        connectionData.dataReader = new AccountDataReaderEmpty();
-        connection = connectionData.connectionClass.newInstance();
+        connectionData.setAccountUserOid(TestSuite.STATUSNET_TEST_ACCOUNT_USER_OID);
+        connectionData.setAccountUsername(TestSuite.STATUSNET_TEST_ACCOUNT_USERNAME);
+        connectionData.setDataReader(new AccountDataReaderEmpty());
+        connection = connectionData.getConnectionClass().newInstance();
         connection.enrichConnectionData(connectionData);
-        connectionData.httpConnectionClass = HttpConnectionMock.class;
+        connectionData.setHttpConnectionClass(HttpConnectionMock.class);
         connection.setAccountData(connectionData);
         httpConnection = (HttpConnectionMock) connection.http;
 
@@ -62,7 +62,7 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         httpConnection.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE, 
-                new TimelinePosition("380925803053449216") , 20, connectionData.accountUserOid);
+                new TimelinePosition("380925803053449216") , 20, connectionData.getAccountUserOid());
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -72,7 +72,7 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         MbMessage mbMessage = timeline.get(ind).mbMessage;
         assertTrue("Message is public", mbMessage.isPublic());
         assertTrue("Favorited", mbMessage.favoritedByActor.toBoolean(false));
-        assertEquals("Actor", connectionData.accountUserOid, mbMessage.actor.oid);
+        assertEquals("Actor", connectionData.getAccountUserOid(), mbMessage.actor.oid);
         assertEquals("Author's oid", "221452291", mbMessage.sender.oid);
         assertEquals("Author's username", "Know", mbMessage.sender.userName);
         assertEquals("Author's Display name", "Just so you Know", mbMessage.sender.realName);

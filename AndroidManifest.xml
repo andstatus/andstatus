@@ -52,19 +52,14 @@
 		<provider android:name=".data.TimelineSearchSuggestionProvider" 
 			android:authorities="org.andstatus.app.data.TimelineSuggestionProvider"/>
 
-		<service android:process=":remote" android:name="org.andstatus.app.service.MyService">
-			<intent-filter>
-				<action android:name="org.andstatus.app.MyService"/>
-				<action android:name="org.andstatus.app.SERVICE"/>
-			</intent-filter>
-		</service>
+		<service android:name="org.andstatus.app.service.MyService"
+		    android:process=":service" android:exported="false" />
 
 		<receiver android:name="org.andstatus.app.service.MyServiceManager">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
             </intent-filter>
             <intent-filter>
-                <action android:name="org.andstatus.app.action.ALARM" />
                 <action android:name="org.andstatus.app.action.SERVICE_STATE" />
             </intent-filter>
 		</receiver>

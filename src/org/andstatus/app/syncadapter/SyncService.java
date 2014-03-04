@@ -31,14 +31,14 @@ import org.andstatus.app.util.MyLog;
 public class SyncService extends Service {
     static final String TAG = SyncService.class.getSimpleName();
 
-    private static final Object sSyncAdapterLock = new Object();
-    private static SyncAdapter sSyncAdapter = null;
+    private static final Object SYNC_ADAPTER_LOCK = new Object();
+    private static SyncAdapter syncAdapter = null;
 
     @Override
     public void onCreate() {
-        synchronized (sSyncAdapterLock) {
-            if (sSyncAdapter == null) {
-                sSyncAdapter = new SyncAdapter(getApplicationContext(), true);
+        synchronized (SYNC_ADAPTER_LOCK) {
+            if (syncAdapter == null) {
+                syncAdapter = new SyncAdapter(getApplicationContext(), true);
             }
             MyLog.d(TAG, "onCreate");
         }
@@ -53,7 +53,7 @@ public class SyncService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         MyLog.d(TAG, "onBind");
-        return sSyncAdapter.getSyncAdapterBinder();
+        return syncAdapter.getSyncAdapterBinder();
     }
 
     @Override

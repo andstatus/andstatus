@@ -41,12 +41,12 @@ public abstract class TimelineDownloader {
             throw new IllegalArgumentException(TAG + ": userId==0");
         }
         TimelineDownloader td;
-        switch (counters.timelineType) {
+        switch (counters.getTimelineType()) {
             case FOLLOWING_USER:
                 td = new TimelineDownloaderUser();
                 break;
             case ALL:
-                throw new IllegalArgumentException(TAG + ": Invalid TimelineType for loadTimeline: " + counters.timelineType);
+                throw new IllegalArgumentException(TAG + ": Invalid TimelineType for loadTimeline: " + counters.getTimelineType());
             default:
                 td = new TimelineDownloaderMsg();
                 break;

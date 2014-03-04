@@ -44,8 +44,8 @@ public class ConnectionPumpio extends Connection {
     @Override
     public void enrichConnectionData(OriginConnectionData connectionData) {
         super.enrichConnectionData(connectionData);
-        if (!TextUtils.isEmpty(connectionData.accountUsername)) {
-            connectionData.host = usernameToHost(connectionData.accountUsername);
+        if (!TextUtils.isEmpty(connectionData.getAccountUsername())) {
+            connectionData.setHost(usernameToHost(connectionData.getAccountUsername()));
         }
     }
     
@@ -106,8 +106,8 @@ public class ConnectionPumpio extends Connection {
             return MbUser.getEmpty();
         }
         String oid = jso.optString("id");
-        MbUser user = MbUser.fromOriginAndUserOid(data.originId, oid);
-        user.actor = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
+        MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
+        user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
         user.userName = userOidToUsername(oid);
         user.oid = oid;
         user.realName = jso.optString("displayName");
@@ -421,8 +421,8 @@ public class ConnectionPumpio extends Connection {
                 MyLog.d(this, "Pumpio activity has no id:" + activity.toString(2));
                 return MbMessage.getEmpty();
             } 
-            message =  MbMessage.fromOriginAndOid(data.originId, oid);
-            message.actor = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
+            message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid);
+            message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
             message.sentDate = dateFromJson(activity, "updated");
 
             if (activity.has("actor")) {
@@ -524,8 +524,8 @@ public class ConnectionPumpio extends Connection {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
                 return MbMessage.getEmpty();
             } 
-            message =  MbMessage.fromOriginAndOid(data.originId, oid);
-            message.actor = MbUser.fromOriginAndUserOid(data.originId, data.accountUserOid);
+            message =  MbMessage.fromOriginAndOid(data.getOriginId(), oid);
+            message.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
 
             parseComment(message, jso);
         } catch (JSONException e) {

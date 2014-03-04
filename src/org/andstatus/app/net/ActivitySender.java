@@ -95,7 +95,7 @@ class ActivitySender {
             }
             activity.put("object", obj);
 
-            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.STATUSES_UPDATE, connection.data.accountUserOid);
+            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.STATUSES_UPDATE, connection.data.getAccountUserOid());
             jso = conu.httpConnection.postRequest(conu.url, activity);
             if (jso != null && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(this, "verb '" + verb + "' object id='" + objectId + "' " + jso.toString(2));
@@ -130,7 +130,7 @@ class ActivitySender {
         activity.put("to", to);
         
         JSONObject author = new JSONObject();
-        author.put("id", connection.data.accountUserOid);
+        author.put("id", connection.data.getAccountUserOid());
         author.put("objectType", "person");
 
         activity.put("actor", author);

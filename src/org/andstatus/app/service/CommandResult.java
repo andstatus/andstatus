@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,14 +26,14 @@ import android.os.Parcelable;
  */
 public class CommandResult implements Parcelable {
     
-    public long numAuthExceptions = 0;
-    public long numIoExceptions = 0;
-    public long numParseExceptions = 0;
-    public boolean willRetry = false;
+    private long numAuthExceptions = 0;
+    private long numIoExceptions = 0;
+    private long numParseExceptions = 0;
+    protected boolean willRetry = false;
     
     // 0 means these values were not set
-    public int hourlyLimit = 0;
-    public int remainingHits = 0;
+    private int hourlyLimit = 0;
+    private int remainingHits = 0;
 
     public CommandResult() {
     }
@@ -93,5 +93,45 @@ public class CommandResult implements Parcelable {
 
     public static String toString(CommandResult commandResult) {
         return commandResult == null ? "result is null" : commandResult.toString();
+    }
+
+    public long getNumAuthExceptions() {
+        return numAuthExceptions;
+    }
+
+    protected void incrementNumAuthExceptions() {
+        numAuthExceptions++;
+    }
+
+    public long getNumIoExceptions() {
+        return numIoExceptions;
+    }
+
+    public void incrementNumIoExceptions() {
+        numIoExceptions++;
+    }
+
+    public long getNumParseExceptions() {
+        return numParseExceptions;
+    }
+
+    public void incrementParseExceptions() {
+        numParseExceptions++;
+    }
+
+    public int getHourlyLimit() {
+        return hourlyLimit;
+    }
+
+    protected void setHourlyLimit(int hourlyLimit) {
+        this.hourlyLimit = hourlyLimit;
+    }
+
+    public int getRemainingHits() {
+        return remainingHits;
+    }
+
+    protected void setRemainingHits(int remainingHits) {
+        this.remainingHits = remainingHits;
     }
 }

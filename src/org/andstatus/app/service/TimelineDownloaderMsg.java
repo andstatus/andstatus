@@ -38,11 +38,11 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
 
     @Override
     public void download() throws ConnectionException {
-        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(counters.timelineType, userId);
+        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(counters.getTimelineType(), userId);
         
         if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-            String strLog = "Loading timeline " + counters.timelineType.save() + "; account=" 
-        + counters.ma.getAccountName()
+            String strLog = "Loading timeline " + counters.getTimelineType().save() + "; account=" 
+        + counters.getMyAccount().getAccountName()
         + "; user=" + MyProvider.userIdToName(userId);
             if (latestTimelineItem.getTimelineItemDate() > 0) {
                 strLog += "; last Timeline item at=" + (new Date(latestTimelineItem.getTimelineItemDate()).toString())
@@ -61,10 +61,10 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
         DataInserter di = new DataInserter(counters);
         for (boolean done = false; !done; ) {
             try {
-                int limit = counters.ma.getConnection().fixedDownloadLimitForApiRoutine(toDownload, 
-                        counters.timelineType.getConnectionApiRoutine()); 
-                List<MbTimelineItem> messages = counters.ma.getConnection().getTimeline(
-                        counters.timelineType.getConnectionApiRoutine(), lastPosition, limit, userOid);
+                int limit = counters.getMyAccount().getConnection().fixedDownloadLimitForApiRoutine(toDownload, 
+                        counters.getTimelineType().getConnectionApiRoutine()); 
+                List<MbTimelineItem> messages = counters.getMyAccount().getConnection().getTimeline(
+                        counters.getTimelineType().getConnectionApiRoutine(), lastPosition, limit, userOid);
                 for (MbTimelineItem item : messages) {
                     toDownload--;
                     latestTimelineItem.onNewMsg(item.timelineItemPosition, item.timelineItemDate);

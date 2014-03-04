@@ -24,14 +24,14 @@ import android.content.SearchRecentSuggestionsProvider;
  */
 public class TimelineSearchSuggestionProvider extends SearchRecentSuggestionsProvider {
 
-	public final static String AUTHORITY = "org.andstatus.app.data.TimelineSuggestionProvider";
-	public final static int MODE = DATABASE_MODE_QUERIES;
+    public static final String AUTHORITY = "org.andstatus.app.data.TimelineSuggestionProvider";
+    public static final int MODE = DATABASE_MODE_QUERIES;
 
-	/**
-	 * 
-	 */
-	public TimelineSearchSuggestionProvider() {
-		super();
-    	setupSuggestions(AUTHORITY, MODE);
-	}
+    /**
+     * 
+     */
+    public TimelineSearchSuggestionProvider() {
+        super();
+        setupSuggestions(AUTHORITY, MODE);
+    }
 }

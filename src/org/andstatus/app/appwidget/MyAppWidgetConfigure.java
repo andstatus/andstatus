@@ -32,92 +32,92 @@ import org.andstatus.app.util.MyLog;
  * The configuration screen for the MyAppWidgetProvider widget.
  */
 public class MyAppWidgetConfigure extends Activity {
-	static final String TAG = MyAppWidgetConfigure.class.getSimpleName();
+    static final String TAG = MyAppWidgetConfigure.class.getSimpleName();
 
-	int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-	EditText mAppWidgetTitle;
-	MyAppWidgetData appWidgetData;
+    int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+    EditText mAppWidgetTitle;
+    MyAppWidgetData appWidgetData;
 
-	public MyAppWidgetConfigure() {
-		super();
-	}
+    public MyAppWidgetConfigure() {
+        super();
+    }
 
-	@Override
-	public void onCreate(Bundle icicle) {
-		super.onCreate(icicle);
+    @Override
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
 
-		// Set the result to CANCELED. This will cause the widget host to cancel
-		// out of the widget placement if they press the back button.
-		setResult(RESULT_CANCELED);
+        // Set the result to CANCELED. This will cause the widget host to cancel
+        // out of the widget placement if they press the back button.
+        setResult(RESULT_CANCELED);
 
-		// Set the view layout resource to use.
-		setContentView(R.layout.appwidget_configure);
+        // Set the view layout resource to use.
+        setContentView(R.layout.appwidget_configure);
 
-		// Find the EditText
-		mAppWidgetTitle = (EditText) findViewById(R.id.appwidget_title);
+        // Find the EditText
+        mAppWidgetTitle = (EditText) findViewById(R.id.appwidget_title);
 
-		// Bind the action for the save button.
-		findViewById(R.id.ok_button).setOnClickListener(mOnClickListener);
+        // Bind the action for the save button.
+        findViewById(R.id.ok_button).setOnClickListener(mOnClickListener);
 
-		// Find the widget id from the intent.
-		Intent intent = getIntent();
-		Bundle extras = intent.getExtras();
-		if (extras != null) {
-			mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
-					AppWidgetManager.INVALID_APPWIDGET_ID);
-		}
+        // Find the widget id from the intent.
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
+        }
         if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
             MyLog.v(TAG, "mAppWidgetId=" + mAppWidgetId);
         }
 
-		// If they gave us an intent without the widget id, just bail.
-		if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-			finish();
-		}
+        // If they gave us an intent without the widget id, just bail.
+        if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            finish();
+        }
 
-		appWidgetData = new MyAppWidgetData(this,
-				mAppWidgetId);
-		appWidgetData.load();
-		
-		// For now we have only one setting to configure:
-		mAppWidgetTitle.setText(appWidgetData.nothingPref);
-	}
+        appWidgetData = new MyAppWidgetData(this,
+                mAppWidgetId);
+        appWidgetData.load();
+        
+        // For now we have only one setting to configure:
+        mAppWidgetTitle.setText(appWidgetData.nothingPref);
+    }
 
-	View.OnClickListener mOnClickListener = new View.OnClickListener() {
-		@Override
+    View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
         public void onClick(View v) {
-			// When the button is clicked, save configuration settings in our prefs
-			// and return that they clicked OK.
-			appWidgetData.nothingPref = mAppWidgetTitle.getText().toString();
-			appWidgetData.clearCounters();
-			appWidgetData.save();
+            // When the button is clicked, save configuration settings in our prefs
+            // and return that they clicked OK.
+            appWidgetData.nothingPref = mAppWidgetTitle.getText().toString();
+            appWidgetData.clearCounters();
+            appWidgetData.save();
 
-			// Push widget update to surface with newly set prefix
-			int[] appWidgetIds = { mAppWidgetId };
-			Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-			intent.putExtra(
-					android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS,
-					appWidgetIds);
-			sendBroadcast(intent);
+            // Push widget update to surface with newly set prefix
+            int[] appWidgetIds = { mAppWidgetId };
+            Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            intent.putExtra(
+                    android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS,
+                    appWidgetIds);
+            sendBroadcast(intent);
 
-			// Make sure we pass back the original appWidgetId
-			Intent resultValue = new Intent();
-			resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-					mAppWidgetId);
-			setResult(RESULT_OK, resultValue);
-			finish();
-		}
-	};
-	
-	/**
-	 * Delete all Widgets
-	 * Idea from <a href="http://stackoverflow.com/a/7774503">Removing AppWidgets programmatically</a>
-	 * @param context
-	 * @param packageName
-	 * @param className
-	 * @return
-	 */
-    static public int deleteWidgets(Context context, String packageName, String className) {
+            // Make sure we pass back the original appWidgetId
+            Intent resultValue = new Intent();
+            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    mAppWidgetId);
+            setResult(RESULT_OK, resultValue);
+            finish();
+        }
+    };
+    
+    /**
+     * Delete all Widgets
+     * Idea from <a href="http://stackoverflow.com/a/7774503">Removing AppWidgets programmatically</a>
+     * @param context
+     * @param packageName
+     * @param className
+     * @return
+     */
+    public static int deleteWidgets(Context context, String packageName, String className) {
         int deletedCount = 0;
         try {
             AppWidgetManager awm = AppWidgetManager.getInstance(context);
@@ -133,5 +133,5 @@ public class MyAppWidgetConfigure extends Activity {
         }
         return deletedCount;
     }
-	
+    
 }

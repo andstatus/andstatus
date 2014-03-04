@@ -33,7 +33,6 @@ import static org.andstatus.app.ContextMenuItem.SHARE;
 import static org.andstatus.app.ContextMenuItem.STOP_FOLLOWING_AUTHOR;
 import static org.andstatus.app.ContextMenuItem.STOP_FOLLOWING_SENDER;
 
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -57,8 +56,6 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
-
-import java.util.Locale;
 
 /**
  * Context menu and corresponding actions on messages from the list 

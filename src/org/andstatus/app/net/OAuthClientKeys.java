@@ -45,7 +45,7 @@ public class OAuthClientKeys {
 
     // Strategy pattern, see http://en.wikipedia.org/wiki/Strategy_pattern
     private OAuthClientKeysStrategy strategy = null;
-    private final static String SECRET_CLASS_NAME = OAuthClientKeysOpenSource.class.getPackage().getName() + "." + "OAuthClientKeysSecret";
+    private static final String SECRET_CLASS_NAME = OAuthClientKeysOpenSource.class.getPackage().getName() + "." + "OAuthClientKeysSecret";
     private static boolean noSecretClass = false;
     
     private OAuthClientKeys() {

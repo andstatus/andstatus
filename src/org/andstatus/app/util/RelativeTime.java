@@ -30,104 +30,104 @@ import android.content.Context;
  */
 public class RelativeTime {
 
-	private static final int SECOND = 1;
-	private static final int MINUTE = 60 * SECOND;
-	private static final int HOUR = 60 * MINUTE;
-	private static final int DAY = 24 * HOUR;
-	private static final int MONTH = 30 * DAY;
+    private static final int SECOND = 1;
+    private static final int MINUTE = 60 * SECOND;
+    private static final int HOUR = 60 * MINUTE;
+    private static final int DAY = 24 * HOUR;
+    private static final int MONTH = 30 * DAY;
 
-	private Calendar mCalendar;
-	private Context mContext;
-	
-	/**
-	 * 
-	 * @param cal
-	 */
-	public RelativeTime(Calendar cal, Context context) {
-		mCalendar = cal;
-		mContext = context;
-	}
+    private Calendar mCalendar;
+    private Context mContext;
+    
+    /**
+     * 
+     * @param cal
+     */
+    public RelativeTime(Calendar cal, Context context) {
+        mCalendar = cal;
+        mContext = context;
+    }
 
-	/**
-	 * 
-	 * @param date
-	 */
-	public RelativeTime(Date date) {
-		mCalendar = Calendar.getInstance();
-		mCalendar.setTime(date);
-	}
+    /**
+     * 
+     * @param date
+     */
+    public RelativeTime(Date date) {
+        mCalendar = Calendar.getInstance();
+        mCalendar.setTime(date);
+    }
 
-	/**
-	 * 
-	 * @param milliseconds
-	 */
-	public RelativeTime(long milliseconds) {
-		mCalendar = Calendar.getInstance();
-		mCalendar.setTimeInMillis(milliseconds);
-	}
+    /**
+     * 
+     * @param milliseconds
+     */
+    public RelativeTime(long milliseconds) {
+        mCalendar = Calendar.getInstance();
+        mCalendar.setTimeInMillis(milliseconds);
+    }
 
-	/**
-	 * Difference to Now
-	 * @param from 
-	 * @return String
-	 */
-	public static String getDifference(Context context, long from) {
-		String value;
-		long to = System.currentTimeMillis();
-		long delta = java.lang.Math.round( (double)(to - from) / 1000);
-		if (from <= 0) {
-		    value = "";
-		} else if (delta < 1) {
-			value = context.getString(R.string.reltime_just_now);
-		} else if (delta < 1 * MINUTE) {
+    /**
+     * Difference to Now
+     * @param from 
+     * @return String
+     */
+    public static String getDifference(Context context, long from) {
+        String value;
+        long to = System.currentTimeMillis();
+        long delta = java.lang.Math.round( (double)(to - from) / 1000);
+        if (from <= 0) {
+            value = "";
+        } else if (delta < 1) {
+            value = context.getString(R.string.reltime_just_now);
+        } else if (delta < 1 * MINUTE) {
             int numSeconds = (int) delta;
             value = I18n.formatQuantityMessage(context,
                     0,
                     numSeconds,
                     R.array.reltime_seconds_ago_patterns,
                     R.array.reltime_seconds_ago_formats);
-		} else if (delta < 59 * MINUTE) {
+        } else if (delta < 59 * MINUTE) {
             int numMinutes = (int) java.lang.Math.round( (double) delta / MINUTE);
             value = I18n.formatQuantityMessage(context,
                     0,
                     numMinutes,
                     R.array.reltime_minutes_ago_patterns,
                     R.array.reltime_minutes_ago_formats);
-		} else if (delta < 24 * HOUR) {
+        } else if (delta < 24 * HOUR) {
             int numHours = (int) java.lang.Math.round( (double) delta / HOUR);
             value = I18n.formatQuantityMessage(context,
                     0,
                     numHours,
                     R.array.reltime_hours_ago_patterns,
                     R.array.reltime_hours_ago_formats);
-		} else if (delta < 30 * DAY) {
-		    int numDays = (int) java.lang.Math.round( (double) delta / DAY);
-		    value = I18n.formatQuantityMessage(context,
+        } else if (delta < 30 * DAY) {
+            int numDays = (int) java.lang.Math.round( (double) delta / DAY);
+            value = I18n.formatQuantityMessage(context,
                     0,
                     numDays,
                     R.array.reltime_days_ago_patterns,
                     R.array.reltime_days_ago_formats);
-		} else if (delta < 12 * MONTH) {
+        } else if (delta < 12 * MONTH) {
             int numMonths = (int) java.lang.Math.round( (double) delta / MONTH);
             value = I18n.formatQuantityMessage(context,
                     0,
                     numMonths,
                     R.array.reltime_months_ago_patterns,
                     R.array.reltime_months_ago_formats);
-		} else {
-		    // TODO: Years...
+        } else {
+            // TODO: Years...
             value = context.getString(R.string.reltime_years_ago);
-		}
-		return value;
-	}
+        }
+        return value;
+    }
 
-	/**
-	 * Returns the relative time passed since now.
-	 * 
-	 * @return String
-	 */
-	@Override
+    /**
+     * Returns the relative time passed since now.
+     * 
+     * @return String
+     */
+    @Override
     public String toString() {
-		return getDifference(mContext, mCalendar.getTimeInMillis());
-	}
+        return getDifference(mContext, mCalendar.getTimeInMillis());
+    }
 }

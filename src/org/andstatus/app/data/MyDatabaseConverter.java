@@ -31,22 +31,22 @@ import org.andstatus.app.util.MyLog;
 public class MyDatabaseConverter {
     private static final String TAG = MyDatabaseConverter.class.getSimpleName();
 
-    private final static Object upgradeLock = new Object();
+    private static final Object UPGRADE_LOCK = new Object();
     @GuardedBy("upgradeLock")
     private static volatile boolean shouldTriggerDatabaseUpgrade = false;
     /**
      * Semaphore enabling uninterrupted system upgrade
      */
     @GuardedBy("upgradeLock")
-    private static Long upgradeEndTime = 0L;
+    private static long upgradeEndTime = 0L;
     @GuardedBy("upgradeLock")
     private static boolean upgradeStarted = false;
     @GuardedBy("upgradeLock")
     private static boolean upgradeSuccessfullyCompleted = false;
     
-    final static Long SECONDS_BEFORE_UPGRADE_TRIGGERED = 5L;
-    final static long SECONDS_FOR_UPGRADE = 30L;
-    final static Long SECONDS_AFTER_UPGRADE = 5L;
+    static final long SECONDS_BEFORE_UPGRADE_TRIGGERED = 5L;
+    static final long SECONDS_FOR_UPGRADE = 30L;
+    static final long SECONDS_AFTER_UPGRADE = 5L;
 
     public static void triggerDatabaseUpgrade(Object requester) {
         String requesterName = MyLog.objTagToString(requester);
@@ -62,7 +62,7 @@ public class MyDatabaseConverter {
                     + ": not initialized yet");
             return;
         }
-        synchronized(upgradeLock) {
+        synchronized(UPGRADE_LOCK) {
             if (isUpgrading()) {
                 MyLog.v(TAG, "Attempt to trigger database upgrade by " + requesterName 
                         + ": already upgrading");
@@ -80,7 +80,7 @@ public class MyDatabaseConverter {
             MyLog.v(TAG, "Upgrade triggered by " + requesterName);
             MyContextHolder.release();
             MyContextHolder.initialize(myContext.context(), TAG);
-            synchronized(upgradeLock) {
+            synchronized(UPGRADE_LOCK) {
                 shouldTriggerDatabaseUpgrade = false;
                 upgradeSuccessfullyCompleted = true;
                 if (upgradeStarted) {
@@ -95,7 +95,7 @@ public class MyDatabaseConverter {
             
         } finally {
             currentTime = java.lang.System.currentTimeMillis();
-            synchronized(upgradeLock) {
+            synchronized(UPGRADE_LOCK) {
                 if (upgradeStarted) {
                     upgradeEndTime = currentTime + java.util.concurrent.TimeUnit.SECONDS.toMillis(SECONDS_AFTER_UPGRADE);
                     MyLog.w(TAG, "Upgrade ended, waiting " + SECONDS_AFTER_UPGRADE + " more seconds");
@@ -107,7 +107,7 @@ public class MyDatabaseConverter {
     }
     
     public static void stillUpgrading() {
-        synchronized(upgradeLock) {
+        synchronized(UPGRADE_LOCK) {
             upgradeStarted = true;
             upgradeEndTime = java.lang.System.currentTimeMillis() + java.util.concurrent.TimeUnit.SECONDS.toMillis(SECONDS_FOR_UPGRADE);
         }
@@ -115,7 +115,7 @@ public class MyDatabaseConverter {
     }
     
     public static boolean isUpgrading() {
-        synchronized(upgradeLock) {
+        synchronized(UPGRADE_LOCK) {
             if (upgradeEndTime == 0 ) {
                 return false;
             }
@@ -134,7 +134,7 @@ public class MyDatabaseConverter {
             MyLog.v(this,"onUpgrade - Trigger not set yet");
             throw new IllegalStateException("onUpgrade - Trigger not set yet");
         }
-        synchronized (upgradeLock) {
+        synchronized (UPGRADE_LOCK) {
             shouldTriggerDatabaseUpgrade = false;
         }
         int currentVersion = oldVersion;

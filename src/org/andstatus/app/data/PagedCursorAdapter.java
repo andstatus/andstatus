@@ -24,8 +24,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FilterQueryProvider;
 import android.widget.SimpleCursorAdapter;
 
@@ -37,46 +35,41 @@ public class PagedCursorAdapter extends SimpleCursorAdapter implements FilterQue
 
     private static final String TAG = PagedCursorAdapter.class.getSimpleName();
 
-	private ContentResolver mContentResolver;
-	private String[] mProjection;
-	private Uri mUri;
-	private String mSortOrder;
+    private ContentResolver mContentResolver;
+    private Uri mUri;
+    private String[] mProjection;
+    private String mSortOrder;
 
-	/**
-	 * 
-	 * @param context
-	 * @param layout
-	 * @param c
-	 * @param from
-	 * @param to
-	 */
-	public PagedCursorAdapter(Context context, int layout, Cursor c,
-			String[] from, int[] to, Uri uri, String[] projection, String sortOrder) {
-		super(context, layout, c, from, to);
-		mContentResolver = context.getContentResolver();
-		mProjection = projection.clone();
-		mUri = uri;
-		mSortOrder = sortOrder;
-		setFilterQueryProvider(this);
-	}
+    /**
+     * 
+     * @param context
+     * @param layout
+     * @param c
+     * @param from
+     * @param to
+     */
+    public PagedCursorAdapter(Context context, int layout, Cursor c,
+            String[] from, int[] to, Uri uri, String[] projection, String sortOrder) {
+        super(context, layout, c, from, to);
+        mContentResolver = context.getContentResolver();
+        mUri = uri;
+        mProjection = projection.clone();
+        mSortOrder = sortOrder;
+        setFilterQueryProvider(this);
+    }
 
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		return super.getView(position, convertView, parent);
-	}
-
-	@Override
+    @Override
     public Cursor runQuery(CharSequence constraint) {
-		if (constraint != null) {
-			if (mSortOrder.indexOf("LIMIT 0,") > 0) {
-				String newSortOrder = mSortOrder.substring(0, mSortOrder.indexOf("LIMIT 0,"));
-				mSortOrder = newSortOrder;
-			}
-			mSortOrder += " " + constraint.toString().trim();
-		}
-		if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-		    MyLog.v(TAG, "runQuery, mUri=" + mUri + "; mProjection=" + Arrays.toString(mProjection) + "; mSortOrder=" + mSortOrder + ";");
-		}
-		return mContentResolver.query(mUri, mProjection, null, null, mSortOrder);
-	}
+        if (constraint != null) {
+            if (mSortOrder.indexOf("LIMIT 0,") > 0) {
+                String newSortOrder = mSortOrder.substring(0, mSortOrder.indexOf("LIMIT 0,"));
+                mSortOrder = newSortOrder;
+            }
+            mSortOrder += " " + constraint.toString().trim();
+        }
+        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            MyLog.v(TAG, "runQuery, mUri=" + mUri + "; mProjection=" + Arrays.toString(mProjection) + "; mSortOrder=" + mSortOrder + ";");
+        }
+        return mContentResolver.query(mUri, mProjection, null, null, mSortOrder);
+    }
 }

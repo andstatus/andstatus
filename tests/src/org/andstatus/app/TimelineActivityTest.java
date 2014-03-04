@@ -40,7 +40,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         setActivityIntent(intent);
         
         activity = getActivity();
-        TestSuite.waitForListLoaded(activity);
+        TestSuite.waitForListLoaded(this, activity);
 
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
@@ -76,12 +76,14 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         
         MyLog.v(this, method + "-Log before run clicker 1");
         activity.runOnUiThread(clicker);
-        Thread.sleep(5000);
+        getInstrumentation().waitForIdleSync();
+        Thread.sleep(500);
         assertTrue("Editor appeared", editorView.getVisibility() == android.view.View.VISIBLE);
 
         MyLog.v(this, method + "-Log before run clicker 2");
         activity.runOnUiThread(clicker);
-        Thread.sleep(5000);
+        getInstrumentation().waitForIdleSync();
+        Thread.sleep(500);
         assertFalse("Editor hidden again", editorView.getVisibility() == android.view.View.VISIBLE);
     }
     
@@ -109,7 +111,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         MyLog.v(this, method + "-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(nextActivity);
+        TestSuite.waitForListLoaded(this, nextActivity);
         Thread.sleep(500);
         nextActivity.finish();        
     }
@@ -136,7 +138,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         MyLog.v(this, method + "-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(nextActivity);
+        TestSuite.waitForListLoaded(this, nextActivity);
         Thread.sleep(500);
         nextActivity.finish();        
     }

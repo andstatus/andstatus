@@ -263,9 +263,9 @@ public class ConversationActivity extends Activity implements MyServiceListener,
 
     @Override
     public void onReceive(CommandData commandData) {
-        switch(commandData.command) {
+        switch(commandData.getCommand()) {
             case GET_STATUS:
-                if (!commandData.commandResult.hasError()) {
+                if (!commandData.getResult().hasError()) {
                     showConversation();
                 }
                 break;

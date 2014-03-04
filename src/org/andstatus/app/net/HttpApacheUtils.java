@@ -112,7 +112,7 @@ class HttpApacheUtils {
     /**
      * @throws ConnectionException
      */
-    final static List<NameValuePair> jsonToNameValuePair(JSONObject jso) throws ConnectionException {
+    static final List<NameValuePair> jsonToNameValuePair(JSONObject jso) throws ConnectionException {
         List<NameValuePair> formParams = new ArrayList<NameValuePair>();
         @SuppressWarnings("unchecked")
         Iterator<String> iterator =  jso.keys();
