@@ -91,7 +91,9 @@ public final class DbUtils {
     public static void closeSilently(Closeable closeable) {
         if (closeable != null) {
             try {
-                closeable.close();
+                if (android.os.Build.VERSION.SDK_INT > 10 ) {
+                    closeable.close();
+                }
             } catch ( IOException e) {
                 MyLog.ignored(closeable, e);
             }

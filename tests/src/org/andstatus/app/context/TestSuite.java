@@ -259,4 +259,16 @@ public class TestSuite extends TestCase {
         assertTrue("There are items in the list of " + activity.getClass().getSimpleName(), 
                 list.getChildCount() > 0);
     }
+
+
+    public static void waitForIdleSync(InstrumentationTestCase instrumentationTestCase) throws InterruptedException {
+        Thread.sleep(100);
+        if (android.os.Build.VERSION.SDK_INT < 15 ) {
+            Thread.sleep(2000);
+        }
+        if (android.os.Build.VERSION.SDK_INT < 10 ) {
+            Thread.sleep(2000);
+        }
+        instrumentationTestCase.getInstrumentation().waitForIdleSync();
+    }
 }

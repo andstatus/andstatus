@@ -57,25 +57,25 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
         getInstrumentation().invokeMenuActionSync(activity, R.id.global_search_menu_id, 0);
-        getInstrumentation().waitForIdleSync();
+        TestSuite.waitForIdleSync(this);
         getInstrumentation().sendStringSync(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
-        getInstrumentation().waitForIdleSync();
+        TestSuite.waitForIdleSync(this);
         Button view = (Button) activity.getWindow().getDecorView().findViewById(R.id.timelineTypeButton);
         assertTrue("Global search menu item clicked '" + view.getText() + "'", String.valueOf(view.getText()).contains(" *"));
-        Thread.sleep(1000);
+        TestSuite.waitForIdleSync(this);
     }
     
     public void testSearch() throws InterruptedException {
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
         getInstrumentation().invokeMenuActionSync(activity, R.id.search_menu_id, 0);
-        getInstrumentation().waitForIdleSync();
+        TestSuite.waitForIdleSync(this);
         getInstrumentation().sendStringSync(TestSuite.PUBLIC_MESSAGE_TEXT);
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
-        getInstrumentation().waitForIdleSync();
+        TestSuite.waitForIdleSync(this);
         Button view = (Button) activity.getWindow().getDecorView().findViewById(R.id.timelineTypeButton);
         assertTrue("Search menu item clicked '" + view.getText() + "'", String.valueOf(view.getText()).contains(" *"));
-        Thread.sleep(1000);
+        TestSuite.waitForIdleSync(this);
         assertMessagesArePublic(TestSuite.PUBLIC_MESSAGE_TEXT);
     }
 
