@@ -19,7 +19,6 @@ package org.andstatus.app.service;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Color;
@@ -28,10 +27,7 @@ import android.net.Uri;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.appwidget.MyAppWidgetProvider;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyProvider;
@@ -40,30 +36,14 @@ import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
-public class LoadTimelineCommandExecutor implements OneCommandExecutor, OneCommandExecutorParent{
-    private OneCommandExecutorParent parent;
-
-    private CommandData commandData;
-    private Context context;
+class CommandExecutorLoadTimeline extends CommandExecutorBase {
 
     private boolean mNotificationsEnabled;
     private boolean mNotificationsVibrate;
     
-    public LoadTimelineCommandExecutor(CommandData commandData) {
-        this.commandData = commandData;
-        context = MyContextHolder.get().context();
-
+    public CommandExecutorLoadTimeline() {
         mNotificationsEnabled = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_enabled", false);
         mNotificationsVibrate = MyPreferences.getDefaultSharedPreferences().getBoolean("vibration", false);
-    }
-
-    /* (non-Javadoc)
-     * @see org.andstatus.app.service.OneCommandExecutor#setParent(org.andstatus.app.service.OneCommandExecutorParent)
-     */
-    @Override
-    public OneCommandExecutor setParent(OneCommandExecutorParent parent) {
-        this.parent = parent;
-        return this;
     }
     
     /* (non-Javadoc)
@@ -71,51 +51,14 @@ public class LoadTimelineCommandExecutor implements OneCommandExecutor, OneComma
      */
     @Override
     public void execute() {
-        MyLog.d(this, "Executing " + commandData);
-        switch (commandData.getCommand()) {
-            case AUTOMATIC_UPDATE:
-            case FETCH_TIMELINE:
-            case SEARCH_MESSAGE:
-                loadTimeline(commandData);
-                break;
-            default:
-                MyLog.e(this, "Unexpected command here " + commandData);
-                break;
-        }
-    }
-    
-    private void logConnectionException(ConnectionException e, CommandData commandData, String detailedMessage) {
-        if (e.isHardError()) {
-            commandData.getResult().incrementParseExceptions();
-        } else {
-            commandData.getResult().incrementNumIoExceptions();
-        }
-        MyLog.e(this, detailedMessage + ": " + e.toString());
-    }
-    
-    /**
-     * Load one or all timeline(s) for one or all accounts
-     * @return True if everything Succeeded
-     */
-    private void loadTimeline(CommandData commandData) {
-        if (commandData.getAccount() == null) {
-            for (MyAccount acc : MyContextHolder.get().persistentAccounts().collection()) {
-                loadTimelineAccount(commandData, acc);
-                if (isStopping()) {
-                    setSoftErrorIfNotOk(commandData, false);
-                    break;
-                }
-            }
-        } else {
-            loadTimelineAccount(commandData, commandData.getAccount());
-        }
+        loadTimelines();
         if (!commandData.getResult().hasError() && commandData.getTimelineType() == TimelineTypeEnum.ALL && !isStopping()) {
             new DataPruner(context).prune();
         }
         if (!commandData.getResult().hasError()) {
             // Notify all timelines, 
             // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
-            MyContextHolder.get().context().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
+            context.getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
         }
     }
 
@@ -123,132 +66,61 @@ public class LoadTimelineCommandExecutor implements OneCommandExecutor, OneComma
      * Load Timeline(s) for one MyAccount
      * @return True if everything Succeeded
      */
-    private void loadTimelineAccount(CommandData commandData, MyAccount acc) {
-        if (setErrorIfCredentialsNotVerified(commandData, acc)) {
-            return;
-        }
-        boolean okAllTimelines = true;
-        boolean ok = false;
-        MessageCounters counters = new MessageCounters(acc, context, TimelineTypeEnum.ALL);
-        String descr = "(starting)";
-
-        long userId = commandData.itemId;
-        if (userId == 0) {
-            userId = acc.getUserId();
-        }
-
-        TimelineTypeEnum[] atl;
+    private void loadTimelines() {
+        MessageCounters counters = new MessageCounters(ma, context, TimelineTypeEnum.ALL);
+        TimelineTypeEnum[] timelineTypes;
         if (commandData.getTimelineType() == TimelineTypeEnum.ALL) {
-            atl = new TimelineTypeEnum[] {
+            timelineTypes = new TimelineTypeEnum[] {
                     TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
                     TimelineTypeEnum.DIRECT,
                     TimelineTypeEnum.FOLLOWING_USER
             };
         } else {
-            atl = new TimelineTypeEnum[] {
+            timelineTypes = new TimelineTypeEnum[] {
                     commandData.getTimelineType()
             };
         }
-
-        int pass = 1;
-        boolean okSomething = false;
-        boolean notOkSomething = false;
-        boolean[] oKs = new boolean[atl.length];
-        try {
-            for (int ind = 0; ind <= atl.length; ind++) {
-                if (isStopping()) {
-                    okAllTimelines = false;
-                    break;
-                }
-
-                if (ind == atl.length) {
-                    // This is some trick for the cases
-                    // when we load more than one timeline at once
-                    // and there was an error on some timeline only
-                    if (pass > 1 || !okSomething || !notOkSomething) {
-                        break;
-                    }
-                    pass++;
-                    ind = 0; // Start from beginning
-                    MyLog.d(this, "Second pass of loading timeline");
-                }
-                if (pass > 1) {
-                    // Find next error index
-                    for (int ind2 = ind; ind2 < atl.length; ind2++) {
-                        if (!oKs[ind2]) {
-                            ind = ind2;
-                            break;
-                        }
-                    }
-                    if (oKs[ind]) {
-                        // No more errors on the second pass
-                        break;
-                    }
-                }
-                ok = true;
-                TimelineTypeEnum timelineType = atl[ind];
-                if (acc.getConnection().isApiSupported(timelineType.getConnectionApiRoutine())) {
-                    MyLog.d(this, "Getting " + timelineType.save() + " for "
-                            + acc.getAccountName());
-                    TimelineDownloader fl = null;
-                    descr = "loading " + timelineType.save();
-                    counters.setTimelineType(timelineType);
-                    fl = TimelineDownloader.newInstance(counters, userId);
-                    fl.download();
-                    counters.accumulate();
-                } else {
-                    MyLog.v(this, "Not supported " + timelineType.save() + " for "
-                            + acc.getAccountName());
-                }
-
-                if (ok) {
-                    okSomething = true;
-                } else {
-                    notOkSomething = true;
-                }
-                oKs[ind] = ok;
+        for (TimelineTypeEnum timelineType : timelineTypes) {
+            if (isStopping()) {
+                break;
             }
-        } catch (ConnectionException e) {
-            logConnectionException(e, commandData, descr +" Exception");
-            ok = false;
-        } catch (SQLiteConstraintException e) {
-            MyLog.e(this, descr + ", SQLite Exception", e);
-            ok = false;
+            loadTimeline(timelineType, counters);
         }
-
-        if (ok) {
-            descr = "notifying";
+        if (!commandData.getResult().hasError()) {
             notifyOfUpdatedTimeline(counters.getMessagesAdded(), counters.getMentionsAdded(), counters.getDirectedAdded());
         }
-
-        String message = "";
-        if (oKs.length <= 1) {
-            message += (ok ? "Succeeded" : "Failed");
-            okAllTimelines = ok;
-        } else {
-            int nOks = 0;
-            for (int ind = 0; ind < oKs.length; ind++) {
-                if (oKs[ind]) {
-                    nOks += 1;
-                }
-            }
-            if (nOks > 0) {
-                message += "Succeded " + nOks;
-                if (nOks < oKs.length) {
-                    message += " of " + oKs.length;
-                    okAllTimelines = false;
-                }
-            } else {
-                message += "Failed " + oKs.length;
-                okAllTimelines = false;
-            }
-            message += " times";
-        }
-        setSoftErrorIfNotOk(commandData, okAllTimelines);
-        
-        message += " getting " + commandData.getTimelineType().save()
-                + " for " + acc.getAccountName() + counters.toString();
+        String message = (commandData.getResult().hasError() ? "Failed" : "Succeeded")
+                + " getting " + commandData.getTimelineType().save()
+                + " for " + ma.getAccountName() + counters.toString();
         MyLog.d(this, message);
+    }
+
+    private void loadTimeline(TimelineTypeEnum timelineType, MessageCounters counters) {
+        boolean ok = false;
+        try {
+            if (ma.getConnection().isApiSupported(timelineType.getConnectionApiRoutine())) {
+                MyLog.d(this, "Getting " + timelineType.save() + " for "
+                        + ma.getAccountName());
+                TimelineDownloader fl = null;
+                counters.setTimelineType(timelineType);
+                long userId = commandData.itemId;
+                if (userId == 0) {
+                    userId = ma.getUserId();
+                }
+                fl = TimelineDownloader.newInstance(counters, userId);
+                fl.download();
+                counters.accumulate();
+            } else {
+                MyLog.v(this, "Not supported " + timelineType.save() + " for "
+                        + ma.getAccountName());
+            }
+            ok = true;
+        } catch (ConnectionException e) {
+            logConnectionException(e, commandData, "Timeline " + timelineType.save());
+        } catch (SQLiteConstraintException e) {
+            MyLog.e(this, "Timeline " + timelineType.save(), e);
+        }
+        setSoftErrorIfNotOk(commandData, ok);
     }
     
     /**
@@ -272,22 +144,6 @@ public class LoadTimelineCommandExecutor implements OneCommandExecutor, OneComma
             notified = true;
         }
     }
-    
-    private void setSoftErrorIfNotOk(CommandData commandData, boolean ok) {
-        if (!ok) {
-            commandData.getResult().incrementNumIoExceptions();
-        }
-    }
-
-    private boolean setErrorIfCredentialsNotVerified(CommandData commandData, MyAccount myAccount) {
-        boolean errorOccured = false;
-        if (myAccount == null || myAccount.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-            errorOccured = true;
-            commandData.getResult().incrementNumAuthExceptions();
-        }
-        return errorOccured;
-    }
-    
     
     /**
      * Notify the user of new tweets.
@@ -431,14 +287,5 @@ public class LoadTimelineCommandExecutor implements OneCommandExecutor, OneComma
         intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
         intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
         context.sendBroadcast(intent);
-    }
-
-    @Override
-    public boolean isStopping() {
-        if (parent != null) {
-            return parent.isStopping();
-        } else {
-            return false;
-        }
     }
 }

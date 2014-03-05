@@ -74,7 +74,7 @@ public class CommandData implements Comparable<CommandData> {
         command = commandIn;
         priority = command.getPriority();
         if (!TextUtils.isEmpty(accountNameIn)) {
-            setAccountName(accountNameIn);
+            accountName = accountNameIn;
         }
     }
 
@@ -113,7 +113,7 @@ public class CommandData implements Comparable<CommandData> {
                     commandData = new CommandData();
                     commandData.bundle = bundle;
                     commandData.command = command;
-                    commandData.setAccountName(commandData.bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                    commandData.accountName = commandData.bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
                     commandData.timelineType = TimelineTypeEnum.load(commandData.bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
                     commandData.itemId = commandData.bundle.getLong(IntentExtra.EXTRA_ITEMID.key);
                     commandData.commandResult = commandData.bundle.getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
@@ -152,7 +152,7 @@ public class CommandData implements Comparable<CommandData> {
         String si = Integer.toString(index);
         // Decode command
         String strCommand = sp.getString(IntentExtra.EXTRA_MSGTYPE.key + si, CommandEnum.UNKNOWN.save());
-        setAccountName(sp.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, ""));
+        accountName = sp.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, "");
         timelineType = TimelineTypeEnum.load(sp.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, ""));
         itemId = sp.getLong(IntentExtra.EXTRA_ITEMID.key + si, 0);
         command = CommandEnum.load(strCommand);
@@ -305,10 +305,6 @@ public class CommandData implements Comparable<CommandData> {
         return MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
     }
     
-    private void setAccountName(String accountName) {
-        this.accountName = accountName;
-    }
-    
     public void resetCommandResult() {
         commandResult = new CommandResult();
     }
@@ -320,21 +316,6 @@ public class CommandData implements Comparable<CommandData> {
             greater = this.priority > another.priority ? 1 : -1;
         }
         return greater;
-    }
-
-    public OneCommandExecutor getExecutor() {
-        OneCommandExecutor oneCommandExecutor;
-        switch (command) {
-            case AUTOMATIC_UPDATE:
-            case FETCH_TIMELINE:
-            case SEARCH_MESSAGE:
-                oneCommandExecutor = new LoadTimelineCommandExecutor(this);
-                break;
-        default:
-            oneCommandExecutor = new OtherCommandExecutor(this);
-            break;
-        }                
-        return oneCommandExecutor;
     }
 
     public CommandEnum getCommand() {

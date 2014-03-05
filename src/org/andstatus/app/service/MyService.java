@@ -649,7 +649,7 @@ public class MyService extends Service {
         MyLog.v(TAG, "state: " + state);
     }
     
-    private class QueueExecutor extends AsyncTask<Void, Void, Boolean> implements OneCommandExecutorParent {
+    private class QueueExecutor extends AsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         
         @Override
         protected Boolean doInBackground(Void... arg0) {
@@ -667,7 +667,7 @@ public class MyService extends Service {
                     break;
                 }
                 commandData.resetCommandResult();
-                commandData.getExecutor().setParent(this).execute();
+                new CommandExecutorAllAccounts().setCommandData(commandData).setParent(this).execute();
                 if (shouldWeRetry(commandData)) {
                     synchronized(MyService.this) {
                         // Put the command to the retry queue

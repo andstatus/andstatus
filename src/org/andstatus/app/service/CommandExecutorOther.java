@@ -18,21 +18,16 @@
 package org.andstatus.app.service;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AvatarLoader;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.MyDatabase.OidEnum;
-import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbRateLimitStatus;
@@ -42,32 +37,10 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
-public class OtherCommandExecutor implements OneCommandExecutor, OneCommandExecutorParent{
-    private OneCommandExecutorParent parent;
-
-    private CommandData commandData;
-    private Context context;
-
-    public OtherCommandExecutor(CommandData commandData) {
-        this.commandData = commandData;
-        context = MyContextHolder.get().context();
-    }
-
-    /* (non-Javadoc)
-     * @see org.andstatus.app.service.OneCommandExecutor#setParent(org.andstatus.app.service.OneCommandExecutorParent)
-     */
-    @Override
-    public OneCommandExecutor setParent(OneCommandExecutorParent parent) {
-        this.parent = parent;
-        return this;
-    }
+class CommandExecutorOther extends CommandExecutorBase{
     
-    /* (non-Javadoc)
-     * @see org.andstatus.app.service.OneCommandExecutor#execute()
-     */
     @Override
     public void execute() {
-        MyLog.d(this, "Executing " + commandData);
         switch (commandData.getCommand()) {
             case CREATE_FAVORITE:
             case DESTROY_FAVORITE:
@@ -111,15 +84,10 @@ public class OtherCommandExecutor implements OneCommandExecutor, OneCommandExecu
         }
     }
     
-    
     /**
      * @param create true - create, false - destroy
      */
     private void createOrDestroyFavorite(CommandData commandData, long msgId, boolean create) {
-        if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-            return;
-        }
-        MyAccount ma = commandData.getAccount();
         boolean ok = false;
         String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
         MbMessage message = null;
@@ -191,10 +159,6 @@ public class OtherCommandExecutor implements OneCommandExecutor, OneCommandExecu
      * @param follow true - Follow, false - Stop following
      */
     private void followOrStopFollowingUser(CommandData commandData, long userId, boolean follow) {
-        if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-            return;
-        }
-        MyAccount ma = commandData.getAccount();
         boolean ok = false;
         String oid = MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
         MbUser user = null;
@@ -244,10 +208,6 @@ public class OtherCommandExecutor implements OneCommandExecutor, OneCommandExecu
      * @param msgId ID of the message to destroy
      */
     private void destroyStatus(CommandData commandData, long msgId) {
-        if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-            return;
-        }
-        MyAccount ma = commandData.getAccount();
         boolean ok = false;
         String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
         try {
@@ -282,10 +242,6 @@ public class OtherCommandExecutor implements OneCommandExecutor, OneCommandExecu
      * @param msgId ID of the message to destroy
      */
     private void destroyReblog(CommandData commandData, long msgId) {
-        if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-            return;
-        }
-        MyAccount ma = commandData.getAccount();
         boolean ok = false;
         String oid = MyProvider.idToOid(OidEnum.REBLOG_OID, msgId, ma.getUserId());
         try {
@@ -317,13 +273,10 @@ public class OtherCommandExecutor implements OneCommandExecutor, OneCommandExecu
     }
 
     private void getStatus(CommandData commandData) {
-        if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-            return;
-        }
         boolean ok = false;
         String oid = MyProvider.idToOid(OidEnum.MSG_OID, commandData.itemId, 0);
         try {
-            MbMessage message = commandData.getAccount().getConnection().getMessage(oid);
+            MbMessage message = ma.getConnection().getMessage(oid);
             if (!message.isEmpty()) {
                 ok = addMessageToLocalStorage(commandData, message);
             }
@@ -342,7 +295,7 @@ public class OtherCommandExecutor implements OneCommandExecutor, OneCommandExecu
     private boolean addMessageToLocalStorage(CommandData commandData, MbMessage message) {
         boolean ok = false;
         try {
-            new DataInserter(commandData.getAccount(),
+            new DataInserter(ma,
                     context,
                     TimelineTypeEnum.ALL).insertOrUpdateMsg(message);
             ok = true;
@@ -358,10 +311,6 @@ public class OtherCommandExecutor implements OneCommandExecutor, OneCommandExecu
      * @param recipientUserId !=0 for Direct messages - User Id
      */
     private void updateStatus(CommandData commandData, String status, long replyToMsgId, long recipientUserId) {
-        if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-            return;
-        }
-        MyAccount ma = commandData.getAccount();
         boolean ok = false;
         MbMessage message = null;
         try {
@@ -391,14 +340,11 @@ public class OtherCommandExecutor implements OneCommandExecutor, OneCommandExecu
     }
     
     private void reblog(CommandData commandData, long rebloggedId) {
-        if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-            return;
-        }
         String oid = MyProvider.idToOid(OidEnum.MSG_OID, rebloggedId, 0);
         boolean ok = false;
         MbMessage result = null;
         try {
-            result = commandData.getAccount().getConnection()
+            result = ma.getConnection()
                     .postReblog(oid);
             ok = !result.isEmpty();
         } catch (ConnectionException e) {
@@ -407,29 +353,17 @@ public class OtherCommandExecutor implements OneCommandExecutor, OneCommandExecu
         if (ok) {
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
-            new DataInserter(commandData.getAccount(), 
+            new DataInserter(ma, 
                     context,
                     TimelineTypeEnum.HOME).insertOrUpdateMsg(result);
         }
         setSoftErrorIfNotOk(commandData, ok);
     }
     
-    private void logConnectionException(ConnectionException e, CommandData commandData, String detailedMessage) {
-        if (e.isHardError()) {
-            commandData.getResult().incrementParseExceptions();
-        } else {
-            commandData.getResult().incrementNumIoExceptions();
-        }
-        MyLog.e(this, detailedMessage + ": " + e.toString());
-    }
-
     private void rateLimitStatus(CommandData commandData) {
-        if (setErrorIfCredentialsNotVerified(commandData, commandData.getAccount())) {
-            return;
-        }
         boolean ok = false;
         try {
-            MbRateLimitStatus rateLimitStatus = commandData.getAccount().getConnection().rateLimitStatus();
+            MbRateLimitStatus rateLimitStatus = ma.getConnection().rateLimitStatus();
             ok = !rateLimitStatus.isEmpty();
             if (ok) {
                 commandData.getResult().setRemainingHits(rateLimitStatus.remaining); 
@@ -439,29 +373,5 @@ public class OtherCommandExecutor implements OneCommandExecutor, OneCommandExecu
             logConnectionException(e, commandData, "rateLimitStatus Exception");
         }
         setSoftErrorIfNotOk(commandData, ok);
-    }
-    
-    private void setSoftErrorIfNotOk(CommandData commandData, boolean ok) {
-        if (!ok) {
-            commandData.getResult().incrementNumIoExceptions();
-        }
-    }
-
-    private boolean setErrorIfCredentialsNotVerified(CommandData commandData, MyAccount myAccount) {
-        boolean errorOccured = false;
-        if (myAccount == null || myAccount.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-            errorOccured = true;
-            commandData.getResult().incrementNumAuthExceptions();
-        }
-        return errorOccured;
-    }
-
-    @Override
-    public boolean isStopping() {
-        if (parent != null) {
-            return parent.isStopping();
-        } else {
-            return false;
-        }
     }
 }

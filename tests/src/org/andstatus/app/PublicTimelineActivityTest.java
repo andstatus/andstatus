@@ -64,6 +64,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         Button view = (Button) activity.getWindow().getDecorView().findViewById(R.id.timelineTypeButton);
         assertTrue("Global search menu item clicked '" + view.getText() + "'", String.valueOf(view.getText()).contains(" *"));
         TestSuite.waitForIdleSync(this);
+        assertMessagesArePublic(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
     }
     
     public void testSearch() throws InterruptedException {

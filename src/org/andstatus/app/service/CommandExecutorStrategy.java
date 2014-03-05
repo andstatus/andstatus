@@ -16,9 +16,13 @@
 
 package org.andstatus.app.service;
 
-public interface OneCommandExecutor {
+import org.andstatus.app.account.MyAccount;
 
-    OneCommandExecutor setParent(OneCommandExecutorParent parent);
+public interface CommandExecutorStrategy {
+
+    CommandExecutorStrategy setCommandData(CommandData commandData);
+    CommandExecutorStrategy setMyAccount(MyAccount ma);
+    CommandExecutorStrategy setParent(CommandExecutorParent parent);
 
     void execute();
 }

@@ -606,9 +606,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
    
     /**
-     *  Cancel notifications of loading timeline
-     *  They were set in 
-     *  @see org.andstatus.app.MyService.CommandExecutor#notifyNewTweets(int, CommandEnum)
+     *  Cancel notifications of loading timeline, which were set during Timeline downloading 
      */
     private void clearNotifications() {
         try {
