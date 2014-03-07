@@ -41,7 +41,7 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
         LatestTimelineItem latestTimelineItem = new LatestTimelineItem(counters.getTimelineType(), counters.getTimelineUserId());
         
         if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-            String strLog = "Loading timeline " + counters.getTimelineType().save() + "; account=" 
+            String strLog = "Loading " + counters.getTimelineType() + "; account=" 
         + counters.getMyAccount().getAccountName()
         + "; user=" + MyProvider.userIdToName(counters.getTimelineUserId());
             if (latestTimelineItem.getTimelineItemDate() > 0) {

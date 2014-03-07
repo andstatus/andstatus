@@ -218,7 +218,7 @@ public class CommandData implements Comparable<CommandData> {
     public String toString() {
         return "CommandData [" + "command=" + command.save()
                 + (TextUtils.isEmpty(getAccountName()) ? "" : "; account=" + getAccountName())
-                + (timelineType == TimelineTypeEnum.UNKNOWN ? "" : "; timeline=" + timelineType.save())
+                + (timelineType == TimelineTypeEnum.UNKNOWN ? "" : "; " + timelineType)
                 + (itemId == 0 ? "" : "; id=" + itemId) + "; hashCode=" + hashCode()
                 + "; " + CommandResult.toString(commandResult)
                 + "]";

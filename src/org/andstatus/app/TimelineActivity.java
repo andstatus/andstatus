@@ -947,7 +947,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "processNewIntent; type=\"" + mTimelineType.save() + "\"");
+            MyLog.v(this, "processNewIntent; " + mTimelineType);
         }
     }
 
@@ -1082,7 +1082,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
                 MyLog.v(this, (TextUtils.isEmpty(activity.mQueryString) ? "" 
                         : "queryString=\"" + activity.mQueryString + "\"; ") 
-                        +  "TimelineType=" + activity.mTimelineType.save()
+                        +  activity.mTimelineType
                         + "; isCombined=" + (activity.mIsTimelineCombined ? "yes" : "no"));
             }
 

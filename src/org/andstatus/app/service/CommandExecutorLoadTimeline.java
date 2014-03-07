@@ -79,7 +79,7 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
             notifyOfUpdatedTimeline(counters.getMessagesAdded(), counters.getMentionsAdded(), counters.getDirectedAdded());
         }
         String message = (commandData.getResult().hasError() ? "Failed" : "Succeeded")
-                + " getting " + commandData.getTimelineType().save()
+                + " getting " + commandData.getTimelineType()
                 + " for " + ma.getAccountName() + counters.toString();
         MyLog.d(this, message);
     }
@@ -104,7 +104,7 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
         boolean ok = false;
         try {
             if (ma.getConnection().isApiSupported(counters.getTimelineType().getConnectionApiRoutine())) {
-                MyLog.d(this, "Getting " + counters.getTimelineType().save() + " for "
+                MyLog.d(this, "Getting " + counters.getTimelineType() + " for "
                         + ma.getAccountName());
                 long userId = commandData.itemId;
                 if (userId == 0) {
@@ -114,14 +114,14 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
                 TimelineDownloader.getStrategy(counters).download();
                 counters.accumulate();
             } else {
-                MyLog.v(this, "Not supported " + counters.getTimelineType().save() + " for "
+                MyLog.v(this, counters.getTimelineType() + " is not supported for "
                         + ma.getAccountName());
             }
             ok = true;
         } catch (ConnectionException e) {
-            logConnectionException(e, commandData, "Timeline " + counters.getTimelineType().save());
+            logConnectionException(e, commandData, counters.getTimelineType().toString());
         } catch (SQLiteConstraintException e) {
-            MyLog.e(this, "Timeline " + counters.getTimelineType().save(), e);
+            MyLog.e(this, counters.getTimelineType().toString(), e);
         }
         setSoftErrorIfNotOk(commandData, ok);
     }

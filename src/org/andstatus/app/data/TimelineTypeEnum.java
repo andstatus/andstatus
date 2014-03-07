@@ -143,6 +143,11 @@ public enum TimelineTypeEnum {
         return code;
     }
     
+    @Override
+    public String toString() {
+        return "timeline=" + code;
+    }
+
     /**
      * The id of the string resource with the localized name to use in UI
      */

@@ -144,7 +144,7 @@ public class LatestTimelineItem {
     
     @Override
     public String toString() {
-        return TAG + "[ Timeline " + timelineType.save() 
+        return TAG + "[" + timelineType 
                     + forTheUser() 
                     + (getTimelineDownloadedDate() > 0 
                             ? " downloaded at " + (new Date(getTimelineDownloadedDate()).toString()) 
@@ -196,7 +196,7 @@ public class LatestTimelineItem {
         boolean blnOut = passedMs > frequencyMs;
         
         if (blnOut && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(this, "It's time to auto update " + timelineType.save() 
+            MyLog.v(this, "It's time to auto update " + timelineType 
                     + forTheUser()
                     + ". Minutes passed=" + passedMs/1000/60);
         }
