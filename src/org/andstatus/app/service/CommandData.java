@@ -68,8 +68,6 @@ public class CommandData implements Comparable<CommandData> {
 
     private CommandResult commandResult = new CommandResult();
     
-    public static final CommandData EMPTY_COMMAND = new CommandData(CommandEnum.EMPTY, "");
-    
     public CommandData(CommandEnum commandIn, String accountNameIn) {
         command = commandIn;
         priority = command.getPriority();
@@ -95,7 +93,7 @@ public class CommandData implements Comparable<CommandData> {
      * Used to decode command from the Intent upon receiving it
      */
     public static CommandData fromIntent(Intent intent) {
-        CommandData commandData = EMPTY_COMMAND;
+        CommandData commandData = getEmpty();
         if (intent != null) {
             Bundle bundle = intent.getExtras();
             String strCommand = "";
@@ -121,6 +119,10 @@ public class CommandData implements Comparable<CommandData> {
             }
         }
         return commandData;
+    }
+
+    public static CommandData getEmpty() {
+        return new CommandData(CommandEnum.EMPTY, "");        
     }
     
     public static CommandData searchCommand(String accountName, String queryString) {

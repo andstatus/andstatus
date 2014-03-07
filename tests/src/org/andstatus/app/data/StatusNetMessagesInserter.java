@@ -16,7 +16,6 @@
 
 package org.andstatus.app.data;
 
-import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
@@ -28,11 +27,11 @@ import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.service.CommandExecutionData;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandExecutionContext;
 
 public class StatusNetMessagesInserter extends InstrumentationTestCase {
     private static volatile int iteration = 0;
-    private Context context;
 
     private MbUser accountMbUser;
     private MyAccount ma;
@@ -45,7 +44,6 @@ public class StatusNetMessagesInserter extends InstrumentationTestCase {
     
     private void mySetup() throws Exception {
         iteration++;
-        context = TestSuite.getMyContextForTest().context();
         origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.STATUSNET_TEST_ORIGIN_NAME);
         assertTrue(TestSuite.STATUSNET_TEST_ORIGIN_NAME + " exists", origin != null);
         ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME); 
@@ -135,7 +133,7 @@ public class StatusNetMessagesInserter extends InstrumentationTestCase {
     }
     
     private long addMessage(MbMessage message) {
-        DataInserter di = new DataInserter(new CommandExecutionData(ma, context).setTimelineType(TimelineTypeEnum.HOME));
+        DataInserter di = new DataInserter(new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineTypeEnum.HOME));
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added " + message.oid, messageId != 0);
         return messageId;

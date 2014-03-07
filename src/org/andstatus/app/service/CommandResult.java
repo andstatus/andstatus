@@ -19,6 +19,8 @@ package org.andstatus.app.service;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.andstatus.app.data.TimelineTypeEnum;
+
 /**
  * Result of the command execution
  * See also {@link android.content.SyncStats}
@@ -34,13 +36,33 @@ public class CommandResult implements Parcelable {
     // 0 means these values were not set
     private int hourlyLimit = 0;
     private int remainingHits = 0;
+    
+    // Counters to use for user notifications
+    private int messagesAdded = 0;
+    private int mentionsAdded = 0;
+    private int directedAdded = 0;
+    private int downloadedCount = 0;
 
     public CommandResult() {
     }
     
     @Override
     public String toString() {
-        return hasError() ? (hasHardError() ? "Hard Error" : "Soft Error") : " No errors";
+        String message = hasError() ? (hasHardError() ? "Hard Error" : "Soft Error") : " No errors";
+        if (downloadedCount > 0) {
+            message += ", " + downloadedCount + " downloaded";
+        }
+        if (getMessagesAdded() > 0) {
+            message += ", " + messagesAdded + " messages";
+        }
+        if (mentionsAdded > 0) {
+            message += ", " + mentionsAdded + " mentions";
+        }
+        if (directedAdded > 0) {
+            message += ", " + directedAdded + " directs";
+        }
+        
+        return message;
     }
 
     public CommandResult(Parcel parcel) {
@@ -133,5 +155,39 @@ public class CommandResult implements Parcelable {
 
     protected void setRemainingHits(int remainingHits) {
         this.remainingHits = remainingHits;
+    }
+    
+
+    public void incrementMessagesCount(TimelineTypeEnum timelineType) {
+        switch (timelineType) {
+            case HOME:
+                messagesAdded++;
+                break;
+            case DIRECT:
+                directedAdded++;
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void incrementMentionsCount() {
+        mentionsAdded++;
+    }
+
+    public void incrementDownloadedCount() {
+        downloadedCount++;
+    }
+    
+    protected int getMessagesAdded() {
+        return messagesAdded;
+    }
+
+    protected int getMentionsAdded() {
+        return mentionsAdded;
+    }
+
+    protected int getDirectedAdded() {
+        return directedAdded;
     }
 }

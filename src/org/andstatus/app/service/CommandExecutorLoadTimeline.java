@@ -67,20 +67,21 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
      * @return True if everything Succeeded
      */
     private void loadTimelines() {
-        CommandExecutionData counters = new CommandExecutionData(ma, context);
+        CommandExecutionContext execContext = new CommandExecutionContext(commandData, ma);
         for (TimelineTypeEnum timelineType : getTimelines()) {
             if (isStopping()) {
                 break;
             }
-            counters.setTimelineType(timelineType);
-            loadTimeline(counters);
+            execContext.setTimelineType(timelineType);
+            loadTimeline(execContext);
         }
         if (!commandData.getResult().hasError()) {
-            notifyOfUpdatedTimeline(counters.getMessagesAdded(), counters.getMentionsAdded(), counters.getDirectedAdded());
+            notifyOfUpdatedTimeline(execContext.result().getMessagesAdded(), 
+                    execContext.result().getMentionsAdded(), execContext.result().getDirectedAdded());
         }
         String message = (commandData.getResult().hasError() ? "Failed" : "Succeeded")
                 + " getting " + commandData.getTimelineType()
-                + " for " + ma.getAccountName() + counters.toString();
+                + " for " + ma.getAccountName() + execContext.toString();
         MyLog.d(this, message);
     }
 
@@ -100,28 +101,27 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
         return timelineTypes;
     }
 
-    private void loadTimeline(CommandExecutionData counters) {
+    private void loadTimeline(CommandExecutionContext execContext) {
         boolean ok = false;
         try {
-            if (ma.getConnection().isApiSupported(counters.getTimelineType().getConnectionApiRoutine())) {
-                MyLog.d(this, "Getting " + counters.getTimelineType() + " for "
+            if (ma.getConnection().isApiSupported(execContext.getTimelineType().getConnectionApiRoutine())) {
+                MyLog.d(this, "Getting " + execContext.getTimelineType() + " for "
                         + ma.getAccountName());
                 long userId = commandData.itemId;
                 if (userId == 0) {
                     userId = ma.getUserId();
                 }
-                counters.setTimelineUserId(userId);
-                TimelineDownloader.getStrategy(counters).download();
-                counters.accumulate();
+                execContext.setTimelineUserId(userId);
+                TimelineDownloader.getStrategy(execContext).download();
             } else {
-                MyLog.v(this, counters.getTimelineType() + " is not supported for "
+                MyLog.v(this, execContext.getTimelineType() + " is not supported for "
                         + ma.getAccountName());
             }
             ok = true;
         } catch (ConnectionException e) {
-            logConnectionException(e, commandData, counters.getTimelineType().toString());
+            logConnectionException(e, commandData, execContext.getTimelineType().toString());
         } catch (SQLiteConstraintException e) {
-            MyLog.e(this, counters.getTimelineType().toString(), e);
+            MyLog.e(this, execContext.getTimelineType().toString(), e);
         }
         setSoftErrorIfNotOk(commandData, ok);
     }

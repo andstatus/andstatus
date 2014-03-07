@@ -328,7 +328,7 @@ class CommandExecutorOther extends CommandExecutorBase{
             // The message was sent successfully
             // New User's message should be put into the user's Home timeline.
             new DataInserter(
-                    new CommandExecutionData(ma, context).
+                    new CommandExecutionContext(commandData, ma).
                             setTimelineType((recipientUserId == 0) ? TimelineTypeEnum.HOME
                                     : TimelineTypeEnum.DIRECT)).insertOrUpdateMsg(message);
         }
@@ -349,7 +349,7 @@ class CommandExecutorOther extends CommandExecutorBase{
         if (ok) {
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
-            new DataInserter(new CommandExecutionData(ma, context).
+            new DataInserter(new CommandExecutionContext(commandData, ma).
                     setTimelineType(TimelineTypeEnum.HOME)).insertOrUpdateMsg(result);
         }
         setSoftErrorIfNotOk(commandData, ok);

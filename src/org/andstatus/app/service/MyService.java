@@ -605,7 +605,7 @@ public class MyService extends Service {
              * Kick the commands queue by sending empty command
              * This Intent will be sent upon a User tapping the notification 
              */
-            PendingIntent pi = PendingIntent.getBroadcast(this, 0, CommandData.EMPTY_COMMAND.toIntent(intentForThisInitialized()), 0);
+            PendingIntent pi = PendingIntent.getBroadcast(this, 0, CommandData.getEmpty().toIntent(intentForThisInitialized()), 0);
             notification.setLatestEventInfo(this, getText(messageTitle), aMessage, pi);
 
             NotificationManager nM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);

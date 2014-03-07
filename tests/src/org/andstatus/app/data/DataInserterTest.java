@@ -35,7 +35,8 @@ import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.service.CommandExecutionData;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 
@@ -77,7 +78,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         deleteOldMessage(origin.getId(), messageOid);
         
-        CommandExecutionData counters = new CommandExecutionData(ma, context).setTimelineType(TimelineTypeEnum.HOME);
+        CommandExecutionContext counters = new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineTypeEnum.HOME);
         DataInserter di = new DataInserter(counters);
         String username = "somebody@identi.ca";
         String userOid =  "acct:" + username;
@@ -362,7 +363,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     private long addMessage(MbMessage message) {
-        DataInserter di = new DataInserter(new CommandExecutionData(ma, context).setTimelineType(TimelineTypeEnum.HOME));
+        DataInserter di = new DataInserter(new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineTypeEnum.HOME));
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added " + message.oid, messageId != 0);
         return messageId;

@@ -40,7 +40,6 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         setActivityIntent(intent);
         
         activity = getActivity();
-        TestSuite.waitForListLoaded(this, activity);
 
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
@@ -57,6 +56,8 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
 
     public void testBlogButton() throws InterruptedException {
         final String method = "testBlogButton";
+        TestSuite.waitForListLoaded(this, activity);
+        
         final Button createMessageButton = (Button) activity.findViewById(R.id.createMessageButton);
         assertTrue(createMessageButton != null);
         assertTrue("Blog button is visible", createMessageButton.getVisibility() == android.view.View.VISIBLE);
@@ -89,6 +90,8 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     public void testOpeningConversationActivity() throws InterruptedException {
         final String method = "testOpeningConversationActivity";
+        TestSuite.waitForListLoaded(this, activity);
+        
         ActivityMonitor activityMonitor = getInstrumentation().addMonitor(ConversationActivity.class.getName(), null, false);
 
         final ListView listView = (ListView) activity.findViewById(android.R.id.list);
@@ -118,6 +121,8 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     public void testOpeningAccountSelector() throws InterruptedException {
         final String method = "testOpeningAccountSelector";
+        TestSuite.waitForListLoaded(this, activity);
+
         ActivityMonitor activityMonitor = getInstrumentation().addMonitor(AccountSelector.class.getName(), null, false);
 
         final Button accountButton = (Button) activity.findViewById(R.id.selectAccountButton);

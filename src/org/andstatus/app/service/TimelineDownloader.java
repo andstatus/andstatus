@@ -29,21 +29,21 @@ import org.andstatus.app.net.ConnectionException;
 public abstract class TimelineDownloader {
     private static final String TAG = TimelineDownloader.class.getSimpleName();
 
-    protected CommandExecutionData counters;
+    protected CommandExecutionContext execContext;
     
-    public static TimelineDownloader getStrategy(CommandExecutionData counters) {
+    public static TimelineDownloader getStrategy(CommandExecutionContext execContext) {
         TimelineDownloader td;
-        switch (counters.getTimelineType()) {
+        switch (execContext.getTimelineType()) {
             case FOLLOWING_USER:
                 td = new TimelineDownloaderUser();
                 break;
             case ALL:
-                throw new IllegalArgumentException(TAG + ": Invalid TimelineType for loadTimeline: " + counters.getTimelineType());
+                throw new IllegalArgumentException(TAG + ": Invalid TimelineType for loadTimeline: " + execContext.getTimelineType());
             default:
                 td = new TimelineDownloaderMsg();
                 break;
         }
-        td.counters = counters;
+        td.execContext = execContext;
         return td;
     }
     

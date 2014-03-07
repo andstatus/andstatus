@@ -16,7 +16,6 @@
 
 package org.andstatus.app.data;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
@@ -29,7 +28,8 @@ import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
-import org.andstatus.app.service.CommandExecutionData;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -44,17 +44,14 @@ import java.util.Date;
  */
 public class DataInserter {
     private static final String TAG = DataInserter.class.getSimpleName();
-
-    private ContentResolver mContentResolver;
-    private CommandExecutionData counters;
+    private CommandExecutionContext execContext;
 
     public DataInserter(MyAccount ma, Context context) {
-        this(new CommandExecutionData(ma, context));
+        this(new CommandExecutionContext(CommandData.getEmpty(), ma));
     }
     
-    public DataInserter(CommandExecutionData counters) {
-        this.counters = counters;
-        mContentResolver = counters.getContext().getContentResolver();
+    public DataInserter(CommandExecutionContext execContext) {
+        this.execContext = execContext;
     }
     
     public long insertOrUpdateMsg(MbMessage message, LatestUserMessages lum) throws SQLiteConstraintException {
@@ -86,14 +83,14 @@ public class DataInserter {
             long createdDate = 0;
             if (sentDate > 0) {
                 createdDate = sentDate;
-                counters.incrementDownloadedCount();
+                execContext.result().incrementDownloadedCount();
             }
             
             long actorId = 0L;
             if (message.actor != null) {
                 actorId = insertOrUpdateUser(message.actor, lum);
             } else {
-                actorId = counters.getMyAccount().getUserId();
+                actorId = execContext.getMyAccount().getUserId();
             }
             
             // Sender
@@ -115,7 +112,7 @@ public class DataInserter {
                     authorId = insertOrUpdateUser(message.rebloggedMessage.sender, lum);
                 }
 
-                if (senderId !=0 && counters.getMyAccount().getUserId() == senderId) {
+                if (senderId !=0 && execContext.getMyAccount().getUserId() == senderId) {
                     // Msg was reblogged by current User (he is the Sender)
                     values.put(MyDatabase.MsgOfUser.REBLOGGED, 1);
 
@@ -163,9 +160,9 @@ public class DataInserter {
                 boolean countIt = false;
 
                 // Lookup the System's (AndStatus) id from the Originated system's id
-                rowId = MyProvider.oidToId(OidEnum.MSG_OID, counters.getMyAccount().getOriginId(), rowOid);
+                rowId = MyProvider.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
                 // Construct the Uri to the Msg
-                Uri msgUri = MyProvider.getTimelineMsgUri(counters.getMyAccount().getUserId(), counters.getTimelineType(), false, rowId);
+                Uri msgUri = MyProvider.getTimelineMsgUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false, rowId);
 
                 long sentDateStored = 0;
                 if (rowId != 0) {
@@ -194,7 +191,7 @@ public class DataInserter {
                     }
 
                     values.put(MyDatabase.Msg.MSG_OID, rowOid);
-                    values.put(MyDatabase.Msg.ORIGIN_ID, counters.getMyAccount().getOriginId());
+                    values.put(MyDatabase.Msg.ORIGIN_ID, execContext.getMyAccount().getOriginId());
                     values.put(MyDatabase.Msg.BODY, body);
                 }
                 if (isNewer) {
@@ -210,14 +207,14 @@ public class DataInserter {
                 if (message.recipient != null) {
                     long recipientId = insertOrUpdateUser(message.recipient, lum);
                     values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
-                    if (recipientId == counters.getMyAccount().getUserId()) {
+                    if (recipientId == execContext.getMyAccount().getUserId()) {
                         values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
                         MyLog.v(this, "Message '" + message.oid + "' is Directed to " 
-                                + counters.getMyAccount().getAccountName() );
+                                + execContext.getMyAccount().getAccountName() );
                     }
                 }
-                boolean mentioned = counters.getTimelineType() == TimelineTypeEnum.MENTIONS;
-                if (counters.getTimelineType() == TimelineTypeEnum.HOME) {
+                boolean mentioned = execContext.getTimelineType() == TimelineTypeEnum.MENTIONS;
+                if (execContext.getTimelineType() == TimelineTypeEnum.HOME) {
                     values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
                 }
                 if (!TextUtils.isEmpty(message.via)) {
@@ -228,7 +225,7 @@ public class DataInserter {
                 }
                 if (message.favoritedByActor != TriState.UNKNOWN
                         && actorId != 0
-                        && actorId == counters.getMyAccount().getUserId()) {
+                        && actorId == execContext.getMyAccount().getUserId()) {
                     values.put(MyDatabase.MsgOfUser.FAVORITED,
                             SharedPreferencesUtil.isTrue(message.favoritedByActor));
                     MyLog.v(this,
@@ -237,12 +234,12 @@ public class DataInserter {
                                     + "' "
                                     + (message.favoritedByActor.toBoolean(false) ? "favorited"
                                             : "unfavorited")
-                                    + " by " + counters.getMyAccount().getAccountName());
+                                    + " by " + execContext.getMyAccount().getAccountName());
                 }
 
                 if (message.inReplyToMessage != null) {
                     // Type of the timeline is ALL meaning that message does not belong to this timeline
-                    DataInserter di = new DataInserter(counters);
+                    DataInserter di = new DataInserter(execContext);
                     inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
                     if (message.inReplyToMessage.sender != null) {
                         inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
@@ -253,7 +250,7 @@ public class DataInserter {
                 if (inReplyToUserId != 0) {
                     values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
 
-                    if (counters.getMyAccount().getUserId() == inReplyToUserId) {
+                    if (execContext.getMyAccount().getUserId() == inReplyToUserId) {
                         values.put(MyDatabase.MsgOfUser.REPLIED, 1);
                         // We count replies as Mentions 
                         mentioned = true;
@@ -267,17 +264,17 @@ public class DataInserter {
                 }
                 
                 if (countIt) { 
-                    counters.incrementMessagesCount();
+                    execContext.result().incrementMessagesCount(execContext.getTimelineType());
                     }
                 // Check if current user was mentioned in the text of the message
                 if (body.length() > 0 
                         && !mentioned 
-                        && body.contains("@" + counters.getMyAccount().getUsername())) {
+                        && body.contains("@" + execContext.getMyAccount().getUsername())) {
                     mentioned = true;
                 }
                 if (mentioned) {
                     if (countIt) { 
-                        counters.incrementMentionsCount();
+                        execContext.result().incrementMentionsCount();
                         }
                   values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
                 }
@@ -293,10 +290,10 @@ public class DataInserter {
                 }
                 if (rowId == 0) {
                     // There was no such row so add the new one
-                    msgUri = mContentResolver.insert(MyProvider.getTimelineUri(counters.getMyAccount().getUserId(), TimelineTypeEnum.HOME, false), values);
+                    msgUri = execContext.getContext().getContentResolver().insert(MyProvider.getTimelineUri(execContext.getMyAccount().getUserId(), TimelineTypeEnum.HOME, false), values);
                     rowId = MyProvider.uriToMessageId(msgUri);
                 } else {
-                  mContentResolver.update(msgUri, values, null, null);
+                    execContext.getContext().getContentResolver().update(msgUri, values, null, null);
                 }
                 
                 if (senderId != 0) {
@@ -340,7 +337,7 @@ public class DataInserter {
         if (mbUser.actor != null) {
             readerId = insertOrUpdateUser(mbUser.actor, lum);
         } else {
-            readerId = counters.getMyAccount().getUserId();
+            readerId = execContext.getMyAccount().getUserId();
         }
         
         long userId = 0L;
@@ -382,17 +379,17 @@ public class DataInserter {
                 values.put(MyDatabase.User.CREATED_DATE, mbUser.updatedDate);
             }
             if (mbUser.followedByActor != TriState.UNKNOWN
-                    && readerId == counters.getMyAccount().getUserId()) {
+                    && readerId == execContext.getMyAccount().getUserId()) {
                 values.put(MyDatabase.FollowingUser.USER_FOLLOWED,
                         mbUser.followedByActor.toBoolean(false));
                 MyLog.v(this,
                         "User '" + userName + "' is "
                                 + (mbUser.followedByActor.toBoolean(false) ? "" : "not ")
-                                + "followed by " + counters.getMyAccount().getAccountName());
+                                + "followed by " + execContext.getMyAccount().getAccountName());
             }
             
             // Construct the Uri to the User
-            Uri userUri = MyProvider.getUserUri(counters.getMyAccount().getUserId(), userId);
+            Uri userUri = MyProvider.getUserUri(execContext.getMyAccount().getUserId(), userId);
             if (userId == 0) {
                 // There was no such row so add new one
                 
@@ -404,10 +401,10 @@ public class DataInserter {
                     values.put(MyDatabase.User.USERNAME, userName);
                 }
                 
-                userUri = mContentResolver.insert(userUri, values);
+                userUri = execContext.getContext().getContentResolver().insert(userUri, values);
                 userId = MyProvider.uriToUserId(userUri);
             } else if (values.size() > 0) {
-              mContentResolver.update(userUri, values, null, null);
+                execContext.getContext().getContentResolver().update(userUri, values, null, null);
             }
             if (mbUser.latestMessage != null) {
                 // This message doesn't have a sender!
@@ -425,7 +422,7 @@ public class DataInserter {
         LatestUserMessages lum = new LatestUserMessages();
         long rowId = insertOrUpdateMsg(message, lum);
         lum.save();
-        mContentResolver.notifyChange(MyProvider.TIMELINE_URI, null);
+        execContext.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
         return rowId;
     }
 }

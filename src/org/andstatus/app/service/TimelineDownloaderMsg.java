@@ -38,33 +38,33 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
 
     @Override
     public void download() throws ConnectionException {
-        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(counters.getTimelineType(), counters.getTimelineUserId());
+        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getTimelineType(), execContext.getTimelineUserId());
         
         if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-            String strLog = "Loading " + counters.getTimelineType() + "; account=" 
-        + counters.getMyAccount().getAccountName()
-        + "; user=" + MyProvider.userIdToName(counters.getTimelineUserId());
+            String strLog = "Loading " + execContext.getTimelineType() + "; account=" 
+        + execContext.getMyAccount().getAccountName()
+        + "; user=" + MyProvider.userIdToName(execContext.getTimelineUserId());
             if (latestTimelineItem.getTimelineItemDate() > 0) {
                 strLog += "; last Timeline item at=" + (new Date(latestTimelineItem.getTimelineItemDate()).toString())
                         + "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
             MyLog.d(TAG, strLog);
         }
-        String userOid =  MyProvider.idToOid(OidEnum.USER_OID, counters.getTimelineUserId(), 0);
+        String userOid =  MyProvider.idToOid(OidEnum.USER_OID, execContext.getTimelineUserId(), 0);
         if (TextUtils.isEmpty(userOid)) {
-            throw new ConnectionException("User oId is not found for id=" + counters.getTimelineUserId());
+            throw new ConnectionException("User oId is not found for id=" + execContext.getTimelineUserId());
         }
         int toDownload = MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD;
         TimelinePosition lastPosition = latestTimelineItem.getPosition();
         LatestUserMessages latestUserMessages = new LatestUserMessages();
         latestTimelineItem.onTimelineDownloaded();
-        DataInserter di = new DataInserter(counters);
+        DataInserter di = new DataInserter(execContext);
         for (boolean done = false; !done; ) {
             try {
-                int limit = counters.getMyAccount().getConnection().fixedDownloadLimitForApiRoutine(toDownload, 
-                        counters.getTimelineType().getConnectionApiRoutine()); 
-                List<MbTimelineItem> messages = counters.getMyAccount().getConnection().getTimeline(
-                        counters.getTimelineType().getConnectionApiRoutine(), lastPosition, limit, userOid);
+                int limit = execContext.getMyAccount().getConnection().fixedDownloadLimitForApiRoutine(toDownload, 
+                        execContext.getTimelineType().getConnectionApiRoutine()); 
+                List<MbTimelineItem> messages = execContext.getMyAccount().getConnection().getTimeline(
+                        execContext.getTimelineType().getConnectionApiRoutine(), lastPosition, limit, userOid);
                 for (MbTimelineItem item : messages) {
                     toDownload--;
                     latestTimelineItem.onNewMsg(item.timelineItemPosition, item.timelineItemDate);
