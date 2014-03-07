@@ -38,21 +38,21 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
 
     @Override
     public void download() throws ConnectionException {
-        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(counters.getTimelineType(), userId);
+        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(counters.getTimelineType(), counters.getTimelineUserId());
         
         if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
             String strLog = "Loading timeline " + counters.getTimelineType().save() + "; account=" 
         + counters.getMyAccount().getAccountName()
-        + "; user=" + MyProvider.userIdToName(userId);
+        + "; user=" + MyProvider.userIdToName(counters.getTimelineUserId());
             if (latestTimelineItem.getTimelineItemDate() > 0) {
                 strLog += "; last Timeline item at=" + (new Date(latestTimelineItem.getTimelineItemDate()).toString())
                         + "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
             MyLog.d(TAG, strLog);
         }
-        String userOid =  MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
+        String userOid =  MyProvider.idToOid(OidEnum.USER_OID, counters.getTimelineUserId(), 0);
         if (TextUtils.isEmpty(userOid)) {
-            throw new ConnectionException("User oId is not found for id=" + userId);
+            throw new ConnectionException("User oId is not found for id=" + counters.getTimelineUserId());
         }
         int toDownload = MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD;
         TimelinePosition lastPosition = latestTimelineItem.getPosition();

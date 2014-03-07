@@ -144,9 +144,7 @@ class CommandExecutorOther extends CommandExecutorBase{
 
             if (ok) {
                 // Please note that the Favorited message may be NOT in the User's Home timeline!
-                new DataInserter(ma,
-                        context,
-                        TimelineTypeEnum.ALL).insertOrUpdateMsg(message);
+                new DataInserter(ma, context).insertOrUpdateMsg(message);
             }
         }
         setSoftErrorIfNotOk(commandData, ok);
@@ -194,8 +192,7 @@ class CommandExecutorOther extends CommandExecutorBase{
             }
             if (ok) {
                 new DataInserter(ma,
-                        context,
-                        TimelineTypeEnum.HOME).insertOrUpdateUser(user);
+                        context).insertOrUpdateUser(user);
                 context.getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
             }
         }
@@ -296,8 +293,7 @@ class CommandExecutorOther extends CommandExecutorBase{
         boolean ok = false;
         try {
             new DataInserter(ma,
-                    context,
-                    TimelineTypeEnum.ALL).insertOrUpdateMsg(message);
+                    context).insertOrUpdateMsg(message);
             ok = true;
         } catch (Exception e) {
             MyLog.e(this, "Error inserting status", e);
@@ -331,10 +327,10 @@ class CommandExecutorOther extends CommandExecutorBase{
         if (ok) {
             // The message was sent successfully
             // New User's message should be put into the user's Home timeline.
-            new DataInserter(ma, 
-                    context,
-                    (recipientUserId == 0) ? TimelineTypeEnum.HOME : TimelineTypeEnum.DIRECT)
-            .insertOrUpdateMsg(message);
+            new DataInserter(
+                    new CommandExecutionData(ma, context).
+                            setTimelineType((recipientUserId == 0) ? TimelineTypeEnum.HOME
+                                    : TimelineTypeEnum.DIRECT)).insertOrUpdateMsg(message);
         }
         setSoftErrorIfNotOk(commandData, ok);
     }
@@ -353,9 +349,8 @@ class CommandExecutorOther extends CommandExecutorBase{
         if (ok) {
             // The tweet was sent successfully
             // Reblog should be put into the user's Home timeline!
-            new DataInserter(ma, 
-                    context,
-                    TimelineTypeEnum.HOME).insertOrUpdateMsg(result);
+            new DataInserter(new CommandExecutionData(ma, context).
+                    setTimelineType(TimelineTypeEnum.HOME)).insertOrUpdateMsg(result);
         }
         setSoftErrorIfNotOk(commandData, ok);
     }

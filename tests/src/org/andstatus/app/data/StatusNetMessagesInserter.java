@@ -28,6 +28,7 @@ import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.service.CommandExecutionData;
 
 public class StatusNetMessagesInserter extends InstrumentationTestCase {
     private static volatile int iteration = 0;
@@ -134,7 +135,7 @@ public class StatusNetMessagesInserter extends InstrumentationTestCase {
     }
     
     private long addMessage(MbMessage message) {
-        DataInserter di = new DataInserter(ma, context, TimelineTypeEnum.HOME);
+        DataInserter di = new DataInserter(new CommandExecutionData(ma, context).setTimelineType(TimelineTypeEnum.HOME));
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added " + message.oid, messageId != 0);
         return messageId;

@@ -20,10 +20,37 @@ import android.content.Context;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
 
-class CommandExecutorBase implements CommandExecutorStrategy, CommandExecutorParent {
+abstract class CommandExecutorBase implements CommandExecutorStrategy, CommandExecutorParent {
+    protected static CommandExecutorStrategy getStrategy(CommandData commandData, MyAccount acc) {
+        CommandExecutorStrategy strategy;
+        if (acc == null) {
+            if (commandData.getTimelineType() == TimelineTypeEnum.PUBLIC) {
+                strategy = new CommandExecutorAllOrigins();
+            } else {
+                strategy = new CommandExecutorAllAccounts();
+            }
+        } else {
+            switch (commandData.getCommand()) {
+                case AUTOMATIC_UPDATE:
+                case FETCH_TIMELINE:
+                case SEARCH_MESSAGE:
+                    strategy = new CommandExecutorLoadTimeline();
+                    break;
+                default:
+                    strategy = new CommandExecutorOther();
+                    break;
+            }
+            strategy.setMyAccount(acc);
+        }
+        strategy.setCommandData(commandData);
+        MyLog.d("CommandExecutorStrategy", strategy.getClass().getSimpleName() + " executing " + commandData);
+        return strategy;
+    }
+
     protected Context context;
     protected CommandData commandData = null;
     protected MyAccount ma = null;
@@ -49,11 +76,6 @@ class CommandExecutorBase implements CommandExecutorStrategy, CommandExecutorPar
     public CommandExecutorStrategy setParent(CommandExecutorParent parent) {
         this.parent = parent;
         return this;
-    }
-
-    @Override
-    public void execute() {
-        // Nothing here
     }
     
     protected void setSoftErrorIfNotOk(CommandData commandData, boolean ok) {

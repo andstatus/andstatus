@@ -29,17 +29,9 @@ import org.andstatus.app.net.ConnectionException;
 public abstract class TimelineDownloader {
     private static final String TAG = TimelineDownloader.class.getSimpleName();
 
-    protected MessageCounters counters;
+    protected CommandExecutionData counters;
     
-    /**
-     * The timeline is of this User, for all timeline types.
-     */
-    protected long userId = 0;
-    
-    public static TimelineDownloader newInstance(MessageCounters counters, long userId) {
-        if (userId == 0) {
-            throw new IllegalArgumentException(TAG + ": userId==0");
-        }
+    public static TimelineDownloader getStrategy(CommandExecutionData counters) {
         TimelineDownloader td;
         switch (counters.getTimelineType()) {
             case FOLLOWING_USER:
@@ -52,7 +44,6 @@ public abstract class TimelineDownloader {
                 break;
         }
         td.counters = counters;
-        td.userId = userId;
         return td;
     }
     

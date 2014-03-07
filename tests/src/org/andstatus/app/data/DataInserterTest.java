@@ -35,7 +35,7 @@ import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.service.MessageCounters;
+import org.andstatus.app.service.CommandExecutionData;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 
@@ -77,7 +77,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         deleteOldMessage(origin.getId(), messageOid);
         
-        MessageCounters counters = new MessageCounters(ma, context, TimelineTypeEnum.HOME);
+        CommandExecutionData counters = new CommandExecutionData(ma, context).setTimelineType(TimelineTypeEnum.HOME);
         DataInserter di = new DataInserter(counters);
         String username = "somebody@identi.ca";
         String userOid =  "acct:" + username;
@@ -178,7 +178,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.actor = firstReader;
         message.favoritedByActor = TriState.TRUE;
 
-        DataInserter di = new DataInserter(ma, context, TimelineTypeEnum.HOME);
+        DataInserter di = new DataInserter(ma, context);
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
         
@@ -218,7 +218,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.actor = accountMbUser;
         message.favoritedByActor = TriState.TRUE;
 
-        DataInserter di = new DataInserter(ma, context, TimelineTypeEnum.HOME);
+        DataInserter di = new DataInserter(ma, context);
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
         
@@ -362,7 +362,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     private long addMessage(MbMessage message) {
-        DataInserter di = new DataInserter(ma, context, TimelineTypeEnum.HOME);
+        DataInserter di = new DataInserter(new CommandExecutionData(ma, context).setTimelineType(TimelineTypeEnum.HOME));
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added " + message.oid, messageId != 0);
         return messageId;

@@ -6,7 +6,7 @@ import org.andstatus.app.data.TimelineTypeEnum;
 
 public class MessageCountersTest extends TestCase {
     public void testHomeAccumulation() {
-        MessageCounters counters = new MessageCounters(null, null, TimelineTypeEnum.HOME);
+        CommandExecutionData counters = new CommandExecutionData(null, null).setTimelineType(TimelineTypeEnum.HOME);
         final int MESSAGES = 4;
         final int MENTIONS = 2;
         for (int ind=0; ind < MESSAGES; ind++) {
@@ -22,7 +22,7 @@ public class MessageCountersTest extends TestCase {
     }
 
     public void testDirectAccumulation() {
-        MessageCounters counters = new MessageCounters(null, null, TimelineTypeEnum.DIRECT);
+        CommandExecutionData counters = new CommandExecutionData(null, null).setTimelineType(TimelineTypeEnum.DIRECT);
         final int MESSAGES = 4;
         for (int ind=0; ind < MESSAGES; ind++) {
             counters.incrementMessagesCount();

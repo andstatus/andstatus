@@ -29,7 +29,7 @@ import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
-import org.andstatus.app.service.MessageCounters;
+import org.andstatus.app.service.CommandExecutionData;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -46,13 +46,13 @@ public class DataInserter {
     private static final String TAG = DataInserter.class.getSimpleName();
 
     private ContentResolver mContentResolver;
-    private MessageCounters counters;
+    private CommandExecutionData counters;
 
-    public DataInserter(MyAccount ma, Context context, TimelineTypeEnum timelineType) {
-        this(new MessageCounters(ma, context, timelineType));
+    public DataInserter(MyAccount ma, Context context) {
+        this(new CommandExecutionData(ma, context));
     }
     
-    public DataInserter(MessageCounters counters) {
+    public DataInserter(CommandExecutionData counters) {
         this.counters = counters;
         mContentResolver = counters.getContext().getContentResolver();
     }

@@ -19,55 +19,25 @@ package org.andstatus.app.service;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.util.MyLog;
 
+/**
+ * Execute command for each account
+ * @author yvolk@yurivolkov.com
+ */
 public class CommandExecutorAllAccounts extends CommandExecutorBase {
 
     @Override
     public void execute() {
-        MyLog.d(this, "Executing " + commandData);
-
-        if (commandData.getAccount() == null) {
-            for (MyAccount acc : MyContextHolder.get().persistentAccounts().collection()) {
-                executeForAccount(commandData, acc);
-                if (isStopping()) {
-                    setSoftErrorIfNotOk(commandData, false);
-                    break;
-                }
+        for (MyAccount acc : MyContextHolder.get().persistentAccounts().collection()) {
+            if ( acc.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
+                commandData.getResult().incrementNumAuthExceptions();
+            } else {
+                getStrategy(commandData, acc).setParent(this).execute();
             }
-        } else {
-            executeForAccount(commandData, commandData.getAccount());
-        }
-    }
-    
-    private void executeForAccount(CommandData commandData, MyAccount acc) {
-        if ( acc.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-            commandData.getResult().incrementNumAuthExceptions();
-        } else {
-            getStrategy(commandData).setCommandData(commandData).setMyAccount(acc).setParent(this).execute();
-        }
-    }
-
-    private CommandExecutorStrategy getStrategy(CommandData commandData) {
-        Class<? extends CommandExecutorStrategy> oneCommandExecutorClass;
-        switch (commandData.getCommand()) {
-            case AUTOMATIC_UPDATE:
-            case FETCH_TIMELINE:
-            case SEARCH_MESSAGE:
-                oneCommandExecutorClass = CommandExecutorLoadTimeline.class;
+            if (isStopping()) {
+                setSoftErrorIfNotOk(commandData, false);
                 break;
-            default:
-                oneCommandExecutorClass = CommandExecutorOther.class;
-                break;
+            }
         }
-        CommandExecutorStrategy strategy = null;
-        try {
-            strategy = oneCommandExecutorClass.newInstance();
-        } catch (InstantiationException e) {
-            MyLog.e(this, e);
-        } catch (IllegalAccessException e) {
-            MyLog.e(this, e);
-        }
-        return strategy;
     }
 }

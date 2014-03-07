@@ -67,7 +67,24 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
      * @return True if everything Succeeded
      */
     private void loadTimelines() {
-        MessageCounters counters = new MessageCounters(ma, context, TimelineTypeEnum.ALL);
+        CommandExecutionData counters = new CommandExecutionData(ma, context);
+        for (TimelineTypeEnum timelineType : getTimelines()) {
+            if (isStopping()) {
+                break;
+            }
+            counters.setTimelineType(timelineType);
+            loadTimeline(counters);
+        }
+        if (!commandData.getResult().hasError()) {
+            notifyOfUpdatedTimeline(counters.getMessagesAdded(), counters.getMentionsAdded(), counters.getDirectedAdded());
+        }
+        String message = (commandData.getResult().hasError() ? "Failed" : "Succeeded")
+                + " getting " + commandData.getTimelineType().save()
+                + " for " + ma.getAccountName() + counters.toString();
+        MyLog.d(this, message);
+    }
+
+    private TimelineTypeEnum[] getTimelines() {
         TimelineTypeEnum[] timelineTypes;
         if (commandData.getTimelineType() == TimelineTypeEnum.ALL) {
             timelineTypes = new TimelineTypeEnum[] {
@@ -80,45 +97,31 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
                     commandData.getTimelineType()
             };
         }
-        for (TimelineTypeEnum timelineType : timelineTypes) {
-            if (isStopping()) {
-                break;
-            }
-            loadTimeline(timelineType, counters);
-        }
-        if (!commandData.getResult().hasError()) {
-            notifyOfUpdatedTimeline(counters.getMessagesAdded(), counters.getMentionsAdded(), counters.getDirectedAdded());
-        }
-        String message = (commandData.getResult().hasError() ? "Failed" : "Succeeded")
-                + " getting " + commandData.getTimelineType().save()
-                + " for " + ma.getAccountName() + counters.toString();
-        MyLog.d(this, message);
+        return timelineTypes;
     }
 
-    private void loadTimeline(TimelineTypeEnum timelineType, MessageCounters counters) {
+    private void loadTimeline(CommandExecutionData counters) {
         boolean ok = false;
         try {
-            if (ma.getConnection().isApiSupported(timelineType.getConnectionApiRoutine())) {
-                MyLog.d(this, "Getting " + timelineType.save() + " for "
+            if (ma.getConnection().isApiSupported(counters.getTimelineType().getConnectionApiRoutine())) {
+                MyLog.d(this, "Getting " + counters.getTimelineType().save() + " for "
                         + ma.getAccountName());
-                TimelineDownloader fl = null;
-                counters.setTimelineType(timelineType);
                 long userId = commandData.itemId;
                 if (userId == 0) {
                     userId = ma.getUserId();
                 }
-                fl = TimelineDownloader.newInstance(counters, userId);
-                fl.download();
+                counters.setTimelineUserId(userId);
+                TimelineDownloader.getStrategy(counters).download();
                 counters.accumulate();
             } else {
-                MyLog.v(this, "Not supported " + timelineType.save() + " for "
+                MyLog.v(this, "Not supported " + counters.getTimelineType().save() + " for "
                         + ma.getAccountName());
             }
             ok = true;
         } catch (ConnectionException e) {
-            logConnectionException(e, commandData, "Timeline " + timelineType.save());
+            logConnectionException(e, commandData, "Timeline " + counters.getTimelineType().save());
         } catch (SQLiteConstraintException e) {
-            MyLog.e(this, "Timeline " + timelineType.save(), e);
+            MyLog.e(this, "Timeline " + counters.getTimelineType().save(), e);
         }
         setSoftErrorIfNotOk(commandData, ok);
     }

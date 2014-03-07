@@ -5,10 +5,14 @@ import android.content.Context;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.TimelineTypeEnum;
 
-public class MessageCounters {
+public class CommandExecutionData {
     private MyAccount ma;
     private Context context;
-    private TimelineTypeEnum timelineType;    
+    private TimelineTypeEnum timelineType = TimelineTypeEnum.ALL;    
+    /**
+     * The Timeline (if any) is of this User 
+     */
+    private long timelineUserId = 0;
 
     // Raw counters
     private int newMessagesCount = 0;
@@ -21,10 +25,9 @@ public class MessageCounters {
     private int directedAdded = 0;
     private int downloadedCount = 0;
     
-    public MessageCounters(MyAccount ma, Context context, TimelineTypeEnum timelineType) {
+    public CommandExecutionData(MyAccount ma, Context context) {
         this.ma = ma;
         this.context = context;
-        this.timelineType = timelineType;
     }
 
     public MyAccount getMyAccount() {
@@ -38,8 +41,18 @@ public class MessageCounters {
     public TimelineTypeEnum getTimelineType() {
         return timelineType;
     }
-    protected void setTimelineType(TimelineTypeEnum timelineType) {
+    public CommandExecutionData setTimelineType(TimelineTypeEnum timelineType) {
         this.timelineType = timelineType;
+        return this;
+    }
+
+    public long getTimelineUserId() {
+        return timelineUserId;
+    }
+
+    public CommandExecutionData setTimelineUserId(long timelineUserId) {
+        this.timelineUserId = timelineUserId;
+        return this;
     }
 
     public void incrementMessagesCount() {

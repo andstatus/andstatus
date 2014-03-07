@@ -4,6 +4,7 @@ import android.accounts.AccountManager;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.Builder;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -217,7 +218,8 @@ public class PersistentAccounts {
     }
 
     /**
-     * Return first found MyAccount with provided originId
+     * Return first verified MyAccount of the provided originId.
+     * If there is no verified account, any account of this Origin is been returned.
      * @param originId
      * @return null if not found
      */
@@ -225,8 +227,13 @@ public class PersistentAccounts {
         MyAccount ma = null;
         for (MyAccount persistentAccount : persistentAccounts.values()) {
             if (persistentAccount.getOriginId() == originId) {
-                ma = persistentAccount;
-                break;
+                if ( persistentAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
+                    ma = persistentAccount;
+                    break;
+                }
+                if (ma == null) {
+                    ma = persistentAccount;
+                }
             }
         }
         return ma;
