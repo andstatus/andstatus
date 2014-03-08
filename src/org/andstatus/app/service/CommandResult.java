@@ -31,7 +31,7 @@ public class CommandResult implements Parcelable {
     private long numAuthExceptions = 0;
     private long numIoExceptions = 0;
     private long numParseExceptions = 0;
-    protected boolean willRetry = false;
+    boolean willRetry = false;
     
     // 0 means these values were not set
     private int hourlyLimit = 0;
@@ -113,6 +113,12 @@ public class CommandResult implements Parcelable {
         }
     };
 
+    public void setSoftErrorIfNotOk(boolean ok) {
+        if (!ok) {
+            incrementNumIoExceptions();
+        }
+    }
+    
     public static String toString(CommandResult commandResult) {
         return commandResult == null ? "result is null" : commandResult.toString();
     }

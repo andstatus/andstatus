@@ -42,21 +42,20 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-public class TimelineDownloaderUser extends TimelineDownloader {
-    private static final String TAG = TimelineDownloaderUser.class.getSimpleName();
+class TimelineDownloaderFollowing extends TimelineDownloader {
 
     @Override
     public void download() throws ConnectionException {
         String userOid =  MyProvider.idToOid(OidEnum.USER_OID, execContext.getTimelineUserId(), 0);
         LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getTimelineType(), execContext.getTimelineUserId());
         
-        if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+        if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             String strLog = "Loading " + execContext.getTimelineType() + "; account=" + execContext.getMyAccount().getAccountName();
             strLog += "; user=" + MyProvider.userIdToName(execContext.getTimelineUserId());
             if (latestTimelineItem.getTimelineDownloadedDate() > 0) {
                 strLog += "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
-            MyLog.d(TAG, strLog);
+            MyLog.d(this, strLog);
         }
         
         latestTimelineItem.onTimelineDownloaded();
@@ -101,7 +100,7 @@ public class TimelineDownloaderUser extends TimelineDownloader {
                         downloadOneMessageBy(followedUserOid, lum);
                     }
                 } catch (ConnectionException e) {
-                    MyLog.i(TAG, "Failed to download the User object or his message for oid=" + followedUserOid, e);
+                    MyLog.i(this, "Failed to download the User object or his message for oid=" + followedUserOid, e);
                 }
             }
             if (friendId != 0) {

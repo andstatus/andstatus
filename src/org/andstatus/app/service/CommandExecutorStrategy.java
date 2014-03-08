@@ -20,9 +20,9 @@ import org.andstatus.app.account.MyAccount;
 
 public interface CommandExecutorStrategy {
 
-    CommandExecutorStrategy setCommandData(CommandData commandData);
     CommandExecutorStrategy setMyAccount(MyAccount ma);
     CommandExecutorStrategy setParent(CommandExecutorParent parent);
+    CommandExecutorStrategy setContext(CommandExecutionContext execContext);
 
     void execute();
 }

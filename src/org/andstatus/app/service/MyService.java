@@ -667,7 +667,7 @@ public class MyService extends Service {
                     break;
                 }
                 commandData.resetCommandResult();
-                new CommandExecutorAllAccounts().setCommandData(commandData).setParent(this).execute();
+                CommandExecutorBase.getStrategy(commandData, this).execute();
                 if (shouldWeRetry(commandData)) {
                     synchronized(MyService.this) {
                         // Put the command to the retry queue

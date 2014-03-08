@@ -16,59 +16,76 @@
 
 package org.andstatus.app.service;
 
-import android.content.Context;
-
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
 
 abstract class CommandExecutorBase implements CommandExecutorStrategy, CommandExecutorParent {
-    protected static CommandExecutorStrategy getStrategy(CommandData commandData, MyAccount acc) {
+    protected CommandExecutionContext execContext = null;
+    private CommandExecutorParent parent = null;
+
+    protected static CommandExecutorStrategy getStrategy(CommandData commandData, CommandExecutorParent parent) {
+        return getStrategy(new CommandExecutionContext(commandData, commandData.getAccount()))
+                .setParent(parent);
+    }
+
+    protected static CommandExecutorStrategy getStrategy(CommandExecutionContext execContext) {
         CommandExecutorStrategy strategy;
-        if (acc == null) {
-            if (commandData.getTimelineType() == TimelineTypeEnum.PUBLIC) {
+        if (execContext.getMyAccount() == null) {
+            if (execContext.getTimelineType() == TimelineTypeEnum.PUBLIC) {
                 strategy = new CommandExecutorAllOrigins();
             } else {
                 strategy = new CommandExecutorAllAccounts();
             }
         } else {
-            switch (commandData.getCommand()) {
+            switch (execContext.getCommandData().getCommand()) {
                 case AUTOMATIC_UPDATE:
                 case FETCH_TIMELINE:
-                case SEARCH_MESSAGE:
                     strategy = new CommandExecutorLoadTimeline();
+                    break;
+                case SEARCH_MESSAGE:
+                    strategy = new CommandExecutorSearch();
                     break;
                 default:
                     strategy = new CommandExecutorOther();
                     break;
             }
-            strategy.setMyAccount(acc);
         }
-        strategy.setCommandData(commandData);
-        MyLog.d("CommandExecutorStrategy", strategy.getClass().getSimpleName() + " executing " + commandData);
+        strategy.setContext(execContext);
+        MyLog.d("CommandExecutorStrategy", strategy.getClass().getSimpleName() + " executing " + execContext);
         return strategy;
     }
 
-    protected Context context;
-    protected CommandData commandData = null;
-    protected MyAccount ma = null;
-    private CommandExecutorParent parent = null;
+    @Override
+    public CommandExecutorStrategy setContext(CommandExecutionContext execContext) {
+        this.execContext = execContext;
+        return this;
+    }
 
-    public CommandExecutorBase() {
-        context = MyContextHolder.get().context();
+    protected CommandExecutorBase() {
     }
     
-    @Override
-    public CommandExecutorStrategy setCommandData(CommandData commandData) {
-        this.commandData = commandData;
-        return this;
+    public static CommandExecutorBase newInstance(Class<? extends CommandExecutorBase> clazz, CommandExecutionContext execContextIn) {
+        CommandExecutorBase exec = null;
+        try {
+            exec = clazz.newInstance();
+            if (execContextIn == null) {
+                exec.execContext = new CommandExecutionContext(CommandData.getEmpty(), null);
+            } else {
+                exec.execContext = execContextIn;
+            }
+        } catch (InstantiationException e) {
+            MyLog.e(CommandExecutorBase.class, "class=" + clazz, e);
+        } catch (IllegalAccessException e) {
+            MyLog.e(CommandExecutorBase.class, "class=" + clazz, e);
+        }
+        return exec;
     }
 
     @Override
     public CommandExecutorStrategy setMyAccount(MyAccount ma) {
-        this.ma = ma;
+        execContext.setMyAccount(ma);
         return this;
     }
     
@@ -78,12 +95,6 @@ abstract class CommandExecutorBase implements CommandExecutorStrategy, CommandEx
         return this;
     }
     
-    protected void setSoftErrorIfNotOk(CommandData commandData, boolean ok) {
-        if (!ok) {
-            commandData.getResult().incrementNumIoExceptions();
-        }
-    }
-
     @Override
     public boolean isStopping() {
         if (parent != null) {
@@ -93,11 +104,11 @@ abstract class CommandExecutorBase implements CommandExecutorStrategy, CommandEx
         }
     }
 
-    protected void logConnectionException(ConnectionException e, CommandData commandData, String detailedMessage) {
+    protected void logConnectionException(ConnectionException e, String detailedMessage) {
         if (e.isHardError()) {
-            commandData.getResult().incrementParseExceptions();
+            execContext.getResult().incrementParseExceptions();
         } else {
-            commandData.getResult().incrementNumIoExceptions();
+            execContext.getResult().incrementNumIoExceptions();
         }
         MyLog.e(this, detailedMessage + ": " + e.toString());
     }

@@ -30,12 +30,13 @@ public class CommandExecutorAllAccounts extends CommandExecutorBase {
     public void execute() {
         for (MyAccount acc : MyContextHolder.get().persistentAccounts().collection()) {
             if ( acc.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-                commandData.getResult().incrementNumAuthExceptions();
+                execContext.getResult().incrementNumAuthExceptions();
             } else {
-                getStrategy(commandData, acc).setParent(this).execute();
+                execContext.setMyAccount(acc);
+                getStrategy(execContext).setParent(this).execute();
             }
             if (isStopping()) {
-                setSoftErrorIfNotOk(commandData, false);
+                execContext.getResult().setSoftErrorIfNotOk(false);
                 break;
             }
         }

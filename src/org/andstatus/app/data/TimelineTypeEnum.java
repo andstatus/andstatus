@@ -66,7 +66,7 @@ public enum TimelineTypeEnum {
     MESSAGESTOACT("messages_to_act", R.string.timeline_title_home, 
             "", "", "", Connection.ApiRoutineEnum.STATUSES_HOME_TIMELINE),
     /**
-     * Latest messages of every Following User (Following by this User - AndStatus account). 
+     * Latest messages of every user, followed by this User - AndStatus account. 
      * So this is essentially a list of "Following users". 
      * The timeline doesn't have Message ID because we download User IDs only 
      * See {@link FollowingUser}

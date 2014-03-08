@@ -26,21 +26,21 @@ import org.andstatus.app.net.ConnectionException;
  * 
  * @author yvolk@yurivolkov.com
  */
-public abstract class TimelineDownloader {
+abstract class TimelineDownloader {
     private static final String TAG = TimelineDownloader.class.getSimpleName();
 
     protected CommandExecutionContext execContext;
     
-    public static TimelineDownloader getStrategy(CommandExecutionContext execContext) {
+    protected static TimelineDownloader getStrategy(CommandExecutionContext execContext) {
         TimelineDownloader td;
         switch (execContext.getTimelineType()) {
             case FOLLOWING_USER:
-                td = new TimelineDownloaderUser();
+                td = new TimelineDownloaderFollowing();
                 break;
             case ALL:
                 throw new IllegalArgumentException(TAG + ": Invalid TimelineType for loadTimeline: " + execContext.getTimelineType());
             default:
-                td = new TimelineDownloaderMsg();
+                td = new TimelineDownloaderOther();
                 break;
         }
         td.execContext = execContext;

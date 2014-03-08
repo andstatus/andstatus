@@ -16,24 +16,24 @@ public class CommandExecutionContextTest extends TestCase {
         final int MESSAGES = 4;
         final int MENTIONS = 2;
         for (int ind=0; ind < MESSAGES; ind++) {
-            execContext.result().incrementMessagesCount(execContext.getTimelineType());
+            execContext.getResult().incrementMessagesCount(execContext.getTimelineType());
         }
         for (int ind=0; ind < MENTIONS; ind++) {
-            execContext.result().incrementMentionsCount();
+            execContext.getResult().incrementMentionsCount();
         }
-        assertEquals(4, execContext.result().getMessagesAdded());
-        assertEquals(2, execContext.result().getMentionsAdded());
-        assertEquals(0, execContext.result().getDirectedAdded());
+        assertEquals(4, execContext.getResult().getMessagesAdded());
+        assertEquals(2, execContext.getResult().getMentionsAdded());
+        assertEquals(0, execContext.getResult().getDirectedAdded());
     }
 
     public void testDirectAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineTypeEnum.DIRECT);
         final int MESSAGES = 4;
         for (int ind=0; ind < MESSAGES; ind++) {
-            execContext.result().incrementMessagesCount(execContext.getTimelineType());
+            execContext.getResult().incrementMessagesCount(execContext.getTimelineType());
         }
-        assertEquals(0, execContext.result().getMessagesAdded());
-        assertEquals(0, execContext.result().getMentionsAdded());
-        assertEquals(4, execContext.result().getDirectedAdded());
+        assertEquals(0, execContext.getResult().getMessagesAdded());
+        assertEquals(0, execContext.getResult().getMentionsAdded());
+        assertEquals(4, execContext.getResult().getDirectedAdded());
     }
 }

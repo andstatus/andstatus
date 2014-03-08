@@ -16,12 +16,13 @@ class CommandExecutorAllOrigins extends CommandExecutorBase {
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
             MyAccount acc = MyContextHolder.get().persistentAccounts().findFirstMyAccountByOriginId(origin.getId());
             if ( acc==null || acc.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-                commandData.getResult().incrementNumAuthExceptions();
+                execContext.getResult().incrementNumAuthExceptions();
             } else {
-                getStrategy(commandData, acc).setParent(this).execute();
+                execContext.setMyAccount(acc);
+                getStrategy(execContext).setParent(this).execute();
             }
             if (isStopping()) {
-                setSoftErrorIfNotOk(commandData, false);
+                execContext.getResult().setSoftErrorIfNotOk(false);
                 break;
             }
         }

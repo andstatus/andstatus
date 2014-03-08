@@ -548,7 +548,7 @@ public final class MyAccount implements AccountDataReader {
                     MyLog.v(TAG, "Upgrade in progress");
                     myAccount.userId = myAccount.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
-                    DataInserter di = new DataInserter(myAccount, MyContextHolder.get().context());
+                    DataInserter di = new DataInserter(myAccount);
                     myAccount.userId = di.insertOrUpdateUser(user);
                 }
             }
@@ -632,7 +632,7 @@ public final class MyAccount implements AccountDataReader {
         private void assignUserId() {
             myAccount.userId = MyProvider.userNameToId(myAccount.getOriginId(), myAccount.getUsername());
             if (myAccount.userId == 0) {
-                DataInserter di = new DataInserter(myAccount, MyContextHolder.get().context());
+                DataInserter di = new DataInserter(myAccount);
                 try {
                     // Construct "User" from available account info
                     // We need this User in order to be able to link Messages to him

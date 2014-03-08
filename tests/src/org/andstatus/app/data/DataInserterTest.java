@@ -179,7 +179,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.actor = firstReader;
         message.favoritedByActor = TriState.TRUE;
 
-        DataInserter di = new DataInserter(ma, context);
+        DataInserter di = new DataInserter(ma);
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
         
@@ -219,7 +219,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.actor = accountMbUser;
         message.favoritedByActor = TriState.TRUE;
 
-        DataInserter di = new DataInserter(ma, context);
+        DataInserter di = new DataInserter(ma);
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
         

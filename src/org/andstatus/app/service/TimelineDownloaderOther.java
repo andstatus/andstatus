@@ -32,15 +32,14 @@ import org.andstatus.app.util.MyLog;
 import java.util.Date;
 import java.util.List;
 
-public class TimelineDownloaderMsg extends TimelineDownloader {
-    private static final String TAG = TimelineDownloaderMsg.class.getSimpleName();
+class TimelineDownloaderOther extends TimelineDownloader {
     private static final int MAXIMUM_NUMBER_OF_MESSAGES_TO_DOWNLOAD = 200;
 
     @Override
     public void download() throws ConnectionException {
         LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getTimelineType(), execContext.getTimelineUserId());
         
-        if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+        if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             String strLog = "Loading " + execContext.getTimelineType() + "; account=" 
         + execContext.getMyAccount().getAccountName()
         + "; user=" + MyProvider.userIdToName(execContext.getTimelineUserId());
@@ -48,7 +47,7 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
                 strLog += "; last Timeline item at=" + (new Date(latestTimelineItem.getTimelineItemDate()).toString())
                         + "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }
-            MyLog.d(TAG, strLog);
+            MyLog.d(this, strLog);
         }
         String userOid =  MyProvider.idToOid(OidEnum.USER_OID, execContext.getTimelineUserId(), 0);
         if (TextUtils.isEmpty(userOid)) {
@@ -93,7 +92,7 @@ public class TimelineDownloaderMsg extends TimelineDownloader {
                     e.setHardError(true);
                     throw e;
                 }
-                MyLog.d(TAG, "The timeline was not found, last position='" + lastPosition +"'", e);
+                MyLog.d(this, "The timeline was not found, last position='" + lastPosition +"'", e);
                 lastPosition = TimelinePosition.getEmpty();
             }
         }

@@ -17,7 +17,6 @@
 package org.andstatus.app.data;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.text.TextUtils;
@@ -46,7 +45,7 @@ public class DataInserter {
     private static final String TAG = DataInserter.class.getSimpleName();
     private CommandExecutionContext execContext;
 
-    public DataInserter(MyAccount ma, Context context) {
+    public DataInserter(MyAccount ma) {
         this(new CommandExecutionContext(CommandData.getEmpty(), ma));
     }
     
@@ -54,11 +53,11 @@ public class DataInserter {
         this.execContext = execContext;
     }
     
-    public long insertOrUpdateMsg(MbMessage message, LatestUserMessages lum) throws SQLiteConstraintException {
+    public long insertOrUpdateMsg(MbMessage message, LatestUserMessages lum) {
         return insertOrUpdateMsgBySender(message, lum, 0);
     }
     
-    private long insertOrUpdateMsgBySender(MbMessage message, LatestUserMessages lum, long senderIdIn) throws SQLiteConstraintException {
+    private long insertOrUpdateMsgBySender(MbMessage message, LatestUserMessages lum, long senderIdIn) {
         final String funcName = "Inserting/updating msg";
         /**
          * Id of the message in our system, see {@link MyDatabase.Msg#MSG_ID}
@@ -83,7 +82,7 @@ public class DataInserter {
             long createdDate = 0;
             if (sentDate > 0) {
                 createdDate = sentDate;
-                execContext.result().incrementDownloadedCount();
+                execContext.getResult().incrementDownloadedCount();
             }
             
             long actorId = 0L;
@@ -264,7 +263,7 @@ public class DataInserter {
                 }
                 
                 if (countIt) { 
-                    execContext.result().incrementMessagesCount(execContext.getTimelineType());
+                    execContext.getResult().incrementMessagesCount(execContext.getTimelineType());
                     }
                 // Check if current user was mentioned in the text of the message
                 if (body.length() > 0 
@@ -274,7 +273,7 @@ public class DataInserter {
                 }
                 if (mentioned) {
                     if (countIt) { 
-                        execContext.result().incrementMentionsCount();
+                        execContext.getResult().incrementMentionsCount();
                         }
                   values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
                 }
@@ -314,7 +313,7 @@ public class DataInserter {
         return rowId;
     }
 
-    public long insertOrUpdateUser(MbUser user) throws SQLiteConstraintException {
+    public long insertOrUpdateUser(MbUser user) {
         LatestUserMessages lum = new LatestUserMessages();
         long userId = insertOrUpdateUser(user, lum);
         lum.save();
@@ -324,7 +323,7 @@ public class DataInserter {
     /**
      * @return userId
      */
-    public long insertOrUpdateUser(MbUser mbUser, LatestUserMessages lum) throws SQLiteConstraintException {
+    public long insertOrUpdateUser(MbUser mbUser, LatestUserMessages lum) {
         if (mbUser.isEmpty()) {
             MyLog.v(this, "insertUser - mbUser is empty");
             return 0;
@@ -418,7 +417,7 @@ public class DataInserter {
         return userId;
     }
     
-    public long insertOrUpdateMsg(MbMessage message) throws SQLiteConstraintException {
+    public long insertOrUpdateMsg(MbMessage message) {
         LatestUserMessages lum = new LatestUserMessages();
         long rowId = insertOrUpdateMsg(message, lum);
         lum.save();

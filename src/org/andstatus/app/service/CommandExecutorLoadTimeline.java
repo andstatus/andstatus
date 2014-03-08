@@ -52,13 +52,13 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
     @Override
     public void execute() {
         loadTimelines();
-        if (!commandData.getResult().hasError() && commandData.getTimelineType() == TimelineTypeEnum.ALL && !isStopping()) {
-            new DataPruner(context).prune();
+        if (!execContext.getResult().hasError() && execContext.getCommandData().getTimelineType() == TimelineTypeEnum.ALL && !isStopping()) {
+            new DataPruner(execContext.getContext()).prune();
         }
-        if (!commandData.getResult().hasError()) {
+        if (!execContext.getResult().hasError()) {
             // Notify all timelines, 
             // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
-            context.getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
+            execContext.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
         }
     }
 
@@ -67,27 +67,25 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
      * @return True if everything Succeeded
      */
     private void loadTimelines() {
-        CommandExecutionContext execContext = new CommandExecutionContext(commandData, ma);
         for (TimelineTypeEnum timelineType : getTimelines()) {
             if (isStopping()) {
                 break;
             }
             execContext.setTimelineType(timelineType);
-            loadTimeline(execContext);
+            loadTimeline();
         }
-        if (!commandData.getResult().hasError()) {
-            notifyOfUpdatedTimeline(execContext.result().getMessagesAdded(), 
-                    execContext.result().getMentionsAdded(), execContext.result().getDirectedAdded());
+        if (!execContext.getResult().hasError()) {
+            notifyOfUpdatedTimeline(execContext.getResult().getMessagesAdded(), 
+                    execContext.getResult().getMentionsAdded(), execContext.getResult().getDirectedAdded());
         }
-        String message = (commandData.getResult().hasError() ? "Failed" : "Succeeded")
-                + " getting " + commandData.getTimelineType()
-                + " for " + ma.getAccountName() + execContext.toString();
+        String message = (execContext.getResult().hasError() ? "Failed" : "Succeeded")
+                + " getting " + execContext.toString();
         MyLog.d(this, message);
     }
 
     private TimelineTypeEnum[] getTimelines() {
         TimelineTypeEnum[] timelineTypes;
-        if (commandData.getTimelineType() == TimelineTypeEnum.ALL) {
+        if (execContext.getCommandData().getTimelineType() == TimelineTypeEnum.ALL) {
             timelineTypes = new TimelineTypeEnum[] {
                     TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
                     TimelineTypeEnum.DIRECT,
@@ -95,35 +93,34 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
             };
         } else {
             timelineTypes = new TimelineTypeEnum[] {
-                    commandData.getTimelineType()
+                    execContext.getCommandData().getTimelineType()
             };
         }
         return timelineTypes;
     }
 
-    private void loadTimeline(CommandExecutionContext execContext) {
+    private void loadTimeline() {
         boolean ok = false;
         try {
-            if (ma.getConnection().isApiSupported(execContext.getTimelineType().getConnectionApiRoutine())) {
-                MyLog.d(this, "Getting " + execContext.getTimelineType() + " for "
-                        + ma.getAccountName());
-                long userId = commandData.itemId;
+            if (execContext.getMyAccount().getConnection().isApiSupported(execContext.getTimelineType().getConnectionApiRoutine())) {
+                long userId = execContext.getCommandData().itemId;
                 if (userId == 0) {
-                    userId = ma.getUserId();
+                    userId = execContext.getMyAccount().getUserId();
                 }
                 execContext.setTimelineUserId(userId);
+                MyLog.d(this, "Getting " + execContext);
                 TimelineDownloader.getStrategy(execContext).download();
             } else {
                 MyLog.v(this, execContext.getTimelineType() + " is not supported for "
-                        + ma.getAccountName());
+                        + execContext.getMyAccount().getAccountName());
             }
             ok = true;
         } catch (ConnectionException e) {
-            logConnectionException(e, commandData, execContext.getTimelineType().toString());
+            logConnectionException(e, execContext.getTimelineType().toString());
         } catch (SQLiteConstraintException e) {
             MyLog.e(this, execContext.getTimelineType().toString(), e);
         }
-        setSoftErrorIfNotOk(commandData, ok);
+        execContext.getResult().setSoftErrorIfNotOk(ok);
     }
     
     /**
@@ -196,7 +193,7 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
 
         // Set up the notification to display to the user
         Notification notification = new Notification(R.drawable.notification_icon,
-                context.getText(R.string.notification_title), System.currentTimeMillis());
+                execContext.getContext().getText(R.string.notification_title), System.currentTimeMillis());
 
         notification.vibrate = null;
         if (mNotificationsVibrate) {
@@ -228,43 +225,43 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
         // org.andstatus.app.TimelineActivity.onOptionsItemSelected
         switch (msgType) {
             case NOTIFY_MENTIONS:
-                aMessage = I18n.formatQuantityMessage(context,
+                aMessage = I18n.formatQuantityMessage(execContext.getContext(),
                         R.string.notification_new_mention_format, numTweets,
                         R.array.notification_mention_patterns,
                         R.array.notification_mention_formats);
                 messageTitle = R.string.notification_title_mentions;
-                intent = new Intent(context, TimelineActivity.class);
+                intent = new Intent(execContext.getContext(), TimelineActivity.class);
                 intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                         TimelineTypeEnum.MENTIONS.save());
-                contentIntent = PendingIntent.getActivity(context, numTweets,
+                contentIntent = PendingIntent.getActivity(execContext.getContext(), numTweets,
                         intent, 0);
                 break;
 
             case NOTIFY_DIRECT_MESSAGE:
-                aMessage = I18n.formatQuantityMessage(context,
+                aMessage = I18n.formatQuantityMessage(execContext.getContext(),
                         R.string.notification_new_message_format, numTweets,
                         R.array.notification_message_patterns,
                         R.array.notification_message_formats);
                 messageTitle = R.string.notification_title_messages;
-                intent = new Intent(context, TimelineActivity.class);
+                intent = new Intent(execContext.getContext(), TimelineActivity.class);
                 intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                         TimelineTypeEnum.DIRECT.save());
-                contentIntent = PendingIntent.getActivity(context, numTweets,
+                contentIntent = PendingIntent.getActivity(execContext.getContext(), numTweets,
                         intent, 0);
                 break;
 
             case NOTIFY_HOME_TIMELINE:
             default:
                 aMessage = I18n
-                        .formatQuantityMessage(context,
+                        .formatQuantityMessage(execContext.getContext(),
                                 R.string.notification_new_tweet_format, numTweets,
                                 R.array.notification_tweet_patterns,
                                 R.array.notification_tweet_formats);
                 messageTitle = R.string.notification_title;
-                intent = new Intent(context, TimelineActivity.class);
+                intent = new Intent(execContext.getContext(), TimelineActivity.class);
                 intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                         TimelineTypeEnum.HOME.save());
-                contentIntent = PendingIntent.getActivity(context, numTweets,
+                contentIntent = PendingIntent.getActivity(execContext.getContext(), numTweets,
                         intent, 0);
                 break;
         }
@@ -273,9 +270,9 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
         notification.tickerText = aMessage;
 
         // Set the latest event information and send the notification
-        notification.setLatestEventInfo(context, context.getText(messageTitle), aMessage,
+        notification.setLatestEventInfo(execContext.getContext(), execContext.getContext().getText(messageTitle), aMessage,
                 contentIntent);
-        NotificationManager nM = (NotificationManager) context.getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+        NotificationManager nM = (NotificationManager) execContext.getContext().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
         nM.notify(msgType.ordinal(), notification);
     }
 
@@ -289,6 +286,6 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
         Intent intent = new Intent(MyService.ACTION_APPWIDGET_UPDATE);
         intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
         intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
-        context.sendBroadcast(intent);
+        execContext.getContext().sendBroadcast(intent);
     }
 }

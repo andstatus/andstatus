@@ -9,7 +9,7 @@ import org.andstatus.app.data.TimelineTypeEnum;
 public class CommandExecutionContext {
     private CommandData commandData;
     private MyAccount ma;
-    private TimelineTypeEnum timelineType = TimelineTypeEnum.ALL;    
+    private TimelineTypeEnum timelineType;    
     /**
      * The Timeline (if any) is of this User 
      */
@@ -21,16 +21,17 @@ public class CommandExecutionContext {
         if (commandData == null) {
             throw new IllegalArgumentException( "CommandData is null");
         }
-        if (ma == null) {
-            throw new IllegalArgumentException( "MyAccount is null");
-        }
         this.commandData = commandData;
         this.ma = ma;
+        this.timelineType = commandData.getTimelineType();
         context = MyContextHolder.get().context();
     }
 
     public MyAccount getMyAccount() {
         return ma;
+    }
+    public void setMyAccount(MyAccount ma) {
+        this.ma = ma;
     }
 
     public Context getContext() {
@@ -54,15 +55,22 @@ public class CommandExecutionContext {
         return this;
     }
 
-    public CommandResult result() {
+    public CommandData getCommandData() {
+        return commandData;
+    }
+    
+    public CommandResult getResult() {
         return commandData.getResult();
     }
     
     @Override
     public String toString() {
-        String message = "CommandExecutionContext [";
-        message += commandData.toString();
-        message += "]";
+        String message = "CommandExecutionContext {";
+        message += ma==null ? "" : "account=" + ma.toString() + "; ";
+        message += timelineType.toString();
+        message += timelineUserId==0 ? "" : "for userId=" + timelineUserId;
+        message += "; " + commandData.toString();
+        message += "}";
         return message;
     }
 }
