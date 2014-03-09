@@ -155,7 +155,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * The string is not empty if this timeline is filtered using query string
      * ("Mentions" are not counted here because they have separate TimelineType)
      */
-    private String mQueryString = "";
+    private String searchQuery = "";
 
     /**
      * Time when shared preferences where changed
@@ -243,7 +243,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     mIsTimelineCombined = savedInstanceState.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key);
                 }
                 if (savedInstanceState.containsKey(SearchManager.QUERY)) {
-                    mQueryString = notNullString(savedInstanceState.getString(SearchManager.QUERY));
+                    searchQuery = notNullString(savedInstanceState.getString(SearchManager.QUERY));
                 }
                 if (savedInstanceState.containsKey(IntentExtra.EXTRA_SELECTEDUSERID.key)) {
                     mSelectedUserId = savedInstanceState.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key);
@@ -429,7 +429,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         private String keyQueryString = "";
         
         private ListPositionStorage(TimelineActivity activity) {
-            queryString = activity.mQueryString; 
+            queryString = activity.searchQuery; 
             if ((activity.getTimelineType() != TimelineTypeEnum.USER) && !activity.isTimelineCombined()) {
                 MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(activity.mCurrentMyAccountUserId);
                 if (ma != null) {
@@ -511,7 +511,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 }
             } else {
                 // There is no stored position
-                if (TextUtils.isEmpty(mQueryString)) {
+                if (TextUtils.isEmpty(searchQuery)) {
                     scrollPos = getListView().getCount() - 2;
                 } else {
                     // In search mode start from the most recent tweet!
@@ -848,7 +848,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public void updateActionBar(String rightText) {
         String timelinename = getString(mTimelineType.getTitleResId());
         Button timelineTypeButton = (Button) findViewById(R.id.timelineTypeButton);
-        timelineTypeButton.setText(timelinename + (TextUtils.isEmpty(mQueryString) ? "" : " *"));
+        timelineTypeButton.setText(timelinename + (TextUtils.isEmpty(searchQuery) ? "" : " *"));
         
         // Show current account info on the left button
         Button selectAccountButton = (Button) findViewById(R.id.selectAccountButton);
@@ -910,7 +910,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
             mTimelineType = timelineTypeNew;
             mIsTimelineCombined = intentNew.getBooleanExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mIsTimelineCombined);
-            mQueryString = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
+            searchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
             mSelectedUserId = intentNew.getLongExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
         } else {
             parseAppSearchData(intentNew);
@@ -918,7 +918,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (mTimelineType == TimelineTypeEnum.UNKNOWN) {
             /* Set default values */
             mTimelineType = TimelineTypeEnum.HOME;
-            mQueryString = "";
+            searchQuery = "";
             mSelectedUserId = 0;
         }
         mCurrentMyAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
@@ -961,11 +961,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 mTimelineType = timelineTypeNew;
                 mIsTimelineCombined = appSearchData.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mIsTimelineCombined);
                 /* The query itself is still from the Intent */
-                mQueryString = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
+                searchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
                 mSelectedUserId = appSearchData.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
-                if (!TextUtils.isEmpty(mQueryString)) {
+                if (!TextUtils.isEmpty(searchQuery)) {
                     if (appSearchData.getBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, false)) {
-                        MyLog.v(this, "Global search: " + mQueryString);
+                        MyLog.v(this, "Global search: " + searchQuery);
                         setIsLoading(true);
                         MyServiceManager.sendCommand(
                                 CommandData.searchCommand(
@@ -973,7 +973,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                                                 ? ""
                                                 : MyContextHolder.get().persistentAccounts()
                                                         .getCurrentAccountName(),
-                                        mQueryString));
+                                        searchQuery));
                     }
                 }
             }
@@ -1080,8 +1080,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             Intent intent = activity.getIntent();
 
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                MyLog.v(this, (TextUtils.isEmpty(activity.mQueryString) ? "" 
-                        : "queryString=\"" + activity.mQueryString + "\"; ") 
+                MyLog.v(this, (TextUtils.isEmpty(activity.searchQuery) ? "" 
+                        : "queryString=\"" + activity.searchQuery + "\"; ") 
                         +  activity.mTimelineType
                         + "; isCombined=" + (activity.mIsTimelineCombined ? "yes" : "no"));
             }
@@ -1089,16 +1089,16 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             // Id of the last (oldest) tweet to retrieve
             long lastItemId = -1;
 
-            if (!TextUtils.isEmpty(activity.mQueryString)) {
+            if (!TextUtils.isEmpty(activity.searchQuery)) {
                 // Record the query string in the recent queries
                 // of the Suggestion Provider
                 SearchRecentSuggestions suggestions = new SearchRecentSuggestions(activity,
                         TimelineSearchSuggestionProvider.AUTHORITY,
                         TimelineSearchSuggestionProvider.MODE);
-                suggestions.saveRecentQuery(activity.mQueryString, null);
+                suggestions.saveRecentQuery(activity.searchQuery, null);
 
                 contentUri = MyProvider.getTimelineSearchUri(activity.mCurrentMyAccountUserId, activity.mTimelineType,
-                        activity.mIsTimelineCombined, activity.mQueryString);
+                        activity.mIsTimelineCombined, activity.searchQuery);
             }
 
             if (!contentUri.equals(intent.getData())) {
@@ -1367,7 +1367,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         outState.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, mTimelineType.save());
         contextMenu.saveState(outState);
         outState.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mIsTimelineCombined);
-        outState.putString(SearchManager.QUERY, mQueryString);
+        outState.putString(SearchManager.QUERY, searchQuery);
         outState.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
 
         super.onSaveInstanceState(outState);

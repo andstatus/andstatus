@@ -37,7 +37,6 @@ import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverter;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.ConnectionException.StatusCode;

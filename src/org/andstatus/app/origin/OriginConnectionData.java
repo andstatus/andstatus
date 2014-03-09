@@ -17,7 +17,9 @@
 package org.andstatus.app.origin;
 
 import org.andstatus.app.account.AccountDataReader;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.ConnectionEmpty;
+import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.net.HttpConnectionEmpty;
 import org.andstatus.app.util.TriState;
 
@@ -115,8 +117,12 @@ public class OriginConnectionData {
         return connectionClass;
     }
 
-    public Class<? extends org.andstatus.app.net.HttpConnection> getHttpConnectionClass() {
-        return httpConnectionClass;
+    public HttpConnection newHttpConnection() throws InstantiationException, IllegalAccessException {
+        HttpConnection http = MyContextHolder.get().getHttpConnectionMock();
+        if (http == null) {
+            http = httpConnectionClass.newInstance();
+        }
+        return http;
     }
 
     public void setHttpConnectionClass(Class<? extends org.andstatus.app.net.HttpConnection> httpConnectionClass) {

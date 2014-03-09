@@ -26,6 +26,8 @@ import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.net.MbTimelineItem.ItemType;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
@@ -96,6 +98,7 @@ public abstract class Connection {
          */
         STATUSES_USER_TIMELINE(true),
         PUBLIC_TIMELINE(true),
+        SEARCH_MESSAGES(true),
 
         GET_MESSAGE,
         STATUSES_UPDATE,
@@ -317,6 +320,9 @@ public abstract class Connection {
     public abstract List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId, int limit, String userId)
             throws ConnectionException;
 
+    public abstract List<MbTimelineItem> search(String searchQuery, int limit)
+            throws ConnectionException;
+    
     /**
      * Allows this User to follow the user specified in the userId parameter
      * Allows this User to stop following the user specified in the userId parameter
@@ -358,7 +364,7 @@ public abstract class Connection {
 
     public final void setAccountData(OriginConnectionData connectionData) throws InstantiationException, IllegalAccessException {
         this.data = connectionData;
-        http = connectionData.getHttpConnectionClass().newInstance();
+        http = connectionData.newHttpConnection();
         http.setConnectionData(HttpConnectionData.fromConnectionData(connectionData));
     }
 
@@ -438,5 +444,19 @@ public abstract class Connection {
                 item.mbMessage.setPublic(true);
             }
         }
+    }
+
+    public JSONArray getRequestArrayInObject(String path, String arrayName) throws ConnectionException {
+        String method = "getRequestArrayInObject";
+        JSONArray jArr = null;
+        JSONObject jso = http.getRequest(path);
+        if (jso != null) {
+            try {
+                jArr = jso.getJSONArray(arrayName);
+            } catch (JSONException e) {
+                throw ConnectionException.loggedJsonException(this, e, jso, method + ", arrayName=" + arrayName);
+            }
+        }
+        return jArr;
     }
 }

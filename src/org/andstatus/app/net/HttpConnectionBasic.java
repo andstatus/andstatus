@@ -37,7 +37,6 @@ import org.json.JSONTokener;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 
 public class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
     protected String mPassword;

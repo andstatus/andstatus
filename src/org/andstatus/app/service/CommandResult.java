@@ -27,6 +27,7 @@ import org.andstatus.app.data.TimelineTypeEnum;
  * @author yvolk@yurivolkov.com
  */
 public class CommandResult implements Parcelable {
+    private static final int MAX_RETRIES = 10;
     
     private long numAuthExceptions = 0;
     private long numIoExceptions = 0;
@@ -42,6 +43,7 @@ public class CommandResult implements Parcelable {
     private int mentionsAdded = 0;
     private int directedAdded = 0;
     private int downloadedCount = 0;
+    private int retriesLeft = 0;
 
     public CommandResult() {
     }
@@ -162,7 +164,6 @@ public class CommandResult implements Parcelable {
     protected void setRemainingHits(int remainingHits) {
         this.remainingHits = remainingHits;
     }
-    
 
     public void incrementMessagesCount(TimelineTypeEnum timelineType) {
         switch (timelineType) {
@@ -195,5 +196,38 @@ public class CommandResult implements Parcelable {
 
     protected int getDirectedAdded() {
         return directedAdded;
+    }
+    
+    protected int getRetriesLeft() {
+        return retriesLeft;
+    }
+    
+    void resetRetries(CommandEnum command) {
+        retriesLeft = MAX_RETRIES;
+        switch (command) {
+            case AUTOMATIC_UPDATE:
+            case FETCH_TIMELINE:
+            case RATE_LIMIT_STATUS:
+            case SEARCH_MESSAGE:
+                retriesLeft = 0;
+                break;
+            default:
+                break;
+        }
+    }
+
+    boolean decrementAndCheckRetry() {
+        willRetry = false;
+        if (hasError() && !hasHardError()) {
+            if (retriesLeft > 0) {
+                retriesLeft -= 1;
+            }
+            if (retriesLeft > 0) {
+                willRetry = true;
+            }
+        } else {
+            retriesLeft = 0;
+        }
+        return willRetry;
     }
 }

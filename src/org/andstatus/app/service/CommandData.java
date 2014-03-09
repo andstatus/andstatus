@@ -60,20 +60,15 @@ public class CommandData implements Comparable<CommandData> {
     /**
      * Other command parameters
      */
-    protected Bundle bundle = new Bundle();
+    Bundle bundle = new Bundle();
 
     private int hashcode = 0;
 
-    protected int retriesLeft = 0;
-
     private CommandResult commandResult = new CommandResult();
     
-    public CommandData(CommandEnum commandIn, String accountNameIn) {
-        command = commandIn;
-        priority = command.getPriority();
-        if (!TextUtils.isEmpty(accountNameIn)) {
-            accountName = accountNameIn;
-        }
+    public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn, long itemIdIn) {
+        this(commandIn, accountNameIn, itemIdIn);
+        timelineType = timelineTypeIn;
     }
 
     public CommandData(CommandEnum commandIn, String accountNameIn, long itemIdIn) {
@@ -81,9 +76,13 @@ public class CommandData implements Comparable<CommandData> {
         itemId = itemIdIn;
     }
 
-    public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn, long itemIdIn) {
-        this(commandIn, accountNameIn, itemIdIn);
-        timelineType = timelineTypeIn;
+    public CommandData(CommandEnum commandIn, String accountNameIn) {
+        command = commandIn;
+        priority = command.getPriority();
+        if (!TextUtils.isEmpty(accountNameIn)) {
+            accountName = accountNameIn;
+        }
+        getResult().resetRetries(command);
     }
 
     private CommandData() {

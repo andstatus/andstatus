@@ -288,7 +288,7 @@ public class MyService extends Service {
             // Reset retries counter on receiving duplicated command
             for (CommandData cd:mainCommandQueue) {
                 if (cd.equals(commandData)) {
-                    cd.retriesLeft = 0;
+                    cd.getResult().resetRetries(commandData.getCommand());
                     break;
                 }
             }
@@ -668,7 +668,7 @@ public class MyService extends Service {
                 }
                 commandData.resetCommandResult();
                 CommandExecutorBase.getStrategy(commandData, this).execute();
-                if (shouldWeRetry(commandData)) {
+                if (commandData.getResult().decrementAndCheckRetry()) {
                     synchronized(MyService.this) {
                         // Put the command to the retry queue
                         if (!retryCommandQueue.contains(commandData) 
@@ -678,7 +678,7 @@ public class MyService extends Service {
                     }        
                 }
                 MyLog.d(this, (commandData.getResult().hasError() 
-                        ? (commandData.getResult().willRetry ? "Will retry" : "Failed") 
+                        ? (commandData.getResult().willRetry ? "Retries left=" + commandData.getResult().getRetriesLeft()  : "Failed") 
                                 : "Succeeded") 
                         + " " + commandData);
                 broadcastState(commandData);
@@ -688,37 +688,6 @@ public class MyService extends Service {
                 }
             } while (true);
             return true;
-        }
-
-        private boolean shouldWeRetry(CommandData commandData) {
-            commandData.getResult().willRetry = false;
-            if (commandData.getResult().hasError()) {
-                switch (commandData.getCommand()) {
-                    case AUTOMATIC_UPDATE:
-                    case FETCH_TIMELINE:
-                    case RATE_LIMIT_STATUS:
-                        break;
-                    default:
-                        if (!commandData.getResult().hasHardError()) {
-                            commandData.getResult().willRetry = true;
-                        }
-                        break;
-                }
-            }
-            if (commandData.getResult().willRetry) {
-                if (commandData.retriesLeft == 0) {
-                    // This means that retriesLeft was not set yet,
-                    // so let's set it to some default value, the same for
-                    // any command that needs to be retried...
-                    commandData.retriesLeft = 10;
-                }
-                commandData.retriesLeft -= 1;
-                if (commandData.retriesLeft == 0) {
-                    commandData.getResult().willRetry = false;
-                }
-                
-            }
-            return commandData.getResult().willRetry;
         }
         
         /**

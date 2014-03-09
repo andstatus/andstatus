@@ -105,5 +105,16 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         date = TestSuite.utcTime(2013, Calendar.MARCH, 22, 13, 13, 7);
         assertEquals("Reblogged message created at Fri Mar 22 13:13:07 +0000 2013 (" + date.toString() + ")", date.getTime(), mbMessage.rebloggedMessage.sentDate);
     }
+
+    public void testSearch() throws ConnectionException {
+        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.home_timeline);
+        httpConnection.setResponse(jso);
+        
+        List<MbTimelineItem> timeline = connection.search(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT , 20);
+        assertNotNull("timeline returned", timeline);
+        int size = 4;
+        assertEquals("Number of items in the Timeline", size, timeline.size());
+    }
     
 }

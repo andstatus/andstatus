@@ -29,7 +29,6 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * This is a central point of accessing SharedPreferences

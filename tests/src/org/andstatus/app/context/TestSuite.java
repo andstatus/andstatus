@@ -33,6 +33,7 @@ import org.andstatus.app.data.DataInserterTest;
 import org.andstatus.app.data.OriginsAndAccountsInserter;
 import org.andstatus.app.data.StatusNetMessagesInserter;
 import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -138,9 +139,9 @@ public class TestSuite extends TestCase {
     }
     
     public static synchronized void forget() {
-        context = null;
         MyLog.d(TAG, "Before forget");
         MyContextHolder.release();
+        context = null;
         initialized = false;
     }
     
@@ -171,6 +172,10 @@ public class TestSuite extends TestCase {
             fail("Wrong type of current context");
         }
         return myContextForTest;
+    }
+    
+    public static void setHttpConnection(HttpConnection httpConnection) {
+        getMyContextForTest().setHttpConnection(httpConnection);
     }
     
     private static volatile boolean dataAdded = false;

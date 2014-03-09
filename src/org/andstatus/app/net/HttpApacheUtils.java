@@ -49,10 +49,6 @@ import java.util.Iterator;
 import java.util.List;
 
 class HttpApacheUtils {
-    private static final String NULL_JSON = "(null)";
-
-    private static final String TAG = HttpApacheUtils.class.getSimpleName();
-    
     private HttpApacheRequest request;
     
     HttpApacheUtils(HttpApacheRequest request) {
@@ -60,31 +56,33 @@ class HttpApacheUtils {
     }
 
     final JSONArray getRequestAsArray(HttpGet get) throws ConnectionException {
+        String method = "getRequestAsArray";
         JSONArray jsa = null;
         JSONTokener jst = request.getRequest(get);
         try {
             jsa = (JSONArray) jst.nextValue();
         } catch (JSONException e) {
-            MyLog.i(TAG, "getRequestAsArray, JSONException response=" + (jst == null ? NULL_JSON : jst.toString()));
-            throw new ConnectionException("getRequestAsArray", e);
+            throw ConnectionException.loggedJsonException(this, e, jst, method);
         } catch (ClassCastException e) {
-            MyLog.i(TAG, "getRequestAsArray, ClassCastException response=" + (jst == null ? NULL_JSON : jst.toString()));
-            throw new ConnectionException("getRequestAsArray", e);
+            ConnectionException connectionException = ConnectionException.loggedJsonException(this, e, jst, method);
+            connectionException.setHardError(true);
+            throw connectionException;
         }
         return jsa;
     }
     
     final JSONObject getRequestAsObject(HttpGet get) throws ConnectionException {
+        String method = "getRequestAsObject";
         JSONObject jso = null;
         JSONTokener jst = request.getRequest(get);
         try {
             jso = (JSONObject) jst.nextValue();
         } catch (JSONException e) {
-            MyLog.i(this, "getRequestAsObject, JSONException response=" + (jst == null ? NULL_JSON : jst.toString()), e);
-            throw new ConnectionException("getRequestAsObject", e);
+            throw ConnectionException.loggedJsonException(this, e, jst, method);
         } catch (ClassCastException e) {
-            MyLog.i(this, "getRequestAsObject, ClassCastException response=" + (jst == null ? NULL_JSON : jst.toString()), e);
-            throw new ConnectionException("getRequestAsObject", e);
+            ConnectionException connectionException = ConnectionException.loggedJsonException(this, e, jst, method);
+            connectionException.setHardError(true);
+            throw connectionException;
         }
         return jso;
     }

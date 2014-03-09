@@ -19,8 +19,10 @@ package org.andstatus.app.net;
 import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -52,16 +54,27 @@ public class ConnectionException extends Exception {
     private boolean isHardError = false;
     private String host = "";
 
-    public static ConnectionException loggedJsonException(Object objTag, JSONException e, JSONObject jso, String detailMessage) throws ConnectionException {
-        MyLog.d(objTag, detailMessage + ": " + e.getMessage());
-        if (jso != null) {
+    public static ConnectionException loggedJsonException(Object objTag, Exception e, Object obj, String detailMessage) throws ConnectionException {
+        MyLog.d(objTag, detailMessage + (e != null ? ": " + e.getMessage() : ""));
+        if (obj != null) {
             try {
-                String stackTrace = MyLog.getStackTrace(e);
-                MyLog.writeStringToFile(stackTrace, "loggedErrorJson_stacktrace.txt");
-                MyLog.v(objTag, "stack trace: " + stackTrace);
-                String strJso = jso.toString(2);
-                MyLog.writeStringToFile(strJso, "loggedErrorJson.json");
-                MyLog.v(objTag, "jso: " + strJso);
+                if (e != null) {
+                    String stackTrace = MyLog.getStackTrace(e);
+                    MyLog.writeStringToFile(stackTrace, "loggedErrorJson_stacktrace.txt");
+                    MyLog.v(objTag, "stack trace: " + stackTrace);
+                }
+                if (obj != null) {
+                    String strJso = "";
+                    if (JSONObject.class.isInstance(obj)) {
+                       strJso = ((JSONObject) obj).toString(2);
+                    } else if (JSONArray.class.isInstance(obj)) {
+                        strJso = ((JSONArray) obj).toString(2);
+                    } else {
+                        strJso = "Class " + obj.getClass().getCanonicalName() + " " + obj.toString();
+                    }
+                    MyLog.writeStringToFile(strJso, "loggedErrorJson.json");
+                    MyLog.v(objTag, "jso: " + strJso);
+                }
             } catch (JSONException ignored) {
                 MyLog.ignored(objTag, ignored);
             }
@@ -122,6 +135,12 @@ public class ConnectionException extends Exception {
         super(throwable);
     }
 
+    public static ConnectionException hardConnectionException(String detailMessage, Throwable throwable) {
+        ConnectionException e = new ConnectionException(detailMessage, throwable);
+        e.setHardError(true);
+        return e;
+    }
+    
     public ConnectionException(String detailMessage, Throwable throwable) {
         super(detailMessage, throwable);
     }

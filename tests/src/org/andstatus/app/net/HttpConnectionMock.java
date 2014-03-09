@@ -1,4 +1,22 @@
+/* 
+ * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.net;
+
+import android.text.TextUtils;
 
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
@@ -7,32 +25,56 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class HttpConnectionMock extends HttpConnection {
-    private static final String TAG = HttpConnectionMock.class.getSimpleName();
     private JSONObject postedObject = null;
+    private String pathString = "";
     private JSONObject responseObject = null;
 
+    private String password = "password";
+    private String userToken = "token";
+    private String userSecret = "secret";
+    
     public void setResponse(JSONObject jso) {
         responseObject = jso;
     }
     
     @Override
     protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
+        pathString = path;
         postedObject = jso;
         return responseObject;
     }
 
     @Override
+    public void setUserTokenWithSecret(String token, String secret) {
+        userToken = token;
+        userSecret = secret;
+    }
+
+    @Override
+    String getUserToken() {
+        return userToken;
+    }
+
+    @Override
+    String getUserSecret() {
+        return userSecret;
+    }
+
+    @Override
     protected JSONObject postRequest(String path) throws ConnectionException {
+        pathString = path;
         return responseObject;
     }
 
     @Override
     protected JSONObject getRequest(String path) throws ConnectionException {
+        pathString = path;
         return responseObject;
     }
 
     @Override
     protected JSONArray getRequestAsArray(String path) throws ConnectionException {
+        pathString = path;
         JSONObject jso = getRequest(path);
         JSONArray jsa = null;
         if (jso == null) {
@@ -46,7 +88,7 @@ public class HttpConnectionMock extends HttpConnection {
             }
         } else {
             try {
-                MyLog.d(TAG, "Response from server: " + jso.toString(4));
+                MyLog.d(this, "Response from server: " + jso.toString(4));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -56,18 +98,32 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     @Override
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+    
+    @Override
     public void clearAuthInformation() {
-        // TODO Auto-generated method stub
+        password = "";
+        userToken = "";
+        userSecret = "";
     }
 
     @Override
     public boolean getCredentialsPresent() {
-        // TODO Auto-generated method stub
-        return false;
+        return !TextUtils.isEmpty(password) || ( !TextUtils.isDigitsOnly(userToken) && !TextUtils.isEmpty(userSecret));
     }
 
     public JSONObject getPostedJSONObject() {
         return postedObject;
     }
 
+    public String getPathString() {
+        return pathString;
+    }
 }

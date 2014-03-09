@@ -1097,7 +1097,7 @@ public class MyProvider extends ContentProvider {
                 }
                 
             } catch (SQLiteDoneException e) {
-                MyLog.v(TAG, method, e);
+                MyLog.ignored(TAG, e);
                 oid = "";
             } catch (Exception e) {
                 MyLog.e(TAG, method, e);
@@ -1133,7 +1133,7 @@ public class MyProvider extends ContentProvider {
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
             } catch (SQLiteDoneException e) {
-                MyLog.v(TAG, e);
+                MyLog.ignored(TAG, e);
                 userName = "";
             } catch (Exception e) {
                 MyLog.e(TAG, "msgIdToUsername", e);
@@ -1161,7 +1161,7 @@ public class MyProvider extends ContentProvider {
                 prog = db.compileStatement(sql);
                 userName = prog.simpleQueryForString();
             } catch (SQLiteDoneException e) {
-                MyLog.v(TAG, e);
+                MyLog.ignored(TAG, e);
                 userName = "";
             } catch (Exception e) {
                 MyLog.e(TAG, "userIdToName", e);
@@ -1209,7 +1209,7 @@ public class MyProvider extends ContentProvider {
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForLong();
             } catch (SQLiteDoneException e) {
-                MyLog.v(TAG, e);
+                MyLog.ignored(TAG, e);
                 columnValue = 0;
             } catch (Exception e) {
                 MyLog.e(TAG, method + " table='" + tableName 
@@ -1256,7 +1256,7 @@ public class MyProvider extends ContentProvider {
                 prog = db.compileStatement(sql);
                 columnValue = prog.simpleQueryForString();
             } catch (SQLiteDoneException e) {
-                MyLog.v(TAG, e);
+                MyLog.ignored(TAG, e);
                 columnValue = "";
             } catch (Exception e) {
                 MyLog.e(TAG, method + " table='" + tableName 
@@ -1324,7 +1324,7 @@ public class MyProvider extends ContentProvider {
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
         } catch (SQLiteDoneException e) {
-            MyLog.v(TAG, e);
+            MyLog.ignored(TAG, e);
             id = 0;
         } catch (Exception e) {
             MyLog.e(TAG, "userNameToId", e);

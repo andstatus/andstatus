@@ -17,7 +17,6 @@
 package org.andstatus.app.data;
 
 import android.content.ContentValues;
-import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.text.TextUtils;
 

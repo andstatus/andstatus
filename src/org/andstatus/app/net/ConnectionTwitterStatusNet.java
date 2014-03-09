@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Specific implementation of the {@link ApiEnum.STATUSNET_TWITTER}
+ * Specific implementation of the {@link org.andstatus.app.net.Connection.ApiEnum#STATUSNET_TWITTER}
  * @author yvolk@yurivolkov.com
  */
 public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
@@ -43,6 +43,9 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
                 break;
             case PUBLIC_TIMELINE:
                 url = "statuses/public_timeline" + EXTENSION;
+                break;
+            case SEARCH_MESSAGES:
+                url = "search" + EXTENSION;
                 break;
             default:
                 url = "";

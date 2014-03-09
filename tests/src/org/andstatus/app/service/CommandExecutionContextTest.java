@@ -1,13 +1,20 @@
 package org.andstatus.app.service;
 
-import junit.framework.TestCase;
+import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.TriState;
 
-public class CommandExecutionContextTest extends TestCase {
-    MyAccount ma = MyAccount.Builder.newOrExistingFromAccountName("temp/", TriState.UNKNOWN).getAccount();
+public class CommandExecutionContextTest extends InstrumentationTestCase {
+    MyAccount ma;
+
+    @Override
+    protected void setUp() throws Exception {
+        TestSuite.initialize(this);
+        ma = MyAccount.Builder.newOrExistingFromAccountName("temp/", TriState.UNKNOWN).getAccount();
+    }
 
     public void testHomeAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineTypeEnum.HOME);

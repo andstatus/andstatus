@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,15 @@
 
 package org.andstatus.app.net;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.List;
 
 /**
  * Twitter API v.1.1 https://dev.twitter.com/docs/api/1.1
@@ -38,16 +42,20 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
             case CREATE_FAVORITE:
                 url = "favorites/create" + EXTENSION;
                 break;
-            // TODO: see https://dev.twitter.com/docs/api/1.1/get/friends/list
-            //   url will be: "friends/list" + EXTENSION
             case GET_FRIENDS:
+                // TODO: see https://dev.twitter.com/docs/api/1.1/get/friends/list
+                //   url will be: "friends/list" + EXTENSION
                 url = ""; 
                 break;
             case DESTROY_FAVORITE:
                 url = "favorites/destroy" + EXTENSION;
                 break;
-            /** https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline */
+            case SEARCH_MESSAGES:
+                // https://dev.twitter.com/docs/api/1.1/get/search/tweets
+                url = "search/tweets" + EXTENSION;
+                break;
             case STATUSES_MENTIONS_TIMELINE:
+                // https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline
                 url = "statuses/mentions_timeline" + EXTENSION;
                 break;
             default:
@@ -84,5 +92,22 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         }
         JSONObject jso = postRequest(ApiRoutineEnum.DESTROY_FAVORITE, out);
         return messageFromJson(jso);
+    }
+
+    @Override
+    public List<MbTimelineItem> search(String searchQuery, int limit)
+            throws ConnectionException {
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
+        String url = this.getApiPath(apiRoutine);
+        Uri sUri = Uri.parse(url);
+        Uri.Builder builder = sUri.buildUpon();
+        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
+            builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
+        }
+        if (!TextUtils.isEmpty(searchQuery)) {
+            builder.appendQueryParameter("q", searchQuery);
+        }
+        JSONArray jArr = getRequestArrayInObject(builder.build().toString(), "statuses");
+        return jArrToTimeline(jArr, apiRoutine, url);
     }
 }

@@ -24,6 +24,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverter;
+import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.util.MyLog;
 
@@ -203,5 +204,10 @@ public final class MyContextImpl implements MyContext {
     @Override
     public PersistentOrigins persistentOrigins() {
         return persistentOrigins;
+    }
+
+    @Override
+    public HttpConnection getHttpConnectionMock() {
+        return null;
     }
 }

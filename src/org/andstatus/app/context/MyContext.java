@@ -21,6 +21,7 @@ import android.content.Context;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 
 import java.util.Locale;
@@ -30,7 +31,6 @@ public interface MyContext {
     MyContext newCreator(Context context, String initializerName);
     boolean initialized();
     boolean isReady();
-    boolean isTestRun();
     Locale getLocale();
     MyContextState state();
     Context context();
@@ -43,4 +43,8 @@ public interface MyContext {
     void release();
     boolean isExpired();
     void setExpired();
+    
+    // For testing
+    boolean isTestRun();
+    HttpConnection getHttpConnectionMock();
 }

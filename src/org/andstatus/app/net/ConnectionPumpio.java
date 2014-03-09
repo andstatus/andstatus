@@ -573,6 +573,12 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
+    public List<MbTimelineItem> search(String searchQuery, int limit)
+            throws ConnectionException {
+        return new ArrayList<MbTimelineItem>();
+    }
+
+    @Override
     public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
         return verbWithUser(follow ? "follow" : "stop-following", userId);
     }

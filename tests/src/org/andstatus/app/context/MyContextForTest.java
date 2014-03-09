@@ -23,6 +23,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 
 import java.util.Locale;
@@ -36,12 +37,17 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class MyContextForTest implements MyContext {
     private MyContext myContext;
     private Set<AssersionData> dataSet = new CopyOnWriteArraySet<AssersionData>();
+    private HttpConnection httpConnection;
 
     public MyContextForTest setContext(MyContext myContextIn) {
         myContext = myContextIn;
         return this;
     }
 
+    public void setHttpConnection(HttpConnection httpConnection) {
+        this.httpConnection = httpConnection;
+    }
+    
     @Override
     public MyContext newInitialized(Context context, String initializerName) {
         return new MyContextForTest().setContext(myContext.newInitialized(context, initializerName));
@@ -151,5 +157,10 @@ public class MyContextForTest implements MyContext {
     @Override
     public PersistentOrigins persistentOrigins() {
         return myContext.persistentOrigins();
+    }
+
+    @Override
+    public HttpConnection getHttpConnectionMock() {
+        return httpConnection;
     }
 }

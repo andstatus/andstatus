@@ -147,24 +147,22 @@ public abstract class ConnectionTwitter extends Connection {
      */
     @Override
     public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
+        String method = "getIdsOfUsersFollowedBy";
         Uri sUri = Uri.parse(getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS));
         Uri.Builder builder = sUri.buildUpon();
         builder.appendQueryParameter("user_id", userId);
         List<String> list = new ArrayList<String>();
-        JSONObject jso = http.getRequest(builder.build().toString());
-        if (jso != null) {
-            try {
-                JSONArray jArr = jso.getJSONArray("ids");
-                for (int index = 0; index < jArr.length(); index++) {
-                    list.add(jArr.getString(index));
-                }
-            } catch (JSONException e) {
-                throw ConnectionException.loggedJsonException(this, e, jso, "Parsing friendsIds");
+        JSONArray jArr = getRequestArrayInObject(builder.build().toString(), "ids");
+        try {
+            for (int index = 0; jArr != null && index < jArr.length(); index++) {
+                list.add(jArr.getString(index));
             }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(this, e, jArr, method);
         }
         return list;
     }
-    
+
     /**
      * Returns a single status, specified by the id parameter below.
      * The status's author will be returned inline.
@@ -199,24 +197,7 @@ public abstract class ConnectionTwitter extends Connection {
             builder.appendQueryParameter("user_id", userId);
         }
         JSONArray jArr = http.getRequestAsArray(builder.build().toString());
-        List<MbTimelineItem> timeline = new ArrayList<MbTimelineItem>();
-        if (jArr != null) {
-            // Read the activities in chronological order
-            for (int index = jArr.length() - 1; index >= 0; index--) {
-                try {
-                    JSONObject jso = jArr.getJSONObject(index);
-                    MbTimelineItem item = timelineItemFromJson(jso);
-                    timeline.add(item);
-                } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(this, e, null, "Parsing timeline");
-                }
-            }
-        }
-        if (apiRoutine.isMsgPublic()) {
-            setMessagesPublic(timeline);
-        }
-        MyLog.d(TAG, "getTimeline '" + url + "' " + timeline.size() + " items");
-        return timeline;
+        return jArrToTimeline(jArr, apiRoutine, url);
     }
 
     private MbTimelineItem timelineItemFromJson(JSONObject jso) throws ConnectionException {
@@ -363,6 +344,44 @@ public abstract class ConnectionTwitter extends Connection {
             }
         }
         return user;
+    }
+
+    @Override
+    public List<MbTimelineItem> search(String searchQuery, int limit)
+            throws ConnectionException {
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_MESSAGES;
+        String url = this.getApiPath(apiRoutine);
+        Uri sUri = Uri.parse(url);
+        Uri.Builder builder = sUri.buildUpon();
+        if (fixedDownloadLimitForApiRoutine(limit, apiRoutine) > 0) {
+            builder.appendQueryParameter("count", String.valueOf(fixedDownloadLimitForApiRoutine(limit, apiRoutine)));
+        }
+        if (!TextUtils.isEmpty(searchQuery)) {
+            builder.appendQueryParameter("q", searchQuery);
+        }
+        JSONArray jArr = http.getRequestAsArray(builder.build().toString());
+        return jArrToTimeline(jArr, apiRoutine, url);
+    }
+    
+    List<MbTimelineItem> jArrToTimeline(JSONArray jArr, ApiRoutineEnum apiRoutine, String url) throws ConnectionException {
+        List<MbTimelineItem> timeline = new ArrayList<MbTimelineItem>();
+        if (jArr != null) {
+            // Read the activities in chronological order
+            for (int index = jArr.length() - 1; index >= 0; index--) {
+                try {
+                    JSONObject jso = jArr.getJSONObject(index);
+                    MbTimelineItem item = timelineItemFromJson(jso);
+                    timeline.add(item);
+                } catch (JSONException e) {
+                    throw ConnectionException.loggedJsonException(this, e, null, "Parsing " + apiRoutine);
+                }
+            }
+        }
+        if (apiRoutine.isMsgPublic()) {
+            setMessagesPublic(timeline);
+        }
+        MyLog.d(this, apiRoutine + " '" + url + "' " + timeline.size() + " items");
+        return timeline;
     }
     
     /**

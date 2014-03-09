@@ -23,80 +23,73 @@ public class ConnectionEmpty extends Connection {
 
     @Override
     protected String getApiPath1(ApiRoutineEnum routine) {
-        // TODO Auto-generated method stub
         return "";
     }
 
     @Override
     public MbRateLimitStatus rateLimitStatus() throws ConnectionException {
-        // TODO Auto-generated method stub
         return new MbRateLimitStatus();
     }
 
     @Override
     public MbUser verifyCredentials() throws ConnectionException {
-        // TODO Auto-generated method stub
         return MbUser.getEmpty();
     }
 
     @Override
     public MbMessage destroyFavorite(String statusId) throws ConnectionException {
-        // TODO Auto-generated method stub
         return MbMessage.getEmpty();
     }
 
     @Override
     public MbMessage createFavorite(String statusId) throws ConnectionException {
-        // TODO Auto-generated method stub
         return MbMessage.getEmpty();
     }
 
     @Override
     public boolean destroyStatus(String statusId) throws ConnectionException {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public MbMessage getMessage1(String statusId) throws ConnectionException {
-        // TODO Auto-generated method stub
         return MbMessage.getEmpty();
     }
 
     @Override
     public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
-        // TODO Auto-generated method stub
         return MbMessage.getEmpty();
     }
 
     @Override
     public MbMessage postDirectMessage(String message, String userId) throws ConnectionException {
-        // TODO Auto-generated method stub
         return MbMessage.getEmpty();
     }
 
     @Override
     public MbMessage postReblog(String rebloggedId) throws ConnectionException {
-        // TODO Auto-generated method stub
         return MbMessage.getEmpty();
     }
 
     @Override
     public List<MbTimelineItem> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition sinceId,
             int limit, String userId) throws ConnectionException {
-        // TODO Auto-generated method stub
+        return new ArrayList<MbTimelineItem>();
+    }
+
+    @Override
+    public List<MbTimelineItem> search(String searchQuery, int limit)
+            throws ConnectionException {
         return new ArrayList<MbTimelineItem>();
     }
 
     @Override
     public MbUser followUser(String userId, Boolean follow) throws ConnectionException {
-        // TODO Auto-generated method stub
         return MbUser.getEmpty();
     }
 
     @Override
     public MbUser getUser(String userId) throws ConnectionException {
-        // TODO Auto-generated method stub
         return MbUser.getEmpty();
     }
 
