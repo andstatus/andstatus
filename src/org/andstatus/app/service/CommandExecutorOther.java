@@ -22,7 +22,6 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.data.AvatarLoader;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
@@ -37,7 +36,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
-class CommandExecutorOther extends CommandExecutorBase{
+class CommandExecutorOther extends CommandExecutorStrategy{
     
     @Override
     public void execute() {
@@ -74,7 +73,7 @@ class CommandExecutorOther extends CommandExecutorBase{
                 rateLimitStatus();
                 break;
             case FETCH_AVATAR:
-                new AvatarLoader(execContext.getCommandData().itemId).load(execContext.getCommandData());
+                new AvatarDownloader(execContext.getCommandData().itemId).load(execContext.getCommandData());
                 break;
             default:
                 MyLog.e(this, "Unexpected command here " + execContext.getCommandData());

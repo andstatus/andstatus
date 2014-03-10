@@ -36,12 +36,12 @@ import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
-class CommandExecutorLoadTimeline extends CommandExecutorBase {
+class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
 
     private boolean mNotificationsEnabled;
     private boolean mNotificationsVibrate;
     
-    public CommandExecutorLoadTimeline() {
+    CommandExecutorLoadTimeline() {
         mNotificationsEnabled = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_enabled", false);
         mNotificationsVibrate = MyPreferences.getDefaultSharedPreferences().getBoolean("vibration", false);
     }
@@ -50,7 +50,7 @@ class CommandExecutorLoadTimeline extends CommandExecutorBase {
      * @see org.andstatus.app.service.OneCommandExecutor#execute()
      */
     @Override
-    public void execute() {
+    void execute() {
         loadTimelines();
         if (!execContext.getResult().hasError() && execContext.getCommandData().getTimelineType() == TimelineTypeEnum.ALL && !isStopping()) {
             new DataPruner(execContext.getContext()).prune();

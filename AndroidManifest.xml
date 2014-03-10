@@ -15,7 +15,8 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
     
-    TODO: Add narrow enough intent filters to activities in order not to see these activities everywhere ("Open with...")
+    TODO: Add narrow enough intent filters to activities in order not to see these activities everywhere
+     ("Open with...")
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
@@ -43,7 +44,8 @@
         android:largeScreens="true"
         android:anyDensity="true" />
     
-	<application android:name=".context.MyApplication" android:label="@string/app_name" android:icon="@drawable/icon" android:allowBackup="false">
+	<application android:name=".context.MyApplication" android:label="@string/app_name" 
+	    android:icon="@drawable/icon" android:allowBackup="false">
 		<meta-data android:name="android.app.default_searchable" android:value=".TimelineActivity"/>
 
 		<provider android:name=".data.MyProvider"
@@ -64,8 +66,8 @@
             </intent-filter>
 		</receiver>
 
-		<activity android:name=".TimelineActivity"
-			android:label="@string/app_name" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize">
+		<activity android:name=".TimelineActivity" android:label="@string/app_name" 
+		    android:launchMode="singleTask" android:windowSoftInputMode="adjustResize">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />

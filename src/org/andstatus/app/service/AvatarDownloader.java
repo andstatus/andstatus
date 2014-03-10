@@ -1,4 +1,4 @@
-package org.andstatus.app.data;
+package org.andstatus.app.service;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -7,10 +7,13 @@ import android.database.sqlite.SQLiteException;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.AvatarStatus;
+import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Avatar;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.HttpJavaNetUtils;
-import org.andstatus.app.service.CommandData;
 import org.andstatus.app.util.MyLog;
 
 import java.io.BufferedOutputStream;
@@ -23,7 +26,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class AvatarLoader {
+class AvatarDownloader {
     private long userId;
     private long rowId = 0;
     private String fileNameStored = "";
@@ -35,9 +38,9 @@ public class AvatarLoader {
     private long loadTimeNew = 0;
     private String fileNameNew = "";
 
-    protected boolean mockNetworkError = false;
+    boolean mockNetworkError = false;
     
-    public AvatarLoader(long userIdIn) {
+    AvatarDownloader(long userIdIn) {
         userId = userIdIn;
         loadStoredData();
     }
@@ -85,7 +88,7 @@ public class AvatarLoader {
         }
     }
     
-    public void load(CommandData commandData) {
+    void load(CommandData commandData) {
         if (!hardError) {
             switch (status) {
                 case LOADED:

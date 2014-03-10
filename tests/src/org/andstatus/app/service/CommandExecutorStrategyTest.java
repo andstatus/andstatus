@@ -27,15 +27,15 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         assertTrue(ma.getUserId() != 0);
         
         CommandData commandData = new CommandData(CommandEnum.FETCH_TIMELINE, "");
-        CommandExecutorStrategy strategy = CommandExecutorBase.getStrategy(commandData, null);
+        CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorAllAccounts.class, strategy.getClass());
 
         commandData = CommandData.searchCommand("", TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
-        strategy = CommandExecutorBase.getStrategy(commandData, null);
+        strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorAllOrigins.class, strategy.getClass());
 
         commandData = CommandData.searchCommand(ma.getAccountName(), TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
-        strategy = CommandExecutorBase.getStrategy(commandData, null);
+        strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorSearch.class, strategy.getClass());
         strategy.execute();
         assertTrue("Requested '" + httpConnection.getPathString() + "'", httpConnection.getPathString().contains(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT) );

@@ -9,7 +9,7 @@ import org.andstatus.app.origin.Origin;
  * Execute command for one account of each origin
  * @author yvolk@yurivolkov.com
  */
-class CommandExecutorAllOrigins extends CommandExecutorBase {
+class CommandExecutorAllOrigins extends CommandExecutorStrategy {
 
     @Override
     public void execute() {

@@ -10,7 +10,7 @@ import org.andstatus.app.util.MyLog;
 
 import java.util.List;
 
-public class CommandExecutorSearch extends CommandExecutorBase {
+public class CommandExecutorSearch extends CommandExecutorStrategy {
 
     @Override
     public void execute() {

@@ -48,7 +48,8 @@ public final class MyServiceReceiver extends BroadcastReceiver {
         try {
             context.unregisterReceiver(this);
         } catch (IllegalArgumentException e) {
-            MyLog.v(this, e);
+            // Thrown when the "Receiver not registered: org.andstatus.app.service.MyServiceReceiver@..."
+            MyLog.ignored(this, e);
         }
     }
     

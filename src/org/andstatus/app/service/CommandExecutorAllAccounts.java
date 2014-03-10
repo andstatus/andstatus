@@ -24,7 +24,7 @@ import org.andstatus.app.context.MyContextHolder;
  * Execute command for each account
  * @author yvolk@yurivolkov.com
  */
-public class CommandExecutorAllAccounts extends CommandExecutorBase {
+public class CommandExecutorAllAccounts extends CommandExecutorStrategy {
 
     @Override
     public void execute() {

@@ -32,7 +32,7 @@ public class CommandResult implements Parcelable {
     private long numAuthExceptions = 0;
     private long numIoExceptions = 0;
     private long numParseExceptions = 0;
-    boolean willRetry = false;
+    private int retriesLeft = 0;
     
     // 0 means these values were not set
     private int hourlyLimit = 0;
@@ -43,7 +43,6 @@ public class CommandResult implements Parcelable {
     private int mentionsAdded = 0;
     private int directedAdded = 0;
     private int downloadedCount = 0;
-    private int retriesLeft = 0;
 
     public CommandResult() {
     }
@@ -71,7 +70,7 @@ public class CommandResult implements Parcelable {
         numAuthExceptions = parcel.readLong();
         numIoExceptions = parcel.readLong();
         numParseExceptions = parcel.readLong();
-        willRetry = (parcel.readInt() != 0);
+        retriesLeft = parcel.readInt();
         hourlyLimit = parcel.readInt();
         remainingHits = parcel.readInt();
     }
@@ -98,7 +97,7 @@ public class CommandResult implements Parcelable {
         dest.writeLong(numAuthExceptions);
         dest.writeLong(numIoExceptions);
         dest.writeLong(numParseExceptions);
-        dest.writeInt(willRetry ? 1 : 0);
+        dest.writeInt(retriesLeft);
         dest.writeInt(hourlyLimit);
         dest.writeInt(remainingHits);
     }
@@ -145,7 +144,7 @@ public class CommandResult implements Parcelable {
         return numParseExceptions;
     }
 
-    public void incrementParseExceptions() {
+    void incrementParseExceptions() {
         numParseExceptions++;
     }
 
@@ -217,7 +216,7 @@ public class CommandResult implements Parcelable {
     }
 
     boolean decrementAndCheckRetry() {
-        willRetry = false;
+        boolean willRetry = false;
         if (hasError() && !hasHardError()) {
             if (retriesLeft > 0) {
                 retriesLeft -= 1;

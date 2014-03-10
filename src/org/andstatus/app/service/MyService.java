@@ -661,13 +661,12 @@ public class MyService extends Service {
                 }
                 
                 // Get commands from the Queue one by one and execute them
-                // The queue is Blocking, so we can do this
                 CommandData commandData = mainCommandQueue.poll();
                 if (commandData == null) {
                     break;
                 }
                 commandData.resetCommandResult();
-                CommandExecutorBase.getStrategy(commandData, this).execute();
+                CommandExecutorStrategy.getStrategy(commandData, this).execute();
                 if (commandData.getResult().decrementAndCheckRetry()) {
                     synchronized(MyService.this) {
                         // Put the command to the retry queue
@@ -677,9 +676,10 @@ public class MyService extends Service {
                         }
                     }        
                 }
-                MyLog.d(this, (commandData.getResult().hasError() 
-                        ? (commandData.getResult().willRetry ? "Retries left=" + commandData.getResult().getRetriesLeft()  : "Failed") 
-                                : "Succeeded") 
+                MyLog.d(this, (commandData.getResult().hasError()
+                        ? ((commandData.getResult().getRetriesLeft() > 0) ? "Retries left="
+                                + commandData.getResult().getRetriesLeft() : "Failed")
+                        : "Succeeded")
                         + " " + commandData);
                 broadcastState(commandData);
                 if (commandData.getResult().hasError() && !isOnline()) {
