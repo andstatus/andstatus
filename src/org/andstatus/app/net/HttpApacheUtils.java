@@ -56,11 +56,29 @@ class HttpApacheUtils {
     }
 
     final JSONArray getRequestAsArray(HttpGet get) throws ConnectionException {
-        String method = "getRequestAsArray";
+        return jsonTokenerToArray(request.getRequest(get));
+    }
+
+    final JSONArray jsonTokenerToArray(JSONTokener jst) throws ConnectionException {
+        String method = "jsonTokenerToArray";
         JSONArray jsa = null;
-        JSONTokener jst = request.getRequest(get);
         try {
-            jsa = (JSONArray) jst.nextValue();
+            Object obj = jst.nextValue();
+            if (JSONObject.class.isInstance(obj)) {
+                JSONObject jso = (JSONObject) obj;
+                @SuppressWarnings("unchecked")
+                Iterator<String> iterator =  jso.keys();
+                while (iterator.hasNext()) {
+                    String key = iterator.next();
+                    Object obj2 = jso.get(key);                    
+                    if (JSONArray.class.isInstance(obj2)) {
+                        MyLog.v(this, method + " found array inside '" + key + "' object");
+                        obj = obj2;
+                        break;
+                    }
+                }
+            }
+            jsa = (JSONArray) obj;
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, e, jst, method);
         } catch (ClassCastException e) {

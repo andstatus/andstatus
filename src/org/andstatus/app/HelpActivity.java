@@ -27,6 +27,7 @@ import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.Xslt;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -246,8 +247,11 @@ public class HelpActivity extends Activity implements SwipeInterface {
             } else if (showChangeLog) {
                 intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
             }
-            activity.startActivity(intent);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Context context = activity.getApplicationContext();
+            MyLog.v(TAG, "Finishing " + activity.getClass().getSimpleName() + " and starting " + TAG);
             activity.finish();
+            context.startActivity(intent);
         }
         return doFinish;
     }

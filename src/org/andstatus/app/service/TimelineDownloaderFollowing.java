@@ -17,6 +17,7 @@
 package org.andstatus.app.service;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DataInserter;
@@ -47,11 +48,20 @@ class TimelineDownloaderFollowing extends TimelineDownloader {
     @Override
     public void download() throws ConnectionException {
         String userOid =  MyProvider.idToOid(OidEnum.USER_OID, execContext.getTimelineUserId(), 0);
+        if (TextUtils.isEmpty(userOid)) {
+            MyLog.d(this, "userOid is Empty." + execContext);
+            execContext.getResult().incrementParseExceptions();
+        } else {
+            downloadFollowingFor(userOid);
+        }
+    }
+
+    private void downloadFollowingFor(String userOid) throws ConnectionException {
         LatestTimelineItem latestTimelineItem = new LatestTimelineItem(execContext.getTimelineType(), execContext.getTimelineUserId());
         
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             String strLog = "Loading " + execContext.getTimelineType() + "; account=" + execContext.getMyAccount().getAccountName();
-            strLog += "; user=" + MyProvider.userIdToName(execContext.getTimelineUserId());
+            strLog += "; user='" + MyProvider.userIdToName(execContext.getTimelineUserId()) + "', oid=" + userOid;
             if (latestTimelineItem.getTimelineDownloadedDate() > 0) {
                 strLog += "; last time downloaded at=" +  (new Date(latestTimelineItem.getTimelineDownloadedDate()).toString());
             }

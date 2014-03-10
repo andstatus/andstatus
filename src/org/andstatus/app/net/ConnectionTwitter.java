@@ -19,6 +19,7 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -229,6 +230,18 @@ public abstract class ConnectionTwitter extends Connection {
             } else if (jso.has("user")) {
                 sender = jso.getJSONObject("user");
                 message.sender = userFromJson(sender);
+            } else if (jso.has("from_user")) {
+                // This is in the search results, 
+                // see https://dev.twitter.com/docs/api/1/get/search
+                String senderName = jso.getString("from_user");
+                String senderOid = jso.optString("from_user_id_str");
+                if (SharedPreferencesUtil.isEmpty(senderOid)) {
+                    senderOid = jso.optString("from_user_id");
+                }
+                if (!SharedPreferencesUtil.isEmpty(senderOid)) {
+                    message.sender = MbUser.fromOriginAndUserOid(data.getOriginId(), senderOid);
+                    message.sender.userName = senderName;
+                }
             }
             
             // Is this a reblog?

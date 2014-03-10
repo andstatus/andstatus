@@ -48,8 +48,9 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             <change> 
                 Context menu on Public Timeline has "Global search" item,
                 allowing searching messages online for Twitter and StatusNet-type systems 
-                (requires Internet connection). 
-                Thus Public timeline shows both messages, "Reloaded" from Public Timeline directly,
+                (requires Internet connection). <a href="https://github.com/e14n/pump.io/issues/503" >Pump.io 
+                doesn't have a global search service yet</a>.<br/> 
+                Thus the Public timeline shows both messages, "Reloaded" from Public Timeline directly,
                 and messages, retrieved via: "Global Search", "Messages by this User" and Messages, 
                 automatically retrieved for Conversation trees.</change>
         </changes>

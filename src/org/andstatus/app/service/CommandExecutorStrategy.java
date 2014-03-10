@@ -17,11 +17,12 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
 
-abstract class CommandExecutorStrategy implements CommandExecutorParent {
+class CommandExecutorStrategy implements CommandExecutorParent {
     protected CommandExecutionContext execContext = null;
     private CommandExecutorParent parent = null;
 
@@ -32,28 +33,39 @@ abstract class CommandExecutorStrategy implements CommandExecutorParent {
 
     static CommandExecutorStrategy getStrategy(CommandExecutionContext execContext) {
         CommandExecutorStrategy strategy;
-        if (execContext.getMyAccount() == null) {
-            if (execContext.getTimelineType() == TimelineTypeEnum.PUBLIC) {
-                strategy = new CommandExecutorAllOrigins();
-            } else {
-                strategy = new CommandExecutorAllAccounts();
-            }
-        } else {
-            switch (execContext.getCommandData().getCommand()) {
-                case AUTOMATIC_UPDATE:
-                case FETCH_TIMELINE:
-                    strategy = new CommandExecutorLoadTimeline();
-                    break;
-                case SEARCH_MESSAGE:
-                    strategy = new CommandExecutorSearch();
-                    break;
-                default:
-                    strategy = new CommandExecutorOther();
-                    break;
-            }
+        switch (execContext.getCommandData().getCommand()) {
+            case FETCH_AVATAR:
+                strategy = new CommandExecutorOther();
+                break;
+            default:
+                if (execContext.getMyAccount() == null) {
+                    if (execContext.getTimelineType() == TimelineTypeEnum.PUBLIC) {
+                        strategy = new CommandExecutorAllOrigins();
+                    } else {
+                        strategy = new CommandExecutorAllAccounts();
+                    }
+                } else if (execContext.getMyAccount().getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED
+                        && execContext.getMyAccount().isValid()) {
+                    switch (execContext.getCommandData().getCommand()) {
+                        case AUTOMATIC_UPDATE:
+                        case FETCH_TIMELINE:
+                            strategy = new CommandExecutorLoadTimeline();
+                            break;
+                        case SEARCH_MESSAGE:
+                            strategy = new CommandExecutorSearch();
+                            break;
+                        default:
+                            strategy = new CommandExecutorOther();
+                            break;
+                    }
+                } else {
+                    strategy = new CommandExecutorStrategy();
+                }
+                break;
         }
         strategy.setContext(execContext);
-        MyLog.d("CommandExecutorStrategy", strategy.getClass().getSimpleName() + " executing " + execContext);
+        MyLog.d("CommandExecutorStrategy", strategy.getClass().getSimpleName() + " executing "
+                + execContext);
         return strategy;
     }
     
@@ -110,5 +122,7 @@ abstract class CommandExecutorStrategy implements CommandExecutorParent {
         MyLog.e(this, detailedMessage + ": " + e.toString());
     }
 
-    abstract void execute();
+    void execute() {
+        MyLog.d(this, "Doing nothing");
+    }
 }

@@ -959,7 +959,7 @@ public final class MyAccount implements AccountDataReader {
         return uniqueName;
     }
 
-    boolean isValid() {
+    public boolean isValid() {
         return (!deleted
                 && version == MyAccount.ACCOUNT_VERSION) 
                 && oAccountName.isValid()

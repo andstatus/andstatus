@@ -69,6 +69,7 @@ import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.TimelineViewBinder;
+import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyService;
@@ -701,8 +702,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         item.setEnabled(enableReload);
         item.setVisible(enableReload);
 
-        boolean enableGlobalSearch = TimelineTypeEnum.PUBLIC == getTimelineType() && ma != null
-                && ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED;
+        boolean enableGlobalSearch = TimelineTypeEnum.PUBLIC == getTimelineType() 
+                && ma != null
+                && ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED
+                && ma.getConnection().isApiSupported(ApiRoutineEnum.SEARCH_MESSAGES);
         item = menu.findItem(R.id.global_search_menu_id);
         item.setEnabled(enableGlobalSearch);
         item.setVisible(enableGlobalSearch);
@@ -1179,7 +1182,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             }
 
             if (lastItemId > 0) {
-                sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.SENT_DATE + " >= ?",
+                sa.addSelection(MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE + " >= ?",
                         new String[] {
                             String.valueOf(MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.SENT_DATE, lastItemId))
                         });
