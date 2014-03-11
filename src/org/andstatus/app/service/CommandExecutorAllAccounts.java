@@ -33,7 +33,7 @@ public class CommandExecutorAllAccounts extends CommandExecutorStrategy {
                 execContext.getResult().incrementNumAuthExceptions();
             } else {
                 execContext.setMyAccount(acc);
-                getStrategy(execContext).setParent(this).execute();
+                CommandExecutorStrategy.executeStep(execContext, this);
             }
             if (isStopping()) {
                 execContext.getResult().setSoftErrorIfNotOk(false);

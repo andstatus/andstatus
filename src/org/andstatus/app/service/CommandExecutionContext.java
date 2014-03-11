@@ -5,6 +5,7 @@ import android.content.Context;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.util.MyLog;
 
 public class CommandExecutionContext {
     private CommandData commandData;
@@ -65,12 +66,10 @@ public class CommandExecutionContext {
     
     @Override
     public String toString() {
-        String message = "CommandExecutionContext {";
-        message += ma==null ? "" : "account=" + ma.toString() + "; ";
-        message += timelineType.toString();
-        message += timelineUserId==0 ? "" : "for userId=" + timelineUserId;
-        message += "; " + commandData.toString();
-        message += "}";
-        return message;
+        return MyLog.formatKeyValue("CommandExecutionContext",
+        (ma==null ? "" : ma.toString() + ",")
+        + timelineType.toString() + ","
+        + (timelineUserId==0 ? "" : "forUserId:" + timelineUserId + ",")
+        + commandData.toString());
     }
 }

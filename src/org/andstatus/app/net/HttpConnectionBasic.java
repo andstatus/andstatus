@@ -59,6 +59,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
 
     @Override
     public JSONObject postRequest(HttpPost postMethod) throws ConnectionException {
+        String method = "postRequest";
+        String result = "?";
         JSONObject jObj = null;
         int statusCode = 0;
         try {
@@ -71,7 +73,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
             client.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, DEFAULT_POST_REQUEST_TIMEOUT);
             HttpResponse httpResponse = client.execute(postMethod);
             statusCode = httpResponse.getStatusLine().getStatusCode();
-            String result = retrieveInputStream(httpResponse.getEntity());
+            result = retrieveInputStream(httpResponse.getEntity());
             jObj = new JSONObject(result);
             if (jObj != null) {
                 String error = jObj.optString("error");
@@ -82,7 +84,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         } catch (UnsupportedEncodingException e) {
             MyLog.e(this, e);
         } catch (JSONException e) {
-            throw new ConnectionException(e);
+            throw ConnectionException.loggedJsonException(this, e, result, method);
         } catch (Exception e) {
             MyLog.e(this, "postRequest", e);
             throw new ConnectionException(e);

@@ -40,6 +40,16 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         strategy.execute();
         assertTrue("Requested '" + httpConnection.getPathString() + "'", httpConnection.getPathString().contains(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT) );
         
+        commandData = CommandData.updateStatus(TestSuite.STATUSNET_TEST_ACCOUNT_NAME, 
+                "Some text to send", 0, 0);
+        assertEquals(0, commandData.getResult().getExecutionCount());
+        CommandExecutorStrategy.executeCommand(commandData, null);
+        assertEquals(1, commandData.getResult().getExecutionCount());
+        assertEquals(CommandResult.MAX_RETRIES - 1, commandData.getResult().getRetriesLeft());
+        CommandExecutorStrategy.executeCommand(commandData, null);
+        assertEquals(2, commandData.getResult().getExecutionCount());
+        assertEquals(CommandResult.MAX_RETRIES - 2, commandData.getResult().getRetriesLeft());
+        
         TestSuite.setHttpConnection(null);
         MyContextHolder.get().persistentAccounts().initialize();
     }

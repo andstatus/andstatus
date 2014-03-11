@@ -20,19 +20,21 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.util.MyLog;
 
 /**
  * Result of the command execution
  * See also {@link android.content.SyncStats}
  * @author yvolk@yurivolkov.com
  */
-public class CommandResult implements Parcelable {
-    private static final int MAX_RETRIES = 10;
+public final class CommandResult implements Parcelable {
+    static final int MAX_RETRIES = 10;
     
+    private int executionCount = 0;
+    private int retriesLeft = 0;
     private long numAuthExceptions = 0;
     private long numIoExceptions = 0;
     private long numParseExceptions = 0;
-    private int retriesLeft = 0;
     
     // 0 means these values were not set
     private int hourlyLimit = 0;
@@ -49,30 +51,47 @@ public class CommandResult implements Parcelable {
     
     @Override
     public String toString() {
-        String message = hasError() ? (hasHardError() ? "Hard Error" : "Soft Error") : " No errors";
-        if (downloadedCount > 0) {
-            message += ", " + downloadedCount + " downloaded";
+        StringBuilder message = new StringBuilder();
+        if (executionCount > 0) {
+            message.append("executed:" + executionCount + ",");
+            if (retriesLeft > 0) {
+                message.append("retriesLeft:" + retriesLeft + ",");
+            }
+            if (!hasError()) {
+                message.append("error:None,");
+            }
         }
-        if (getMessagesAdded() > 0) {
-            message += ", " + messagesAdded + " messages";
+        if (hasError()) {
+            message.append("error:" + (hasHardError() ? "Hard" : "Soft") + ",");
+        }
+        if (downloadedCount > 0) {
+            message.append("downloaded:" + downloadedCount + ",");
+        }
+        if (messagesAdded > 0) {
+            message.append("messagesAdded:" + messagesAdded + ",");
         }
         if (mentionsAdded > 0) {
-            message += ", " + mentionsAdded + " mentions";
+            message.append("mentionsAdded:" + mentionsAdded + ",");
         }
         if (directedAdded > 0) {
-            message += ", " + directedAdded + " directs";
+            message.append("directedAdded:" + directedAdded + ",");
         }
         
-        return message;
+        return MyLog.formatKeyValue("CommandResult", message);
     }
 
     public CommandResult(Parcel parcel) {
+        executionCount = parcel.readInt();
+        retriesLeft = parcel.readInt();
         numAuthExceptions = parcel.readLong();
         numIoExceptions = parcel.readLong();
         numParseExceptions = parcel.readLong();
-        retriesLeft = parcel.readInt();
         hourlyLimit = parcel.readInt();
         remainingHits = parcel.readInt();
+    }
+
+    public int getExecutionCount() {
+        return executionCount;
     }
 
     public boolean hasError() {
@@ -94,10 +113,11 @@ public class CommandResult implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(executionCount);
+        dest.writeInt(retriesLeft);
         dest.writeLong(numAuthExceptions);
         dest.writeLong(numIoExceptions);
         dest.writeLong(numParseExceptions);
-        dest.writeInt(retriesLeft);
         dest.writeInt(hourlyLimit);
         dest.writeInt(remainingHits);
     }
@@ -121,7 +141,7 @@ public class CommandResult implements Parcelable {
     }
     
     public static String toString(CommandResult commandResult) {
-        return commandResult == null ? "result is null" : commandResult.toString();
+        return commandResult == null ? "(result is null)" : commandResult.toString();
     }
 
     public long getNumAuthExceptions() {
@@ -215,18 +235,39 @@ public class CommandResult implements Parcelable {
         }
     }
 
-    boolean decrementAndCheckRetry() {
-        boolean willRetry = false;
+    /**
+     * Before execution started
+     */
+    void onLaunched() {
+        numAuthExceptions = 0;
+        numIoExceptions = 0;
+        numParseExceptions = 0;
+        
+        hourlyLimit = 0;
+        remainingHits = 0;
+
+        messagesAdded = 0;
+        mentionsAdded = 0;
+        directedAdded = 0;
+    }
+    
+    /**
+     * After execution ended
+     */
+    void onExecuted() {
+        executionCount++;
+        if (retriesLeft > 0) {
+            retriesLeft -= 1;
+        }
+    }
+    
+    boolean shouldWeRetry() {
+        boolean retry = false;
         if (hasError() && !hasHardError()) {
             if (retriesLeft > 0) {
-                retriesLeft -= 1;
+                retry = true;
             }
-            if (retriesLeft > 0) {
-                willRetry = true;
-            }
-        } else {
-            retriesLeft = 0;
         }
-        return willRetry;
+        return retry;
     }
 }

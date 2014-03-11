@@ -78,9 +78,6 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
             notifyOfUpdatedTimeline(execContext.getResult().getMessagesAdded(), 
                     execContext.getResult().getMentionsAdded(), execContext.getResult().getDirectedAdded());
         }
-        String message = (execContext.getResult().hasError() ? "Failed" : "Succeeded")
-                + " getting " + execContext.toString();
-        MyLog.d(this, message);
     }
 
     private TimelineTypeEnum[] getTimelines() {
@@ -108,7 +105,7 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
                     userId = execContext.getMyAccount().getUserId();
                 }
                 execContext.setTimelineUserId(userId);
-                MyLog.d(this, "Getting " + execContext);
+                MyLog.d(this, "Getting " + execContext.getTimelineType() + " timeline for " + execContext.getMyAccount().getAccountName() );
                 TimelineDownloader.getStrategy(execContext).download();
             } else {
                 MyLog.v(this, execContext.getTimelineType() + " is not supported for "

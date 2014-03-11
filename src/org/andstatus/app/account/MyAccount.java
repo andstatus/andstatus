@@ -1082,34 +1082,33 @@ public final class MyAccount implements AccountDataReader {
 
     @Override
     public String toString() {
-        String str = TAG;
-        String members = getAccountName();
+        String members = "accountName:" + getAccountName() + ",";
         try {
-            members += "; id=" + userId;
-            members += "; oid=" + userOid;
+            members += "id:" + userId + ",";
+            members += "oid:" + userOid + ",";
             if (isPersistent()) {
-                members += "; persistent";
+                members += "persistent,";
             }
             if (isOAuth()) {
-                members += "; OAuth";
+                members += "OAuth,";
             }
-            members += "; verified=" + getCredentialsVerified().name();
+            members += "verified:" + getCredentialsVerified().name() + ",";
             if (getCredentialsPresent()) {
-                members += "; has credentials";
+                members += "credentialsPresent:true,";
             }
             if (connection == null) {
-                members += "; no connection";
+                members += "connection:null,";
             }
             if (deleted) {
-                members += "; deleted";
+                members += "deleted,";
             }
             if (version != ACCOUNT_VERSION) {
-                members += "; version=" + version;
+                members += "version:" + version + ",";
             }
         } catch (Exception e) {
             MyLog.v(this, members, e);
         }
-        return str + "{" + members + "}";
+        return MyLog.formatKeyValue(TAG, members);
     }
     
     public int accountsOfThisOrigin() {

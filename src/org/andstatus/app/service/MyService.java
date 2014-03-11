@@ -653,21 +653,17 @@ public class MyService extends Service {
         
         @Override
         protected Boolean doInBackground(Void... arg0) {
-            MyLog.d(this, "CommandExecutor, " + mainCommandQueue.size() + " commands to process");
-
+            MyLog.d(this, "CommandExecutor started, " + mainCommandQueue.size() + " commands to process");
             do {
                 if (isStopping()) {
                     break;
                 }
-                
-                // Get commands from the Queue one by one and execute them
                 CommandData commandData = mainCommandQueue.poll();
                 if (commandData == null) {
                     break;
                 }
-                commandData.resetCommandResult();
-                CommandExecutorStrategy.getStrategy(commandData, this).execute();
-                if (commandData.getResult().decrementAndCheckRetry()) {
+                CommandExecutorStrategy.executeCommand(commandData, this);
+                if (commandData.getResult().shouldWeRetry()) {
                     synchronized(MyService.this) {
                         // Put the command to the retry queue
                         if (!retryCommandQueue.contains(commandData) 
@@ -676,17 +672,13 @@ public class MyService extends Service {
                         }
                     }        
                 }
-                MyLog.d(this, (commandData.getResult().hasError()
-                        ? ((commandData.getResult().getRetriesLeft() > 0) ? "Retries left="
-                                + commandData.getResult().getRetriesLeft() : "Failed")
-                        : "Succeeded")
-                        + " " + commandData);
                 broadcastState(commandData);
                 if (commandData.getResult().hasError() && !isOnline()) {
                     // Don't bother with other commands if we're not Online :-)
                     break;
                 }
             } while (true);
+            MyLog.d(this, "CommandExecutor ended, " + mainCommandQueue.size() + " commands left");
             return true;
         }
         

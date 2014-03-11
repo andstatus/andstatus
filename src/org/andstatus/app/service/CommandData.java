@@ -217,12 +217,14 @@ public class CommandData implements Comparable<CommandData> {
      */
     @Override
     public String toString() {
-        return "CommandData [" + "command=" + command.save()
-                + (TextUtils.isEmpty(getAccountName()) ? "" : "; account=" + getAccountName())
-                + (timelineType == TimelineTypeEnum.UNKNOWN ? "" : "; " + timelineType)
-                + (itemId == 0 ? "" : "; id=" + itemId) + "; hashCode=" + hashCode()
-                + "; " + CommandResult.toString(commandResult)
-                + "]";
+        return MyLog.formatKeyValue("CommandData",
+            "command:" + command.save() + ","
+                + (TextUtils.isEmpty(getAccountName()) ? "" : "account:" + getAccountName() + ",")
+                + (timelineType == TimelineTypeEnum.UNKNOWN ? "" : timelineType + ",")
+                + (itemId == 0 ? "" : "id:" + itemId + ",")
+                + "hashCode:" + hashCode() + ","
+                + CommandResult.toString(commandResult)
+            );
     }
 
     /**
@@ -304,10 +306,6 @@ public class CommandData implements Comparable<CommandData> {
      */
     public MyAccount getAccount() {
         return MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
-    }
-    
-    public void resetCommandResult() {
-        commandResult = new CommandResult();
     }
 
     @Override

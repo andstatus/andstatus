@@ -145,7 +145,7 @@ public enum TimelineTypeEnum {
     
     @Override
     public String toString() {
-        return "timeline=" + code;
+        return "timeline:" + code;
     }
 
     /**

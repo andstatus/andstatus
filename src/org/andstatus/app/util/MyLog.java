@@ -343,4 +343,21 @@ public class MyLog {
         }        
         return ok;
     }
+    
+    public static String formatKeyValue(String key, StringBuilder stringBuilder) {
+        return formatKeyValue(key, stringBuilder.toString());
+    }
+    
+    public static String formatKeyValue(String key, String value) {
+        String out = "";
+        if (!TextUtils.isEmpty(value)) {
+            out = value.trim();
+            final String COMMA = ",";
+            int ind = out.lastIndexOf(COMMA);
+            if (ind > 0 && ind == out.length()-1) {
+                out = out.substring(0, ind);
+            }
+        }
+        return key + ":{" + out + "}";
+    }
 }
