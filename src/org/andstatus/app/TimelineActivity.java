@@ -30,6 +30,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.text.TextUtils;
@@ -51,6 +52,8 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
+import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
@@ -646,6 +649,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!isFinishing) {
             isFinishing = true;
         }
+        cancelAsyncTask("finish");
         super.finish();
     }
 
@@ -1015,10 +1019,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         queryListData(false);
     }
     
-    /**
-     * This is to prevent parallel requests to query data
-     */
-    private boolean queryListDataInProgress = false;
+    final Object asyncQueryLock = new Object();
+    @GuardedBy("asyncQueryLock")
+    AsyncQueryListData asyncQueryTask = null;
     /**
      * Clean after successful or failed operation
      */
@@ -1030,7 +1033,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             // Do this after restoring position to avoid repeated loading from onScroll event
             setIsLoading(false);
         }
-        queryListDataInProgress = false;
+        synchronized (asyncQueryLock) {
+            asyncQueryTask = null;
+        }
     }
     
     /**
@@ -1042,17 +1047,33 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * @param loadOneMorePage true - load one more page of messages, false - reload the same page
      */
     protected void queryListData(boolean loadOneMorePage) {
-        if (queryListDataInProgress) {
-            MyLog.v(this, "queryListData is already in progress, skipping this request");
-        } else {
-            try {
-                queryListDataInProgress = true;
-                setIsLoading(true);
-                new AsyncQueryListData(this, loadOneMorePage).execute();
-            } catch (Exception e) {
-                MyLog.e(this, "Error during AsyncQueryListData", e);
-                queryListDataEnded(!loadOneMorePage);
+        final String method = "queryListData";
+        synchronized (asyncQueryLock) {
+            cancelAsyncTask(method);
+            if (asyncQueryTask == null) {
+                try {
+                    setIsLoading(true);
+                    asyncQueryTask = new AsyncQueryListData(this, loadOneMorePage);
+                    asyncQueryTask.execute();
+                } catch (Exception e) {
+                    MyLog.e(this, method, e);
+                    queryListDataEnded(!loadOneMorePage);
+                }
             }
+        }
+    }
+
+    private void cancelAsyncTask(final String method) {
+        synchronized (asyncQueryLock) {
+            if (asyncQueryTask != null && asyncQueryTask.getStatus() == Status.RUNNING) {
+                MyLog.v(this, method +" task is running. Cancelling");
+                if (asyncQueryTask.cancel(true)) {
+                    MyLog.v(this, method +" task cancelled");
+                } else {
+                    MyLog.d(this, method +" couldn't cancel task");
+                }
+            }
+            asyncQueryTask = null;
         }
     }
 
@@ -1198,7 +1219,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         @Override
         protected Void doInBackground(Void... params) {
-            for (int attempt=0; attempt<3; attempt++) {
+            for (int attempt=0; attempt<3 && !isCancelled(); attempt++) {
                 try {
                     cursor = activity.getContentResolver().query(contentUri, activity.getProjection(), sa.selection,
                             sa.selectionArgs, sortOrder);
@@ -1218,6 +1239,48 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         @Override
         protected void onPostExecute(Void result) {
+            boolean doRestorePosition = !isCancelled();
+            doRestorePosition = replaceCursor();
+
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                String cursorInfo = "cursor - ??";
+                if (cursor == null) {
+                    cursorInfo = "new cursor is null";
+                } else if (activity.mCursor == null) {
+                    cursorInfo = "cursor is null";
+                } else if (activity.mCursor.isClosed()) {
+                    cursorInfo = "cursor is Closed";
+                } else {
+                    cursorInfo = activity.mCursor.getCount() + " rows";
+                }
+                MyLog.v(this, (isCancelled() ? "cancelled" : "ended") + ", " + cursorInfo + ", " + Double.valueOf((System.nanoTime() - startTime)/1.0E6).longValue() + " ms");
+            }
+            
+            activity.queryListDataEnded(doRestorePosition);
+            
+            if (!isCancelled()) {
+                if (!loadOneMorePage) {
+                    switch (activity.getTimelineType()) {
+                        case USER:
+                        case FOLLOWING_USER:
+                            // This timeline doesn't update automatically so let's do it now if necessary
+                            LatestTimelineItem latestTimelineItem = new LatestTimelineItem(activity.getTimelineType(), activity.getSelectedUserId());
+                            if (latestTimelineItem.isTimeToAutoUpdate()) {
+                                activity.manualReload(false);
+                            }
+                            break;
+                        default:
+                            if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, activity.mCurrentMyAccountUserId) == 0) {
+                                // This is supposed to be a one time task.
+                                activity.manualReload(true);
+                            } 
+                            break;
+                    }
+                }
+            }
+        }
+
+        private boolean replaceCursor() {
             boolean doRestorePosition = true;
             if (cursor != null && !activity.isFinishing) {
                 boolean cursorSet = false;
@@ -1245,41 +1308,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     activity.createListAdapter();
                 }
             }
-            
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                String cursorInfo = "cursor - ??";
-                if (cursor == null) {
-                    cursorInfo = "new cursor is null";
-                } else if (activity.mCursor == null) {
-                    cursorInfo = "cursor is null";
-                } else if (activity.mCursor.isClosed()) {
-                    cursorInfo = "cursor is Closed";
-                } else {
-                    cursorInfo = activity.mCursor.getCount() + " rows";
-                }
-                MyLog.v(this, "ended, " + cursorInfo + ", " + Double.valueOf((System.nanoTime() - startTime)/1.0E6).longValue() + " ms");
-            }
-            
-            activity.queryListDataEnded(doRestorePosition);
-            
-            if (!loadOneMorePage) {
-                switch (activity.getTimelineType()) {
-                    case USER:
-                    case FOLLOWING_USER:
-                        // This timeline doesn't update automatically so let's do it now if necessary
-                        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(activity.getTimelineType(), activity.getSelectedUserId());
-                        if (latestTimelineItem.isTimeToAutoUpdate()) {
-                            activity.manualReload(false);
-                        }
-                        break;
-                    default:
-                        if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, activity.mCurrentMyAccountUserId) == 0) {
-                            // This is supposed to be a one time task.
-                            activity.manualReload(true);
-                        } 
-                        break;
-                }
-            }
+            return doRestorePosition;
         }
     }
     
