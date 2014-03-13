@@ -331,23 +331,27 @@ public class MyPreferences {
      * @return true if we opened previous version
      * @throws NameNotFoundException
      */
-    public static boolean checkAndUpdateLastOpenedAppVersion(Context context, boolean update)
-            throws NameNotFoundException {
+    public static boolean checkAndUpdateLastOpenedAppVersion(Context context, boolean update) {
         boolean changed = false;
         int versionCodeLast =  getDefaultSharedPreferences().getInt(KEY_VERSION_CODE_LAST, 0);
         PackageManager pm = context.getPackageManager();
-        PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
-        int versionCode =  pi.versionCode;
-        if (versionCodeLast < versionCode) {
-            // Even if the User will see only the first page of the Help activity,
-            // count this as showing the Change Log
-            MyLog.v(TAG, "Last opened version=" + versionCodeLast + ", current is " + versionCode
-                    + (update ? ", updating" : "")
-                    );
-            changed = true;
-            if ( update && MyContextHolder.get().isReady()) {
-                getDefaultSharedPreferences().edit().putInt(KEY_VERSION_CODE_LAST, versionCode).commit();
+        PackageInfo pi;
+        try {
+            pi = pm.getPackageInfo(context.getPackageName(), 0);
+            int versionCode =  pi.versionCode;
+            if (versionCodeLast < versionCode) {
+                // Even if the User will see only the first page of the Help activity,
+                // count this as showing the Change Log
+                MyLog.v(TAG, "Last opened version=" + versionCodeLast + ", current is " + versionCode
+                        + (update ? ", updating" : "")
+                        );
+                changed = true;
+                if ( update && MyContextHolder.get().isReady()) {
+                    getDefaultSharedPreferences().edit().putInt(KEY_VERSION_CODE_LAST, versionCode).commit();
+                }
             }
+        } catch (NameNotFoundException e) {
+            MyLog.e(TAG, "Unable to obtain package information", e);
         }
         return changed;
     }

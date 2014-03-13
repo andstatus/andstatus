@@ -442,7 +442,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
             onUpgradeTriggered.set(false);
             if (MyPreferences.isDataAvailable()) {
                 db = getReadableDatabase();
-                if (onUpgradeTriggered.get() || MyDatabaseConverter.isUpgrading()) {
+                if (onUpgradeTriggered.get() || MyDatabaseConverterController.isUpgrading()) {
                     state = MyContextState.UPGRADING;
                 } else {
                     if (db != null && db.isOpen()) {
@@ -610,7 +610,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
         onUpgradeTriggered.set(true);
-        new MyDatabaseConverter().onUpgrade(db, oldVersion, newVersion);
+        new MyDatabaseConverterController().onUpgrade(db, oldVersion, newVersion);
         MyPreferences.onPreferencesChanged();
     }
 }

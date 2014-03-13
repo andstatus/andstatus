@@ -22,7 +22,7 @@ import android.content.Context;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
-import org.andstatus.app.data.MyDatabaseConverter;
+import org.andstatus.app.data.MyDatabaseConverterController;
 import org.andstatus.app.util.MyLog;
 
 import java.util.concurrent.Callable;
@@ -85,7 +85,7 @@ public final class MyContextHolder {
      * @return preferencesChangeTime or 0 in a case of error
      */
     public static long initialize(Context context, Object initializedBy) {
-        if (MyDatabaseConverter.isUpgrading()) {
+        if (MyDatabaseConverterController.isUpgrading()) {
             MyLog.v(TAG, "Skipping initialization: upgrade in progress (called by: " + initializedBy + ")");
             return 0;
         }
@@ -160,8 +160,8 @@ public final class MyContextHolder {
             }
             if (myFutureContext == null || myFutureContext.isExpired()) {
                 try {
-                    futureTask.run();
                     myFutureContext = futureTask;
+                    myFutureContext.run();
                 } catch (Exception e) {
                     MyLog.e(TAG, method + " exception on futureTask.run", e);
                 }
@@ -239,7 +239,7 @@ public final class MyContextHolder {
     
     public static void upgradeIfNeeded(Activity upgradeRequestor) {
         if (get().state() == MyContextState.UPGRADING) {
-            MyDatabaseConverter.attemptToTriggerDatabaseUpgrade(upgradeRequestor);
+            MyDatabaseConverterController.attemptToTriggerDatabaseUpgrade(upgradeRequestor);
         }
     }
 }

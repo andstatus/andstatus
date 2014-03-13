@@ -23,7 +23,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabaseConverter;
+import org.andstatus.app.data.MyDatabaseConverterController;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.util.MyLog;
@@ -134,7 +134,7 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public boolean isReady() {
-        return state == MyContextState.READY && !MyDatabaseConverter.isUpgrading();
+        return state == MyContextState.READY && !MyDatabaseConverterController.isUpgrading();
     }
 
     @Override

@@ -35,7 +35,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.LatestUserMessages;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabaseConverter;
+import org.andstatus.app.data.MyDatabaseConverterController;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
@@ -543,7 +543,7 @@ public final class MyAccount implements AccountDataReader {
             if (ok) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
                 myAccount.userOid = user.oid;
-                if (MyDatabaseConverter.isUpgrading()) {
+                if (MyDatabaseConverterController.isUpgrading()) {
                     MyLog.v(TAG, "Upgrade in progress");
                     myAccount.userId = myAccount.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {

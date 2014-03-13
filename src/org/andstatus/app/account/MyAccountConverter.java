@@ -21,7 +21,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.MyDatabaseConverter;
+import org.andstatus.app.data.MyDatabaseConverterController;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class MyAccountConverter {
             android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
             Collection<android.accounts.Account> accountsToRemove = new ArrayList<android.accounts.Account>(); 
             for (android.accounts.Account account : aa) {
-                MyDatabaseConverter.stillUpgrading();
+                MyDatabaseConverterController.stillUpgrading();
                 MyAccount.Builder builderOld = MyAccount.Builder.fromAndroidAccount(MyContextHolder.get(), account);
                 if (builderOld.getVersion() == versionTo) {
                     MyLog.i(TAG, "Account " + account.name + " already converted?!");

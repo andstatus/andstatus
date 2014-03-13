@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2012-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,13 +22,11 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.service.MyService;
 import org.andstatus.app.util.ActivitySwipeDetector;
-import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.Xslt;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -46,8 +44,8 @@ import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 /**
- * @author Torgny & yvolk@yurivolkov.com
- *
+ * @author yvolk@yurivolkov.com
+ * @author Torgny 
  */
 public class HelpActivity extends Activity implements SwipeInterface {
 
@@ -135,6 +133,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
         getStarted.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                MyPreferences.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
                 if (MyContextHolder.get().persistentAccounts().getCurrentAccount() == null) {
                     startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
                 } else {
@@ -197,7 +196,6 @@ public class HelpActivity extends Activity implements SwipeInterface {
     @Override
     protected void onPause() {
         super.onPause();
-        upgradeEnded();
         wasPaused = true;
     }
 
@@ -235,12 +233,8 @@ public class HelpActivity extends Activity implements SwipeInterface {
         } 
         
         // Show Change Log after update
-        try {
-            if (MyPreferences.checkAndUpdateLastOpenedAppVersion(activity, true)) {
-                showChangeLog = true;                    
-            }
-        } catch (NameNotFoundException e) {
-            MyLog.e(activity, "Unable to obtain package information", e);
+        if (MyPreferences.checkAndUpdateLastOpenedAppVersion(activity, true)) {
+            showChangeLog = true;                    
         }
 
         boolean doFinish = helpAsFirstActivity || showChangeLog;
@@ -248,7 +242,8 @@ public class HelpActivity extends Activity implements SwipeInterface {
             Intent intent = new Intent(activity, HelpActivity.class);
             if (helpAsFirstActivity) {
                 intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
-            } else if (showChangeLog) {
+            } 
+            if (showChangeLog) {
                 intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -258,27 +253,5 @@ public class HelpActivity extends Activity implements SwipeInterface {
             context.startActivity(intent);
         }
         return doFinish;
-    }
-    
-    private ProgressDialog progress = null;
-    public void upgradeStarted() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                progress = new ProgressDialog(HelpActivity.this, ProgressDialog.STYLE_SPINNER);
-                progress.setTitle(R.string.app_name);
-                progress.setMessage(HelpActivity.this.getText(R.string.label_upgrading));
-                progress.show();
-            }
-          });
-    }
-    
-    public void upgradeEnded() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                DialogFactory.dismissSafely(progress);
-            }
-          });
     }
 }
