@@ -442,7 +442,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
             onUpgradeTriggered.set(false);
             if (MyPreferences.isDataAvailable()) {
                 db = getReadableDatabase();
-                if (onUpgradeTriggered.get()) {
+                if (onUpgradeTriggered.get() || MyDatabaseConverter.isUpgrading()) {
                     state = MyContextState.UPGRADING;
                 } else {
                     if (db != null && db.isOpen()) {
@@ -457,10 +457,6 @@ public final class MyDatabase extends SQLiteOpenHelper  {
             }
         } catch (Exception e) {
             MyLog.d(this, "Error during checkState", e);
-        } finally {
-            if (db != null && db.isOpen()) {
-                db.close();
-            }
         }
         return state;
     }

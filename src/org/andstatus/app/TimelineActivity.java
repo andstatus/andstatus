@@ -200,7 +200,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         preferencesChangeTime = MyContextHolder.initialize(this, this);
-        MyContextHolder.upgradeIfNeeded(this);
         
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             MyLog.d(this, "onCreate instanceId=" + instanceId 

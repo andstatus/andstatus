@@ -22,11 +22,13 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.service.MyService;
 import org.andstatus.app.util.ActivitySwipeDetector;
+import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SwipeInterface;
 import org.andstatus.app.util.Xslt;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -182,6 +184,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
     @Override
     protected void onResume() {
         super.onResume();
+        MyContextHolder.upgradeIfNeeded(this);
         // We assume that user pressed back after adding first account
         if ( wasPaused && mIsFirstActivity 
                 &&  MyContextHolder.get().persistentAccounts().getCurrentAccount() != null ) {
@@ -194,6 +197,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
     @Override
     protected void onPause() {
         super.onPause();
+        upgradeEnded();
         wasPaused = true;
     }
 
@@ -254,5 +258,27 @@ public class HelpActivity extends Activity implements SwipeInterface {
             context.startActivity(intent);
         }
         return doFinish;
+    }
+    
+    private ProgressDialog progress = null;
+    public void upgradeStarted() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progress = new ProgressDialog(HelpActivity.this, ProgressDialog.STYLE_SPINNER);
+                progress.setTitle(R.string.app_name);
+                progress.setMessage(HelpActivity.this.getText(R.string.label_upgrading));
+                progress.show();
+            }
+          });
+    }
+    
+    public void upgradeEnded() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                DialogFactory.dismissSafely(progress);
+            }
+          });
     }
 }

@@ -111,6 +111,7 @@
     <string name="label_origin_list">Система микроблогов</string>
     <string name="label_origin_name">Имя системы микроблогов (уникальное и неизменное)</string>
     <string name="label_origin_system">Система микроблогов</string>
+    <string name="label_upgrading">Идёт обновление приложения. Пожалуйста подождите.</string>
     <string name="loading">Загрузка…</string>
     <string name="message">Сообщение</string>
     <string name="message_twitter">Сообщение</string>

@@ -20,10 +20,12 @@ import junit.framework.TestCase;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
 import android.view.ViewGroup;
 
+import org.andstatus.app.HelpActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -111,7 +113,8 @@ public class TestSuite extends TestCase {
 
         if (MyContextHolder.get().state() == MyContextState.UPGRADING) {
             MyLog.d(TAG, "Upgrade is needed");
-            MyContextHolder.upgradeIfNeeded(TAG);
+            MyContextHolder.get().context()
+                    .startActivity(new Intent(MyContextHolder.get().context(), HelpActivity.class));
             waitTillUpgradeEnded();
         }
         MyLog.d(TAG, "Before check isReady " + MyContextHolder.get());

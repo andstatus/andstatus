@@ -16,6 +16,7 @@
 
 package org.andstatus.app.context;
 
+import android.app.Activity;
 import android.content.Context;
 
 import net.jcip.annotations.GuardedBy;
@@ -84,6 +85,14 @@ public final class MyContextHolder {
      * @return preferencesChangeTime or 0 in a case of error
      */
     public static long initialize(Context context, Object initializedBy) {
+        if (MyDatabaseConverter.isUpgrading()) {
+            MyLog.v(TAG, "Skipping initialization: upgrade in progress (called by: " + initializedBy + ")");
+            return 0;
+        }
+        return initializeDuringUpgrade(context, initializedBy);
+    }
+
+    public static long initializeDuringUpgrade(Context context, Object initializedBy) {
         if (get().initialized() && arePreferencesChanged()) {
             synchronized(CONTEXT_LOCK) {
                 if (get().initialized() && arePreferencesChanged()) {
@@ -228,12 +237,9 @@ public final class MyContextHolder {
         }
     }
     
-    public static void upgradeIfNeeded(Object requester) {
+    public static void upgradeIfNeeded(Activity upgradeRequestor) {
         if (get().state() == MyContextState.UPGRADING) {
-            MyDatabaseConverter.triggerDatabaseUpgrade(requester);
-            if (get().state() == MyContextState.UPGRADING) {
-                MyContextHolder.initialize(null, TAG + "-AfterUpgradeProcess");
-            }
+            MyDatabaseConverter.attemptToTriggerDatabaseUpgrade(upgradeRequestor);
         }
     }
 }

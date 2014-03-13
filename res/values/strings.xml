@@ -112,6 +112,7 @@
     <string name="label_origin_name">Name of Microblogging system (unique and not changeable)</string>
     <string name="label_origin_system">Microblogging system</string>
     <string name="label_origin_type">Type of Microblogging system</string>
+    <string name="label_upgrading">Upgrade is in progress. Please wait.</string>
     <string name="loading">Loading…</string>
     <string name="message">Message</string>
     <string name="message_twitter">Tweet</string>
