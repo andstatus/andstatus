@@ -49,6 +49,7 @@ import android.widget.TextView;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
@@ -292,16 +293,17 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 case SHARE:
                     String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
                     Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), messageList.getTimelineType(), true, mCurrentMsgId);
-                    Cursor c = getContext().getContentResolver().query(uri, new String[] {
-                            MyDatabase.Msg.MSG_ID, MyDatabase.Msg.BODY
-                    }, null, null, null);
+                    Cursor cursor = null;
                     try {
-                        if (c != null && c.getCount() > 0) {
-                            c.moveToFirst();
+                        cursor = getContext().getContentResolver().query(uri, new String[] {
+                                MyDatabase.Msg.MSG_ID, MyDatabase.Msg.BODY
+                        }, null, null, null);
+                        if (cursor != null && cursor.getCount() > 0) {
+                            cursor.moveToFirst();
         
                             StringBuilder subject = new StringBuilder();
                             StringBuilder text = new StringBuilder();
-                            String msgBody = c.getString(c.getColumnIndex(MyDatabase.Msg.BODY));
+                            String msgBody = cursor.getString(cursor.getColumnIndex(MyDatabase.Msg.BODY));
         
                             subject.append(getContext().getText(ma.alternativeTermForResourceId(R.string.message)));
                             subject.append(" - " + msgBody);
@@ -316,7 +318,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                             text.append(msgBody);
                             text.append("\n-- \n" + userName);
                             text.append("\n URL: " + ma.messagePermalink(userName, 
-                                    c.getLong(c.getColumnIndex(MyDatabase.Msg.MSG_ID))));
+                                    cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.MSG_ID))));
                             
                             Intent share = new Intent(android.content.Intent.ACTION_SEND); 
                             share.setType("text/plain"); 
@@ -328,9 +330,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                         MyLog.e(this, "onContextItemSelected", e);
                         return false;
                     } finally {
-                        if (c != null && !c.isClosed()) {
-                            c.close();
-                        }
+                        DbUtils.closeSilently(cursor);
                     }
                     return true;
                 case SENDER_MESSAGES:

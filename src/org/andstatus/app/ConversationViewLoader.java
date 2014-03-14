@@ -38,6 +38,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase.Avatar;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -118,114 +119,124 @@ public class ConversationViewLoader {
         findRepliesRecursively(oMsg);
         MyLog.v(this, "findPreviousMessages " + msgId);
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, true, msgId);
-        boolean skip = true;
         Cursor cursor = null;
-        if (msgId != 0) {
-            cursor = context.getContentResolver().query(uri, PROJECTION, null, null, null);
-        }
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                /**
-                 * IDs of all known senders of this message except for the Author
-                 * These "senders" reblogged the message
-                 */
-                Set<Long> rebloggers = new HashSet<Long>();
-                int ind=0;
-                do {
-                    long senderId = cursor.getLong(cursor.getColumnIndex(Msg.SENDER_ID));
-                    long authorId = cursor.getLong(cursor.getColumnIndex(Msg.AUTHOR_ID));
-                    long linkedUserId = cursor.getLong(cursor.getColumnIndex(User.LINKED_USER_ID));
-
-                    if (ind == 0) {
-                        // This is the same for all retrieved rows
-                        oMsg.inReplyToMsgId = cursor.getLong(cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
-                        oMsg.createdDate = cursor.getLong(cursor.getColumnIndex(Msg.CREATED_DATE));
-                        oMsg.author = cursor.getString(cursor.getColumnIndex(User.AUTHOR_NAME));
-                        oMsg.body = cursor.getString(cursor.getColumnIndex(Msg.BODY));
-                        String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));
-                        if (!TextUtils.isEmpty(via)) {
-                            oMsg.via = Html.fromHtml(via).toString().trim();
-                        }
-                        if (MyPreferences.showAvatars()) {
-                            oMsg.avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Avatar.FILE_NAME)));
-                        }
-                        int colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
-                        if (colIndex > -1) {
-                            oMsg.inReplyToName = cursor.getString(colIndex);
-                            if (TextUtils.isEmpty(oMsg.inReplyToName)) {
-                                oMsg.inReplyToName = "";
-                            }
-                        }
-                        colIndex = cursor.getColumnIndex(User.RECIPIENT_NAME);
-                        if (colIndex > -1) {
-                            oMsg.recipientName = cursor.getString(colIndex);
-                            if (TextUtils.isEmpty(oMsg.recipientName)) {
-                                oMsg.recipientName = "";
-                            }
-                        }
-                    }
-
-                    if (senderId != authorId) {
-                        rebloggers.add(senderId);
-                    }
-                    if (linkedUserId != 0) {
-                        if (oMsg.linkedUserId == 0) {
-                            oMsg.linkedUserId = linkedUserId;
-                        }
-                        if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.REBLOGGED)) == 1
-                                && linkedUserId != authorId) {
-                            rebloggers.add(linkedUserId);
-                        }
-                        if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.FAVORITED)) == 1) {
-                            oMsg.favorited = true;
-                        }
-                    }
-                    
-                    ind++;
-                } while (cursor.moveToNext());
-
-                for (long rebloggerId : rebloggers) {
-                    if (!TextUtils.isEmpty(oMsg.rebloggersString)) {
-                        oMsg.rebloggersString += ", ";
-                    }
-                    oMsg.rebloggersString += MyProvider.userIdToName(rebloggerId);
-                }
-                if (oMsgs.contains(oMsg)) {
-                    MyLog.v(this, "Message " + msgId + " is in the list already");
-                } else {
-                    oMsgs.add(oMsg);
-                    skip = false;
+        try {
+            if (msgId != 0) {
+                cursor = context.getContentResolver().query(uri, PROJECTION, null, null, null);
+            }
+            if (cursor != null) {
+                if (!findPreviousMessage3(oMsg, msgId, cursor)) {
+                    findPreviousMessage4(oMsg, msgId);
                 }
             }
-            cursor.close();
+        } finally {
+            DbUtils.closeSilently(cursor);
+        }
+    }
 
-            if (!skip) {
-                if (oMsg.createdDate == 0) {
-                    MyLog.v(this, "Message " + msgId + " should be retrieved from the Internet");
-                    MyServiceManager.sendCommand(new CommandData(CommandEnum.GET_STATUS, ma
-                            .getAccountName(), msgId));
-                } else {
-                    if (oMsg.inReplyToMsgId != 0) {
-                        findPreviousMessagesRecursively(new ConversationOneMessage(oMsg.inReplyToMsgId, oMsg.replyLevel-1));
-                    } else if (!SharedPreferencesUtil.isEmpty(oMsg.inReplyToName)) {
-                        MyLog.v(this, "Message " + msgId + " has reply to name ("
-                                + oMsg.inReplyToName
-                                + ") but no reply to message id");
-                        // Don't try to retrieve this message again. It
-                        // looks like there really are such messages.
-                        ConversationOneMessage oMsg2 = new ConversationOneMessage(0, oMsg.replyLevel-1);
-                        oMsg2.author = oMsg.inReplyToName;
-                        oMsg2.body = "("
-                                + context.getText(R.string.id_of_this_message_was_not_specified)
-                                + ")";
-                        oMsgs.add(oMsg2);
-                        skip = true;
+    private boolean findPreviousMessage3(ConversationOneMessage oMsg, long msgId, Cursor cursor) {
+        boolean skip = false;
+        if (cursor.moveToFirst()) {
+            /**
+             * IDs of all known senders of this message except for the Author
+             * These "senders" reblogged the message
+             */
+            Set<Long> rebloggers = new HashSet<Long>();
+            int ind=0;
+            do {
+                long senderId = cursor.getLong(cursor.getColumnIndex(Msg.SENDER_ID));
+                long authorId = cursor.getLong(cursor.getColumnIndex(Msg.AUTHOR_ID));
+                long linkedUserId = cursor.getLong(cursor.getColumnIndex(User.LINKED_USER_ID));
+
+                if (ind == 0) {
+                    // This is the same for all retrieved rows
+                    oMsg.inReplyToMsgId = cursor.getLong(cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
+                    oMsg.createdDate = cursor.getLong(cursor.getColumnIndex(Msg.CREATED_DATE));
+                    oMsg.author = cursor.getString(cursor.getColumnIndex(User.AUTHOR_NAME));
+                    oMsg.body = cursor.getString(cursor.getColumnIndex(Msg.BODY));
+                    String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));
+                    if (!TextUtils.isEmpty(via)) {
+                        oMsg.via = Html.fromHtml(via).toString().trim();
+                    }
+                    if (MyPreferences.showAvatars()) {
+                        oMsg.avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Avatar.FILE_NAME)));
+                    }
+                    int colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
+                    if (colIndex > -1) {
+                        oMsg.inReplyToName = cursor.getString(colIndex);
+                        if (TextUtils.isEmpty(oMsg.inReplyToName)) {
+                            oMsg.inReplyToName = "";
+                        }
+                    }
+                    colIndex = cursor.getColumnIndex(User.RECIPIENT_NAME);
+                    if (colIndex > -1) {
+                        oMsg.recipientName = cursor.getString(colIndex);
+                        if (TextUtils.isEmpty(oMsg.recipientName)) {
+                            oMsg.recipientName = "";
+                        }
                     }
                 }
+
+                if (senderId != authorId) {
+                    rebloggers.add(senderId);
+                }
+                if (linkedUserId != 0) {
+                    if (oMsg.linkedUserId == 0) {
+                        oMsg.linkedUserId = linkedUserId;
+                    }
+                    if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.REBLOGGED)) == 1
+                            && linkedUserId != authorId) {
+                        rebloggers.add(linkedUserId);
+                    }
+                    if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.FAVORITED)) == 1) {
+                        oMsg.favorited = true;
+                    }
+                }
+                
+                ind++;
+            } while (cursor.moveToNext());
+
+            for (long rebloggerId : rebloggers) {
+                if (!TextUtils.isEmpty(oMsg.rebloggersString)) {
+                    oMsg.rebloggersString += ", ";
+                }
+                oMsg.rebloggersString += MyProvider.userIdToName(rebloggerId);
+            }
+            if (oMsgs.contains(oMsg)) {
+                MyLog.v(this, "Message " + msgId + " is in the list already");
+            } else {
+                oMsgs.add(oMsg);
+                skip = false;
+            }
+        }
+        cursor.close();
+        return skip;
+    }
+
+    private void findPreviousMessage4(ConversationOneMessage oMsg, long msgId) {
+        if (oMsg.createdDate == 0) {
+            MyLog.v(this, "Message " + msgId + " should be retrieved from the Internet");
+            MyServiceManager.sendCommand(new CommandData(CommandEnum.GET_STATUS, ma
+                    .getAccountName(), msgId));
+        } else {
+            if (oMsg.inReplyToMsgId != 0) {
+                findPreviousMessagesRecursively(new ConversationOneMessage(oMsg.inReplyToMsgId, oMsg.replyLevel-1));
+            } else if (!SharedPreferencesUtil.isEmpty(oMsg.inReplyToName)) {
+                MyLog.v(this, "Message " + msgId + " has reply to name ("
+                        + oMsg.inReplyToName
+                        + ") but no reply to message id");
+                // Don't try to retrieve this message again. It
+                // looks like there really are such messages.
+                ConversationOneMessage oMsg2 = new ConversationOneMessage(0, oMsg.replyLevel-1);
+                oMsg2.author = oMsg.inReplyToName;
+                oMsg2.body = "("
+                        + context.getText(R.string.id_of_this_message_was_not_specified)
+                        + ")";
+                oMsgs.add(oMsg2);
             }
         }
     }
-    
+
     private boolean checkAndAddMessageToFind(long msgId) {
         if (idsOfTheMessagesToFind.contains(msgId)) {
             MyLog.v(this, "findMessages cycled on the msgId=" + msgId);

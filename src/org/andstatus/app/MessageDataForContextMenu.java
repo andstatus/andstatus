@@ -23,6 +23,7 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
@@ -66,25 +67,26 @@ class MessageDataForContextMenu {
 
         // Get the record for the currently selected item
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.MESSAGESTOACT, false, msgId);
-        Cursor c = context.getContentResolver().query(uri, new String[] {
-                BaseColumns._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
-                MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED,
-                MyDatabase.Msg.RECIPIENT_ID,
-                MyDatabase.MsgOfUser.REBLOGGED,
-                MyDatabase.FollowingUser.SENDER_FOLLOWED,
-                MyDatabase.FollowingUser.AUTHOR_FOLLOWED
-        }, null, null, null);
+        Cursor cursor = null;
         try {
-            if (c != null && c.getCount() > 0) {
-                c.moveToFirst();
-                isDirect = !c.isNull(c.getColumnIndex(MyDatabase.Msg.RECIPIENT_ID));
-                authorId = c.getLong(c.getColumnIndex(MyDatabase.Msg.AUTHOR_ID));
-                senderId = c.getLong(c.getColumnIndex(MyDatabase.Msg.SENDER_ID));
-                favorited = c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED)) == 1;
-                reblogged = c.getInt(c.getColumnIndex(MyDatabase.MsgOfUser.REBLOGGED)) == 1;
-                senderFollowed = c.getInt(c
+            cursor = context.getContentResolver().query(uri, new String[] {
+                    BaseColumns._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
+                    MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED,
+                    MyDatabase.Msg.RECIPIENT_ID,
+                    MyDatabase.MsgOfUser.REBLOGGED,
+                    MyDatabase.FollowingUser.SENDER_FOLLOWED,
+                    MyDatabase.FollowingUser.AUTHOR_FOLLOWED
+            }, null, null, null);
+            if (cursor != null && cursor.getCount() > 0) {
+                cursor.moveToFirst();
+                isDirect = !cursor.isNull(cursor.getColumnIndex(MyDatabase.Msg.RECIPIENT_ID));
+                authorId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.AUTHOR_ID));
+                senderId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.SENDER_ID));
+                favorited = cursor.getInt(cursor.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED)) == 1;
+                reblogged = cursor.getInt(cursor.getColumnIndex(MyDatabase.MsgOfUser.REBLOGGED)) == 1;
+                senderFollowed = cursor.getInt(cursor
                         .getColumnIndex(MyDatabase.FollowingUser.SENDER_FOLLOWED)) == 1;
-                authorFollowed = c.getInt(c
+                authorFollowed = cursor.getInt(cursor
                         .getColumnIndex(MyDatabase.FollowingUser.AUTHOR_FOLLOWED)) == 1;
                 /**
                  * If this message was sent by current User, we may delete it.
@@ -92,7 +94,7 @@ class MessageDataForContextMenu {
                 isSender = (ma.getUserId() == senderId);
                 isAuthor = (ma.getUserId() == authorId);
 
-                body = c.getString(c.getColumnIndex(MyDatabase.Msg.BODY));
+                body = cursor.getString(cursor.getColumnIndex(MyDatabase.Msg.BODY));
 
                 if ( timelineType != TimelineTypeEnum.FOLLOWING_USER 
                         && !isDirect && !favorited && !reblogged && !isSender && !senderFollowed && !authorFollowed
@@ -104,9 +106,7 @@ class MessageDataForContextMenu {
                 }
             }
         } finally {
-            if (c != null && !c.isClosed()) {
-                c.close();
-            }
+            DbUtils.closeSilently(cursor);
         }
     }
 }

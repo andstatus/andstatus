@@ -21,6 +21,7 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import org.andstatus.app.account.AccountDataWriter;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -205,13 +206,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         } catch (IOException e) {
             MyLog.e(this, e);
         } finally {
-            if (inputStreamReader != null) {
-                try {
-                    inputStreamReader.close();
-                } catch (IOException ignored) {
-                    MyLog.ignored(this, ignored);
-                }
-            }
+            DbUtils.closeSilently(inputStreamReader);
         }
         return stringBuffer.toString();
     }

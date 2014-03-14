@@ -52,6 +52,7 @@ import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.AccountSettingsActivity;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.origin.OriginList;
 import org.andstatus.app.service.MyService;
@@ -695,12 +696,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                             sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
                             ok = (sizeIn == sizeCopied);
                         } finally {
-                            if (inChannel != null) {
-                                inChannel.close();
-                            }
-                            if (outChannel != null) {
-                                outChannel.close();
-                            }
+                            DbUtils.closeSilently(inChannel);
+                            DbUtils.closeSilently(outChannel);
                         }
 
                     }

@@ -80,6 +80,7 @@ public class DataPruner {
         int nDeletedSize = 0;
         int maxSize = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_SIZE, "2000"));
         long sinceTimestampSize = 0;
+        Cursor cursor = null;
         try {
             if (maxDays > 0) {
                 sinceTimestamp = System.currentTimeMillis() - maxDays * (1000L * 60 * 60 * 24);
@@ -94,7 +95,7 @@ public class DataPruner {
 
             if (maxSize > 0) {
                 nDeletedSize = 0;
-                Cursor cursor = mContentResolver.query(MyProvider.MSG_CONTENT_COUNT_URI, null, null, null, null);
+                cursor = mContentResolver.query(MyProvider.MSG_CONTENT_COUNT_URI, null, null, null, null);
                 if (cursor.moveToFirst()) {
                     // Count is in the first column
                     nTweets = cursor.getInt(0);
@@ -124,6 +125,8 @@ public class DataPruner {
             }
         } catch (Exception e) {
             MyLog.e(this, "pruneOldRecords failed", e);
+        } finally {
+            DbUtils.closeSilently(cursor);
         }
         mDeleted = nDeletedTime + nDeletedSize;
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {

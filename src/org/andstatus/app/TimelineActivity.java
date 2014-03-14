@@ -67,6 +67,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
@@ -632,13 +633,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public void onDestroy() {
         MyLog.v(this,"onDestroy, instanceId=" + instanceId);
-        super.onDestroy();
-        if (mCursor != null && !mCursor.isClosed()) {
-            mCursor.close();
-        }
+        DbUtils.closeSilently(mCursor);
         if (serviceConnector != null) {
             serviceConnector.unregisterReceiver(this);
         }
+        super.onDestroy();
     }
 
     @Override
@@ -1294,14 +1293,14 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                             activity.noMoreItems = true;
                             doRestorePosition = false;
                             // We don't need this cursor: assuming it is the same as existing
-                            cursor.close();
+                            DbUtils.closeSilently(cursor);
                         }
                         cursorSet = true; 
                     }
                 }
                 if (!cursorSet) {
-                    if (activity.mCursor != null && !activity.mCursor.isClosed()) {
-                        activity.mCursor.close();
+                    if (activity.mCursor != null) {
+                        DbUtils.closeSilently(activity.mCursor);
                     }
                     activity.mCursor = cursor;
                     activity.createListAdapter();

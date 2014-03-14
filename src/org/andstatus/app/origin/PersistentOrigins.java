@@ -22,6 +22,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.util.MyLog;
 
@@ -44,18 +45,16 @@ public class PersistentOrigins {
     
     public PersistentOrigins initialize(SQLiteDatabase db) {
         String sql = "SELECT * FROM " + MyDatabase.Origin.TABLE_NAME;
-        Cursor c = null;
+        Cursor cursor = null;
         try {
-            c = db.rawQuery(sql, null);
+            cursor = db.rawQuery(sql, null);
             persistentOrigins.clear();
-            while (c.moveToNext()) {
-                Origin origin = new Origin.Builder(c).build();
+            while (cursor.moveToNext()) {
+                Origin origin = new Origin.Builder(cursor).build();
                 persistentOrigins.put(origin.name, origin);
             }
         } finally {
-            if (c != null) {
-                c.close();
-            }
+            DbUtils.closeSilently(cursor);
         }
         
         MyLog.v(this, "Initialized " + persistentOrigins.size() + " origins");

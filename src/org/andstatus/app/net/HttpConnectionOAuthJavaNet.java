@@ -26,6 +26,7 @@ import oauth.signpost.exception.OAuthCommunicationException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.util.MyLog;
@@ -56,7 +57,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         String consumerKey = "";
         String consumerSecret = "";
         data.oauthClientKeys.clear();
-
+        Writer writer = null;
         try {
             URL endpoint = new URL(pathToUrl(path));
             HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
@@ -71,9 +72,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             
-            Writer w = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
-            w.write(requestBody);
-            w.close();
+            writer = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+            writer.write(requestBody);
+            writer.close();
             
             if(conn.getResponseCode() != 200) {
                 String msg = HttpJavaNetUtils.readAll(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
@@ -92,6 +93,8 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             MyLog.e(this, "registerClient Exception", e);
         } catch (JSONException e) {
             MyLog.e(this, "registerClient Exception", e);
+        } finally {
+            DbUtils.closeSilently(writer);
         }
         if (data.oauthClientKeys.areKeysPresent()) {
             MyLog.v(this, "Registered client for " + data.host);
@@ -113,6 +116,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     @Override
     protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
         JSONObject result = null;
+        OutputStreamWriter writer = null;
         try {
             MyLog.v(this, "Posting " + (jso == null ? "(empty)" : jso.toString(2)));
         
@@ -126,14 +130,10 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             
             if (jso != null) {
                 OutputStream os = conn.getOutputStream();
-                OutputStreamWriter wr = new OutputStreamWriter(os, "UTF-8");
+                writer = new OutputStreamWriter(os, "UTF-8");
                 String toWrite = jso.toString(); 
-                wr.write(toWrite);
-                try {
-                    wr.close();
-                } catch (IOException e) {
-                    MyLog.d(this, "Error closing output stream", e);
-                }
+                writer.write(toWrite);
+                writer.close();
             }
                         
             int responseCode = conn.getResponseCode();
@@ -151,6 +151,8 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             throw e;
         } catch(Exception e) {
             throw new ConnectionException(ERROR_GETTING + path + "'", e);
+        } finally {
+            DbUtils.closeSilently(writer);
         }
         return result;
     }

@@ -233,26 +233,29 @@ public class Origin {
 
     public boolean hasChildren() {
         long count = 0;
+        Cursor cursor = null;
         try {
             String sql = "SELECT Count(*) FROM " + MyDatabase.Msg.TABLE_NAME + " WHERE "
                     + MyDatabase.Msg.ORIGIN_ID + "=" + id;
-            Cursor c = MyContextHolder.get().getDatabase().getWritableDatabase().rawQuery(sql, null);
-            if (c.moveToNext()) {
-                count = c.getLong(0);
+            cursor = MyContextHolder.get().getDatabase().getWritableDatabase().rawQuery(sql, null);
+            if (cursor.moveToNext()) {
+                count = cursor.getLong(0);
             }
-            c.close();
+            cursor.close();
             if (count == 0) {
                 sql = "SELECT Count(*) FROM " + MyDatabase.User.TABLE_NAME + " WHERE "
                         + MyDatabase.User.ORIGIN_ID + "=" + id;
-                c = MyContextHolder.get().getDatabase().getWritableDatabase().rawQuery(sql, null);
-                if (c.moveToNext()) {
-                    count = c.getLong(0);
+                cursor = MyContextHolder.get().getDatabase().getWritableDatabase().rawQuery(sql, null);
+                if (cursor.moveToNext()) {
+                    count = cursor.getLong(0);
                 }
-                c.close();
+                cursor.close();
             }
             MyLog.v(this, this.toString() + " has " + count + " children");
         } catch (Exception e) {
             MyLog.e(this, "Error counting children", e);
+        } finally {
+            DbUtils.closeSilently(cursor);
         }
         return count != 0;
     }

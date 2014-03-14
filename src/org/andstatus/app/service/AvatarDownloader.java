@@ -68,19 +68,17 @@ class AvatarDownloader {
                 + " WHERE " + where;
         
         SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
-        Cursor c = null;
+        Cursor cursor = null;
         try {
-            c = db.rawQuery(sql, null);
+            cursor = db.rawQuery(sql, null);
             status = AvatarStatus.ABSENT;
-            while (c.moveToNext()) {
-                status = AvatarStatus.load(c.getInt(0));
-                rowId = c.getLong(1);
-                fileNameStored = c.getString(2);
+            while (cursor.moveToNext()) {
+                status = AvatarStatus.load(cursor.getInt(0));
+                rowId = cursor.getLong(1);
+                fileNameStored = cursor.getString(2);
             }
         } finally {
-            if (c != null) {
-                c.close();
-            }
+            DbUtils.closeSilently(cursor);
         }
         if (AvatarStatus.LOADED.equals(status) 
                 && !new AvatarDrawable(userId, fileNameStored).exists()) {
@@ -138,10 +136,10 @@ class AvatarDownloader {
                         out.write(buffer, 0, length);
                       }
                 } finally {
-                    out.close();
+                    DbUtils.closeSilently(out);
                 }
             } finally {
-                is.close();
+                DbUtils.closeSilently(is);
             }
         } catch (FileNotFoundException e) {
             logError(method + ", File not found", e);
@@ -254,21 +252,19 @@ class AvatarDownloader {
         boolean done = false;
         for (int pass=0; !done && pass<3; pass++) {
             SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
-            Cursor c = null;
+            Cursor cursor = null;
             try {
-                c = db.rawQuery(sql, null);
-                while (c.moveToNext()) {
-                    long rowIdOld = c.getLong(0);
-                    deleteAvatarByFileName(c.getString(1));
+                cursor = db.rawQuery(sql, null);
+                while (cursor.moveToNext()) {
+                    long rowIdOld = cursor.getLong(0);
+                    deleteAvatarByFileName(cursor.getString(1));
                     rowsDeleted += db.delete(Avatar.TABLE_NAME, Avatar._ID + "=" + Long.toString(rowIdOld), null);
                 }
                 done = true;
             } catch (SQLiteException e) {
                 MyLog.i(this, method + ", Database is locked, pass=" + pass + "; sql='" + sql + "'", e);
             } finally {
-                if (c != null) {
-                    c.close();
-                }
+                DbUtils.closeSilently(cursor);
             }
             if (!done) {
                 try {

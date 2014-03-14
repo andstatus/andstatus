@@ -17,17 +17,27 @@
 package org.andstatus.app.data;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
+import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.channels.FileChannel;
 
 public final class DbUtils {
     private static final int MS_BETWEEN_RETRIES = 500;
+    private static final String TAG = DbUtils.class.getSimpleName();
     
     private DbUtils() {
     }
@@ -88,15 +98,46 @@ public final class DbUtils {
         }
     }
 
-    public static void closeSilently(Closeable closeable) {
+    // Couldn't use "Closeable" as a Type due to incompatibility with API <= 10
+    public static void closeSilently(Object closeable) {
+        closeSilently(closeable, "");
+    }
+    
+    public static void closeSilently(Object closeable, String message) {
         if (closeable != null) {
             try {
-                if (android.os.Build.VERSION.SDK_INT > 10 ) {
-                    closeable.close();
-                }
+                closeLegacy(closeable, message);
             } catch ( IOException e) {
                 MyLog.ignored(closeable, e);
             }
+        }
+    }
+    
+    private static void closeLegacy(Object closeable, String message) throws IOException {
+        if (Closeable.class.isAssignableFrom(closeable.getClass()) ) {
+            ((Closeable) closeable).close();
+        } else if (Cursor.class.isAssignableFrom(closeable.getClass())) {
+            ((Cursor) closeable).close();
+        } else if (FileChannel.class.isAssignableFrom(closeable.getClass())) {
+            ((FileChannel) closeable).close();
+        } else if (InputStream.class.isAssignableFrom(closeable.getClass())) {
+            ((InputStream) closeable).close();
+        } else if (Reader.class.isAssignableFrom(closeable.getClass())) {
+            ((Reader) closeable).close();
+        } else if (SQLiteStatement.class.isAssignableFrom(closeable.getClass())) {
+            ((SQLiteStatement) closeable).close();
+        } else if (OutputStream.class.isAssignableFrom(closeable.getClass())) {
+            ((OutputStream) closeable).close();
+        } else if (OutputStreamWriter.class.isAssignableFrom(closeable.getClass())) {
+            ((OutputStreamWriter) closeable).close();
+        } else if (Writer.class.isAssignableFrom(closeable.getClass())) {
+            ((Writer) closeable).close();
+        } else {
+            String detailMessage = "Couldn't close silently an object of the class: "
+                    + closeable.getClass().getCanonicalName() 
+                    + (TextUtils.isEmpty(message) ? "" : "; " + message) ;
+            MyLog.d(TAG, detailMessage);
+            throw new IllegalArgumentException(detailMessage);
         }
     }
 }

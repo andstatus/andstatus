@@ -914,15 +914,20 @@ public class MyProvider extends ContentProvider {
                             + accountUserId + ")";
                     String sql = "SELECT * FROM " + MsgOfUser.TABLE_NAME + " WHERE "
                             + where;
-                    Cursor c = db.rawQuery(sql, null);
-                    if (c == null || c.getCount() == 0) {
-                        // There was no such row
-                        msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
-                        count += db.insert(MsgOfUser.TABLE_NAME, null, msgOfUserValues);
-                    } else {
-                        c.close();
-                        count += db.update(MsgOfUser.TABLE_NAME, msgOfUserValues, where,
-                                null);
+                    Cursor cursor = null;
+                    try {
+                        cursor = db.rawQuery(sql, null);
+                        if (cursor == null || cursor.getCount() == 0) {
+                            // There was no such row
+                            msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
+                            count += db.insert(MsgOfUser.TABLE_NAME, null, msgOfUserValues);
+                        } else {
+                            cursor.close();
+                            count += db.update(MsgOfUser.TABLE_NAME, msgOfUserValues, where,
+                                    null);
+                        }
+                    } finally {
+                        DbUtils.closeSilently(cursor);
                     }
                 }
                 break;
@@ -1498,9 +1503,7 @@ public class MyProvider extends ContentProvider {
                 friends.add(c.getLong(0));
             }
         } finally {
-            if (c != null) {
-                c.close();
-            }
+            DbUtils.closeSilently(c);
         }
         return friends;
     }
@@ -1523,9 +1526,7 @@ public class MyProvider extends ContentProvider {
                 replies.add(c.getLong(0));
             }
         } finally {
-            if (c != null) {
-                c.close();
-            }
+            DbUtils.closeSilently(c);
         }
         return replies;
     }

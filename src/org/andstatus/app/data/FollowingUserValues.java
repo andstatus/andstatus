@@ -95,17 +95,15 @@ public class FollowingUserValues {
                 + " AND " + MyDatabase.FollowingUser.FOLLOWING_USER_ID + "=" + followingUserId;
         String sql = "SELECT * FROM " + FollowingUser.TABLE_NAME + " WHERE " + where;
 
-        Cursor c = null;
+        Cursor cursor = null;
         boolean exists = false;
         try {
-            c = db.rawQuery(sql, null);
-            if (c != null && c.getCount() > 0) {
+            cursor = db.rawQuery(sql, null);
+            if (cursor != null && cursor.getCount() > 0) {
                 exists = true;
             }
         } finally {
-            if (c != null) {
-                c.close();
-            }
+            DbUtils.closeSilently(cursor);
         }
 
         if (exists) {

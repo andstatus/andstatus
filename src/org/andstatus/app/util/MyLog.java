@@ -19,6 +19,7 @@ package org.andstatus.app.util;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DbUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -333,13 +334,7 @@ public class MyLog {
         } catch (Exception e) {
             MyLog.d(TAG, fileName, e);
         } finally {
-            try {
-                if (out != null ) {
-                    out.close();
-                }
-            } catch (IOException e) {
-                MyLog.d(TAG, "Closing " + fileName, e);
-            }
+            DbUtils.closeSilently(out, fileName);
         }        
         return ok;
     }
