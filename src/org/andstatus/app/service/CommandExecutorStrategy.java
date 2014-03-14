@@ -29,7 +29,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     static void executeCommand(CommandData commandData, CommandExecutorParent parent) {
         CommandExecutorStrategy strategy = getStrategy(new CommandExecutionContext(commandData, commandData.getAccount()))
                 .setParent(parent);
-        commandData.getResult().onLaunched();;
+        commandData.getResult().onLaunched();
         MyLog.d(strategy, "Launching " + strategy.execContext);
         // This may cause recursive calls to executors...
         strategy.execute();
@@ -140,5 +140,9 @@ class CommandExecutorStrategy implements CommandExecutorParent {
 
     void execute() {
         MyLog.d(this, "Doing nothing");
+    }
+
+    protected void logOk(boolean ok) {
+        execContext.getResult().setSoftErrorIfNotOk(ok);
     }
 }

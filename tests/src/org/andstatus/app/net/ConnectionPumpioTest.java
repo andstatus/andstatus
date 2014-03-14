@@ -242,4 +242,20 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         String stringDate = "Wed Nov 27 09:27:01 -0300 2013";
         assertEquals("Bad date shouldn't throw (" + stringDate + ")", 0, connection.parseDate(stringDate) );
     }
+    
+    public void testDestroyStatus() throws JSONException, ConnectionException {
+        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.destroy_status_response_pumpio);
+        httpConnection.setResponse(jso);
+        connection.data.setAccountUserOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
+        assertTrue("Success", connection.destroyStatus("https://identi.ca.example.com/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
+
+        boolean thrown = false;
+        try {
+            connection.destroyStatus("");
+        } catch (IllegalArgumentException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+    }
 }

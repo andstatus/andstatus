@@ -37,7 +37,6 @@ public class CommandExecutorSearch extends CommandExecutorStrategy {
                     }
                 }
             } catch (ConnectionException e) {
-                execContext.getResult().incrementNumIoExceptions();
                 logConnectionException(e, execContext.getTimelineType().toString());
             }
         }

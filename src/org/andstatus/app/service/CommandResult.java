@@ -35,6 +35,8 @@ public final class CommandResult implements Parcelable {
     private long numAuthExceptions = 0;
     private long numIoExceptions = 0;
     private long numParseExceptions = 0;
+
+    private long itemId = 0;
     
     // 0 means these values were not set
     private int hourlyLimit = 0;
@@ -269,5 +271,13 @@ public final class CommandResult implements Parcelable {
             }
         }
         return retry;
+    }
+
+    long getItemId() {
+        return itemId;
+    }
+
+    void setItemId(long itemId) {
+        this.itemId = itemId;
     }
 }

@@ -20,6 +20,7 @@ package org.andstatus.app.service;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.data.DataInserter;
@@ -88,6 +89,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         boolean ok = false;
         String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
         MbMessage message = null;
+        boolean errorLogged = false;
         if (oid.length() > 0) {
             try {
                 if (create) {
@@ -97,6 +99,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 }
                 ok = !message.isEmpty();
             } catch (ConnectionException e) {
+                errorLogged = true;
                 logConnectionException(e, (create ? "create" : "destroy") + "Favorite Connection Exception");
             }
         } else {
@@ -144,7 +147,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 new DataInserter(execContext).insertOrUpdateMsg(message);
             }
         }
-        execContext.getResult().setSoftErrorIfNotOk(ok);
+        logOk(ok || !errorLogged);
         MyLog.d(this, (create ? "Creating" : "Destroying") + " favorite "
                 + (ok ? "succeded" : "failed") + ", id=" + msgId);
     }
@@ -157,11 +160,13 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         boolean ok = false;
         String oid = MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
         MbUser user = null;
+        boolean errorLogged = false;
         if (oid.length() > 0) {
             try {
                 user = execContext.getMyAccount().getConnection().followUser(oid, follow);
                 ok = !user.isEmpty();
             } catch (ConnectionException e) {
+                errorLogged = true;
                 logConnectionException(e, (follow ? "Follow" : "Stop following") + " Exception");
             }
         } else {
@@ -192,7 +197,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 execContext.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
             }
         }
-        execContext.getResult().setSoftErrorIfNotOk(ok);
+        logOk(ok || !errorLogged);
         MyLog.d(this, (follow ? "Follow" : "Stop following") + " User "
                 + (ok ? "succeded" : "failed") + ", id=" + userId);
     }
@@ -204,7 +209,13 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         boolean ok = false;
         String oid = MyProvider.idToOid(OidEnum.MSG_OID, msgId, 0);
         try {
-            ok = execContext.getMyAccount().getConnection().destroyStatus(oid);
+            if (TextUtils.isEmpty(oid)) {
+                ok = true;
+                MyLog.e(this, "OID is empty for MsgId=" + msgId);
+            } else {
+                ok = execContext.getMyAccount().getConnection().destroyStatus(oid);
+                logOk(ok);
+            }
         } catch (ConnectionException e) {
             if (e.getStatusCode() == StatusCode.NOT_FOUND) {
                 // This means that there is no such "Status", so we may
@@ -226,7 +237,6 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.e(this, "Error destroying status locally", e);
             }
         }
-        execContext.getResult().setSoftErrorIfNotOk(ok);
         MyLog.d(this, "Destroying status " + (ok ? "succeded" : "failed") + ", id=" + msgId);
     }
 
@@ -239,6 +249,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = MyProvider.idToOid(OidEnum.REBLOG_OID, msgId, execContext.getMyAccount().getUserId());
         try {
             ok = execContext.getMyAccount().getConnection().destroyStatus(oid);
+            logOk(ok);
         } catch (ConnectionException e) {
             if (e.getStatusCode() == StatusCode.NOT_FOUND) {
                 // This means that there is no such "Status", so we may
@@ -261,7 +272,6 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 MyLog.e(this, "Error destroying reblog locally", e);
             }
         }
-        execContext.getResult().setSoftErrorIfNotOk(ok);
         MyLog.d(this, "Destroying reblog " + (ok ? "succeded" : "failed") + ", id=" + msgId);
     }
 
@@ -273,6 +283,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             if (!message.isEmpty()) {
                 ok = addMessageToLocalStorage(message);
             }
+            logOk(ok);
         } catch (ConnectionException e) {
             if (e.getStatusCode() == StatusCode.NOT_FOUND) {
                 execContext.getResult().incrementParseExceptions();
@@ -281,7 +292,6 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
             logConnectionException(e, "getStatus Exception");
         }
-        execContext.getResult().setSoftErrorIfNotOk(ok);
         MyLog.d(this, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + execContext.getCommandData().itemId);
     }
 
@@ -316,19 +326,20 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                         .postDirectMessage(status.trim(), recipientOid);
             }
             ok = (!message.isEmpty());
+            logOk(ok);
         } catch (ConnectionException e) {
             logConnectionException(e, "updateStatus Exception");
         }
         if (ok) {
             // The message was sent successfully
             // New User's message should be put into the user's Home timeline.
-            new DataInserter(
+            long msgId = new DataInserter(
                     execContext.setTimelineType((recipientUserId == 0) ? TimelineTypeEnum.HOME
                             : TimelineTypeEnum.DIRECT)).insertOrUpdateMsg(message);
+            execContext.getResult().setItemId(msgId);
         }
-        execContext.getResult().setSoftErrorIfNotOk(ok);
     }
-    
+
     private void reblog(long rebloggedId) {
         String oid = MyProvider.idToOid(OidEnum.MSG_OID, rebloggedId, 0);
         boolean ok = false;
@@ -337,6 +348,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             result = execContext.getMyAccount().getConnection()
                     .postReblog(oid);
             ok = !result.isEmpty();
+            logOk(ok);
         } catch (ConnectionException e) {
             logConnectionException(e, "Reblog Exception");
         }
@@ -346,7 +358,6 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             new DataInserter(execContext.
                     setTimelineType(TimelineTypeEnum.HOME)).insertOrUpdateMsg(result);
         }
-        execContext.getResult().setSoftErrorIfNotOk(ok);
     }
     
     private void rateLimitStatus() {
@@ -358,9 +369,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 execContext.getResult().setRemainingHits(rateLimitStatus.remaining); 
                 execContext.getResult().setHourlyLimit(rateLimitStatus.limit);
              }
+            logOk(ok);
         } catch (ConnectionException e) {
             logConnectionException(e, "rateLimitStatus Exception");
         }
-        execContext.getResult().setSoftErrorIfNotOk(ok);
     }
 }

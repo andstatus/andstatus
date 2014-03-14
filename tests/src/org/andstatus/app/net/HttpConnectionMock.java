@@ -28,6 +28,7 @@ public class HttpConnectionMock extends HttpConnection {
     private JSONObject postedObject = null;
     private String pathString = "";
     private JSONObject responseObject = null;
+    private ConnectionException exception = null;
 
     private String password = "password";
     private String userToken = "token";
@@ -36,12 +37,23 @@ public class HttpConnectionMock extends HttpConnection {
     public void setResponse(JSONObject jso) {
         responseObject = jso;
     }
+
+    public void setException(ConnectionException exception) {
+        this.exception = exception;
+    }
     
     @Override
     protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
         pathString = path;
         postedObject = jso;
+        throwExceptionIfSet();
         return responseObject;
+    }
+
+    private void throwExceptionIfSet() throws ConnectionException {
+        if (exception != null) {
+            throw exception;
+        }
     }
 
     @Override
@@ -63,12 +75,14 @@ public class HttpConnectionMock extends HttpConnection {
     @Override
     protected JSONObject postRequest(String path) throws ConnectionException {
         pathString = path;
+        throwExceptionIfSet();
         return responseObject;
     }
 
     @Override
     protected JSONObject getRequest(String path) throws ConnectionException {
         pathString = path;
+        throwExceptionIfSet();
         return responseObject;
     }
 

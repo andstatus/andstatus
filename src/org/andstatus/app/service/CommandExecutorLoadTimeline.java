@@ -112,12 +112,12 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
                         + execContext.getMyAccount().getAccountName());
             }
             ok = true;
+            logOk(ok);
         } catch (ConnectionException e) {
             logConnectionException(e, execContext.getTimelineType().toString());
         } catch (SQLiteConstraintException e) {
             MyLog.e(this, execContext.getTimelineType().toString(), e);
         }
-        execContext.getResult().setSoftErrorIfNotOk(ok);
     }
     
     /**
