@@ -68,6 +68,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
+import android.view.*;
 
 /**
  * Add new or edit existing account
@@ -240,6 +241,34 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         }
     }
     
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.account_settings, menu);
+        return true;
+    }
+	
+	@Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.preferences_menu_id:
+                startMyPreferenceActivity();
+                break;
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+	private void startMyPreferenceActivity()
+	{
+		finish();
+        startActivity(new Intent(this, MyPreferenceActivity.class));
+	}
+	
     /**
      * Show values of all preferences in the "summaries".
      * @see <a href="http://stackoverflow.com/questions/531427/how-do-i-display-the-current-value-of-an-android-preference-in-the-preference-sum"> 
@@ -252,9 +281,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         MyAccount ma = state.getAccount();
         
         originOfUser = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
-        originPreference.setTitle(originOfUser.getName());
-        originPreference.setSummary(this.getText(R.string.summary_preference_origin_system)
-                .toString().replace("{0}", originOfUser.getOriginType().getTitle()));
+        originPreference.setTitle(this.getText(R.string.title_preference_origin_system)
+								  .toString().replace("{0}",originOfUser.getName())
+								  .replace("{1}", originOfUser.getOriginType().getTitle()));
 
         originPreference.setEnabled(!state.builder.isPersistent() && TextUtils.isEmpty(ma.getUsername()));
         

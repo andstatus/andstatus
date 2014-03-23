@@ -52,7 +52,7 @@
 	<string name="category_title_preference_credentials">User Credentials</string>
 	<string name="category_title_preference_information">Information</string>
 	<string name="category_title_preference_notifications">Notifications</string>
-	<string name="category_title_preference_origin">Microblogging system parameters</string>
+	<string name="category_title_preference_origin">Microblogging system</string>
 	<string name="category_title_preference_settings">Settings</string>
     <string name="combined_timeline_on">combined</string>
     <string name="combined_timeline_off">for</string>
@@ -253,7 +253,7 @@
 	<string name="summary_preference_notifications_timeline_on">You will be notified of new Home messages</string>
 	<string name="summary_preference_oauth_off">Basic authentication</string>
 	<string name="summary_preference_oauth_on">OAuth (secure authentication) is on</string>
-    <string name="summary_preference_origin_system">Type: {0}</string>
+    <string name="summary_preference_origin_system">Tap here to select a Microblogging system</string>
     <string name="summary_preference_password">Your password in the Microblogging system</string>
 	<string name="summary_preference_ssl_off">No SSL</string>
 	<string name="summary_preference_ssl_on">SSL is on</string>
@@ -299,7 +299,7 @@
     <string name="title_preference_notifications_queue">Commands in the queue</string>
     <string name="title_preference_notifications_timeline">New Home messages</string>
 	<string name="title_preference_oauth">OAuth</string>
-    <string name="title_preference_origin_system">Microblogging system</string>
+    <string name="title_preference_origin_system">{0}, type: {1}</string>
     <string name="title_preference_password">Password</string>
 	<string name="title_preference_report_bug">Report Bug</string>
 	<string name="title_preference_storage">Storage</string>
