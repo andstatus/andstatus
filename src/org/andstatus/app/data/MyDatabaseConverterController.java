@@ -103,7 +103,7 @@ public class MyDatabaseConverterController {
                 }
                 MyLog.v(TAG, "Upgrade triggered by " + MyLog.objTagToString(activity[0]));
                 MyContextHolder.release();
-                // Upgrade will occur inside this call asynchronously
+                // Upgrade will occur inside this call synchronously
                 MyContextHolder.initializeDuringUpgrade(activity[0], activity[0]);
                 synchronized(UPGRADE_LOCK) {
                     shouldTriggerDatabaseUpgrade = false;

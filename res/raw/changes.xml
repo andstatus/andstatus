@@ -38,7 +38,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="8.0" android:versionCode="96"
-        versionDate="2014-03-10"
+        versionDate="2014-03-24"
         versionTitle="Public Timeline and Global Search">
         <changes>
             <change>"Public" Timeline added to the list of available timelines. 
@@ -46,20 +46,22 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 for StatusNet-type microblogging systems via "Reload" context menu item.                  
                 See <a href="https://github.com/andstatus/andstatus/issues/73" >Issue #73</a></change>
             <change> 
-                Context menu on Public Timeline has "Global search" item,
+                Context menu on Public Timeline has a "Global search" item,
                 allowing searching messages online for Twitter and StatusNet-type systems 
                 (requires Internet connection). <a href="https://github.com/e14n/pump.io/issues/503" >Pump.io 
                 doesn't have a global search service yet</a>.<br/> 
                 Thus the Public timeline shows both messages, "Reloaded" from Public Timeline directly,
                 and messages, retrieved via: "Global Search", "Messages by this User" and Messages, 
                 automatically retrieved for Conversation trees.</change>
+            <change>Options menu in Account activity allows to open Settings 
+                e.g. to add new Microblogging system.</change>
         </changes>
     </release>
     <release android:versionName="7.1" android:versionCode="95"
         versionDate="2014-02-07"
         versionTitle="Design for the Novice">
         <changes>
-            <change>Getting started with AndStatus simplified, including creation of the first user account. 
+            <change>Getting started with AndStatus is simplified, including creation of the first user account. 
                 See <a href="https://github.com/andstatus/andstatus/issues/75" >Issue #75</a></change>
             <change>Action bar added to the "Settings" and "Account" screens (for Android 4.x+) in 
                 order to show a "Way back" to a User. These screens have new, more common names.</change>

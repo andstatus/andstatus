@@ -172,7 +172,9 @@
         <h2><b>1. Getting started</b></h2>\n\n
         Tap \"Get Started\" button below: screen to add new account will be opened.\n
         You may change default Microblogging system (\"Twitter\") to some other 
-        (pump.io and StatusNet, in addition to Twitter, are preconfiigured).\n
+        (Twitter, pump.io and Quitter as an example of the StatusNet-type system, are preconfigured).\n
+        In a case your (StatusNet-type) system is not listed, open Options menu, select \"Settings - 
+        Manage microblogging systems\" and \"Add new system\" before adding new account.\n
         For Twitter you are allowed to press \"Add this account\" immediately. 
         For other systems you will be prompted to type your Username and Password before
         the \"Add this account\" gets enabled.\n
@@ -183,7 +185,7 @@
         And don\'t forget to add AndStatus widget to the Home screen: 
         the widget will inform you about new messages and may be used to launch AndStatus.\n\n
         <h2><b>2. AndStatus BASICS</b></h2>\n\n
-        The first view of AndStatus contains the Home timeline.\n
+        The first view of AndStatus (after at least one account has been added) contains the Home timeline.\n
         In order to perform an action on a message in the list you should <b>hold down</b>
         on it to get a context menu.\n
         You may <b>click</b> on a message to get more details on it or to see
@@ -210,18 +212,38 @@
         Tap <b>Home</b> and then select <b>Mentions</b>.\n
         Mentions will list every message that mentions your <b>@username</b>
         (or even mentions of all your AndStatus accounts for a \"combined\" timeline).\n\n
-        <h2><b>6. SEARCHING</b></h2>\n\n
-        Click \"Menu\" to open the Options Menu and then <b>Search</b> 
-        or you can click the <b>Search</b> button on your device.\n
-        If you wish to show messages from a specific user, search for \"username\".\n
-        To see mentions of a specific user, search for \"@username\".\n
-        A search will find any text contained within a message. This simple search
-        searches among messages already loaded from the Internet 
-        (Global Search is in works now...)\n\n
-        Please note that you may request messages from the Internet by any user 
-        (an Author or a Sender of the message) selecting 
-        \"Messages by UserName\" from the context menu of the message. This is also a sort of Global Search
-        which is already implemented. 
+        <h2><b>6. (LOCAL) SEARCH</b></h2>\n\n
+        Local search searches among messages already loaded from the Internet.
+        Hence it is available even offline.\n
+        1.  In order to find any word or phrase in a text of messages,
+        click \"Menu\" to open the Options Menu and then <b>Search</b> 
+        or you can click the dedicated <b>Search</b> button on your device.\n
+        If you wish to show messages from a specific user, 
+        please search for \"username\".\n
+        To see mentions of a specific user, search for \"@username\".\n\n
+        2. To search quickly for messages by a user 
+        (an Author or a Sender of a selected message), select 
+        \"Messages by UserName\" from the context menu of the message. This is actually
+        a sort of Global Search (see below).\n\n
+        <h2><b>7. GLOBAL SEARCH</b></h2>\n\n
+        Global search function requests search results directly 
+        from Microblogging System\'s servers. 
+        This is why live Internet connection to the systems is required.
+        First, you are presented with the results of the Local search. In parallel,
+        AndStatus requests results from a Microblogging System of the selected Account
+        (or from all Microblogging systems, if the Timeline is \"combined\").
+        The search results being updated upon receiving responses from the servers.
+        In a case of no connection 
+        (i.e. no response from a server of a Microblogging System)
+        you will see results of the Local Search only.\n
+        Please note that pump.io system doesn\'t support Global search yet.\n
+        1. Global search by a word or a phrase may be started 
+        from the \"Public\" Timeline only.
+        After switсhing to this timeline, 
+        click \"Menu\" to open the Options Menu and then <b>Global search</b>.\n
+        2. Another way to search globally for messages by an Author or a Sender
+        of the selected message is to select 
+        \"Messages by UserName\" from the context menu of this message.
     </string>
 	<string name="search_timeline_label">Search messages, users, and hashtags</string>
 	<string name="search_timeline_hint">Enter a username/phrase</string>

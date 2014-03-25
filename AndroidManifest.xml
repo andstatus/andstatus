@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-    Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="8.0-SNAPSHOT" android:versionCode="96"
+	android:versionName="8.0" android:versionCode="96"
 	android:installLocation="internalOnly">
 
 	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="10" />

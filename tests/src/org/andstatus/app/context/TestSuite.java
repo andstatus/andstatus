@@ -64,7 +64,7 @@ public class TestSuite extends TestCase {
         return getMyContextForTest().context();
     }
     
-    public static synchronized Context initialize(InstrumentationTestCase testCase) throws NameNotFoundException, ConnectionException {
+    public static synchronized Context initialize(InstrumentationTestCase testCase) throws NameNotFoundException, ConnectionException, InterruptedException {
         if (initialized) {
             MyLog.d(TAG, "Already initialized");
             return context;
@@ -113,9 +113,11 @@ public class TestSuite extends TestCase {
 
         if (MyContextHolder.get().state() == MyContextState.UPGRADING) {
             MyLog.d(TAG, "Upgrade is needed");
-            MyContextHolder.get().context()
-                    .startActivity(new Intent(MyContextHolder.get().context(), HelpActivity.class));
+            Intent intent = new Intent(MyContextHolder.get().context(), HelpActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            MyContextHolder.get().context().startActivity(intent);
             waitTillUpgradeEnded();
+            Thread.sleep(500);
         }
         MyLog.d(TAG, "Before check isReady " + MyContextHolder.get());
         initialized =  MyContextHolder.get().isReady();

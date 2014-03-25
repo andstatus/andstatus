@@ -24,6 +24,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccountConverter;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabaseConverterController.UpgradeParams;
 import org.andstatus.app.util.DialogFactory;
@@ -46,6 +47,14 @@ class MyDatabaseConverter {
                 MyLog.d(this, "while sleeping", e);
             }
             upgradeEnded();
+            if (MyContextHolder.get().isTestRun()) {
+                activity.finish();
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    MyLog.d(this, "while sleeping", e);
+                }
+            }
         }
         long endTime = java.lang.System.currentTimeMillis();
         MyLog.w(this, "Upgrade successfully completed in " + Math.round((endTime - startTime)/1000) + " seconds");
