@@ -87,7 +87,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, e, result, method);
         } catch (Exception e) {
-            MyLog.e(this, "postRequest", e);
+            MyLog.e(this, method, e);
             throw new ConnectionException(e);
         } finally {
             postMethod.abort();

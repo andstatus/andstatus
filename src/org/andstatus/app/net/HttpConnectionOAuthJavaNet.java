@@ -115,17 +115,19 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
 
     @Override
     protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
+        String method = "postRequest: ";
+        URL url = null;
         JSONObject result = null;
         OutputStreamWriter writer = null;
         try {
-            MyLog.v(this, "Posting " + (jso == null ? "(empty)" : jso.toString(2)));
+            MyLog.v(this, method + (jso == null ? "(empty)" : jso.toString(2)));
         
-            URL url = new URL(pathToUrl(path));
+            url = new URL(pathToUrl(path));
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json ; charset=UTF-8");
+            conn.setRequestProperty("Content-Type", "application/json");
             setAuthorization(conn, getConsumer(), false);
             
             if (jso != null) {
@@ -146,17 +148,19 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     throw exceptionFromJsonErrorResponse(path, responseCode, responseString, StatusCode.UNKNOWN);
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, result, ERROR_GETTING + path + "'");
-        } catch (ConnectionException e) {
-            throw e;
+            throw ConnectionException.loggedJsonException(this, e, result, method + urlAndDataToString(url));
         } catch(Exception e) {
-            throw new ConnectionException(ERROR_GETTING + path + "'", e);
+            throw new ConnectionException(method + urlAndDataToString(url), e);
         } finally {
             DbUtils.closeSilently(writer);
         }
         return result;
     }
 
+    private String urlAndDataToString(URL url) {
+        return "url:'" + url + "', " + data;
+    }
+    
     @Override public OAuthConsumer getConsumer() {
         OAuthConsumer consumer = new DefaultOAuthConsumer(
                 data.oauthClientKeys.getConsumerKey(),

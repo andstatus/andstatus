@@ -60,4 +60,12 @@ class HttpConnectionData implements Cloneable {
             return new HttpConnectionData();
         }
     }
+
+    @Override
+    public String toString() {
+        return "HttpConnectionData {" + originType + ", isSsl:" + isSsl + ", basicPath:"
+                + basicPath + ", oauthPath:" + oauthPath + ", accountUsername:" + accountUsername
+                + ", host:" + host + ", hostForUserToken:" + hostForUserToken + ", dataReader:"
+                + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}";
+    }
 }
