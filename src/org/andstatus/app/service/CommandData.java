@@ -17,6 +17,7 @@
 package org.andstatus.app.service;
 
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -25,9 +26,13 @@ import android.text.TextUtils;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
+
+import java.util.Queue;
 
 /**
  * Command data store (message...)
@@ -148,32 +153,86 @@ public class CommandData implements Comparable<CommandData> {
      * @param sp
      * @param index Index of the preference's name to be used
      */
-    public CommandData(SharedPreferences sp, int index) {
-        bundle = new Bundle();
+    private static CommandData fromSharedPreferences(SharedPreferences sp, int index) {
         String si = Integer.toString(index);
         // Decode command
-        String strCommand = sp.getString(IntentExtra.EXTRA_MSGTYPE.key + si, CommandEnum.UNKNOWN.save());
-        accountName = sp.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, "");
-        timelineType = TimelineTypeEnum.load(sp.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, ""));
-        itemId = sp.getLong(IntentExtra.EXTRA_ITEMID.key + si, 0);
-        command = CommandEnum.load(strCommand);
+        String strCommand = sp.getString(IntentExtra.EXTRA_MSGTYPE.key + si,
+                CommandEnum.UNKNOWN.save());
+        CommandData commandData = new CommandData(CommandEnum.load(strCommand),
+                sp.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, ""),
+                TimelineTypeEnum.load(sp.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, "")),
+                sp.getLong(IntentExtra.EXTRA_ITEMID.key + si, 0));
 
-        switch (command) {
+        switch (commandData.command) {
             case UPDATE_STATUS:
-                bundle.putString(IntentExtra.EXTRA_STATUS.key, sp.getString(IntentExtra.EXTRA_STATUS.key + si, ""));
-                bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key, sp.getLong(IntentExtra.EXTRA_INREPLYTOID.key + si, 0));
-                bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key, sp.getLong(IntentExtra.EXTRA_RECIPIENTID.key + si, 0));
+                commandData.bundle.putString(IntentExtra.EXTRA_STATUS.key,
+                        sp.getString(IntentExtra.EXTRA_STATUS.key + si, ""));
+                commandData.bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key,
+                        sp.getLong(IntentExtra.EXTRA_INREPLYTOID.key + si, 0));
+                commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key,
+                        sp.getLong(IntentExtra.EXTRA_RECIPIENTID.key + si, 0));
                 break;
             default:
                 break;
         }
-
-        MyLog.v(this, "Restored command " + (IntentExtra.EXTRA_MSGTYPE + si) + " = " + strCommand);
+        commandData.getResult().loadFromSharedPreferences(sp, index);
+        return commandData;
+    }
+    
+    /**
+     * @return Number of items persisted
+     */
+    static int saveQueue(Context context, Queue<CommandData> q, String prefsFileName) {
+        int count = 0;
+        // Delete any existing saved queue
+        SharedPreferencesUtil.delete(context, prefsFileName);
+        if (!q.isEmpty()) {
+            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
+            while (!q.isEmpty()) {
+                CommandData cd = q.poll();
+                cd.saveToSharedPreferences(sp, count);
+                MyLog.v(context, "Command saved: " + cd.toString());
+                count += 1;
+            }
+            MyLog.d(context, "Queue saved to " + prefsFileName  + ", " + count + " msgs");
+        }
+        return count;
+    }
+    
+    /**
+     * @return Number of items loaded
+     */
+    static int loadQueue(Context context, Queue<CommandData> q, String prefsFileName) {
+        String method = "loadQueue: ";
+        int count = 0;
+        if (SharedPreferencesUtil.exists(context, prefsFileName)) {
+            boolean done = false;
+            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
+            do {
+                CommandData cd = fromSharedPreferences(sp, count);
+                MyLog.v(context, "Restored command " + IntentExtra.EXTRA_MSGTYPE + count + " " + cd);
+                if (cd.getCommand() == CommandEnum.UNKNOWN) {
+                    done = true;
+                } else {
+                    if ( q.offer(cd) ) {
+                        MyLog.v(context, method + cd.toString());
+                        count += 1;
+                    } else {
+                        MyLog.e(context, method + cd.toString());
+                    }
+                }
+            } while (!done);
+            sp = null;
+            // Delete this loaded queue
+            SharedPreferencesUtil.delete(context, prefsFileName);
+            MyLog.d(context, "Queue loaded from " + prefsFileName  + ", " + count + " msgs");
+        }
+        return count;
     }
     
     /**
      * It's used in equals() method. We need to distinguish duplicated
-     * commands
+     * commands but to ignore differences in results!
      */
     @Override
     public int hashCode() {
@@ -271,7 +330,7 @@ public class CommandData implements Comparable<CommandData> {
      * @param sp
      * @param index Index of the preference's name to be used
      */
-    public void save(SharedPreferences sp, int index) {
+    private void saveToSharedPreferences(SharedPreferences sp, int index) {
         String si = Integer.toString(index);
 
         android.content.SharedPreferences.Editor ed = sp.edit();
@@ -294,6 +353,7 @@ public class CommandData implements Comparable<CommandData> {
             default:
                 break;
         }
+        commandResult.saveToSharedPreferences(ed, index);
         ed.commit();
     }
 

@@ -16,9 +16,11 @@
 
 package org.andstatus.app.service;
 
+import android.content.SharedPreferences;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 
@@ -113,6 +115,20 @@ public final class CommandResult implements Parcelable {
         return 0;
     }
 
+    void saveToSharedPreferences(android.content.SharedPreferences.Editor ed, int index) {
+        String si = Integer.toString(index);
+        if (executionCount > 0) {
+            ed.putInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
+        }
+        ed.putInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
+    }
+
+    void loadFromSharedPreferences(SharedPreferences sp, int index) {
+        String si = Integer.toString(index);
+        executionCount = sp.getInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
+        retriesLeft = sp.getInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
+    }
+    
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(executionCount);

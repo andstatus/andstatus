@@ -26,7 +26,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -327,8 +326,8 @@ public class MyService extends Service {
         synchronized (serviceStateLock) {
             if (!mInitialized) {
                 int count = 0;
-                count += restoreQueue(mainCommandQueue, COMMANDS_QUEUE_FILENAME);
-                count += restoreQueue(retryCommandQueue, RETRY_QUEUE_FILENAME);
+                count += CommandData.loadQueue(this, mainCommandQueue, COMMANDS_QUEUE_FILENAME);
+                count += CommandData.loadQueue(this, retryCommandQueue, RETRY_QUEUE_FILENAME);
                 MyLog.d(this, "State restored, " + (count>0 ? Integer.toString(count) : "no") + " msg in the Queues");
 
                 registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
@@ -357,33 +356,6 @@ public class MyService extends Service {
             preferencesExamineTime = preferencesExamineTimeNew;
             getMyServicePreferences().edit().putLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, preferencesExamineTime).commit();
         }
-    }
-
-    private int restoreQueue(Queue<CommandData> q, String prefsFileName) {
-        Context context = MyContextHolder.get().context();
-        int count = 0;
-        if (SharedPreferencesUtil.exists(context, prefsFileName)) {
-            boolean done = false;
-            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
-            do {
-                CommandData cd = new CommandData(sp, count);
-                if (cd.getCommand() == CommandEnum.UNKNOWN) {
-                    done = true;
-                } else {
-                    if ( q.offer(cd) ) {
-                        MyLog.v(this, "Command restored: " + cd.toString());
-                        count += 1;
-                    } else {
-                        MyLog.e(this, "Error restoring queue, command: " + cd.toString());
-                    }
-                }
-            } while (!done);
-            sp = null;
-            // Delete this saved queue
-            SharedPreferencesUtil.delete(context, prefsFileName);
-            MyLog.d(this, "Queue restored from " + prefsFileName  + ", " + count + " msgs");
-        }
-        return count;
     }
 
     /**
@@ -524,8 +496,8 @@ public class MyService extends Service {
     
                     notifyOfQueue();
                     int count = 0;
-                    count += persistQueue(mainCommandQueue, COMMANDS_QUEUE_FILENAME);
-                    count += persistQueue(retryCommandQueue, RETRY_QUEUE_FILENAME);
+                    count += CommandData.saveQueue(this, mainCommandQueue, COMMANDS_QUEUE_FILENAME);
+                    count += CommandData.saveQueue(this, retryCommandQueue, RETRY_QUEUE_FILENAME);
                     MyLog.d(this, "State saved, " + (count>0 ? Integer.toString(count) : "no ") + " msg in the Queues");
     
                     relealeWakeLock();
@@ -539,24 +511,6 @@ public class MyService extends Service {
             }
         }
         broadcastState(null);
-    }
-
-    private int persistQueue(Queue<CommandData> q, String prefsFileName) {
-        Context context = MyContextHolder.get().context();
-        int count = 0;
-        // Delete any existing saved queue
-        SharedPreferencesUtil.delete(context, prefsFileName);
-        if (!q.isEmpty()) {
-            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
-            while (!q.isEmpty()) {
-                CommandData cd = q.poll();
-                cd.save(sp, count);
-                MyLog.v(this, "Command saved: " + cd.toString());
-                count += 1;
-            }
-            MyLog.d(this, "Queue saved to " + prefsFileName  + ", " + count + " msgs");
-        }
-        return count;
     }
 
     private void relealeWakeLock() {

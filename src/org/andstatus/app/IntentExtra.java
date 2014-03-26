@@ -84,6 +84,10 @@ public enum IntentExtra{
      */
     EXTRA_TIMELINE_IS_COMBINED("TIMELINE_IS_COMBINED"),
     ORIGIN_ID("ORIGIN_ID"),
+    
+    EXTRA_EXECUTION_COUNT("EXECUTION_COUNT"),
+    EXTRA_RETRIES_LEFT("RETRIES_LEFT"),
+    
     UNKNOWN("UNKNOWN");
     
     public final String key;

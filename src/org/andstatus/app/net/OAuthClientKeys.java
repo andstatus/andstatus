@@ -18,7 +18,6 @@ package org.andstatus.app.net;
 
 import android.text.TextUtils;
 
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
 /**

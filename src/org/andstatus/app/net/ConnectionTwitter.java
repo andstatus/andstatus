@@ -19,7 +19,6 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
