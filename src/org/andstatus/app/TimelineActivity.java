@@ -28,6 +28,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
@@ -1213,6 +1214,17 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 }
                 sortOrder += " LIMIT 0," + nMessages;
             }
+            
+            prepareListForChanges();
+        }
+
+        private void prepareListForChanges() {
+            if ( (activity.getListAdapter() != null)
+                    && !loadOneMorePage) {
+                Cursor emptyCursor = new MatrixCursor(activity.getProjection());
+                ((SimpleCursorAdapter) activity.getListAdapter()).changeCursor(emptyCursor);
+                activity.mCursor = null;
+            }
         }
 
         @Override
@@ -1237,8 +1249,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         @Override
         protected void onPostExecute(Void result) {
-            boolean doRestorePosition = !isCancelled();
-            doRestorePosition = replaceCursor();
+            boolean doRestorePosition = changeListContent();
 
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
                 String cursorInfo = "cursor - ??";
@@ -1278,30 +1289,29 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             }
         }
 
-        private boolean replaceCursor() {
-            boolean doRestorePosition = true;
+        private boolean changeListContent() {
+            boolean doRestorePosition = !isCancelled();
             if (cursor != null && !activity.isFinishing) {
                 boolean cursorSet = false;
-                if (activity.positionRestored && (activity.getListAdapter() != null)) {
-                    if (loadOneMorePage) {
-                        // This will prevent continuous loading...
-                        if (cursor.getCount() > activity.getListAdapter().getCount()) {
-                            MyLog.v(this, "On changing Cursor");
-                            ((SimpleCursorAdapter) activity.getListAdapter()).changeCursor(cursor);
-                            activity.mCursor = cursor;
-                        } else {
-                            activity.noMoreItems = true;
-                            doRestorePosition = false;
-                            // We don't need this cursor: assuming it is the same as existing
-                            DbUtils.closeSilently(cursor);
-                        }
-                        cursorSet = true; 
+                if (activity.positionRestored
+                        && (activity.getListAdapter() != null)
+                        && loadOneMorePage) {
+                    // This check will prevent continuous loading...
+                    if (cursor.getCount() > activity.getListAdapter().getCount()) {
+                        MyLog.v(this, "On changing Cursor");
+                        ((SimpleCursorAdapter) activity.getListAdapter()).changeCursor(cursor);
+                        activity.mCursor = cursor;
+                    } else {
+                        activity.noMoreItems = true;
+                        doRestorePosition = false;
+                        // We don't need this cursor: assuming it is the same as
+                        // existing
+                        DbUtils.closeSilently(cursor);
                     }
+                    cursorSet = true;
                 }
                 if (!cursorSet) {
-                    if (activity.mCursor != null) {
-                        DbUtils.closeSilently(activity.mCursor);
-                    }
+                    DbUtils.closeSilently(activity.mCursor);
                     activity.mCursor = cursor;
                     activity.createListAdapter();
                 }
