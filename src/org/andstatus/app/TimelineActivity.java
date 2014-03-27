@@ -1219,11 +1219,13 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         private void prepareListForChanges() {
-            if ( (activity.getListAdapter() != null)
-                    && !loadOneMorePage) {
-                Cursor emptyCursor = new MatrixCursor(activity.getProjection());
-                ((SimpleCursorAdapter) activity.getListAdapter()).changeCursor(emptyCursor);
-                activity.mCursor = emptyCursor;
+            if ( (activity.getListAdapter() == null) 
+				|| ((activity.getListAdapter() != null)
+                    && !loadOneMorePage)
+					) {
+				DbUtils.closeSilently(activity.mCursor);	
+				activity.mCursor = new MatrixCursor(activity.getProjection());
+				activity.createListAdapter();   
             }
         }
 
@@ -1311,9 +1313,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     cursorSet = true;
                 }
                 if (!cursorSet) {
-                    DbUtils.closeSilently(activity.mCursor);
-                    activity.mCursor = cursor;
-                    activity.createListAdapter();
+                    ((SimpleCursorAdapter) activity.getListAdapter()).changeCursor(cursor);
+					activity.mCursor = cursor;
                 }
             }
             return doRestorePosition;
