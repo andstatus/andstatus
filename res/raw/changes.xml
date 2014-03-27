@@ -37,8 +37,8 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
-    <release android:versionName="8.0" android:versionCode="96"
-        versionDate="2014-03-24"
+    <release android:versionName="8.1" android:versionCode="97"
+        versionDate="2014-03-27"
         versionTitle="Public Timeline and Global Search">
         <changes>
             <change>"Public" Timeline added to the list of available timelines. 
@@ -55,6 +55,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 automatically retrieved for Conversation trees.</change>
             <change>Options menu in Account activity allows to open Settings 
                 e.g. to add new Microblogging system.</change>
+            <change>Fixed: Android fast scroll thumb disappears after switching Timeline type or "combined" mode.</change>
         </changes>
     </release>
     <release android:versionName="7.1" android:versionCode="95"

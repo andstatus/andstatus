@@ -1223,7 +1223,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     && !loadOneMorePage) {
                 Cursor emptyCursor = new MatrixCursor(activity.getProjection());
                 ((SimpleCursorAdapter) activity.getListAdapter()).changeCursor(emptyCursor);
-                activity.mCursor = null;
+                activity.mCursor = emptyCursor;
             }
         }
 
