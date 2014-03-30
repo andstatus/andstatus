@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2012 Yuri Volkov, yvolk@yurivolkov.com
+	Copyright (C) 2008 Torgny Bjers
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	     http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+ -->
+<resources>
+	<string-array name="appwidget_message_formats">
+		<item>"{0} mensage"</item>
+		<item>"{0} mensages"</item>
+	</string-array>
+	<string-array name="appwidget_message_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="appwidget_mention_formats">
+		<item>"{0} menciones"</item>
+		<item>"{0} menciones"</item>
+	</string-array>
+	<string-array name="appwidget_mention_patterns">
+		<!-- same as @appwidget_message_patterns,
+		but I couldn't refer to existing resource, e.g. by 
+		@array/appwidget_message_patterns -->
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="appwidget_directmessage_formats">
+		<item>"{0} directo"</item>
+		<item>"{0} directo"</item>
+	</string-array>
+	<string-array name="appwidget_directmessage_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="fetch_frequency_entries">
+		<item>3 minutos</item>
+		<item>5 minutos</item>
+		<item>10 minutos</item>
+		<item>15 minutos</item>
+		<item>30 minutos</item>
+		<item>1 hora</item>
+		<item>2 horas</item>
+		<item>4 horas</item>
+		<item>8 horas</item>
+		<item>12 horas</item>
+		<item>1 día</item>
+	</string-array>
+	<string-array name="fetch_frequency_values">
+		<item>180</item>
+		<item>300</item>
+		<item>600</item>
+		<item>900</item>
+		<item>1800</item>
+		<item>3600</item>
+		<item>7200</item>
+		<item>14400</item>
+		<item>28800</item>
+		<item>43200</item>
+		<item>86400</item>
+	</string-array>
+	<string-array name="fetch_frequency_display">
+		<item>3 minutos</item>
+		<item>5 minutos</item>
+		<item>10 minutos</item>
+		<item>15 minutos</item>
+		<item>30 minutos</item>
+		<item>hora</item>
+		<item>2 horas</item>
+		<item>4 horas</item>
+		<item>8 horas</item>
+		<item>12 horas</item>
+		<item>día</item>
+	</string-array>
+    <string-array name="log_level_entries">
+        <item>INFO</item>
+        <item>DEBUG</item>
+        <item>VERBOSE</item>
+    </string-array>
+    <string-array name="log_level_value">
+        <item>4</item>
+        <item>3</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="log_level_display">
+        <item>INFO</item>
+        <item>DEBUG</item>
+        <item>VERBOSE</item>
+    </string-array>
+    <string-array name="origin_system_entries">
+        <item>twitter</item>
+        <item>pump.io</item>
+        <item>status.net</item>
+    </string-array>
+    <string-array name="theme_color_entries">
+		<item>Dispositivo predeterminado</item>
+		<item>Claro</item>
+		<item>Oscuro</item>
+	</string-array>
+	<string-array name="theme_color_values">
+		<item>Dispositivo predeterminado</item>
+		<item>Claro</item>
+		<item>Oscuro</item>
+	</string-array>
+    <string-array name="theme_size_entries">
+		<item>Pequeño</item>
+		<item>Normal</item>
+		<item>Grande</item>
+	</string-array>
+	<string-array name="theme_size_values">
+		<item>Normal</item>
+		<item>Tamaño Estandar</item>
+		<item>Grande</item>
+	</string-array>
+	<string-array name="history_size_entries">
+		<item>500 mensages</item>
+		<item>1000 mensages</item>
+		<item>2000 mensages</item>
+		<item>5000 mensages</item>
+		<item>10000 mensages</item>
+		<item>20000 mensages</item>
+		<item>50000 mensages</item>
+		<item>100000 mensages</item>
+        <item>1 mln mensages</item>
+    </string-array>
+	<string-array name="history_size_values">
+		<item>500</item>
+		<item>1000</item>
+		<item>2000</item>
+		<item>5000</item>
+		<item>10000</item>
+		<item>20000</item>
+		<item>50000</item>
+		<item>100000</item>
+        <item>1000000</item>
+    </string-array>
+	<string-array name="history_size_display">
+		<item>500 mensages</item>
+		<item>1000 mensages</item>
+		<item>2000 mensages</item>
+		<item>5000 mensages</item>
+		<item>10000 mensages</item>
+		<item>20000 mensages</item>
+		<item>50000 mensages</item>
+		<item>100000 mensages</item>
+        <item>1 mln messages</item>
+    </string-array>
+	<string-array name="history_time_entries">
+		<item>1 día</item>
+		<item>2 días</item>
+		<item>3 días</item>
+		<item>4 días</item>
+		<item>5 días</item>
+		<item>6 días</item>
+		<item>1 semana</item>
+		<item>1 mes</item>
+		<item>1 año</item>
+        <item>10 años</item>
+    </string-array>
+	<string-array name="history_time_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>6</item>
+		<item>7</item>
+		<item>31</item>
+		<item>365</item>
+        <item>3653</item>
+	</string-array>
+	<string-array name="history_time_display">
+		<item>1 día</item>
+		<item>2 días</item>
+		<item>3 días</item>
+		<item>4 días</item>
+		<item>5 días</item>
+		<item>6 días</item>
+		<item>1 semana</item>
+		<item>1 mes</item>
+		<item>1 año</item>
+        <item>10 años</item>
+    </string-array>
+	<string-array name="notification_tweet_formats">
+		<item>"{0} mensage"</item>
+		<item>"{0} mensages"</item>
+	</string-array>
+	<string-array name="notification_tweet_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="notification_mention_formats">
+		<item>"{0} mencion"</item>
+		<item>"{0} menciones"</item>
+	</string-array>
+	<string-array name="notification_mention_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="notification_message_formats">
+		<item>"{0} mensage directo"</item>
+		<item>"{0} mensages directos"</item>
+	</string-array>
+	<string-array name="notification_message_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="notification_queue_formats">
+		<item>"{0} es mensage"</item>
+		<item>"{0} son mensages"</item>
+	</string-array>
+	<string-array name="notification_queue_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_days_ago_formats">
+		<item>"hoy"</item>
+		<item>"hace {0} días"</item>
+	</string-array>
+	<string-array name="reltime_days_ago_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_hours_ago_formats">
+		<item>"hace una hora"</item>
+		<item>"hace dos horas"</item>
+		<item>"hace {0} horas"</item>
+	</string-array>
+	<string-array name="reltime_hours_ago_patterns">
+		<item>"1"</item>
+		<item>"2"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_minutes_ago_formats">
+		<item>"hace un minuto"</item>
+		<item>"hace dos minutos"</item>
+		<item>"hace {0} minutos"</item>
+	</string-array>
+	<string-array name="reltime_minutes_ago_patterns">
+		<item>"1"</item>
+		<item>"2"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_months_ago_formats">
+		<item>"hace un mes"</item>
+		<item>"hace {0} meses"</item>
+	</string-array>
+	<string-array name="reltime_months_ago_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+	<string-array name="reltime_seconds_ago_formats">
+		<item>"hace un segundo"</item>
+		<item>"hace {0} segundos"</item>
+	</string-array>
+	<string-array name="reltime_seconds_ago_patterns">
+		<item>"1"</item>
+		<item>".*"</item>
+	</string-array>
+</resources>
