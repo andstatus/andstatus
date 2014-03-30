@@ -49,13 +49,15 @@
 		<meta-data android:name="android.app.default_searchable" android:value=".TimelineActivity"/>
 
 		<provider android:name=".data.MyProvider"
-			android:authorities="org.andstatus.app.data.MyProvider"/>
+			android:authorities="org.andstatus.app.data.MyProvider" 
+			android:exported="false" />
 
 		<provider android:name=".data.TimelineSearchSuggestionProvider" 
-			android:authorities="org.andstatus.app.data.TimelineSuggestionProvider"/>
+			android:authorities="org.andstatus.app.data.TimelineSuggestionProvider"
+			android:permission="android.permission.GET_ACCOUNTS"/>
 
 		<service android:name="org.andstatus.app.service.MyService"
-		    android:process=":service" android:exported="false" />
+		    android:exported="false" />
 
 		<receiver android:name="org.andstatus.app.service.MyServiceManager">
             <intent-filter>
@@ -138,7 +140,7 @@
             android:name=".account.AuthenticatorService"
             android:exported="true"
             android:enabled="true"
-            >
+            android:permission="android.permission.AUTHENTICATE_ACCOUNTS">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -150,7 +152,8 @@
 
         <service
             android:name=".syncadapter.SyncService"
-            android:exported="true">
+            android:exported="true"
+            android:permission="android.permission.WRITE_SYNC_SETTINGS">
             <intent-filter>
                 <action
                     android:name="android.content.SyncAdapter" />
