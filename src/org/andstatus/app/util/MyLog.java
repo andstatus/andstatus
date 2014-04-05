@@ -337,9 +337,17 @@ public class MyLog {
         }        
         return ok;
     }
-    
-    public static String formatKeyValue(String key, StringBuilder stringBuilder) {
-        return formatKeyValue(key, stringBuilder.toString());
+
+    public static String formatKeyValue(Object keyIn, Object valueIn) {
+        String key = objTagToString(keyIn);
+        if (keyIn == null) {
+            return key;
+        }
+        String value = "null";
+        if (value != null) {
+            value = valueIn.toString();
+        }
+        return formatKeyValue(key, value);
     }
     
     public static String formatKeyValue(String key, String value) {

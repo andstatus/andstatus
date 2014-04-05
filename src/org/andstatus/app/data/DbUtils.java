@@ -117,7 +117,9 @@ public final class DbUtils {
         if (Closeable.class.isAssignableFrom(closeable.getClass()) ) {
             ((Closeable) closeable).close();
         } else if (Cursor.class.isAssignableFrom(closeable.getClass())) {
-            ((Cursor) closeable).close();
+            if (!((Cursor) closeable).isClosed()) {
+                ((Cursor) closeable).close();
+            }
         } else if (FileChannel.class.isAssignableFrom(closeable.getClass())) {
             ((FileChannel) closeable).close();
         } else if (InputStream.class.isAssignableFrom(closeable.getClass())) {

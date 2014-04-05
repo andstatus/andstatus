@@ -83,6 +83,8 @@ public enum IntentExtra{
      * Is the timeline combined in {@link TimelineActivity} 
      */
     EXTRA_TIMELINE_IS_COMBINED("TIMELINE_IS_COMBINED"),
+    EXTRA_LOAD_ONE_MORE_PAGE("LOAD_ONE_MORE_PAGE"),
+    EXTRA_REQUERY("REQUERY"),
     ORIGIN_ID("ORIGIN_ID"),
     
     EXTRA_EXECUTION_COUNT("EXECUTION_COUNT"),

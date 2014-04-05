@@ -1343,34 +1343,34 @@ public class MyProvider extends ContentProvider {
         return id;
     }
     
-    /**
-     * Build a Timeline URI for this User / {@link MyAccount}
-     * @param accountUserId {@link MyDatabase.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()} 
-     * @param isCombined true for a Combined Timeline
-     * @return
-     */
-    public static Uri getTimelineUri(long accountUserId, TimelineTypeEnum timelineType, boolean isCombined) {
-        Uri uri = ContentUris.withAppendedId(TIMELINE_URI, accountUserId);
-        uri = Uri.withAppendedPath(uri, "tt/" + timelineType.save());
-        uri = Uri.withAppendedPath(uri, "combined/" + (isCombined ? "1" : "0"));
+    public static Uri getTimelineSearchUri(long accountUserId, TimelineTypeEnum timelineType, boolean isCombined, String queryString) {
+        Uri uri = getTimelineUri(accountUserId, timelineType, isCombined);
+        if (!TextUtils.isEmpty(queryString)) {
+            uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT);
+            uri = Uri.withAppendedPath(uri, Uri.encode(queryString));
+        }
         return uri;
     }
 
     /**
-     * @param accountUserId
-     * @param msgId
-     * @param isCombined Combined timeline?
-     * @return Uri for the message in the account's <u>HOME</u> timeline
+     * Uri for the message in the account's timeline
      */
     public static Uri getTimelineMsgUri(long accountUserId, TimelineTypeEnum timelineType, boolean isCombined, long msgId) {
-        return ContentUris.withAppendedId(Uri.withAppendedPath(getTimelineUri(accountUserId, timelineType, isCombined), Msg.TABLE_NAME), msgId);
+        Uri uri = getTimelineUri(accountUserId, timelineType, isCombined);
+        uri = Uri.withAppendedPath(uri,  Msg.TABLE_NAME);
+        uri = ContentUris.withAppendedId(uri, msgId);
+        return uri;
     }
     
-    public static Uri getTimelineSearchUri(long accountUserId, TimelineTypeEnum timelineType, boolean isCombined, String queryString) {
-        Uri uri = Uri.withAppendedPath(getTimelineUri(accountUserId, timelineType, isCombined), SEARCH_SEGMENT);
-        if (!TextUtils.isEmpty(queryString)) {
-            uri = Uri.withAppendedPath(uri, Uri.encode(queryString));
-        }
+    /**
+     * Build a Timeline URI for this User / {@link MyAccount}
+     * @param accountUserId {@link MyDatabase.User#USER_ID}. This user <i>may</i> be an account: {@link MyAccount#getUserId()} 
+     * @return
+     */
+    public static Uri getTimelineUri(long accountUserId, TimelineTypeEnum timelineType, boolean isTimelineCombined) {
+        Uri uri = ContentUris.withAppendedId(TIMELINE_URI, accountUserId);
+        uri = Uri.withAppendedPath(uri, "tt/" + timelineType.save());
+        uri = Uri.withAppendedPath(uri, "combined/" + (isTimelineCombined ? "1" : "0"));
         return uri;
     }
 
