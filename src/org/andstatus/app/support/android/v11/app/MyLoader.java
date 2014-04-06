@@ -1,4 +1,4 @@
-package org.andstatus.app;
+package org.andstatus.app.support.android.v11.app;
 
 /**
  * Temporary simplified substitute for {@link android.content.Loader} available in API >= 11 
@@ -498,7 +498,7 @@ public class MyLoader<D> {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(64);
-        MyLog.formatKeyValue("id", mId);
+        sb.append("id:" + mId);
         return MyLog.formatKeyValue(this, sb.toString());
     }
 

@@ -30,7 +30,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
-import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.text.TextUtils;
@@ -52,8 +51,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import net.jcip.annotations.GuardedBy;
-
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
@@ -68,7 +65,6 @@ import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.PagedCursorAdapter;
 import org.andstatus.app.data.TimelineSearchSuggestionProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.TimelineViewBinder;
@@ -79,6 +75,9 @@ import org.andstatus.app.service.MyService;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
+import org.andstatus.app.support.android.v11.app.MyLoader;
+import org.andstatus.app.support.android.v11.app.MyLoaderManager;
+import org.andstatus.app.support.android.v11.widget.MySimpleCursorAdapter;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
@@ -346,6 +345,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         if (!isFinishing) {
             serviceConnector.registerReceiver(this);
+            loaderManager.onResumeActivity(LOADER_ID);
             if (!isLoading()) {
                 restoreListPosition();
             }
@@ -600,6 +600,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             MyLog.v(this, "onPause, instanceId=" + instanceId);
         }
         serviceConnector.unregisterReceiver(this);
+        loaderManager.onPauseActivity(LOADER_ID);
 
         if (positionRestored) {
             // Get rid of the "fast scroll thumb"
@@ -650,9 +651,14 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!isFinishing) {
             isFinishing = true;
         }
-        if (loaderManager != null) {
-            loaderManager.destroyLoader(LOADER_ID);
-        }
+        runOnUiThread( new Runnable() {
+            @Override 
+            public void run() {
+                if (loaderManager != null) {
+                    loaderManager.destroyLoader(LOADER_ID);
+                }
+            }
+        });
         super.finish();
     }
 
@@ -823,8 +829,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             if (loadMore) {
                 MyLog.d(this, "Start Loading more items, rows=" + totalItemCount);
                 saveListPosition();
-                setLoading(true);
-                queryListData(true, false);
+                queryListData(true);
             }
         }
     }
@@ -984,7 +989,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             // E.g. messages by users, downloaded on demand.
             combinedTimelineToggle.setVisibility(View.VISIBLE);
         }
-        noMoreItems = false;
         contextMenu.setAccountUserIdToActAs(0);
 
         updateActionBar("");
@@ -997,20 +1001,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             messageEditor.updateCreateMessageButton();
         }
         
-        queryListData(false, false);
-    }
-    
-    /**
-     * Clean after successful or failed operation
-     */
-    private void queryListDataEnded(boolean doRestorePosition) {
-        if (!isFinishing) {
-            if (doRestorePosition) {
-                restoreListPosition();
-            }
-            // Do this after restoring position to avoid repeated loading from onScroll event
-            setLoading(false);
-        }
+        queryListData(false);
     }
     
     /**
@@ -1021,19 +1012,36 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * 
      * @param loadOneMorePage true - load one more page of messages, false - reload the same page
      */
-    protected void queryListData(boolean loadOneMorePage, boolean reQuery) {
+    protected void queryListData(boolean loadOneMorePage) {
         final String method = "queryListData";
-        MyLog.v(this, method + " " + loadOneMorePage);
+        if (!loadOneMorePage) {
+            noMoreItems = false;
+        }
+        MyLog.v(this, method + (loadOneMorePage ? "loadOneMorePage" : ""));
         Bundle args = new Bundle();
         args.putBoolean(IntentExtra.EXTRA_LOAD_ONE_MORE_PAGE.key, loadOneMorePage);
-        loaderManager.initLoader(LOADER_ID, args, this);
+        args.putInt(IntentExtra.EXTRA_ROWS_LIMIT.key, calcRowsLimit(loadOneMorePage));
+        loaderManager.restartLoader(LOADER_ID, args, this);
         setLoading(true);
+    }
+
+    private int calcRowsLimit(boolean loadOneMorePage) {
+        int nMessages = 0;
+        if (mCursor != null && !mCursor.isClosed()) {
+            nMessages = mCursor.getCount();
+        }
+        if (loadOneMorePage) {
+            nMessages += PAGE_SIZE;
+        } else if (nMessages < PAGE_SIZE) {
+            nMessages = PAGE_SIZE;
+        }
+        return nMessages;
     }
 
     @Override
     public MyLoader<Cursor> onCreateLoader(int id, Bundle args) {
         final String method = "onCreateLoader";
-        MyLog.v(this, method + " " + id);
+        MyLog.v(this, method + " #" + id);
         TimelineCursorLoader loader = new TimelineCursorLoader();
         boolean loadOneMorePage = false;
         boolean reQuery = false;
@@ -1049,6 +1057,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         params.projection = getProjection();
         params.searchQuery = this.searchQuery;
         params.loadOneMorePage = loadOneMorePage;
+        params.rowsLimit = args.getInt(IntentExtra.EXTRA_ROWS_LIMIT.key);
         params.incrementallyLoadingPages = positionRestored
                 && (getListAdapter() != null)
                 && loadOneMorePage;
@@ -1154,20 +1163,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         if (params.lastItemId <= 0) {
-            int nMessages = 0;
-            if (mCursor != null && !mCursor.isClosed()
-                    && positionRestored) {
-                // If position is NOT loaded - this cursor is from other
-                // timeline/search
-                // and we shouldn't care how much rows are there.
-                nMessages = mCursor.getCount();
+            int rowsLimit = params.rowsLimit;
+            if (rowsLimit < PAGE_SIZE) {
+                rowsLimit = PAGE_SIZE;
             }
-            if (params.loadOneMorePage) {
-                nMessages += PAGE_SIZE;
-            } else if (nMessages < PAGE_SIZE) {
-                nMessages = PAGE_SIZE;
-            }
-            params.sortOrder += " LIMIT 0," + nMessages;
+            params.sortOrder += " LIMIT 0," + rowsLimit;
         }
     }
    
@@ -1199,7 +1199,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             if (TimelineCursorLoader.class.isAssignableFrom(loader.getClass())) {
                 TimelineCursorLoader myLoader = (TimelineCursorLoader) loader;
                 boolean doRestorePosition = changeListContent(myLoader.params, cursor);
-                logExecutionStats(myLoader.params, cursor);
                 queryListDataEnded(doRestorePosition);
                 launchReloadIfNeeded(myLoader.params);
             } else {
@@ -1220,40 +1219,27 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private boolean changeListContent(TimelineListParameters params, Cursor cursor) {
         boolean doRestorePosition = false;
         if (!params.cancelled && cursor != null && !isFinishing) {
+            MyLog.v(this, "On changing Cursor");
+            ((CursorAdapter) getListAdapter()).changeCursor(cursor);
+            mCursor = cursor;
             doRestorePosition = true;
-            if (params.incrementallyLoadingPages) {
-                // This check will prevent continuous loading...
-                if (cursor.getCount() > getListAdapter().getCount()) {
-                    MyLog.v(this, "On changing Cursor");
-                    ((CursorAdapter) getListAdapter()).changeCursor(cursor);
-                    mCursor = cursor;
-                } else {
-                    noMoreItems = true;
-                    doRestorePosition = false;
-                    // We don't need this cursor: assuming it is the same as existing
-                    DbUtils.closeSilently(cursor);
-                }
-            } else {
-                ((CursorAdapter) getListAdapter()).changeCursor(cursor);
-                mCursor = cursor;
-            }
+            // This check will prevent continuous loading...
+            noMoreItems = params.incrementallyLoadingPages &&
+                    cursor.getCount() <= getListAdapter().getCount();
         }
         return doRestorePosition;
     }
-
-    private void logExecutionStats(TimelineListParameters params, Cursor cursor) {
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            String cursorInfo = "cursor - ??";
-            if (cursor == null) {
-                cursorInfo = "new cursor is null";
-            } else if (mCursor == null) {
-                cursorInfo = "cursor is null";
-            } else if (mCursor.isClosed()) {
-                cursorInfo = "cursor is Closed";
-            } else {
-                cursorInfo = mCursor.getCount() + " rows";
+    
+    /**
+     * Clean after successful or failed operation
+     */
+    private void queryListDataEnded(boolean doRestorePosition) {
+        if (!isFinishing) {
+            if (doRestorePosition) {
+                restoreListPosition();
             }
-            MyLog.v(this, (params.cancelled ? "cancelled" : "ended") + ", " + cursorInfo + ", " + Double.valueOf((System.nanoTime() - params.startTime)/1.0E6).longValue() + " ms");
+            // Do this after restoring position to avoid repeated loading from onScroll event
+            setLoading(false);
         }
     }
     
@@ -1269,6 +1255,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     }
                     break;
                 default:
+                    // TODO: Make this call asynchronous
                     if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, currentMyAccountUserId) == 0) {
                         // This is supposed to be a one time task.
                         manualReload(true);
@@ -1402,16 +1389,15 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         viewIds.add(R.id.message_favorited);
         columnNames.add(MyDatabase.Msg._ID);
         viewIds.add(R.id.id);
-        int listItemId = R.layout.message_basic;
+        int listItemLayoutId = R.layout.message_basic;
         if (MyPreferences.showAvatars()) {
-            listItemId = R.layout.message_avatar;
+            listItemLayoutId = R.layout.message_avatar;
             columnNames.add(MyDatabase.Avatar.FILE_NAME);
             viewIds.add(R.id.avatar_image);
         }
-        PagedCursorAdapter messageAdapter = new PagedCursorAdapter(TimelineActivity.this,
-                listItemId, mCursor, columnNames.toArray(new String[]{}),
-                toIntArray(viewIds), 
-                getIntent().getData(), getProjection(), MyDatabase.Msg.DEFAULT_SORT_ORDER);
+        MySimpleCursorAdapter messageAdapter = new MySimpleCursorAdapter(TimelineActivity.this,
+                listItemLayoutId, mCursor, columnNames.toArray(new String[]{}),
+                toIntArray(viewIds), 0);
         messageAdapter.setViewBinder(new TimelineViewBinder());
 
         setListAdapter(messageAdapter);
@@ -1438,7 +1424,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         switch (commandData.getCommand()) {
             case FETCH_TIMELINE:
             case SEARCH_MESSAGE:
-                setLoading(false);
+                if (isLoading()) {
+                    setLoading(false);
+                }
                 break;
             case RATE_LIMIT_STATUS:
                 if (commandData.getResult().getHourlyLimit() > 0) {
@@ -1450,7 +1438,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 break;
         }
     }
-
+    
     @Override
     public Activity getActivity() {
         return this;

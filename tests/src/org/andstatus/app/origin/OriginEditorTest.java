@@ -78,7 +78,19 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         setActivityIntent(intent);
         
         final OriginEditor activity = getActivity();
-
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // This is needed because the activity is actually never
+                // destroyed
+                // and onCreate occurs only once.
+                activity.onNewIntent(intent);
+            }
+        }
+        );
+        getInstrumentation().waitForIdleSync();
+        Thread.sleep(200);
+        
         final Button buttonSave = (Button) activity.findViewById(R.id.button_save);
         final Spinner spinnerOriginType = (Spinner) activity.findViewById(R.id.origin_type);
         final EditText editTextOriginName = (EditText) activity.findViewById(R.id.origin_name);
@@ -89,10 +101,6 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         Runnable clicker = new Runnable() {
             @Override
             public void run() {
-                // This is needed because the activity is actually never destroyed
-                // and onCreate occurs only once.
-                activity.onNewIntent(intent);
-
                 spinnerOriginType.setSelection(originType.getEntriesPosition());
                 editTextOriginName.setText(originName);
                 editTextHost.setText(host);

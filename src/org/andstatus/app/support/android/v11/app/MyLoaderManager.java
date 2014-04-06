@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.andstatus.app;
+package org.andstatus.app.support.android.v11.app;
 
 import android.os.Bundle;
 
@@ -27,6 +27,7 @@ public class MyLoaderManager<T> implements MyLoader.OnLoadCompleteListener<T>, M
     int id = 0;
     Bundle args = null;
     MyLoader<T> loader = null;
+    MyLoader<T> prevLoader = null;
     LoaderCallbacks<T> callback = null;
     
     /**
@@ -50,14 +51,17 @@ public class MyLoaderManager<T> implements MyLoader.OnLoadCompleteListener<T>, M
     /** See {@link android.app.LoaderManager#initLoader} */
     public MyLoader<T> initLoader(int id, Bundle args,
             LoaderCallbacks<T> callback) {
-        if (this.loader != null) {
-            // Maybe we need to wait for cancellation, maybe not... Here we don't wait.
-            destroyLoader(id);
+        MyLoader<T> newLoader = callback.onCreateLoader(id, args);
+        if (loader != null && loader != newLoader) {
+            destroyLoaderLater(id);
         }
+        this.loader = newLoader;
         this.id = id;
         this.args = args;
         this.callback = callback;
-        this.loader = callback.onCreateLoader(id, args);
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, "initLoader: " + newLoader);
+        }
         loader.registerListener(id, this);
         loader.registerOnLoadCanceledListener(this);
         loader.startLoading();
@@ -70,11 +74,33 @@ public class MyLoaderManager<T> implements MyLoader.OnLoadCompleteListener<T>, M
         return initLoader(id, args, callback);
     }
 
-    public void destroyLoader(int id) {
-        if (loader != null) {
-            loader.reset();
-        }
+    private void destroyLoaderLater(int id) {
+        destroyPrevLoader(id);
+        prevLoader = loader;
         loader = null;
+        if (prevLoader != null) {
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                MyLog.v(this, "destroyLoaderLater: " + prevLoader);
+            }
+            prevLoader.unregisterListener(this);
+            prevLoader.unregisterOnLoadCanceledListener(this);
+            prevLoader.stopLoading();
+        }
+    }
+
+    private void destroyPrevLoader(int id) {
+        if (prevLoader != null) {
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                MyLog.v(this, "destroyPrevLoader: " + prevLoader);
+            }
+            prevLoader.reset();
+        }
+        prevLoader = null;
+    }
+    
+    public void destroyLoader(int id) {
+        destroyLoaderLater(id);
+        destroyPrevLoader(id);
     }
 
     /**
@@ -90,6 +116,7 @@ public class MyLoaderManager<T> implements MyLoader.OnLoadCompleteListener<T>, M
         MyLog.v(this, "onLoadComplete");
         if (callback != null) {
             callback.onLoadFinished(loader, data);
+            destroyPrevLoader(id);
         }
     }
     
@@ -98,6 +125,21 @@ public class MyLoaderManager<T> implements MyLoader.OnLoadCompleteListener<T>, M
         MyLog.v(this, "onLoadCanceled");
         if (callback != null) {
             callback.onLoadFinished(loader, null);
+            destroyPrevLoader(id);
+        }
+    }
+
+    public void onResumeActivity(int id) {
+        MyLoader<T> loader1 = getLoader(id);
+        if (loader1 != null) {
+            loader1.startLoading();
+        }
+    }
+
+    public void onPauseActivity(int id) {
+        MyLoader<T> loader1 = getLoader(id);
+        if (loader1 != null) {
+            loader1.stopLoading();
         }
     }
     

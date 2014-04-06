@@ -86,6 +86,7 @@ public final class CommandResult implements Parcelable {
 
     public CommandResult(Parcel parcel) {
         executionCount = parcel.readInt();
+        downloadedCount = parcel.readInt();
         retriesLeft = parcel.readInt();
         numAuthExceptions = parcel.readLong();
         numIoExceptions = parcel.readLong();
@@ -132,6 +133,7 @@ public final class CommandResult implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(executionCount);
+        dest.writeInt(downloadedCount);
         dest.writeInt(retriesLeft);
         dest.writeLong(numAuthExceptions);
         dest.writeLong(numIoExceptions);
@@ -221,6 +223,10 @@ public final class CommandResult implements Parcelable {
 
     public void incrementDownloadedCount() {
         downloadedCount++;
+    }
+
+    public int getDownloadedCount() {
+        return downloadedCount;
     }
     
     protected int getMessagesAdded() {
