@@ -64,7 +64,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     /**
      * We use this for message requests
      */
-    protected MyAccount ma;
+    private volatile MyAccount ma = null;
 
     protected int instanceId;
     MyServiceReceiver myServiceReceiver;
@@ -106,7 +106,6 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         Uri uri = intent.getData();
 
         selectedMessageId = MyProvider.uriToMessageId(uri);
-        ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(selectedMessageId, 0, MyProvider.uriToAccountUserId(uri));
 
         setContentView(R.layout.conversation);
 
@@ -129,9 +128,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         messageEditor.hide();
         contextMenu = new MessageContextMenu(this);
         
-        if (ma != null) {
-            showConversation();
-        }
+        showConversation();
     }
 
     protected void showConversation() {
@@ -147,16 +144,26 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     }
 
     private class ContentLoader extends AsyncTask<Void, Void, ConversationViewLoader> {
-        private long timeStarted = 0;
-        private long timeLoaded = 0;
-        private long timeCompleted = 0;
+        private volatile long timeStarted = 0;
+        private volatile long timeLoaded = 0;
+        private volatile long timeCompleted = 0;
 
         @Override
         protected ConversationViewLoader doInBackground(Void... params) {
             timeStarted = System.currentTimeMillis();
+
+            if (ma == null) {
+                ma = MyContextHolder
+                        .get()
+                        .persistentAccounts()
+                        .getAccountWhichMayBeLinkedToThisMessage(selectedMessageId, 0,
+                                MyProvider.uriToAccountUserId(getIntent().getData()));
+            }
             ConversationViewLoader loader = new ConversationViewLoader(
                     ConversationActivity.this, ma, selectedMessageId, contextMenu);
-            loader.load();
+            if (ma != null) {
+                loader.load();
+            }
             timeLoaded = System.currentTimeMillis();
             return loader;
         }
@@ -175,7 +182,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
             }
             timeCompleted = System.currentTimeMillis();
             long timeTotal = timeCompleted - timeStarted;
-            MyLog.v(this, "ContentLoader completed " + timeTotal + "ms total, " 
+            MyLog.v(this, "ContentLoader completed, " + loader.getMsgs().size() + " items, " + timeTotal + "ms total, " 
             + (timeCompleted - timeLoaded) + "ms in the foreground");
         }
     }
@@ -304,7 +311,11 @@ public class ConversationActivity extends Activity implements MyServiceListener,
 
     @Override
     public long getCurrentMyAccountUserId() {
-        return ma.getUserId();
+        if (ma == null) {
+            return 0;
+        } else {
+            return ma.getUserId();
+        }
     }
 
     @Override

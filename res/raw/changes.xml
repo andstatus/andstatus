@@ -37,6 +37,15 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="8.2" android:versionCode="98"
+        versionDate="2014-04-06"
+        versionTitle="Smooth timeline scrolling">
+        <changes>
+            <change>In the presence of background operations the Timeline is now operating smoothly
+                and doesn't freeze. Potentially long operations moved to the background thread.                  
+                See <a href="https://github.com/andstatus/andstatus/issues/33" >Issue #33</a></change>
+        </changes>
+    </release>
     <release android:versionName="8.1" android:versionCode="97"
         versionDate="2014-03-27"
         versionTitle="Public Timeline and Global Search">

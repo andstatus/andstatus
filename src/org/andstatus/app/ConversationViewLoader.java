@@ -331,6 +331,13 @@ public class ConversationViewLoader {
      * Formats message as a View suitable for a conversation list
      */
     private View oneMessageToView(ConversationOneMessage oMsg) {
+        final String method = "oneMessageToView";
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, method
+                    + ": msgId=" + oMsg.id
+                    + (oMsg.avatarDrawable != null ? ", avatar="
+                            + oMsg.avatarDrawable.getFileName() : ""));
+        }
         LayoutInflater inflater = LayoutInflater.from(context);
         int layoutResource = R.layout.message_conversation;
         if (!Activity.class.isAssignableFrom(context.getClass())) {

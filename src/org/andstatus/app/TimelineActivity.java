@@ -30,6 +30,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.text.TextUtils;
@@ -762,38 +763,48 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * @param id
      */
     @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+    public void onItemClick(AdapterView<?> adapterView, final View view, final int position, final long id) {
         if (id <= 0) {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
                 MyLog.v(this, "onItemClick, position=" + position + "; id=" + id + "; view=" + view);
             }
             return;
         }
-        long linkedUserId = getLinkedUserIdFromCursor(position);
-        MyAccount ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(id, linkedUserId,
-                currentMyAccountUserId);
-        if (ma == null) {
-            MyLog.e(this, "Account for the message " + id + " was not found");
-            return;
-        }
         
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "onItemClick, position=" + position + "; id=" + id + "; view=" + view
-                    + "; linkedUserId=" + linkedUserId + " account=" + ma.getAccountName());
-        }
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), timelineType, true, id);
-        String action = getIntent().getAction();
-        if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
-            if (MyLog.isLoggable(this, MyLog.DEBUG)) {
-                MyLog.d(this, "onItemClick, setData=" + uri);
+        new AsyncTask<Void, Void, Uri>() {
+
+            @Override
+            protected Uri doInBackground(Void... params) {
+                long linkedUserId = getLinkedUserIdFromCursor(position);
+                MyAccount ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(id, linkedUserId,
+                        currentMyAccountUserId);
+                if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                    MyLog.v(this,
+                            "onItemClick, position=" + position + "; id=" + id + "; view=" + view
+                                    + "; linkedUserId=" + linkedUserId + " account="
+                                    + ((ma != null) ? ma.getAccountName() : "?"));
+                }
+                Uri uri = MyProvider.getTimelineMsgUri(((ma != null) ? ma.getUserId() : 0), timelineType, true, id);
+                return uri;
             }
-            setResult(RESULT_OK, new Intent().setData(uri));
-        } else {
-            if (MyLog.isLoggable(this, MyLog.DEBUG)) {
-                MyLog.d(this, "onItemClick, startActivity=" + uri);
+
+            @Override
+            protected void onPostExecute(Uri uri) {
+                String action = getIntent().getAction();
+                if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
+                    if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+                        MyLog.d(this, "onItemClick, setData=" + uri);
+                    }
+                    setResult(RESULT_OK, new Intent().setData(uri));
+                } else {
+                    if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+                        MyLog.d(this, "onItemClick, startActivity=" + uri);
+                    }
+                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                }
             }
-            startActivity(new Intent(Intent.ACTION_VIEW, uri));
-        }
+            
+        }.execute();
     }
 
     /**
@@ -1053,6 +1064,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         params.loaderCallbacks = this;
         params.timelineType = getTimelineType();
         params.timelineCombined = isTimelineCombined();
+        params.myAccountUserId = getCurrentMyAccountUserId();
+        params.selectedUserId = getSelectedUserId();
         params.projection = getProjection();
         params.searchQuery = this.searchQuery;
         params.loadOneMorePage = loadOneMorePage;

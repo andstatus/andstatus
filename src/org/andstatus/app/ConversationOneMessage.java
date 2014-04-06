@@ -40,6 +40,7 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
     String inReplyToName = "";
     String recipientName = "";
 
+    /** Numeration starts from 0 **/
     int listOrder = 0;
     /**
      * This order is reverse to the {@link #listOrder}. 

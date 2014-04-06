@@ -32,6 +32,7 @@ import java.io.File;
 
 public class AvatarDrawable {
     private long userId;
+    private String fileName;
     private File file = null;
     public static final int AVATAR_SIZE_DIP = 48;
     
@@ -39,6 +40,7 @@ public class AvatarDrawable {
     
     public AvatarDrawable(long userIdIn, String fileName) {
         userId = userIdIn;
+        this.fileName = fileName;
         if (!TextUtils.isEmpty(fileName)) {
             file = new File(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS, null), fileName);
         }
@@ -68,5 +70,9 @@ public class AvatarDrawable {
     
     public File getFile() {
         return file;
+    }
+
+    public String getFileName() {
+        return fileName;
     }
 }
