@@ -46,7 +46,7 @@ public class PersistentAccounts {
         return persistentAccounts.values();
     }
     
-    public int isEmpty() {
+    public int size() {
         return persistentAccounts.size();
     }
 

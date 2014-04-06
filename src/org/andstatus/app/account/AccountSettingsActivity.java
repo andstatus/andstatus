@@ -464,7 +464,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     private void returnToOurActivity() {
         Class<? extends Activity> ourActivity;
         MyContextHolder.initialize(this, this);
-        if (MyContextHolder.get().persistentAccounts().isEmpty() > 1) {
+        if (MyContextHolder.get().persistentAccounts().size() > 1) {
             ourActivity = MyPreferenceActivity.class;
         } else {
             ourActivity = TimelineActivity.class;

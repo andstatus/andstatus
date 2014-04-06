@@ -202,7 +202,7 @@ public class TestSuite extends TestCase {
             new StatusNetMessagesInserter().insertData();
         }
 
-        if (MyContextHolder.get().persistentAccounts().isEmpty() == 0) {
+        if (MyContextHolder.get().persistentAccounts().size() == 0) {
             fail("No persistent accounts");
         }
         setSuccessfulAccountAsCurrent();
@@ -229,7 +229,7 @@ public class TestSuite extends TestCase {
     public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "AndStatus";
     
     private static void setSuccessfulAccountAsCurrent() {
-        MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().persistentAccounts().isEmpty());
+        MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().persistentAccounts().size());
         boolean found = (MyContextHolder.get().persistentAccounts().getCurrentAccount().getCredentialsVerified() 
                 == MyAccount.CredentialsVerificationStatus.SUCCEEDED);
         if (!found) {

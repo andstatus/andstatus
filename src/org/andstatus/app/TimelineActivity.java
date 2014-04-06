@@ -274,7 +274,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         accountButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (MyContextHolder.get().persistentAccounts().isEmpty() > 1) {
+                if (MyContextHolder.get().persistentAccounts().size() > 1) {
                     Intent i = new Intent(TimelineActivity.this, AccountSelector.class);
                     startActivityForResult(i, ActivityRequestCode.SELECT_ACCOUNT.id);
                 }
@@ -1214,16 +1214,18 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public void onLoadFinished(MyLoader<Cursor> loader, Cursor cursor) {
         MyLog.v(this, "onLoadFinished");
+        TimelineTypeEnum timelineToReload = TimelineTypeEnum.UNKNOWN;
         if (loader.isStarted()) {
             if (TimelineCursorLoader.class.isAssignableFrom(loader.getClass())) {
                 TimelineCursorLoader myLoader = (TimelineCursorLoader) loader;
                 changeListContent(myLoader.params, cursor);
-                launchReloadIfNeeded(myLoader.params.timelineToReload);
+                timelineToReload = myLoader.params.timelineToReload;
             } else {
                 MyLog.e(this, "Wrong type of loader: " + MyLog.objTagToString(loader));
             }
         }
         setLoading(false);
+        launchReloadIfNeeded(timelineToReload);
     }
     
     private void changeListContent(TimelineListParameters params, Cursor cursor) {

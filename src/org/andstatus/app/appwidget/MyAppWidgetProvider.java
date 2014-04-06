@@ -350,7 +350,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                 // TODO: We don't mention MyAccount in the intent 
                 // On the other hand the Widget is also is not Account aware yet,
                 //   so for now this is correct.
-                if (MyContextHolder.get().persistentAccounts().isEmpty() > 1) {
+                if (MyContextHolder.get().persistentAccounts().size() > 1) {
                     // There are more than one account, 
                     // so turn Combined timeline on in order to show all new messages.
                     intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, true);

@@ -155,7 +155,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Intent intent = new Intent(MyPreferenceActivity.this, HelpActivity.class);
-                intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
+                intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_INDEX_CHANGELOG);
                 startActivity(intent);
                 return false;
             }
@@ -208,8 +208,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         
         Preference myPref = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
         CharSequence summary;
-        if (MyContextHolder.get().persistentAccounts().isEmpty() > 0) {
-            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().isEmpty();
+        if (MyContextHolder.get().persistentAccounts().size() > 0) {
+            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().size();
         } else {
             summary = getText(R.string.summary_preference_accounts_absent);
         }
@@ -738,7 +738,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if (MyContextHolder.get().persistentAccounts().isEmpty() > 0) {
+            if (MyContextHolder.get().persistentAccounts().size() > 0) {
                 closeAndGoBack();
                 return true;    
             }

@@ -21,7 +21,7 @@ public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActiv
         
         Intent intent = new Intent();
         intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
-        intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
+        intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_INDEX_CHANGELOG);
         setActivityIntent(intent);
         
         mActivity = getActivity();
@@ -30,7 +30,7 @@ public class HelpActivityTest extends ActivityInstrumentationTestCase2<HelpActiv
     public void test() throws InterruptedException {
         ViewFlipper mFlipper = ((ViewFlipper) mActivity.findViewById(R.id.help_flipper));
         assertTrue(mFlipper != null);
-        assertEquals("At Changelog page", HelpActivity.HELP_PAGE_CHANGELOG, mFlipper.getDisplayedChild());
+        assertEquals("At Changelog page", HelpActivity.PAGE_INDEX_CHANGELOG, mFlipper.getDisplayedChild());
         View changeLogView = mActivity.findViewById(R.id.help_changelog);
         assertTrue(changeLogView != null);
         

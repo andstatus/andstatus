@@ -57,17 +57,16 @@ public class HelpActivity extends Activity implements SwipeInterface {
     /**
      * integer - Index of Help screen to show first
      */
-    public static final String EXTRA_HELP_PAGE_ID = PACKAGE_NAME + ".HELP_PAGE_ID";
+    public static final String EXTRA_HELP_PAGE_INDEX = PACKAGE_NAME + ".HELP_PAGE_ID";
     /**
      * boolean - If the activity is the first then we should provide means 
      * to start {@link TimelineActivity} from this activity
      */
     public static final String EXTRA_IS_FIRST_ACTIVITY = PACKAGE_NAME + ".IS_FIRST_ACTIVITY";
 
-    /**
-     * Change Log page index
-     */
-    public static final int HELP_PAGE_CHANGELOG = 2;
+    public static final int PAGE_INDEX_DEFAULT = 0;
+    public static final int PAGE_INDEX_USER_GUIDE = 1;
+    public static final int PAGE_INDEX_CHANGELOG = 2;
     
     // Local objects
     private ViewFlipper mFlipper;
@@ -161,8 +160,8 @@ public class HelpActivity extends Activity implements SwipeInterface {
             }
         });
         
-        if (getIntent().hasExtra(EXTRA_HELP_PAGE_ID)) {
-            int pageToStart = getIntent().getIntExtra(EXTRA_HELP_PAGE_ID, 0);
+        if (getIntent().hasExtra(EXTRA_HELP_PAGE_INDEX)) {
+            int pageToStart = getIntent().getIntExtra(EXTRA_HELP_PAGE_INDEX, 0);
             if (pageToStart > 0) {
                 mFlipper.setDisplayedChild(pageToStart);
             }
@@ -225,8 +224,8 @@ public class HelpActivity extends Activity implements SwipeInterface {
         } else if (MyPreferences.shouldSetDefaultValues()) {
             MyLog.i(activity, "We are running the Application for the very first time?");
             helpAsFirstActivity = true;
-        } else if (MyContextHolder.get().persistentAccounts().getCurrentAccount() == null) {
-            MyLog.i(activity, "No current MyAccount");
+        } else if (MyContextHolder.get().persistentAccounts().size() == 0) {
+            MyLog.i(activity, "No AndStatus Accounts yet");
             if (!(activity instanceof AccountSettingsActivity)) {
                 helpAsFirstActivity = true;
             }
@@ -243,9 +242,15 @@ public class HelpActivity extends Activity implements SwipeInterface {
             if (helpAsFirstActivity) {
                 intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
             } 
-            if (showChangeLog) {
-                intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_ID, HelpActivity.HELP_PAGE_CHANGELOG);
+            
+            int pageIndex = PAGE_INDEX_DEFAULT;
+            if (MyContextHolder.get().persistentAccounts().size() == 0) {
+                pageIndex = PAGE_INDEX_USER_GUIDE;
+            } else if (showChangeLog) {
+                pageIndex = PAGE_INDEX_CHANGELOG;
             }
+            intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, pageIndex);
+            
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             Context context = activity.getApplicationContext();
             MyLog.v(TAG, "Finishing " + activity.getClass().getSimpleName() + " and starting " + TAG);

@@ -137,7 +137,7 @@ class StateOfAccountChangeProcess {
             if (state.getAccountAction().equals(ACTION_ACCOUNT_MANAGER_ENTRY) && android.os.Build.VERSION.SDK_INT < 16) {
                 state.setAccountAction(Intent.ACTION_INSERT);
             } else {
-                switch(MyContextHolder.get().persistentAccounts().isEmpty()) {
+                switch(MyContextHolder.get().persistentAccounts().size()) {
                     case 0:
                         state.setAccountAction(Intent.ACTION_INSERT);
                         break;
