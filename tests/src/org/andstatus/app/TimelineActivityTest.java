@@ -96,18 +96,30 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
 
         final ListView listView = (ListView) activity.findViewById(android.R.id.list);
         MyLog.v(this, method + "-Log setSelection");
+        
         activity.runOnUiThread(new Runnable() {
-          // See http://stackoverflow.com/questions/8094268/android-listview-performitemclick
-          @Override
-          public void run() {
-              int position = 0;
-              listView.setSelection(position);
-              MyLog.v(this, method + "-Log performClick");
-              listView.performItemClick(
-                      listView.getAdapter().getView(position, null, null), 
-                      position, 
-                      ((ListActivity) activity).getListAdapter().getItemId(position));              
-          }
+            @Override
+            public void run() {
+                int position = 0;
+                MyLog.v(this, method + "-Log on setting selection");
+                listView.setSelection(position);
+            }
+        });
+        
+        getInstrumentation().waitForIdleSync();
+        
+        activity.runOnUiThread(new Runnable() {
+            // See
+            // http://stackoverflow.com/questions/8094268/android-listview-performitemclick
+            @Override
+            public void run() {
+                int position = 0;
+                long rowId = ((ListActivity) activity).getListAdapter().getItemId(position);
+                MyLog.v(this, method + "-Log on performClick, rowId=" + rowId);
+                listView.performItemClick(
+                        listView.getAdapter().getView(position, null, null),
+                        position, rowId);
+            }
         });
 
         Activity nextActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 40000);

@@ -25,8 +25,11 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceReceiver;
@@ -102,8 +105,8 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         synchronized (asyncLoaderLock) {
             if (cancelAsyncTask(method)) {
                 try {
-                    asyncLoader = new AsyncLoader(params);
-                    asyncLoader.execute();
+                    asyncLoader = new AsyncLoader();
+                    asyncLoader.execute(params);
                 } catch (Exception e) {
                     MyLog.e(this, method, e);
                     ended = true;
@@ -202,18 +205,24 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
     /**
      * @author yvolk@yurivolkov.com
      */
-    private class AsyncLoader extends AsyncTask<Void, Void, Cursor> {
+    private class AsyncLoader extends AsyncTask<TimelineListParameters, Void, Cursor> {
         TimelineListParameters params;
 
-        public AsyncLoader(TimelineListParameters params) {
-            super();
-            this.params = params;
+        @Override
+        protected Cursor doInBackground(TimelineListParameters... params) {
+            this.params = params[0];
+            markStart();
+            prepareQueryInBackground();
+            Cursor cursor = queryDatabase();
+            checkIfReloadIsNeeded(cursor);
+            return cursor;
         }
 
-        @Override
-        protected void onPreExecute() {
+        private void markStart() {
             params.startTime = System.nanoTime();
             params.cancelled = false;
+            params.timelineToReload = TimelineTypeEnum.UNKNOWN;
+            
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
                 MyLog.v(this, (TextUtils.isEmpty(params.searchQuery) ? ""
                         : "queryString=\"" + params.searchQuery + "\"; ")
@@ -221,13 +230,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
                         + "; isCombined=" + (params.timelineCombined ? "yes" : "no"));
             }
         }
-
-        @Override
-        protected Cursor doInBackground(Void... params) {
-            prepareQueryInBackground();
-            return queryDatabase();
-        }
-
+        
         private void prepareQueryInBackground() {
             if (params.lastItemId > 0) {
                 params.sa.addSelection(MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
@@ -261,10 +264,31 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
             }
             return cursor;
         }
+        
+        private void checkIfReloadIsNeeded(Cursor cursor) {
+            if (!params.loadOneMorePage && cursor != null && !cursor.isClosed() && cursor.getCount() == 0) {
+                switch (params.timelineType) {
+                    case USER:
+                    case FOLLOWING_USER:
+                        // This timeline doesn't update automatically so let's do it now if necessary
+                        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(params.timelineType, params.selectedUserId);
+                        if (latestTimelineItem.isTimeToAutoUpdate()) {
+                            params.timelineToReload = params.timelineType;
+                        }
+                        break;
+                    default:
+                        // TODO: Make this call asynchronous
+                        if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, params.myAccountUserId) == 0) {
+                            // This is supposed to be a one time task.
+                            params.timelineToReload = TimelineTypeEnum.ALL;
+                        } 
+                        break;
+                }
+            }
+        }
 
         @Override
         protected void onPostExecute(Cursor result) {
-            params.cancelled = isCancelled();
             singleEnd(result);
         }
 
@@ -275,11 +299,11 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         }
 
         private void singleEnd(Cursor result) {
-            logExecutionStats(params, result);
+            logExecutionStats(result);
             TimelineCursorLoader.this.asyncLoaderEnded(result);
         }
         
-        private void logExecutionStats(TimelineListParameters params, Cursor cursor) {
+        private void logExecutionStats(Cursor cursor) {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
                 StringBuilder text = new StringBuilder((params.cancelled ? "cancelled" : "ended"));
                 if (!params.cancelled) {

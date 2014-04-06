@@ -58,7 +58,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferenceActivity;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AccountUserIds;
-import org.andstatus.app.data.LatestTimelineItem;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
@@ -175,7 +174,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
     
     private void setLoading(boolean loading) {
-        if (isLoading() != loading) {
+        if (isLoading() != loading && !isFinishing()) {
             MyLog.v(this, "isLoading set to " + loading + ", instanceId=" + instanceId );
             if (loading) {
                 loadingLayout.setVisibility(View.VISIBLE);
@@ -1193,78 +1192,52 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     @Override
+    public void onLoaderReset(MyLoader<Cursor> loader) {
+        MyLog.v(this, "onLoaderReset; " + loader);
+        mCursor = null;
+        setLoading(false);
+    }
+    
+    @Override
     public void onLoadFinished(MyLoader<Cursor> loader, Cursor cursor) {
         MyLog.v(this, "onLoadFinished");
         if (loader.isStarted()) {
             if (TimelineCursorLoader.class.isAssignableFrom(loader.getClass())) {
                 TimelineCursorLoader myLoader = (TimelineCursorLoader) loader;
-                boolean doRestorePosition = changeListContent(myLoader.params, cursor);
-                queryListDataEnded(doRestorePosition);
-                launchReloadIfNeeded(myLoader.params);
+                changeListContent(myLoader.params, cursor);
+                launchReloadIfNeeded(myLoader.params.timelineToReload);
             } else {
                 MyLog.e(this, "Wrong type of loader: " + MyLog.objTagToString(loader));
             }
-        } else {
-            queryListDataEnded(false);
         }
-    }
-
-    @Override
-    public void onLoaderReset(MyLoader<Cursor> loader) {
-        MyLog.v(this, "onLoaderReset; " + loader);
-        mCursor = null;
-        queryListDataEnded(false);
+        setLoading(false);
     }
     
-    private boolean changeListContent(TimelineListParameters params, Cursor cursor) {
-        boolean doRestorePosition = false;
+    private void changeListContent(TimelineListParameters params, Cursor cursor) {
         if (!params.cancelled && cursor != null && !isFinishing) {
             MyLog.v(this, "On changing Cursor");
             ((CursorAdapter) getListAdapter()).changeCursor(cursor);
             mCursor = cursor;
-            doRestorePosition = true;
             // This check will prevent continuous loading...
             noMoreItems = params.incrementallyLoadingPages &&
                     cursor.getCount() <= getListAdapter().getCount();
-        }
-        return doRestorePosition;
-    }
-    
-    /**
-     * Clean after successful or failed operation
-     */
-    private void queryListDataEnded(boolean doRestorePosition) {
-        if (!isFinishing) {
-            if (doRestorePosition) {
-                restoreListPosition();
-            }
-            // Do this after restoring position to avoid repeated loading from onScroll event
-            setLoading(false);
+            restoreListPosition();
         }
     }
     
-    private void launchReloadIfNeeded(TimelineListParameters params) {
-        if (!params.cancelled &&  !params.loadOneMorePage) {
-            switch (getTimelineType()) {
-                case USER:
-                case FOLLOWING_USER:
-                    // This timeline doesn't update automatically so let's do it now if necessary
-                    LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getTimelineType(), getSelectedUserId());
-                    if (latestTimelineItem.isTimeToAutoUpdate()) {
-                        manualReload(false);
-                    }
-                    break;
-                default:
-                    // TODO: Make this call asynchronous
-                    if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, currentMyAccountUserId) == 0) {
-                        // This is supposed to be a one time task.
-                        manualReload(true);
-                    } 
-                    break;
-            }
+    private void launchReloadIfNeeded(TimelineTypeEnum timelineToReload) {
+        switch (timelineToReload) {
+            case ALL:
+                manualReload(true);
+                break;
+            case UNKNOWN:
+                break;
+            default:
+                manualReload(false);
+                break;
         }
     }
-    
+
     /**
      * Ask a service to load data from the Internet for the selected TimelineType
      * Only newer messages (newer than last loaded) are being loaded from the

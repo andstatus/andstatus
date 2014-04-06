@@ -33,29 +33,34 @@ class TimelineListParameters {
     boolean reQuery = false;
     TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
     boolean timelineCombined = false;
+    long myAccountUserId = 0;
+    long selectedUserId = 0;
+    
     String[] projection;
     String searchQuery = "";
     Uri contentUri = null;
     boolean incrementallyLoadingPages = false;
     int rowsLimit = 0;
     long lastItemId = 0;
-    SelectionAndArgs sa = new SelectionAndArgs();
+    volatile SelectionAndArgs sa = new SelectionAndArgs();
     String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
 
     // Execution state / data:
-    long startTime;
-    boolean cancelled;
+    volatile long startTime = 0;
+    volatile boolean cancelled = false;;
+    volatile TimelineTypeEnum timelineToReload = TimelineTypeEnum.UNKNOWN;
     
     @Override
     public String toString() {
         return "TimelineListParameters [loaderCallbacks=" + loaderCallbacks + ", loadOneMorePage="
                 + loadOneMorePage + ", reQuery=" + reQuery + ", timelineType=" + timelineType
-                + ", timelineCombined=" + timelineCombined + ", projection="
+                + ", timelineCombined=" + timelineCombined + ", myAccountUserId=" + myAccountUserId
+                + ", selectedUserId=" + selectedUserId + ", projection="
                 + Arrays.toString(projection) + ", searchQuery=" + searchQuery + ", contentUri="
                 + contentUri + ", incrementallyLoadingPages=" + incrementallyLoadingPages
                 + ", rowsLimit=" + rowsLimit + ", lastItemId=" + lastItemId + ", sa=" + sa
                 + ", sortOrder=" + sortOrder + ", startTime=" + startTime + ", cancelled="
-                + cancelled + "]";
+                + cancelled + ", timelineToReload=" + timelineToReload + "]";
     }
     
 }
