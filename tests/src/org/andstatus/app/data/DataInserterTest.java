@@ -194,12 +194,10 @@ public class DataInserterTest extends InstrumentationTestCase {
             MsgOfUser.FAVORITED,
             MyDatabase.User.LINKED_USER_ID
             };
-        Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection, sa.selectionArgs, sortOrder);
+        Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
+                sa.selectionArgs, sortOrder);
         assertTrue("Cursor returned", cursor != null);
-        assertTrue("Message found, id=" + messageId, cursor.getCount() == 1);
-        cursor.moveToFirst();
-        assertTrue("Message not favorited", cursor.getInt(0) == 0);
-        assertTrue("Message not favorited by AccountUser", cursor.getLong(1) == ma.getUserId());
+        assertEquals("MsgOfUser was not created, msgId=" + messageId, 0, cursor.getCount());
         cursor.close();
     }
 
@@ -328,7 +326,8 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.setPublic(isPublic);
         long id = addMessage(message);
         long storedPublic = MyProvider.msgIdToLongColumnValue(Msg.PUBLIC, id);
-        assertTrue("Message is " + (isPublic ? "public" : "private" )+ ": " + message.getBody(), (isPublic == ( storedPublic != 0)));
+        assertTrue("Message is " + (isPublic ? "public" : "private") + ": " + message.getBody(),
+                (isPublic == (storedPublic != 0)));
     }
 
     private MbUser userFromPumpioOid(String userOid) {
@@ -363,12 +362,33 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
     
     private long addMessage(MbMessage message) {
-        DataInserter di = new DataInserter(new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineTypeEnum.HOME));
+        TimelineTypeEnum tt = TimelineTypeEnum.HOME;
+        if (message.isPublic() ) {
+            tt = TimelineTypeEnum.PUBLIC;
+        }
+        DataInserter di = new DataInserter(new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(tt));
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added " + message.oid, messageId != 0);
+        
+        
+        if (message.isPublic() ) {
+            long msgIdFromMsgOfUser = MyProvider.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
+                    "t." + MyDatabase.MsgOfUser.MSG_ID + "=" + messageId);
+            assertEquals("msgofuser not found for msgId=" + messageId, 0, msgIdFromMsgOfUser);
+        } else {
+            if (message.favoritedByActor == TriState.TRUE) {
+                long msgIdFromMsgOfUser = MyProvider.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
+                        "t." + MyDatabase.MsgOfUser.MSG_ID + "=" + messageId);
+                assertEquals("msgofuser found for msgId=" + messageId, messageId, msgIdFromMsgOfUser);
+                
+                long userIdFromMsgOfUser = MyProvider.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 
+                        "t." + MyDatabase.MsgOfUser.USER_ID + "=" + ma.getUserId());
+                assertEquals("userId found for msgId=" + messageId, ma.getUserId(), userIdFromMsgOfUser);
+            }
+        }
+        
         return messageId;
     }
-    
     
     public void testHtmlContent() {
         boolean isHtmlContentAllowedStored = origin.isHtmlContentAllowed(); 

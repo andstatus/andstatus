@@ -368,7 +368,7 @@ public class MyProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues initialValues) {
 
         ContentValues values;
-        ContentValues msgOfUserValues = null;
+        MsgOfUserValues msgOfUserValues = new MsgOfUserValues(0);
         FollowingUserValues followingUserValues = null;
         long accountUserId = 0;
         
@@ -410,7 +410,7 @@ public class MyProvider extends ContentProvider {
                     }
                     values.put(Msg.INS_DATE, now);
                     
-                    msgOfUserValues = prepareMsgOfUserValues(accountUserId, values);
+                    msgOfUserValues = MsgOfUserValues.valueOf(accountUserId, values);
                     break;
                     
                 case ORIGIN:
@@ -435,14 +435,9 @@ public class MyProvider extends ContentProvider {
                 loadAvatar(rowId, values);
             }
             
-            if (msgOfUserValues != null) {
-                // We need to insert the row:
-                msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
-                long msgOfUserRowId = db.insert(MsgOfUser.TABLE_NAME, MsgOfUser.MSG_ID, msgOfUserValues);
-                if (msgOfUserRowId == -1) {
-                    throw new SQLException("Failed to insert row into " + MsgOfUser.TABLE_NAME);
-                }
-            }
+            msgOfUserValues.setMsgId(rowId);
+            msgOfUserValues.insert(db);
+
             if (followingUserValues != null) {
                 followingUserValues.followingUserId =  rowId;
                 followingUserValues.update(db);
@@ -477,33 +472,6 @@ public class MyProvider extends ContentProvider {
             MyServiceManager.sendCommand(new CommandData(CommandEnum.FETCH_AVATAR, null, rowId));
         }
     }
-
-    /**
-     * Move all keys that belong to MsgOfUser table from values to the newly created ContentValues. 
-     * Returns null if we don't need MsgOfUser for this Msg
-     * @param values
-     * @return
-     */
-    private ContentValues prepareMsgOfUserValues(long userId, ContentValues values) {
-        ContentValues msgOfUserValues = null;
-        if (userId != 0) {
-            // Add MsgOfUser link to Current User MyAccount
-            msgOfUserValues = new ContentValues();
-            if (values.containsKey(BaseColumns._ID) ) {
-                msgOfUserValues.put(MsgOfUser.MSG_ID, values.getAsString(BaseColumns._ID));
-            }
-            msgOfUserValues.put(MsgOfUser.USER_ID, userId);
-            moveBooleanKey(MsgOfUser.SUBSCRIBED, values, msgOfUserValues);
-            moveBooleanKey(MsgOfUser.FAVORITED, values, msgOfUserValues);
-            moveBooleanKey(MsgOfUser.REBLOGGED, values, msgOfUserValues);
-            // The value is String!
-            moveStringKey(MsgOfUser.REBLOG_OID, values, msgOfUserValues);
-            moveBooleanKey(MsgOfUser.MENTIONED, values, msgOfUserValues);
-            moveBooleanKey(MsgOfUser.REPLIED, values, msgOfUserValues);
-            moveBooleanKey(MsgOfUser.DIRECTED, values, msgOfUserValues);
-        }
-        return msgOfUserValues;
-    }
     
     /**
      * Move boolean value of the key from valuesIn to valuesOut and remove it from valuesIn
@@ -533,7 +501,7 @@ public class MyProvider extends ContentProvider {
      * @param valuesOut  may be null
      * @return 1 for not empty, 0 for empty and 2 for "not present" 
      */
-    private int moveStringKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
+    static int moveStringKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
         int ret = 2;
         if (valuesIn != null) {
             if (valuesIn.containsKey(key) ) {
@@ -902,33 +870,15 @@ public class MyProvider extends ContentProvider {
             case TIMELINE_MSG_ID:
                 accountUserId = uriToAccountUserId(uri);
                 long rowId = uriToMessageId(uri);
-                ContentValues msgOfUserValues = prepareMsgOfUserValues(accountUserId, values);
+                MsgOfUserValues msgOfUserValues = MsgOfUserValues.valueOf(accountUserId, values);
+                msgOfUserValues.setMsgId(rowId);
                 if (values.size() > 0) {
                     count = db.update(Msg.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
                             + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
-                if (msgOfUserValues != null) {
-                    String where = "(" + MsgOfUser.MSG_ID + "=" + rowId + " AND "
-                            + MsgOfUser.USER_ID + "="
-                            + accountUserId + ")";
-                    String sql = "SELECT * FROM " + MsgOfUser.TABLE_NAME + " WHERE "
-                            + where;
-                    Cursor cursor = null;
-                    try {
-                        cursor = db.rawQuery(sql, null);
-                        if (cursor == null || cursor.getCount() == 0) {
-                            // There was no such row
-                            msgOfUserValues.put(MsgOfUser.MSG_ID, rowId);
-                            count += db.insert(MsgOfUser.TABLE_NAME, null, msgOfUserValues);
-                        } else {
-                            cursor.close();
-                            count += db.update(MsgOfUser.TABLE_NAME, msgOfUserValues, where,
-                                    null);
-                        }
-                    } finally {
-                        DbUtils.closeSilently(cursor);
-                    }
+                if (!msgOfUserValues.isValid()) {
+                    count += msgOfUserValues.update(db);
                 }
                 break;
 
@@ -1199,7 +1149,7 @@ public class MyProvider extends ContentProvider {
      * @return 0 in case not found or error or systemId==0
      */
     private static long idToLongColumnValue(String tableName, String columnName, long systemId) {
-        String method = "idToLongColumnValue";
+        final String method = "idToLongColumnValue";
         long columnValue = 0;
         if (TextUtils.isEmpty(tableName) || TextUtils.isEmpty(columnName)) {
             throw new IllegalArgumentException(method + " tableName or columnName are empty");
@@ -1225,6 +1175,47 @@ public class MyProvider extends ContentProvider {
             }
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
+            }
+        }
+        return columnValue;
+    }
+
+
+    /**
+     * Convenience method to get long column value from the 'tableName' table
+     * @param tableName e.g. {@link Msg#TABLE_NAME} 
+     * @param columnName without table name
+     * @param WHERE part of SQL statement
+     * @return 0 in case not found or error or systemId==0
+     */
+    static long conditionToLongColumnValue(String tableName, String columnName, String condition) {
+        final String method = "conditionToLongColumnValue";
+        long columnValue = 0;
+        if (TextUtils.isEmpty(tableName) || TextUtils.isEmpty(columnName)) {
+            throw new IllegalArgumentException(method + " tableName or columnName are empty");
+        } else if (!TextUtils.isEmpty(condition)) {
+            SQLiteStatement prog = null;
+            String sql = "";
+            try {
+                sql = "SELECT t." + columnName
+                        + " FROM " + tableName + " AS t"
+                        + " WHERE " + condition;
+                SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
+                prog = db.compileStatement(sql);
+                columnValue = prog.simpleQueryForLong();
+            } catch (SQLiteDoneException e) {
+                MyLog.ignored(TAG, e);
+                columnValue = 0;
+            } catch (Exception e) {
+                MyLog.e(TAG, method + " table='" + tableName 
+                        + "', column='" + columnName + "'"
+                        + " where '" + condition + "'", e);
+                return 0;
+            } finally {
+                DbUtils.closeSilently(prog);
+            }
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + " where '" + condition + "' -> " + columnValue );
             }
         }
         return columnValue;
