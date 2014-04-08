@@ -99,9 +99,7 @@ public class FollowingUserValues {
         boolean exists = false;
         try {
             cursor = db.rawQuery(sql, null);
-            if (cursor != null && cursor.getCount() > 0) {
-                exists = true;
-            }
+            exists = cursor.moveToFirst();
         } finally {
             DbUtils.closeSilently(cursor);
         }

@@ -877,9 +877,7 @@ public class MyProvider extends ContentProvider {
                             + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
-                if (!msgOfUserValues.isValid()) {
-                    count += msgOfUserValues.update(db);
-                }
+                count += msgOfUserValues.update(db);
                 break;
 
             case USERS:
@@ -1141,43 +1139,12 @@ public class MyProvider extends ContentProvider {
         return idToLongColumnValue(User.TABLE_NAME, columnName, systemId);
     }
 
-    /**
-     * Convenience method to get long column value from the 'tableName' table
-     * @param tableName e.g. {@link Msg#TABLE_NAME} 
-     * @param columnName without table name
-     * @param systemId tableName._id
-     * @return 0 in case not found or error or systemId==0
-     */
     private static long idToLongColumnValue(String tableName, String columnName, long systemId) {
-        final String method = "idToLongColumnValue";
-        long columnValue = 0;
-        if (TextUtils.isEmpty(tableName) || TextUtils.isEmpty(columnName)) {
-            throw new IllegalArgumentException(method + " tableName or columnName are empty");
-        } else if (systemId != 0) {
-            SQLiteStatement prog = null;
-            String sql = "";
-            try {
-                sql = "SELECT t." + columnName
-                        + " FROM " + tableName + " AS t"
-                        + " WHERE t._id=" + systemId;
-                SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
-                prog = db.compileStatement(sql);
-                columnValue = prog.simpleQueryForLong();
-            } catch (SQLiteDoneException e) {
-                MyLog.ignored(TAG, e);
-                columnValue = 0;
-            } catch (Exception e) {
-                MyLog.e(TAG, method + " table='" + tableName 
-                        + "', column='" + columnName + "'", e);
-                return 0;
-            } finally {
-                DbUtils.closeSilently(prog);
-            }
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
-            }
+        if (systemId == 0) {
+            return 0;
+        } else {
+            return conditionToLongColumnValue(tableName, columnName, "t._id=" + systemId);
         }
-        return columnValue;
     }
 
 
@@ -1185,7 +1152,7 @@ public class MyProvider extends ContentProvider {
      * Convenience method to get long column value from the 'tableName' table
      * @param tableName e.g. {@link Msg#TABLE_NAME} 
      * @param columnName without table name
-     * @param WHERE part of SQL statement
+     * @param condition WHERE part of SQL statement
      * @return 0 in case not found or error or systemId==0
      */
     static long conditionToLongColumnValue(String tableName, String columnName, String condition) {

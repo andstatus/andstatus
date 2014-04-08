@@ -77,8 +77,7 @@ class MessageDataForContextMenu {
                     MyDatabase.FollowingUser.SENDER_FOLLOWED,
                     MyDatabase.FollowingUser.AUTHOR_FOLLOWED
             }, null, null, null);
-            if (cursor != null && cursor.getCount() > 0) {
-                cursor.moveToFirst();
+            if (cursor != null && cursor.moveToFirst()) {
                 isDirect = !cursor.isNull(cursor.getColumnIndex(MyDatabase.Msg.RECIPIENT_ID));
                 authorId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.AUTHOR_ID));
                 senderId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.SENDER_ID));

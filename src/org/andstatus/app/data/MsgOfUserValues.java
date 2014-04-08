@@ -24,6 +24,7 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.util.MyLog;
 
 class MsgOfUserValues {
     private long rowId;
@@ -118,7 +119,10 @@ class MsgOfUserValues {
 
     public int update(SQLiteDatabase db) {
         int count = 0;
-        String where = "(" + MsgOfUser.MSG_ID + "=" + rowId + " AND "
+        if (!isValid()) {
+            return count;
+        }
+        String where = "(" + MsgOfUser.MSG_ID + "=" + msgId + " AND "
                 + MsgOfUser.USER_ID + "="
                 + userId + ")";
         String sql = "SELECT * FROM " + MsgOfUser.TABLE_NAME + " WHERE "
@@ -126,7 +130,7 @@ class MsgOfUserValues {
         Cursor cursor = null;
         try {
             cursor = db.rawQuery(sql, null);
-            boolean exists = (cursor != null && cursor.getCount() > 0);
+            boolean exists = cursor.moveToFirst();
             DbUtils.closeSilently(cursor);
             if (exists) {
                 count += db.update(MsgOfUser.TABLE_NAME, contentValues, where, null);

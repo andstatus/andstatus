@@ -298,8 +298,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                         cursor = getContext().getContentResolver().query(uri, new String[] {
                                 MyDatabase.Msg.MSG_ID, MyDatabase.Msg.BODY
                         }, null, null, null);
-                        if (cursor != null && cursor.getCount() > 0) {
-                            cursor.moveToFirst();
+                        if (cursor != null && cursor.moveToFirst()) {
         
                             StringBuilder subject = new StringBuilder();
                             StringBuilder text = new StringBuilder();

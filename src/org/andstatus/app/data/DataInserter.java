@@ -288,7 +288,7 @@ public class DataInserter {
                 }
                 if (rowId == 0) {
                     // There was no such row so add the new one
-                    msgUri = execContext.getContext().getContentResolver().insert(MyProvider.getTimelineUri(execContext.getMyAccount().getUserId(), TimelineTypeEnum.HOME, false), values);
+                    msgUri = execContext.getContext().getContentResolver().insert(MyProvider.getTimelineUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false), values);
                     rowId = MyProvider.uriToMessageId(msgUri);
                 } else {
                     execContext.getContext().getContentResolver().update(msgUri, values, null, null);
