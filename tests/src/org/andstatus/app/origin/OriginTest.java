@@ -40,12 +40,20 @@ public class OriginTest  extends InstrumentationTestCase {
             origin = new Origin.Builder(origin).save(config).build();
             assertEquals("Textlimit", textLimit, origin.textLimit);
             
-            textLimit = 140;
+			textLimit = 140;
             config = MbConfig.fromTextLimit(textLimit);
             origin = new Origin.Builder(origin).save(config).build();
             assertEquals("Textlimit", textLimit, origin.textLimit);
             assertEquals("Short URL length", 0, origin.shortUrlLength);
             assertEquals("Characters left", textLimit - message.length(), origin.charactersLeftForMessage(message));
+			
+            textLimit = 0;
+            config = MbConfig.fromTextLimit(textLimit);
+			config.shortUrlLength = 24;
+            origin = new Origin.Builder(origin).save(config).build();
+            assertEquals("Textlimit", OriginType.TEXT_LIMIT_MAXIMUM, origin.textLimit);
+            assertEquals("Short URL length", config.shortUrlLength, origin.shortUrlLength);
+            assertEquals("Characters left", origin.textLimit - message.length(), origin.charactersLeftForMessage(message));
          }
         
         public void testAddDeleteOrigin() {

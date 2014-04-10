@@ -31,6 +31,7 @@ public enum OriginType {
     private static final String OAUTH_PATH_DEFAULT = "oauth";
     private static final String USERNAME_REGEX_DEFAULT = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     public static final OriginType ORIGIN_TYPE_DEFAULT = TWITTER;
+	public static int TEXT_LIMIT_MAXIMUM = 5000;
 
     private long id;
     private String title;
@@ -112,7 +113,7 @@ public enum OriginType {
                 usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
                 allowHtmlDefault = true;
                 // This is not a hard limit, just for convenience
-                textLimitDefault = 5000;
+                textLimitDefault = TEXT_LIMIT_MAXIMUM;
                 basicPath = BASIC_PATH_DEFAULT;
                 oauthPath = OAUTH_PATH_DEFAULT;
                 originClass = OriginPumpio.class;

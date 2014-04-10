@@ -330,6 +330,9 @@ public class Origin {
             if (originType1.textLimitDefault == 0) {
                 origin.textLimit = c.getInt(c.getColumnIndex(MyDatabase.Origin.TEXT_LIMIT));
             }
+			if (origin.textLimit == 0) {
+				origin.textLimit = OriginType.TEXT_LIMIT_MAXIMUM;
+			}
         }
 
         public Builder(Origin original) {
