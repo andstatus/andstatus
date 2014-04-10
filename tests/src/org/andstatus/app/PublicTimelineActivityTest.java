@@ -55,6 +55,8 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     }
     
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
+        assertFalse("Screen is locked", TestSuite.isScreenLocked(activity));
+        
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
         getInstrumentation().invokeMenuActionSync(activity, R.id.global_search_menu_id, 0);
         TestSuite.waitForIdleSync(this);
@@ -68,6 +70,8 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     }
     
     public void testSearch() throws InterruptedException {
+        assertFalse("Screen is locked", TestSuite.isScreenLocked(activity));
+
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
         getInstrumentation().invokeMenuActionSync(activity, R.id.search_menu_id, 0);
         TestSuite.waitForIdleSync(this);

@@ -16,7 +16,8 @@ public class OriginTest  extends InstrumentationTestCase {
         }
 
         public void testTextLimit() {
-            String message = "I set \"Shorten URL with: QTTR.AT\" URL longer than 25 Text longer than 140. Will this be shortened: https://github.com/andstatus/andstatus/issues/41";
+            String urlString = "https://github.com/andstatus/andstatus/issues/41";
+            String message = "I set \"Shorten URL with: QTTR.AT\" URL longer than 25 Text longer than 140. Will this be shortened: " + urlString;
 
             Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
             assertEquals(origin.originType, OriginType.TWITTER); 
@@ -24,26 +25,26 @@ public class OriginTest  extends InstrumentationTestCase {
             origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.TWITTER);
             assertEquals(origin.originType, OriginType.TWITTER); 
             int textLimit = 140;
-            assertEquals("Textlimit", textLimit, origin.textLimit);
+            assertEquals("Textlimit", textLimit, origin.getTextLimit());
             assertEquals("Short URL length", 23, origin.shortUrlLength);
             assertEquals("Characters left", 18, origin.charactersLeftForMessage(message));
 
             origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.PUMPIO);
             textLimit = 5000;
-            assertEquals("Textlimit", textLimit, origin.textLimit);
+            assertEquals("Textlimit", textLimit, origin.getTextLimit());
             assertEquals("Short URL length", 0, origin.shortUrlLength);
-            assertEquals("Characters left", origin.textLimit - message.length(), origin.charactersLeftForMessage(message));
+            assertEquals("Characters left", origin.getTextLimit() - message.length(), origin.charactersLeftForMessage(message));
             
             origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.STATUSNET);
             textLimit = 200;
             MbConfig config = MbConfig.fromTextLimit(textLimit);
             origin = new Origin.Builder(origin).save(config).build();
-            assertEquals("Textlimit", textLimit, origin.textLimit);
+            assertEquals("Textlimit", textLimit, origin.getTextLimit());
             
 			textLimit = 140;
             config = MbConfig.fromTextLimit(textLimit);
             origin = new Origin.Builder(origin).save(config).build();
-            assertEquals("Textlimit", textLimit, origin.textLimit);
+            assertEquals("Textlimit", textLimit, origin.getTextLimit());
             assertEquals("Short URL length", 0, origin.shortUrlLength);
             assertEquals("Characters left", textLimit - message.length(), origin.charactersLeftForMessage(message));
 			
@@ -51,9 +52,11 @@ public class OriginTest  extends InstrumentationTestCase {
             config = MbConfig.fromTextLimit(textLimit);
 			config.shortUrlLength = 24;
             origin = new Origin.Builder(origin).save(config).build();
-            assertEquals("Textlimit", OriginType.TEXT_LIMIT_MAXIMUM, origin.textLimit);
+            assertEquals("Textlimit", OriginType.TEXT_LIMIT_MAXIMUM, origin.getTextLimit());
             assertEquals("Short URL length", config.shortUrlLength, origin.shortUrlLength);
-            assertEquals("Characters left", origin.textLimit - message.length(), origin.charactersLeftForMessage(message));
+            assertEquals("Characters left", origin.getTextLimit() - message.length()
+                    - config.shortUrlLength + urlString.length()
+                    , origin.charactersLeftForMessage(message));
          }
         
         public void testAddDeleteOrigin() {

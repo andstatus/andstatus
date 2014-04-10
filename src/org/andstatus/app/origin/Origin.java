@@ -65,7 +65,7 @@ public class Origin {
     /**
      * Maximum number of characters in the message
      */
-    protected int textLimit = 0;
+    private int textLimit = OriginType.TEXT_LIMIT_MAXIMUM;
 
     public OriginType getOriginType() {
         return originType;
@@ -284,6 +284,18 @@ public class Origin {
                 + originType.toString() + "]";
     }
 
+    protected int getTextLimit() {
+        return textLimit;
+    }
+
+    protected void setTextLimit(int textLimit) {
+        if (textLimit <= 0) {
+            this.textLimit = OriginType.TEXT_LIMIT_MAXIMUM;
+        } else {
+            this.textLimit = textLimit;
+        }
+    }
+
     public static final class Builder {
         private final Origin origin;
         /*
@@ -328,11 +340,8 @@ public class Origin {
                         .getColumnIndex(MyDatabase.Origin.SHORT_URL_LENGTH));
             }
             if (originType1.textLimitDefault == 0) {
-                origin.textLimit = c.getInt(c.getColumnIndex(MyDatabase.Origin.TEXT_LIMIT));
+                origin.setTextLimit(c.getInt(c.getColumnIndex(MyDatabase.Origin.TEXT_LIMIT)));
             }
-			if (origin.textLimit == 0) {
-				origin.textLimit = OriginType.TEXT_LIMIT_MAXIMUM;
-			}
         }
 
         public Builder(Origin original) {
@@ -347,7 +356,7 @@ public class Origin {
             cloned.ssl = original.ssl;
             cloned.allowHtml = original.allowHtml;
             cloned.shortUrlLength = original.shortUrlLength;
-            cloned.textLimit = original.textLimit;
+            cloned.setTextLimit(original.getTextLimit());
             return cloned;
         }
 
@@ -384,7 +393,7 @@ public class Origin {
 
         public Builder save(MbConfig config) {
             origin.shortUrlLength = config.shortUrlLength;
-            origin.textLimit = config.textLimit;
+            origin.setTextLimit(config.textLimit);
             save();
             return this;
         }
@@ -412,7 +421,7 @@ public class Origin {
             values.put(MyDatabase.Origin.SSL, origin.ssl);
             values.put(MyDatabase.Origin.ALLOW_HTML, origin.allowHtml);
             values.put(MyDatabase.Origin.SHORT_URL_LENGTH, origin.shortUrlLength);
-            values.put(MyDatabase.Origin.TEXT_LIMIT, origin.textLimit);
+            values.put(MyDatabase.Origin.TEXT_LIMIT, origin.getTextLimit());
 
             boolean changed = false;
             if (origin.id == 0) {

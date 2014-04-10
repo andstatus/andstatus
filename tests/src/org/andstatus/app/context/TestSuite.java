@@ -19,6 +19,7 @@ package org.andstatus.app.context;
 import junit.framework.TestCase;
 
 import android.app.Activity;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -280,5 +281,14 @@ public class TestSuite extends TestCase {
             Thread.sleep(2000);
         }
         instrumentationTestCase.getInstrumentation().waitForIdleSync();
+    }
+    
+    public static boolean isScreenLocked(Context context) {
+        KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE); 
+        if (km == null) {
+            return true;
+        } else {
+            return km.inKeyguardRestrictedInputMode();
+        }
     }
 }
