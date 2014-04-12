@@ -18,6 +18,7 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
@@ -30,11 +31,24 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         CommandExecutorStrategy strategy = getStrategy(new CommandExecutionContext(commandData, commandData.getAccount()))
                 .setParent(parent);
         commandData.getResult().onLaunched();
-        MyLog.d(strategy, "Launching " + strategy.execContext);
+        logLaunch(strategy);
         // This may cause recursive calls to executors...
         strategy.execute();
         commandData.getResult().onExecuted();
+        logEnd(strategy);
+    }
+
+    private static void logLaunch(CommandExecutorStrategy strategy) {
+        if (strategy.execContext.getCommandData().getCommand() == CommandEnum.UPDATE_STATUS 
+                && MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
+            MyLog.setLogToFile(true);
+        }
+        MyLog.d(strategy, "Launching " + strategy.execContext);
+    }
+
+    private static void logEnd(CommandExecutorStrategy strategy) {
         MyLog.d(strategy, "Executed " + strategy.execContext);
+        MyLog.setLogToFile(false);
     }
 
     static void executeStep(CommandExecutionContext execContext, CommandExecutorParent parent) {

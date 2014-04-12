@@ -29,6 +29,9 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
+import java.io.File;
+import java.util.Date;
+
 /**
  * Clean database from outdated information
  * currently only old Messages are being deleted 
@@ -36,6 +39,7 @@ import org.andstatus.app.util.SelectionAndArgs;
 public class DataPruner {
     private ContentResolver mContentResolver;
     private int mDeleted = 0;
+    final static long MAX_DAYS_LOGS_TO_KEEP = 10;
     
     public DataPruner(Context context) {
         mContentResolver = context.getContentResolver();
@@ -49,6 +53,7 @@ public class DataPruner {
      * @return true if succeeded
      */
     public boolean prune() {
+        final String method = "prune";
         boolean ok = true;
        
         mDeleted = 0;
@@ -83,7 +88,7 @@ public class DataPruner {
         Cursor cursor = null;
         try {
             if (maxDays > 0) {
-                sinceTimestamp = System.currentTimeMillis() - maxDays * (1000L * 60 * 60 * 24);
+                sinceTimestamp = System.currentTimeMillis() - daysToMillis(maxDays);
                 SelectionAndArgs sa = new SelectionAndArgs();
                 sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <  ?", new String[] {
                     String.valueOf(sinceTimestamp)
@@ -124,20 +129,52 @@ public class DataPruner {
                 }
             }
         } catch (Exception e) {
-            MyLog.e(this, "pruneOldRecords failed", e);
+            MyLog.e(this, method + " failed", e);
         } finally {
             DbUtils.closeSilently(cursor);
         }
         mDeleted = nDeletedTime + nDeletedSize;
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this,
-                    "pruneOldRecords; History time=" + maxDays + " days; deleted " + nDeletedTime
-                            + " , since " + sinceTimestamp + ", now=" + System.currentTimeMillis());
-            MyLog.v(this, "pruneOldRecords; History size=" + maxSize + " messages; deleted "
-                    + nDeletedSize + " of " + nTweets + " messages, since " + sinceTimestampSize);
+                    method + "; History time=" + maxDays + " days; deleted " + nDeletedTime
+                            + " , since " + new Date(sinceTimestamp).toString());
+            MyLog.v(this, method + "; History size=" + maxSize + " messages; deleted "
+                    + nDeletedSize + " of " + nTweets + " messages, since " + new Date(sinceTimestampSize).toString());
         }
-        
+        pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
         return ok;
+    }
+
+    /** TODO: java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays) since API 9  */
+    static long daysToMillis(long days) {
+        return days * (1000L * 60 * 60 * 24); 
+    }
+    
+    long pruneLogs(long maxDays) {
+        final String method = "pruneLogs";
+        long sinceTimestamp = System.currentTimeMillis() 
+                - daysToMillis(maxDays);
+        long count = 0;
+        File dir = MyLog.getLogDir(true);
+        if (dir == null) {
+            return count;
+        }
+        for (String filename : dir.list()) {
+            File file = new File(dir, filename);
+            if (file.isFile() && file.lastModified() < sinceTimestamp) {
+                if (file.delete()) {
+                    count++;
+                } else {
+                    MyLog.v(this, method + " couldn't delete: " + file.getAbsolutePath());
+                }
+            }
+        }
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this,
+                    method + "; deleted " + count
+                            + " files, since " + new Date(sinceTimestamp).toString());
+        }
+        return count;
     }
 
     /**

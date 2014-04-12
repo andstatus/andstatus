@@ -63,6 +63,7 @@ public class MyPreferences {
      * Minimum logging level for the whole application (i.e. for any tag)
      */
     public static final String KEY_MIN_LOG_LEVEL = "min_log_level";
+    public static final String KEY_SENDING_MESSAGES_LOG_ENABLED = "sending_messages_log_enabled";
     
     public static final String KEY_THEME_SIZE = "theme_size";
     public static final String KEY_THEME_COLOR = "theme_color";
@@ -222,6 +223,10 @@ public class MyPreferences {
      * @see <a href="http://developer.android.com/guide/topics/data/data-storage.html#filesExternal">filesExternal</a>
      */
     public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage) {
+        return getDataFilesDir(type, forcedUseExternalStorage, true);
+    }
+
+    public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage, boolean logged) {
         File dir = null;
         String textToLog = null;
         MyContext myContext = MyContextHolder.get();
@@ -248,7 +253,9 @@ public class MyPreferences {
                 try {
                     dir.mkdirs();
                 } catch (Exception e) {
-                    MyLog.e(TAG, "Error creating directory", e);
+                    if (logged) {
+                        MyLog.e(TAG, "Error creating directory", e);
+                    }
                 } finally {
                     if (!dir.exists()) {
                         textToLog = "getDataFilesDir - Could not create '" + dir.getPath() + "'";
@@ -256,30 +263,36 @@ public class MyPreferences {
                     }
                 }
             }
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            if (logged && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, (isStorageExternal(forcedUseExternalStorage) ? "External" : "Internal") 
                         + " path: '" + ( (dir == null) ? "(null)" : dir ) + "'");
             }
         }
-        if (textToLog != null) {
+        if (logged && textToLog != null) {
             MyLog.i(TAG, textToLog);
         }
         return dir;
     }
-
+    
     public static boolean isStorageExternal(Boolean forcedUseExternalStorage) {
         boolean useExternalStorage = false;
         if (forcedUseExternalStorage == null) {
-            SharedPreferences sp = getDefaultSharedPreferences();
-            if (sp != null) {
-                useExternalStorage = getDefaultSharedPreferences().getBoolean(KEY_USE_EXTERNAL_STORAGE, false); 
-            }
+            useExternalStorage = getBoolean(KEY_USE_EXTERNAL_STORAGE, false); 
         } else {
             useExternalStorage  = forcedUseExternalStorage;
         }
         return useExternalStorage;
     }
 
+    public static boolean getBoolean(String key, boolean defaultValue) {
+        boolean value = defaultValue;
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            value = getDefaultSharedPreferences().getBoolean(key, false); 
+        }
+        return value;
+    }
+    
     /**
      * Extends {@link android.content.ContextWrapper#getDatabasePath(java.lang.String)}
      * @param name The name of the database for which you would like to get its path.

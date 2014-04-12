@@ -59,7 +59,7 @@ public class ConnectionException extends Exception {
             try {
                 if (e != null) {
                     String stackTrace = MyLog.getStackTrace(e);
-                    MyLog.writeStringToFile(stackTrace, "loggedErrorJson_stacktrace.txt");
+                    MyLog.writeStringToFile(stackTrace, "ErrorJson_stacktrace_log.txt");
                     MyLog.v(objTag, "stack trace: " + stackTrace);
                 }
                 if (obj != null) {
@@ -71,7 +71,7 @@ public class ConnectionException extends Exception {
                     } else {
                         strJso = "Class " + obj.getClass().getCanonicalName() + " " + obj.toString();
                     }
-                    MyLog.writeStringToFile(strJso, "loggedErrorJson.json");
+                    MyLog.writeStringToFile(strJso, "ErrorJson_log.json");
                     MyLog.v(objTag, "jso: " + strJso);
                 }
             } catch (JSONException ignored) {

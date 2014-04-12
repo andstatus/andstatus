@@ -256,7 +256,7 @@
     <string name="summary_preference_add_account_oauth">Tap here to open the Microblogging system site in a browser.</string>
     <string name="summary_preference_add_account_basic">Tap here to verify credentials and add the account.</string>
     <string name="summary_preference_appearance">Change the AndStatus look and feel</string>
-	<string name="summary_preference_frequency">Updates are fetched every {0}.</string>
+    <string name="summary_preference_frequency">Updates are fetched every {0}.</string>
 	<string name="summary_preference_history_size">Remember message history up to {0}.</string>
 	<string name="summary_preference_history_time">Remember message history up to {0}.</string>
 	<string name="summary_preference_host">Host name of the system, e.g. quitter.se</string>
@@ -309,6 +309,7 @@
     <string name="title_preference_appearance">Appearance</string>
 	<string name="title_preference_change_log">Change Log</string>
 	<string name="title_preference_contact_developer">Contact Developer</string>
+    <string name="title_preference_debugging">Logging and debugging</string>
 	<string name="title_preference_frequency">Sync frequency</string>
 	<string name="title_preference_history_size">History Size</string>
 	<string name="title_preference_history_time">History Time</string>
@@ -324,13 +325,14 @@
 	<string name="title_preference_oauth">OAuth</string>
     <string name="title_preference_origin_system">{0}, type: {1}</string>
     <string name="title_preference_password">Password</string>
-	<string name="title_preference_report_bug">Report Bug</string>
+	<string name="title_preference_report_bug">Report a bug</string>
 	<string name="title_preference_storage">Storage</string>
 	<string name="title_preference_ssl">SSL</string>
 	<string name="title_preference_storage_external">Use External Storage</string>
 	<string name="title_preference_theme_size">Size</string>
 	<string name="title_preference_username">Username</string>
 	<string name="title_preference_username_pumpio">Webfinger ID</string>
+    <string name="title_sending_messages_log_enabled">Log Sending messages to file</string>
 	<string name="title_preference_show_avatars">Display Avatars</string>
     <string name="title_preference_verify_credentials">Reverify credentials</string>
 	<string name="title_preference_verify_credentials_failed">Verify credentials</string>

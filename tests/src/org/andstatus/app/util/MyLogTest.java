@@ -17,8 +17,11 @@
 package org.andstatus.app.util;
 
 import android.test.InstrumentationTestCase;
+import android.text.TextUtils;
 
 import org.andstatus.app.context.TestSuite;
+
+import java.io.File;
 
 public class MyLogTest  extends InstrumentationTestCase {
 
@@ -37,5 +40,20 @@ public class MyLogTest  extends InstrumentationTestCase {
        assertEquals(tag.toString(), MyLog.objTagToString(tag));
        tag = null;
        assertEquals("(null)", MyLog.objTagToString(tag));
+    }
+    
+    public void testLogFileName() {
+        final String method = "testLogFileName";
+        MyLog.setLogToFile(true);
+        assertFalse(TextUtils.isEmpty(MyLog.getLogFileName()));
+        File file = MyLog.getLogFile(MyLog.getLogFileName(), true);
+        MyLog.v(this, method);
+        assertTrue(file.exists());
+        
+        MyLog.setLogToFile(false);
+        assertTrue(TextUtils.isEmpty(MyLog.getLogFileName()));
+        file.delete();
+        MyLog.v(this, method);
+        assertFalse(file.exists());
     }
 }

@@ -28,9 +28,11 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Date;
 
 import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.util.Log;
 
 import net.jcip.annotations.GuardedBy;
@@ -66,7 +68,9 @@ public class MyLog {
      */
     public static final String APPTAG = "AndStatus";
     public static final int DEBUG = Log.DEBUG;
+    public static final int ERROR = Log.ERROR;
     public static final int VERBOSE = Log.VERBOSE;
+    public static final int WARN = Log.WARN;
     public static final int INFO = Log.INFO;
     private static final int IGNORED = VERBOSE - 1;
     
@@ -78,6 +82,8 @@ public class MyLog {
      * Cached value of the persistent preference
      */
     private static volatile int minLogLevel = VERBOSE;
+
+    private static volatile ThreadLocal<String> logFileName = new ThreadLocal<String>();
 
     private MyLog() {
         
@@ -106,36 +112,43 @@ public class MyLog {
     
     public static int e(Object objTag, String msg, Throwable tr) {
         String tag = objTagToString(objTag);
+        logToFile(ERROR, tag, msg, tr);
         return Log.e(tag, msg, tr);
     }
 
     public static int e(Object objTag, Throwable tr) {
         String tag = objTagToString(objTag);
+        logToFile(ERROR, tag, null, tr);
         return Log.e(tag, "", tr);
     }
     
     public static int e(Object objTag, String msg) {
         String tag = objTagToString(objTag);
+        logToFile(ERROR, tag, msg, null);
         return Log.e(tag, msg);
     }
 
     public static int i(Object objTag, String msg, Throwable tr) {
         String tag = objTagToString(objTag);
+        logToFile(INFO, tag, msg, tr);
         return Log.i(tag, msg, tr);
     }
     
     public static int i(Object objTag, Throwable tr) {
         String tag = objTagToString(objTag);
+        logToFile(INFO, tag, null, tr);
         return Log.i(tag, "", tr);
     }
     
     public static int i(Object objTag, String msg) {
         String tag = objTagToString(objTag);
+        logToFile(INFO, tag, msg, null);
         return Log.i(tag, msg);
     }
 
     public static int w(Object objTag, String msg) {
         String tag = objTagToString(objTag);
+        logToFile(WARN, tag, msg, null);
         return Log.w(tag, msg);
     }
 
@@ -146,6 +159,7 @@ public class MyLog {
         String tag = objTagToString(objTag);
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
+            logToFile(DEBUG, tag, msg, null);
             i = Log.d(tag, msg);
         }
         return i;
@@ -158,16 +172,21 @@ public class MyLog {
         String tag = objTagToString(objTag);
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
+            logToFile(DEBUG, tag, msg, tr);
             i = Log.d(tag, msg, tr);
         }
         return i;
     }
 
-    public static int v(Object objTag, Throwable e) {
+    /**
+     * Shortcut for verbose messages of the application
+     */
+    public static int v(Object objTag, Throwable tr) {
         String tag = objTagToString(objTag);
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
-            i = Log.v(tag, "", e);
+            logToFile(VERBOSE, tag, null, tr);
+            i = Log.v(tag, "", tr);
         }
         return i;
     }
@@ -179,6 +198,7 @@ public class MyLog {
         String tag = objTagToString(objTag);
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
+            logToFile(VERBOSE, tag, msg, null);
             i = Log.v(tag, msg);
         }
         return i;
@@ -188,6 +208,7 @@ public class MyLog {
         String tag = objTagToString(objTag);
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
+            logToFile(VERBOSE, tag, msg, tr);
             i = Log.v(tag, msg, tr);
         }
         return i;
@@ -312,32 +333,42 @@ public class MyLog {
         throwable.printStackTrace(pw); // NOSONAR
         return sw.getBuffer().toString();
     }
-    
+
     public static boolean writeStringToFile(String string, String fileName) {
+        return writeStringToFile(string, fileName, false, true);
+    }
+    
+    static boolean writeStringToFile(String string, String fileName, boolean append, boolean logged) {
         boolean ok = false;
-        File dir1 = MyPreferences.getDataFilesDir("logs", null);
-        if (dir1 == null) { 
-            return false; 
-            }
-        File file = new File(dir1, fileName);
+        File file = getLogFile(fileName, logged);
         Writer out = null;
         try {
-            if (file.exists() 
-                && !file.delete()) {
-                MyLog.e(TAG, "Couldn't delete the file: " + fileName);
-            }
             out = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(file.getAbsolutePath()), "UTF-8"));
+                    new FileOutputStream(file.getAbsolutePath(), append), "UTF-8"));
             out.write(string);
             ok = true;
         } catch (Exception e) {
-            MyLog.d(TAG, fileName, e);
+            if (logged) {
+                MyLog.d(TAG, fileName, e);
+            }
         } finally {
             DbUtils.closeSilently(out, fileName);
         }        
         return ok;
     }
 
+    static File getLogFile(String fileName, boolean logged) {
+        File dir1 = getLogDir(logged);
+        if (dir1 == null) { 
+            return null; 
+        }
+        return new File(dir1, fileName);
+    }
+
+    public static File getLogDir(boolean logged) {
+        return MyPreferences.getDataFilesDir("logs", null, logged);
+    }
+    
     public static String formatKeyValue(Object keyIn, Object valueIn) {
         String key = objTagToString(keyIn);
         if (keyIn == null) {
@@ -361,5 +392,67 @@ public class MyLog {
             }
         }
         return key + ":{" + out + "}";
+    }
+
+    public static void setLogToFile(boolean logEnabled) {
+        if (logEnabled) {
+            String fileName = currentDateTimeFormatted() + "_log.txt";
+            logFileName.set(fileName); 
+        } else { 
+            logFileName.remove();
+        }
+    }
+    
+    static boolean isLogToFileEnabled() {
+        return logFileName.get() != null;
+    }
+    
+    static void logToFile(int logLevel, String tag, String msg, Throwable tr) {
+        String fileName = getLogFileName();
+        if (fileName == null) {
+            return;
+        }
+        StringBuilder builder = new StringBuilder();
+        builder.append(currentDateTimeFormatted());
+        builder.append(" ");
+        builder.append(logLevelToString(logLevel));
+        builder.append("/");
+        builder.append(tag);
+        builder.append(":");
+        if (!TextUtils.isEmpty(msg)) {
+            builder.append(" ");
+            builder.append(msg);
+        }
+        if (tr != null) {
+            builder.append(" ");
+            builder.append(tr.toString());
+            builder.append("\n");
+            builder.append(getStackTrace(tr));
+        }
+        builder.append("\n");
+        writeStringToFile(builder.toString(), fileName, true, false);
+    }
+    
+    static String getLogFileName() {
+        return logFileName.get();
+    }
+    
+    static String logLevelToString(int logLevel) {
+        switch (logLevel) {
+            case DEBUG:
+                return "D";
+            case ERROR:
+                return "E";
+            case INFO:
+                return "I";
+            case VERBOSE:
+                return "V";
+            default:
+                return Integer.toString(logLevel);
+        }
+    }
+    
+    static String currentDateTimeFormatted() {
+        return DateFormat.format("yyyy-MM-dd-hh-mm-ss", new Date(System.currentTimeMillis())).toString();
     }
 }

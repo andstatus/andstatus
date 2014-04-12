@@ -106,7 +106,9 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
                 editTextHost.setText(host);
                 checkBoxIsSsl.setChecked(isSsl);
                 checkBoxAllowHtml.setChecked(allowHtml);
-
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) { }
                 MyLog.v(this, method + "-Log before click");
                 buttonSave.performClick();
             }
@@ -114,7 +116,8 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
 
         MyLog.v(this, method + "-Log before run clicker 1");
         activity.runOnUiThread(clicker);
-        Thread.sleep(2000);
+        getInstrumentation().waitForIdleSync();
+        Thread.sleep(200);
 
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(originName);
         assertEquals("Origin '" + originName + "' added", originName, origin.getName());
