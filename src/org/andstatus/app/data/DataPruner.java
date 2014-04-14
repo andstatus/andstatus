@@ -78,20 +78,20 @@ public class DataPruner {
                 + ")";
         
         int maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
-        long sinceTimestamp = 0;
+        long latestTimestamp = 0;
 
         int nTweets = 0;
         int nToDeleteSize = 0;
         int nDeletedSize = 0;
         int maxSize = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_SIZE, "2000"));
-        long sinceTimestampSize = 0;
+        long latestTimestampSize = 0;
         Cursor cursor = null;
         try {
             if (maxDays > 0) {
-                sinceTimestamp = System.currentTimeMillis() - daysToMillis(maxDays);
+                latestTimestamp = System.currentTimeMillis() - MyLog.daysToMillis(maxDays);
                 SelectionAndArgs sa = new SelectionAndArgs();
                 sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <  ?", new String[] {
-                    String.valueOf(sinceTimestamp)
+                    String.valueOf(latestTimestamp)
                 });
                 sa.selection += " AND " + sqlNotFavoritedMessage;
                 sa.selection += " AND " + sqlNotLatestMessageByFollowedUser;
@@ -113,13 +113,13 @@ public class DataPruner {
                             MyDatabase.Msg.INS_DATE
                     }, null, null, MyDatabase.Msg.INS_DATE + " ASC LIMIT 0," + nToDeleteSize);
                     if (cursor.moveToLast()) {
-                        sinceTimestampSize = cursor.getLong(0);
+                        latestTimestampSize = cursor.getLong(0);
                     }
                     cursor.close();
-                    if (sinceTimestampSize > 0) {
+                    if (latestTimestampSize > 0) {
                         SelectionAndArgs sa = new SelectionAndArgs();
                         sa.addSelection(Msg.TABLE_NAME + "." + MyDatabase.Msg.INS_DATE + " <=  ?", new String[] {
-                            String.valueOf(sinceTimestampSize)
+                            String.valueOf(latestTimestampSize)
                         });
                         sa.selection += " AND " + sqlNotFavoritedMessage;
                         sa.selection += " AND " + sqlNotLatestMessageByFollowedUser;
@@ -137,23 +137,18 @@ public class DataPruner {
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this,
                     method + "; History time=" + maxDays + " days; deleted " + nDeletedTime
-                            + " , since " + new Date(sinceTimestamp).toString());
+                            + " , before " + new Date(latestTimestamp).toString());
             MyLog.v(this, method + "; History size=" + maxSize + " messages; deleted "
-                    + nDeletedSize + " of " + nTweets + " messages, since " + new Date(sinceTimestampSize).toString());
+                    + nDeletedSize + " of " + nTweets + " messages, before " + new Date(latestTimestampSize).toString());
         }
         pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
         return ok;
     }
 
-    /** TODO: java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays) since API 9  */
-    static long daysToMillis(long days) {
-        return days * (1000L * 60 * 60 * 24); 
-    }
-    
-    long pruneLogs(long maxDays) {
+    long pruneLogs(long maxDaysToKeep) {
         final String method = "pruneLogs";
-        long sinceTimestamp = System.currentTimeMillis() 
-                - daysToMillis(maxDays);
+        long latestTimestamp = System.currentTimeMillis() 
+                - MyLog.daysToMillis(maxDaysToKeep);
         long count = 0;
         File dir = MyLog.getLogDir(true);
         if (dir == null) {
@@ -161,18 +156,21 @@ public class DataPruner {
         }
         for (String filename : dir.list()) {
             File file = new File(dir, filename);
-            if (file.isFile() && file.lastModified() < sinceTimestamp) {
+            if (file.isFile() && (file.lastModified() < latestTimestamp)) {
                 if (file.delete()) {
                     count++;
+                    MyLog.v(this, method + "; deleted " + file.getName());
                 } else {
                     MyLog.v(this, method + " couldn't delete: " + file.getAbsolutePath());
                 }
+            } else {
+                MyLog.v(this, method + "; skipped " + file.getName() + ", modified " + new Date(file.lastModified()).toString());
             }
         }
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this,
                     method + "; deleted " + count
-                            + " files, since " + new Date(sinceTimestamp).toString());
+                            + " files, before " + new Date(latestTimestamp).toString());
         }
         return count;
     }

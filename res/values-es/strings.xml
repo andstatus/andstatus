@@ -112,6 +112,7 @@
     <string name="label_origin_name">Nombre del sistema de microblogging (único y no se puede cambiar)</string>
     <string name="label_origin_system">Sistema de microbblogin</string>
     <string name="label_origin_type">Tipo de sistema de Microblogging</string>
+    <string name="label_upgrading">Actualización en curso. Por favor, espere.</string>
     <string name="loading">Cargando…</string>
     <string name="message">Mensaje</string>
     <string name="message_twitter">Tweet</string>
@@ -166,19 +167,22 @@
 	<string name="resolve_view">Ver mensaje</string>
 	<string name="splash_button_learn_more">Más información</string>
 	<string name="splash_button_get_started">Comenzar</string>
-	<string name="splash_payoff_line">Cliente liviano para Twitter, pump.ioy StatusNet para Android™</string>
+	<string name="splash_payoff_line">Cliente liviano para Twitter, pump.io y StatusNet para Android™</string>
 	<string name="user_manual_page_1"><h1><b>Manual de usuario de AndStatus</b></h1>\n\n
         <h2><b>1. Primeros pasos</b></h2>\n\n
         Pulsa debajo del botón \"Comenzar\": se abrirá la pantalla para agregar una nueva cuenta.\n
-        Puedes cambiar por defecto del sistema de microblogging (\ "Twitter \") a alguna otra 
+        Puedes cambiar por defecto del sistema de microblogging (\"Twitter\") a alguna otra 
         (pump.io y StatusNet, además de Twitter, están preconfigurados).\n
-        Para Twitter es inmediato al presionar \ "Añadir esta cuenta \". 
+	En caso de que su sistema (tipo StatusNet) no aparezca, abra Opciones de menú, seleccione  \"Configuración -
+        Administrar los sistemas de microblogging\" y \"Añadir nuevo sistema\" antes de añadir una nueva cuenta.\n
+        Para Twitter es inmediato al presionar \"Añadir esta cuenta\". 
         Para otros sistemas, se le pedirá que escriba su nombre de usuario y contraseña antes de
-        habilitar el \ "Añadir esta cuenta \".\n
-        Después de la creación exitosa de la cuenta, por favor pulse la \ "flecha de la izquierda \" o 
+        habilitar el \"Añadir esta cuenta\".\n
+        Después de la creación exitosa de la cuenta, por favor pulse la \"flecha de la izquierda\" o 
         \"Barra de acción\" o \"Atrás\" de tu dispositivo. 
-        En este momento, tu línea de tiempo se abrirá y comenzará a cargar...\n 
-        ¡Felicidades! Lea a continuación que más puedes hacer.\n\n
+        Ahora la línea de tienmo de inicio se abrirá
+        y se iniciará la descarga desde internet de los mensajes de esta cuenta.\n 
+        ¡Felicidades! Lea a continuación que más puede hacer.\n\n
         Y no te olvides de añadir tus credenciales AndStatus en la pantalla de inicio:: 
         el widget te informará sobre nuevos mensajes y puede ser utilizado para lanzar AndStatus.\n\n
         <h2><b>2. AndStatus BÁSICO</b></h2>\n\n
@@ -187,40 +191,62 @@
         para que aparezca el menú contextual.\n
         Puedes hacer <b>clic</b> en un mensaje para obtener más detalles sobre el mismo o para ver
         el árbol de la conversación a la que pertenece el mensaje.\n
-        Pulsa la tecla <b> Home </b> en la \"barra de acción \" para cambiar a otros puntos de vista.\n\n
+        Pulsa la tecla <b>Home</b> en la \ "barra de acción \" para cambiar a otros puntos de vista.\n\n
         <h2><b>3. ENVÏO Y RESPUESTA</b></h2>\n\n
-        Con el fin de actualizar su estado, pulsa el botón \ "Blog \" (\ "Tweet \" para Twitter),
+        Con el fin de actualizar su estado, pulsa el botón \"Blog\" (\"Tweet\" para Twitter),
         escribe un texto en el área de texto en la parte inferior de la pantalla y pulsa <b>Enviar</b>.\n
-        Para responder, <b>mantén pulsado</b> un mensaje, selecciona <b>Responder</b>,
+        Para responder, <b>mantén pulsado</b> un mensaje, selecciona <b>Responder</b>,,
         y escribe tu respuesta en la parte inferior.\n
-        Para abortar una respuesta, basta con pinchar en el botón \ "Ocultar \" en el área de texto.
+        Para abortar una respuesta, basta con pinchar en el botón \"Ocultar\" en el área de texto.
 	</string>
     <string name="user_manual_page_2">
         <h2><b>4. MENSAJES DIRECTOS</b></h2>\n\n
-        Pulsa el botón <b> Inicio </b> (en la Línea de tiempo) 
-        y seleccion <b> Mensajes Directos </b> en la lista.\n
+        Pulsa el botón <b>Inicio</b> (en la Línea de tiempo) 
+        y seleccion <b>Mensajes Directos</b> en la lista.\n
         Con el fin de <b>eliminar</b> tu mensaje directo (o tu mensaje público), 
         <b>mantén pulsado</b> en él y selecciona <b>Eliminar</b>.\n\n
-        Los nuevos mensajes se recuperán con los plazos estipulados si has activado <b>Sincronización automática</b>
+        Los nuevos mensajes se recuperán con los plazos estipulados si has activado 
+        <b>Sincronización automática</b>
         en los ajustes de Cuenta y Sincronización de Android. 
         En cualquier caso, siempre se puede obtener actualizaciones desde Internet
-        utilizando manualmente el comando \ "Actualizar \" en el Menú de Opciones.\n\n
+        utilizando manualmente el comando \"Actualizar\" en el Menú de Opciones.\n\n
         <h2><b>5. MENCIONES</b></h2>\n\n
         Presiona <b>Inicio</b> y luego selecciona <b>Menciones</b>.\n
         Aquí enumerará cada mensaje que menciona su <b>@nombre de usuario</b>
-        (o incluso las menciones de en todas tus cuentas AndStatus para una línea de tiempo \"combinada\").\n\n
-        <h2><b>6. BUSCANDO</b></h2>\n\n
-        Haz clic en \"Menú\" para abrir el menú de opciones y luego pulsa <b>Buscar</b> 
-        o puedes hacer clic en el botón <b>Buscar</b> de tu dispositivo.\n
-        Si desea mostrar los mensajes de un usuario específico, busca por \ "nombre de usuario \".\n
-        Para ver las menciones de un usuario específico, buscar \"@nombre de usuario\".\n
-        Una búsqueda encontrará cualquier texto contenido en un mensaje. Esta sencilla búsqueda 
-        se hará entre los mensajes ya cargados desde Internet 
-        (Se está trabajando en implementar la búsqueda global...)\n\n
-        Por favor, tenga en cuenta que usted puede solicitar mensajes de Internet de cualquier usuario 
-        (un autor o de un remitente del mensaje) seleccionando 
-        \"Mensajes por Usuario\" en el menú contextual del mensaje. Ésta es también una especie de búsqueda global
-         que ya está en marcha.
+        (o incluso las menciones de en todas tus cuentas AndStatus para una línea 
+        de tiempo \"combinada\").\n\n
+        <h2><b>6. BÚSQUEDA (LOCAL) </b></h2>\n\n
+        Esta búsqueda se hace entre los mensajes ya cargados desde Internet.
+        Por lo tanto, está disponible incluso sin conexión\n
+        1. Con el fin de encontrar cualquier palabra o frase en el texto de los mensajes,
+        haga clic en \"Menú\" para abrir el menú de opciones y luego <b>Buscar</b>
+        o puede hacer clic en el botón <b>Buscar</b> de su dispositivo.\n
+        Si desea que se muestren los mensajes de un usuario específico,
+        por favor, busque en \"nombre de usuario\".\n
+        Para ver las menciones de un usuario específico, buscar \"@nombre de usuario\".\n\n
+        2. Para buscar rápidamente los mensajes de un usuario
+        (de un autor o de un remitente de un mensaje seleccionado), seleccione
+        \"Mensajes por nombre de usuario\" en el menú de contexto del mensaje. Esto es en realidad
+        una especie de búsqueda global (véase más adelante).\n\n
+        <h2><b>7. BÚSQUEDA GLOBAL</b></h2>\n\n
+        La función de búsqueda global solicita directamente los resultados de búsqueda
+        a los servidores del sistema de Microblogging.
+        Por eso se necesita conexión a Internet directa a los sistemas.
+        En primer lugar, se le presentará los resultados de la búsqueda local. En paralelo,
+        AndStatus hará peticiones de resultados al sistema de microblogging de la cuenta seleccionada
+        (o a todos los sistemas de microblogging, si la línea de tiempo es \"combinada\").
+        Los resultados de la búsqueda se actualizan sobre la recepción de las respuestas de los servidores.
+        En un caso de no haber conexión
+        (es decir, sin respuesta de un servidor de un sistema de microblogging)
+        verá los resultados de la búsqueda local solamente.\n
+        Tenga en cuenta que el sistema pump.io no soporta todavía la búsqueda global.\n
+        1. La búsqueda global con una palabra o una frase se puede iniciar
+        solo desde la línea temporal \"Pública\".
+        Después del cambio a esta línea de tiempo,
+        haga clic en \"Menú\" para abrir el menú de opciones y luego pulse <b>Búsqueda global</b>.\n
+        2. Otra forma de buscar globalmente los mensajes de un autor o de un remitente
+        del mensaje seleccionado es seleccionar
+        \"Mensajes por nombre de usuario\" en el menú contextual de este mensaje.
     </string>
 	<string name="search_timeline_label">Búsqueda de mensajes, usuarios y hashtags</string>
 	<string name="search_timeline_hint">Introduzca un nombre de usuario/frase</string>
@@ -266,7 +292,7 @@
 	<string name="summary_preference_username_pumpio">Introduzca su ID de tu servidor pump.io. Se parece a una dirección de correo electrónico, con su nombre de usuario a continuación \"@\" después tu servidor, por ejemplo: andstatus@identi.ca</string>
 	<string name="summary_preference_verify_credentials">Esta cuenta está verificada y habilitada. Pulse Back (&lt;) para continuar o pulse aquí para verificar las credenciales del usuario nuevo..</string>
     <string name="summary_preference_verify_credentials_failed">Fallo en la verificación. Pulse aquí para verificar las credenciales y permitir esta cuenta de usuario</string>
-	<string name="summary_preference_vibration_off">La vibración se desactiva</string>
+	<string name="summary_preference_vibration_off">La vibración se desactivará</string>
 	<string name="summary_preference_vibration_on">Vibración con mensaje entrante</string>
     <string name="system_is_busy_try_later">El sistema está ocupado. Por favor, inténtelo de nuevo más tarde.</string>
     <string name="timeline_reloaded">La línea de tiempo se ha vuelto a cargar.</string>
@@ -319,3 +345,4 @@
 	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">No implementado.</string>
 </resources>
+

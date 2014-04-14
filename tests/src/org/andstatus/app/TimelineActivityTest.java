@@ -106,7 +106,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
             }
         });
         
-        getInstrumentation().waitForIdleSync();
+        TestSuite.waitForIdleSync(this);
         
         activity.runOnUiThread(new Runnable() {
             // See

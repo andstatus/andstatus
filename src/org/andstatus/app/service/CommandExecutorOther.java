@@ -318,7 +318,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         MbMessage message = null;
         try {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                MyLog.v(this, method + ", text:'" + trimmedString(status, 40) + "'");
+                MyLog.v(this, method + ", text:'" + MyLog.trimmedString(status, 40) + "'");
             }
             if (recipientUserId == 0) {
                 String replyToMsgOid = MyProvider.idToOid(OidEnum.MSG_OID, replyToMsgId, 0);
@@ -333,7 +333,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             ok = (!message.isEmpty());
             logOk(ok);
         } catch (ConnectionException e) {
-            logConnectionException(e, method + ", text:'" + trimmedString(status, 40) + "'");
+            logConnectionException(e, method + ", text:'" + MyLog.trimmedString(status, 40) + "'");
         }
         if (ok) {
             // The message was sent successfully
@@ -343,21 +343,6 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                             : TimelineTypeEnum.DIRECT)).insertOrUpdateMsg(message);
             execContext.getResult().setItemId(msgId);
         }
-    }
-
-    private String trimmedString(String input, int maxLength) {
-        String out;
-        if (input != null) {
-            String trimmed  = input.trim();
-            if (trimmed.length() > maxLength) {
-                out = trimmed.substring(0, maxLength-2) + "..";
-            } else {
-                out = trimmed; 
-            }
-        } else {
-            out = "(null)";
-        }
-        return out;
     }
 
     private void reblog(long rebloggedId) {

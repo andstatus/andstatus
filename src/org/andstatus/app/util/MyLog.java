@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2011-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -357,7 +357,7 @@ public class MyLog {
         return ok;
     }
 
-    static File getLogFile(String fileName, boolean logged) {
+    public static File getLogFile(String fileName, boolean logged) {
         File dir1 = getLogDir(logged);
         if (dir1 == null) { 
             return null; 
@@ -433,7 +433,7 @@ public class MyLog {
         writeStringToFile(builder.toString(), fileName, true, false);
     }
     
-    static String getLogFileName() {
+    public static String getLogFileName() {
         return logFileName.get();
     }
     
@@ -453,6 +453,26 @@ public class MyLog {
     }
     
     static String currentDateTimeFormatted() {
-        return DateFormat.format("yyyy-MM-dd-hh-mm-ss", new Date(System.currentTimeMillis())).toString();
+        return DateFormat.format("yyyy-MM-dd-HH-mm-ss", new Date(System.currentTimeMillis())).toString();
+    }
+
+    public static String trimmedString(String input, int maxLength) {
+        String out;
+        if (input != null) {
+            String trimmed  = input.trim();
+            if (trimmed.length() > maxLength) {
+                out = trimmed.substring(0, maxLength-1) + "…";
+            } else {
+                out = trimmed; 
+            }
+        } else {
+            out = "(null)";
+        }
+        return out;
+    }
+
+    /** TODO: java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays) since API 9  */
+    public static long daysToMillis(long days) {
+        return days * (1000L * 60 * 60 * 24); 
     }
 }
