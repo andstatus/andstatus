@@ -252,16 +252,17 @@ public class PersistentAccounts {
      */
     public MyAccount getAccountWhichMayBeLinkedToThisMessage(long messageId, long userIdForThisMessage, 
             long preferredOtherUserId)  {
+        final String method = "getAccountWhichMayBeLinkedToThisMessage";
         MyAccount ma = fromUserId(userIdForThisMessage);
-        if (messageId == 0 || ma == null) {
+        if ((messageId == 0) || (ma == null)) {
             ma = fromUserId(preferredOtherUserId);
         }
         long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, messageId);
-        if (ma == null || originId != ma.getOriginId()) {
+        if ((ma == null) || (originId != ma.getOriginId())) {
            ma = findFirstMyAccountByOriginId(originId); 
         }
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "getMyAccountLinkedToThisMessage msgId=" + messageId +"; userId=" + userIdForThisMessage 
+            MyLog.v(this, method + "; msgId=" + messageId +"; userId=" + userIdForThisMessage 
                     + " -> account=" + (ma==null ? "null" : ma.getAccountName()));
         }
         return ma;

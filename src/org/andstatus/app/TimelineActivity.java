@@ -100,7 +100,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     private LinearLayout loadingLayout;
 
-    private Cursor mCursor;
+    private Cursor mCursor = null;
+    /** Parameters of currently shown Timeline */
+    private TimelineListParameters listParameters = new TimelineListParameters();
 
     private NotificationManager mNM;
     
@@ -346,9 +348,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!isFinishing) {
             serviceConnector.registerReceiver(this);
             loaderManager.onResumeActivity(LOADER_ID);
-            if (!isLoading()) {
-                restoreListPosition();
-            }
         }
     }
 
@@ -360,18 +359,23 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * 2. The last item we should retrieve before restoring the position.
      */
     private void saveListPosition() {
-        long firstVisibleItemId = 0;
-        long lastRetrievedItemId = 0;
-        int firstScrollPos = 0;
-        int lastScrollPos = -1;
-        ListPositionStorage ps = new ListPositionStorage(this);
-
-        firstScrollPos = getListView().getFirstVisiblePosition();
+        final String method = "saveListPosition";
         android.widget.ListAdapter la = getListView().getAdapter();
         if (la == null) {
-            MyLog.v(this, "Position wasn't saved - no adapters yet");
+            MyLog.v(this, method + " skipped: no ListAdapter");
             return;
         }
+        if (listParameters.isEmpty()) {
+            MyLog.v(this, method + " skipped: no listParameters");
+            return;
+        }
+
+        long firstVisibleItemId = 0;
+        long lastRetrievedItemId = 0;
+        int lastScrollPos = -1;
+        ListPositionStorage ps = new ListPositionStorage(listParameters);
+
+        int firstScrollPos = getListView().getFirstVisiblePosition();
         if (firstScrollPos > la.getCount() - 2) {
             // Skip footer
             firstScrollPos = la.getCount() - 2;
@@ -393,16 +397,15 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         if (firstVisibleItemId <= 0) {
-            MyLog.v(this, "Position wasn't saved \"" + ps.accountGuid + "\"; " + ps.keyFirst + " - no visible Item");
-            return;
-        }
+            MyLog.v(this, method + " failed: no visible items for \"" + ps.accountGuid + "\"; " + ps.keyFirst);
+        } else {
+            ps.put(firstVisibleItemId, lastRetrievedItemId);
 
-        ps.put(firstVisibleItemId, lastRetrievedItemId);
-
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "Position saved    \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
-                    + firstVisibleItemId + "; index=" + firstScrollPos + "; lastId="
-                    + lastRetrievedItemId + "; index=" + lastScrollPos);
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                MyLog.v(this, method + " succeeded \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+                        + firstVisibleItemId + "; index=" + firstScrollPos + "; lastId="
+                        + lastRetrievedItemId + "; index=" + lastScrollPos);
+            }
         }
     }
     
@@ -435,15 +438,15 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
          */
         private String keyQueryString = "";
         
-        private ListPositionStorage(TimelineActivity activity) {
-            queryString = activity.searchQuery; 
-            if ((activity.getTimelineType() != TimelineTypeEnum.USER) && !activity.isTimelineCombined()) {
-                MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(activity.currentMyAccountUserId);
+        private ListPositionStorage(TimelineListParameters listParameters) {
+            queryString = listParameters.searchQuery; 
+            if ((listParameters.timelineType != TimelineTypeEnum.USER) && !listParameters.timelineCombined) {
+                MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(listParameters.myAccountUserId);
                 if (ma != null) {
                     sp = ma.getAccountPreferences();
                     accountGuid = ma.getAccountName();
                 } else {
-                    MyLog.e(this, "No accoount for IserId=" + activity.currentMyAccountUserId);
+                    MyLog.e(this, "No accoount for IserId=" + listParameters.myAccountUserId);
                 }
             }
             if (sp == null) {
@@ -451,11 +454,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             }
             
             keyFirst = KEY_LAST_POSITION
-                    + activity.getTimelineType().save()
-                    + (activity.getTimelineType() == TimelineTypeEnum.USER ? "_user"
-                            + Long.toString(activity.getSelectedUserId()) : "") + (TextUtils.isEmpty(queryString) ? "" : "_search");
+                    + listParameters.timelineType.save()
+                    + (listParameters.timelineType == TimelineTypeEnum.USER ? "_user"
+                            + Long.toString(listParameters.selectedUserId) : "") + (TextUtils.isEmpty(queryString) ? "" : "_search");
             keyLast = keyFirst + "_last";
-            keyQueryString = KEY_LAST_POSITION + activity.getTimelineType().save() + "_querystring";
+            keyQueryString = KEY_LAST_POSITION + listParameters.timelineType.save() + "_querystring";
         }
 
         private void put(long firstVisibleItemId, long lastRetrievedItemId) {
@@ -500,11 +503,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * Restore (First visible item) position saved for this user and for this type of timeline
      */
     private void restoreListPosition() {
-        ListPositionStorage ps = new ListPositionStorage(this);
+        final String method = "restoreListPosition";
+        ListPositionStorage ps = new ListPositionStorage(listParameters);
         boolean loaded = false;
+        int scrollPos = -1;
         long firstItemId = -3;
         try {
-            int scrollPos = -1;
             firstItemId = ps.getFirst();
             if (firstItemId > 0) {
                 scrollPos = listPosForId(firstItemId);
@@ -512,16 +516,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             if (scrollPos >= 0) {
                 getListView().setSelectionFromTop(scrollPos, 0);
                 loaded = true;
-                if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                    MyLog.v(this, "Position restored \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
-                            + firstItemId +"; index=" + scrollPos);
-                }
             } else {
                 // There is no stored position
                 if (TextUtils.isEmpty(searchQuery)) {
                     scrollPos = getListView().getCount() - 2;
                 } else {
-                    // In search mode start from the most recent tweet!
+                    // In search mode start from the most recent message!
                     scrollPos = 0;
                 }
                 if (scrollPos >= 0) {
@@ -529,12 +529,16 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 }
             }
         } catch (Exception e) {
-            MyLog.v(this, "Position error", e);
-            loaded = false;
+            MyLog.v(this, method, e);
         }
-        if (!loaded) {
+        if (loaded) {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                MyLog.v(this, "Didn't restore position \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+                MyLog.v(this, method + " succeeded \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
+                        + firstItemId +"; index=" + scrollPos);
+            }
+        } else {
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                MyLog.v(this, method + " failed \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
                         + firstItemId);
             }
             ps.clear();
@@ -838,7 +842,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     && (firstVisibleItem + visibleItemCount >= totalItemCount);
             if (loadMore) {
                 MyLog.d(this, "Start Loading more items, rows=" + totalItemCount);
-                saveListPosition();
                 queryListData(true);
             }
         }
@@ -1171,7 +1174,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!positionRestored) {
             // We have to ensure that saved position will be
             // loaded from database into the list
-            params.lastItemId = new ListPositionStorage(this).getLast();
+            params.lastItemId = new ListPositionStorage(params).getLast();
         }
 
         if (params.lastItemId <= 0) {
@@ -1231,8 +1234,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private void changeListContent(TimelineListParameters params, Cursor cursor) {
         if (!params.cancelled && cursor != null && !isFinishing) {
             MyLog.v(this, "On changing Cursor");
+            saveListPosition();
             ((CursorAdapter) getListAdapter()).changeCursor(cursor);
             mCursor = cursor;
+            listParameters = params;
             // This check will prevent continuous loading...
             noMoreItems = params.incrementallyLoadingPages &&
                     cursor.getCount() <= getListAdapter().getCount();

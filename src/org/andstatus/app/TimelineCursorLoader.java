@@ -328,6 +328,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         final String method = "onReceive";
         MyLog.v(this, method + ": " + commandData);
         switch (commandData.getCommand()) {
+            case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
             case GET_STATUS:
             case SEARCH_MESSAGE:

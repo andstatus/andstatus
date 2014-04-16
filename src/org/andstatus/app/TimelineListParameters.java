@@ -50,6 +50,10 @@ class TimelineListParameters {
     volatile boolean cancelled = false;;
     volatile TimelineTypeEnum timelineToReload = TimelineTypeEnum.UNKNOWN;
     
+    public boolean isEmpty() {
+        return timelineType == TimelineTypeEnum.UNKNOWN;
+    }
+    
     @Override
     public String toString() {
         return "TimelineListParameters [loaderCallbacks=" + loaderCallbacks + ", loadOneMorePage="
