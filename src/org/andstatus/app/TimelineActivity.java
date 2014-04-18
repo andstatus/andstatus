@@ -28,6 +28,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -88,7 +89,6 @@ import java.util.List;
 public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener, ActionableMessageList, MyLoaderManager.LoaderCallbacks<Cursor> {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
 
-    private static final String KEY_IS_LOADING = "isLoading";
     private static final String KEY_LAST_POSITION = "last_position_";
 
     /**
@@ -230,7 +230,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         messageEditor.hide();
 
         boolean isInstanceStateRestored = false;
-        boolean isLoadingNew = false;
         if (savedInstanceState != null) {
             TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(savedInstanceState
                     .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
@@ -238,9 +237,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 isInstanceStateRestored = true;
                 timelineType = timelineTypeNew;
                 messageEditor.loadState(savedInstanceState);
-                if (savedInstanceState.containsKey(KEY_IS_LOADING)) {
-                    isLoadingNew = savedInstanceState.getBoolean(KEY_IS_LOADING);
-                }
                 contextMenu.loadState(savedInstanceState);
                 if (savedInstanceState.containsKey(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key)) {
                     timelineCombined = savedInstanceState.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key);
@@ -262,7 +258,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         // Create list footer to show the progress of message loading
         loadingLayout = (LinearLayout) inflater.inflate(R.layout.item_loading, null);
         getListView().addFooterView(loadingLayout);
-        setLoading(isLoadingNew);
+        createListAdapter(new MatrixCursor(getProjection()));
 
         // Attach listeners to the message list
         getListView().setOnScrollListener(this);
@@ -1232,16 +1228,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private void changeListContent(TimelineListParameters params, Cursor cursor) {
         if (!params.cancelled && cursor != null && !isFinishing) {
             MyLog.v(this, "On changing Cursor");
-            saveListPosition();
-            if (getListAdapter() == null) {
-                createListAdapter(cursor);   
-            } else {
-                ((CursorAdapter) getListAdapter()).changeCursor(cursor);
-            }
-            listParameters = params;
             // This check will prevent continuous loading...
             noMoreItems = params.incrementallyLoadingPages &&
                     cursor.getCount() <= getListAdapter().getCount();
+            saveListPosition();
+            ((CursorAdapter) getListAdapter()).changeCursor(cursor);
+            listParameters = params;
             restoreListPosition();
         }
     }
@@ -1319,8 +1311,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putBoolean(KEY_IS_LOADING, isLoading());
-
         messageEditor.saveState(outState);
         outState.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
         contextMenu.saveState(outState);
