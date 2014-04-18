@@ -49,10 +49,22 @@ public class DataInserterTest extends InstrumentationTestCase {
     private MbUser accountMbUser;
     private MyAccount ma;
     private Origin origin;
+    private String bodySuffix = "";
 
-    public void insertData() throws Exception {
+    public void insertConversation(String bodySuffixIn) throws Exception {
+        if (TextUtils.isEmpty(bodySuffixIn)) {
+            bodySuffix = "";
+        } else {
+            bodySuffix = " " + bodySuffixIn;
+        }
         mySetup();
-        testConversation();
+        insertAndTestConversation();
+    }
+
+    public void insertMessage(String body) throws Exception {
+        mySetup();
+        MbMessage message = buildPumpIoMessage(getAuthor1(), body, null, null);
+        addMessage(message);
     }
     
     private void mySetup() throws Exception {
@@ -282,11 +294,9 @@ public class DataInserterTest extends InstrumentationTestCase {
         cursor.close();
     }
     
-    public void testConversation() throws ConnectionException {
+    private void insertAndTestConversation() throws ConnectionException {
         assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, TestSuite.CONVERSATION_ORIGIN_TYPE  );
         
-        MbUser author1 = userFromPumpioOid("acct:first@example.net");
-        author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/res/drawable/splash_logo.png";
         MbUser author2 = userFromPumpioOid("acct:second@identi.ca");
         author2.avatarUrl = "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png";
         MbUser author3 = userFromPumpioOid("acct:third@pump.example.com");
@@ -294,11 +304,11 @@ public class DataInserterTest extends InstrumentationTestCase {
         MbUser author4 = userFromPumpioOid("acct:fourthWithoutAvatar@pump.example.com");
         
         MbMessage minus1 = buildPumpIoMessage(author2, "Older one message", null, null);
-        MbMessage selected = buildPumpIoMessage(author1, "Selected message", minus1, TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
+        MbMessage selected = buildPumpIoMessage(getAuthor1(), "Selected message", minus1, TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
         MbMessage reply1 = buildPumpIoMessage(author3, "Reply 1 to selected", selected, null);
         MbMessage reply2 = buildPumpIoMessage(author2, "Reply 2 to selected is public", selected, null);
         addPublicMessage(reply2, true);
-        MbMessage reply3 = buildPumpIoMessage(author1, "Reply 3 to selected by the same author", selected, null);
+        MbMessage reply3 = buildPumpIoMessage(getAuthor1(), "Reply 3 to selected by the same author", selected, null);
         addMessage(selected);
         addMessage(reply3);
         addMessage(reply1);
@@ -309,7 +319,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         addMessage(buildPumpIoMessage(author2, "Reply 5 to Reply 4", reply4, null));
         addMessage(buildPumpIoMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
-        MbMessage reply7 = buildPumpIoMessage(author1, "Reply 7 to Reply 2 is about " 
+        MbMessage reply7 = buildPumpIoMessage(getAuthor1(), "Reply 7 to Reply 2 is about " 
         + TestSuite.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
         addPublicMessage(reply7, true);
         
@@ -320,6 +330,12 @@ public class DataInserterTest extends InstrumentationTestCase {
         addMessage(reply10);
         MbMessage reply11 = buildPumpIoMessage(author2, "Reply 11 to Reply 7 with " + TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
         addPublicMessage(reply11, true);
+    }
+
+    private MbUser getAuthor1() {
+        MbUser author1 = userFromPumpioOid("acct:first@example.net");
+        author1.avatarUrl = "https://raw.github.com/andstatus/andstatus/master/res/drawable/splash_logo.png";
+        return author1;
     }
     
     private void addPublicMessage(MbMessage message, boolean isPublic) {
@@ -348,7 +364,7 @@ public class DataInserterTest extends InstrumentationTestCase {
             messageOid = author.url  + "/" + (inReplyToMessage == null ? "note" : "comment") + "thisisfakeuri" + System.nanoTime();
         }
         MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid);
-        message.setBody(body + (inReplyToMessage != null ? " it" + iteration : "" ));
+        message.setBody(body + (inReplyToMessage != null ? " it" + iteration : "" ) + bodySuffix );
         message.sentDate = System.currentTimeMillis();
         message.via = "AndStatus";
         message.sender = author;

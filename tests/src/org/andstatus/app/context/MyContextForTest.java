@@ -84,7 +84,11 @@ public class MyContextForTest implements MyContext {
 
     @Override
     public Context context() {
-        return myContext.context();
+        if (myContext == null) {
+            return null;
+        } else {
+            return myContext.context();
+        }
     }
 
     @Override

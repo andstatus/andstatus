@@ -123,8 +123,9 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
      * Clean after successful or failed operation
      */
     private void asyncLoaderEnded(Cursor cursor) {
+        Cursor cursorPrev = null;
         if (this.mCursor != cursor) {
-            disposeResult();
+            cursorPrev = this.mCursor; 
             this.mCursor = cursor;
         }
         if (params.cancelled || cursor == null) {
@@ -132,6 +133,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         } else {
             deliverResult(cursor);
         }
+        DbUtils.closeSilently(cursorPrev, null);
         synchronized (asyncLoaderLock) {
             asyncLoader = null;
         }

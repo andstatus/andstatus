@@ -199,7 +199,7 @@ public class TestSuite extends TestCase {
         if (!dataAdded) {
             dataAdded = true;
             new OriginsAndAccountsInserter().insert();
-            new DataInserterTest().insertData();
+            new DataInserterTest().insertConversation("");
             new StatusNetMessagesInserter().insertData();
         }
 
@@ -261,7 +261,7 @@ public class TestSuite extends TestCase {
         final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
         assertTrue(list != null);
         for (int ind=0; ind<200; ind++) {
-            if (list.getChildCount() > 0) {
+            if (list.getChildCount() > 1) {
                 break;
             }
             instrumentationTestCase.getInstrumentation().waitForIdleSync();

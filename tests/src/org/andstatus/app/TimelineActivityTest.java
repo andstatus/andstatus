@@ -6,14 +6,20 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DataInserterTest;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.MyService;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.service.MyService.ServiceState;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -92,21 +98,9 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         final String method = "testOpeningConversationActivity";
         TestSuite.waitForListLoaded(this, activity);
         
-        ActivityMonitor activityMonitor = getInstrumentation().addMonitor(ConversationActivity.class.getName(), null, false);
+        selectListPosition(method, 0);
 
-        final ListView listView = (ListView) activity.findViewById(android.R.id.list);
-        MyLog.v(this, method + "-Log setSelection");
-        
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                int position = 0;
-                MyLog.v(this, method + "-Log on setting selection");
-                listView.setSelection(position);
-            }
-        });
-        
-        TestSuite.waitForIdleSync(this);
+        ActivityMonitor activityMonitor = getInstrumentation().addMonitor(ConversationActivity.class.getName(), null, false);
         
         activity.runOnUiThread(new Runnable() {
             // See
@@ -116,8 +110,8 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
                 int position = 0;
                 long rowId = ((ListActivity) activity).getListAdapter().getItemId(position);
                 MyLog.v(this, method + "-Log on performClick, rowId=" + rowId);
-                listView.performItemClick(
-                        listView.getAdapter().getView(position, null, null),
+                getListView().performItemClick(
+                        getListView().getAdapter().getView(position, null, null),
                         position, rowId);
             }
         });
@@ -129,6 +123,62 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         TestSuite.waitForListLoaded(this, nextActivity);
         Thread.sleep(500);
         nextActivity.finish();        
+    }
+
+    private void selectListPosition(final String method, final int positionIn) throws InterruptedException {
+        TestSuite.waitForIdleSync(this);
+        MyLog.v(this, method + " before setSelection " + positionIn);
+        
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                int position = positionIn;
+                ListAdapter la = getListView().getAdapter();
+                if (la.getCount() <= position) {
+                    position = la.getCount() - 1;
+                }
+                MyLog.v(this, method + " on     setSelection " + position 
+                        + " of " + (la.getCount() - 1));
+                getListView().setSelection(position);
+            }
+        });
+        TestSuite.waitForIdleSync(this);
+        MyLog.v(this, method + " after  setSelection");
+    }
+
+    private ListView getListView() {
+        return (ListView) activity.findViewById(android.R.id.list);
+    }
+
+    public void testPositionOnContentChange() throws Exception {
+        final String method = "testPositionOnContentChange";
+        TestSuite.waitForListLoaded(this, activity);
+        
+        int position1 = 20;
+        selectListPosition(method, position1);
+        Thread.sleep(2000);
+        long itemId = getListView().getAdapter().getItemId(position1);
+        new DataInserterTest().insertConversation("p1");
+        CommandData commandData = new CommandData(CommandEnum.CREATE_FAVORITE, TestSuite.CONVERSATION_ACCOUNT_NAME);
+        MyService.broadcastState(activity, ServiceState.RUNNING, commandData);
+        TestSuite.waitForIdleSync(this);
+        Thread.sleep(2000);
+        int firstScrollPos = getListView().getFirstVisiblePosition();
+        assertTrue("New content added above Position1=" + position1 
+                + "; new position=" + firstScrollPos, firstScrollPos > position1);
+        boolean found = false;
+        for (int ind=0; ind<2; ind++) {
+            if (itemId == getListView().getAdapter().getItemId(firstScrollPos + ind)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            Thread.sleep(5000);
+        }
+        assertTrue("The item was found near the top of the screen. Position1=" + position1 
+                + "; new position=" + firstScrollPos, found);
+        
     }
     
     public void testOpeningAccountSelector() throws InterruptedException {
