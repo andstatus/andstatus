@@ -61,6 +61,10 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
         this.replyLevel = replyLevel;
     }
 
+    public boolean isLoaded() {
+        return createdDate > 0;
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ConversationOneMessage)) {

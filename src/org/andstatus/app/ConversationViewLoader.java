@@ -95,11 +95,11 @@ public class ConversationViewLoader {
 
     List<Long> idsOfTheMessagesToFind = new ArrayList<Long>();
 
-    public ConversationViewLoader(Context contextIn, MyAccount maIn, long selectedMessageIdIn, MessageContextMenu contextMenuIn) {
-        context = contextIn;
-        ma = maIn;
-        selectedMessageId = selectedMessageIdIn;
-        contextMenu = contextMenuIn;
+    public ConversationViewLoader(Context context, MyAccount ma, long selectedMessageId, MessageContextMenu contextMenu) {
+        this.context = context;
+        this.ma = ma;
+        this.selectedMessageId = selectedMessageId;
+        this.contextMenu = contextMenu;
     }
     
     public void load() {
@@ -117,27 +117,59 @@ public class ConversationViewLoader {
         }
         findRepliesRecursively(oMsg);
         MyLog.v(this, "findPreviousMessages id=" + oMsg.msgId);
-        addRebloggers(oMsg);
-        if (addMessageToList(oMsg) && shouldFindPreviousMessageOf(oMsg)) {
-            findPreviousMessagesRecursively(new ConversationOneMessage(oMsg.inReplyToMsgId,
-                    oMsg.replyLevel - 1));
+        loadMessageFromDatabase(oMsg);
+        if (oMsg.isLoaded()) {
+            if (addMessageToList(oMsg)) {
+                if (oMsg.inReplyToMsgId != 0) {
+                    findPreviousMessagesRecursively(new ConversationOneMessage(oMsg.inReplyToMsgId,
+                            oMsg.replyLevel - 1));
+                } else {
+                    checkInReplyToNameOf(oMsg);                    
+                }
+            }
+        } else {
+            retrieveFromInternet(oMsg.msgId);
         }
     }
+    
+    /** Returns true if message was added 
+     *          false in a case the message existed already 
+     * */
+    private boolean addMessageIdToFind(long msgId) {
+        if (msgId == 0) {
+            return false;
+        } else if (idsOfTheMessagesToFind.contains(msgId)) {
+            MyLog.v(this, "findMessages cycled on the id=" + msgId);
+            return false;
+        }
+        idsOfTheMessagesToFind.add(msgId);
+        return true;
+    }
 
-    private void addRebloggers(ConversationOneMessage oMsg) {
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, true, oMsg.msgId);
+    public void findRepliesRecursively(ConversationOneMessage oMsg) {
+        MyLog.v(this, "findReplies for id=" + oMsg.msgId);
+        List<Long> replies = MyProvider.getReplyIds(oMsg.msgId);
+        oMsg.nReplies = replies.size();
+        for (long replyId : replies) {
+            ConversationOneMessage oMsgReply = new ConversationOneMessage(replyId, oMsg.replyLevel + 1);
+            findPreviousMessagesRecursively(oMsgReply);
+        }
+    }
+    
+    private void loadMessageFromDatabase(ConversationOneMessage oMsg) {
+        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.ALL, true, oMsg.msgId);
         Cursor cursor = null;
         try {
             cursor = context.getContentResolver().query(uri, PROJECTION, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
-                addRebloggersFromCursor(oMsg, cursor);
+                loadMessageFromCursor(oMsg, cursor);
             }
         } finally {
             DbUtils.closeSilently(cursor);
         }
     }
 
-    private void addRebloggersFromCursor(ConversationOneMessage oMsg, Cursor cursor) {
+    private void loadMessageFromCursor(ConversationOneMessage oMsg, Cursor cursor) {
         /**
          * IDs of all known senders of this message except for the Author
          * These "senders" reblogged the message
@@ -216,51 +248,28 @@ public class ConversationViewLoader {
         return added;
     }
     
-    private boolean shouldFindPreviousMessageOf(ConversationOneMessage oMsg) {
-        boolean shouldFind = false;
-        if (oMsg.createdDate == 0) {
-            MyLog.v(this, "Message id=" + oMsg.msgId + " should be retrieved from the Internet");
-            MyServiceManager.sendCommand(new CommandData(CommandEnum.GET_STATUS, ma
-                    .getAccountName(), oMsg.msgId));
-        } else {
-            if (oMsg.inReplyToMsgId != 0) {
-                shouldFind = true;
-            } else if (!SharedPreferencesUtil.isEmpty(oMsg.inReplyToName)) {
-                MyLog.v(this, "Message id=" + oMsg.msgId + " has reply to name ("
-                        + oMsg.inReplyToName
-                        + ") but no reply to message id");
-                // Don't try to retrieve this message again. It
-                // looks like there really are such messages.
-                ConversationOneMessage oMsg2 = new ConversationOneMessage(0, oMsg.replyLevel-1);
-                oMsg2.author = oMsg.inReplyToName;
-                oMsg2.body = "("
-                        + context.getText(R.string.id_of_this_message_was_not_specified)
-                        + ")";
-                oMsgs.add(oMsg2);
-            }
+    private void checkInReplyToNameOf(ConversationOneMessage oMsg) {
+        if (!SharedPreferencesUtil.isEmpty(oMsg.inReplyToName)) {
+            MyLog.v(this, "Message id=" + oMsg.msgId + " has reply to name ("
+                    + oMsg.inReplyToName
+                    + ") but no reply to message id");
+            // Don't try to retrieve this message again. 
+            // It looks like such messages really exist.
+            ConversationOneMessage oMsg2 = new ConversationOneMessage(0, oMsg.replyLevel-1);
+            // This allows to place the message on the timeline correctly
+            oMsg2.createdDate = oMsg.createdDate - 60000;
+            oMsg2.author = oMsg.inReplyToName;
+            oMsg2.body = "("
+                    + context.getText(R.string.id_of_this_message_was_not_specified)
+                    + ")";
+            addMessageToList(oMsg2);
         }
-        return shouldFind;
     }
 
-    private boolean addMessageIdToFind(long msgId) {
-        if (msgId == 0) {
-            return false;
-        } else if (idsOfTheMessagesToFind.contains(msgId)) {
-            MyLog.v(this, "findMessages cycled on the msg id=" + msgId);
-            return false;
-        }
-        idsOfTheMessagesToFind.add(msgId);
-        return true;
-    }
-
-    public void findRepliesRecursively(ConversationOneMessage oMsg) {
-        MyLog.v(this, "findReplies " + oMsg.msgId);
-        List<Long> replies = MyProvider.getReplyIds(oMsg.msgId);
-        oMsg.nReplies = replies.size();
-        for (long replyId : replies) {
-            ConversationOneMessage oMsgReply = new ConversationOneMessage(replyId, oMsg.replyLevel + 1);
-            findPreviousMessagesRecursively(oMsgReply);
-        }
+    private void retrieveFromInternet(long msgId) {
+        MyLog.v(this, "Message id=" + msgId + " should be retrieved from the Internet");
+        MyServiceManager.sendCommand(new CommandData(CommandEnum.GET_STATUS, ma
+                .getAccountName(), msgId));
     }
 
     private static class ReplyLevelComparator implements Comparator<ConversationOneMessage>, Serializable {
@@ -306,21 +315,22 @@ public class ConversationViewLoader {
     }
 
     private void enumerateBranch(ConversationOneMessage oMsg, OrderCounters order, int indent) {
-        if (addMessageIdToFind(oMsg.msgId)) {
+        if (!addMessageIdToFind(oMsg.msgId)) {
             return;
         }
+        int indentNext = indent;
         oMsg.historyOrder = order.history++;
         oMsg.listOrder = order.list--;
         oMsg.indentLevel = indent;
         if ((oMsg.nReplies > 1 || oMsg.nParentReplies > 1)
-                && indent < MAX_INDENT_LEVEL) {
-            indent++;
+                && indentNext < MAX_INDENT_LEVEL) {
+            indentNext++;
         }
         for (int ind = oMsgs.size() - 1; ind >= 0; ind--) {
            ConversationOneMessage reply = oMsgs.get(ind);
            if (reply.inReplyToMsgId == oMsg.msgId) {
                reply.nParentReplies = oMsg.nReplies;
-               enumerateBranch(reply, order, indent);
+               enumerateBranch(reply, order, indentNext);
            }
         }
     }

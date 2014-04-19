@@ -37,18 +37,18 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
-    <release android:versionName="8.2" android:versionCode="98"
-        versionDate="2014-04-06"
+    <release android:versionName="8.3" android:versionCode="99"
+        versionDate="2014-04-19"
         versionTitle="Smooth timeline scrolling. Spanish translation">
         <changes>
-            <change>In the presence of background operations the Timeline is now operating smoothly
-                and doesn't freeze. Potentially long operations moved to the background thread.                  
-                See <a href="https://github.com/andstatus/andstatus/issues/33" >Issue #33</a></change>
-            <change>Spanish translation added, thanks to <a href="https://identi.ca/susobaco" >Suso Comesaña</a></change>
+            <change>Fixed "Preserve screen position after content update". As a Timeline is being
+                updated in the background, new messages don't cause unexpected list scrolling any more.
+                See <a href="https://github.com/andstatus/andstatus/issues/7" >Issue #7</a></change>
+            <change>Spanish translation updated, thanks to <a href="https://identi.ca/susobaco" >Suso Comesaña</a></change>
         </changes>
     </release>
-    <release android:versionName="8.1" android:versionCode="97"
-        versionDate="2014-03-27"
+    <release android:versionName="8.2" android:versionCode="98"
+        versionDate="2014-04-06"
         versionTitle="Public Timeline and Global Search">
         <changes>
             <change>"Public" Timeline added to the list of available timelines. 
@@ -66,7 +66,11 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             <change>Options menu in Account activity allows to open Settings 
                 e.g. to add new Microblogging system.</change>
             <change>Fixed: Android fast scroll thumb disappears after switching Timeline type or "combined" mode.</change>
-        </changes>
+            <change>In the presence of background operations the Timeline is now operating smoothly
+                and doesn't freeze. Potentially long operations moved to the background thread.                  
+                See <a href="https://github.com/andstatus/andstatus/issues/33" >Issue #33</a></change>
+            <change>Spanish translation added, thanks to <a href="https://identi.ca/susobaco" >Suso Comesaña</a></change>
+            </changes>
     </release>
     <release android:versionName="7.1" android:versionCode="95"
         versionDate="2014-02-07"
