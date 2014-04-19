@@ -39,7 +39,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
 
     <release android:versionName="8.3" android:versionCode="99"
         versionDate="2014-04-19"
-        versionTitle="Smooth timeline scrolling. Spanish translation">
+        versionTitle="Fixed 'Preserve screen position after content update'">
         <changes>
             <change>Fixed "Preserve screen position after content update". As a Timeline is being
                 updated in the background, new messages don't cause unexpected list scrolling any more.
