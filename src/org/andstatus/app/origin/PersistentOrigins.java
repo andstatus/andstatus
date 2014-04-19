@@ -27,10 +27,11 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PersistentOrigins {
-    private ConcurrentHashMap<String,Origin> persistentOrigins = new ConcurrentHashMap<String, Origin>();
+    private Map<String,Origin> persistentOrigins = new ConcurrentHashMap<String, Origin>();
     
     private PersistentOrigins() {
     }

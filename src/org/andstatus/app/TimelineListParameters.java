@@ -47,7 +47,7 @@ class TimelineListParameters {
 
     // Execution state / data:
     volatile long startTime = 0;
-    volatile boolean cancelled = false;;
+    volatile boolean cancelled = false;
     volatile TimelineTypeEnum timelineToReload = TimelineTypeEnum.UNKNOWN;
     
     public boolean isEmpty() {

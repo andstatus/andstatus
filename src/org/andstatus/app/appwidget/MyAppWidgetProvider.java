@@ -132,11 +132,10 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                     }
                 }
             }
-            if (!done) {
-                if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-                    MyLog.d(TAG, "Deletion was not done, extras='"
-                            + extras.toString() + "'");
-                }
+            if (!done
+                    && MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+                MyLog.d(TAG, "Deletion was not done, extras='"
+                        + extras.toString() + "'");
             }
         }
         if (!done) {
@@ -346,16 +345,16 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
             intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                     timeLineType.save());
 
-            if ( data.areNew() ) {
-                // TODO: We don't mention MyAccount in the intent 
-                // On the other hand the Widget is also is not Account aware yet,
-                //   so for now this is correct.
-                if (MyContextHolder.get().persistentAccounts().size() > 1) {
-                    // There are more than one account, 
-                    // so turn Combined timeline on in order to show all new messages.
-                    intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, true);
-                }
+            if (data.areNew()
+                    && MyContextHolder.get().persistentAccounts().size() > 1) {
+                // There are more than one account,
+                // so turn Combined timeline on in order to show all the new messages.
+                intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, true);
             }
+
+            // TODO: We don't mention MyAccount in the intent 
+            // On the other hand the Widget is not Account aware yet also,
+            //   so for now this is correct.
             
             // This line is necessary to actually bring Extra to the target intent
             // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
@@ -428,13 +427,12 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
                 }
             }
             widgetTime = strStart;
-            if (strEnd.length()>0) {
-                if (strEnd.compareTo(strStart) != 0) {
-                    if (widgetTime.length()>0) {
-                        widgetTime += " - ";
-                    }
-                    widgetTime += strEnd;
+            if (strEnd.length() > 0
+                    && strEnd.compareTo(strStart) != 0) {
+                if (widgetTime.length() > 0) {
+                    widgetTime += " - ";
                 }
+                widgetTime += strEnd;
             }
         }       
         

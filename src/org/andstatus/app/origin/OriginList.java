@@ -90,7 +90,7 @@ public class OriginList extends ListActivity {
     private void fillList() {
         data.clear();
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
-            HashMap<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<String, String>();
             String visibleName = origin.getName();
             map.put(KEY_VISIBLE_NAME, visibleName);
             map.put(KEY_NAME, origin.getName());

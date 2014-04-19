@@ -62,18 +62,16 @@ public class ConnectionException extends Exception {
                     MyLog.writeStringToFile(stackTrace, "ErrorJson_stacktrace_log.txt");
                     MyLog.v(objTag, "stack trace: " + stackTrace);
                 }
-                if (obj != null) {
-                    String strJso = "";
-                    if (JSONObject.class.isInstance(obj)) {
-                       strJso = ((JSONObject) obj).toString(2);
-                    } else if (JSONArray.class.isInstance(obj)) {
-                        strJso = ((JSONArray) obj).toString(2);
-                    } else {
-                        strJso = "Class " + obj.getClass().getCanonicalName() + " " + obj.toString();
-                    }
-                    MyLog.writeStringToFile(strJso, "ErrorJson_log.json");
-                    MyLog.v(objTag, "jso: " + strJso);
+                String strJso = "";
+                if (JSONObject.class.isInstance(obj)) {
+                   strJso = ((JSONObject) obj).toString(2);
+                } else if (JSONArray.class.isInstance(obj)) {
+                    strJso = ((JSONArray) obj).toString(2);
+                } else {
+                    strJso = "Class " + obj.getClass().getCanonicalName() + " " + obj.toString();
                 }
+                MyLog.writeStringToFile(strJso, "ErrorJson_log.json");
+                MyLog.v(objTag, "jso: " + strJso);
             } catch (JSONException ignored) {
                 MyLog.ignored(objTag, ignored);
             }

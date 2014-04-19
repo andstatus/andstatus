@@ -263,8 +263,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         return super.onOptionsItemSelected(item);
     }
 
-	private void startMyPreferenceActivity()
-	{
+	private void startMyPreferenceActivity() {
 		finish();
         startActivity(new Intent(this, MyPreferenceActivity.class));
 	}

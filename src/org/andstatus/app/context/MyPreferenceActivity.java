@@ -208,10 +208,10 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         
         Preference myPref = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
         CharSequence summary;
-        if (MyContextHolder.get().persistentAccounts().size() > 0) {
-            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().size();
-        } else {
+        if (MyContextHolder.get().persistentAccounts().isEmpty()) {
             summary = getText(R.string.summary_preference_accounts_absent);
+        } else {
+            summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().size();
         }
         myPref.setSummary(summary);
         
@@ -295,11 +295,10 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             if (key.equals(MyPreferences.KEY_MIN_LOG_LEVEL)) {
                 showMinLogLevel();
             }
-            if (key.equals(MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW)) {
-                if (!useExternalStorageIsBusy) {
-                    useExternalStorageIsBusy = true;
-                    showDialog(DLG_MOVE_DATA_BETWEEN_STORAGES);
-                }
+            if (key.equals(MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW)
+                    && !useExternalStorageIsBusy) {
+                useExternalStorageIsBusy = true;
+                showDialog(DLG_MOVE_DATA_BETWEEN_STORAGES);
             }
         } finally {
             onSharedPreferenceChangedIsBusy = false;
@@ -640,22 +639,16 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             } finally {
                 // Delete unnecessary files
                 try {
-                    if (succeeded) {
-                        if (copied && dbFileOld != null) {
-                            if (dbFileOld.exists()) {
-                                if (!dbFileOld.delete()) {
-                                    messageToAppend.append(method + " couldn't delete old files. ");
-                                }
-                            }
-                        }
-                    } else {
-                        if (dbFileNew != null) {
-                            if (dbFileNew.exists()) {
-                                if (!dbFileNew.delete()) {
-                                    messageToAppend.append(method + " Couldn't delete new files. ");
-                                }
-                            }
-                        }
+                    if (succeeded
+                            && (copied && dbFileOld != null)
+                            && dbFileOld.exists()
+                            && !dbFileOld.delete()) {
+                        messageToAppend.append(method + " couldn't delete old files. ");
+                    } else if (dbFileNew != null
+                            && dbFileNew.exists()
+                            && !dbFileNew.delete()) {
+                        messageToAppend.append(method + " couldn't delete new files. ");
+
                     }
                 } catch (Exception e) {
                     MyLog.v(this, method + " Delete old file", e);
@@ -679,28 +672,26 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             long sizeIn = -1;
             long sizeCopied = 0;
             boolean ok = false;
-            if (src != null) {
-                if (src.exists()) {
-                    sizeIn = src.length();
-                    if (!dst.createNewFile()) {
-                        MyLog.e(TAG, "New file was not created: '" + dst.getCanonicalPath() + "'");
-                    } else if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
-                        MyLog.d(TAG, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
-                    } else {
-                        java.nio.channels.FileChannel inChannel = null;
-                        java.nio.channels.FileChannel outChannel = null;
-                        try {
-                            inChannel = new java.io.FileInputStream(src).getChannel();
-                            outChannel = new java.io.FileOutputStream(dst)
-                            .getChannel();
-                            sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
-                            ok = (sizeIn == sizeCopied);
-                        } finally {
-                            DbUtils.closeSilently(inChannel);
-                            DbUtils.closeSilently(outChannel);
-                        }
-
+            if (src != null && src.exists()) {
+                sizeIn = src.length();
+                if (!dst.createNewFile()) {
+                    MyLog.e(TAG, "New file was not created: '" + dst.getCanonicalPath() + "'");
+                } else if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
+                    MyLog.d(TAG, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
+                } else {
+                    java.nio.channels.FileChannel inChannel = null;
+                    java.nio.channels.FileChannel outChannel = null;
+                    try {
+                        inChannel = new java.io.FileInputStream(src).getChannel();
+                        outChannel = new java.io.FileOutputStream(dst)
+                                .getChannel();
+                        sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
+                        ok = (sizeIn == sizeCopied);
+                    } finally {
+                        DbUtils.closeSilently(inChannel);
+                        DbUtils.closeSilently(outChannel);
                     }
+
                 }
             }
             MyLog.d(TAG, "Copied " + sizeCopied + " bytes of " + sizeIn);
@@ -737,12 +728,12 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if (MyContextHolder.get().persistentAccounts().size() > 0) {
-                closeAndGoBack();
-                return true;    
-            }
-        }        
+        if (keyCode == KeyEvent.KEYCODE_BACK
+                && event.getRepeatCount() == 0
+                && !MyContextHolder.get().persistentAccounts().isEmpty()) {
+            closeAndGoBack();
+            return true;
+        }
         return super.onKeyDown(keyCode, event);
     }
 

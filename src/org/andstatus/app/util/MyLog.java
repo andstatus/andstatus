@@ -85,6 +85,8 @@ public class MyLog {
 
     private static volatile ThreadLocal<String> logFileName = new ThreadLocal<String>();
 
+    private final static String COMMA = ",";
+
     private MyLog() {
         
     }
@@ -385,7 +387,6 @@ public class MyLog {
         String out = "";
         if (!TextUtils.isEmpty(value)) {
             out = value.trim();
-            final String COMMA = ",";
             int ind = out.lastIndexOf(COMMA);
             if (ind > 0 && ind == out.length()-1) {
                 out = out.substring(0, ind);

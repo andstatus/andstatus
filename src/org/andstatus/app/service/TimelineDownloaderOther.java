@@ -58,7 +58,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
         LatestUserMessages latestUserMessages = new LatestUserMessages();
         latestTimelineItem.onTimelineDownloaded();
         DataInserter di = new DataInserter(execContext);
-        for (boolean done = false; !done; ) {
+        for (int loopCounter=0; loopCounter < 100; loopCounter++ ) {
             try {
                 int limit = execContext.getMyAccount().getConnection().fixedDownloadLimitForApiRoutine(toDownload, 
                         execContext.getTimelineType().getConnectionApiRoutine()); 
@@ -80,7 +80,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 }
                 if (toDownload <= 0
                         || lastPosition == latestTimelineItem.getPosition()) {
-                    done = true;
+                    break;
                 } else {
                     lastPosition = latestTimelineItem.getPosition();
                 }

@@ -33,6 +33,7 @@ import org.andstatus.app.context.MyContextHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -62,9 +63,9 @@ public class AccountSelector extends ListActivity {
                 accounts.put(ma.getAccountName(), ma);
             }
         }
-        ArrayList<Map<String, String>> data = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> data = new ArrayList<Map<String, String>>();
         for (MyAccount ma : accounts.values()) {
-            HashMap<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<String, String>();
             String visibleName = ma.getAccountName();
             if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
                 visibleName = "(" + visibleName + ")";

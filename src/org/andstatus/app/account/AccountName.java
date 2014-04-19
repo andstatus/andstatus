@@ -137,7 +137,7 @@ class AccountName {
         return origin.getName();
     }
 
-    public int compareTo(String string) {
+    public int compareToString(String string) {
         return toString().compareTo(string);
     }
 

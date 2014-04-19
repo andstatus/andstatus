@@ -167,10 +167,8 @@ public class MyServiceManager extends BroadcastReceiver {
             long availableInMillis = 0; 
             synchronized (serviceAvailableLock) {
                 availableInMillis = timeWhenTheServiceWillBeAvailable - System.currentTimeMillis();
-                if  (!isServiceAvailable) {
-                    if (availableInMillis <= 0) {
-                        setServiceAvailable();
-                    }
+                if (!isServiceAvailable && availableInMillis <= 0) {
+                    setServiceAvailable();
                 }
                 isAvailable = isServiceAvailable;
             }

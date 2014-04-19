@@ -112,117 +112,121 @@ public class ConversationViewLoader {
     }
 
     private void findPreviousMessagesRecursively(ConversationOneMessage oMsg) {
-        long msgId = oMsg.id;
-        if (checkAndAddMessageToFind(msgId)) {
+        if (!addMessageIdToFind(oMsg.msgId)) {
             return;
         }
         findRepliesRecursively(oMsg);
-        MyLog.v(this, "findPreviousMessages " + msgId);
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, true, msgId);
+        MyLog.v(this, "findPreviousMessages id=" + oMsg.msgId);
+        addRebloggers(oMsg);
+        if (addMessageToList(oMsg) && shouldFindPreviousMessageOf(oMsg)) {
+            findPreviousMessagesRecursively(new ConversationOneMessage(oMsg.inReplyToMsgId,
+                    oMsg.replyLevel - 1));
+        }
+    }
+
+    private void addRebloggers(ConversationOneMessage oMsg) {
+        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.HOME, true, oMsg.msgId);
         Cursor cursor = null;
         try {
-            if (msgId != 0) {
-                cursor = context.getContentResolver().query(uri, PROJECTION, null, null, null);
-            }
-            if (cursor != null) {
-                if (!findPreviousMessage3(oMsg, msgId, cursor)) {
-                    findPreviousMessage4(oMsg, msgId);
-                }
+            cursor = context.getContentResolver().query(uri, PROJECTION, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                addRebloggersFromCursor(oMsg, cursor);
             }
         } finally {
             DbUtils.closeSilently(cursor);
         }
     }
 
-    private boolean findPreviousMessage3(ConversationOneMessage oMsg, long msgId, Cursor cursor) {
-        boolean skip = false;
-        if (cursor.moveToFirst()) {
-            /**
-             * IDs of all known senders of this message except for the Author
-             * These "senders" reblogged the message
-             */
-            Set<Long> rebloggers = new HashSet<Long>();
-            int ind=0;
-            do {
-                long senderId = cursor.getLong(cursor.getColumnIndex(Msg.SENDER_ID));
-                long authorId = cursor.getLong(cursor.getColumnIndex(Msg.AUTHOR_ID));
-                long linkedUserId = cursor.getLong(cursor.getColumnIndex(User.LINKED_USER_ID));
+    private void addRebloggersFromCursor(ConversationOneMessage oMsg, Cursor cursor) {
+        /**
+         * IDs of all known senders of this message except for the Author
+         * These "senders" reblogged the message
+         */
+        Set<Long> rebloggers = new HashSet<Long>();
+        int ind=0;
+        do {
+            long senderId = cursor.getLong(cursor.getColumnIndex(Msg.SENDER_ID));
+            long authorId = cursor.getLong(cursor.getColumnIndex(Msg.AUTHOR_ID));
+            long linkedUserId = cursor.getLong(cursor.getColumnIndex(User.LINKED_USER_ID));
 
-                if (ind == 0) {
-                    // This is the same for all retrieved rows
-                    oMsg.inReplyToMsgId = cursor.getLong(cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
-                    oMsg.createdDate = cursor.getLong(cursor.getColumnIndex(Msg.CREATED_DATE));
-                    oMsg.author = cursor.getString(cursor.getColumnIndex(User.AUTHOR_NAME));
-                    oMsg.body = cursor.getString(cursor.getColumnIndex(Msg.BODY));
-                    String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));
-                    if (!TextUtils.isEmpty(via)) {
-                        oMsg.via = Html.fromHtml(via).toString().trim();
-                    }
-                    if (MyPreferences.showAvatars()) {
-                        oMsg.avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Avatar.FILE_NAME)));
-                    }
-                    int colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
-                    if (colIndex > -1) {
-                        oMsg.inReplyToName = cursor.getString(colIndex);
-                        if (TextUtils.isEmpty(oMsg.inReplyToName)) {
-                            oMsg.inReplyToName = "";
-                        }
-                    }
-                    colIndex = cursor.getColumnIndex(User.RECIPIENT_NAME);
-                    if (colIndex > -1) {
-                        oMsg.recipientName = cursor.getString(colIndex);
-                        if (TextUtils.isEmpty(oMsg.recipientName)) {
-                            oMsg.recipientName = "";
-                        }
+            if (ind == 0) {
+                // This is the same for all retrieved rows
+                oMsg.inReplyToMsgId = cursor.getLong(cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
+                oMsg.createdDate = cursor.getLong(cursor.getColumnIndex(Msg.CREATED_DATE));
+                oMsg.author = cursor.getString(cursor.getColumnIndex(User.AUTHOR_NAME));
+                oMsg.body = cursor.getString(cursor.getColumnIndex(Msg.BODY));
+                String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));
+                if (!TextUtils.isEmpty(via)) {
+                    oMsg.via = Html.fromHtml(via).toString().trim();
+                }
+                if (MyPreferences.showAvatars()) {
+                    oMsg.avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Avatar.FILE_NAME)));
+                }
+                int colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
+                if (colIndex > -1) {
+                    oMsg.inReplyToName = cursor.getString(colIndex);
+                    if (TextUtils.isEmpty(oMsg.inReplyToName)) {
+                        oMsg.inReplyToName = "";
                     }
                 }
-
-                if (senderId != authorId) {
-                    rebloggers.add(senderId);
-                }
-                if (linkedUserId != 0) {
-                    if (oMsg.linkedUserId == 0) {
-                        oMsg.linkedUserId = linkedUserId;
-                    }
-                    if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.REBLOGGED)) == 1
-                            && linkedUserId != authorId) {
-                        rebloggers.add(linkedUserId);
-                    }
-                    if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.FAVORITED)) == 1) {
-                        oMsg.favorited = true;
+                colIndex = cursor.getColumnIndex(User.RECIPIENT_NAME);
+                if (colIndex > -1) {
+                    oMsg.recipientName = cursor.getString(colIndex);
+                    if (TextUtils.isEmpty(oMsg.recipientName)) {
+                        oMsg.recipientName = "";
                     }
                 }
-                
-                ind++;
-            } while (cursor.moveToNext());
-
-            for (long rebloggerId : rebloggers) {
-                if (!TextUtils.isEmpty(oMsg.rebloggersString)) {
-                    oMsg.rebloggersString += ", ";
-                }
-                oMsg.rebloggersString += MyProvider.userIdToName(rebloggerId);
             }
-            if (oMsgs.contains(oMsg)) {
-                MyLog.v(this, "Message " + msgId + " is in the list already");
-            } else {
-                oMsgs.add(oMsg);
-                skip = false;
+
+            if (senderId != authorId) {
+                rebloggers.add(senderId);
             }
+            if (linkedUserId != 0) {
+                if (oMsg.linkedUserId == 0) {
+                    oMsg.linkedUserId = linkedUserId;
+                }
+                if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.REBLOGGED)) == 1
+                        && linkedUserId != authorId) {
+                    rebloggers.add(linkedUserId);
+                }
+                if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.FAVORITED)) == 1) {
+                    oMsg.favorited = true;
+                }
+            }
+            
+            ind++;
+        } while (cursor.moveToNext());
+
+        for (long rebloggerId : rebloggers) {
+            if (!TextUtils.isEmpty(oMsg.rebloggersString)) {
+                oMsg.rebloggersString += ", ";
+            }
+            oMsg.rebloggersString += MyProvider.userIdToName(rebloggerId);
         }
-        cursor.close();
-        return skip;
     }
 
-    private void findPreviousMessage4(ConversationOneMessage oMsg, long msgId) {
+    private boolean addMessageToList(ConversationOneMessage oMsg) {
+        boolean added = false;
+        if (oMsgs.contains(oMsg)) {
+            MyLog.v(this, "Message id=" + oMsg.msgId + " is in the list already");
+        } else {
+            oMsgs.add(oMsg);
+            added = true;
+        }
+        return added;
+    }
+    
+    private boolean shouldFindPreviousMessageOf(ConversationOneMessage oMsg) {
+        boolean shouldFind = false;
         if (oMsg.createdDate == 0) {
-            MyLog.v(this, "Message " + msgId + " should be retrieved from the Internet");
+            MyLog.v(this, "Message id=" + oMsg.msgId + " should be retrieved from the Internet");
             MyServiceManager.sendCommand(new CommandData(CommandEnum.GET_STATUS, ma
-                    .getAccountName(), msgId));
+                    .getAccountName(), oMsg.msgId));
         } else {
             if (oMsg.inReplyToMsgId != 0) {
-                findPreviousMessagesRecursively(new ConversationOneMessage(oMsg.inReplyToMsgId, oMsg.replyLevel-1));
+                shouldFind = true;
             } else if (!SharedPreferencesUtil.isEmpty(oMsg.inReplyToName)) {
-                MyLog.v(this, "Message " + msgId + " has reply to name ("
+                MyLog.v(this, "Message id=" + oMsg.msgId + " has reply to name ("
                         + oMsg.inReplyToName
                         + ") but no reply to message id");
                 // Don't try to retrieve this message again. It
@@ -235,20 +239,23 @@ public class ConversationViewLoader {
                 oMsgs.add(oMsg2);
             }
         }
+        return shouldFind;
     }
 
-    private boolean checkAndAddMessageToFind(long msgId) {
-        if (idsOfTheMessagesToFind.contains(msgId)) {
-            MyLog.v(this, "findMessages cycled on the msgId=" + msgId);
-            return true;
+    private boolean addMessageIdToFind(long msgId) {
+        if (msgId == 0) {
+            return false;
+        } else if (idsOfTheMessagesToFind.contains(msgId)) {
+            MyLog.v(this, "findMessages cycled on the msg id=" + msgId);
+            return false;
         }
         idsOfTheMessagesToFind.add(msgId);
-        return false;
+        return true;
     }
 
     public void findRepliesRecursively(ConversationOneMessage oMsg) {
-        MyLog.v(this, "findReplies " + oMsg.id);
-        List<Long> replies = MyProvider.getReplyIds(oMsg.id);
+        MyLog.v(this, "findReplies " + oMsg.msgId);
+        List<Long> replies = MyProvider.getReplyIds(oMsg.msgId);
         oMsg.nReplies = replies.size();
         for (long replyId : replies) {
             ConversationOneMessage oMsgReply = new ConversationOneMessage(replyId, oMsg.replyLevel + 1);
@@ -264,10 +271,10 @@ public class ConversationViewLoader {
             int compared = rhs.replyLevel - lhs.replyLevel;
             if (compared == 0) {
                 if (lhs.createdDate == rhs.createdDate) {
-                    if ( lhs.id == rhs.id) {
+                    if ( lhs.msgId == rhs.msgId) {
                         compared = 0;
                     } else {
-                        compared = (rhs.id - lhs.id > 0 ? 1 : -1);
+                        compared = (rhs.msgId - lhs.msgId > 0 ? 1 : -1);
                     }
                 } else {
                     compared = (rhs.createdDate - lhs.createdDate > 0 ? 1 : -1);
@@ -299,7 +306,7 @@ public class ConversationViewLoader {
     }
 
     private void enumerateBranch(ConversationOneMessage oMsg, OrderCounters order, int indent) {
-        if (checkAndAddMessageToFind(oMsg.id)) {
+        if (addMessageIdToFind(oMsg.msgId)) {
             return;
         }
         oMsg.historyOrder = order.history++;
@@ -311,7 +318,7 @@ public class ConversationViewLoader {
         }
         for (int ind = oMsgs.size() - 1; ind >= 0; ind--) {
            ConversationOneMessage reply = oMsgs.get(ind);
-           if (reply.inReplyToMsgId == oMsg.id) {
+           if (reply.inReplyToMsgId == oMsg.msgId) {
                reply.nParentReplies = oMsg.nReplies;
                enumerateBranch(reply, order, indent);
            }
@@ -334,7 +341,7 @@ public class ConversationViewLoader {
         final String method = "oneMessageToView";
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, method
-                    + ": msgId=" + oMsg.id
+                    + ": msgId=" + oMsg.msgId
                     + (oMsg.avatarDrawable != null ? ", avatar="
                             + oMsg.avatarDrawable.getFileName() : ""));
         }
@@ -352,7 +359,7 @@ public class ConversationViewLoader {
         int indentPixels = indent0 * oMsg.indentLevel;
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
-        if (oMsg.id == selectedMessageId && oMsgs.size() > 1) {
+        if (oMsg.msgId == selectedMessageId && oMsgs.size() > 1) {
             messageIndented.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.message_current_background));
         }
 
@@ -394,7 +401,7 @@ public class ConversationViewLoader {
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
         
         TextView id = (TextView) messageView.findViewById(R.id.id);
-        id.setText(Long.toString(oMsg.id));
+        id.setText(Long.toString(oMsg.msgId));
         TextView linkedUserId = (TextView) messageView.findViewById(R.id.linked_user_id);
         linkedUserId.setText(Long.toString(oMsg.linkedUserId));
 
@@ -464,7 +471,7 @@ public class ConversationViewLoader {
 
     private int msgIdToHistoryOrder(long msgId) {
         for (ConversationOneMessage oMsg : oMsgs) {
-            if (oMsg.id == msgId ) {
+            if (oMsg.msgId == msgId ) {
                 return oMsg.historyOrder;
             }
         }

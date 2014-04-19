@@ -24,7 +24,7 @@ import org.andstatus.app.data.AvatarDrawable;
  * One message row
  */
 class ConversationOneMessage implements Comparable<ConversationOneMessage> {
-    long id;
+    long msgId;
     long inReplyToMsgId = 0;
     long createdDate = 0;
     long linkedUserId = 0;
@@ -56,9 +56,9 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
     AvatarDrawable avatarDrawable;
     View view = null;
     
-    public ConversationOneMessage(long idIn, int replyLevelIn) {
-        this.id = idIn;
-        this.replyLevel = replyLevelIn;
+    public ConversationOneMessage(long msgId, int replyLevel) {
+        this.msgId = msgId;
+        this.replyLevel = replyLevel;
     }
 
     @Override
@@ -67,12 +67,12 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
             return false;
         }
         ConversationOneMessage row = (ConversationOneMessage) o;
-        return id == row.id;
+        return msgId == row.msgId;
     }
 
     @Override
     public int hashCode() {
-        return Long.valueOf(id).hashCode();
+        return Long.valueOf(msgId).hashCode();
     }
 
     /**
@@ -83,10 +83,10 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
         int compared = listOrder - another.listOrder;
         if (compared == 0) {
             if (createdDate == another.createdDate) {
-                if ( id == another.id) {
+                if ( msgId == another.msgId) {
                     compared = 0;
                 } else {
-                    compared = (another.id - id > 0 ? 1 : -1);
+                    compared = (another.msgId - msgId > 0 ? 1 : -1);
                 }
             } else {
                 compared = (another.createdDate - createdDate > 0 ? 1 : -1);

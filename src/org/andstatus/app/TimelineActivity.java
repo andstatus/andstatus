@@ -970,18 +970,17 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 /* The query itself is still from the Intent */
                 searchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
                 selectedUserId = appSearchData.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, selectedUserId);
-                if (!TextUtils.isEmpty(searchQuery)) {
-                    if (appSearchData.getBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, false)) {
-                        MyLog.v(this, "Global search: " + searchQuery);
-                        setLoading(true);
-                        MyServiceManager.sendCommand(
-                                CommandData.searchCommand(
-                                        isTimelineCombined()
-                                                ? ""
-                                                : MyContextHolder.get().persistentAccounts()
-                                                        .getCurrentAccountName(),
-                                        searchQuery));
-                    }
+                if (!TextUtils.isEmpty(searchQuery)
+                        && appSearchData.getBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, false)) {
+                    MyLog.v(this, "Global search: " + searchQuery);
+                    setLoading(true);
+                    MyServiceManager.sendCommand(
+                            CommandData.searchCommand(
+                                    isTimelineCombined()
+                                            ? ""
+                                            : MyContextHolder.get().persistentAccounts()
+                                                    .getCurrentAccountName(),
+                                    searchQuery));
                 }
             }
         }
@@ -1060,13 +1059,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         final String method = "onCreateLoader";
         MyLog.v(this, method + " #" + id);
         TimelineCursorLoader loader = new TimelineCursorLoader();
-        boolean loadOneMorePage = false;
-        boolean reQuery = false;
-        if (args != null) {
-            loadOneMorePage = args.getBoolean(IntentExtra.EXTRA_LOAD_ONE_MORE_PAGE.key);
-            reQuery = args.getBoolean(IntentExtra.EXTRA_REQUERY.key);
-        }
-
         TimelineListParameters params = new TimelineListParameters();
         params.loaderCallbacks = this;
         params.timelineType = getTimelineType();
@@ -1075,8 +1067,15 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         params.selectedUserId = getSelectedUserId();
         params.projection = getProjection();
         params.searchQuery = this.searchQuery;
+
+        boolean loadOneMorePage = false;
+        boolean reQuery = false;
+        if (args != null) {
+            loadOneMorePage = args.getBoolean(IntentExtra.EXTRA_LOAD_ONE_MORE_PAGE.key);
+            reQuery = args.getBoolean(IntentExtra.EXTRA_REQUERY.key);
+            params.rowsLimit = args.getInt(IntentExtra.EXTRA_ROWS_LIMIT.key);
+        }
         params.loadOneMorePage = loadOneMorePage;
-        params.rowsLimit = args.getInt(IntentExtra.EXTRA_ROWS_LIMIT.key);
         params.incrementallyLoadingPages = positionRestored
                 && (getListAdapter() != null)
                 && loadOneMorePage;
@@ -1213,7 +1212,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         MyLog.v(this, "onLoadFinished");
         TimelineTypeEnum timelineToReload = TimelineTypeEnum.UNKNOWN;
         if (loader.isStarted()) {
-            if (TimelineCursorLoader.class.isAssignableFrom(loader.getClass())) {
+            if (loader instanceof TimelineCursorLoader) {
                 TimelineCursorLoader myLoader = (TimelineCursorLoader) loader;
                 changeListContent(myLoader.params, cursor);
                 timelineToReload = myLoader.params.timelineToReload;

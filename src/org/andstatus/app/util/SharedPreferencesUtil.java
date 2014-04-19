@@ -198,10 +198,8 @@ public class SharedPreferencesUtil {
                     String string = o.toString();
                     if (!isEmpty(string)) {
                         is = Boolean.parseBoolean(string);
-                        if (!is) {
-                            if ( string.compareTo("1") == 0) {
-                                is = true;
-                            }
+                        if (!is && string.compareTo("1") == 0) {
+                            is = true;
                         }
                     }
                 }

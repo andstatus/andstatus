@@ -124,18 +124,21 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
      */
     private void asyncLoaderEnded(Cursor cursor) {
         Cursor cursorPrev = null;
-        if (this.mCursor != cursor) {
-            cursorPrev = this.mCursor; 
-            this.mCursor = cursor;
-        }
-        if (params.cancelled || cursor == null) {
-            deliverCancellation();
-        } else {
-            deliverResult(cursor);
-        }
-        DbUtils.closeSilently(cursorPrev, null);
-        synchronized (asyncLoaderLock) {
-            asyncLoader = null;
+        try {
+            if (this.mCursor != cursor) {
+                cursorPrev = this.mCursor; 
+                this.mCursor = cursor;
+            }
+            if (params.cancelled || cursor == null) {
+                deliverCancellation();
+            } else {
+                deliverResult(cursor);
+            }
+        } finally {
+            DbUtils.closeSilently(cursorPrev, null);
+            synchronized (asyncLoaderLock) {
+                asyncLoader = null;
+            }
         }
     }
     
@@ -183,12 +186,11 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
     private long previousRequeryTime = 0;
     @Override
     protected void onForceLoad() {
-        if (isStarted()) {
-            if (System.currentTimeMillis() - previousRequeryTime > MIN_LIST_REQUERY_MILLISECONDS) {
-                previousRequeryTime = System.currentTimeMillis();
-                params.reQuery = true;
-                onStartLoading();
-            }
+        if (isStarted()
+                && System.currentTimeMillis() - previousRequeryTime > MIN_LIST_REQUERY_MILLISECONDS) {
+            previousRequeryTime = System.currentTimeMillis();
+            params.reQuery = true;
+            onStartLoading();
         }
     }
     
@@ -279,7 +281,6 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
                         }
                         break;
                     default:
-                        // TODO: Make this call asynchronous
                         if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, params.myAccountUserId) == 0) {
                             // This is supposed to be a one time task.
                             params.timelineToReload = TimelineTypeEnum.ALL;

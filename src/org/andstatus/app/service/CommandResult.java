@@ -287,10 +287,8 @@ public final class CommandResult implements Parcelable {
     
     boolean shouldWeRetry() {
         boolean retry = false;
-        if (hasError() && !hasHardError()) {
-            if (retriesLeft > 0) {
-                retry = true;
-            }
+        if (hasError() && !hasHardError() && retriesLeft > 0) {
+            retry = true;
         }
         return retry;
     }

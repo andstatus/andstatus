@@ -224,7 +224,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
         } else if (MyPreferences.shouldSetDefaultValues()) {
             MyLog.i(activity, "We are running the Application for the very first time?");
             helpAsFirstActivity = true;
-        } else if (MyContextHolder.get().persistentAccounts().size() == 0) {
+        } else if (MyContextHolder.get().persistentAccounts().isEmpty()) {
             MyLog.i(activity, "No AndStatus Accounts yet");
             if (!(activity instanceof AccountSettingsActivity)) {
                 helpAsFirstActivity = true;
@@ -244,7 +244,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
             } 
             
             int pageIndex = PAGE_INDEX_DEFAULT;
-            if (MyContextHolder.get().persistentAccounts().size() == 0) {
+            if (MyContextHolder.get().persistentAccounts().isEmpty()) {
                 pageIndex = PAGE_INDEX_USER_GUIDE;
             } else if (showChangeLog) {
                 pageIndex = PAGE_INDEX_CHANGELOG;

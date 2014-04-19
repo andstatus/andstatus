@@ -42,6 +42,7 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 
 public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     private static final String NON_JSON_RESPONSE = ", non-JSON response: '";
@@ -62,7 +63,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             URL endpoint = new URL(pathToUrl(path));
             HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
                     
-            HashMap<String, String> params = new HashMap<String, String>();
+            Map<String, String> params = new HashMap<String, String>();
             params.put("type", "client_associate");
             params.put("application_type", "native");
             params.put("redirect_uris", HttpConnection.CALLBACK_URI.toString());

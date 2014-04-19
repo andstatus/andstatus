@@ -208,7 +208,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         int indOfCurrentMessage = 0;
         for (int ind = 0; ind < oMsgs.size(); ind++) {
             list.addView(oMsgs.get(ind).view);
-            if (oMsgs.get(ind).id == selectedMessageId) {
+            if (oMsgs.get(ind).msgId == selectedMessageId) {
                 indOfCurrentMessage = ind;
             }
         }

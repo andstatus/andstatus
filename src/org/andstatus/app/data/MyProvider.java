@@ -397,10 +397,8 @@ public class MyProvider extends ContentProvider {
                     /**
                      * Add default values for missed required fields
                      */
-                    if (!values.containsKey(Msg.AUTHOR_ID)) {
-                        if (values.containsKey(Msg.SENDER_ID)) {
-                            values.put(Msg.AUTHOR_ID, values.get(Msg.SENDER_ID).toString());
-                        }
+                    if (!values.containsKey(Msg.AUTHOR_ID) && values.containsKey(Msg.SENDER_ID)) {
+                        values.put(Msg.AUTHOR_ID, values.get(Msg.SENDER_ID).toString());
                     }
                     if (!values.containsKey(Msg.BODY)) {
                         values.put(Msg.BODY, "");
@@ -482,13 +480,11 @@ public class MyProvider extends ContentProvider {
      */
     protected static int moveBooleanKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
         int ret = 2;
-        if (valuesIn != null) {
-            if (valuesIn.containsKey(key) ) {
-                ret = SharedPreferencesUtil.isTrueAsInt(valuesIn.get(key));
-                valuesIn.remove(key);
-                if (valuesOut != null) {
-                    valuesOut.put(key, ret);
-                }
+        if (valuesIn != null && valuesIn.containsKey(key)) {
+            ret = SharedPreferencesUtil.isTrueAsInt(valuesIn.get(key));
+            valuesIn.remove(key);
+            if (valuesOut != null) {
+                valuesOut.put(key, ret);
             }
         }
         return ret;
@@ -503,14 +499,12 @@ public class MyProvider extends ContentProvider {
      */
     static int moveStringKey(String key, ContentValues valuesIn, ContentValues valuesOut) {
         int ret = 2;
-        if (valuesIn != null) {
-            if (valuesIn.containsKey(key) ) {
-                String value =  valuesIn.getAsString(key);
-                ret = SharedPreferencesUtil.isEmpty(value) ? 0 : 1;
-                valuesIn.remove(key);
-                if (valuesOut != null) {
-                    valuesOut.put(key, value);
-                }
+        if (valuesIn != null && valuesIn.containsKey(key)) {
+            String value = valuesIn.getAsString(key);
+            ret = SharedPreferencesUtil.isEmpty(value) ? 0 : 1;
+            valuesIn.remove(key);
+            if (valuesOut != null) {
+                valuesOut.put(key, value);
             }
         }
         return ret;
@@ -936,10 +930,9 @@ public class MyProvider extends ContentProvider {
             SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
-            if (id == 1 || id == 388) {
-                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                    MyLog.v(TAG, "oidToId: sql='" + sql +"'");
-                }
+            if ((id == 1 || id == 388) 
+                && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "oidToId: sql='" + sql +"'");
             }
         } catch (SQLiteDoneException e) {
             MyLog.ignored(TAG, e);

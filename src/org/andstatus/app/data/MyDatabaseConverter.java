@@ -57,7 +57,7 @@ class MyDatabaseConverter {
             }
         }
         long endTime = java.lang.System.currentTimeMillis();
-        MyLog.w(this, "Upgrade successfully completed in " + Math.round((endTime - startTime)/1000) + " seconds");
+        MyLog.w(this, "Upgrade successfully completed in " + ((endTime - startTime)/1000) + " seconds");
     }
 
     private void upgradeStarted() {

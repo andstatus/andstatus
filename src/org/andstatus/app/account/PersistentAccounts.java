@@ -13,6 +13,7 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PersistentAccounts {
@@ -29,7 +30,7 @@ public class PersistentAccounts {
      */
     private volatile String currentAccountName = "";
     
-    private ConcurrentHashMap<String,MyAccount> persistentAccounts = new ConcurrentHashMap<String, MyAccount>();
+    private Map<String,MyAccount> persistentAccounts = new ConcurrentHashMap<String, MyAccount>();
     
     private PersistentAccounts() {
     }
@@ -44,6 +45,10 @@ public class PersistentAccounts {
      */
     public Collection<MyAccount> collection() {
         return persistentAccounts.values();
+    }
+    
+    public boolean isEmpty() {
+        return persistentAccounts.isEmpty();
     }
     
     public int size() {
@@ -122,19 +127,19 @@ public class PersistentAccounts {
                 break;
             }
         }
-        if (myAccount == null) {
-            // Try to find persisted Account which was not loaded yet
-            if (!TextUtils.isEmpty(accountName.toString())) {
-                android.accounts.Account[] androidAccounts = AccountManager.get(
-                        MyContextHolder.get().context()).getAccountsByType(
-                        AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-                for (android.accounts.Account androidAccount : androidAccounts) {
-                    if (accountName.compareTo(androidAccount.name) == 0) {
-                        myAccount = Builder.fromAndroidAccount(MyContextHolder.get(), androidAccount).getAccount();
-                        persistentAccounts.put(myAccount.getAccountName(), myAccount);
-                        MyPreferences.onPreferencesChanged();
-                        break;
-                    }
+        // Try to find persisted Account which was not loaded yet
+        if (myAccount == null
+                && !TextUtils.isEmpty(accountName.toString())) {
+            android.accounts.Account[] androidAccounts = AccountManager.get(
+                    MyContextHolder.get().context()).getAccountsByType(
+                    AuthenticatorService.ANDROID_ACCOUNT_TYPE);
+            for (android.accounts.Account androidAccount : androidAccounts) {
+                if (accountName.compareToString(androidAccount.name) == 0) {
+                    myAccount = Builder.fromAndroidAccount(MyContextHolder.get(), androidAccount)
+                            .getAccount();
+                    persistentAccounts.put(myAccount.getAccountName(), myAccount);
+                    MyPreferences.onPreferencesChanged();
+                    break;
                 }
             }
         }
@@ -157,10 +162,8 @@ public class PersistentAccounts {
         if (ma == null) {
             defaultAccountName = "";
         }
-        if (ma == null) {
-            if (!persistentAccounts.isEmpty()) {
-                ma = persistentAccounts.values().iterator().next();
-            }
+        if (ma == null && !persistentAccounts.isEmpty()) {
+            ma = persistentAccounts.values().iterator().next();
         }
         if (ma != null) {
             // Correct Current and Default Accounts if needed

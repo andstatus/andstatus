@@ -98,9 +98,9 @@ class MsgOfUserValues {
         return msgId;
     }
 
-    public void setMsgId(Long msgId_in) {
-        if (msgId_in != null) {
-            msgId = msgId_in;
+    public void setMsgId(Long msgIdIn) {
+        if (msgIdIn != null) {
+            msgId = msgIdIn;
         } else {
             msgId = 0;
         }
