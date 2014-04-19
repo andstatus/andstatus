@@ -45,6 +45,9 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 updated in the background, new messages don't cause unexpected list scrolling any more.
                 See <a href="https://github.com/andstatus/andstatus/issues/7" >Issue #7</a></change>
             <change>Spanish translation updated, thanks to <a href="https://identi.ca/susobaco" >Suso Comesaña</a></change>
+            <change><a href="https://loadaverage.org/">LoadAverage</a> 
+                and <a href="http://status.vinilox.eu/">Vinilox</a> "GNU social" sites are preconfigured,
+                in addition to <a href="https://quitter.se/">Quitter</a>.</change>
         </changes>
     </release>
     <release android:versionName="8.2" android:versionCode="98"
