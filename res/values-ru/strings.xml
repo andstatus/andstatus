@@ -165,14 +165,16 @@
 	<string name="resolve_view">Посмотреть сообщение</string>
 	<string name="splash_button_learn_more">Узнать больше</string>
 	<string name="splash_button_get_started">Начать работу</string>
-	<string name="splash_payoff_line">Лёгкий клиент Твиттера, pump.io и StatusNet для Андроида™</string>
+	<string name="splash_payoff_line">Лёгкий клиент Твиттера, pump.io и StatusNet (GNU social) 
+	    для Андроида™</string>
 	<string name="user_manual_page_1"><h1><b>Руководство пользователя приложения AndStatus</b></h1>\n\n
         <h2><b>1. Начало работы</b></h2>\n\n
         Нажмите кнопку \"Начать работу\" внизу данного окна:
         откроется экран добавления нового аккаунта.\n
         Вы можете изменить \"Систему микроблогов\" \"Twitter\", 
-        выбранную по умолчанию, на какую-либо другую (Твиттер, pump.io и Quitter, 
-        как пример системы StatusNet-типа, - заранее сконфигурированы).\n
+        выбранную по умолчанию, на какую-либо другую (Твиттер, pump.io и 
+        Quitter, LoadAverage и Vinilox, 
+        как три примера систем StatusNet (GNU social)-типа, - заранее сконфигурированы).\n
         Если нужной Вам Системы микроблогов StatusNet-типа нет в списке, то откройте меню, 
         выберите пункт \"Настройки\", далее - \"Управление системами микроблогов\" 
         и добавьте новую Систему перед добавлением нового аккаунта.\n

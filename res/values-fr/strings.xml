@@ -144,8 +144,12 @@
 	<string name="resolve_view">Voir le message</string>
 	<string name="splash_button_learn_more">En savoir plus</string>
 	<string name="splash_button_get_started">Commencer</string>
-	<string name="splash_payoff_line">Client de microblogage Twitter et identi.ca léger pour Android™</string>
-	<string name="user_manual_page_1"><h1><b>1. Les BASES d\'AndStatus</b></h1>\n\n
+	<string name="splash_payoff_line">Client de microblogage Light-Weight Twitter, pump.io 
+	    et StatusNet (GNU social) léger pour Android™</string>
+	<string name="user_manual_page_1">(The French transtalion is outdated, 
+	    please switch to English for the up-to-date information.\n
+	    Please help to update the translation!)</string>
+	<string name="user_manual_page_2"><h1><b>1. Les BASES d\'AndStatus</b></h1>\n\n
         Le premier écran d\'AndStatus affiche votre timeline.\n
         Pour effectuer une action sur un message de la liste, effectuez un <b>appui long</b> sur celui-ci pour faire apparaître un menu.\n
         Vous pouvez <b>cliquer</b> sur un message pour afficher plus de détails.\n

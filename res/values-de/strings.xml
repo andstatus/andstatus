@@ -100,8 +100,12 @@
 	<string name="resolve_view">Zeige Tweet</string>
 	<string name="splash_button_learn_more">Mehr Informationen</string>
 	<string name="splash_button_get_started">Los gehts</string>
-	<string name="splash_payoff_line">schlanker Twitter Client für Android™</string>
-	<string name="user_manual_page_1"><h1><b>1. AndStatus EINFÜHRUNG</b></h1>\n\n
+	<string name="splash_payoff_line">schlanker Twitter, pump.io, 
+        StatusNet (GNU social) Client für Android™</string>
+    <string name="user_manual_page_1">(The German transtalion is outdated, 
+        please switch to English for the up-to-date information.\n 
+        Please help to update the translation!)</string>
+	<string name="user_manual_page_2"><h1><b>1. AndStatus EINFÜHRUNG</b></h1>\n\n
         Die erste Ansicht von AndStatus zeigt die Chronik deiner Freunde.\n
         Um eine Aktion zu einem bestimmten Tweet in der Liste durchzuführen, kannst du ihn <b>lange halten</b> um zu einem Menü zu gelangen.\n
         <b>Klicke</b> auf einen Tweet für mehr Informationen zu erhalten.\n

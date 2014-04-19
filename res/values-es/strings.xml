@@ -167,7 +167,8 @@
 	<string name="resolve_view">Ver mensaje</string>
 	<string name="splash_button_learn_more">Más información</string>
 	<string name="splash_button_get_started">Comenzar</string>
-	<string name="splash_payoff_line">Cliente liviano para Twitter, pump.io y StatusNet para Android™</string>
+	<string name="splash_payoff_line">Cliente liviano para Twitter, pump.io y 
+	    StatusNet (GNU social) para Android™</string>
 	<string name="user_manual_page_1"><h1><b>Manual de usuario de AndStatus</b></h1>\n\n
         <h2><b>1. Primeros pasos</b></h2>\n\n
         Pulsa debajo del botón \"Comenzar\": se abrirá la pantalla para agregar una nueva cuenta.\n

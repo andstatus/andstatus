@@ -167,12 +167,14 @@
 	<string name="resolve_view">View Message</string>
 	<string name="splash_button_learn_more">Learn More</string>
 	<string name="splash_button_get_started">Get Started</string>
-	<string name="splash_payoff_line">Light-Weight Twitter, pump.io and StatusNet Client for Android™</string>
+	<string name="splash_payoff_line">Light-Weight Twitter, pump.io and StatusNet (GNU social)
+	    Client for Android™</string>
 	<string name="user_manual_page_1"><h1><b>AndStatus User Guide</b></h1>\n\n
         <h2><b>1. Getting started</b></h2>\n\n
         Tap \"Get Started\" button below: screen to add new account will be opened.\n
         You may change default Microblogging system (\"Twitter\") to some other system
-        (Twitter, pump.io and Quitter as an example of the StatusNet-type system, are preconfigured).\n
+        (Twitter, pump.io and Quitter, LoadAverage and Vinilox as three examples of 
+        the StatusNet-type (GNU social) system, are preconfigured).\n
         In a case your (StatusNet-type) system is not listed, open Options menu, select \"Settings - 
         Manage microblogging systems\" and \"Add new system\" before adding the new account.\n
         For Twitter you are allowed to press \"Add this account\" immediately. 
