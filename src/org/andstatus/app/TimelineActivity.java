@@ -864,26 +864,36 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
     }
 
-    /**
-     * Updates the activity title.
-     * Sets the title with a left and right title.
-     * 
-     * @param rightText Right title part
-     */
-    private void updateActionBar(String rightText) {
+    private void updateActionBarText() {
+        updateTimelineTypeButtonText();
+        updateAccountButtonText();
+        updateRightText("");
+    }
+
+    private void updateTimelineTypeButtonText() {
         String timelinename = getString(timelineType.getTitleResId());
         Button timelineTypeButton = (Button) findViewById(R.id.timelineTypeButton);
         timelineTypeButton.setText(timelinename + (TextUtils.isEmpty(searchQuery) ? "" : " *"));
-        
-        // Show current account info on the left button
+    }
+
+    private void updateAccountButtonText() {
         Button selectAccountButton = (Button) findViewById(R.id.selectAccountButton);
         MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
-        String accountName = ma.shortestUniqueAccountName();
-        if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-            accountName = "(" + accountName + ")";
+        String accountButtonText = "";
+        if (ma == null) {
+            accountButtonText = "?";
+        } else if (isTimelineCombined() || getTimelineType() != TimelineTypeEnum.PUBLIC) {
+            accountButtonText = ma.shortestUniqueAccountName();
+            if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
+                accountButtonText = "(" + accountButtonText + ")";
+            }
+        } else {
+            accountButtonText = ma.getOriginName();
         }
-        selectAccountButton.setText(accountName);
-        
+        selectAccountButton.setText(accountButtonText);
+    }
+
+    private void updateRightText(String rightText) {
         TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
         rightTitle.setText(rightText);
     }
@@ -1004,7 +1014,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         contextMenu.setAccountUserIdToActAs(0);
 
-        updateActionBar("");
+        updateActionBarText();
         if (messageEditor.isStateLoaded()) {
             messageEditor.continueEditingLoadedState();
         } else if (messageEditor.isVisible()) {
@@ -1413,7 +1423,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 break;
             case RATE_LIMIT_STATUS:
                 if (commandData.getResult().getHourlyLimit() > 0) {
-                    updateActionBar(commandData.getResult().getRemainingHits() + "/"
+                    updateRightText(commandData.getResult().getRemainingHits() + "/"
                             + commandData.getResult().getHourlyLimit());
                 }
                 break;

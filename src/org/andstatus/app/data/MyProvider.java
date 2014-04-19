@@ -727,7 +727,14 @@ public class MyProvider extends ContentProvider {
                 }
                 break;
             case PUBLIC:
-                tables = "(SELECT * FROM " + Msg.TABLE_NAME + " WHERE public=1) AS " + MSG_TABLE_ALIAS;
+                String where = Msg.PUBLIC + "=1";
+                if (!isCombined) {
+                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(uriToAccountUserId(uri));
+                    if (ma != null) {
+                        where += " AND " + Msg.ORIGIN_ID + "=" + ma.getOriginId();
+                    }
+                }
+                tables = "(SELECT * FROM " + Msg.TABLE_NAME + " WHERE (" + where + ")) AS " + MSG_TABLE_ALIAS;
                 break;
             default:
                 break;
@@ -751,7 +758,7 @@ public class MyProvider extends ContentProvider {
                     break;
                 default:
                     tbl += " AND " + MyDatabase.User.LINKED_USER_ID + userIds.getSqlUserIds();
-                    if (isCombined) {
+                    if (isCombined || tt == TimelineTypeEnum.PUBLIC) {
                         tables += " LEFT OUTER JOIN " + tbl;
                     } else {
                         tables += " INNER JOIN " + tbl;

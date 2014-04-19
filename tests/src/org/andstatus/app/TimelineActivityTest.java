@@ -158,26 +158,31 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         selectListPosition(method, position1);
         Thread.sleep(2000);
         long itemId = getListView().getAdapter().getItemId(position1);
+        int count1 = getListView().getAdapter().getCount();
         new DataInserterTest().insertConversation("p1");
         CommandData commandData = new CommandData(CommandEnum.CREATE_FAVORITE, TestSuite.CONVERSATION_ACCOUNT_NAME);
         MyService.broadcastState(activity, ServiceState.RUNNING, commandData);
-        TestSuite.waitForIdleSync(this);
-        Thread.sleep(2000);
-        int firstScrollPos = getListView().getFirstVisiblePosition();
-        assertTrue("New content added above Position1=" + position1 
-                + "; new position=" + firstScrollPos, firstScrollPos > position1);
+        int firstScrollPos = 0;
+        int count2 = 0;
         boolean found = false;
-        for (int ind=0; ind<2; ind++) {
-            if (itemId == getListView().getAdapter().getItemId(firstScrollPos + ind)) {
-                found = true;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            TestSuite.waitForIdleSync(this);
+            Thread.sleep(2000 * (attempt + 1));
+            firstScrollPos = getListView().getFirstVisiblePosition();
+            for (int ind = 0; ind < 2; ind++) {
+                count2 = getListView().getAdapter().getCount();
+                if (itemId == getListView().getAdapter().getItemId(firstScrollPos + ind)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
                 break;
             }
         }
-        if (!found) {
-            Thread.sleep(5000);
-        }
-        assertTrue("The item was found near the top of the screen. Position1=" + position1 
-                + "; new position=" + firstScrollPos, found);
+        assertTrue("The item was found. "
+                + "position1=" + position1 + " of " + count1
+                + "; position2=" + firstScrollPos + " of " + count2, found);
         
     }
     
