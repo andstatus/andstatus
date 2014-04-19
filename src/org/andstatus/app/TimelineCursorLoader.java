@@ -344,6 +344,8 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
                 break;
             case CREATE_FAVORITE:
             case DESTROY_FAVORITE:
+            case DESTROY_REBLOG:
+            case DESTROY_STATUS:
             case REBLOG:
             case UPDATE_STATUS:
                 if (!commandData.getResult().hasError()) {
