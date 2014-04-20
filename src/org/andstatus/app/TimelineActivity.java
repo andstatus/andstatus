@@ -363,43 +363,39 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             return;
         }
 
+        int firstVisiblePosition = getListView().getFirstVisiblePosition();
+        // Don't count a footer
+        int itemCount = la.getCount() - 1;
+        if (firstVisiblePosition >= itemCount) {
+            firstVisiblePosition = itemCount - 1;
+        }
         long firstVisibleItemId = 0;
-        long lastRetrievedItemId = 0;
-        int lastScrollPos = -1;
+        int lastPosition = -1;
+        long lastItemId = 0;
+        if (firstVisiblePosition >= 0) {
+            firstVisibleItemId = la.getItemId(firstVisiblePosition);
+            MyLog.v(this, method + " firstVisiblePos:" + firstVisiblePosition + " of " + itemCount
+                    + "; itemId:" + firstVisibleItemId);
+            // We will load one more "page of messages" below (older) current top item
+            lastPosition = firstVisiblePosition + PAGE_SIZE;
+            if (lastPosition >= itemCount) {
+                lastPosition = itemCount - 1;
+            }
+            if (lastPosition >= 0) {
+                lastItemId = la.getItemId(lastPosition);
+            }
+        }
+
         ListPositionStorage ps = new ListPositionStorage(listParameters);
-
-        int firstScrollPos = getListView().getFirstVisiblePosition();
-        int itemCount = la.getCount(); 
-        if (firstScrollPos > itemCount - 2) {
-            // Skip footer
-            firstScrollPos = itemCount - 2;
-        }
-        if (firstScrollPos >= 0) {
-            firstVisibleItemId = la.getItemId(firstScrollPos);
-            MyLog.v(this, method + " firstScrollPos:" + firstScrollPos + " of " + itemCount + "; itemId:" + firstVisibleItemId);
-            // We will load one more "page of tweets" below (older) current top item
-            lastScrollPos = firstScrollPos + PAGE_SIZE;
-            if (lastScrollPos > itemCount - 2) {
-                if (firstScrollPos > PAGE_SIZE - 2) {
-                    lastScrollPos = itemCount - 2;
-                } else {
-                    lastScrollPos = -1;
-                }
-            }
-            if (lastScrollPos >= 0) {
-                lastRetrievedItemId = la.getItemId(lastScrollPos);
-            }
-        }
-
         if (firstVisibleItemId <= 0) {
             MyLog.v(this, method + " failed: no visible items for \"" + ps.accountGuid + "\"; " + ps.keyFirst);
         } else {
-            ps.put(firstVisibleItemId, lastRetrievedItemId);
+            ps.put(firstVisibleItemId, lastItemId);
 
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
                 MyLog.v(this, method + " succeeded \"" + ps.accountGuid + "\"; " + ps.keyFirst + "="
-                        + firstVisibleItemId + ", pos=" + firstScrollPos + "; lastId="
-                        + lastRetrievedItemId + ", pos=" + lastScrollPos);
+                        + firstVisibleItemId + ", pos=" + firstVisiblePosition + "; lastId="
+                        + lastItemId + ", pos=" + lastPosition);
             }
         }
     }
@@ -1068,7 +1064,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public MyLoader<Cursor> onCreateLoader(int id, Bundle args) {
         final String method = "onCreateLoader";
         MyLog.v(this, method + " #" + id);
-        TimelineCursorLoader loader = new TimelineCursorLoader();
         TimelineListParameters params = new TimelineListParameters();
         params.loaderCallbacks = this;
         params.timelineType = getTimelineType();
@@ -1094,8 +1089,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         saveSearchQuery();
         prepareQueryForeground(params);
 
-        loader.params = params;
-        return loader;
+        return new TimelineCursorLoader(params);
     }
 
     private void saveSearchQuery() {
@@ -1224,8 +1218,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (loader.isStarted()) {
             if (loader instanceof TimelineCursorLoader) {
                 TimelineCursorLoader myLoader = (TimelineCursorLoader) loader;
-                changeListContent(myLoader.params, cursor);
-                timelineToReload = myLoader.params.timelineToReload;
+                changeListContent(myLoader.getParams(), cursor);
+                timelineToReload = myLoader.getParams().timelineToReload;
             } else {
                 MyLog.e(this, "Wrong type of loader: " + MyLog.objTagToString(loader));
             }

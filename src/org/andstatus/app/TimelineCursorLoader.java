@@ -44,18 +44,19 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceListener {
-    TimelineListParameters params;
+    private final TimelineListParameters mParams;
     private Cursor mCursor = null;
 
     private int instanceId = InstanceId.next();
     private MyServiceReceiver serviceConnector;
 
-    final Object asyncLoaderLock = new Object();
+    private final Object asyncLoaderLock = new Object();
     @GuardedBy("asyncLoaderLock")
-    AsyncLoader asyncLoader = null;
+    private AsyncLoader asyncLoader = null;
 
-    public TimelineCursorLoader() {
+    public TimelineCursorLoader(TimelineListParameters params) {
         super(MyContextHolder.get().context());
+        this.mParams = params;
         serviceConnector = new MyServiceReceiver(this);
     }
 
@@ -63,13 +64,13 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
     protected void onStartLoading() {
         final String method = "onStartLoading";
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, method + ", " + params);
+            MyLog.v(this, method + ", " + getParams());
         }
         serviceConnector.registerReceiver(getContext());
         if (mayReuseResult()) {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) MyLog.v(this, method + " reusing result");
-            asyncLoaderEnded(mCursor);
-        } else if (params.reQuery || taskIsNotRunning()) {
+            deliverResultsAndClean(mCursor);
+        } else if (getParams().reQuery || taskIsNotRunning()) {
             restartLoader();
         } else {
             
@@ -88,7 +89,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
 
     private boolean mayReuseResult() {
         boolean ok = false;
-        if (!params.reQuery && !takeContentChanged() && mCursor != null && !mCursor.isClosed()) {
+        if (!getParams().reQuery && !takeContentChanged() && mCursor != null && !mCursor.isClosed()) {
             synchronized (asyncLoaderLock) {
                 if (asyncLoader == null) {
                     ok = true;
@@ -106,7 +107,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
             if (cancelAsyncTask(method)) {
                 try {
                     asyncLoader = new AsyncLoader();
-                    asyncLoader.execute(params);
+                    asyncLoader.execute();
                 } catch (Exception e) {
                     MyLog.e(this, method, e);
                     ended = true;
@@ -115,27 +116,24 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
             }
         }
         if (ended) {
-            asyncLoaderEnded(null);
+            deliverResultsAndClean(null);
         }
     }
     
-    /**
-     * Clean after successful or failed operation
-     */
-    private void asyncLoaderEnded(Cursor cursor) {
+    private void deliverResultsAndClean(Cursor cursor) {
         Cursor cursorPrev = null;
         try {
             if (this.mCursor != cursor) {
                 cursorPrev = this.mCursor; 
                 this.mCursor = cursor;
             }
-            if (params.cancelled || cursor == null) {
+            if (getParams().cancelled || cursor == null) {
                 deliverCancellation();
             } else {
                 deliverResult(cursor);
             }
         } finally {
-            DbUtils.closeSilently(cursorPrev, null);
+            DbUtils.closeSilently(cursorPrev, "asyncLoaderEnded");
             synchronized (asyncLoaderLock) {
                 asyncLoader = null;
             }
@@ -189,7 +187,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         if (isStarted()
                 && System.currentTimeMillis() - previousRequeryTime > MIN_LIST_REQUERY_MILLISECONDS) {
             previousRequeryTime = System.currentTimeMillis();
-            params.reQuery = true;
+            getParams().reQuery = true;
             onStartLoading();
         }
     }
@@ -202,19 +200,17 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
     }
 
     private void disposeResult() {
-        DbUtils.closeSilently(mCursor);
+        DbUtils.closeSilently(mCursor, "disposeResult");
         mCursor = null;
     }
     
     /**
      * @author yvolk@yurivolkov.com
      */
-    private class AsyncLoader extends AsyncTask<TimelineListParameters, Void, Cursor> {
-        TimelineListParameters params;
-
+    private class AsyncLoader extends AsyncTask<Void, Void, Cursor> {
+        
         @Override
-        protected Cursor doInBackground(TimelineListParameters... params) {
-            this.params = params[0];
+        protected Cursor doInBackground(Void... voidParams) {
             markStart();
             prepareQueryInBackground();
             Cursor cursor = queryDatabase();
@@ -223,25 +219,25 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         }
 
         private void markStart() {
-            params.startTime = System.nanoTime();
-            params.cancelled = false;
-            params.timelineToReload = TimelineTypeEnum.UNKNOWN;
+            getParams().startTime = System.nanoTime();
+            getParams().cancelled = false;
+            getParams().timelineToReload = TimelineTypeEnum.UNKNOWN;
             
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                MyLog.v(this, (TextUtils.isEmpty(params.searchQuery) ? ""
-                        : "queryString=\"" + params.searchQuery + "\"; ")
-                        + params.timelineType
-                        + "; isCombined=" + (params.timelineCombined ? "yes" : "no"));
+                MyLog.v(this, (TextUtils.isEmpty(getParams().searchQuery) ? ""
+                        : "queryString=\"" + getParams().searchQuery + "\"; ")
+                        + getParams().timelineType
+                        + "; isCombined=" + (getParams().timelineCombined ? "yes" : "no"));
             }
         }
         
         private void prepareQueryInBackground() {
-            if (params.lastItemId > 0) {
-                params.sa.addSelection(MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
+            if (getParams().lastItemId > 0) {
+                getParams().sa.addSelection(MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
                         + " >= ?",
                         new String[] {
                             String.valueOf(MyProvider.msgIdToLongColumnValue(
-                                    MyDatabase.Msg.SENT_DATE, params.lastItemId))
+                                    MyDatabase.Msg.SENT_DATE, getParams().lastItemId))
                         });
             }
         }
@@ -251,8 +247,8 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
             for (int attempt = 0; attempt < 3 && !isCancelled(); attempt++) {
                 try {
                     cursor = MyContextHolder.get().context().getContentResolver()
-                            .query(params.contentUri, params.projection, params.sa.selection,
-                                    params.sa.selectionArgs, params.sortOrder);
+                            .query(getParams().contentUri, getParams().projection, getParams().sa.selection,
+                                    getParams().sa.selectionArgs, getParams().sortOrder);
                     break;
                 } catch (IllegalStateException e) {
                     MyLog.d(this, "Attempt " + attempt + " to prepare cursor", e);
@@ -270,20 +266,20 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         }
         
         private void checkIfReloadIsNeeded(Cursor cursor) {
-            if (!params.loadOneMorePage && cursor != null && !cursor.isClosed() && cursor.getCount() == 0) {
-                switch (params.timelineType) {
+            if (!getParams().loadOneMorePage && cursor != null && !cursor.isClosed() && cursor.getCount() == 0) {
+                switch (getParams().timelineType) {
                     case USER:
                     case FOLLOWING_USER:
                         // This timeline doesn't update automatically so let's do it now if necessary
-                        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(params.timelineType, params.selectedUserId);
+                        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().timelineType, getParams().selectedUserId);
                         if (latestTimelineItem.isTimeToAutoUpdate()) {
-                            params.timelineToReload = params.timelineType;
+                            getParams().timelineToReload = getParams().timelineType;
                         }
                         break;
                     default:
-                        if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, params.myAccountUserId) == 0) {
+                        if ( MyProvider.userIdToLongColumnValue(User.HOME_TIMELINE_DATE, getParams().myAccountUserId) == 0) {
                             // This is supposed to be a one time task.
-                            params.timelineToReload = TimelineTypeEnum.ALL;
+                            getParams().timelineToReload = TimelineTypeEnum.ALL;
                         } 
                         break;
                 }
@@ -297,19 +293,19 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
 
         @Override
         protected void onCancelled(Cursor result) {
-            params.cancelled = true;
+            getParams().cancelled = true;
             singleEnd(null);
         }
 
         private void singleEnd(Cursor result) {
             logExecutionStats(result);
-            TimelineCursorLoader.this.asyncLoaderEnded(result);
+            TimelineCursorLoader.this.deliverResultsAndClean(result);
         }
         
         private void logExecutionStats(Cursor cursor) {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                StringBuilder text = new StringBuilder((params.cancelled ? "cancelled" : "ended"));
-                if (!params.cancelled) {
+                StringBuilder text = new StringBuilder((getParams().cancelled ? "cancelled" : "ended"));
+                if (!getParams().cancelled) {
                     String cursorInfo;
                     if (cursor == null) {
                         cursorInfo = "cursor is null";
@@ -320,7 +316,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
                     }
                     text.append(", " + cursorInfo);
                 }
-                text.append(", " + Double.valueOf((System.nanoTime() - params.startTime)/1.0E6).longValue() + " ms");
+                text.append(", " + Double.valueOf((System.nanoTime() - getParams().startTime)/1.0E6).longValue() + " ms");
                 MyLog.v(this, text.toString());
             }
         }
@@ -366,5 +362,9 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         sb.append("instance:" + instanceId + ",");
         sb.append("id:" + getId() + ",");
         return MyLog.formatKeyValue(this, sb.toString());
+    }
+
+    TimelineListParameters getParams() {
+        return mParams;
     }
 }

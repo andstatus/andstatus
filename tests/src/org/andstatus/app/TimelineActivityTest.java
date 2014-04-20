@@ -150,28 +150,43 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         return (ListView) activity.findViewById(android.R.id.list);
     }
 
-    public void testPositionOnContentChange() throws Exception {
-        final String method = "testPositionOnContentChange";
+    /** It really makes difference if we are near the end of the list or not
+     *  This is why we have two similar methods
+     */
+    public void testPositionOnContentChange1() throws Exception {
+        onePositionOnContentChange(10, 1);
+    }
+
+    public void testPositionOnContentChange2() throws Exception {
+        onePositionOnContentChange(10, 2);
+    }
+    
+    private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, Exception {
+        final String method = "testPositionOnContentChange" + iterationId;
         TestSuite.waitForListLoaded(this, activity);
         
-        int position1 = 20;
-        selectListPosition(method, position1);
-        Thread.sleep(2000);
-        long itemId = getListView().getAdapter().getItemId(position1);
-        int count1 = getListView().getAdapter().getCount();
+        selectListPosition(method, position0);
         new DataInserterTest().insertConversation("p1");
         CommandData commandData = new CommandData(CommandEnum.CREATE_FAVORITE, TestSuite.CONVERSATION_ACCOUNT_NAME);
+        int position1 = getListView().getFirstVisiblePosition();
+        long itemId = getListView().getAdapter().getItemId(position1);
+        int count1 = getListView().getAdapter().getCount() - 1;
         MyService.broadcastState(activity, ServiceState.RUNNING, commandData);
-        int firstScrollPos = 0;
         int count2 = 0;
+        int position2 = 0;
+        int position2Any = -1;
         boolean found = false;
         for (int attempt = 0; attempt < 3; attempt++) {
             TestSuite.waitForIdleSync(this);
             Thread.sleep(2000 * (attempt + 1));
-            firstScrollPos = getListView().getFirstVisiblePosition();
-            for (int ind = 0; ind < 2; ind++) {
-                count2 = getListView().getAdapter().getCount();
-                if (itemId == getListView().getAdapter().getItemId(firstScrollPos + ind)) {
+            count2 = getListView().getAdapter().getCount() - 1;
+            position2 = getListView().getFirstVisiblePosition();
+            for (int ind = 0; ind < count2; ind++) {
+                if (itemId == getListView().getAdapter().getItemId(ind)) {
+                    position2Any = ind;
+                }
+                if ( ind >= position2 && ind <= position2 + 2 
+                        && itemId == getListView().getAdapter().getItemId(ind)) {
                     found = true;
                     break;
                 }
@@ -180,10 +195,13 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
                 break;
             }
         }
-        assertTrue("The item was found. "
+        String logText = method +  " The item id=" + itemId + " was " + (found ? "" : " not") + " found. "
                 + "position1=" + position1 + " of " + count1
-                + "; position2=" + firstScrollPos + " of " + count2, found);
-        
+                + "; position2=" + position2 + " of " + count2
+                + ((position2Any >=0) ? " foundAt=" + position2Any : "");
+        MyLog.v(this, logText);
+        assertTrue(logText, found);
+        assertTrue("More items loaded; " + logText, count2 > count1);
     }
     
     public void testOpeningAccountSelector() throws InterruptedException {
