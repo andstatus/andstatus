@@ -20,6 +20,7 @@ import android.net.Uri;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public abstract class HttpConnection {
@@ -85,6 +86,12 @@ public abstract class HttpConnection {
      * @return true if something changed (so it needs to be rewritten to persistence...)
      */
     public boolean save(AccountDataWriter dw) {
+        boolean changed = false;
+        // Nothing to save in this implementation
+        return changed;
+    }
+    
+    public boolean save(JSONObject jso) throws JSONException {
         boolean changed = false;
         // Nothing to save in this implementation
         return changed;

@@ -40,19 +40,20 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
-     * v.15 2014-02-16 yvolk. Public timeline added
-     * v.14 2013-12-15 yvolk. Origin table added
-     * v.13 2013-12-06 yvolk. Avatar table added
-     * v.12 2013-08-30 yvolk. Adapting for Pump.Io
-     * v.11 2013-05-18 yvolk. FollowingUser table added. User table extended with a column
+     * v.16 2014-05-03 Account persistence changed
+     * v.15 2014-02-16 Public timeline added
+     * v.14 2013-12-15 Origin table added
+     * v.13 2013-12-06 Avatar table added
+     * v.12 2013-08-30 Adapting for Pump.Io
+     * v.11 2013-05-18 FollowingUser table added. User table extended with a column
      *      to store the date the list of Following users was loaded.
-     * v.10 2013-03-23 yvolk. User table extended with columns
+     * v.10 2013-03-23 User table extended with columns
      *      to store information on timelines loaded.
-     * v.9 2012-02-26 yvolk. Totally new database design using table joins.
+     * v.9  2012-02-26 Totally new database design using table joins.
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    public static final int DATABASE_VERSION = 15;
+    public static final int DATABASE_VERSION = 16;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
     /**

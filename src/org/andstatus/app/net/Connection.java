@@ -210,6 +210,11 @@ public abstract class Connection {
         return http.save(dw);
     }
     
+
+    public boolean save(JSONObject jso) throws JSONException {
+        return http.save(jso);
+    }
+    
     /**
      * Do we have enough credentials to verify them?
      * @return true == yes

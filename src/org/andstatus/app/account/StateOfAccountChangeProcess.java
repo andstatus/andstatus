@@ -60,6 +60,8 @@ class StateOfAccountChangeProcess {
     private static final String ACCOUNT_KEY = "account";
     private static final String ACTION_COMPLETED_KEY = "action_completed";
     private static final String ACTION_SUCCEEDED_KEY = "action_succeeded";
+    private static final String REQUEST_TOKEN_KEY = "request_token";
+    private static final String REQUEST_SECRET_KEY = "request_secret";
     
     private String accountAction = Intent.ACTION_DEFAULT;
     boolean actionCompleted = true;
@@ -79,8 +81,8 @@ class StateOfAccountChangeProcess {
      */
     boolean accountShouldBeSelected = false;
 
-    private static final String REQUEST_SECRET = "request_secret";
-    private static final String REQUEST_TOKEN = "request_token";
+    private String requestToken = null;
+    private String requestSecret = null;
     
     private StateOfAccountChangeProcess() {
     }
@@ -133,16 +135,18 @@ class StateOfAccountChangeProcess {
         }
 
         if (state.builder == null && !state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-            // This case occurs if we're changing account settings from Settings -> Accounts
-            if (state.getAccountAction().equals(ACTION_ACCOUNT_MANAGER_ENTRY) && android.os.Build.VERSION.SDK_INT < 16) {
+            // This case occurs if we're changing account settings from Settings->Accounts
+            if (state.getAccountAction().equals(ACTION_ACCOUNT_MANAGER_ENTRY)
+                    && android.os.Build.VERSION.SDK_INT < 16) {
                 state.setAccountAction(Intent.ACTION_INSERT);
             } else {
-                switch(MyContextHolder.get().persistentAccounts().size()) {
+                switch (MyContextHolder.get().persistentAccounts().size()) {
                     case 0:
                         state.setAccountAction(Intent.ACTION_INSERT);
                         break;
                     case 1:
-                        state.builder = MyAccount.Builder.fromMyAccount(MyContextHolder.get().persistentAccounts().getCurrentAccount());
+                        state.builder = MyAccount.Builder.fromMyAccount(MyContextHolder.get()
+                                .persistentAccounts().getCurrentAccount(), "fromIntent");
                         break;
                     default:
                         state.accountShouldBeSelected = true;
@@ -181,6 +185,8 @@ class StateOfAccountChangeProcess {
             bundle.putBoolean(ACTION_SUCCEEDED_KEY, actionSucceeded);
             bundle.putParcelable(ACCOUNT_KEY, builder);
             bundle.putParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY, authenticatiorResponse);
+            bundle.putString(REQUEST_TOKEN_KEY, requestToken);
+            bundle.putString(REQUEST_SECRET_KEY, requestSecret);
             
             MyLog.v(this, "State saved to Bundle");
         }
@@ -195,6 +201,7 @@ class StateOfAccountChangeProcess {
             actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY);
             builder = bundle.getParcelable(ACCOUNT_KEY);
             authenticatiorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY);
+            setRequestTokenWithSecret(bundle.getString(REQUEST_TOKEN_KEY), bundle.getString(REQUEST_SECRET_KEY));
             restoredNow = true;
         }
         this.restored = restoredNow;
@@ -202,19 +209,27 @@ class StateOfAccountChangeProcess {
     }
 
     public String getRequestToken() {
-        return builder.getAccount().getDataString(REQUEST_TOKEN, null);
+        return requestToken;
     }
 
     public String getRequestSecret() {
-        return builder.getAccount().getDataString(REQUEST_SECRET, null);
+        return requestSecret;
     }
     
+    /** null means to clear the old values */
     public void setRequestTokenWithSecret(String token,
             String secret) {
-        // null means to clear the old values
-        builder.setDataString(REQUEST_TOKEN, token);
+        if (TextUtils.isEmpty(token)) {
+            requestToken = null;
+        } else {
+            requestToken = token;
+        }
         MyLog.d(TAG, TextUtils.isEmpty(token) ? "Clearing Request Token" : "Saving Request Token: " + token);
-        builder.setDataString(REQUEST_SECRET, secret);
+        if (TextUtils.isEmpty(secret)) {
+            requestSecret = null;
+        } else {
+            requestSecret = secret;
+        }
         MyLog.d(TAG, TextUtils.isEmpty(secret) ? "Clearing Request Secret" : "Saving Request Secret: " + secret);
     }
     

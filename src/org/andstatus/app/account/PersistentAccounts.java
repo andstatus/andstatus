@@ -5,13 +5,21 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount.Builder;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.backup.MyBackupDataInput;
+import org.andstatus.app.backup.MyBackupDataOutput;
+import org.andstatus.app.backup.MyBackupDescriptor;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.util.MyLog;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -97,7 +105,7 @@ public class PersistentAccounts {
             }
         }
         if (found) {
-            MyAccount.Builder.fromMyAccount(ma).deleteData();
+            MyAccount.Builder.fromMyAccount(ma, "delete").deleteData();
 
             // And delete the object from the list
             persistentAccounts.remove(ma.getAccountName());
@@ -296,9 +304,47 @@ public class PersistentAccounts {
     public void onMyPreferencesChanged() {
         long syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
         for (MyAccount ma : persistentAccounts.values()) {
-            Builder builder = Builder.fromMyAccount(ma);
+            Builder builder = Builder.fromMyAccount(ma, "onMyPreferencesChanged");
             builder.setSyncFrequency(syncFrequencySeconds);
             builder.save();
+        }
+    }
+
+    private static final String KEY_ACCOUNT = "account";
+    public void onBackup(MyBackupDataOutput data, MyBackupDescriptor newDescriptor) throws IOException {
+        JSONArray jsa = new JSONArray();
+        try {
+            for (MyAccount ma : persistentAccounts.values()) {
+                jsa.put(ma.toJson());
+            }
+            byte[] bytes = jsa.toString(2).getBytes("UTF-8");
+            data.writeEntityHeader(KEY_ACCOUNT, bytes.length);
+            data.writeEntityData(bytes, bytes.length);
+        } catch (JSONException e) {
+            throw new FileNotFoundException(e.getLocalizedMessage());
+        }
+    }
+
+    public void onRestore(MyBackupDataInput data, MyBackupDescriptor newDescriptor) throws IOException {
+        if (!KEY_ACCOUNT.equals(data.getKey())) {
+            return;
+        }
+        final String method = "onRestore";
+        MyLog.i(this, method + " started, " + data.getDataSize() + " bytes");
+        byte[] bytes = new byte[data.getDataSize()];
+        int bytesRead = data.readEntityData(bytes, 0, bytes.length);
+        try {
+            JSONArray jsa = new JSONArray(new String(bytes, 0, bytesRead, "UTF-8"));
+            for (int ind = 0; ind < jsa.length(); ind++) {
+                MyAccount.Builder builder = Builder.fromJson((JSONObject) jsa.get(ind));
+                if (builder.saveSilently()) {
+                    MyLog.v(this, "Restored " + (ind+1) + ": " + builder.toString());
+                } else {
+                    MyLog.e(this, "Failed to restore " + (ind+1) + ": " + builder.toString());
+                }
+            }
+        } catch (JSONException e) {
+            throw new FileNotFoundException(e.getLocalizedMessage());
         }
     }
 }

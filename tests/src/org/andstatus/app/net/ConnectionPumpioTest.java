@@ -27,6 +27,7 @@ import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -131,7 +132,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     public void testGetTimeline() throws ConnectionException {
         String sinceId = "http://" + host + "/activity/frefq3232sf";
 
-        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.user_t131t_inbox);
         httpConnection.setResponse(jso);
         
@@ -179,7 +180,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     }
 
     public void testGetUsersFollowedBy() throws ConnectionException {
-        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.user_t131t_following);
         httpConnection.setResponse(jso);
         
@@ -226,7 +227,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     }
     
     public void testUnfollowUser() throws ConnectionException {
-        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.unfollow_pumpio);
         httpConnection.setResponse(jso);
         connection.data.setAccountUserOid("acct:t131t@" + host);
@@ -244,7 +245,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     }
     
     public void testDestroyStatus() throws JSONException, ConnectionException {
-        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.destroy_status_response_pumpio);
         httpConnection.setResponse(jso);
         connection.data.setAccountUserOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);

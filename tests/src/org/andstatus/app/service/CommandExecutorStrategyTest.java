@@ -6,9 +6,9 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.RawResourceReader;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.net.HttpConnectionMock;
+import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 
 public class CommandExecutorStrategyTest extends InstrumentationTestCase {
@@ -50,7 +50,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
 
     public void testUpdateDestroyStatus() {
         String body = "Some text to send " + System.currentTimeMillis() + "ms"; 
-        httpConnection.setResponse(RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+        httpConnection.setResponse(RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.update_status_response_status_net));
        
         CommandData commandData = CommandData.updateStatus(TestSuite.STATUSNET_TEST_ACCOUNT_NAME, 

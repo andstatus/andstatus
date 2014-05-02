@@ -54,7 +54,7 @@ public class MyAccountConverter {
                 if (builderOld.getVersion() == versionTo) {
                     MyLog.i(TAG, "Account " + account.name + " already converted?!");
                 } else {
-                    builderOld.setVersion(versionTo);
+                    // TODO: setVersion to versionTo
                     String originNameOld = AccountName.accountNameToOriginName(account.name);
                     if ("twitter".equals(originNameOld)) {
                         if (builderOld.onOriginNameChanged(twitterName)) {

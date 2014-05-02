@@ -226,7 +226,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     }
 
     protected void showFrequency() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_FETCH_FREQUENCY, R.array.fetch_frequency_values, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, R.array.fetch_frequency_values, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
     }
 
     protected void showMinLogLevel() {
@@ -279,7 +279,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             MyLog.logSharedPreferencesValue(this, sharedPreferences, key);
             MyPreferences.onPreferencesChanged();
             
-            if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY)) {
+            if (key.equals(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS)) {
                 MyContextHolder.get().persistentAccounts().onMyPreferencesChanged();
                 showFrequency();
             }

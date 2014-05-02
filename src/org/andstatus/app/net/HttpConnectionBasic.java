@@ -234,6 +234,18 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         
         return changed;
     }
+
+    @Override
+    public boolean save(JSONObject jso) throws JSONException {
+        boolean changed = super.save(jso);
+        
+        if (mPassword.compareTo(jso.optString(Connection.KEY_PASSWORD, "")) != 0) {
+            jso.put(Connection.KEY_PASSWORD, mPassword);
+            changed = true;
+        }
+        
+        return changed;
+    }
     
     /**
      * Parse the status code and throw appropriate exceptions when necessary.

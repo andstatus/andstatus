@@ -34,6 +34,7 @@ import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
@@ -81,7 +82,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
     }
 
     public void testVerifyCredentials() throws ConnectionException {
-        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.verify_credentials_twitter);
         httpConnection.setResponse(jso);
         

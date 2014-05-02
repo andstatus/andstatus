@@ -24,6 +24,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
 
@@ -57,7 +58,7 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
     }
 
     public void testGetPublicTimeline() throws ConnectionException {
-        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.home_timeline);
         httpConnection.setResponse(jso);
         
@@ -107,7 +108,7 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
     }
 
     public void testSearch() throws ConnectionException {
-        JSONObject jso = RawResourceReader.getJSONObjectResource(this.getInstrumentation().getContext(), 
+        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.home_timeline);
         httpConnection.setResponse(jso);
         

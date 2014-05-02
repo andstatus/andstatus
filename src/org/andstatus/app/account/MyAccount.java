@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010-2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,11 @@ package org.andstatus.app.account;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
-import android.content.PeriodicSync;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
-
-import java.util.List;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
@@ -48,6 +45,8 @@ import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Immutable class that holds "AndStatus account"-specific information including: 
@@ -56,104 +55,83 @@ import org.andstatus.app.util.TriState;
  * 
  * @author yvolk@yurivolkov.com
  */
-public final class MyAccount implements AccountDataReader {
+public final class MyAccount {
     private static final String TAG = MyAccount.class.getSimpleName();
+
+    //------------------------------------------------------------
+    // Key names for MyAccount preferences are below:
+    
+    /**
+     * The Key for the android.accounts.Account bundle;
+     */
+    public static final String KEY_ACCOUNT = "account";
+    /**
+     * Is the MyAccount persistent in AccountManager;
+     */
+    public static final String KEY_PERSISTENT = "persistent";
+
+    /**
+     * This Key is both global for the application and the same - for one MyAccount
+     * Global: Username of currently selected MyAccount (Current MyAccount)
+     * This MyAccount: Username of the {@link MyDatabase.User} corresponding to this {@link MyAccount}
+     */
+    public static final String KEY_USERNAME = "username";
+    /**
+     * New Username typed / selected in UI
+     * It doesn't immediately change "Current MyAccount"
+     */
+    public static final String KEY_USERNAME_NEW = "username_new";
+    /**
+     * {@link MyDatabase.User#_ID} in our System.
+     */
+    public static final String KEY_USER_ID = "user_id";
+    /**
+     * {@link MyDatabase.User#USER_OID} in Microblogging System.
+     */
+    public static final String KEY_USER_OID = "user_oid";
+
+    /**
+     * Is OAuth on for this MyAccount?
+     */
+    public static final String KEY_OAUTH = "oauth";
+
+    /**
+     * Storing version of the account data
+     */
+    public static final String KEY_VERSION = "myversion";
+
+    /**
+     * This account is in the process of deletion and should be ignored...
+     */
+    public static final String KEY_DELETED = "deleted";
     
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
-    public static final class Builder implements Parcelable, AccountDataWriter {
+    public static final class Builder implements Parcelable {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
 
-        //------------------------------------------------------------
-        // Key names for MyAccount preferences are below:
+        private final MyAccount myAccount;
         
         /**
-         * The Key for the android.accounts.Account bundle;
-         */
-        public static final String KEY_ACCOUNT = "account";
-        /**
-         * Is the MyAccount persistent in AccountManager;
-         */
-        public static final String KEY_PERSISTENT = "persistent";
-
-        /**
-         * This Key is both global for the application and the same - for one MyAccount
-         * Global: Username of currently selected MyAccount (Current MyAccount)
-         * This MyAccount: Username of the {@link MyDatabase.User} corresponding to this {@link MyAccount}
-         */
-        public static final String KEY_USERNAME = "username";
-        /**
-         * New Username typed / selected in UI
-         * It doesn't immediately change "Current MyAccount"
-         */
-        public static final String KEY_USERNAME_NEW = "username_new";
-        /**
-         * {@link MyDatabase.User#_ID} in our System.
-         */
-        public static final String KEY_USER_ID = "user_id";
-        /**
-         * {@link MyDatabase.User#USER_OID} in Microblogging System.
-         */
-        public static final String KEY_USER_OID = "user_oid";
-
-        /**
-         * Is OAuth on for this MyAccount?
-         */
-        public static final String KEY_OAUTH = "oauth";
-
-        /**
-         * Storing version of the account data
-         */
-        public static final String KEY_VERSION = "myversion";
-
-        /**
-         * This account is in the process of deletion and should be ignored...
-         */
-        public static final String KEY_DELETED = "deleted";
-        
-        /**
-         * Factory of Builder-s
          * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
-         * 
-         * @param accountName - Account Guid (in the form, defined by {@link AccountName} )
-         *  if accountName doesn't have systemname, invalid system name is assumed
-         * @return Builder - existed or newly created. For new Builder we assume that it is not persistent.
          */
-        public static Builder newOrExistingFromAccountName(String accountName, TriState isOAuth) {
-            MyAccount myAccount = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
-            Builder mab;
-            if (myAccount == null) {
-                // Create temporary MyAccount.Builder
-                mab = new Builder(accountName, isOAuth);
+        public static Builder newOrExistingFromAccountName(String accountName, TriState isOAuthTriState) {
+            MyAccount persistentAccount = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
+            if (persistentAccount == null) {
+                return newFromAccountName(accountName, isOAuthTriState);
             } else {
-                mab = Builder.fromMyAccount(myAccount);
+                return fromMyAccount(persistentAccount, "newOrExistingFromAccountName");
             }
-            return mab;
-        }
-        
-        private MyAccount myAccount;
-
-        private Builder() {
         }
         
         /**
          * Creates new account, which is not Persistent yet
          * @param accountName
          */
-        private Builder (String accountName, TriState isOAuthTriState) {
-            myAccount = new MyAccount();
-            myAccount.oAccountName = AccountName.fromAccountName(MyContextHolder.get(), accountName);
-            setOAuth(isOAuthTriState);
-            myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
-            setConnection();
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "New temporary account created: " + this.toString());
-            }
-        }
-
-        protected static Builder fromMyAccount(MyAccount ma) {
-            Builder builder = new Builder(); 
-            builder.myAccount = ma;
-            return builder;
+        private static Builder newFromAccountName(String accountName, TriState isOAuthTriState) {
+            MyAccount ma = new MyAccount(null);
+            ma.oAccountName = AccountName.fromAccountName(MyContextHolder.get(), accountName);
+            ma.setOAuth(isOAuthTriState);
+            return fromMyAccount(ma, "newFromAccountName");
         }
         
         /**
@@ -162,46 +140,43 @@ public final class MyAccount implements AccountDataReader {
          * @param account should not be null
          */
         protected static Builder fromAndroidAccount(MyContext myContext, android.accounts.Account account) {
-            String method = "fromAndroidAccount";
-            if (account == null) {
-                throw new IllegalArgumentException(TAG + " null account");
-            }
-            Builder builder = fromMyAccount(new MyAccount());
-            builder.loadNameFromAndroidAccount(myContext, account);
-            builder.loadOtherStoredData();
+            return fromMyAccount(new MyAccount(AccountData.fromAndroidAccount(myContext, account)), "fromAndroidAccount");
+        }
+
+        public static Builder fromJson(JSONObject jso) throws JSONException {
+            return fromMyAccount(new MyAccount(AccountData.fromJson(jso, false)), "fromJson");
+        }
+
+        protected static Builder fromMyAccount(MyAccount ma, String method) {
+            Builder builder = new Builder(ma);
             builder.setConnection();
-            builder.fixInconsistenciesWithChangedEnvironmentSilently(true);
+            builder.fixInconsistenciesWithChangedEnvironmentSilently();
             builder.logLoadResult(method);
             return builder;
         }
 
-        private void loadNameFromAndroidAccount(MyContext myContext, Account account) {
-            myAccount.androidAccount = account;
-            myAccount.oAccountName = AccountName.fromAccountName(myContext, myAccount.androidAccount.name);
-        }
-        
-        private void loadOtherStoredData() {
-            myAccount.version = myAccount.getDataInt(KEY_VERSION, 0);
-            myAccount.deleted = myAccount.getDataBoolean(KEY_DELETED, false);
-            setOAuth(TriState.UNKNOWN);
-            myAccount.credentialsVerified = CredentialsVerificationStatus.load(myAccount);
-            myAccount.syncFrequencySeconds = myAccount.getDataLong(MyPreferences.KEY_FETCH_FREQUENCY, 0);
-            myAccount.userId = myAccount.getDataLong(KEY_USER_ID, 0L);
-            myAccount.userOid = myAccount.getDataString(KEY_USER_OID, "");
+        private Builder(MyAccount myAccount) {
+            this.myAccount = myAccount;
         }
 
-        private void setOAuth(TriState isOAuthTriState) {
+        private void setConnection() {
             Origin origin = myAccount.oAccountName.getOrigin();
-            boolean isOAuthBoolean = true;
-            if (isOAuthTriState == TriState.UNKNOWN) {
-                isOAuthBoolean = myAccount.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault());
-            } else {
-                isOAuthBoolean = isOAuthTriState.toBoolean(origin.isOAuthDefault());
+            OriginConnectionData connectionData = origin.getConnectionData(TriState.fromBoolean(myAccount.isOAuth));
+            connectionData.setAccountUserOid(myAccount.userOid);
+            connectionData.setAccountUsername(myAccount.getUsername());
+            connectionData.setDataReader(myAccount.accountData);
+            try {
+                myAccount.connection = connectionData.getConnectionClass().newInstance();
+                myAccount.connection.enrichConnectionData(connectionData);
+                myAccount.connection.setAccountData(connectionData);
+            } catch (InstantiationException e) {
+                MyLog.i(TAG, e);
+            } catch (IllegalAccessException e) {
+                MyLog.i(TAG, e);
             }
-            myAccount.isOAuth = origin.getOriginType().fixIsOAuth(isOAuthBoolean);
         }
         
-        private void fixInconsistenciesWithChangedEnvironmentSilently(boolean saveChanges) {
+        private void fixInconsistenciesWithChangedEnvironmentSilently() {
             if (myAccount.version != MyAccount.ACCOUNT_VERSION) {
                 return;
             }
@@ -211,19 +186,16 @@ public final class MyAccount implements AccountDataReader {
                 assignUserId();
                 MyLog.e(TAG, "MyAccount '" + myAccount.getAccountName() + "' was not connected to the User table. UserId=" + myAccount.userId);
             }
-            if (myAccount.syncFrequencySeconds==0) {
-                myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
-                ContentResolver.setIsSyncable(myAccount.androidAccount, MyProvider.AUTHORITY, 1);
-                ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
+            if (myAccount.syncFrequencySeconds == 0) {
                 changed = true;
             }
             if (!myAccount.getCredentialsPresent()
                     && myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                 MyLog.e(TAG, "User's credentials were lost?! Fixing...");
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
-                save();
+                changed = true;
             }
-            if (changed && saveChanges) {
+            if (changed && isPersistent()) {
                 saveSilently();
             }
         }
@@ -236,33 +208,6 @@ public final class MyAccount implements AccountDataReader {
             } else {
                 MyLog.i(TAG, method + "Loaded Invalid account; version=" + myAccount.version + "; " + this.toString());
             }
-        }
-        
-        private Builder(Parcel source) {
-            String method = "construct from Parcel";
-            myAccount = new MyAccount();
-            
-            // Load as if the account is not persisted to force loading everything from userData
-            loadNameFromUserData(source.readBundle());
-            loadOtherStoredData();
-            setConnection();
-            fixInconsistenciesWithChangedEnvironmentSilently(false);
-
-            // Do this as a last step
-            if (myAccount.getDataBoolean(KEY_PERSISTENT, false)) {
-                myAccount.androidAccount = myAccount.userData.getParcelable(KEY_ACCOUNT);
-                if (myAccount.androidAccount == null) {
-                    MyLog.e(TAG, "The account was marked as persistent:" + this);
-                }
-            }
-            logLoadResult(method);
-        }
-
-        private void loadNameFromUserData(Bundle userDataIn) {
-            myAccount.userData = userDataIn;
-            myAccount.oAccountName = AccountName.fromOriginAndUserNames(
-                    myAccount.getDataString(Origin.KEY_ORIGIN_NAME, ""),
-                    myAccount.getDataString(KEY_USERNAME, ""));
         }
         
         public MyAccount getAccount() {
@@ -291,191 +236,96 @@ public final class MyAccount implements AccountDataReader {
                     // TODO: Delete databases for this User
                     myAccount.userId = 0;
                 }
-
-                setAndroidAccountDeleted();
-                // We don't delete Account from Account Manager here
-                myAccount.androidAccount = null;
             }
+            setAndroidAccountDeleted();
             return ok;
         }
         
         private void setAndroidAccountDeleted() {
-            if (isPersistent()) {
-                setDataBoolean(KEY_DELETED, true);
-            }
-        }
-
-        @Override
-        public void setDataString(String key, String value) {
-            try {
-                if (isPersistent()) {
-                    android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
-                    am.setUserData(myAccount.androidAccount, key, value);
-                } else {
-                    if (TextUtils.isEmpty(value)) {
-                        myAccount.userData.remove(key);
-                    } else {
-                        myAccount.userData.putString(key, value);
-                    }
-                }
-            } catch (Exception e) {
-                MyLog.v(TAG, e);
-            }
-        }
-
-        @Override
-        public void setDataInt(String key, int value) {
-            try {
-                setDataString(key, Integer.toString(value));
-            } catch (Exception e) {
-                MyLog.v(TAG, e);
-            }
-        }
-
-        public void setDataLong(String key, long value) {
-            try {
-                if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY) && isPersistent()) {
-                    // See
-                    // http://developer.android.com/reference/android/content/ContentResolver.html#addPeriodicSync(android.accounts.Account, java.lang.String, android.os.Bundle, long)
-                    // and
-                    // http://stackoverflow.com/questions/11090604/android-syncadapter-automatically-initialize-syncing
-                    ContentResolver.removePeriodicSync(myAccount.androidAccount, MyProvider.AUTHORITY, new Bundle());
-                    if (value > 0) {
-                        ContentResolver.addPeriodicSync(myAccount.androidAccount, MyProvider.AUTHORITY, new Bundle(), value);
-                    }
-                } else {
-                    setDataString(key, Long.toString(value));
-                }
-            } catch (Exception e) {
-                MyLog.v(TAG, e);
-            }
-        }
-        
-        public void setDataBoolean(String key, boolean value) {
-            try {
-                setDataString(key, Boolean.toString(value));
-            } catch (Exception e) {
-                MyLog.v(TAG, e);
-            }
+            myAccount.accountData.setDataBoolean(KEY_DELETED, true);
         }
 
         public void save() {
-            boolean changed = saveSilently();
-            if (changed && isPersistent() && MyContextHolder.get().isReady()) {
+            boolean saved = saveSilently();
+            if (saved && MyContextHolder.get().isReady()) {
                 MyPreferences.onPreferencesChanged();
             }
         }
-        
 
         /**
-         * Save this MyAccount:
-         * 1) to internal Bundle (userData). 
-         * 2) If it is not Persistent yet and may be added to AccountManager, do it (i.e. Persist it). 
-         * 3) If it isPersitent, save everything to AccountManager also.
-         * @return true if changed 
+         * Save this MyAccount to AccountManager
+         * @return true if saved to AccountManager 
          */
         public boolean saveSilently() {
-            boolean changed = false;
-            
+            boolean saved = false;
             try {
                 if (!myAccount.isValid()) {
                     MyLog.v(TAG, "Didn't save invalid account: " + myAccount);
                     return false;
                 }
-                changed = addAndroidAccountIfNecessary(changed);
-                if (myAccount.getDataString(KEY_USERNAME, "").compareTo(myAccount.oAccountName.getUsername()) !=0 ) {
-                    setDataString(KEY_USERNAME, myAccount.oAccountName.getUsername());
-                    changed = true;
+                Account androidAccount = getNewOrExistingAndroidAccount();
+                myAccount.accountData.setDataString(KEY_USERNAME, myAccount.oAccountName.getUsername());
+                myAccount.accountData.setDataString(KEY_USER_OID, myAccount.userOid);
+                myAccount.accountData.setDataString(Origin.KEY_ORIGIN_NAME, myAccount.oAccountName.getOriginName());
+                myAccount.credentialsVerified.put(myAccount.accountData);
+                myAccount.accountData.setDataBoolean(KEY_OAUTH, myAccount.isOAuth);
+                myAccount.accountData.setDataLong(KEY_USER_ID, myAccount.userId);
+                if (myAccount.connection != null) {
+                    myAccount.connection.save(myAccount.accountData);
                 }
-                if (myAccount.getDataString(KEY_USER_OID, "").compareTo(myAccount.userOid) !=0 ) {
-                    setDataString(KEY_USER_OID, myAccount.userOid);
-                    changed = true;
+                myAccount.accountData.setPersistent(true);
+                if (myAccount.syncFrequencySeconds == 0) {
+                    myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
                 }
-                if (myAccount.oAccountName.getOriginName().compareTo(myAccount.getDataString(Origin.KEY_ORIGIN_NAME, "")) != 0) {
-                    setDataString(Origin.KEY_ORIGIN_NAME, myAccount.oAccountName.getOriginName());
-                    changed = true;
-                }
-                if (myAccount.credentialsVerified != CredentialsVerificationStatus.load(myAccount)) {
-                    myAccount.credentialsVerified.put(this);
-                    changed = true;
-                }
-                if (myAccount.isOAuth != myAccount.getDataBoolean(KEY_OAUTH, myAccount.oAccountName.getOrigin().isOAuthDefault())) {
-                    setDataBoolean(KEY_OAUTH, myAccount.isOAuth);
-                    changed = true;
-                }
-                if (myAccount.userId != myAccount.getDataLong(KEY_USER_ID, 0L)) {
-                    setDataLong(KEY_USER_ID, myAccount.userId);
-                    changed = true;
-                }
-                if (myAccount.connection != null && myAccount.connection.save(this)) {
-                    changed = true;
-                }
-                if (isPersistent() != myAccount.getDataBoolean(KEY_PERSISTENT, false)) {
-                    setDataBoolean(KEY_PERSISTENT, isPersistent());
-                    changed = true;
-                }
-                if (myAccount.syncFrequencySeconds != myAccount.getDataInt(MyPreferences.KEY_FETCH_FREQUENCY, 0)) {
-                    setDataLong(MyPreferences.KEY_FETCH_FREQUENCY, myAccount.syncFrequencySeconds); 
-                    changed = true;
-                }
-                if (myAccount.version != myAccount.getDataInt(KEY_VERSION, 0)) {
-                    setDataInt(KEY_VERSION, myAccount.version);
-                    changed = true;
-                }
-
-                MyLog.v(TAG, "Saved " + (changed ? " changed " : " no changes " ) + this);
+                myAccount.accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.syncFrequencySeconds); 
+                myAccount.accountData.setDataInt(KEY_VERSION, myAccount.version);
+                saved = myAccount.accountData.saveDataToAccount(MyContextHolder.get(), androidAccount);
+                MyLog.v(this, (saved ? " Saved " : " Didn't save " ) + this.toString());
             } catch (Exception e) {
-                MyLog.e(TAG, "saving " + myAccount.getAccountName(), e);
-                changed = false;
+                MyLog.e(this, "Saving " + myAccount.getAccountName(), e);
             }
-            return changed;
+            return saved;
         }
 
-        private boolean addAndroidAccountIfNecessary(boolean changedIn) {
-            boolean changed = changedIn;
-            if (!isPersistent()) {
-                // Let's check if there is such an Android Account already
-                android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
-                android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
-                for (android.accounts.Account account : aa) {
-                    if (myAccount.getAccountName().equals(account.name)) {
-                        changed = true;
-                        myAccount.androidAccount = account;
-                        break;
-                    }
-                }
-                if (!isPersistent() && (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED)) {
-                    try {
-                        changed = true;
-                        /** Now add this account to the Account Manager
-                         * See {@link com.android.email.provider.EmailProvider.createAccountManagerAccount(Context, String, String)}
-                         * 
-                         * Note: We could add userdata from {@link userData} Bundle, 
-                         * but we decided to add it below one by one item
-                         */
-                        myAccount.androidAccount = new android.accounts.Account(myAccount.getAccountName(), AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-                        am.addAccountExplicitly(myAccount.androidAccount, myAccount.getPassword(), null);
-                        
-                        ContentResolver.setIsSyncable(myAccount.androidAccount, MyProvider.AUTHORITY, 1);
-                        
-                        // This is not needed because we don't use the "network tickles"... yet?!
-                        // See http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
-                        ContentResolver.setSyncAutomatically(myAccount.androidAccount, MyProvider.AUTHORITY, true);
-       
-                        // Without SyncAdapter we got the error:
-                        // SyncManager(865): can't find a sync adapter for SyncAdapterType Key 
-                        // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, removing settings for it
-                        
-                        MyLog.v(TAG, "Persisted " + myAccount.getAccountName());
-                    } catch (Exception e) {
-                        MyLog.e(TAG, "Adding Account to AccountManager", e);
-                        myAccount.androidAccount = null;
-                    }
+        private Account getNewOrExistingAndroidAccount() {
+            Account androidAccount = myAccount.getExisingAndroidAccount();
+            if ((androidAccount == null)
+                    && (myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED)) {
+                try {
+                    /**
+                     * Now add this account to the Account Manager See {@link
+                     * com.android.email.provider.EmailProvider.
+                     * createAccountManagerAccount(Context, String, String)}
+                     * Note: We could add userdata from {@link userData} Bundle,
+                     * but we decided to add it below one by one item
+                     */
+                    androidAccount = new android.accounts.Account(myAccount.getAccountName(),
+                            AuthenticatorService.ANDROID_ACCOUNT_TYPE);
+                    android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get()
+                            .context());
+                    am.addAccountExplicitly(androidAccount, myAccount.getPassword(), null);
+
+                    ContentResolver.setIsSyncable(androidAccount, MyProvider.AUTHORITY, 1);
+
+                    // This is not needed because we don't use the "network tickles"... yet?!
+                    // See http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
+                    ContentResolver
+                            .setSyncAutomatically(androidAccount, MyProvider.AUTHORITY, true);
+
+                    // Without SyncAdapter we got the error:
+                    // SyncManager(865): can't find a sync adapter for SyncAdapterType Key
+                    // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app}, 
+                    // removing settings for it
+
+                    MyLog.v(TAG, "Persisted " + myAccount.getAccountName());
+                } catch (Exception e) {
+                    MyLog.e(TAG, "Adding Account to AccountManager", e);
+                    androidAccount = null;
                 }
             }
-            return changed;
+            return androidAccount;
         }
-
+        
         public boolean getOriginConfig() throws ConnectionException {
             boolean ok = false;
             if (!ok) {
@@ -545,7 +395,7 @@ public final class MyAccount implements AccountDataReader {
                 myAccount.userOid = user.oid;
                 if (MyDatabaseConverterController.isUpgrading()) {
                     MyLog.v(TAG, "Upgrade in progress");
-                    myAccount.userId = myAccount.getDataLong(KEY_USER_ID, myAccount.userId);
+                    myAccount.userId = myAccount.accountData.getDataLong(KEY_USER_ID, myAccount.userId);
                 } else {
                     DataInserter di = new DataInserter(myAccount);
                     myAccount.userId = di.insertOrUpdateUser(user);
@@ -556,7 +406,7 @@ public final class MyAccount implements AccountDataReader {
                 // We don't recreate MyAccount object for the new name
                 //   in order to preserve credentials.
                 myAccount.oAccountName = AccountName.fromOriginAndUserNames(myAccount.oAccountName.getOriginName(), newName);
-                myAccount.connection.save(this);
+                myAccount.connection.save(myAccount.accountData);
                 setConnection();
                 save();
             }
@@ -598,23 +448,6 @@ public final class MyAccount implements AccountDataReader {
             setConnection();
             myAccount.connection.registerClientForAccount();
         }
-        
-        private void setConnection() {
-            Origin origin = myAccount.oAccountName.getOrigin();
-            OriginConnectionData connectionData = origin.getConnectionData(TriState.fromBoolean(myAccount.isOAuth));
-            connectionData.setAccountUserOid(myAccount.userOid);
-            connectionData.setAccountUsername(myAccount.getUsername());
-            connectionData.setDataReader(myAccount);
-            try {
-                myAccount.connection = connectionData.getConnectionClass().newInstance();
-                myAccount.connection.enrichConnectionData(connectionData);
-                myAccount.connection.setAccountData(connectionData);
-            } catch (InstantiationException e) {
-                MyLog.i(TAG, e);
-            } catch (IllegalAccessException e) {
-                MyLog.i(TAG, e);
-            }
-        }
 
         /**
          * Password was moved to the connection object because it is needed there
@@ -654,17 +487,13 @@ public final class MyAccount implements AccountDataReader {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             save();
-            // We don't need this until it is persisted
-            if (isPersistent()) {
-                myAccount.userData.putParcelable(KEY_ACCOUNT, myAccount.androidAccount);
-            }
-            dest.writeParcelable(myAccount.userData, flags);
+            dest.writeParcelable(myAccount.accountData, flags);
         }
         
         public static final Creator<Builder> CREATOR = new Creator<Builder>() {
             @Override
             public Builder createFromParcel(Parcel source) {
-                return new Builder(source);
+                return fromMyAccount(new MyAccount(AccountData.fromBundle(source.readBundle())), "createFromParcel");
             }
 
             @Override
@@ -672,21 +501,6 @@ public final class MyAccount implements AccountDataReader {
                 return new Builder[size];
             }
         };
-
-        @Override
-        public boolean dataContains(String key) {
-            return myAccount.dataContains(key);
-        }
-
-        @Override
-        public int getDataInt(String key, int defValue) {
-            return myAccount.getDataInt(key, defValue);
-        }
-
-        @Override
-        public String getDataString(String key, String defValue) {
-            return myAccount.getDataString(key, defValue);
-        }
         
         @Override
         public String toString() {
@@ -699,10 +513,6 @@ public final class MyAccount implements AccountDataReader {
 
         protected int getVersion() {
             return myAccount.version;
-        }
-        
-        protected void setVersion(int versionNew) {
-            myAccount.version = versionNew;
         }
 
         void setSyncFrequency(long syncFrequencySeconds) {
@@ -719,7 +529,6 @@ public final class MyAccount implements AccountDataReader {
             }
             MyLog.i(TAG, "renaming origin of " + myAccount.getAccountName() + " to " + originNameNew );
             setAndroidAccountDeleted();
-            myAccount.androidAccount = null;
             myAccount.oAccountName = AccountName.fromOriginAndUserNames(
                     originNameNew,
                     myAccount.oAccountName.getUsername());
@@ -728,41 +537,22 @@ public final class MyAccount implements AccountDataReader {
         }
     }
     
-    private AccountName oAccountName = AccountName.getEmpty();
-    private String userOid = "";
+    private final AccountData accountData;
+    private AccountName oAccountName;
+    private String userOid;
+    /** Id in the database, see {@link MyDatabase.User#_ID} */
+    private long userId;
     private Connection connection = null;
-    
-    /**
-     * Android Account associated with this MyAccount
-     */
-    private android.accounts.Account androidAccount;
-    
-    /**
-     * User Data associated with this Account
-     * It's mainly used when the MyAccount is not Persisted yet.
-     */
-    private Bundle userData = new Bundle();
-    
-    /**
-     * Id in the database, see {@link MyDatabase.User#_ID}
-     */
-    private long userId = 0;
-
-    /**
-     * Was this user authenticated last time _current_ credentials were verified?
-     * CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
+    /** Was this user authenticated last time _current_ credentials were verified?
+     *  CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
      */
     private CredentialsVerificationStatus credentialsVerified = CredentialsVerificationStatus.NEVER;
-
-    /**
-     * Is this user authenticated with OAuth?
-     */
+    /** Is this user authenticated with OAuth? */
     private boolean isOAuth = true;
-
-    private long syncFrequencySeconds = 0;
-    private int version = MyAccount.ACCOUNT_VERSION;
-    public static final int ACCOUNT_VERSION = 14;
-    private boolean deleted = false;
+    private long syncFrequencySeconds;
+    private final int version;
+    public static final int ACCOUNT_VERSION = 16;
+    private boolean deleted;
     
     public enum CredentialsVerificationStatus {
         /** 
@@ -776,17 +566,18 @@ public final class MyAccount implements AccountDataReader {
 
         private int id;
         
-        /*
-         * Methods to persist in SharedPreferences
-         */
         private static final String KEY = "credentials_verified";
         
         private CredentialsVerificationStatus(int id) {
             this.id = id;
         }
-        
+
         public void put(AccountDataWriter dw) {
             dw.setDataInt(KEY, id);
+        }
+        
+        public void put(JSONObject jso) throws JSONException {
+            jso.put(KEY, id);
         }
         
         public static CredentialsVerificationStatus load(SharedPreferences sp) {
@@ -809,96 +600,11 @@ public final class MyAccount implements AccountDataReader {
             int id = dr.getDataInt(KEY, NEVER.id);
             return fromId(id);
         }
-    }
-
-    @Override
-    public int getDataInt(String key, int defValue) {
-        int value = defValue;
-        try {
-            String str = getDataString(key, "null");
-            if (str.compareTo("null") != 0) {
-                value = Integer.parseInt(str);
-            }
-        } catch (Exception e) {
-            MyLog.v(this, e);
-        }
-        return value;
-    }
-
-    private long getDataLong(String key, long defValue) {
-        long value = defValue;
-        try {
-            if (key.equals(MyPreferences.KEY_FETCH_FREQUENCY) && isPersistent()) {
-                List<PeriodicSync> syncs = ContentResolver.getPeriodicSyncs(androidAccount, MyProvider.AUTHORITY);
-                // Take care of the first in the list
-                if (!syncs.isEmpty()) {
-                    value = syncs.get(0).period;
-                }
-            } else {
-                String str = getDataString(key, "null");
-                if (str.compareTo("null") != 0) {
-                    value = Long.parseLong(str);
-                }
-            }
-        } catch (Exception e) {
-            MyLog.v(this, e);
-        }
-        return value;
-    }
-
-    private boolean getDataBoolean(String key, boolean defValue) {
-        boolean value = defValue;
-        try {
-            String str = getDataString(key, "null");
-            if (str.compareTo("null") != 0) {
-                value = SharedPreferencesUtil.isTrue(str);
-            }
-        } catch (Exception e) {
-            MyLog.v(this, e);
-        }
-        return value;
-    }
-
-    /**
-     * User Data associated with the account
-     */
-    @Override
-    public String getDataString(String key, String defValue) {
-        String value = defValue;
-        if (isPersistent()) {
-            android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
-            String str = am.getUserData(androidAccount, key);
-            if (!TextUtils.isEmpty(str)) {
-                value = str;
-            }
-            // And cache retrieved value (Do we really need this?)
-            if (TextUtils.isEmpty(value)) {
-                userData.remove(key);
-            } else {
-                userData.putString(key, value);
-            }
-        } else {
-            String str = userData.getString(key);
-            if (!TextUtils.isEmpty(str)) {
-                value = str;
-            }
-        }
         
-        return value;
-    }
-    
-    @Override
-    public boolean dataContains(String key) {
-        boolean contains = false;
-        try {
-            String str = getDataString(key, "null");
-            if (str.compareTo("null") != 0) {
-                contains = true;
-            }
-        } catch (Exception e) {
-            MyLog.v(this, e);
+        public static CredentialsVerificationStatus load(JSONObject jso) {
+            int id = jso.optInt(KEY, NEVER.id);
+            return fromId(id);
         }
-        return contains;
     }
     
     public boolean getCredentialsPresent() {
@@ -909,11 +615,8 @@ public final class MyAccount implements AccountDataReader {
         return credentialsVerified;
     }
  
-    /**
-     * @return Is this object persistent 
-     */
     private boolean isPersistent() {
-        return androidAccount != null;
+        return accountData.isPersistent();
     }
     
     /**
@@ -968,7 +671,33 @@ public final class MyAccount implements AccountDataReader {
                 && connection != null;
     }
     
-    private MyAccount() {
+    private MyAccount(AccountData accountDataIn) {
+        if (accountDataIn == null) {
+            accountData = AccountData.fromJson(null, false);
+        } else {
+            accountData = accountDataIn;
+        }
+        oAccountName = AccountName.fromOriginAndUserNames(
+                accountData.getDataString(Origin.KEY_ORIGIN_NAME, ""), 
+                accountData.getDataString(KEY_USERNAME, ""));
+        version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
+        deleted = accountData.getDataBoolean(KEY_DELETED, false);
+        syncFrequencySeconds = accountData.getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0L);
+        userId = accountData.getDataLong(KEY_USER_ID, 0L);
+        userOid = accountData.getDataString(KEY_USER_OID, "");
+        setOAuth(TriState.UNKNOWN);
+        credentialsVerified = CredentialsVerificationStatus.load(accountData);
+    }
+
+    private void setOAuth(TriState isOAuthTriState) {
+        Origin origin = oAccountName.getOrigin();
+        boolean isOAuthBoolean = true;
+        if (isOAuthTriState == TriState.UNKNOWN) {
+            isOAuthBoolean = accountData.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault());
+        } else {
+            isOAuthBoolean = isOAuthTriState.toBoolean(origin.isOAuthDefault());
+        }
+        isOAuth = origin.getOriginType().fixIsOAuth(isOAuthBoolean);
     }
 
     public String getUsername() {
@@ -1076,10 +805,24 @@ public final class MyAccount implements AccountDataReader {
     
     public void requestSync() {
         if (isPersistent()) {
-           ContentResolver.requestSync(androidAccount, MyProvider.AUTHORITY, new Bundle()); 
+           ContentResolver.requestSync(getExisingAndroidAccount(), MyProvider.AUTHORITY, new Bundle()); 
         }
     }
 
+    private Account getExisingAndroidAccount() {
+        Account androidAccount = null;
+        // Let's check if there is such an Android Account already
+        android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
+        android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+        for (android.accounts.Account account : aa) {
+            if (getAccountName().equals(account.name)) {
+                androidAccount = account;
+                break;
+            }
+        }
+        return androidAccount;
+    }
+    
     @Override
     public String toString() {
         String members = "accountName:" + getAccountName() + ",";
@@ -1109,6 +852,23 @@ public final class MyAccount implements AccountDataReader {
             MyLog.v(this, members, e);
         }
         return MyLog.formatKeyValue(TAG, members);
+    }
+    
+    public JSONObject toJson() throws JSONException {
+        JSONObject jso = new JSONObject();
+        jso.put(KEY_ACCOUNT, getAccountName());  
+        jso.put(KEY_USERNAME, getUsername());  
+        jso.put(KEY_USER_OID, userOid);
+        jso.put(Origin.KEY_ORIGIN_NAME, oAccountName.getOriginName());
+        credentialsVerified.put(jso);
+        jso.put(KEY_OAUTH, isOAuth);
+        jso.put(KEY_USER_ID, userId);
+        if (connection != null) {
+            connection.save(jso);
+        }
+        jso.put(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, syncFrequencySeconds);
+        jso.put(KEY_VERSION, version);
+        return jso;
     }
     
     public int accountsOfThisOrigin() {

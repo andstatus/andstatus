@@ -317,8 +317,8 @@ public class CommandData implements Comparable<CommandData> {
         if (!(o instanceof CommandData)) {
             return false;
         }
-        CommandData cd = (CommandData) o;
-        return hashCode() == cd.hashCode();
+        CommandData other = (CommandData) o;
+        return hashCode() == other.hashCode();
     }
 
     /**

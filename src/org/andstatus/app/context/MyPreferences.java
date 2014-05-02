@@ -19,6 +19,7 @@ package org.andstatus.app.context;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 
+import android.app.backup.BackupManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -48,7 +49,7 @@ public class MyPreferences {
     /**
      * Period of automatic updates in seconds
      */
-    public static final String KEY_FETCH_FREQUENCY = "fetch_frequency";
+    public static final String KEY_SYNC_FREQUENCY_SECONDS = "fetch_frequency";
     public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
     public static final String KEY_CONTACT_DEVELOPER = "contact_developer";
     public static final String KEY_REPORT_BUG = "report_bug";
@@ -160,7 +161,7 @@ public class MyPreferences {
         long frequencySeconds = SYNC_FREQUENCY_DEFAULT_SECONDS;
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
-            long frequencySecondsStored = Long.parseLong(getDefaultSharedPreferences().getString(MyPreferences.KEY_FETCH_FREQUENCY, "0"));
+            long frequencySecondsStored = Long.parseLong(getDefaultSharedPreferences().getString(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, "0"));
             if (frequencySecondsStored > 0) { 
                 frequencySeconds = frequencySecondsStored;
             }
@@ -185,6 +186,10 @@ public class MyPreferences {
             sp.edit()
             .putLong(KEY_PREFERENCES_CHANGE_TIME,
                     java.lang.System.currentTimeMillis()).commit();
+            Context context = MyContextHolder.get().context();
+            if (context != null) {
+                new BackupManager(context).dataChanged();
+            }
         }
     }
     

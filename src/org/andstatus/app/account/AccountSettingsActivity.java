@@ -132,8 +132,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         });
         
         addAccountOrVerifyCredentials = findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
-        oAuthCheckBox = (CheckBoxPreference) findPreference(MyAccount.Builder.KEY_OAUTH);
-        usernameText = (EditTextPreference) findPreference(MyAccount.Builder.KEY_USERNAME_NEW);
+        oAuthCheckBox = (CheckBoxPreference) findPreference(MyAccount.KEY_OAUTH);
+        usernameText = (EditTextPreference) findPreference(MyAccount.KEY_USERNAME_NEW);
         passwordText = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
 
         actionBar.attach();
@@ -495,7 +495,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             // Check if there are changes to avoid "ripples": don't set new
             // value if no changes
 
-            if (key.equals(MyAccount.Builder.KEY_OAUTH)
+            if (key.equals(MyAccount.KEY_OAUTH)
                 && state.getAccount().isOAuth() != oAuthCheckBox.isChecked()) {
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         AccountName.fromOriginAndUserNames(originOfUser.getName(),
@@ -503,7 +503,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                                 TriState.fromBoolean(oAuthCheckBox.isChecked()));
                 showUserPreferences();
             }
-            if (key.equals(MyAccount.Builder.KEY_USERNAME_NEW)) {
+            if (key.equals(MyAccount.KEY_USERNAME_NEW)) {
                 String usernameNew = usernameText.getText();
                 if (usernameNew.compareTo(state.getAccount().getUsername()) != 0) {
                     boolean isOAuth = state.getAccount().isOAuth();

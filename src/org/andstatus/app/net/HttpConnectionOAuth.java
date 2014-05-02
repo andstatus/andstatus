@@ -22,6 +22,8 @@ import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsumerAndProvider {
     private static final String TAG = HttpConnectionOAuth.class.getSimpleName();
@@ -143,6 +145,33 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthConsum
         return changed;
     }
 
+    @Override
+    public boolean save(JSONObject jso) throws JSONException {
+        boolean changed = super.save(jso);
+
+        if ( !TextUtils.equals(userToken, jso.optString(userTokenKey(), null)) ||
+                !TextUtils.equals(userSecret, jso.optString(userSecretKey(), null)) 
+                ) {
+            changed = true;
+
+            if (TextUtils.isEmpty(userToken)) {
+                jso.remove(userTokenKey());
+                MyLog.d(TAG, "Clearing OAuth Token");
+            } else {
+                jso.put(userTokenKey(), userToken);
+                MyLog.d(TAG, "Saving OAuth Token: " + userToken);
+            }
+            if (TextUtils.isEmpty(userSecret)) {
+                jso.remove(userSecretKey());
+                MyLog.d(TAG, "Clearing OAuth Secret");
+            } else {
+                jso.put(userSecretKey(), userSecret);
+                MyLog.d(TAG, "Saving OAuth Secret: " + userSecret);
+            }
+        }
+        return changed;
+    }
+    
     @Override
     public void clearAuthInformation() {
         setUserTokenWithSecret(null, null);

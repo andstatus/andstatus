@@ -67,11 +67,14 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
     
     @Override
     public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
         if (!(o instanceof ConversationOneMessage)) {
             return false;
         }
-        ConversationOneMessage row = (ConversationOneMessage) o;
-        return msgId == row.msgId;
+        final ConversationOneMessage other = (ConversationOneMessage) o;
+        return msgId == other.msgId;
     }
 
     @Override
