@@ -17,7 +17,6 @@
 package org.andstatus.app.account;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 
@@ -91,9 +90,9 @@ class AccountName {
         return accountName;
     }
 
-    protected static AccountName fromOriginAndUserNames(String originName, String username) {
+    protected static AccountName fromOriginAndUserNames(MyContext myContext, String originName, String username) {
         AccountName accountName = new AccountName();
-        accountName.origin = MyContextHolder.get().persistentOrigins().fromName(fixOriginName(originName));
+        accountName.origin = myContext.persistentOrigins().fromName(fixOriginName(originName));
         accountName.username = accountName.fixUsername(username);
         return accountName;
     }

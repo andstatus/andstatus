@@ -437,6 +437,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
 
     private ThreadLocal<Boolean> onUpgradeTriggered = new ThreadLocal<Boolean>();
     public MyContextState checkState() {
+        if (MyDatabaseConverterController.isUpgradeError()) {
+            return MyContextState.ERROR;
+        }
         MyContextState state = MyContextState.ERROR;
         SQLiteDatabase db = null;
         try {
@@ -452,7 +455,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 }
             }
         } catch (IllegalStateException e) {
-            MyLog.v(this, e);
+            MyLog.v(this, e.getMessage());
             if (onUpgradeTriggered.get()) {
                 state = MyContextState.UPGRADING;
             }
@@ -614,6 +617,5 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
         onUpgradeTriggered.set(true);
         new MyDatabaseConverterController().onUpgrade(db, oldVersion, newVersion);
-        MyPreferences.onPreferencesChanged();
     }
 }

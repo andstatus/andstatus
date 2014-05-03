@@ -128,7 +128,7 @@ public final class MyAccount {
          * @param accountName
          */
         private static Builder newFromAccountName(String accountName, TriState isOAuthTriState) {
-            MyAccount ma = new MyAccount(null);
+            MyAccount ma = new MyAccount(MyContextHolder.get(), null);
             ma.oAccountName = AccountName.fromAccountName(MyContextHolder.get(), accountName);
             ma.setOAuth(isOAuthTriState);
             return fromMyAccount(ma, "newFromAccountName");
@@ -140,13 +140,17 @@ public final class MyAccount {
          * @param account should not be null
          */
         protected static Builder fromAndroidAccount(MyContext myContext, android.accounts.Account account) {
-            return fromMyAccount(new MyAccount(AccountData.fromAndroidAccount(myContext, account)), "fromAndroidAccount");
+            return fromAccountData(myContext, AccountData.fromAndroidAccount(myContext, account), "fromAndroidAccount");
         }
 
         public static Builder fromJson(JSONObject jso) throws JSONException {
-            return fromMyAccount(new MyAccount(AccountData.fromJson(jso, false)), "fromJson");
+            return fromAccountData(MyContextHolder.get(), AccountData.fromJson(jso, false), "fromJson");
         }
 
+        static Builder fromAccountData(MyContext myContext, AccountData accountData, String method) {
+            return fromMyAccount(new MyAccount(myContext, accountData), method);
+        }
+        
         protected static Builder fromMyAccount(MyAccount ma, String method) {
             Builder builder = new Builder(ma);
             builder.setConnection();
@@ -206,7 +210,7 @@ public final class MyAccount {
                     MyLog.v(TAG, method + " Loaded " + this.toString());
                 }
             } else {
-                MyLog.i(TAG, method + "Loaded Invalid account; version=" + myAccount.version + "; " + this.toString());
+                MyLog.i(TAG, method + " Failed to load: Invalid account; version=" + myAccount.version + "; " + this.toString());
             }
         }
         
@@ -405,7 +409,9 @@ public final class MyAccount {
                 // Now we know the name (or proper case of the name) of this User!
                 // We don't recreate MyAccount object for the new name
                 //   in order to preserve credentials.
-                myAccount.oAccountName = AccountName.fromOriginAndUserNames(myAccount.oAccountName.getOriginName(), newName);
+                myAccount.oAccountName = AccountName.fromOriginAndUserNames(
+                        MyContextHolder.get(),
+                        myAccount.oAccountName.getOriginName(), newName);
                 myAccount.connection.save(myAccount.accountData);
                 setConnection();
                 save();
@@ -493,7 +499,7 @@ public final class MyAccount {
         public static final Creator<Builder> CREATOR = new Creator<Builder>() {
             @Override
             public Builder createFromParcel(Parcel source) {
-                return fromMyAccount(new MyAccount(AccountData.fromBundle(source.readBundle())), "createFromParcel");
+                return fromAccountData(MyContextHolder.get(), AccountData.fromBundle(source.readBundle()), "createFromParcel");
             }
 
             @Override
@@ -530,6 +536,7 @@ public final class MyAccount {
             MyLog.i(TAG, "renaming origin of " + myAccount.getAccountName() + " to " + originNameNew );
             setAndroidAccountDeleted();
             myAccount.oAccountName = AccountName.fromOriginAndUserNames(
+                    MyContextHolder.get(),
                     originNameNew,
                     myAccount.oAccountName.getUsername());
             saveSilently();
@@ -566,7 +573,7 @@ public final class MyAccount {
 
         private int id;
         
-        private static final String KEY = "credentials_verified";
+        static final String KEY = "credentials_verified";
         
         private CredentialsVerificationStatus(int id) {
             this.id = id;
@@ -671,13 +678,13 @@ public final class MyAccount {
                 && connection != null;
     }
     
-    private MyAccount(AccountData accountDataIn) {
+    private MyAccount(MyContext myContext, AccountData accountDataIn) {
         if (accountDataIn == null) {
             accountData = AccountData.fromJson(null, false);
         } else {
             accountData = accountDataIn;
         }
-        oAccountName = AccountName.fromOriginAndUserNames(
+        oAccountName = AccountName.fromOriginAndUserNames(myContext,
                 accountData.getDataString(Origin.KEY_ORIGIN_NAME, ""), 
                 accountData.getDataString(KEY_USERNAME, ""));
         version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);

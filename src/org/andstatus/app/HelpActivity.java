@@ -20,6 +20,7 @@ package org.andstatus.app;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.MyDatabaseConverterController;
 import org.andstatus.app.service.MyService;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.MyLog;
@@ -132,11 +133,13 @@ public class HelpActivity extends Activity implements SwipeInterface {
         getStarted.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyPreferences.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
-                if (MyContextHolder.get().persistentAccounts().getCurrentAccount() == null) {
-                    startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
-                } else {
-                    startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
+                if (MyContextHolder.get().isReady()) {
+                    MyPreferences.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
+                    if (MyContextHolder.get().persistentAccounts().getCurrentAccount() == null) {
+                        startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
+                    } else {
+                        startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
+                    }
                 }
                 finish();
             }
@@ -244,7 +247,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
             } 
             
             int pageIndex = PAGE_INDEX_DEFAULT;
-            if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+            if (MyContextHolder.get().isReady() && MyContextHolder.get().persistentAccounts().isEmpty()) {
                 pageIndex = PAGE_INDEX_USER_GUIDE;
             } else if (showChangeLog) {
                 pageIndex = PAGE_INDEX_CHANGELOG;

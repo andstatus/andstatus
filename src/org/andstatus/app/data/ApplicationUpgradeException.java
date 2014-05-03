@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.account;
+package org.andstatus.app.data;
 
-
-/**
- * Interface that allows to read and write the {@link MyAccount}'s persistent data 
- */
-public interface AccountDataWriter extends AccountDataReader {
-    void setDataInt(String key, int value);
-    void setDataLong(String key, long dataLong);
-    void setDataString(String key, String value);
+public class ApplicationUpgradeException extends Exception {
+    private static final long serialVersionUID = 1L;
+    
+    public ApplicationUpgradeException(String detailMessage) {
+        super(detailMessage);
+    }
 }

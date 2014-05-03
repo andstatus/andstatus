@@ -53,6 +53,7 @@ import org.andstatus.app.MyActionBar;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferenceActivity;
 import org.andstatus.app.context.MyPreferences;
@@ -68,6 +69,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import android.view.*;
 
 /**
@@ -233,7 +235,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 // If we have changed the System, we should recreate the Account
                 originOfUser = origin;
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                        AccountName.fromOriginAndUserNames(originOfUser.getName(),
+                        AccountName.fromOriginAndUserNames(
+                                MyContextHolder.get(),
+                                originOfUser.getName(),
                                 state.getAccount().getUsername()).toString(),
                         TriState.fromBoolean(state.getAccount().isOAuth()));
                 showUserPreferences();
@@ -483,7 +487,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         if (somethingIsBeingProcessed) {
             return;
         }
-        if (onSharedPreferenceChangedIsBusy || !MyContextHolder.get().initialized()) {
+        MyContext myContext = MyContextHolder.get();
+        if (onSharedPreferenceChangedIsBusy || !myContext.initialized()) {
             return;
         }
         onSharedPreferenceChangedIsBusy = true;
@@ -498,7 +503,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             if (key.equals(MyAccount.KEY_OAUTH)
                 && state.getAccount().isOAuth() != oAuthCheckBox.isChecked()) {
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                        AccountName.fromOriginAndUserNames(originOfUser.getName(),
+                        AccountName.fromOriginAndUserNames(
+                                MyContextHolder.get(),
+                                originOfUser.getName(),
                                 state.getAccount().getUsername()).toString(),
                                 TriState.fromBoolean(oAuthCheckBox.isChecked()));
                 showUserPreferences();
@@ -509,7 +516,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     boolean isOAuth = state.getAccount().isOAuth();
                     String originName = state.getAccount().getOriginName();
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                            AccountName.fromOriginAndUserNames(originName, usernameNew).toString(),
+                            AccountName.fromOriginAndUserNames(myContext, 
+                                    originName, usernameNew).toString(),
                             TriState.fromBoolean(isOAuth));
                     showUserPreferences();
                 }

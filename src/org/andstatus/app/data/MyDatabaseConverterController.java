@@ -22,7 +22,9 @@ import android.os.AsyncTask;
 
 import net.jcip.annotations.GuardedBy;
 
+import org.andstatus.app.HelpActivity;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 public class MyDatabaseConverterController {
@@ -39,7 +41,9 @@ public class MyDatabaseConverterController {
     @GuardedBy("upgradeLock")
     private static boolean upgradeStarted = false;
     @GuardedBy("upgradeLock")
-    private static boolean upgradeSuccessfullyCompleted = false;
+    private static boolean upgradeEnded = false;
+    @GuardedBy("upgradeLock")
+    private static boolean upgradeEndedSuccessfully = false;
     @GuardedBy("upgradeLock")
     private static Activity upgradeRequestor = null;
     
@@ -73,9 +77,9 @@ public class MyDatabaseConverterController {
                         + ": already upgrading");
                 skip = true;
             }
-            if (!skip && upgradeSuccessfullyCompleted) {
+            if (!skip && upgradeEnded) {
                 MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName 
-                        + ": already completed successfully");
+                        + ": already completed");
                 skip = true;
             }
             if (!skip) {
@@ -112,7 +116,7 @@ public class MyDatabaseConverterController {
                 MyLog.i(TAG, "Failed to trigger database upgrade, will try later", e);
             } finally {
                 synchronized(UPGRADE_LOCK) {
-                    success = upgradeSuccessfullyCompleted;
+                    success = upgradeEndedSuccessfully;
                     upgradeRequestor = null;
                     if (upgradeStarted) {
                         upgradeStarted = false;
@@ -123,7 +127,10 @@ public class MyDatabaseConverterController {
                 }
             }
             if (success) {
-                MyContextHolder.initialize(activity[0], activity[0]);
+                MyPreferences.onPreferencesChanged();
+                if (!MyContextHolder.get().isReady()) {
+                    MyContextHolder.initialize(activity[0], activity[0]);
+                }
             }
             return null;
         }
@@ -140,6 +147,15 @@ public class MyDatabaseConverterController {
         MyLog.w(TAG, (wasStarted ? "Still upgrading" : "Upgrade started") + ". Wait " + SECONDS_FOR_UPGRADE + " seconds");
     }
     
+    public static boolean isUpgradeError() {
+        synchronized(UPGRADE_LOCK) {
+            if (upgradeEnded && !upgradeEndedSuccessfully) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean isUpgrading() {
         synchronized(UPGRADE_LOCK) {
             if (upgradeEndTime == 0 ) {
@@ -164,9 +180,13 @@ public class MyDatabaseConverterController {
             shouldTriggerDatabaseUpgrade = false;
             stillUpgrading();
         }
-        new MyDatabaseConverter().execute(new UpgradeParams(upgradeRequestor, db, oldVersion, newVersion));
+        boolean success = new MyDatabaseConverter().execute(new UpgradeParams(upgradeRequestor, db, oldVersion, newVersion));
         synchronized(UPGRADE_LOCK) {
-            upgradeSuccessfullyCompleted = true;
+            upgradeEnded = true;
+            upgradeEndedSuccessfully = success;
+        }
+        if (!success) {
+            throw new IllegalStateException("Upgrade failed");
         }
     }
 
