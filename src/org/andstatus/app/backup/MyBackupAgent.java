@@ -21,12 +21,14 @@ import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.os.ParcelFileDescriptor;
 
+import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,6 +38,8 @@ public class MyBackupAgent extends BackupAgent {
     public static final int BACKUP_VERSION = 1;
     private static final int BACKUP_VERSION_UNKNOWN = -1;
     public static final String KEY_DATABASE = "database";
+    public static final String KEY_SHARED_PREFERENCES = "shared_preferences";
+    public static final String SHARED_PREFERENCES_FILENAME = "shared_preferences";
 
     long accountsBackedUp = 0;
     long accountsRestored = 0;
@@ -81,15 +85,18 @@ public class MyBackupAgent extends BackupAgent {
     }
 
     private void doBackup(MyBackupDataOutput data, MyBackupDescriptor newDescriptor) throws IOException {
-        accountsBackedUp = MyContextHolder.get().persistentAccounts().onBackup(data, newDescriptor);
+        sharedPreferencesBackedUp = backupFile(data,
+                KEY_SHARED_PREFERENCES,
+                SharedPreferencesUtil.sharedPreferencesPath(MyContextHolder.get().context()));
         databasesBackedUp = backupFile(data,
                 KEY_DATABASE + "_" + MyDatabase.DATABASE_NAME,
                 MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME, null));
         suggestionsBackedUp = backupFile(data,
                 KEY_DATABASE + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME,
                 MyPreferences.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME, null));
+        accountsBackedUp = MyContextHolder.get().persistentAccounts().onBackup(data, newDescriptor);
     }
-
+    
     private long backupFile(MyBackupDataOutput data, String key, File dataFile) throws IOException {
         final int chunkSize = 10000;
         long backedUpCount = 0;
@@ -119,6 +126,8 @@ public class MyBackupAgent extends BackupAgent {
             }
             MyLog.v(this, "Backed up file key='" + key + "', name='" + dataFile.getName()
                     + "', length=" + fileLength);
+        } else {
+            MyLog.v(this, "File doesn't exist key='" + key + "', path='" + dataFile.getAbsolutePath());
         }
         return backedUpCount;
     }

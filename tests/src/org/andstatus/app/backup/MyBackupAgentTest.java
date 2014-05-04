@@ -27,10 +27,11 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         MyBackupAgent backupAgent = new MyBackupAgent();
         
         File outputFolder = MyContextHolder.get().context().getCacheDir();
-        File descriptorFile = File.createTempFile("descriptorFile", ".backup", outputFolder);
+        final String descriptorFilePrefix = "descriptor";
+        File descriptorFile = File.createTempFile(descriptorFilePrefix, ".backup", outputFolder);
         assertTrue("Descriptor file created: " + descriptorFile.getAbsolutePath(), descriptorFile.exists());
         MyLog.i(this, "Creating backup at '" + descriptorFile.getAbsolutePath() + "'");
-        String dataFolderName = "data_" + descriptorFile.getName();
+        String dataFolderName = "data" + descriptorFile.getName().substring(descriptorFilePrefix.length(), descriptorFile.getName().length());
         File dataFolder = new File(outputFolder, dataFolderName);
         assertTrue("Folder " + dataFolderName + " created in " + outputFolder.getAbsolutePath(),
                 dataFolder.mkdir());
@@ -38,8 +39,7 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         testBackup(backupAgent, descriptorFile, dataFolder);
         testRestore(backupAgent, descriptorFile, dataFolder);
         
-        descriptorFile.delete();
-        dataFolder.delete();
+        deleteBackup(descriptorFile, dataFolder);
     }
 
     private void testBackup(MyBackupAgent backupAgent, File descriptorFile, File dataFolder)
@@ -50,8 +50,10 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         backupAgent.onBackup(null, dataOutput, state2);
         state2.close();
 
-        assertTrue("Accounts backed up", backupAgent.accountsBackedUp > 1);
+        assertEquals("Shared preferences backed up", 1, backupAgent.sharedPreferencesBackedUp);
         assertEquals("Databases backed up", 1, backupAgent.databasesBackedUp);
+        assertEquals("Accounts backed up", backupAgent.accountsBackedUp, MyContextHolder.get()
+                .persistentAccounts().size());
         
         assertTrue("Descriptor file was filled: " + descriptorFile, descriptorFile.length() > 10);
 
@@ -76,10 +78,18 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         ParcelFileDescriptor state4 = ParcelFileDescriptor.open(descriptorFile,
                 ParcelFileDescriptor.MODE_READ_WRITE);
         MyBackupDataInput dataInput = new MyBackupDataInput(dataFolder);
-        assertEquals("Keys in the backup: " + Arrays.toString(dataInput.listKeys().toArray()) , 3, dataInput.listKeys().size());
+        assertEquals("Keys in the backup: " + Arrays.toString(dataInput.listKeys().toArray()) , 4, dataInput.listKeys().size());
         
         backupAgent.onRestore(dataInput, appVersion, state4);
         assertEquals("Accounts restored", backupAgent.accountsBackedUp, backupAgent.accountsRestored);
         state4.close();
+    }
+
+    private void deleteBackup(File descriptorFile, File dataFolder) {
+        for (File dataFile : dataFolder.listFiles()) {
+            dataFile.delete();
+        }
+        dataFolder.delete();
+        descriptorFile.delete();
     }
 }

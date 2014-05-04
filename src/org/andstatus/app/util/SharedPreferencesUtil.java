@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,16 +33,20 @@ public class SharedPreferencesUtil {
 
     private SharedPreferencesUtil() {
     }
+
+    public static File sharedPreferencesPath(Context context) {
+        return new File(prefsDirectory(context),
+                context.getPackageName() + "_preferences" + FILE_EXTENSION);
+    }
     
     /**
      * @param Context
      * @return Directory for files of SharedPreferences
      */
-    public static String prefsDirectory(Context context) {
+    public static File prefsDirectory(Context context) {
         File dir1 = new File(Environment.getDataDirectory(), "data/"
                 + context.getPackageName());
-        File dir2 = new File(dir1, "shared_prefs");
-        return dir2.getAbsolutePath();
+        return new File(dir1, "shared_prefs");
     }
 
     /**

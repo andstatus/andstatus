@@ -34,12 +34,15 @@ import java.io.OutputStream;
 public class MyBackupDataOutput {
     final static String HEADER_FILE_SUFFIX = "_header";
     final static String DATA_FILE_SUFFIX = "_data";
+    final static String KEY_KEYNAME = "key";
     final static String KEY_DATA_SIZE = "data_size";
+    final static String KEY_ORDINAL_NUMBER = "ordinal_number";
     private File dataFolder;
     private BackupDataOutput backupDataOutput;
     private int sizeToWrite = 0;
     private int sizeWritten = 0;
     private File dataFile = null;
+    private int headerOrdinalNumber = 0;
 
     public MyBackupDataOutput(BackupDataOutput backupDataOutput) {
         this.backupDataOutput = backupDataOutput;
@@ -51,6 +54,7 @@ public class MyBackupDataOutput {
 
     /** {@link BackupDataOutput#writeEntityHeader(String, int)} */
     public int writeEntityHeader(String key, int dataSize) throws IOException {
+        headerOrdinalNumber++;
         if (backupDataOutput != null) {
             return backupDataOutput.writeEntityHeader(key, dataSize);
         } else {
@@ -72,6 +76,8 @@ public class MyBackupDataOutput {
         createFileIfNeeded(dataSize, headerFile);
         JSONObject jso = new JSONObject();
         try {
+            jso.put(KEY_KEYNAME, key);
+            jso.put(KEY_ORDINAL_NUMBER, headerOrdinalNumber);
             jso.put(KEY_DATA_SIZE, dataSize);
             byte[] bytes = jso.toString(2).getBytes("UTF-8");
             appendBytesToFile(headerFile, bytes, bytes.length);

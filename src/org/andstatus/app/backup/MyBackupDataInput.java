@@ -25,36 +25,71 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class MyBackupDataInput {
     private BackupDataInput backupDataInput;
 
     private File dataFolder = null;
-    private Set<String> keys = new HashSet<String>();
-    private Iterator<String> keysIterator;
+    private Set<BackupHeader> headers = new TreeSet<BackupHeader>();
+    private Iterator<BackupHeader> keysIterator;
     private boolean mHeaderReady = false;
-    private String key = "";
-    private int dataSize = 0;
+    private BackupHeader header = BackupHeader.getEmpty();
+    
+    static class BackupHeader implements Comparable<BackupHeader> {
+        String key;
+        long ordinalNumber;
+        int dataSize;
+
+        BackupHeader(String key, long ordinalNumber, int dataSize) {
+            this.key = key;
+            this.ordinalNumber = ordinalNumber;
+            this.dataSize = dataSize;
+        }
+
+        static BackupHeader getEmpty() {
+            return new BackupHeader("", 0, 0);
+        }
+        
+        static BackupHeader fromJson(JSONObject jso) {
+            return new BackupHeader(
+            jso.optString(MyBackupDataOutput.KEY_KEYNAME, ""),
+            jso.optLong(MyBackupDataOutput.KEY_ORDINAL_NUMBER, 0),
+            jso.optInt(MyBackupDataOutput.KEY_DATA_SIZE, 0));
+        }
+
+        @Override
+        public int compareTo(BackupHeader another) {
+            return (ordinalNumber == another.ordinalNumber ? 0
+                    : (ordinalNumber > another.ordinalNumber ? 1 : -1));
+        }
+
+        @Override
+        public String toString() {
+            return "BackupHeader [key=" + key + ", ordinalNumber=" + ordinalNumber + ", dataSize="
+                    + dataSize + "]";
+        }
+    }
     
     MyBackupDataInput(BackupDataInput backupDataInput) {
         this.backupDataInput = backupDataInput;
     }
 
-    MyBackupDataInput(File dataFolder) {
+    MyBackupDataInput(File dataFolder) throws IOException {
         this.dataFolder = dataFolder;
         for (String fileName : this.dataFolder.list()) {
             if (fileName.endsWith(MyBackupDataOutput.HEADER_FILE_SUFFIX)) {
-                keys.add(fileName.substring(0, fileName.lastIndexOf(MyBackupDataOutput.HEADER_FILE_SUFFIX)));
+                File headerFile = new File(dataFolder, fileName);
+                headers.add(BackupHeader.fromJson(FileUtils.getJSONObject(headerFile)));
             }
         }
-        keysIterator = keys.iterator();
+        keysIterator = headers.iterator();
     }
 
-    Set<String> listKeys() {
-        return keys;
+    Set<BackupHeader> listKeys() {
+        return headers;
     }
     
     /** {@link BackupDataInput#readNextHeader()}  */
@@ -69,14 +104,11 @@ public class MyBackupDataInput {
     private boolean readNextHeader2() throws IOException {
         mHeaderReady = false;
         if (keysIterator.hasNext()) {
-            key = keysIterator.next();
-            File headerFile = new File(dataFolder, key + MyBackupDataOutput.HEADER_FILE_SUFFIX);
-            JSONObject jso = FileUtils.getJSONObject(headerFile);
-            dataSize = jso.optInt(MyBackupDataOutput.KEY_DATA_SIZE, -1);
-            if (dataSize > 0) {
+            header = keysIterator.next();
+            if (header.dataSize > 0) {
                 mHeaderReady = true;
             } else {
-                throw new FileNotFoundException("Error reading the '" + headerFile.getName() + "' header file");
+                throw new FileNotFoundException("Header is invalid, " + header);
             }
         }
         return mHeaderReady;
@@ -93,7 +125,7 @@ public class MyBackupDataInput {
 
     private String getKey2() {
         if (mHeaderReady) {
-            return key;
+            return header.key;
         } else {
             throw new IllegalStateException("Entity header not read");
         }
@@ -110,7 +142,7 @@ public class MyBackupDataInput {
 
     private int getDataSize2() {
         if (mHeaderReady) {
-            return dataSize;
+            return header.dataSize;
         } else {
             throw new IllegalStateException("Entity header not read");
         }
@@ -130,17 +162,17 @@ public class MyBackupDataInput {
         int bytesRead = 0;
         if (size > chunkSize) {
             throw new FileNotFoundException("Size to read is too large: " + size);
-        } else if (size < 1 || offset >= dataSize) {
+        } else if (size < 1 || offset >= header.dataSize) {
             // skip
         } else if (mHeaderReady) {
-            File dataFile = new File(dataFolder, key + MyBackupDataOutput.DATA_FILE_SUFFIX);
+            File dataFile = new File(dataFolder, header.key + MyBackupDataOutput.DATA_FILE_SUFFIX);
             byte[] readData = FileUtils.getBytes(dataFile, offset, size);
             bytesRead = readData.length;
             System.arraycopy(readData, offset, data, 0, bytesRead);
         } else {
             throw new IllegalStateException("Entity header not read");
         }
-        MyLog.v(this, "key=" + key + ", offset=" + offset + ", bytes read=" + bytesRead);
+        MyLog.v(this, "key=" + header.key + ", offset=" + offset + ", bytes read=" + bytesRead);
         return bytesRead;
     }
 
@@ -155,7 +187,6 @@ public class MyBackupDataInput {
 
     private void skipEntityData2() {
         if (mHeaderReady) {
-            // TODO:
             mHeaderReady = false;
         } else {
             throw new IllegalStateException("Entity header not read");
