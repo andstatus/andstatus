@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-    Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,9 +55,9 @@
 			android:authorities="org.andstatus.app.data.MyProvider" 
 			android:exported="false" />
 
-		<provider android:name=".data.TimelineSearchSuggestionProvider" 
+		<provider android:name=".data.TimelineSearchSuggestionsProvider" 
 			android:authorities="org.andstatus.app.data.TimelineSuggestionProvider"
-			android:permission="android.permission.GET_ACCOUNTS"/>
+			android:permission="android.permission.INTERNET"/>
 
 		<service android:name="org.andstatus.app.service.MyService"
 		    android:exported="false" />
@@ -81,7 +81,7 @@
 				<action android:name="android.intent.action.VIEW"/>
 				<action android:name="android.intent.action.PICK"/>
 				<category android:name="android.intent.category.DEFAULT"/>
-				<data android:mimeType="vnd.android.cursor.dir/org.andstatus.provider.msg"/>
+				<data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.msg"/>
 			</intent-filter>
 			<intent-filter>
 			    <action android:name="android.intent.action.SEND" />
@@ -99,7 +99,7 @@
 			<intent-filter android:label="@string/resolve_view">
 				<action android:name="android.intent.action.VIEW"/>
 				<category android:name="android.intent.category.DEFAULT"/>
-				<data android:mimeType="vnd.android.cursor.item/org.andstatus.provider.msg"/>
+				<data android:mimeType="vnd.android.cursor.item/org.andstatus.app.provider.msg"/>
 			</intent-filter>
 		</activity>
 
@@ -129,7 +129,7 @@
                     android:resource="@xml/appwidget_info" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="org.andstatus.app.action.APPWIDGET_UPDATE" />
+                <action android:name=".action.APPWIDGET_UPDATE" />
             </intent-filter>
         </receiver>
 
@@ -174,7 +174,7 @@
             >
             <intent-filter>
                 <action
-                    android:name="org.andstatus.account.setup.ACCOUNT_MANAGER_ENTRY" />
+                    android:name=".ACCOUNT_MANAGER_ENTRY" />
                 <category
                     android:name="android.intent.category.DEFAULT" />
             </intent-filter>

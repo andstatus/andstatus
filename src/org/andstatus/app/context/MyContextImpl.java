@@ -20,6 +20,7 @@ import android.content.Context;
 
 import net.jcip.annotations.ThreadSafe;
 
+import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
@@ -111,7 +112,7 @@ public final class MyContextImpl implements MyContext {
             }
             // TODO: Maybe we need to determine if the context is compatible, using some Interface...
             // ...but we don't have any yet.
-            if (!context.getClass().getName().contains(this.getClass().getPackage().getName())) {
+            if (!context.getClass().getName().contains(ClassInApplicationPackage.PACKAGE_NAME)) {
                 MyLog.w(TAG, "Incompatible context: " + contextToUse.getClass().getName());
                 contextToUse = null;
             }

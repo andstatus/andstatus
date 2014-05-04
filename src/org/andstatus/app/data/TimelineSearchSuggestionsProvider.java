@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,18 @@ package org.andstatus.app.data;
 
 import android.content.SearchRecentSuggestionsProvider;
 
+import org.andstatus.app.ClassInApplicationPackage;
+
 /**
- * @author torgny.bjers
- *
+ * TODO: Extend as in http://www.grokkingandroid.com/android-tutorial-adding-suggestions-to-search/
  */
-public class TimelineSearchSuggestionProvider extends SearchRecentSuggestionsProvider {
-
-    public static final String AUTHORITY = "org.andstatus.app.data.TimelineSuggestionProvider";
+public class TimelineSearchSuggestionsProvider extends SearchRecentSuggestionsProvider {
+    /** Note: This is historical constant, remained to preserve compatibility without reinstallation */
+    public static final String AUTHORITY = ClassInApplicationPackage.PACKAGE_NAME + ".data.TimelineSuggestionProvider";
+    public static final String DATABASE_NAME = "suggestions.db";
     public static final int MODE = DATABASE_MODE_QUERIES;
-
-    /**
-     * 
-     */
-    public TimelineSearchSuggestionProvider() {
+    
+    public TimelineSearchSuggestionsProvider() {
         super();
         setupSuggestions(AUTHORITY, MODE);
     }

@@ -40,6 +40,7 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 
+import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -139,12 +140,14 @@ public class MyProvider extends ContentProvider {
      *   
      * As Android documentation states:
      * "The authority therefore must be unique. 
-     *  Typically, as in this example, it's the fully qualified name of a ContentProvider subclass.
+     *  Typically, it's the fully qualified name of a ContentProvider subclass.
      *  The path part of a URI may be used by a content provider to identify particular data subsets,
      *  but those paths are not declared in the manifest."
      * (see <a href="http://developer.android.com/guide/topics/manifest/provider-element.html">&lt;provider&gt;</a>)
+     * 
+     * Note: This is historical constant, remained to preserve compatibility without reinstallation
      */
-    public static final String AUTHORITY = MyProvider.class.getName();
+    public static final String AUTHORITY = ClassInApplicationPackage.PACKAGE_NAME + ".data.MyProvider";
     /**
      * Used for URIs referring to timelines 
      */
@@ -239,8 +242,10 @@ public class MyProvider extends ContentProvider {
     /**
      *  Content types should be like in AndroidManifest.xml
      */
-    private static final String CONTENT_TYPE_PREFIX = "vnd.android.cursor.dir/org.andstatus.provider.";
-    private static final String CONTENT_ITEM_TYPE_PREFIX = "vnd.android.cursor.item/org.andstatus.provider.";
+    private static final String CONTENT_TYPE_PREFIX = "vnd.android.cursor.dir/"
+            + ClassInApplicationPackage.PACKAGE_NAME + ".provider.";
+    private static final String CONTENT_ITEM_TYPE_PREFIX = "vnd.android.cursor.item/"
+            + ClassInApplicationPackage.PACKAGE_NAME + ".provider.";
     public static final String MSG_CONTENT_TYPE = CONTENT_TYPE_PREFIX + Msg.TABLE_NAME;
     public static final String MSG_CONTENT_ITEM_TYPE = CONTENT_ITEM_TYPE_PREFIX + Msg.TABLE_NAME;
     public static final String ORIGIN_CONTENT_TYPE = CONTENT_TYPE_PREFIX + Origin.TABLE_NAME;

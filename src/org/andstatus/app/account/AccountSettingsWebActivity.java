@@ -24,14 +24,14 @@ import android.os.Bundle;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.R;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.util.MyLog;
 
 public class AccountSettingsWebActivity extends Activity {
     private static final String TAG = AccountSettingsWebActivity.class.getSimpleName();
-    private static final String PACKAGE_NAME = AccountSettingsWebActivity.class.getPackage().getName();
-    public static final String EXTRA_URLTOOPEN = PACKAGE_NAME + ".URLTOOPEN";
+    public static final String EXTRA_URLTOOPEN = ClassInApplicationPackage.PACKAGE_NAME + ".URLTOOPEN";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

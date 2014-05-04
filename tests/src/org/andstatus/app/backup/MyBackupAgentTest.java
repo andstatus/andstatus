@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class MyBackupAgentTest extends InstrumentationTestCase {
 
@@ -25,13 +26,13 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
     public void testBackupRestore() throws IOException, JSONException {
         MyBackupAgent backupAgent = new MyBackupAgent();
         
-        File outputDir = MyContextHolder.get().context().getCacheDir();
-        File descriptorFile = File.createTempFile("descriptorFile", ".backup", outputDir);
-        assertTrue("Descriptor file created: " + descriptorFile, descriptorFile.exists());
+        File outputFolder = MyContextHolder.get().context().getCacheDir();
+        File descriptorFile = File.createTempFile("descriptorFile", ".backup", outputFolder);
+        assertTrue("Descriptor file created: " + descriptorFile.getAbsolutePath(), descriptorFile.exists());
         MyLog.i(this, "Creating backup at '" + descriptorFile.getAbsolutePath() + "'");
-        String backupFolder = "data_" + descriptorFile.getName();
-        File dataFolder = new File(outputDir, backupFolder);
-        assertTrue("Folder " + backupFolder + " created in " + dataFolder.getAbsolutePath(),
+        String dataFolderName = "data_" + descriptorFile.getName();
+        File dataFolder = new File(outputFolder, dataFolderName);
+        assertTrue("Folder " + dataFolderName + " created in " + outputFolder.getAbsolutePath(),
                 dataFolder.mkdir());
 
         testBackup(backupAgent, descriptorFile, dataFolder);
@@ -49,6 +50,9 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         backupAgent.onBackup(null, dataOutput, state2);
         state2.close();
 
+        assertTrue("Accounts backed up", backupAgent.accountsBackedUp > 1);
+        assertEquals("Databases backed up", 1, backupAgent.databasesBackedUp);
+        
         assertTrue("Descriptor file was filled: " + descriptorFile, descriptorFile.length() > 10);
 
         JSONObject jso = FileUtils.getJSONObject(descriptorFile);
@@ -60,7 +64,7 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         jso = FileUtils.getJSONObject(accountHeader);
         assertTrue(jso.getInt(MyBackupDataOutput.KEY_DATA_SIZE) > 10);
 
-        File accountData = new File(dataFolder, "account");
+        File accountData = new File(dataFolder, "account_data");
         assertTrue(accountData.exists());
         JSONArray jsa = FileUtils.getJSONArray(accountData);
         assertTrue(jsa.length() > 2);
@@ -72,8 +76,10 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         ParcelFileDescriptor state4 = ParcelFileDescriptor.open(descriptorFile,
                 ParcelFileDescriptor.MODE_READ_WRITE);
         MyBackupDataInput dataInput = new MyBackupDataInput(dataFolder);
-
+        assertEquals("Keys in the backup: " + Arrays.toString(dataInput.listKeys().toArray()) , 3, dataInput.listKeys().size());
+        
         backupAgent.onRestore(dataInput, appVersion, state4);
+        assertEquals("Accounts restored", backupAgent.accountsBackedUp, backupAgent.accountsRestored);
         state4.close();
     }
 }

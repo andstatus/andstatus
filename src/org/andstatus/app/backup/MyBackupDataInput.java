@@ -18,13 +18,23 @@ package org.andstatus.app.backup;
 
 import android.app.backup.BackupDataInput;
 
+import org.andstatus.app.util.FileUtils;
+import org.andstatus.app.util.MyLog;
+import org.json.JSONObject;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 public class MyBackupDataInput {
     private BackupDataInput backupDataInput;
 
     private File dataFolder = null;
+    private Set<String> keys = new HashSet<String>();
+    private Iterator<String> keysIterator;
     private boolean mHeaderReady = false;
     private String key = "";
     private int dataSize = 0;
@@ -35,8 +45,18 @@ public class MyBackupDataInput {
 
     MyBackupDataInput(File dataFolder) {
         this.dataFolder = dataFolder;
+        for (String fileName : this.dataFolder.list()) {
+            if (fileName.endsWith(MyBackupDataOutput.HEADER_FILE_SUFFIX)) {
+                keys.add(fileName.substring(0, fileName.lastIndexOf(MyBackupDataOutput.HEADER_FILE_SUFFIX)));
+            }
+        }
+        keysIterator = keys.iterator();
     }
 
+    Set<String> listKeys() {
+        return keys;
+    }
+    
     /** {@link BackupDataInput#readNextHeader()}  */
     public boolean readNextHeader() throws IOException {
         if (backupDataInput != null) {
@@ -46,10 +66,19 @@ public class MyBackupDataInput {
         }
     }
 
-    private boolean readNextHeader2() {
+    private boolean readNextHeader2() throws IOException {
         mHeaderReady = false;
-        // TODO:
-
+        if (keysIterator.hasNext()) {
+            key = keysIterator.next();
+            File headerFile = new File(dataFolder, key + MyBackupDataOutput.HEADER_FILE_SUFFIX);
+            JSONObject jso = FileUtils.getJSONObject(headerFile);
+            dataSize = jso.optInt(MyBackupDataOutput.KEY_DATA_SIZE, -1);
+            if (dataSize > 0) {
+                mHeaderReady = true;
+            } else {
+                throw new FileNotFoundException("Error reading the '" + headerFile.getName() + "' header file");
+            }
+        }
         return mHeaderReady;
     }
 
@@ -96,13 +125,22 @@ public class MyBackupDataInput {
         }
     }
 
-    private int readEntityData2(byte[] data, int offset, int size) {
+    private int readEntityData2(byte[] data, int offset, int size) throws IOException {
+        final long chunkSize = 50000;
         int bytesRead = 0;
-        if (mHeaderReady) {
-            // TODO:
+        if (size > chunkSize) {
+            throw new FileNotFoundException("Size to read is too large: " + size);
+        } else if (size < 1 || offset >= dataSize) {
+            // skip
+        } else if (mHeaderReady) {
+            File dataFile = new File(dataFolder, key + MyBackupDataOutput.DATA_FILE_SUFFIX);
+            byte[] readData = FileUtils.getBytes(dataFile, offset, size);
+            bytesRead = readData.length;
+            System.arraycopy(readData, offset, data, 0, bytesRead);
         } else {
             throw new IllegalStateException("Entity header not read");
         }
+        MyLog.v(this, "key=" + key + ", offset=" + offset + ", bytes read=" + bytesRead);
         return bytesRead;
     }
 
@@ -124,4 +162,7 @@ public class MyBackupDataInput {
         }
     }
     
+    File getDataFolder() {
+        return dataFolder;
+    }
 }

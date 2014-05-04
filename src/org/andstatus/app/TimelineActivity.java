@@ -64,7 +64,7 @@ import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.TimelineSearchSuggestionProvider;
+import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.TimelineViewBinder;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
@@ -1097,8 +1097,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             // Record the query string in the recent queries
             // of the Suggestion Provider
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-                    TimelineSearchSuggestionProvider.AUTHORITY,
-                    TimelineSearchSuggestionProvider.MODE);
+                    TimelineSearchSuggestionsProvider.AUTHORITY,
+                    TimelineSearchSuggestionsProvider.MODE);
             suggestions.saveRecentQuery(searchQuery, null);
 
         }

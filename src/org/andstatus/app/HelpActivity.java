@@ -20,8 +20,6 @@ package org.andstatus.app;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MyDatabaseConverterController;
-import org.andstatus.app.service.MyService;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SwipeInterface;
@@ -53,17 +51,15 @@ public class HelpActivity extends Activity implements SwipeInterface {
     // Constants
     public static final String TAG = "HelpActivity";
 
-    private static final String PACKAGE_NAME = MyService.class.getPackage().getName();
-    
     /**
      * integer - Index of Help screen to show first
      */
-    public static final String EXTRA_HELP_PAGE_INDEX = PACKAGE_NAME + ".HELP_PAGE_ID";
+    public static final String EXTRA_HELP_PAGE_INDEX = ClassInApplicationPackage.PACKAGE_NAME + ".HELP_PAGE_ID";
     /**
      * boolean - If the activity is the first then we should provide means 
      * to start {@link TimelineActivity} from this activity
      */
-    public static final String EXTRA_IS_FIRST_ACTIVITY = PACKAGE_NAME + ".IS_FIRST_ACTIVITY";
+    public static final String EXTRA_IS_FIRST_ACTIVITY = ClassInApplicationPackage.PACKAGE_NAME + ".IS_FIRST_ACTIVITY";
 
     public static final int PAGE_INDEX_DEFAULT = 0;
     public static final int PAGE_INDEX_USER_GUIDE = 1;

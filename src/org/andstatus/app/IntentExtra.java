@@ -98,10 +98,10 @@ public enum IntentExtra{
      * This prefix should be the same as in the AndroidManifest
      * It is used for all actions of this application
      */
-    public static final String MY_ACTION_PREFIX = IntentExtra.class.getPackage().getName() + ".action.";
+    public static final String MY_ACTION_PREFIX = ClassInApplicationPackage.PACKAGE_NAME + ".action.";
     
     private IntentExtra(String keySuffix) {
-        key = this.getClass().getPackage().getName() + "." + keySuffix;
+        key = ClassInApplicationPackage.PACKAGE_NAME + "." + keySuffix;
     }
 
     public static IntentExtra fromKey(String key) {

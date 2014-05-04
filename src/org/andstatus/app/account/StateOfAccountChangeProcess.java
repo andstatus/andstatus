@@ -22,6 +22,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import org.andstatus.app.ClassInApplicationPackage;
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
@@ -44,16 +46,12 @@ class StateOfAccountChangeProcess {
     /** Intent extras for launch directly from system account manager
      * NOTE: This string must match the one in res/xml/account_preferences.xml
      */
-    private static final String ACTION_ACCOUNT_MANAGER_ENTRY =
-        "org.andstatus.account.setup.ACCOUNT_MANAGER_ENTRY";
+    private static final String ACTION_ACCOUNT_MANAGER_ENTRY = ClassInApplicationPackage.PACKAGE_NAME
+            + ".ACCOUNT_MANAGER_ENTRY";
     /** 
      * NOTE: This constant should eventually be defined in android.accounts.Constants
      */
     private static final String EXTRA_ACCOUNT_MANAGER_ACCOUNT = "account";
-    /**
-     * Explicitly defined {@link MyAccount#getAccountName()}
-     */
-    public static final String EXTRA_MYACCOUNT_GUID = "myaccount_guid";
     
     private static final String ACCOUNT_ACTION_KEY = "account_action";
     private static final String ACCOUNT_AUTHENTICATOR_RESPONSE_KEY = "account_authenticator_response";
@@ -125,8 +123,8 @@ class StateOfAccountChangeProcess {
                 state.builder = MyAccount.Builder.fromAndroidAccount(MyContextHolder.get(), androidAccount);
                 state.useThisState = true;
             } else {
-                // Maybe we received MyAccount name as as parameter?!
-                String accountName = extras.getString(EXTRA_MYACCOUNT_GUID);
+                // Maybe we received MyAccount name as a parameter?!
+                String accountName = extras.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
                 if (!TextUtils.isEmpty(accountName)) {
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(accountName, TriState.UNKNOWN);
                     state.useThisState = state.builder.isPersistent();

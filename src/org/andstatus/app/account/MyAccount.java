@@ -249,9 +249,14 @@ public final class MyAccount {
             myAccount.accountData.setDataBoolean(KEY_DELETED, true);
         }
 
-        public void save() {
-            boolean saved = saveSilently();
-            if (saved && MyContextHolder.get().isReady()) {
+        static class SaveResult {
+            boolean success = false;
+            boolean changed = false;
+            boolean savedToAccountManager = false;
+        }
+        
+        void save() {
+            if (saveSilently().savedToAccountManager && MyContextHolder.get().isReady()) {
                 MyPreferences.onPreferencesChanged();
             }
         }
@@ -260,12 +265,12 @@ public final class MyAccount {
          * Save this MyAccount to AccountManager
          * @return true if saved to AccountManager 
          */
-        public boolean saveSilently() {
-            boolean saved = false;
+        SaveResult saveSilently() {
+            SaveResult result = new SaveResult();
             try {
                 if (!myAccount.isValid()) {
                     MyLog.v(TAG, "Didn't save invalid account: " + myAccount);
-                    return false;
+                    return result;
                 }
                 Account androidAccount = getNewOrExistingAndroidAccount();
                 myAccount.accountData.setDataString(KEY_USERNAME, myAccount.oAccountName.getUsername());
@@ -283,12 +288,13 @@ public final class MyAccount {
                 }
                 myAccount.accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.syncFrequencySeconds); 
                 myAccount.accountData.setDataInt(KEY_VERSION, myAccount.version);
-                saved = myAccount.accountData.saveDataToAccount(MyContextHolder.get(), androidAccount);
-                MyLog.v(this, (saved ? " Saved " : " Didn't save " ) + this.toString());
+                myAccount.accountData.saveDataToAccount(MyContextHolder.get(), androidAccount, result);
+                MyLog.v(this, (result.savedToAccountManager ? " Saved " 
+                        : ( result.changed ? " Didn't save?! " : " Didn't change") ) + this.toString());
             } catch (Exception e) {
                 MyLog.e(this, "Saving " + myAccount.getAccountName(), e);
             }
-            return saved;
+            return result;
         }
 
         private Account getNewOrExistingAndroidAccount() {

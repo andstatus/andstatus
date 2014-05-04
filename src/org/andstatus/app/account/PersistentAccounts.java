@@ -311,11 +311,13 @@ public class PersistentAccounts {
     }
 
     private static final String KEY_ACCOUNT = "account";
-    public void onBackup(MyBackupDataOutput data, MyBackupDescriptor newDescriptor) throws IOException {
+    public long onBackup(MyBackupDataOutput data, MyBackupDescriptor newDescriptor) throws IOException {
+        long backedUpCount = 0;
         JSONArray jsa = new JSONArray();
         try {
             for (MyAccount ma : persistentAccounts.values()) {
                 jsa.put(ma.toJson());
+                backedUpCount++;
             }
             byte[] bytes = jsa.toString(2).getBytes("UTF-8");
             data.writeEntityHeader(KEY_ACCOUNT, bytes.length);
@@ -323,11 +325,14 @@ public class PersistentAccounts {
         } catch (JSONException e) {
             throw new FileNotFoundException(e.getLocalizedMessage());
         }
+        return backedUpCount;
     }
 
-    public void onRestore(MyBackupDataInput data, MyBackupDescriptor newDescriptor) throws IOException {
+    /** Returns count of restores objects */
+    public long onRestore(MyBackupDataInput data, MyBackupDescriptor newDescriptor) throws IOException {
+        long restoredCount = 0;
         if (!KEY_ACCOUNT.equals(data.getKey())) {
-            return;
+            return restoredCount;
         }
         final String method = "onRestore";
         MyLog.i(this, method + " started, " + data.getDataSize() + " bytes");
@@ -337,8 +342,9 @@ public class PersistentAccounts {
             JSONArray jsa = new JSONArray(new String(bytes, 0, bytesRead, "UTF-8"));
             for (int ind = 0; ind < jsa.length(); ind++) {
                 MyAccount.Builder builder = Builder.fromJson((JSONObject) jsa.get(ind));
-                if (builder.saveSilently()) {
+                if (builder.saveSilently().success) {
                     MyLog.v(this, "Restored " + (ind+1) + ": " + builder.toString());
+                    restoredCount++;
                 } else {
                     MyLog.e(this, "Failed to restore " + (ind+1) + ": " + builder.toString());
                 }
@@ -346,5 +352,6 @@ public class PersistentAccounts {
         } catch (JSONException e) {
             throw new FileNotFoundException(e.getLocalizedMessage());
         }
+        return restoredCount;
     }
 }

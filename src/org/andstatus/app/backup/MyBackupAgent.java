@@ -22,15 +22,30 @@ import android.app.backup.BackupDataOutput;
 import android.os.ParcelFileDescriptor;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
+import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class MyBackupAgent extends BackupAgent {
     public static final int BACKUP_VERSION = 1;
     private static final int BACKUP_VERSION_UNKNOWN = -1;
+    public static final String KEY_DATABASE = "database";
 
+    long accountsBackedUp = 0;
+    long accountsRestored = 0;
+    long databasesBackedUp = 0;
+    long databasesRestored = 0;
+    long suggestionsBackedUp = 0;
+    long suggestionsRestored = 0;
+    long sharedPreferencesBackedUp = 0;
+    long sharedPreferencesRestored = 0;
+    
     @Override
     public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data,
             ParcelFileDescriptor newState) throws IOException {
@@ -43,16 +58,18 @@ public class MyBackupAgent extends BackupAgent {
         MyBackupDescriptor oldDescriptor = MyBackupDescriptor.fromParcelFileDescriptor(
                 MyBackupAgent.BACKUP_VERSION_UNKNOWN, oldState);
         // Ignore oldDescriptor for now...
-        MyLog.i(this, method + " started, "
-                        + (oldDescriptor.saved() ? " oldState:" + oldDescriptor.toString()
-                                : "no old state"));
+        MyLog.i(this, method + " started"
+                + (data != null && data.getDataFolder() != null ? ", folder='"
+                        + data.getDataFolder().getAbsolutePath() + "'" : "")
+                + ", " + (oldDescriptor.saved() ? "oldState:" + oldDescriptor.toString()
+                        : "no old state"));
         MyBackupDescriptor newDescriptor = MyBackupDescriptor.fromParcelFileDescriptor(
                 BACKUP_VERSION, newState);
         try {
             if (data == null) {
                 throw new FileNotFoundException("No BackupDataOutput");
             } else if (!MyContextHolder.get().isReady()) {
-                throw new FileNotFoundException("Appplcation context is not initialized");
+                throw new FileNotFoundException("Application context is not initialized");
             } else {
                 doBackup(data, newDescriptor);
                 newDescriptor.save();
@@ -64,9 +81,48 @@ public class MyBackupAgent extends BackupAgent {
     }
 
     private void doBackup(MyBackupDataOutput data, MyBackupDescriptor newDescriptor) throws IOException {
-        MyContextHolder.get().persistentAccounts().onBackup(data, newDescriptor);
+        accountsBackedUp = MyContextHolder.get().persistentAccounts().onBackup(data, newDescriptor);
+        databasesBackedUp = backupFile(data,
+                KEY_DATABASE + "_" + MyDatabase.DATABASE_NAME,
+                MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME, null));
+        suggestionsBackedUp = backupFile(data,
+                KEY_DATABASE + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME,
+                MyPreferences.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME, null));
     }
 
+    private long backupFile(MyBackupDataOutput data, String key, File dataFile) throws IOException {
+        final int chunkSize = 10000;
+        long backedUpCount = 0;
+        if (dataFile.exists()) {
+            long fileLength = dataFile.length();
+            if ( fileLength > Integer.MAX_VALUE) {
+                throw new FileNotFoundException("File '" 
+                        + dataFile.getName() + "' is too large for backup: " + fileLength );
+            } else {
+                int bytesToWrite = (int) fileLength;
+                data.writeEntityHeader(key, bytesToWrite);
+                int bytesWritten = 0;
+                while (bytesWritten < bytesToWrite) {
+                    byte[] bytes = FileUtils.getBytes(dataFile, bytesWritten, chunkSize);
+                    if (bytes.length <= 0) {
+                        break;
+                    }
+                    bytesWritten += bytes.length;
+                    data.writeEntityData(bytes, bytes.length);
+                }
+                if (bytesWritten != bytesToWrite) {
+                    throw new FileNotFoundException("Couldn't backup File '" 
+                            + dataFile.getName() + "'. written " 
+                            + bytesWritten + " of " + bytesToWrite + " bytes");
+                }
+                backedUpCount++;
+            }
+            MyLog.v(this, "Backed up file key='" + key + "', name='" + dataFile.getName()
+                    + "', length=" + fileLength);
+        }
+        return backedUpCount;
+    }
+    
     @Override
     public void onRestore(BackupDataInput data, int appVersionCode, ParcelFileDescriptor newState)
             throws IOException {
@@ -78,8 +134,10 @@ public class MyBackupAgent extends BackupAgent {
         final String method = "onRestore";
         MyBackupDescriptor newDescriptor = MyBackupDescriptor.fromParcelFileDescriptor(
                 BACKUP_VERSION_UNKNOWN, newState);
-        MyLog.i(this, method + " started, " 
-                + (newDescriptor.saved() ? " newState:" + newDescriptor.toString() 
+        MyLog.i(this, method + " started" 
+                + (data != null && data.getDataFolder() != null ? ", folder='"
+                        + data.getDataFolder().getAbsolutePath() + "'" : "")
+                + ", " + (newDescriptor.saved() ? " newState:" + newDescriptor.toString() 
                         : "no new state"));
         boolean success = false;
         try {
@@ -92,7 +150,9 @@ public class MyBackupAgent extends BackupAgent {
                     } else if (!newDescriptor.saved()) {
                         throw new FileNotFoundException("No new state");
                     } else if (!MyContextHolder.get().isReady()) {
-                        throw new FileNotFoundException("Appplcation context is not initialized");
+                        throw new FileNotFoundException("Application context is not initialized");
+                    } else if ( !MyContextHolder.get().isTestRun() && MyContextHolder.get().persistentAccounts().size() > 0) {
+                        throw new FileNotFoundException("Cannot restore: AndStatus accounts are present");
                     } else {
                         doRestore(data, newDescriptor);
                         success = true;
@@ -109,7 +169,7 @@ public class MyBackupAgent extends BackupAgent {
     
     private void doRestore(MyBackupDataInput data, MyBackupDescriptor newDescriptor) throws IOException {
         while (data.readNextHeader()) {
-            MyContextHolder.get().persistentAccounts().onRestore(data, newDescriptor);
+            accountsRestored += MyContextHolder.get().persistentAccounts().onRestore(data, newDescriptor);
         }
     }
 }

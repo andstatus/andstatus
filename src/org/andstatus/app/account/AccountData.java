@@ -25,6 +25,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import org.andstatus.app.account.MyAccount.Builder.SaveResult;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyProvider;
@@ -82,7 +83,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
         } catch (JSONException e) {
             MyLog.e(TAG, "fromJsonString", e);
         }
-        return new AccountData(jso, persistent);
+        return fromJson(jso, persistent);
     }
 
     public static AccountData fromJson(JSONObject jso, boolean persistent) {
@@ -99,23 +100,23 @@ public class AccountData implements Parcelable, AccountDataWriter {
     }
     
     /**
+     * @param result 
      * @return true if Android account changed
      */
-    boolean saveDataToAccount(MyContext myContext, Account androidAccount) {
+    void saveDataToAccount(MyContext myContext, Account androidAccount, SaveResult result) {
         AccountData oldData = fromAndroidAccount(myContext, androidAccount);
-        boolean changed = !this.equals(oldData);
-        boolean saved = false;
-        if (changed) {
+        result.changed = !this.equals(oldData);
+        if (result.changed) {
             long syncFrequencySeconds = getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0);
             if (syncFrequencySeconds > 0 && syncFrequencySeconds != getSyncFrequencySeconds(androidAccount)) {
-                changed = true;
+                result.changed = true;
                 setSyncFrequencySeconds(androidAccount, syncFrequencySeconds);
             }
             android.accounts.AccountManager am = AccountManager.get(myContext.context());
             am.setUserData(androidAccount, KEY_ACCOUNT, toJsonString());
-            saved = true;
+            result.savedToAccountManager = true;
         }
-        return saved;
+        result.success = true;
     }
 
     @Override

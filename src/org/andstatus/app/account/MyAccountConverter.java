@@ -85,7 +85,7 @@ public class MyAccountConverter {
                     androidAccountData.moveLongKeyTo(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, accountData);
                     
                     Builder builder = Builder.fromAccountData(myContext, accountData, method);
-                    if (!builder.saveSilently()) {
+                    if (!builder.saveSilently().success) {
                         MyLog.e(TAG, "Failed to convert account " + androidAccount.name + ", deleting");
                         accountsToRemove.add(androidAccount);
                     }

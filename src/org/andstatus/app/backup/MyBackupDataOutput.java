@@ -33,8 +33,9 @@ import java.io.OutputStream;
 /** Allowing to instantiate and to mock BackupDataOutput class */
 public class MyBackupDataOutput {
     final static String HEADER_FILE_SUFFIX = "_header";
+    final static String DATA_FILE_SUFFIX = "_data";
     final static String KEY_DATA_SIZE = "data_size";
-    private File backupFolder;
+    private File dataFolder;
     private BackupDataOutput backupDataOutput;
     private int sizeToWrite = 0;
     private int sizeWritten = 0;
@@ -44,8 +45,8 @@ public class MyBackupDataOutput {
         this.backupDataOutput = backupDataOutput;
     }
     
-    public MyBackupDataOutput(File backupFolder) {
-        this.backupFolder = backupFolder;
+    public MyBackupDataOutput(File dataFolder) {
+        this.dataFolder = dataFolder;
     }
 
     /** {@link BackupDataOutput#writeEntityHeader(String, int)} */
@@ -67,13 +68,13 @@ public class MyBackupDataOutput {
     }
 
     private void writeHeaderFile(String key, int dataSize) throws IOException {
-        File headerFile = new File(backupFolder, key + HEADER_FILE_SUFFIX);
+        File headerFile = new File(dataFolder, key + HEADER_FILE_SUFFIX);
         createFileIfNeeded(dataSize, headerFile);
         JSONObject jso = new JSONObject();
         try {
             jso.put(KEY_DATA_SIZE, dataSize);
             byte[] bytes = jso.toString(2).getBytes("UTF-8");
-            writeBytesToFile(headerFile, bytes, bytes.length);
+            appendBytesToFile(headerFile, bytes, bytes.length);
         } catch (JSONException e) {
             throw new FileNotFoundException(e.getLocalizedMessage());
         }
@@ -93,7 +94,7 @@ public class MyBackupDataOutput {
     }
     
     private void createDataFile(String key, int dataSize) throws IOException {
-        dataFile = new File(backupFolder, key);
+        dataFile = new File(dataFolder, key + DATA_FILE_SUFFIX);
         createFileIfNeeded(dataSize, dataFile);
     }
 
@@ -113,7 +114,7 @@ public class MyBackupDataOutput {
         if (size < 0) {
             throw new FileNotFoundException("Wrong number of bytes to write: " + size);
         }
-        writeBytesToFile(dataFile, data, size);
+        appendBytesToFile(dataFile, data, size);
         sizeWritten += size;
         if (sizeWritten >= sizeToWrite) {
             try {
@@ -129,18 +130,19 @@ public class MyBackupDataOutput {
         return size;
     }
 
-    private int writeBytesToFile(File file, byte[] data, int size) {
-        MyLog.v(this, "Writing data to '" + file.getName() + "', size=" + size);
+    private int appendBytesToFile(File file, byte[] data, int size) throws IOException {
+        MyLog.v(this, "Appending data to file='" + file.getName() + "', size=" + size);
         OutputStream out = null;
         try {
             out = new BufferedOutputStream(new FileOutputStream(file, true));
             out.write(data, 0, size);
-        } catch (Exception e) {
-            MyLog.d(this, file.getAbsolutePath(), e);
         } finally {
             DbUtils.closeSilently(out, file.getAbsolutePath());
         }        
         return 0;
     }
-    
+
+    File getDataFolder() {
+        return dataFolder;
+    }
 }

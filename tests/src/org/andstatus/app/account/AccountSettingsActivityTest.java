@@ -23,6 +23,7 @@ import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.test.ActivityInstrumentationTestCase2;
 
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
@@ -52,7 +53,7 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
         }
         
         Intent intent = new Intent();
-        intent.putExtra(StateOfAccountChangeProcess.EXTRA_MYACCOUNT_GUID, ma.getAccountName());
+        intent.putExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key, ma.getAccountName());
         setActivityIntent(intent);
         
         mActivity = getActivity();

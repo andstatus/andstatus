@@ -26,8 +26,10 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 public class FileUtils {
     private static final String TAG = FileUtils.class.getSimpleName();
@@ -72,6 +74,7 @@ public class FileUtils {
         return new String(getBytes(file));
     }
 
+    /** Reads the whole file */
     public static byte[] getBytes(File file) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         if (file != null) {
@@ -87,8 +90,33 @@ public class FileUtils {
                     bout.write(readBuffer, 0, read);
                 } while(true);
                 return bout.toByteArray();
-            } catch (IOException e) {
-                MyLog.v(TAG, e);
+            } finally {
+                DbUtils.closeSilently(is);
+            }
+        }
+        return new byte[0];
+    }
+
+    /** Reads up to 'size' bytes, starting from 'offset' */
+    public static byte[] getBytes(File file, int offset, int size) throws IOException {
+        if (file != null) {
+            InputStream is = new FileInputStream(file);
+            byte[] readBuffer = new byte[size];
+            try {
+                long bytesSkipped = is.skip(offset);
+                if (bytesSkipped < offset) {
+                    throw new FileNotFoundException("Skiiped only " + bytesSkipped 
+                            + " of " + offset + " bytes in file='" + file.getAbsolutePath() + "'");
+                }
+                int bytesRead = is.read(readBuffer, 0, size);
+                if (bytesRead == readBuffer.length) {
+                    return readBuffer;
+                } else if (bytesRead > 0) {
+                    // TODO: Since API 9: return Arrays.copyOf(readBuffer, read);
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream(bytesRead);
+                    bout.write(readBuffer, 0, bytesRead);
+                    return bout.toByteArray();
+                }
             } finally {
                 DbUtils.closeSilently(is);
             }
