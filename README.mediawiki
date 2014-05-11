@@ -1,5 +1,3 @@
-AndStatus is a light-weight Twitter, pump.io and StatusNet client for Android 
-([http://identi.ca/ identi.ca] is now one of the sites of the [http://pump.io/ pump.io social network]). 
-It features multiple User accounts in all supported Microblogging systems and allows you to work offline, including reading and blogging/sending messages while you are offline. Open Source License.
+AndStatus is a traffic-efficient microblogging client for [http://twitter.com Twitter], [http://status.net/ StatusNet] ([http://www.gnu.org/software/social/ GNU social]) and [http://pump.io pump.io], for Android devices. It combines your accounts in all Microblogging systems into one Timeline and allows you to work offline, including reading and blogging/sending messages (tweets, notices etc.) while you are offline. Open Source License.
 
 For more information please read the [https://github.com/andstatus/andstatus/wiki AndStatus Wiki]. 
