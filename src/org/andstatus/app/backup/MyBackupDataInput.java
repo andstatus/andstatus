@@ -36,6 +36,7 @@ public class MyBackupDataInput {
     private Set<BackupHeader> headers = new TreeSet<BackupHeader>();
     private Iterator<BackupHeader> keysIterator;
     private boolean mHeaderReady = false;
+    private int dataOffset = 0;
     private BackupHeader header = BackupHeader.getEmpty();
     
     static class BackupHeader implements Comparable<BackupHeader> {
@@ -103,6 +104,7 @@ public class MyBackupDataInput {
 
     private boolean readNextHeader2() throws IOException {
         mHeaderReady = false;
+        dataOffset = 0;
         if (keysIterator.hasNext()) {
             header = keysIterator.next();
             if (header.dataSize > 0) {
@@ -162,17 +164,18 @@ public class MyBackupDataInput {
         int bytesRead = 0;
         if (size > chunkSize) {
             throw new FileNotFoundException("Size to read is too large: " + size);
-        } else if (size < 1 || offset >= header.dataSize) {
+        } else if (size < 1 || dataOffset >= header.dataSize) {
             // skip
         } else if (mHeaderReady) {
             File dataFile = new File(dataFolder, header.key + MyBackupDataOutput.DATA_FILE_SUFFIX);
-            byte[] readData = FileUtils.getBytes(dataFile, offset, size);
+            byte[] readData = FileUtils.getBytes(dataFile, dataOffset, size);
             bytesRead = readData.length;
-            System.arraycopy(readData, offset, data, 0, bytesRead);
+            System.arraycopy(readData, 0, data, offset, bytesRead);
         } else {
             throw new IllegalStateException("Entity header not read");
         }
-        MyLog.v(this, "key=" + header.key + ", offset=" + offset + ", bytes read=" + bytesRead);
+        MyLog.v(this, "key=" + header.key + ", offset=" + dataOffset + ", bytes read=" + bytesRead);
+        dataOffset += bytesRead;
         return bytesRead;
     }
 

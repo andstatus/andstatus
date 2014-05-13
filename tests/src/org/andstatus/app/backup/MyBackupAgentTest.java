@@ -1,19 +1,32 @@
 package org.andstatus.app.backup;
 
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
+import android.content.Context;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.ParcelFileDescriptor;
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.account.AuthenticatorService;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class MyBackupAgentTest extends InstrumentationTestCase {
 
@@ -23,7 +36,7 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         TestSuite.initializeWithData(this);
     }
 
-    public void testBackupRestore() throws IOException, JSONException {
+    public void testBackupRestore() throws IOException, JSONException, NameNotFoundException, ConnectionException, InterruptedException {
         MyBackupAgent backupAgent = new MyBackupAgent();
         
         File outputFolder = MyContextHolder.get().context().getCacheDir();
@@ -37,8 +50,10 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
                 dataFolder.mkdir());
 
         testBackup(backupAgent, descriptorFile, dataFolder);
+        deleteApplicationData();
         testRestore(backupAgent, descriptorFile, dataFolder);
-        
+        TestSuite.initialize(this);
+
         deleteBackup(descriptorFile, dataFolder);
     }
 
@@ -72,15 +87,60 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         assertTrue(jsa.length() > 2);
     }
 
+    private void deleteApplicationData() throws IOException {
+        MyServiceManager.setServiceUnavailable();
+        deleteAccounts();
+        Context context = MyContextHolder.get().context();
+        MyContextHolder.get().getDatabase().close();
+        MyContextHolder.release();
+        deleteFiles(context, false);
+        deleteFiles(context, true);
+        TestSuite.onDataDeleted();
+    }
+
+    private void deleteAccounts() throws IOException {
+        android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
+        android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
+        for (android.accounts.Account androidAccount : aa) {
+            MyLog.i(this, "Removing old account: " + androidAccount.name);
+            AccountManagerFuture<Boolean> amf = am.removeAccount(androidAccount, null, null);
+            try {
+                amf.getResult(10, TimeUnit.SECONDS);
+            } catch (OperationCanceledException e) {
+                throw new FileNotFoundException(e.getMessage());
+            } catch (AuthenticatorException e) {
+                throw new FileNotFoundException(e.getMessage());
+            }
+        }
+    }
+
+    private void deleteFiles(Context context, boolean useExternalStorage) {
+        deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS, useExternalStorage));
+        deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, useExternalStorage));
+        deleteFilesRecursively(SharedPreferencesUtil.prefsDirectory(context));
+    }
+
+    private void deleteFilesRecursively(File rootDirectory) {
+        for (File file : rootDirectory.listFiles()) {
+            if (file.isDirectory()) {
+                deleteFilesRecursively(file);
+            } else {
+                file.delete();
+            }
+        }
+    }
+    
     private void testRestore(MyBackupAgent backupAgent, File descriptorFile, File dataFolder)
             throws IOException {
         final int appVersion = 100;
         ParcelFileDescriptor state4 = ParcelFileDescriptor.open(descriptorFile,
                 ParcelFileDescriptor.MODE_READ_WRITE);
         MyBackupDataInput dataInput = new MyBackupDataInput(dataFolder);
-        assertEquals("Keys in the backup: " + Arrays.toString(dataInput.listKeys().toArray()) , 4, dataInput.listKeys().size());
+        assertEquals("Keys in the backup: " + Arrays.toString(dataInput.listKeys().toArray()) , backupAgent.suggestionsBackedUp + 3, dataInput.listKeys().size());
         
         backupAgent.onRestore(dataInput, appVersion, state4);
+        assertEquals("Shared preferences restored", 1, backupAgent.sharedPreferencesRestored);
+        assertEquals("Databases restored", 1, backupAgent.databasesRestored);
         assertEquals("Accounts restored", backupAgent.accountsBackedUp, backupAgent.accountsRestored);
         state4.close();
     }

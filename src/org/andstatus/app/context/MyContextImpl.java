@@ -17,6 +17,7 @@
 package org.andstatus.app.context;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteException;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -66,20 +67,28 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public MyContext newInitialized(Context context, String initializerName) {
+        final String method = "newInitialized";
         MyContextImpl newMyContext = getCreator(context, initializerName);
         if ( newMyContext.context != null) {
-            MyLog.v(TAG, "Starting initialization by " + initializerName);
+            MyLog.v(TAG, method + " Starting initialization by " + initializerName);
             newMyContext.preferencesChangeTime = MyPreferences.getPreferencesChangeTime();
             MyDatabase newDb = new MyDatabase(newMyContext.context);
-            newMyContext.state = newDb.checkState();
-            switch (newMyContext.state) {
-                case READY:
-                    newMyContext.db = newDb;
-                    newMyContext.persistentOrigins.initialize(newMyContext);
-                    newMyContext.persistentAccounts.initialize(newMyContext);
-                    break;
-                default: 
-                    break;
+            try {
+                newMyContext.state = newDb.checkState();
+                switch (newMyContext.state) {
+                    case READY:
+                            newMyContext.db = newDb;
+                            newMyContext.persistentOrigins.initialize(newMyContext);
+                            newMyContext.persistentAccounts.initialize(newMyContext);
+                        break;
+                    default: 
+                        break;
+                }
+            } catch (SQLiteException e) {
+                MyLog.e(TAG, method + " Error", e);
+                newMyContext.state = MyContextState.ERROR;
+                newDb.close();
+                newMyContext.db = null;
             }
         }
 
@@ -130,7 +139,7 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public boolean initialized() {
-        return state != MyContextState.EMPTY && state != MyContextState.ERROR;
+        return state != MyContextState.EMPTY;
     }
 
     @Override

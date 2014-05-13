@@ -3,6 +3,7 @@ package org.andstatus.app.data;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
+import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
@@ -74,7 +75,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
     }
 
     private MyAccount addAccountFromMbUser(MbUser mbUser) throws ConnectionException {
-        assertTrue(MyContextHolder.get().initialized());
+        waitForContextInitialization();
         Origin origin = MyContextHolder.get().persistentOrigins().fromId(mbUser.originId);
         MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(mbUser.userName + "/" + origin.getName(), TriState.TRUE);
         if (builder.getAccount().isOAuth()) {
@@ -84,6 +85,8 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         }
         assertTrue("Credentials of " + mbUser + " are present (origin name=" + origin.getName() + ")", builder.getAccount().getCredentialsPresent());
         builder.onCredentialsVerified(mbUser, null);
+        waitForContextInitialization();
+
         assertTrue("Account is persistent", builder.isPersistent());
         MyAccount ma = builder.getAccount();
         assertEquals("Credentials of " + mbUser.userName + " successfully verified", 
@@ -91,11 +94,25 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         long userId = ma.getUserId();
         assertTrue("Account " + mbUser.userName + " has UserId", userId != 0);
         assertEquals("Account UserOid", ma.getUserOid(), mbUser.oid);
+        String oid = MyProvider.idToOid(OidEnum.USER_OID, userId, 0);
+        if (TextUtils.isEmpty(oid)) {
+            String message = "Couldn't find a User in the database for id=" + userId + " oid=" + mbUser.oid;
+            MyLog.v(this, message);
+            fail(message); 
+        }
         assertEquals("User in the database for id=" + userId, 
                 mbUser.oid,
                 MyProvider.idToOid(OidEnum.USER_OID, userId, 0));
         assertEquals("Account name", mbUser.userName + "/" + origin.getName(), ma.getAccountName());
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
         return ma;
+    }
+
+    private void waitForContextInitialization() throws ConnectionException {
+        try {
+            assertTrue(MyContextHolder.getBlocking(null, this).isReady());
+        } catch (InterruptedException e) {
+            throw new ConnectionException("Error at addAccountFromMbUser", e);
+        }
     }
 }

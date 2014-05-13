@@ -57,7 +57,7 @@ public class AccountData implements Parcelable, AccountDataWriter {
     
     public static AccountData fromAndroidAccount(MyContext myContext, Account account) {
         if (account == null) {
-            throw new IllegalArgumentException(TAG + " null account");
+            throw new IllegalArgumentException(TAG + " account is null");
         }
         android.accounts.AccountManager am = AccountManager.get(myContext.context());
         AccountData accountData = fromJsonString(am.getUserData(account, KEY_ACCOUNT), true);

@@ -188,6 +188,9 @@ public class TestSuite extends TestCase {
     public static boolean isDataAdded() {
         return dataAdded;
     }
+    public static void onDataDeleted() {
+        dataAdded = false;
+    }
 
     /**
      * This method mimics execution of one test case before another

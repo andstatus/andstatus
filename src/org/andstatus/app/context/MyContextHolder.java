@@ -53,7 +53,7 @@ public final class MyContextHolder {
      */
     public static MyContext get() {
         MyContext myContext = myInitializedContext;
-        if (myContext == null) {
+        if (myContext == null || !myContext.initialized() || myContext.isExpired()) {
             myContext = myContextCreator;
         }
         return myContext;

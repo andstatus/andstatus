@@ -310,7 +310,7 @@ public class PersistentAccounts {
         }
     }
 
-    private static final String KEY_ACCOUNT = "account";
+    public static final String KEY_ACCOUNT = "account";
     public long onBackup(MyBackupDataOutput data, MyBackupDescriptor newDescriptor) throws IOException {
         long backedUpCount = 0;
         JSONArray jsa = new JSONArray();
@@ -331,9 +331,6 @@ public class PersistentAccounts {
     /** Returns count of restores objects */
     public long onRestore(MyBackupDataInput data, MyBackupDescriptor newDescriptor) throws IOException {
         long restoredCount = 0;
-        if (!KEY_ACCOUNT.equals(data.getKey())) {
-            return restoredCount;
-        }
         final String method = "onRestore";
         MyLog.i(this, method + " started, " + data.getDataSize() + " bytes");
         byte[] bytes = new byte[data.getDataSize()];

@@ -288,7 +288,9 @@ public final class MyAccount {
                 }
                 myAccount.accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.syncFrequencySeconds); 
                 myAccount.accountData.setDataInt(KEY_VERSION, myAccount.version);
-                myAccount.accountData.saveDataToAccount(MyContextHolder.get(), androidAccount, result);
+                if (androidAccount != null) {
+                    myAccount.accountData.saveDataToAccount(MyContextHolder.get(), androidAccount, result);
+                }
                 MyLog.v(this, (result.savedToAccountManager ? " Saved " 
                         : ( result.changed ? " Didn't save?! " : " Didn't change") ) + this.toString());
             } catch (Exception e) {
