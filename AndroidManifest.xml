@@ -46,16 +46,16 @@
     
 	<application android:name=".context.MyApplication" android:label="@string/app_name" 
 	    android:icon="@drawable/icon" android:allowBackup="true" 
-	    android:backupAgent=".backup.MyBackupAgent" >
-		<meta-data android:name="android.app.default_searchable" android:value=".TimelineActivity"/>
+	    android:backupAgent="org.andstatus.app.backup.MyBackupAgent" >
+		<meta-data android:name="android.app.default_searchable" android:value="org.andstatus.app.TimelineActivity"/>
 		<meta-data android:name="com.google.android.backup.api_key" 
 		    android:value="AEdPqrEAAAAIwaY-1-9DmEnU74ycFHDSJiTl_1CW6CzuHsWMLA" />
 
-		<provider android:name=".data.MyProvider"
+		<provider android:name="org.andstatus.app.data.MyProvider"
 			android:authorities="org.andstatus.app.data.MyProvider" 
 			android:exported="false" />
 
-		<provider android:name=".data.TimelineSearchSuggestionsProvider" 
+		<provider android:name="org.andstatus.app.data.TimelineSearchSuggestionsProvider" 
 			android:authorities="org.andstatus.app.data.TimelineSuggestionProvider"
 			android:permission="android.permission.INTERNET"/>
 
@@ -124,12 +124,12 @@
             android:label="@string/label_accountselector">
 		</activity>
 		
-        <receiver android:name=".appwidget.MyAppWidgetProvider">
+        <receiver android:name="org.andstatus.app.appwidget.MyAppWidgetProvider">
             <meta-data android:name="android.appwidget.provider"
                     android:resource="@xml/appwidget_info" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name=".action.APPWIDGET_UPDATE" />
+                <action android:name="org.andstatus.app.action.APPWIDGET_UPDATE" />
             </intent-filter>
         </receiver>
 
@@ -140,7 +140,7 @@
         </activity>
 
         <service
-            android:name=".account.AuthenticatorService"
+            android:name="org.andstatus.app.account.AuthenticatorService"
             android:exported="true"
             android:enabled="true"
             android:permission="android.permission.AUTHENTICATE_ACCOUNTS">
@@ -154,7 +154,7 @@
         </service>
 
         <service
-            android:name=".syncadapter.SyncService"
+            android:name="org.andstatus.app.syncadapter.SyncService"
             android:exported="true"
             android:permission="android.permission.WRITE_SYNC_SETTINGS">
             <intent-filter>
@@ -174,7 +174,7 @@
             >
             <intent-filter>
                 <action
-                    android:name=".ACCOUNT_MANAGER_ENTRY" />
+                    android:name="org.andstatus.app.ACCOUNT_MANAGER_ENTRY" />
                 <category
                     android:name="android.intent.category.DEFAULT" />
             </intent-filter>
