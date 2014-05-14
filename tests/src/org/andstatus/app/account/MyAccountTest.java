@@ -19,6 +19,7 @@ package org.andstatus.app.account;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
@@ -42,8 +43,10 @@ public class MyAccountTest  extends InstrumentationTestCase {
     }
     
     private void createAccountOfOriginType(String userName, OriginType originType) {
-        Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(originType);
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
+        MyContext myContext = MyContextHolder.get();
+        Origin origin = myContext.persistentOrigins().firstOfType(originType);
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext,
+                userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
         assertEquals("Creating account for '" + originType + "'", origin.getId(), builder.getAccount().getOriginId());
         assertEquals("Creating account for '" + originType + "'", userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), builder.getAccount().getAccountName());
     }

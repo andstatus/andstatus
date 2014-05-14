@@ -3,6 +3,7 @@ package org.andstatus.app.service;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.TriState;
@@ -13,7 +14,8 @@ public class CommandExecutionContextTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         TestSuite.initialize(this);
-        ma = MyAccount.Builder.newOrExistingFromAccountName("temp/", TriState.UNKNOWN).getAccount();
+        ma = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(), "temp/",
+                TriState.UNKNOWN).getAccount();
     }
 
     public void testHomeAccumulation() {

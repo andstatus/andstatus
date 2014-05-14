@@ -109,17 +109,18 @@ public final class MyAccount {
     public static final class Builder implements Parcelable {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
 
+        private MyContext myContext;
         private final MyAccount myAccount;
         
         /**
          * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
          */
-        public static Builder newOrExistingFromAccountName(String accountName, TriState isOAuthTriState) {
-            MyAccount persistentAccount = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
+        public static Builder newOrExistingFromAccountName(MyContext myContext, String accountName, TriState isOAuthTriState) {
+            MyAccount persistentAccount = myContext.persistentAccounts().fromAccountName(accountName);
             if (persistentAccount == null) {
-                return newFromAccountName(accountName, isOAuthTriState);
+                return newFromAccountName(myContext, accountName, isOAuthTriState);
             } else {
-                return fromMyAccount(persistentAccount, "newOrExistingFromAccountName");
+                return fromMyAccount(myContext, persistentAccount, "newOrExistingFromAccountName");
             }
         }
         
@@ -127,11 +128,11 @@ public final class MyAccount {
          * Creates new account, which is not Persistent yet
          * @param accountName
          */
-        private static Builder newFromAccountName(String accountName, TriState isOAuthTriState) {
-            MyAccount ma = new MyAccount(MyContextHolder.get(), null);
-            ma.oAccountName = AccountName.fromAccountName(MyContextHolder.get(), accountName);
+        private static Builder newFromAccountName(MyContext myContext, String accountName, TriState isOAuthTriState) {
+            MyAccount ma = new MyAccount(myContext, null);
+            ma.oAccountName = AccountName.fromAccountName(myContext, accountName);
             ma.setOAuth(isOAuthTriState);
-            return fromMyAccount(ma, "newFromAccountName");
+            return fromMyAccount(myContext, ma, "newFromAccountName");
         }
         
         /**
@@ -143,23 +144,24 @@ public final class MyAccount {
             return fromAccountData(myContext, AccountData.fromAndroidAccount(myContext, account), "fromAndroidAccount");
         }
 
-        public static Builder fromJson(JSONObject jso) throws JSONException {
-            return fromAccountData(MyContextHolder.get(), AccountData.fromJson(jso, false), "fromJson");
+        public static Builder fromJson(MyContext myContext, JSONObject jso) throws JSONException {
+            return fromAccountData(myContext, AccountData.fromJson(jso, false), "fromJson");
         }
 
         static Builder fromAccountData(MyContext myContext, AccountData accountData, String method) {
-            return fromMyAccount(new MyAccount(myContext, accountData), method);
+            return fromMyAccount(myContext, new MyAccount(myContext, accountData), method);
         }
         
-        protected static Builder fromMyAccount(MyAccount ma, String method) {
-            Builder builder = new Builder(ma);
+        protected static Builder fromMyAccount(MyContext myContext, MyAccount ma, String method) {
+            Builder builder = new Builder(myContext, ma);
             builder.setConnection();
             builder.fixInconsistenciesWithChangedEnvironmentSilently();
             builder.logLoadResult(method);
             return builder;
         }
 
-        private Builder(MyAccount myAccount) {
+        private Builder(MyContext myContext, MyAccount myAccount) {
+            this.myContext = myContext;
             this.myAccount = myAccount;
         }
 
@@ -233,7 +235,7 @@ public final class MyAccount {
             boolean ok = true;
 
             // Old preferences file may be deleted, if it exists...
-            ok = SharedPreferencesUtil.delete(MyContextHolder.get().context(), myAccount.oAccountName.prefsFileName());
+            ok = SharedPreferencesUtil.delete(myContext.context(), myAccount.oAccountName.prefsFileName());
 
             if (isPersistent()) {
                 if (myAccount.userId != 0) {
@@ -256,7 +258,7 @@ public final class MyAccount {
         }
         
         void save() {
-            if (saveSilently().savedToAccountManager && MyContextHolder.get().isReady()) {
+            if (saveSilently().savedToAccountManager && myContext.isReady()) {
                 MyPreferences.onPreferencesChanged();
             }
         }
@@ -289,7 +291,7 @@ public final class MyAccount {
                 myAccount.accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.syncFrequencySeconds); 
                 myAccount.accountData.setDataInt(KEY_VERSION, myAccount.version);
                 if (androidAccount != null) {
-                    myAccount.accountData.saveDataToAccount(MyContextHolder.get(), androidAccount, result);
+                    myAccount.accountData.saveDataToAccount(myContext, androidAccount, result);
                 }
                 MyLog.v(this, (result.savedToAccountManager ? " Saved " 
                         : ( result.changed ? " Didn't save?! " : " Didn't change") ) + this.toString());
@@ -313,8 +315,8 @@ public final class MyAccount {
                      */
                     androidAccount = new android.accounts.Account(myAccount.getAccountName(),
                             AuthenticatorService.ANDROID_ACCOUNT_TYPE);
-                    android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get()
-                            .context());
+                    android.accounts.AccountManager am = AccountManager.get(
+                            myContext.context());
                     am.addAccountExplicitly(androidAccount, myAccount.getPassword(), null);
 
                     ContentResolver.setIsSyncable(androidAccount, MyProvider.AUTHORITY, 1);
@@ -346,7 +348,8 @@ public final class MyAccount {
                     config = myAccount.getConnection().getConfig();
                     ok = (!config.isEmpty());
                     if (ok) {
-                        Origin.Builder originBuilder = new Origin.Builder(MyContextHolder.get().persistentOrigins().fromId(myAccount.getOriginId())); 
+                        Origin.Builder originBuilder = new Origin.Builder(
+                                myContext.persistentOrigins().fromId(myAccount.getOriginId())); 
                         originBuilder.save(config);
                     }
                 } finally {
@@ -389,7 +392,7 @@ public final class MyAccount {
             boolean errorSettingUsername = false;
             if (ok) {
                 newName = user.userName;
-                Origin origin = MyContextHolder.get().persistentOrigins().fromId(user.originId);
+                Origin origin = myContext.persistentOrigins().fromId(user.originId);
                 ok = origin.isUsernameValid(newName);
                 errorSettingUsername = !ok;
             }
@@ -418,7 +421,7 @@ public final class MyAccount {
                 // We don't recreate MyAccount object for the new name
                 //   in order to preserve credentials.
                 myAccount.oAccountName = AccountName.fromOriginAndUserNames(
-                        MyContextHolder.get(),
+                        myContext,
                         myAccount.oAccountName.getOriginName(), newName);
                 myAccount.connection.save(myAccount.accountData);
                 setConnection();
@@ -433,12 +436,12 @@ public final class MyAccount {
                 throw ce;
             }
             if (credentialsOfOtherUser) {
-                MyLog.e(TAG, MyContextHolder.get().context().getText(R.string.error_credentials_of_other_user) + ": "
+                MyLog.e(TAG, myContext.context().getText(R.string.error_credentials_of_other_user) + ": "
                         + newName);
                 throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_USER, newName);
             }
             if (errorSettingUsername) {
-                String msg = MyContextHolder.get().context().getText(R.string.error_set_username) + newName;
+                String msg = myContext.context().getText(R.string.error_set_username) + newName;
                 MyLog.e(TAG, msg);
                 throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
             }
@@ -544,7 +547,7 @@ public final class MyAccount {
             MyLog.i(TAG, "renaming origin of " + myAccount.getAccountName() + " to " + originNameNew );
             setAndroidAccountDeleted();
             myAccount.oAccountName = AccountName.fromOriginAndUserNames(
-                    MyContextHolder.get(),
+                    myContext,
                     originNameNew,
                     myAccount.oAccountName.getUsername());
             saveSilently();

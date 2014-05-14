@@ -105,7 +105,7 @@ public class PersistentAccounts {
             }
         }
         if (found) {
-            MyAccount.Builder.fromMyAccount(ma, "delete").deleteData();
+            MyAccount.Builder.fromMyAccount(MyContextHolder.get(), ma, "delete").deleteData();
 
             // And delete the object from the list
             persistentAccounts.remove(ma.getAccountName());
@@ -301,10 +301,10 @@ public class PersistentAccounts {
                 .putString(KEY_DEFAULT_ACCOUNT_NAME, defaultAccountName).commit();
     }
     
-    public void onMyPreferencesChanged() {
+    public void onMyPreferencesChanged(MyContext myContext) {
         long syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
         for (MyAccount ma : persistentAccounts.values()) {
-            Builder builder = Builder.fromMyAccount(ma, "onMyPreferencesChanged");
+            Builder builder = Builder.fromMyAccount(myContext, ma, "onMyPreferencesChanged");
             builder.setSyncFrequency(syncFrequencySeconds);
             builder.save();
         }
@@ -332,22 +332,23 @@ public class PersistentAccounts {
     public long onRestore(MyBackupDataInput data, MyBackupDescriptor newDescriptor) throws IOException {
         long restoredCount = 0;
         final String method = "onRestore";
-        MyLog.i(this, method + " started, " + data.getDataSize() + " bytes");
+        MyLog.i(this, method + "; started, " + data.getDataSize() + " bytes");
         byte[] bytes = new byte[data.getDataSize()];
         int bytesRead = data.readEntityData(bytes, 0, bytes.length);
         try {
             JSONArray jsa = new JSONArray(new String(bytes, 0, bytesRead, "UTF-8"));
             for (int ind = 0; ind < jsa.length(); ind++) {
-                MyAccount.Builder builder = Builder.fromJson((JSONObject) jsa.get(ind));
+                MyLog.v(this, method + "; restoring " + (ind+1) + " of " + jsa.length());
+                MyAccount.Builder builder = Builder.fromJson(data.getMyContext(), (JSONObject) jsa.get(ind));
                 if (builder.saveSilently().success) {
-                    MyLog.v(this, "Restored " + (ind+1) + ": " + builder.toString());
+                    MyLog.v(this, method + "; restored " + (ind+1) + ": " + builder.toString());
                     restoredCount++;
                 } else {
-                    MyLog.e(this, "Failed to restore " + (ind+1) + ": " + builder.toString());
+                    MyLog.e(this, method + "; failed to restore " + (ind+1) + ": " + builder.toString());
                 }
             }
         } catch (JSONException e) {
-            throw new FileNotFoundException(e.getLocalizedMessage());
+            throw new FileNotFoundException(method + "; " + e.getLocalizedMessage());
         }
         return restoredCount;
     }

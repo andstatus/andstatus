@@ -20,7 +20,6 @@ import android.app.backup.BackupAgent;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.os.ParcelFileDescriptor;
-import android.preference.PreferenceManager;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.PersistentAccounts;
@@ -87,8 +86,18 @@ public class MyBackupAgent extends BackupAgent {
             } else {
                 boolean isServiceAvailableStored = MyServiceManager.isServiceAvailable();
                 MyServiceManager.setServiceUnavailable();
-                if (MyServiceManager.getServiceState() != ServiceState.STOPPED) {
-                    throw new FileNotFoundException(getString(R.string.system_is_busy_try_later));
+                for (int ind=0; ; ind++) {
+                    if (MyServiceManager.getServiceState() == ServiceState.STOPPED) {
+                        break;
+                    }
+                    if (ind > 5) {
+                        throw new FileNotFoundException(getString(R.string.system_is_busy_try_later));
+                    }
+                    try {
+                        Thread.sleep(5000);
+                    } catch (Exception e2) {
+                        MyLog.d(this, "while sleeping", e2);
+                    }
                 }
                 doBackup(data, newDescriptor);
                 newDescriptor.save();
@@ -208,11 +217,16 @@ public class MyBackupAgent extends BackupAgent {
             db.close();
             db = null;
         }
-        MyContextHolder.release();
     }
     
     private void doRestore(MyBackupDataInput data, MyBackupDescriptor newDescriptor) throws IOException {
-        PreferenceManager.setDefaultValues(MyContextHolder.get().context(), R.xml.preferences, false);
+        MyPreferences.setDefaultValues(R.xml.preferences, false);
+        MyContextHolder.release();
+        MyLog.forget();
+        MyContextHolder.initialize(this, this);
+        // For some reason the next line is required for proper work...
+        // MyLog.setMinLogLevel(MyLog.VERBOSE);
+        
         assertNextHeader(data, KEY_SHARED_PREFERENCES);
         sharedPreferencesRestored += restoreFile(data, 
                 SharedPreferencesUtil.sharedPreferencesPath(MyContextHolder.get().context()));
@@ -223,10 +237,15 @@ public class MyBackupAgent extends BackupAgent {
             suggestionsRestored += restoreFile(data,
                     MyPreferences.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME, null));            
         }
+        MyContextHolder.release();
         MyContextHolder.initialize(this, this);
+        
+        data.setMyContext(MyContextHolder.get());
         assertNextHeader(data, PersistentAccounts.KEY_ACCOUNT);
-        accountsRestored += MyContextHolder.get().persistentAccounts().onRestore(data, newDescriptor);
-        MyContextHolder.get().setExpired();
+        accountsRestored += data.getMyContext().persistentAccounts().onRestore(data, newDescriptor);
+
+        MyContextHolder.release();
+        MyContextHolder.initialize(this, this);
     }
     
     private void assertNextHeader(MyBackupDataInput data, String key) throws IOException {

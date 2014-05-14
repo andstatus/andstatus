@@ -18,6 +18,7 @@ package org.andstatus.app.backup;
 
 import android.app.backup.BackupDataInput;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONObject;
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class MyBackupDataInput {
+    private MyContext myContext;
     private BackupDataInput backupDataInput;
 
     private File dataFolder = null;
@@ -198,5 +200,12 @@ public class MyBackupDataInput {
     
     File getDataFolder() {
         return dataFolder;
+    }
+    
+    void setMyContext(MyContext myContext) {
+        this.myContext = myContext;
+    }
+    public MyContext getMyContext() {
+        return myContext;
     }
 }

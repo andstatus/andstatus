@@ -201,7 +201,7 @@ public class TestSuite extends TestCase {
         MyLog.v(TAG, method + ": started");
         if (!dataAdded) {
             dataAdded = true;
-            new OriginsAndAccountsInserter().insert();
+            new OriginsAndAccountsInserter(getMyContextForTest()).insert();
             new DataInserterTest().insertConversation("");
             new StatusNetMessagesInserter().insertData();
         }

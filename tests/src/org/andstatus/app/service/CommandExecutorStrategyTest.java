@@ -26,6 +26,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         // In order the mocked connection to have effect:
         MyContextHolder.get().persistentAccounts().initialize();
         ma = MyAccount.Builder.newOrExistingFromAccountName(
+                MyContextHolder.get(), 
                 TestSuite.STATUSNET_TEST_ACCOUNT_NAME, TriState.UNKNOWN).getAccount();
         assertTrue(ma.getUserId() != 0);
     }

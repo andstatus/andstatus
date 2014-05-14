@@ -280,7 +280,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             MyPreferences.onPreferencesChanged();
             
             if (key.equals(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS)) {
-                MyContextHolder.get().persistentAccounts().onMyPreferencesChanged();
+                MyContextHolder.get().persistentAccounts().onMyPreferencesChanged(MyContextHolder.get());
                 showFrequency();
             }
             if (key.equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {

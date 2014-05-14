@@ -208,7 +208,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
 
     private void onAccountSelected(int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            state.builder = MyAccount.Builder.newOrExistingFromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key), TriState.UNKNOWN);
+            state.builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(), data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key), TriState.UNKNOWN);
             if (!state.builder.isPersistent()) {
                 mIsFinishing = true;
             }
@@ -235,6 +235,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 // If we have changed the System, we should recreate the Account
                 originOfUser = origin;
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                        MyContextHolder.get(), 
                         AccountName.fromOriginAndUserNames(
                                 MyContextHolder.get(),
                                 originOfUser.getName(),
@@ -503,7 +504,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             if (key.equals(MyAccount.KEY_OAUTH)
                 && state.getAccount().isOAuth() != oAuthCheckBox.isChecked()) {
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                        AccountName.fromOriginAndUserNames(
+                            MyContextHolder.get(), 
+                            AccountName.fromOriginAndUserNames(
                                 MyContextHolder.get(),
                                 originOfUser.getName(),
                                 state.getAccount().getUsername()).toString(),
@@ -516,6 +518,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     boolean isOAuth = state.getAccount().isOAuth();
                     String originName = state.getAccount().getOriginName();
                     state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                            MyContextHolder.get(), 
                             AccountName.fromOriginAndUserNames(myContext, 
                                     originName, usernameNew).toString(),
                             TriState.fromBoolean(isOAuth));
@@ -732,7 +735,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     if (succeeded) {
                         String accountName = state.getAccount().getAccountName();
                         MyContextHolder.get().persistentAccounts().initialize();
-                        state.builder = MyAccount.Builder.newOrExistingFromAccountName(accountName, TriState.TRUE);
+                        state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                                MyContextHolder.get(), accountName, TriState.TRUE);
                         showUserPreferences();
                         new OAuthAcquireRequestTokenTask().execute();
                         // and return back to default screen

@@ -918,6 +918,17 @@ public class MyProvider extends ContentProvider {
      *         {@link MyDatabase.Msg#_ID} ). Or 0 if nothing was found.
      */
     public static long oidToId(MyDatabase.OidEnum oidEnum, long originId, String oid) {
+        MyDatabase myDb = MyContextHolder.get().getDatabase();
+        if (myDb == null) {
+            MyLog.v(TAG, "oidToId: MyDatabase is null, oid=" + oid);
+            return 0;
+        } else {
+            SQLiteDatabase db = myDb.getReadableDatabase();
+            return oidToId(db, oidEnum, originId, oid);
+        }
+    }
+    
+    public static long oidToId(SQLiteDatabase db, MyDatabase.OidEnum oidEnum, long originId, String oid) {
         long id = 0;
         String sql = "";
 
@@ -939,7 +950,6 @@ public class MyProvider extends ContentProvider {
                 default:
                     throw new IllegalArgumentException("oidToId; Unknown oidEnum \"" + oidEnum);
             }
-            SQLiteDatabase db = MyContextHolder.get().getDatabase().getReadableDatabase();
             prog = db.compileStatement(sql);
             id = prog.simpleQueryForLong();
             if ((id == 1 || id == 388) 
