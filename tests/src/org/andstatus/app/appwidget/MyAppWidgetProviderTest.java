@@ -170,6 +170,7 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
         Thread.sleep(100);
         updateWidgets(0, CommandEnum.NOTIFY_CLEAR);
         checkWidgetData(0, 0, 0);
+        checkDateChecked(dateSinceMin, dateSinceMax);
     	
     	int numMentions = 3;
     	updateWidgets(numMentions, CommandEnum.NOTIFY_MENTIONS);

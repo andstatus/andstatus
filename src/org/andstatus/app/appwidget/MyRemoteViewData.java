@@ -35,7 +35,7 @@ class MyRemoteViewData {
     private void getViewData(Context context, MyAppWidgetData widgetData) {
         final String method = "updateView";
         if (widgetData.dateLastChecked == 0) {
-            MyLog.e(this, "data.dateLastChecked==0");
+            MyLog.d(this, "dateLastChecked==0 ?? " + widgetData.toString());
             widgetComment = context.getString(R.string.appwidget_nodata);
         } else {
             widgetTime = formatWidgetTime(context, widgetData.dateSince, widgetData.dateLastChecked);

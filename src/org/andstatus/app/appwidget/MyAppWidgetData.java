@@ -191,7 +191,7 @@ public class MyAppWidgetData {
     public String toString() {
         return "MyAppWidgetData [appWidgetId=" + mAppWidgetId + ", numHomeTimeline="
                 + numHomeTimeline + ", numMentions=" + numMentions + ", numDirectMessages="
-                + numDirectMessages + ", dateChecked=" + dateLastChecked + ", dateSince="
+                + numDirectMessages + ", dateLastChecked=" + dateLastChecked + ", dateSince="
                 + dateSince + ", nothingPref=" + nothingPref + "]";
     }
 
