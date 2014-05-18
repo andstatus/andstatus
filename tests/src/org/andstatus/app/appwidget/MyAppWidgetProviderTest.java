@@ -165,9 +165,9 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
         long dateSinceMin = System.currentTimeMillis();  
     	// To set dateSince correctly!
         updateWidgets(1, CommandEnum.NOTIFY_HOME_TIMELINE);
-        Thread.sleep(500);
+        Thread.sleep(3000);
         long dateSinceMax = System.currentTimeMillis();  
-        Thread.sleep(100);
+        Thread.sleep(3000);
         updateWidgets(0, CommandEnum.NOTIFY_CLEAR);
         checkWidgetData(0, 0, 0);
         checkDateChecked(dateSinceMin, dateSinceMax);
