@@ -31,7 +31,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -54,27 +53,6 @@ public class MyService extends Service {
     private static final String COMMANDS_QUEUE_FILENAME = TAG + "-commands-queue";
     private static final String RETRY_QUEUE_FILENAME = TAG + "-retry-queue";
     
-    /**
-     * Intent with this action sent when it is time to update AndStatus
-     * AppWidget.
-     * <p>
-     * This may be sent in response to some new information is ready for
-     * notification (some changes...), or the system booting.
-     * <p>
-     * The intent will contain the following extras:
-     * <ul>
-     * <li>{@link #EXTRA_MSGTYPE}</li>
-     * <li>{@link #EXTRA_NUMTWEETSMSGTYPE}</li>
-     * <li>{@link android.appwidget.AppWidgetManager#EXTRA_APPWIDGET_IDS}<br/>
-     * The appWidgetIds to update. This may be all of the AppWidgets created for
-     * this provider, or just a subset. The system tries to send updates for as
-     * few AppWidget instances as possible.</li>
-     * 
-     * @see AppWidgetProvider#onUpdate AppWidgetProvider.onUpdate(Context
-     *      context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
-     */
-    public static final String ACTION_APPWIDGET_UPDATE = IntentExtra.MY_ACTION_PREFIX + "APPWIDGET_UPDATE";
-
     /**
      * Broadcast with this action is being sent by {@link MyService} to notify of its state.
      *  Actually {@link MyServiceManager} receives it.

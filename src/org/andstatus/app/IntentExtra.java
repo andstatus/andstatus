@@ -22,9 +22,8 @@ package org.andstatus.app;
  */
 public enum IntentExtra{
     /**
-     * This extra is used as a command to perform by MyService and
-     * MyAppWidgetProvider Value of this extra is string code of
-     * CommandEnum (not serialized enum !)
+     * This extra is used as a command to perform by MyService and by
+     * MyAppWidgetProvider. Value of this extra is a string code of CommandEnum
      */
     EXTRA_MSGTYPE("MSGTYPE"),
     /**

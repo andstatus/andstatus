@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +22,19 @@ import android.content.SharedPreferences;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 /**
  * The class maintains the appWidget instance (defined by mappWidgetId): - state
  * (that changes when new tweets etc. arrive); - preferences (that are set once
- * in the appWidget configuration activity.
+ * in the appWidget configuration activity).
  * 
  * @author yvolk@yurivolkov.com
  */
 public class MyAppWidgetData {
-    private static final String TAG = MyAppWidgetData.class
-            .getSimpleName();
+    private static final String TAG = MyAppWidgetData.class.getSimpleName();
 
     /**
      * Name of the preferences file (with appWidgetId appended to it, so every
@@ -45,7 +45,7 @@ public class MyAppWidgetData {
     public static final String PREFS_FILE_NAME = TAG;
 
     /**
-     * Key to store number of new tweets received
+     * Key to store number of new messages/tweets received
      */
     private static final String PREF_NUM_HOME_TIMELINE_KEY = "num_messages";
     private static final String PREF_NUM_MENTIONS_KEY = "num_mentions";
@@ -57,78 +57,51 @@ public class MyAppWidgetData {
     /**
      *  Date and time when counters where cleared
      */
-    public static final String PREF_DATECLEARED_KEY = "datecleared";
+    public static final String PREF_DATESINCE_KEY = "datecleared";
     /**
      *  Date and time when data was checked on the server last time
      */
     public static final String PREF_DATECHECKED_KEY = "datechecked";
 
     private Context mContext;
-    private int mappWidgetId;
+    private int mAppWidgetId;
     private String prefsFileName;
 
     private boolean isLoaded = false;
 
-    public String nothingPref = "";
+    String nothingPref = "";
 
     // Numbers of new Messages accumulated
-    // TODO: GETTER AND SETTER METHODS, REMEMBER "OLD VALUE"...
-    public int numHomeTimeline = 0;
-    public int numMentions = 0;
-    public int numDirectMessages = 0;
+    int numHomeTimeline = 0;
+    int numMentions = 0;
+    int numDirectMessages = 0;
 
+    /**  Value of {@link #dateLastChecked} before counters were cleared */
+    long dateSince = 0;
     /**
-     *  When server was successfully checked for new tweets
-     *  If there was some new data on the server, it was loaded that time.
+     *  Date and time, when a server was successfully checked for new messages/tweets.
+     *  If there was some new messages on the server, they were loaded at that time.
      */
-    public long dateChecked = 0;
-    /**
-     *  dateChecked before counters were cleared.
-     */
-    public long dateCleared = 0;
+    long dateLastChecked = 0;
     
-    public boolean changed = false;
+    boolean changed = false;
     
-    public MyAppWidgetData(Context context, int appWidgetId) {
+    private MyAppWidgetData(Context context, int appWidgetId) {
         mContext = context;
-        mappWidgetId = appWidgetId;
-        prefsFileName = PREFS_FILE_NAME + mappWidgetId;
-        MyContextHolder.initialize(context, this);
+        this.mAppWidgetId = appWidgetId;
+        prefsFileName = PREFS_FILE_NAME + this.mAppWidgetId;
     }
 
-    /**
-     * Clear counters
-     */
-    public void clearCounters() {
-        numMentions = 0;
-        numDirectMessages = 0;
-        numHomeTimeline = 0;
-        // New Tweets etc. will be since dateChecked ! 
-        dateCleared = dateChecked;
-        changed = true;
-    }
-
-    /**
-     * Are there any new messages in any of timelines
-     * @return
-     */
-    public boolean areNew() {
-        return (numMentions >0) || (numDirectMessages > 0) || (numHomeTimeline > 0);
-    }
-    
-    /**
-     * Data on the server was successfully checked now
-     */
-    public void checked() {
-        dateChecked = Long.valueOf(System.currentTimeMillis());
-        if (dateCleared == 0) {
-            clearCounters();
+    public static MyAppWidgetData newInstance(Context context, int appWidgetId) {
+        MyAppWidgetData data = new MyAppWidgetData(context, appWidgetId);
+        MyContextHolder.initialize(context, data);
+        if (MyContextHolder.get().isReady()) {
+            data.load();
         }
-        changed = true;
+        return data;
     }
     
-    public boolean load() {
-        boolean ok = false;
+    private void load() {
         SharedPreferences prefs = MyPreferences.getSharedPreferences(prefsFileName);
         if (prefs == null) {
             MyLog.e(this, "The prefs file '" + prefsFileName + "' was not loaded");
@@ -137,34 +110,52 @@ public class MyAppWidgetData {
             if (nothingPref == null) {
                 nothingPref = mContext
                         .getString(R.string.appwidget_nothingnew_default);
-                if (MyLog.isLoggable(this, MyLog.DEBUG)) {
-                    nothingPref += " (" + mappWidgetId + ")";
+                if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                    nothingPref += " (" + mAppWidgetId + ")";
                 }
             }
-            dateChecked = prefs.getLong(PREF_DATECHECKED_KEY, 0);
-            if (dateChecked == 0) {
+            dateLastChecked = prefs.getLong(PREF_DATECHECKED_KEY, 0);
+            if (dateLastChecked == 0) {
                 clearCounters();
             } else {
                 numHomeTimeline = prefs.getInt(PREF_NUM_HOME_TIMELINE_KEY, 0);
                 numMentions = prefs.getInt(PREF_NUM_MENTIONS_KEY, 0);
                 numDirectMessages = prefs.getInt(PREF_NUM_DIRECTMESSAGES_KEY, 0);
-                dateCleared = prefs.getLong(PREF_DATECLEARED_KEY, 0);
+                dateSince = prefs.getLong(PREF_DATESINCE_KEY, 0);
             }
 
-            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "Prefs for appWidgetId=" + mappWidgetId
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                MyLog.v(this, "Prefs for appWidgetId=" + mAppWidgetId
                         + " were loaded");
             }
-            ok = true;
-            isLoaded = ok;
+            isLoaded = true;
         }
-        return ok;
     }
 
+    public void clearCounters() {
+        numMentions = 0;
+        numDirectMessages = 0;
+        numHomeTimeline = 0;
+        dateSince = dateLastChecked;
+        changed = true;
+    }
+
+    public boolean areThereAnyNewMessagesInAnyTimeline() {
+        return (numMentions >0) || (numDirectMessages > 0) || (numHomeTimeline > 0);
+    }
+    
+    private void onDataCheckedOnTheServer() {
+        dateLastChecked = System.currentTimeMillis();
+        if (dateSince == 0) {
+            clearCounters();
+        }
+        changed = true;
+    }
+    
     public boolean save() {
         boolean ok = false;
         if (!isLoaded) {
-            MyLog.e(this, "Save without load is not possible");
+            MyLog.d(this, "Save without load is not possible");
         } else {
             SharedPreferences.Editor prefs = MyPreferences.getSharedPreferences(
                     prefsFileName).edit();
@@ -176,12 +167,11 @@ public class MyAppWidgetData {
                 prefs.putInt(PREF_NUM_MENTIONS_KEY, numMentions);
                 prefs.putInt(PREF_NUM_DIRECTMESSAGES_KEY, numDirectMessages);
                 
-                prefs.putLong(PREF_DATECHECKED_KEY, dateChecked);
-                prefs.putLong(PREF_DATECLEARED_KEY, dateCleared);
+                prefs.putLong(PREF_DATECHECKED_KEY, dateLastChecked);
+                prefs.putLong(PREF_DATESINCE_KEY, dateSince);
                 prefs.commit();
-                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                    MyLog.v(TAG, "Prefs for appWidgetId=" + mappWidgetId
-                            + " were saved, nothing='" + nothingPref + "'");
+                if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                    MyLog.v(this, "Saved " + toString());
                 }
                 ok = true;
             }
@@ -193,6 +183,48 @@ public class MyAppWidgetData {
      * Delete the preferences file!
      * */
     public boolean delete() {
+        MyLog.v(this, "Deleting data for widgetId=" + mAppWidgetId );
         return SharedPreferencesUtil.delete(mContext, prefsFileName); 
+    }
+
+    @Override
+    public String toString() {
+        return "MyAppWidgetData [appWidgetId=" + mAppWidgetId + ", numHomeTimeline="
+                + numHomeTimeline + ", numMentions=" + numMentions + ", numDirectMessages="
+                + numDirectMessages + ", dateChecked=" + dateLastChecked + ", dateSince="
+                + dateSince + ", nothingPref=" + nothingPref + "]";
+    }
+
+    public void update(int numSomethingReceived, CommandEnum msgType) {
+        if (numSomethingReceived != 0) {
+            changed = true;
+        }
+        // Calculate new values
+        switch (msgType) {
+            case NOTIFY_MENTIONS:
+                numMentions += numSomethingReceived;
+                onDataCheckedOnTheServer();
+                break;
+
+            case NOTIFY_DIRECT_MESSAGE:
+                numDirectMessages += numSomethingReceived;
+                onDataCheckedOnTheServer();
+                break;
+
+            case NOTIFY_HOME_TIMELINE:
+                numHomeTimeline += numSomethingReceived;
+                onDataCheckedOnTheServer();
+                break;
+
+            case NOTIFY_CLEAR:
+                clearCounters();
+                break;
+
+            default:
+                break;
+        }
+        if (changed) {
+            save();
+        }
     }
 }

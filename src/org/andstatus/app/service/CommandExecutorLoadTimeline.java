@@ -74,7 +74,7 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
             execContext.setTimelineType(timelineType);
             loadTimeline();
         }
-        if (!execContext.getResult().hasError()) {
+        if (!execContext.getResult().hasError() || execContext.getResult().getDownloadedCount() > 0) {
             notifyOfUpdatedTimeline(execContext.getResult().getMessagesAdded(), 
                     execContext.getResult().getMentionsAdded(), execContext.getResult().getDirectedAdded());
         }
@@ -280,7 +280,7 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
      * @see MyAppWidgetProvider
      */
     private void updateWidgets(int numTweets, CommandEnum msgType) {
-        Intent intent = new Intent(MyService.ACTION_APPWIDGET_UPDATE);
+        Intent intent = new Intent(MyAppWidgetProvider.ACTION_APPWIDGET_UPDATE);
         intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
         intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
         execContext.getContext().sendBroadcast(intent);

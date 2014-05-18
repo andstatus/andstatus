@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,41 +17,49 @@
 package org.andstatus.app.appwidget;
 
 import android.content.Intent;
+import android.text.format.DateFormat;
 import android.text.format.Time;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
-
-import static org.andstatus.app.service.MyService.*;
 
 import android.content.*;
 import android.text.format.DateUtils;
-import android.test.ActivityTestCase;
+import android.test.InstrumentationTestCase;
 
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Runs various tests...
  * @author yvolk@yurivolkov.com
  */
-public class MyAppWidgetProviderTest extends ActivityTestCase {
-
+public class MyAppWidgetProviderTest extends InstrumentationTestCase {
+    MyContext myContext;
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         TestSuite.initialize(this);
+        myContext = MyContextHolder.get();
+        MyServiceManager.setServiceUnavailable();
         initializeDateTests();
     }
     
-    public void test001WidgetTime() throws Exception {
-        MyLog.i(this, "testWidgetTime started");
+    public void testTimeFormatting() throws Exception {
+        MyLog.v(this, "testTimeFormatting started");
         Context context = MyContextHolder.get().context();
     	
-    	MyAppWidgetProvider widget = new MyAppWidgetProvider();
-    	MyLog.i(this, "MyAppWidgetProvider created");
+        int appWidgetId = 1;
+        MyAppWidgetData widgetData = MyAppWidgetData.newInstance(context, appWidgetId);
+        
+    	MyRemoteViewData viewData = MyRemoteViewData.fromViewData(context, widgetData);
+    	MyLog.v(this, "MyRemoteViewData created");
     	
         int len = dateTests.length;
         for (int index = 0; index < len; index++) {
@@ -63,8 +71,8 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
             long endMillis = dateTest.date2.toMillis(false /* use isDst */);
             int flags = dateTest.flags;
             String output = DateUtils.formatDateRange(context, startMillis, endMillis, flags);
-            String output2 = widget.formatWidgetTime(context, startMillis, endMillis);
-        	MyLog.i(this, "\"" + output + "\"; \"" + output2 + "\"");
+            String output2 = viewData.formatWidgetTime(context, startMillis, endMillis);
+        	MyLog.v(this, "\"" + output + "\"; \"" + output2 + "\"");
             
             //assertEquals(dateTest.expectedOutput, output);
         }         
@@ -150,27 +158,115 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
     	dateTests[ind] = new DateTest(cal1.getTimeInMillis(), cal2.getTimeInMillis());
     }
 
-    public void test100Receiver() throws Exception {
-    	MyLog.i(this, "testReceiver started");
+    public void testReceiver() throws Exception {
+        final String method = "testReceiver";
+    	MyLog.i(this, method + "; started");
 
-    	int numTweets;
-    	CommandEnum msgType;
+        long dateSinceMin = System.currentTimeMillis();  
+    	// To set dateSince correctly!
+        updateWidgets(1, CommandEnum.NOTIFY_HOME_TIMELINE);
+        Thread.sleep(500);
+        long dateSinceMax = System.currentTimeMillis();  
+        Thread.sleep(100);
+        updateWidgets(0, CommandEnum.NOTIFY_CLEAR);
+        checkWidgetData(0, 0, 0);
     	
-    	numTweets = 1;
-    	msgType = CommandEnum.NOTIFY_MENTIONS;
-    	updateWidgets(numTweets, msgType);
+    	int numMentions = 3;
+    	updateWidgets(numMentions, CommandEnum.NOTIFY_MENTIONS);
     	
-    	numTweets = 1;
-    	msgType = CommandEnum.NOTIFY_DIRECT_MESSAGE;
-    	updateWidgets(numTweets, msgType);
+    	int numDirect = 1;
+    	updateWidgets(numDirect, CommandEnum.NOTIFY_DIRECT_MESSAGE);
     	
-    	numTweets = 1;
-    	msgType = CommandEnum.NOTIFY_HOME_TIMELINE;
-    	updateWidgets(numTweets, msgType);
+    	int numHome = 7;
+    	updateWidgets(numHome, CommandEnum.NOTIFY_HOME_TIMELINE);
     	
+        checkWidgetData(numMentions, numDirect, numHome);
+        
+        long dateCheckedMin = System.currentTimeMillis();  
+        numMentions++;
+        updateWidgets(1, CommandEnum.NOTIFY_MENTIONS);
+        checkWidgetData(numMentions, numDirect, numHome);
+        long dateCheckedMax = System.currentTimeMillis();
+        
+        checkDateSince(dateSinceMin, dateSinceMax);
+        checkDateChecked(dateCheckedMin, dateCheckedMax);
+    }
+
+    private void checkWidgetData(int numMentions, int numDirect, int numHome)
+            throws InterruptedException {
+        final String method = "checkWidgetData";
     	// Some seconds to complete updates
     	// Shorter period sometimes doesn't work (processes are being closed...)
     	Thread.sleep(1000);
+    	
+    	MyAppWidgetProvider provider = new MyAppWidgetProvider();
+    	int[] appWidgetIds = provider.getAppWidgetIds(myContext.context());
+    	if (appWidgetIds.length == 0) {
+            MyLog.i(this, method + "; No appWidgetIds found");
+    	}
+    	for (int appWidgetId : appWidgetIds) {
+    	    MyAppWidgetData widgetData = MyAppWidgetData.newInstance(myContext.context(), appWidgetId);
+            assertEquals("Mentions " + widgetData.toString(), numMentions, widgetData.numMentions);
+    	    assertEquals("Direct " + widgetData.toString(), numDirect, widgetData.numDirectMessages);
+            assertEquals("Home " + widgetData.toString(), numHome, widgetData.numHomeTimeline);
+    	}
+    }
+
+    private void checkDateSince(long dateMin, long dateMax)
+            throws InterruptedException {
+        final String method = "checkDateSince";
+        // Some seconds to complete updates
+        // Shorter period sometimes doesn't work (processes are being closed...)
+        Thread.sleep(500);
+        
+        MyAppWidgetProvider provider = new MyAppWidgetProvider();
+        int[] appWidgetIds = provider.getAppWidgetIds(myContext.context());
+        if (appWidgetIds.length == 0) {
+            MyLog.i(this, method + "; No appWidgetIds found");
+        }
+        for (int appWidgetId : appWidgetIds) {
+            MyAppWidgetData widgetData = MyAppWidgetData.newInstance(myContext.context(), appWidgetId);
+            assertDatePeriod(method, dateMin, dateMax, widgetData.dateSince);
+        }
+    }
+
+    private void checkDateChecked(long dateMin, long dateMax)
+            throws InterruptedException {
+        final String method = "checkDateChecked";
+        // Some seconds to complete updates
+        // Shorter period sometimes doesn't work (processes are being closed...)
+        Thread.sleep(1000);
+        
+        MyAppWidgetProvider provider = new MyAppWidgetProvider();
+        int[] appWidgetIds = provider.getAppWidgetIds(myContext.context());
+        if (appWidgetIds.length == 0) {
+            MyLog.i(this, method + "; No appWidgetIds found");
+        }
+        for (int appWidgetId : appWidgetIds) {
+            MyAppWidgetData widgetData = MyAppWidgetData.newInstance(myContext.context(), appWidgetId);
+            assertDatePeriod(method, dateMin, dateMax, widgetData.dateLastChecked);
+        }
+    }
+    
+    private void assertDatePeriod(String message, long dateMin, long dateMax, long dateActual) {
+        if (dateActual >= dateMin && dateActual <= dateMax) {
+            return;
+        }
+        if (dateActual == 0 ) {
+            fail( message + " actual date is zero");
+        } else if (dateActual < dateMin) {
+            fail( message + " actual date " + dateTimeFormatted(dateActual) 
+                    + " is less than expected " + dateTimeFormatted(dateMin) 
+                    + " min by " + (dateMin - dateActual) + " ms");
+        } else {
+            fail( message + " actual date " + dateTimeFormatted(dateActual) 
+                    + " is larger than expected " + dateTimeFormatted(dateMax) 
+                    + " max by " + (dateActual - dateMax) + " ms");
+        }
+    }
+    
+    static String dateTimeFormatted(long date) {
+        return DateFormat.format("yyyy-MM-dd HH:mm:ss", new Date(date)).toString();
     }
     
 	/** 
@@ -184,26 +280,26 @@ public class MyAppWidgetProviderTest extends ActivityTestCase {
 		//updateWidgetsThreads(numHomeTimeline, msgType);
 		//updateWidgetsPending(numHomeTimeline, msgType);
 		} catch (Exception e) {
-			
+		    MyLog.i(this, e);
 		}
 	}
 
-    
 	/** 
 	 * Send Update intent to AndStatus Widget(s),
 	 * if there are some installed... (e.g. on the Home screen...) 
 	 * @see MyAppWidgetProvider
 	 */
-	private void updateWidgetsNow(int numTweets, CommandEnum msgType){
+	private void updateWidgetsNow(int numMessages, CommandEnum msgType){
     	Context context = this.getInstrumentation().getContext();
     	//Context context = getInstrumentation().getContext();
 
-    	MyLog.i(this, "Sending update; numHomeTimeline=" + numTweets + "; msgType=" + msgType);
+    	MyLog.i(this, "Sending update; numMessages=" + numMessages + "; msgType=" + msgType);
 
-    	Intent intent = new Intent(ACTION_APPWIDGET_UPDATE);
-		intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
+    	Intent intent = new Intent(MyAppWidgetProvider.ACTION_APPWIDGET_UPDATE);
+		intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numMessages);
 		intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
 		context.sendBroadcast(intent);
-    	
 	}
+	
+	
 }

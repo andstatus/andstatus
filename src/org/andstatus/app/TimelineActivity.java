@@ -55,6 +55,7 @@ import android.widget.ToggleButton;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.appwidget.MyAppWidgetProvider;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferenceActivity;
 import org.andstatus.app.context.MyPreferences;
@@ -70,7 +71,6 @@ import org.andstatus.app.data.TimelineViewBinder;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyService;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
@@ -621,7 +621,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             mNM.cancel(CommandEnum.NOTIFY_DIRECT_MESSAGE.ordinal());
 
             // Reset notifications on AppWidget(s)
-            Intent intent = new Intent(MyService.ACTION_APPWIDGET_UPDATE);
+            Intent intent = new Intent(MyAppWidgetProvider.ACTION_APPWIDGET_UPDATE);
             intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, CommandEnum.NOTIFY_CLEAR.save());
             sendBroadcast(intent);
         } finally {

@@ -75,10 +75,7 @@ public class MyAppWidgetConfigure extends Activity {
             finish();
         }
 
-        appWidgetData = new MyAppWidgetData(this,
-                mAppWidgetId);
-        appWidgetData.load();
-        
+        appWidgetData = MyAppWidgetData.newInstance(this, mAppWidgetId);
         // For now we have only one setting to configure:
         mAppWidgetTitle.setText(appWidgetData.nothingPref);
     }
