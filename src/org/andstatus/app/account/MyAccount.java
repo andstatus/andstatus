@@ -911,5 +911,33 @@ public final class MyAccount {
         }
         return this;
     }
-    
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        try {
+            result = prime * result + toJson().toString(2).hashCode();
+        } catch (JSONException e) {
+            MyLog.v(this, e);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MyAccount other = (MyAccount) obj;
+        try {
+            return toJson().toString(2).equals(other.toJson().toString(2));
+        } catch (JSONException e) {
+            MyLog.v(this, e);
+        }
+        return hashCode() == other.hashCode();
+    }
 }

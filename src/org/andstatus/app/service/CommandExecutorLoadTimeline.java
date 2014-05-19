@@ -55,10 +55,16 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
         if (!execContext.getResult().hasError() && execContext.getCommandData().getTimelineType() == TimelineTypeEnum.ALL && !isStopping()) {
             new DataPruner(execContext.getContext()).prune();
         }
-        if (!execContext.getResult().hasError()) {
-            // Notify all timelines, 
-            // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
-            execContext.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
+        if (!execContext.getResult().hasError() || execContext.getResult().getDownloadedCount() > 0) {
+            MyLog.v(this, "Notifying of timeline changes");
+
+            notifyViaWidgets(execContext.getResult().getMessagesAdded(), 
+                    execContext.getResult().getMentionsAdded(), execContext.getResult().getDirectedAdded());
+            
+            notifyViaNotificationManager(execContext.getResult().getMessagesAdded(), 
+                    execContext.getResult().getMentionsAdded(), execContext.getResult().getDirectedAdded());
+            
+            notifyViaContentResolver();
         }
     }
 
@@ -73,10 +79,6 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
             }
             execContext.setTimelineType(timelineType);
             loadTimeline();
-        }
-        if (!execContext.getResult().hasError() || execContext.getResult().getDownloadedCount() > 0) {
-            notifyOfUpdatedTimeline(execContext.getResult().getMessagesAdded(), 
-                    execContext.getResult().getMentionsAdded(), execContext.getResult().getDirectedAdded());
         }
     }
 
@@ -119,48 +121,55 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
             MyLog.e(this, execContext.getTimelineType().toString(), e);
         }
     }
-    
-    /**
-     * TODO: Different notifications for different Accounts
-     * @param msgAdded Number of "Tweets" added
-     * @param mentionsAdded
-     * @param directedAdded
-     */
-    private void notifyOfUpdatedTimeline(int msgAdded, int mentionsAdded, int directedAdded) {
-        boolean notified = false;
+
+    private void notifyViaWidgets(int msgAdded, int mentionsAdded, int directedAdded) {
+        boolean widgetsUpdated = false;
         if (mentionsAdded > 0) {
-            notifyOfNewTweets(mentionsAdded, CommandEnum.NOTIFY_MENTIONS);
-            notified = true;
+            notifyViaWidgets1Type(mentionsAdded, CommandEnum.NOTIFY_MENTIONS);
+            widgetsUpdated = true;
         }
         if (directedAdded > 0) {
-            notifyOfNewTweets(directedAdded, CommandEnum.NOTIFY_DIRECT_MESSAGE);
-            notified = true;
+            notifyViaWidgets1Type(directedAdded, CommandEnum.NOTIFY_DIRECT_MESSAGE);
+            widgetsUpdated = true;
         }
-        if (msgAdded > 0 || !notified) {
-            notifyOfNewTweets(msgAdded, CommandEnum.NOTIFY_HOME_TIMELINE);
-            notified = true;
+        if (msgAdded > 0 || !widgetsUpdated) {
+            notifyViaWidgets1Type(msgAdded, CommandEnum.NOTIFY_HOME_TIMELINE);
         }
     }
     
     /**
-     * Notify the user of new tweets.
+     * Send Update intent to AndStatus Widget(s), if there are some
+     * installed... (e.g. on the Home screen...)
      * 
-     * @param numHomeTimeline
+     * @see MyAppWidgetProvider
      */
-    private void notifyOfNewTweets(int numTweets, CommandEnum msgType) {
-        MyLog.d(this, "notifyOfNewTweets n=" + numTweets + "; msgType=" + msgType);
-
-        if (MyService.UPDATE_WIDGETS_ON_EVERY_UPDATE) {
-            // Notify widgets even about the fact, that update occurred
-            // even if there was nothing new
-            updateWidgets(numTweets, msgType);
+    private void notifyViaWidgets1Type(int numTweets, CommandEnum msgType) {
+        Intent intent = new Intent(MyAppWidgetProvider.ACTION_APPWIDGET_UPDATE);
+        intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
+        intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
+        execContext.getContext().sendBroadcast(intent);
+    }
+    
+    private void notifyViaNotificationManager(int msgAdded, int mentionsAdded, int directedAdded) {
+        if (mentionsAdded > 0) {
+            notifyViaNotificationManager1Type(mentionsAdded, CommandEnum.NOTIFY_MENTIONS);
         }
-
+        if (directedAdded > 0) {
+            notifyViaNotificationManager1Type(directedAdded, CommandEnum.NOTIFY_DIRECT_MESSAGE);
+        }
+        if (msgAdded > 0) {
+            notifyViaNotificationManager1Type(msgAdded, CommandEnum.NOTIFY_HOME_TIMELINE);
+        }
+    }
+    
+    private void notifyViaNotificationManager1Type(int numMessages, CommandEnum msgType) {
         // If no notifications are enabled, return
-        if (!mNotificationsEnabled || numTweets == 0) {
+        if (!mNotificationsEnabled || numMessages == 0) {
             return;
         }
 
+        MyLog.v(this, "notifyViaNotificationManager n=" + numMessages + "; msgType=" + msgType);
+        
         boolean notificationsMessages = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_messages", false);
         boolean notificationsReplies = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_mentions", false);
         boolean notificationsTimeline = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_timeline", false);
@@ -223,27 +232,27 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
         switch (msgType) {
             case NOTIFY_MENTIONS:
                 aMessage = I18n.formatQuantityMessage(execContext.getContext(),
-                        R.string.notification_new_mention_format, numTweets,
+                        R.string.notification_new_mention_format, numMessages,
                         R.array.notification_mention_patterns,
                         R.array.notification_mention_formats);
                 messageTitle = R.string.notification_title_mentions;
                 intent = new Intent(execContext.getContext(), TimelineActivity.class);
                 intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                         TimelineTypeEnum.MENTIONS.save());
-                contentIntent = PendingIntent.getActivity(execContext.getContext(), numTweets,
+                contentIntent = PendingIntent.getActivity(execContext.getContext(), numMessages,
                         intent, 0);
                 break;
 
             case NOTIFY_DIRECT_MESSAGE:
                 aMessage = I18n.formatQuantityMessage(execContext.getContext(),
-                        R.string.notification_new_message_format, numTweets,
+                        R.string.notification_new_message_format, numMessages,
                         R.array.notification_message_patterns,
                         R.array.notification_message_formats);
                 messageTitle = R.string.notification_title_messages;
                 intent = new Intent(execContext.getContext(), TimelineActivity.class);
                 intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                         TimelineTypeEnum.DIRECT.save());
-                contentIntent = PendingIntent.getActivity(execContext.getContext(), numTweets,
+                contentIntent = PendingIntent.getActivity(execContext.getContext(), numMessages,
                         intent, 0);
                 break;
 
@@ -251,14 +260,14 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
             default:
                 aMessage = I18n
                         .formatQuantityMessage(execContext.getContext(),
-                                R.string.notification_new_tweet_format, numTweets,
+                                R.string.notification_new_tweet_format, numMessages,
                                 R.array.notification_tweet_patterns,
                                 R.array.notification_tweet_formats);
                 messageTitle = R.string.notification_title;
                 intent = new Intent(execContext.getContext(), TimelineActivity.class);
                 intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
                         TimelineTypeEnum.HOME.save());
-                contentIntent = PendingIntent.getActivity(execContext.getContext(), numTweets,
+                contentIntent = PendingIntent.getActivity(execContext.getContext(), numMessages,
                         intent, 0);
                 break;
         }
@@ -273,16 +282,8 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
         nM.notify(msgType.ordinal(), notification);
     }
 
-    /**
-     * Send Update intent to AndStatus Widget(s), if there are some
-     * installed... (e.g. on the Home screen...)
-     * 
-     * @see MyAppWidgetProvider
-     */
-    private void updateWidgets(int numTweets, CommandEnum msgType) {
-        Intent intent = new Intent(MyAppWidgetProvider.ACTION_APPWIDGET_UPDATE);
-        intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
-        intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
-        execContext.getContext().sendBroadcast(intent);
+    private void notifyViaContentResolver() {
+        // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
+        execContext.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
     }
 }

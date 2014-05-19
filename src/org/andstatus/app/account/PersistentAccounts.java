@@ -352,4 +352,30 @@ public class PersistentAccounts {
         }
         return restoredCount;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((persistentAccounts == null) ? 0 : persistentAccounts.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        PersistentAccounts other = (PersistentAccounts) obj;
+        if (persistentAccounts == null) {
+            if (other.persistentAccounts != null)
+                return false;
+        } else if (!persistentAccounts.equals(other.persistentAccounts))
+            return false;
+        return true;
+    }
 }

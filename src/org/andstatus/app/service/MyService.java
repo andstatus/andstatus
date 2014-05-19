@@ -67,12 +67,6 @@ public class MyService extends Service {
      * @see CommandEnum
      */
     public static final String ACTION_GO = IntentExtra.MY_ACTION_PREFIX + "GO";
-    
-    /**
-     * Send broadcast to Widgets even if there are no new tweets
-     */
-    // TODO: Maybe this should be additional setting...
-    public static final boolean UPDATE_WIDGETS_ON_EVERY_UPDATE = true;
 
     private volatile boolean mNotificationsEnabled;
 

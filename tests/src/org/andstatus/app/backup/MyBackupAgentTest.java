@@ -10,6 +10,8 @@ import android.os.ParcelFileDescriptor;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.AuthenticatorService;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
@@ -49,11 +51,22 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         assertTrue("Folder " + dataFolderName + " created in " + outputFolder.getAbsolutePath(),
                 dataFolder.mkdir());
 
+        PersistentAccounts accountsBefore = PersistentAccounts.getEmpty();
+        accountsBefore.initialize();
+        assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
+        
         testBackup(backupAgent, descriptorFile, dataFolder);
         deleteApplicationData();
         testRestore(backupAgent, descriptorFile, dataFolder);
         TestSuite.initialize(this);
 
+        assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
+        assertEquals(
+                "One account",
+                accountsBefore.fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME),
+                MyContextHolder.get().persistentAccounts()
+                        .fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME));
+        
         deleteBackup(descriptorFile, dataFolder);
     }
 
