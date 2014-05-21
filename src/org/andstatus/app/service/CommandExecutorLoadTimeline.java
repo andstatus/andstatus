@@ -27,7 +27,7 @@ import android.net.Uri;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
-import org.andstatus.app.appwidget.MyAppWidgetProvider;
+import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyProvider;
@@ -58,8 +58,7 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
         if (!execContext.getResult().hasError() || execContext.getResult().getDownloadedCount() > 0) {
             MyLog.v(this, "Notifying of timeline changes");
 
-            notifyViaWidgets(execContext.getResult().getMessagesAdded(), 
-                    execContext.getResult().getMentionsAdded(), execContext.getResult().getDirectedAdded());
+            notifyViaWidgets(execContext.getResult());
             
             notifyViaNotificationManager(execContext.getResult().getMessagesAdded(), 
                     execContext.getResult().getMentionsAdded(), execContext.getResult().getDirectedAdded());
@@ -122,34 +121,13 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
         }
     }
 
-    private void notifyViaWidgets(int msgAdded, int mentionsAdded, int directedAdded) {
-        boolean widgetsUpdated = false;
-        if (mentionsAdded > 0) {
-            notifyViaWidgets1Type(mentionsAdded, CommandEnum.NOTIFY_MENTIONS);
-            widgetsUpdated = true;
-        }
-        if (directedAdded > 0) {
-            notifyViaWidgets1Type(directedAdded, CommandEnum.NOTIFY_DIRECT_MESSAGE);
-            widgetsUpdated = true;
-        }
-        if (msgAdded > 0 || !widgetsUpdated) {
-            notifyViaWidgets1Type(msgAdded, CommandEnum.NOTIFY_HOME_TIMELINE);
-        }
+    private void notifyViaWidgets(CommandResult result) {
+        AppWidgets appWidgets = AppWidgets.newInstance(execContext.getMyContext());
+        appWidgets.updateData(result);
+        appWidgets.updateViews();
     }
     
-    /**
-     * Send Update intent to AndStatus Widget(s), if there are some
-     * installed... (e.g. on the Home screen...)
-     * 
-     * @see MyAppWidgetProvider
-     */
-    private void notifyViaWidgets1Type(int numTweets, CommandEnum msgType) {
-        Intent intent = new Intent(MyAppWidgetProvider.ACTION_APPWIDGET_UPDATE);
-        intent.putExtra(IntentExtra.EXTRA_MSGTYPE.key, msgType.save());
-        intent.putExtra(IntentExtra.EXTRA_NUMTWEETS.key, numTweets);
-        execContext.getContext().sendBroadcast(intent);
-    }
-    
+    /** TODO: Change the notification's interface just like {@link #notifyViaWidgets(CommandResult)}  */
     private void notifyViaNotificationManager(int msgAdded, int mentionsAdded, int directedAdded) {
         if (mentionsAdded > 0) {
             notifyViaNotificationManager1Type(mentionsAdded, CommandEnum.NOTIFY_MENTIONS);

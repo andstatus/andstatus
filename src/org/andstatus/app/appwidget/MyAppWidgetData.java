@@ -22,7 +22,7 @@ import android.content.SharedPreferences;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.CommandResult;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -65,6 +65,7 @@ public class MyAppWidgetData {
 
     private Context mContext;
     private int mAppWidgetId;
+
     private String prefsFileName;
 
     private boolean isLoaded = false;
@@ -195,36 +196,18 @@ public class MyAppWidgetData {
                 + dateSince + ", nothingPref=" + nothingPref + "]";
     }
 
-    public void update(int numSomethingReceived, CommandEnum msgType) {
-        if (numSomethingReceived != 0) {
-            changed = true;
+    public void update(CommandResult result) {
+        if (result.hasError() && result.getDownloadedCount() == 0) {
+            return;
         }
-        // Calculate new values
-        switch (msgType) {
-            case NOTIFY_MENTIONS:
-                numMentions += numSomethingReceived;
-                onDataCheckedOnTheServer();
-                break;
+        numHomeTimeline += result.getMessagesAdded();
+        numMentions += result.getMentionsAdded();
+        numDirectMessages += result.getDirectedAdded();
+        onDataCheckedOnTheServer();
+        save();
+    }
 
-            case NOTIFY_DIRECT_MESSAGE:
-                numDirectMessages += numSomethingReceived;
-                onDataCheckedOnTheServer();
-                break;
-
-            case NOTIFY_HOME_TIMELINE:
-                numHomeTimeline += numSomethingReceived;
-                onDataCheckedOnTheServer();
-                break;
-
-            case NOTIFY_CLEAR:
-                clearCounters();
-                break;
-
-            default:
-                break;
-        }
-        if (changed) {
-            save();
-        }
+    int getId() {
+        return mAppWidgetId;
     }
 }

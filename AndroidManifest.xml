@@ -20,7 +20,7 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="9.0-SNAPSHOT" android:versionCode="101"
+	android:versionName="9.0-SNAPSHOT" android:versionCode="102"
 	android:installLocation="internalOnly">
 
 	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="10" />
@@ -129,7 +129,6 @@
                     android:resource="@xml/appwidget_info" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="org.andstatus.app.action.APPWIDGET_UPDATE" />
             </intent-filter>
         </receiver>
 

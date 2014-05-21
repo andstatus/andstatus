@@ -3,6 +3,7 @@ package org.andstatus.app.service;
 import android.content.Context;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
@@ -16,16 +17,20 @@ public class CommandExecutionContext {
      */
     private long timelineUserId = 0;
 
-    private Context context;
-    
+    private MyContext myContext;
+
     public CommandExecutionContext(CommandData commandData, MyAccount ma) {
+        this(MyContextHolder.get(), commandData, ma);
+    }
+    
+    public CommandExecutionContext(MyContext myContext, CommandData commandData, MyAccount ma) {
         if (commandData == null) {
             throw new IllegalArgumentException( "CommandData is null");
         }
         this.commandData = commandData;
         this.ma = ma;
         this.timelineType = commandData.getTimelineType();
-        context = MyContextHolder.get().context();
+        this.myContext = myContext;
     }
 
     public MyAccount getMyAccount() {
@@ -35,8 +40,12 @@ public class CommandExecutionContext {
         this.ma = ma;
     }
 
+    public MyContext getMyContext() {
+        return myContext;
+    }
+    
     public Context getContext() {
-        return context;
+        return myContext.context();
     }
 
     public TimelineTypeEnum getTimelineType() {

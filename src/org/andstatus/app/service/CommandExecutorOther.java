@@ -23,7 +23,7 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataInserter;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
@@ -76,6 +76,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 break;
             case FETCH_AVATAR:
                 new AvatarDownloader(execContext.getCommandData().itemId).load(execContext.getCommandData());
+                break;
+            case NOTIFY_CLEAR:
+                AppWidgets.clearAndUpdateWidgets(execContext.getMyContext());
                 break;
             default:
                 MyLog.e(this, "Unexpected command here " + execContext.getCommandData());

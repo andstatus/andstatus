@@ -70,9 +70,9 @@ public enum CommandEnum {
     NOTIFY_MENTIONS("notify-mentions"), 
             // TODO: Add NOTIFY_REPLIES("notify-replies"),
     /**
-     * Clear previous notifications (because e.g. user open tweet list...)
+     * Clear previous notifications (because e.g. user opened a Timeline)
      */
-    NOTIFY_CLEAR("notify-clear"),
+    NOTIFY_CLEAR("notify-clear", 20),
 
     /**
      * Stop the service after finishing all asynchronous treads (i.e. not immediately!)

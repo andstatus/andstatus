@@ -229,15 +229,15 @@ public final class CommandResult implements Parcelable {
         return downloadedCount;
     }
     
-    protected int getMessagesAdded() {
+    public int getMessagesAdded() {
         return messagesAdded;
     }
 
-    protected int getMentionsAdded() {
+    public int getMentionsAdded() {
         return mentionsAdded;
     }
 
-    protected int getDirectedAdded() {
+    public int getDirectedAdded() {
         return directedAdded;
     }
     
