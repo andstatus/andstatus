@@ -69,7 +69,9 @@ public class MyAccountConverter {
                     androidAccountData.moveStringKeyTo(MyAccount.KEY_USER_OID, accountData);
                     androidAccountData.moveLongKeyTo(MyAccount.KEY_USER_ID, accountData);
                     
-                    boolean isOauth = androidAccountData.getDataBoolean(MyAccount.KEY_OAUTH, true);
+                    Origin origin = myContext.persistentOrigins().fromName(accountData.getDataString(Origin.KEY_ORIGIN_NAME, ""));
+                    
+                    boolean isOauth = androidAccountData.getDataBoolean(MyAccount.KEY_OAUTH, origin.isOAuthDefault());
                     accountData.setDataBoolean(MyAccount.KEY_OAUTH, isOauth);
                     am.setUserData(androidAccount, MyAccount.KEY_OAUTH, null);
                     if (isOauth) {
@@ -81,6 +83,8 @@ public class MyAccountConverter {
 
                     MyAccount.CredentialsVerificationStatus.load(androidAccountData).put(accountData);
                     am.setUserData(androidAccount, MyAccount.CredentialsVerificationStatus.KEY, null);
+                    
+                    MyLog.v(TAG, method + "; " + accountData.toJsonString());
                     
                     androidAccountData.moveLongKeyTo(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, accountData);
                     
