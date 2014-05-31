@@ -232,11 +232,12 @@ public class MyPreferences {
     }
 
     public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage, boolean logged) {
+        final String method = "getDataFilesDir";
         File dir = null;
         String textToLog = null;
         MyContext myContext = MyContextHolder.get();
         if (myContext.context() == null) {
-            textToLog = "getDataFilesDir - no android.content.Context yet";
+            textToLog = "No android.content.Context yet";
         } else {
             if (isStorageExternal(forcedUseExternalStorage)) {
                 String state = Environment.getExternalStorageState();
@@ -244,9 +245,9 @@ public class MyPreferences {
                     // We can read and write the media
                     dir = myContext.context().getExternalFilesDir(type);
                 } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-                    textToLog = "getDataFilesDir - We can only read External storage";
+                    textToLog = "We can only read External storage";
                 } else {    
-                    textToLog = "getDataFilesDir - error accessing External storage";
+                    textToLog = "Error accessing External storage, state='" + state + "'";
                 }                
             } else {
                 dir = myContext.context().getFilesDir();
@@ -259,22 +260,22 @@ public class MyPreferences {
                     dir.mkdirs();
                 } catch (Exception e) {
                     if (logged) {
-                        MyLog.e(TAG, "Error creating directory", e);
+                        MyLog.e(TAG, method + "; Error creating directory", e);
                     }
                 } finally {
                     if (!dir.exists()) {
-                        textToLog = "getDataFilesDir - Could not create '" + dir.getPath() + "'";
+                        textToLog = "Could not create '" + dir.getPath() + "'";
                         dir = null;
                     }
                 }
             }
             if (logged && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, (isStorageExternal(forcedUseExternalStorage) ? "External" : "Internal") 
+                MyLog.v(TAG, method + "; " + (isStorageExternal(forcedUseExternalStorage) ? "External" : "Internal") 
                         + " path: '" + ( (dir == null) ? "(null)" : dir ) + "'");
             }
         }
         if (logged && textToLog != null) {
-            MyLog.i(TAG, textToLog);
+            MyLog.i(TAG, method + "; " + textToLog);
         }
         return dir;
     }

@@ -1,5 +1,9 @@
 package org.andstatus.app;
 
+import android.content.ComponentName;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.preference.PreferenceActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +14,9 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.util.MyLog;
+
 public class MyActionBar {
     private MyActionBarContainer container;
 
@@ -18,6 +25,7 @@ public class MyActionBar {
         if (android.os.Build.VERSION.SDK_INT >= 16 ) {
             container.getActivity().requestWindowFeature(Window.FEATURE_NO_TITLE);
         }
+        MyPreferences.loadTheme(container.getActivity(), container.getActivity());
     }
 
     public void attach() {
@@ -31,7 +39,19 @@ public class MyActionBar {
                 attachToListView(actionsView);
             }
         }
+        setDefaultTitle();
         attachUpNavigationListener();
+    }
+
+    /** http://stackoverflow.com/questions/1457803/how-do-i-access-androidlabel-for-an-activity */
+    private void setDefaultTitle() {
+        PackageManager pm = container.getActivity().getPackageManager();
+        try {
+            ActivityInfo info = pm.getActivityInfo(new ComponentName(container.getActivity(), container.getActivity().getClass()), 0);
+            setTitle(info.labelRes);
+        } catch (NameNotFoundException e) {
+            MyLog.d(this, "setDefaultTitle", e);
+        }
     }
 
     /**

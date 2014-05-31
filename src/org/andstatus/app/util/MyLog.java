@@ -85,7 +85,7 @@ public class MyLog {
 
     private static volatile ThreadLocal<String> logFileName = new ThreadLocal<String>();
 
-    private final static String COMMA = ",";
+    private static final String COMMA = ",";
 
     private MyLog() {
         
@@ -458,7 +458,7 @@ public class MyLog {
         }
     }
     
-    static String currentDateTimeFormatted() {
+    public static String currentDateTimeFormatted() {
         return DateFormat.format("yyyy-MM-dd-HH-mm-ss", new Date(System.currentTimeMillis())).toString();
     }
 

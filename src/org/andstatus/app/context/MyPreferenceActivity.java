@@ -52,6 +52,8 @@ import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.AccountSettingsActivity;
+import org.andstatus.app.backup.BackupActivity;
+import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.origin.OriginList;
@@ -71,6 +73,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener, MyActionBarContainer {
 
     private static final String KEY_ADD_NEW_ACCOUNT = "add_new_account";
+    private static final String KEY_BACKUP_RESTORE = "backup_restore";
     private static final String KEY_MANAGE_EXISTING_ACCOUNTS = "manage_existing_accounts";
 
     private static final String TAG = MyPreferenceActivity.class.getSimpleName();
@@ -93,9 +96,10 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 
     private CheckBoxPreference mUseExternalStorage;
     private boolean useExternalStorageIsBusy = false;
-
+    
     private RingtonePreference mNotificationRingtone;
-
+    private Preference mBackupRestore;
+    
     private boolean onSharedPreferenceChangedIsBusy = false;
 
     private boolean startTimelineActivity = false;
@@ -111,6 +115,19 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         mNotificationRingtone = (RingtonePreference) findPreference(MyPreferences.KEY_RINGTONE_PREFERENCE);
         mUseExternalStorage = (CheckBoxPreference) getPreferenceScreen().findPreference(
                 MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
+
+        mBackupRestore = findPreference(KEY_BACKUP_RESTORE);
+        mBackupRestore.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+                    startActivity(new Intent(MyPreferenceActivity.this, RestoreActivity.class));
+                } else {
+                    startActivity(new Intent(MyPreferenceActivity.this, BackupActivity.class));
+                }
+                return false;
+            }
+        });
         
         Preference myPref = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -205,6 +222,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         showRingtone();
         showMinLogLevel();
         showUseExternalStorage();
+        showBackupRestore();
         
         Preference myPref = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
         CharSequence summary;
@@ -216,7 +234,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         myPref.setSummary(summary);
         
     }
-    
+
     protected void showHistorySize() {
         SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_SIZE, R.array.history_size_values, R.array.history_size_display, R.string.summary_preference_history_size);
     }
@@ -263,6 +281,16 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) && !mUseExternalStorage.isChecked()) {
             mUseExternalStorage.setEnabled(false);
         }
+    }
+
+    private void showBackupRestore() {
+        CharSequence title;
+        if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+            title = getText(R.string.label_restore);
+        } else {
+            title = getText(R.string.label_backup);
+        }
+        mBackupRestore.setTitle(title);
     }
     
     @Override

@@ -6,11 +6,9 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.ParcelFileDescriptor;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.AuthenticatorService;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -27,7 +25,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class MyBackupAgentTest extends InstrumentationTestCase {
@@ -39,25 +36,14 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
     }
 
     public void testBackupRestore() throws IOException, JSONException, NameNotFoundException, ConnectionException, InterruptedException {
-        MyBackupAgent backupAgent = new MyBackupAgent();
-        
-        File outputFolder = MyContextHolder.get().context().getCacheDir();
-        final String descriptorFilePrefix = "descriptor";
-        File descriptorFile = File.createTempFile(descriptorFilePrefix, ".backup", outputFolder);
-        assertTrue("Descriptor file created: " + descriptorFile.getAbsolutePath(), descriptorFile.exists());
-        MyLog.i(this, "Creating backup at '" + descriptorFile.getAbsolutePath() + "'");
-        String dataFolderName = "data" + descriptorFile.getName().substring(descriptorFilePrefix.length(), descriptorFile.getName().length());
-        File dataFolder = new File(outputFolder, dataFolderName);
-        assertTrue("Folder " + dataFolderName + " created in " + outputFolder.getAbsolutePath(),
-                dataFolder.mkdir());
-
         PersistentAccounts accountsBefore = PersistentAccounts.getEmpty();
         accountsBefore.initialize();
         assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
         
-        testBackup(backupAgent, descriptorFile, dataFolder);
+        File outputFolder = MyContextHolder.get().context().getCacheDir();
+        File descriptorFile = testBackup(outputFolder);
         deleteApplicationData();
-        testRestore(backupAgent, descriptorFile, dataFolder);
+        testRestore(descriptorFile);
         TestSuite.initialize(this);
 
         assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
@@ -66,38 +52,43 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
                 accountsBefore.fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME),
                 MyContextHolder.get().persistentAccounts()
                         .fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME));
-        
-        deleteBackup(descriptorFile, dataFolder);
+
+        deleteBackup(descriptorFile);
     }
 
-    private void testBackup(MyBackupAgent backupAgent, File descriptorFile, File dataFolder)
-            throws IOException, JSONException {
-        ParcelFileDescriptor state2 = ParcelFileDescriptor.open(descriptorFile,
-                ParcelFileDescriptor.MODE_READ_WRITE);
-        MyBackupDataOutput dataOutput = new MyBackupDataOutput(dataFolder);
-        backupAgent.onBackup(null, dataOutput, state2);
-        state2.close();
+    private File testBackup(File backupFolder) throws IOException, JSONException {
+        MyBackupManager backupManager = new MyBackupManager(null);
+        backupManager.prepareForBackup(backupFolder);
+        assertTrue("Descriptor file created: " + backupManager.getDescriptorFile().getAbsolutePath(), backupManager.getDescriptorFile().exists());
+        assertTrue("Data folder created: '" + backupManager.getDataFolder() + "'",
+                backupManager.getDataFolder().exists());
+        backupManager.backup();
 
-        assertEquals("Shared preferences backed up", 1, backupAgent.sharedPreferencesBackedUp);
-        assertEquals("Databases backed up", 1, backupAgent.databasesBackedUp);
-        assertEquals("Accounts backed up", backupAgent.accountsBackedUp, MyContextHolder.get()
+        assertEquals("Shared preferences backed up", 1, backupManager.getBackupAgent().sharedPreferencesBackedUp);
+        assertEquals("Databases backed up", 1, backupManager.getBackupAgent().databasesBackedUp);
+        assertEquals("Accounts backed up", backupManager.getBackupAgent().accountsBackedUp, MyContextHolder.get()
                 .persistentAccounts().size());
         
-        assertTrue("Descriptor file was filled: " + descriptorFile, descriptorFile.length() > 10);
+        assertTrue("Descriptor file was filled: " + backupManager.getDescriptorFile().getAbsolutePath(), backupManager.getDescriptorFile().length() > 10);
+        JSONObject jso = FileUtils.getJSONObject(backupManager.getDescriptorFile());
+        assertEquals(MyBackupDescriptor.BACKUP_SCHEMA_VERSION, jso.getInt(MyBackupDescriptor.KEY_BACKUP_SCHEMA_VERSION));
+        assertTrue(jso.getLong(MyBackupDescriptor.KEY_CREATED_DATE) > System.currentTimeMillis() - 1000000);
 
-        JSONObject jso = FileUtils.getJSONObject(descriptorFile);
-        assertEquals(MyBackupAgent.BACKUP_VERSION, jso.getInt(MyBackupDescriptor.BACKUP_SCHEMA_VERSION));
-        assertTrue(jso.getLong(MyBackupDescriptor.CREATED_DATE) > System.currentTimeMillis() - 1000000);
-
-        File accountHeader = new File(dataFolder, "account_header");
+        MyBackupDescriptor backupDescriptor = backupManager.getBackupAgent().getBackupDescriptor();
+        assertEquals(MyBackupDescriptor.BACKUP_SCHEMA_VERSION, backupDescriptor.getBackupSchemaVersion());
+        
+        File accountHeader = new File(backupManager.getDataFolder(), "account_header.json");
         assertTrue(accountHeader.exists());
         jso = FileUtils.getJSONObject(accountHeader);
         assertTrue(jso.getInt(MyBackupDataOutput.KEY_DATA_SIZE) > 10);
+        assertEquals(jso.getString(MyBackupDataOutput.KEY_FILE_EXTENSION), ".json");
 
-        File accountData = new File(dataFolder, "account_data");
+        File accountData = new File(backupManager.getDataFolder(), "account_data.json");
         assertTrue(accountData.exists());
         JSONArray jsa = FileUtils.getJSONArray(accountData);
         assertTrue(jsa.length() > 2);
+        
+        return backupManager.getDescriptorFile();
     }
 
     private void deleteApplicationData() throws IOException {
@@ -134,7 +125,15 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
     }
 
     private void deleteFilesRecursively(File rootDirectory) {
-        for (File file : rootDirectory.listFiles()) {
+        if (rootDirectory == null) {
+            return;
+        }
+        File[] files = rootDirectory.listFiles();
+        if (files == null) {
+            MyLog.v(this, "No files inside " + rootDirectory.getAbsolutePath());
+            return;
+        }
+        for (File file : files) {
             if (file.isDirectory()) {
                 deleteFilesRecursively(file);
             } else {
@@ -143,26 +142,23 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         }
     }
     
-    private void testRestore(MyBackupAgent backupAgent, File descriptorFile, File dataFolder)
+    private void testRestore(File descriptorFile)
             throws IOException {
-        final int appVersion = 100;
-        ParcelFileDescriptor state4 = ParcelFileDescriptor.open(descriptorFile,
-                ParcelFileDescriptor.MODE_READ_WRITE);
-        MyBackupDataInput dataInput = new MyBackupDataInput(dataFolder);
-        assertEquals("Keys in the backup: " + Arrays.toString(dataInput.listKeys().toArray()) , backupAgent.suggestionsBackedUp + 3, dataInput.listKeys().size());
         
-        backupAgent.onRestore(dataInput, appVersion, state4);
-        assertEquals("Shared preferences restored", 1, backupAgent.sharedPreferencesRestored);
-        assertEquals("Databases restored", 1, backupAgent.databasesRestored);
-        assertEquals("Accounts restored", backupAgent.accountsBackedUp, backupAgent.accountsRestored);
-        state4.close();
+        MyBackupManager backupManager = new MyBackupManager(null);
+        backupManager.prepareForRestore(descriptorFile);
+        assertTrue("Data folder exists: '" + backupManager.getDataFolder().getAbsolutePath() + "'", backupManager.getDataFolder().exists());
+
+        backupManager.restore();
+        assertEquals("Shared preferences restored", 1, backupManager.getBackupAgent().sharedPreferencesRestored);
+        assertEquals("Databases restored", 1, backupManager.getBackupAgent().databasesRestored);
     }
 
-    private void deleteBackup(File descriptorFile, File dataFolder) {
-        for (File dataFile : dataFolder.listFiles()) {
+    private void deleteBackup(File descriptorFile) {
+        for (File dataFile : MyBackupManager.descriptorFileToDataFolder(descriptorFile).listFiles()) {
             dataFile.delete();
         }
-        dataFolder.delete();
+        MyBackupManager.descriptorFileToDataFolder(descriptorFile).delete();
         descriptorFile.delete();
     }
 }

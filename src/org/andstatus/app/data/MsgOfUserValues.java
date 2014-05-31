@@ -24,7 +24,6 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
-import org.andstatus.app.util.MyLog;
 
 class MsgOfUserValues {
     private long rowId;

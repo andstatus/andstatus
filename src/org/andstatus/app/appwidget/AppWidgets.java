@@ -3,7 +3,6 @@ package org.andstatus.app.appwidget;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 

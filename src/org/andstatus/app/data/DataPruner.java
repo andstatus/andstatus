@@ -39,7 +39,7 @@ import java.util.Date;
 public class DataPruner {
     private ContentResolver mContentResolver;
     private int mDeleted = 0;
-    final static long MAX_DAYS_LOGS_TO_KEEP = 10;
+    static final long MAX_DAYS_LOGS_TO_KEEP = 10;
     
     public DataPruner(Context context) {
         mContentResolver = context.getContentResolver();

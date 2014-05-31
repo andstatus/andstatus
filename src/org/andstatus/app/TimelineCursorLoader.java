@@ -180,7 +180,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         return true;
     }
     
-    private final static long MIN_LIST_REQUERY_MILLISECONDS = 3000;
+    private static final long MIN_LIST_REQUERY_MILLISECONDS = 3000;
     private long previousRequeryTime = 0;
     @Override
     protected void onForceLoad() {

@@ -45,22 +45,25 @@ public class MyBackupDataInput {
         String key;
         long ordinalNumber;
         int dataSize;
+        String fileExtension;
 
-        BackupHeader(String key, long ordinalNumber, int dataSize) {
+        BackupHeader(String key, long ordinalNumber, int dataSize, String fileExtension) {
             this.key = key;
             this.ordinalNumber = ordinalNumber;
             this.dataSize = dataSize;
+            this.fileExtension = fileExtension;
         }
 
         static BackupHeader getEmpty() {
-            return new BackupHeader("", 0, 0);
+            return new BackupHeader("", 0, 0, "");
         }
         
         static BackupHeader fromJson(JSONObject jso) {
             return new BackupHeader(
             jso.optString(MyBackupDataOutput.KEY_KEYNAME, ""),
             jso.optLong(MyBackupDataOutput.KEY_ORDINAL_NUMBER, 0),
-            jso.optInt(MyBackupDataOutput.KEY_DATA_SIZE, 0));
+            jso.optInt(MyBackupDataOutput.KEY_DATA_SIZE, 0),
+            jso.optString(MyBackupDataOutput.KEY_FILE_EXTENSION, MyBackupDataOutput.DATA_FILE_EXTENSION_DEFAULT));
         }
 
         @Override
@@ -169,7 +172,7 @@ public class MyBackupDataInput {
         } else if (size < 1 || dataOffset >= header.dataSize) {
             // skip
         } else if (mHeaderReady) {
-            File dataFile = new File(dataFolder, header.key + MyBackupDataOutput.DATA_FILE_SUFFIX);
+            File dataFile = new File(dataFolder, header.key + MyBackupDataOutput.DATA_FILE_SUFFIX + header.fileExtension);
             byte[] readData = FileUtils.getBytes(dataFile, dataOffset, size);
             bytesRead = readData.length;
             System.arraycopy(readData, 0, data, offset, bytesRead);

@@ -210,5 +210,13 @@
         <activity android:name=".origin.OriginEditor"
             android:label="@string/label_origin_system">
         </activity>
-	</application>
+
+        <activity android:name=".backup.BackupActivity"
+            android:label="@string/label_backup">
+        </activity>
+
+        <activity android:name=".backup.RestoreActivity"
+            android:label="@string/label_restore">
+        </activity>
+    </application>
 </manifest>

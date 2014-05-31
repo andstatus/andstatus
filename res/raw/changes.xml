@@ -37,6 +37,22 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="9.0" android:versionCode="102"
+        versionDate="2014-06-01"
+        versionTitle="Backup/Restore implemented">
+        <changes>
+            <change>Application data backup and restore implemented. This feature may be used in two ways:
+                <ul>
+                    <li>Manual backup at any time to SD card (Settings-&gt;Storage-&gt;Backup application data) 
+                and manual restore after reinstall (Settings-&gt;Storage-&gt;Restore application data).</li>
+                    <li>Automatic backup and restore by Android system. This may work for some devices, 
+                        but is useless for the most users due to Android system internal limitations 
+                        (see <a href="https://github.com/andstatus/andstatus/pull/49" >the discussion</a>).</li>
+                </ul>
+                Preferences, messages and accounts with their credentials are backed up. Avatars are not. 
+                See <a href="https://github.com/andstatus/andstatus/issues/86" >Issue #86</a>.</change>
+        </changes>
+    </release>
     <release android:versionName="8.4" android:versionCode="100"
         versionDate="2014-04-20"
         versionTitle="Fixed 'Preserve screen position after content update'">

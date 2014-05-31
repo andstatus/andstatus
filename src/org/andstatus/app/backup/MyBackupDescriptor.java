@@ -16,8 +16,12 @@
 
 package org.andstatus.app.backup;
 
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.ParcelFileDescriptor;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.FileDescriptorUtils;
 import org.andstatus.app.util.MyLog;
@@ -34,30 +38,79 @@ import java.io.Writer;
 import java.util.Date;
 
 public class MyBackupDescriptor {
-    static final String CREATED_DATE = "created_date";
-    static final String BACKUP_SCHEMA_VERSION = "backup_schema_version";
-    private int backupSchemaVersion;
+    private static final Object TAG = MyBackupDescriptor.class;
+    
+    static final int BACKUP_SCHEMA_VERSION_UNKNOWN = -1;
+    static final int BACKUP_SCHEMA_VERSION = 2;
+    static final String KEY_ACCOUNTS_COUNT = "accounts_count";
+    static final String KEY_CREATED_DATE = "created_date";
+    static final String KEY_BACKUP_SCHEMA_VERSION = "backup_schema_version";
+    static final String KEY_APPLICATION_VERSION_CODE = "app_version_code";
+    
+    private int backupSchemaVersion = BACKUP_SCHEMA_VERSION_UNKNOWN;
+    private int applicationVersionCode = 0;
+
     private long createdDate = 0;
     private FileDescriptor fileDescriptor = null;
 
-    static MyBackupDescriptor fromParcelFileDescriptor(int backupSchemaVersionIn, ParcelFileDescriptor parcelFileDescriptor) {
-        MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor();
-        myBackupDescriptor.backupSchemaVersion = backupSchemaVersionIn;
+    private long accountsCount = 0;
+
+    private final ProgressLogger progressLogger;
+    
+    private MyBackupDescriptor(ProgressLogger progressLogger) {
+        this.progressLogger = progressLogger;
+    }
+
+    static MyBackupDescriptor getEmpty() {
+        return new MyBackupDescriptor(ProgressLogger.getEmpty());
+    }
+    
+    static MyBackupDescriptor fromOldParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor, ProgressLogger progressLogger) {
+        MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLogger);
         if (parcelFileDescriptor != null) {
             myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor();
             JSONObject jso = FileDescriptorUtils.getJSONObject(parcelFileDescriptor.getFileDescriptor());
-            myBackupDescriptor.backupSchemaVersion = jso.optInt(BACKUP_SCHEMA_VERSION, backupSchemaVersionIn);
-            myBackupDescriptor.createdDate = jso.optLong(CREATED_DATE, myBackupDescriptor.createdDate);
+            myBackupDescriptor.backupSchemaVersion = jso.optInt(KEY_BACKUP_SCHEMA_VERSION, myBackupDescriptor.backupSchemaVersion);
+            myBackupDescriptor.createdDate = jso.optLong(KEY_CREATED_DATE, myBackupDescriptor.createdDate);
+            myBackupDescriptor.applicationVersionCode = jso.optInt(KEY_APPLICATION_VERSION_CODE, myBackupDescriptor.applicationVersionCode);
+            myBackupDescriptor.accountsCount = jso.optLong(KEY_ACCOUNTS_COUNT, myBackupDescriptor.accountsCount);
+            if (myBackupDescriptor.backupSchemaVersion != BACKUP_SCHEMA_VERSION) {
+                try {
+                    MyLog.w(TAG, "Bad backup descriptor: " + jso.toString(2) );
+                } catch (JSONException e) {
+                    MyLog.d(TAG, "Bad backup descriptor: " + jso.toString(), e);
+                }
+            }
         }
         return myBackupDescriptor;
     }
 
+    static MyBackupDescriptor fromEmptyParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor, ProgressLogger progressLoggerIn) throws IOException {
+        MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLoggerIn);
+        myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+        myBackupDescriptor.backupSchemaVersion = BACKUP_SCHEMA_VERSION;
+
+        PackageManager pm = MyContextHolder.get().context().getPackageManager();
+        PackageInfo pi;
+        try {
+            pi = pm.getPackageInfo(MyContextHolder.get().context().getPackageName(), 0);
+        } catch (NameNotFoundException e) {
+            throw new FileNotFoundException(e.getLocalizedMessage());
+        }
+        myBackupDescriptor.applicationVersionCode = pi.versionCode;
+        return myBackupDescriptor;
+    }
+    
     int getBackupSchemaVersion() {
         return backupSchemaVersion;
     }
 
     long getCreatedDate() {
         return createdDate;
+    }
+
+    int getApplicationVersionCode() {
+        return applicationVersionCode;
     }
     
     boolean isEmpty() {
@@ -74,8 +127,11 @@ public class MyBackupDescriptor {
         }
         JSONObject jso = new JSONObject();
         try {
-            jso.put(BACKUP_SCHEMA_VERSION, backupSchemaVersion);
-            jso.put(CREATED_DATE, createdDateNew);
+            jso.put(KEY_BACKUP_SCHEMA_VERSION, backupSchemaVersion);
+            jso.put(KEY_CREATED_DATE, createdDateNew);
+            jso.put(KEY_APPLICATION_VERSION_CODE, applicationVersionCode);
+            jso.put(KEY_ACCOUNTS_COUNT, accountsCount);
+            
             writeStringToFileDescriptor(jso.toString(), fileDescriptor, true);
             createdDate = createdDateNew;
         } catch (JSONException e) {
@@ -102,16 +158,28 @@ public class MyBackupDescriptor {
     
     @Override
     public String toString() {
-        return "MyBackupDescriptor {backupSchemaVersion:"
-                + backupSchemaVersion
-                + ", "
-                + (createdDate == 0 ? "not created" : " created:"
-                        + (new Date(createdDate)).toString())
+        return "MyBackupDescriptor {backupSchemaVersion:" + backupSchemaVersion
+                + ", " + (createdDate == 0 ? "not created" : " created:" + (new Date(createdDate)).toString())
                 + (fileDescriptor == null ? ", fileDescriptor:null" : "")
+                + ", versionCode:" + applicationVersionCode
+                + ", accountsCount:" + accountsCount
                 + "}";
      }
 
     boolean saved() {
         return (createdDate != 0);
+    }
+
+    public long getAccountsCount() {
+        return accountsCount;
+    }
+
+    public void setAccountsCount(long accountsCount) {
+        this.accountsCount = accountsCount;
+        progressLogger.logProgress("Accounts backed up:" + accountsCount);
+    }
+
+    public ProgressLogger getLogger() {
+        return progressLogger;
     }
 }

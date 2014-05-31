@@ -39,11 +39,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class MyBackupAgent extends BackupAgent {
-    public static final int BACKUP_VERSION = 1;
-    private static final int BACKUP_VERSION_UNKNOWN = -1;
-    public static final String KEY_DATABASE = "database";
-    public static final String KEY_SHARED_PREFERENCES = "shared_preferences";
+    public static final String DATABASE_KEY = "database";
+    public static final String SHARED_PREFERENCES_KEY = "shared_preferences";
     public static final String SHARED_PREFERENCES_FILENAME = "shared_preferences";
+
+    private MyBackupDescriptor backupDescriptor = null;
 
     private String previousKey = "";
     
@@ -55,18 +55,23 @@ public class MyBackupAgent extends BackupAgent {
     long suggestionsRestored = 0;
     long sharedPreferencesBackedUp = 0;
     long sharedPreferencesRestored = 0;
+
+    public MyBackupAgent() {
+    }
     
     @Override
     public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data,
             ParcelFileDescriptor newState) throws IOException {
-        onBackup(oldState, new MyBackupDataOutput(data), newState);
+        onBackup(
+                MyBackupDescriptor.fromOldParcelFileDescriptor(oldState, ProgressLogger.getEmpty()),
+                new MyBackupDataOutput(data),
+                MyBackupDescriptor.fromEmptyParcelFileDescriptor(newState,
+                        ProgressLogger.getEmpty()));
     }
 
-    public void onBackup(ParcelFileDescriptor oldState, MyBackupDataOutput data,
-            ParcelFileDescriptor newState) throws IOException {
+    public void onBackup(MyBackupDescriptor oldDescriptor, MyBackupDataOutput data,
+            MyBackupDescriptor newDescriptor) throws IOException {
         final String method = "onBackup";
-        MyBackupDescriptor oldDescriptor = MyBackupDescriptor.fromParcelFileDescriptor(
-                MyBackupAgent.BACKUP_VERSION_UNKNOWN, oldState);
         // Ignore oldDescriptor for now...
         MyLog.i(this, method + " started"
                 + (data != null && data.getDataFolder() != null ? ", folder='"
@@ -74,8 +79,7 @@ public class MyBackupAgent extends BackupAgent {
                 + ", " + (oldDescriptor.saved() ? "oldState:" + oldDescriptor.toString()
                         : "no old state"));
         MyContextHolder.initialize(this, this);
-        MyBackupDescriptor newDescriptor = MyBackupDescriptor.fromParcelFileDescriptor(
-                BACKUP_VERSION, newState);
+        backupDescriptor = newDescriptor;
         try {
             if (data == null) {
                 throw new FileNotFoundException("No BackupDataOutput");
@@ -84,44 +88,49 @@ public class MyBackupAgent extends BackupAgent {
             } else if (MyContextHolder.get().persistentAccounts().size() == 0) {
                 throw new FileNotFoundException("Nothing to backup - No accounts yet");
             } else {
-                boolean isServiceAvailableStored = MyServiceManager.isServiceAvailable();
-                MyServiceManager.setServiceUnavailable();
-                for (int ind=0; ; ind++) {
-                    if (MyServiceManager.getServiceState() == ServiceState.STOPPED) {
-                        break;
-                    }
-                    if (ind > 5) {
-                        throw new FileNotFoundException(getString(R.string.system_is_busy_try_later));
-                    }
-                    try {
-                        Thread.sleep(5000);
-                    } catch (Exception e2) {
-                        MyLog.d(this, "while sleeping", e2);
-                    }
-                }
-                doBackup(data, newDescriptor);
-                newDescriptor.save();
-                MyLog.v(this, method + "; newState: " + newDescriptor.toString());
+                boolean isServiceAvailableStored = checkAndSetServiceUnavailable();
+                doBackup(data);
+                backupDescriptor.save();
+                MyLog.v(this, method + "; newState: " + backupDescriptor.toString());
                 if (isServiceAvailableStored) {
                     MyServiceManager.setServiceAvailable();
                 }
             }
         } finally {
-            MyLog.i(this, method + " ended, " + (newDescriptor.saved() ? "success" : "failure"));
+            MyLog.i(this, method + " ended, " + (backupDescriptor.saved() ? "success" : "failure"));
         }
     }
 
-    private void doBackup(MyBackupDataOutput data, MyBackupDescriptor newDescriptor) throws IOException {
+    boolean checkAndSetServiceUnavailable() throws IOException {
+        boolean isServiceAvailableStored = MyServiceManager.isServiceAvailable();
+        MyServiceManager.setServiceUnavailable();
+        for (int ind=0; ; ind++) {
+            if (MyServiceManager.getServiceState() == ServiceState.STOPPED) {
+                break;
+            }
+            if (ind > 5) {
+                throw new FileNotFoundException(getString(R.string.system_is_busy_try_later));
+            }
+            try {
+                Thread.sleep(5000);
+            } catch (Exception e2) {
+                MyLog.d(this, "while sleeping", e2);
+            }
+        }
+        return isServiceAvailableStored;
+    }
+
+    private void doBackup(MyBackupDataOutput data) throws IOException {
         sharedPreferencesBackedUp = backupFile(data,
-                KEY_SHARED_PREFERENCES,
+                SHARED_PREFERENCES_KEY,
                 SharedPreferencesUtil.sharedPreferencesPath(MyContextHolder.get().context()));
         databasesBackedUp = backupFile(data,
-                KEY_DATABASE + "_" + MyDatabase.DATABASE_NAME,
+                DATABASE_KEY + "_" + MyDatabase.DATABASE_NAME,
                 MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME, null));
         suggestionsBackedUp = backupFile(data,
-                KEY_DATABASE + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME,
+                DATABASE_KEY + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME,
                 MyPreferences.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME, null));
-        accountsBackedUp = MyContextHolder.get().persistentAccounts().onBackup(data, newDescriptor);
+        accountsBackedUp = MyContextHolder.get().persistentAccounts().onBackup(data, backupDescriptor);
     }
     
     private long backupFile(MyBackupDataOutput data, String key, File dataFile) throws IOException {
@@ -131,45 +140,58 @@ public class MyBackupAgent extends BackupAgent {
             long fileLength = dataFile.length();
             if ( fileLength > Integer.MAX_VALUE) {
                 throw new FileNotFoundException("File '" 
-                        + dataFile.getName() + "' is too large for backup: " + fileLength );
-            } else {
-                int bytesToWrite = (int) fileLength;
-                data.writeEntityHeader(key, bytesToWrite);
-                int bytesWritten = 0;
-                while (bytesWritten < bytesToWrite) {
-                    byte[] bytes = FileUtils.getBytes(dataFile, bytesWritten, chunkSize);
-                    if (bytes.length <= 0) {
-                        break;
-                    }
-                    bytesWritten += bytes.length;
-                    data.writeEntityData(bytes, bytes.length);
+                        + dataFile.getName() + "' is too large for backup: " + fileLength + " bytes" );
+            } 
+            int bytesToWrite = (int) fileLength;
+            data.writeEntityHeader(key, bytesToWrite, MyBackupDataOutput.getDataFileExtension(dataFile));
+            int bytesWritten = 0;
+            while (bytesWritten < bytesToWrite) {
+                byte[] bytes = FileUtils.getBytes(dataFile, bytesWritten, chunkSize);
+                if (bytes.length <= 0) {
+                    break;
                 }
-                if (bytesWritten != bytesToWrite) {
-                    throw new FileNotFoundException("Couldn't backup File '" 
-                            + dataFile.getName() + "'. written " 
-                            + bytesWritten + " of " + bytesToWrite + " bytes");
-                }
-                backedUpCount++;
+                bytesWritten += bytes.length;
+                data.writeEntityData(bytes, bytes.length);
             }
-            MyLog.v(this, "Backed up file key='" + key + "', name='" + dataFile.getName()
-                    + "', length=" + fileLength);
+            if (bytesWritten != bytesToWrite) {
+                throw new FileNotFoundException("Couldn't backup "
+                        + filePartiallyWritten(key, dataFile, bytesToWrite, bytesWritten));
+            }
+            backedUpCount++;
+            backupDescriptor.getLogger().logProgress(
+                    "Backed up " + fileWritten(key, dataFile, bytesWritten));
         } else {
             MyLog.v(this, "File doesn't exist key='" + key + "', path='" + dataFile.getAbsolutePath());
         }
         return backedUpCount;
     }
+
+    private String fileWritten(String key, File dataFile, int bytesWritten) {
+        return filePartiallyWritten(key, dataFile, bytesWritten, bytesWritten);
+    }
+    
+    private String filePartiallyWritten(String key, File dataFile, int bytesToWrite, int bytesWritten) {
+        if ( bytesWritten == bytesToWrite) {
+            return "file:'" + dataFile.getName()
+                    + "', key:'" + key + "', length:"
+                    + bytesWritten + " bytes";
+        } else {
+            return "file:'" + dataFile.getName()
+                    + "', key:'" + key + "', wrote "
+                    + bytesWritten + " of " + bytesToWrite + " bytes";
+        }
+    }
     
     @Override
     public void onRestore(BackupDataInput data, int appVersionCode, ParcelFileDescriptor newState)
             throws IOException {
-        onRestore(new MyBackupDataInput(data), appVersionCode, newState);
+        onRestore(new MyBackupDataInput(data), appVersionCode, MyBackupDescriptor.fromOldParcelFileDescriptor(newState, ProgressLogger.getEmpty()));
     }
 
-    public void onRestore(MyBackupDataInput data, int appVersionCode, ParcelFileDescriptor newState)
+    public void onRestore(MyBackupDataInput data, int appVersionCode, MyBackupDescriptor newDescriptor)
             throws IOException {
         final String method = "onRestore";
-        MyBackupDescriptor newDescriptor = MyBackupDescriptor.fromParcelFileDescriptor(
-                BACKUP_VERSION_UNKNOWN, newState);
+        backupDescriptor = newDescriptor;
         MyLog.i(this, method + " started" 
                 + (data != null && data.getDataFolder() != null ? ", folder='"
                         + data.getDataFolder().getAbsolutePath() + "'" : "")
@@ -177,23 +199,23 @@ public class MyBackupAgent extends BackupAgent {
                         : "no new state"));
         boolean success = false;
         try {
-            switch (newDescriptor.getBackupSchemaVersion()) {
-                case BACKUP_VERSION_UNKNOWN:
+            switch (backupDescriptor.getBackupSchemaVersion()) {
+                case MyBackupDescriptor.BACKUP_SCHEMA_VERSION_UNKNOWN:
                     throw new FileNotFoundException("No backup information in the backup descriptor");
-                case BACKUP_VERSION:
+                case MyBackupDescriptor.BACKUP_SCHEMA_VERSION:
                     if (data == null) {
                         throw new FileNotFoundException("No BackupDataInput");
                     } else if (!newDescriptor.saved()) {
                         throw new FileNotFoundException("No new state");
                     } else {
                         ensureNoDataIsPresent();
-                        doRestore(data, newDescriptor);
+                        doRestore(data);
                         success = true;
                     }
                     break;
                 default:
                     throw new FileNotFoundException("Incompatible backup version "
-                            + newDescriptor.getBackupSchemaVersion() + ", expected:" + BACKUP_VERSION);
+                            + newDescriptor.getBackupSchemaVersion() + ", expected:" + MyBackupDescriptor.BACKUP_SCHEMA_VERSION);
             }
         } finally {
             MyLog.i(this, method + " ended, " + (success ? "success" : "failure"));
@@ -219,7 +241,7 @@ public class MyBackupAgent extends BackupAgent {
         }
     }
     
-    private void doRestore(MyBackupDataInput data, MyBackupDescriptor newDescriptor) throws IOException {
+    private void doRestore(MyBackupDataInput data) throws IOException {
         MyPreferences.setDefaultValues(R.xml.preferences, false);
         MyContextHolder.release();
         MyLog.forget();
@@ -227,13 +249,13 @@ public class MyBackupAgent extends BackupAgent {
         // For some reason the next line is required for proper work...
         // MyLog.setMinLogLevel(MyLog.VERBOSE);
         
-        assertNextHeader(data, KEY_SHARED_PREFERENCES);
+        assertNextHeader(data, SHARED_PREFERENCES_KEY);
         sharedPreferencesRestored += restoreFile(data, 
                 SharedPreferencesUtil.sharedPreferencesPath(MyContextHolder.get().context()));
-        assertNextHeader(data, KEY_DATABASE + "_" + MyDatabase.DATABASE_NAME);
+        assertNextHeader(data, DATABASE_KEY + "_" + MyDatabase.DATABASE_NAME);
         databasesRestored += restoreFile(data,
                     MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME, null));
-        if (optionalNextHeader(data, KEY_DATABASE + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME)) {
+        if (optionalNextHeader(data, DATABASE_KEY + "_" + TimelineSearchSuggestionsProvider.DATABASE_NAME)) {
             suggestionsRestored += restoreFile(data,
                     MyPreferences.getDatabasePath(TimelineSearchSuggestionsProvider.DATABASE_NAME, null));            
         }
@@ -242,7 +264,7 @@ public class MyBackupAgent extends BackupAgent {
         
         data.setMyContext(MyContextHolder.get());
         assertNextHeader(data, PersistentAccounts.KEY_ACCOUNT);
-        accountsRestored += data.getMyContext().persistentAccounts().onRestore(data, newDescriptor);
+        accountsRestored += data.getMyContext().persistentAccounts().onRestore(data, backupDescriptor);
 
         MyContextHolder.release();
         MyContextHolder.initialize(this, this);
@@ -270,12 +292,12 @@ public class MyBackupAgent extends BackupAgent {
     public long restoreFile(MyBackupDataInput data, File dataFile) throws IOException {
         if (dataFile.exists()) {
             if (!dataFile.delete()) {
-                throw new FileNotFoundException("Couldn't delete old file before restore '" 
+                throw new FileNotFoundException("Couldn't delete old file before restore '"
                         + dataFile.getName() + "'");
             }
         }
         final String method = "restoreFile";
-        MyLog.i(this, method + " started, key='" + data.getKey() + "', size=" + data.getDataSize() + " bytes");
+        MyLog.i(this, method + " started, " + fileWritten(data.getKey(), dataFile, data.getDataSize()));
         final int chunkSize = 10000;
         int bytesToWrite = data.getDataSize();
         int bytesWritten = 0;
@@ -290,10 +312,19 @@ public class MyBackupAgent extends BackupAgent {
                 output.write(bytes, 0, bytesRead);
                 bytesWritten += bytesRead;
             }
-         } finally {
+            if (bytesWritten != bytesToWrite) {
+                throw new FileNotFoundException("Couldn't restore " 
+                        + filePartiallyWritten(data.getKey(), dataFile, bytesToWrite, bytesWritten));
+            }
+        } finally {
             output.close();
-         }
+        }
+        backupDescriptor.getLogger().logProgress("Restored "
+                + filePartiallyWritten(data.getKey(), dataFile, bytesToWrite, bytesWritten));
         return 1;
     }
-    
+
+    MyBackupDescriptor getBackupDescriptor() {
+        return backupDescriptor;
+    }
 }

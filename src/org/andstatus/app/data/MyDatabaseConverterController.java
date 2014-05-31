@@ -22,7 +22,6 @@ import android.os.AsyncTask;
 
 import net.jcip.annotations.GuardedBy;
 
-import org.andstatus.app.HelpActivity;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;

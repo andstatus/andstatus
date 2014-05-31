@@ -32,11 +32,13 @@ import java.io.OutputStream;
 
 /** Allowing to instantiate and to mock BackupDataOutput class */
 public class MyBackupDataOutput {
-    final static String HEADER_FILE_SUFFIX = "_header";
-    final static String DATA_FILE_SUFFIX = "_data";
-    final static String KEY_KEYNAME = "key";
-    final static String KEY_DATA_SIZE = "data_size";
-    final static String KEY_ORDINAL_NUMBER = "ordinal_number";
+    static final String HEADER_FILE_SUFFIX = "_header.json";
+    static final String DATA_FILE_SUFFIX = "_data";
+    static final String DATA_FILE_EXTENSION_DEFAULT = ".dat";
+    static final String KEY_KEYNAME = "key";
+    static final String KEY_DATA_SIZE = "data_size";
+    static final String KEY_ORDINAL_NUMBER = "ordinal_number";
+    static final String KEY_FILE_EXTENSION = "file_extension";
     private File dataFolder;
     private BackupDataOutput backupDataOutput;
     private int sizeToWrite = 0;
@@ -53,25 +55,25 @@ public class MyBackupDataOutput {
     }
 
     /** {@link BackupDataOutput#writeEntityHeader(String, int)} */
-    public int writeEntityHeader(String key, int dataSize) throws IOException {
+    public int writeEntityHeader(String key, int dataSize, String fileExtension) throws IOException {
         headerOrdinalNumber++;
         if (backupDataOutput != null) {
             return backupDataOutput.writeEntityHeader(key, dataSize);
         } else {
-            return writeEntityHeader2(key, dataSize);
+            return writeEntityHeader2(key, dataSize, fileExtension);
         }
     }
 
-    private int writeEntityHeader2(String key, int dataSize) throws IOException {
+    private int writeEntityHeader2(String key, int dataSize, String fileExtension) throws IOException {
         MyLog.v(this, "Writing header for '" + key + "', size=" + dataSize);
         sizeToWrite = dataSize;
         sizeWritten = 0;
-        writeHeaderFile(key, dataSize);
-        createDataFile(key, dataSize);
+        writeHeaderFile(key, dataSize, fileExtension);
+        createDataFile(key, dataSize, fileExtension);
         return key.length();
     }
 
-    private void writeHeaderFile(String key, int dataSize) throws IOException {
+    private void writeHeaderFile(String key, int dataSize, String fileExtension) throws IOException {
         File headerFile = new File(dataFolder, key + HEADER_FILE_SUFFIX);
         createFileIfNeeded(dataSize, headerFile);
         JSONObject jso = new JSONObject();
@@ -79,6 +81,7 @@ public class MyBackupDataOutput {
             jso.put(KEY_KEYNAME, key);
             jso.put(KEY_ORDINAL_NUMBER, headerOrdinalNumber);
             jso.put(KEY_DATA_SIZE, dataSize);
+            jso.put(KEY_FILE_EXTENSION, fileExtension);
             byte[] bytes = jso.toString(2).getBytes("UTF-8");
             appendBytesToFile(headerFile, bytes, bytes.length);
         } catch (JSONException e) {
@@ -99,8 +102,8 @@ public class MyBackupDataOutput {
         }
     }
     
-    private void createDataFile(String key, int dataSize) throws IOException {
-        dataFile = new File(dataFolder, key + DATA_FILE_SUFFIX);
+    private void createDataFile(String key, int dataSize, String fileExtension) throws IOException {
+        dataFile = new File(dataFolder, key + DATA_FILE_SUFFIX + fileExtension);
         createFileIfNeeded(dataSize, dataFile);
     }
 
@@ -150,5 +153,14 @@ public class MyBackupDataOutput {
 
     File getDataFolder() {
         return dataFolder;
+    }
+
+    static String getDataFileExtension(File dataFile) {
+        String name = dataFile.getName();
+        int indDot = name.lastIndexOf(".");
+        if (indDot >= 0) {
+            return name.substring(indDot);
+        }
+        return DATA_FILE_EXTENSION_DEFAULT;
     }
 }

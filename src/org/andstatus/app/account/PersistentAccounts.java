@@ -320,11 +320,12 @@ public class PersistentAccounts {
                 backedUpCount++;
             }
             byte[] bytes = jsa.toString(2).getBytes("UTF-8");
-            data.writeEntityHeader(KEY_ACCOUNT, bytes.length);
+            data.writeEntityHeader(KEY_ACCOUNT, bytes.length, ".json");
             data.writeEntityData(bytes, bytes.length);
         } catch (JSONException e) {
             throw new FileNotFoundException(e.getLocalizedMessage());
         }
+        newDescriptor.setAccountsCount(backedUpCount);
         return backedUpCount;
     }
 
@@ -340,13 +341,26 @@ public class PersistentAccounts {
             for (int ind = 0; ind < jsa.length(); ind++) {
                 MyLog.v(this, method + "; restoring " + (ind+1) + " of " + jsa.length());
                 MyAccount.Builder builder = Builder.fromJson(data.getMyContext(), (JSONObject) jsa.get(ind));
+                CredentialsVerificationStatus verified = builder.getAccount().getCredentialsVerified(); 
+                if (verified != CredentialsVerificationStatus.SUCCEEDED) {
+                    newDescriptor.getLogger().logProgress("Account " + builder.getAccount().getAccountName() + " was not successfully verified");
+                    builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
+                }
                 if (builder.saveSilently().success) {
                     MyLog.v(this, method + "; restored " + (ind+1) + ": " + builder.toString());
                     restoredCount++;
+                    if (verified != CredentialsVerificationStatus.SUCCEEDED) {
+                        builder.setCredentialsVerificationStatus(verified);
+                        builder.saveSilently();
+                    }
                 } else {
                     MyLog.e(this, method + "; failed to restore " + (ind+1) + ": " + builder.toString());
                 }
             }
+            if (restoredCount != newDescriptor.getAccountsCount()) {
+                throw new FileNotFoundException("Restored only " + restoredCount + " accounts of " + newDescriptor.getAccountsCount());
+            }
+            newDescriptor.getLogger().logProgress("Restored " + restoredCount + " accounts");
         } catch (JSONException e) {
             throw new FileNotFoundException(method + "; " + e.getLocalizedMessage());
         }

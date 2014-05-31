@@ -31,16 +31,17 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyActionBar;
+import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 /**
  * Add/Update Microblogging system
  * @author yvolk@yurivolkov.com
  */
-public class OriginEditor extends Activity {
+public class OriginEditor extends Activity implements MyActionBarContainer {
     private Origin.Builder builder;
 
     private Button buttonSave;
@@ -54,8 +55,9 @@ public class OriginEditor extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MyPreferences.loadTheme(this, this);
+        MyActionBar actionBar = new MyActionBar(this);
         setContentView(R.layout.origin_editor);
+        actionBar.attach();
 
         buttonSave = (Button) findViewById(R.id.button_save);
         Button buttonDiscard = (Button) findViewById(R.id.button_discard);
@@ -166,5 +168,15 @@ public class OriginEditor extends Activity {
         } catch (Exception e) {
             MyLog.e("beep", e);
         }        
+    }
+
+    @Override
+    public Activity getActivity() {
+        return this;
+    }
+
+    @Override
+    public void closeAndGoBack() {
+        finish();
     }
 }
