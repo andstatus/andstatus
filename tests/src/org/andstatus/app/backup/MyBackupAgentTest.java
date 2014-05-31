@@ -41,9 +41,9 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
         
         File outputFolder = MyContextHolder.get().context().getCacheDir();
-        File descriptorFile = testBackup(outputFolder);
+        File dataFolder = testBackup(outputFolder);
         deleteApplicationData();
-        testRestore(descriptorFile);
+        testRestore(dataFolder);
         TestSuite.initialize(this);
 
         assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
@@ -53,15 +53,15 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
                 MyContextHolder.get().persistentAccounts()
                         .fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME));
 
-        deleteBackup(descriptorFile);
+        deleteBackup(dataFolder);
     }
 
     private File testBackup(File backupFolder) throws IOException, JSONException {
         MyBackupManager backupManager = new MyBackupManager(null);
         backupManager.prepareForBackup(backupFolder);
-        assertTrue("Descriptor file created: " + backupManager.getDescriptorFile().getAbsolutePath(), backupManager.getDescriptorFile().exists());
         assertTrue("Data folder created: '" + backupManager.getDataFolder() + "'",
                 backupManager.getDataFolder().exists());
+        assertTrue("Descriptor file created: " + backupManager.getDescriptorFile().getAbsolutePath(), backupManager.getDescriptorFile().exists());
         backupManager.backup();
 
         assertEquals("Shared preferences backed up", 1, backupManager.getBackupAgent().sharedPreferencesBackedUp);
@@ -88,7 +88,7 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         JSONArray jsa = FileUtils.getJSONArray(accountData);
         assertTrue(jsa.length() > 2);
         
-        return backupManager.getDescriptorFile();
+        return backupManager.getDataFolder();
     }
 
     private void deleteApplicationData() throws IOException {
@@ -142,11 +142,11 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         }
     }
     
-    private void testRestore(File descriptorFile)
+    private void testRestore(File dataFolder)
             throws IOException {
         
         MyBackupManager backupManager = new MyBackupManager(null);
-        backupManager.prepareForRestore(descriptorFile);
+        backupManager.prepareForRestore(dataFolder);
         assertTrue("Data folder exists: '" + backupManager.getDataFolder().getAbsolutePath() + "'", backupManager.getDataFolder().exists());
 
         backupManager.restore();
@@ -154,11 +154,10 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         assertEquals("Databases restored", 1, backupManager.getBackupAgent().databasesRestored);
     }
 
-    private void deleteBackup(File descriptorFile) {
-        for (File dataFile : MyBackupManager.descriptorFileToDataFolder(descriptorFile).listFiles()) {
+    private void deleteBackup(File dataFolder) {
+        for (File dataFile : dataFolder.listFiles()) {
             dataFile.delete();
         }
-        MyBackupManager.descriptorFileToDataFolder(descriptorFile).delete();
-        descriptorFile.delete();
+        dataFolder.delete();
     }
 }

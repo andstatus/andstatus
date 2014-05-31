@@ -40,9 +40,8 @@ import java.util.Arrays;
  * @author yvolk (Yuri Volkov), http://yurivolkov.com
  */
 class MyBackupManager {
-    static final String DESCRIPTOR_FILE_SUFFIX = "_descriptor.json";
-    static final String DATA_FOLDER_SUFFIX = "_data";
-    private File descriptorFile = null;
+    static final String DESCRIPTOR_FILE_NAME = "_descriptor.json";
+    private File dataFolder = null;
     private MyBackupDescriptor newDescriptor = MyBackupDescriptor.getEmpty();    
 
     private MyBackupAgent backupAgent;
@@ -64,39 +63,48 @@ class MyBackupManager {
     }
     
     void prepareForBackup(File backupFolder) throws IOException {
+        progressLogger.logProgress("Data folder will be created inside:'" + backupFolder.getAbsolutePath() + "'");
+        if (backupFolder.exists()) {
+            if (dataFolderToDescriptorFile(backupFolder).exists()) {
+                throw new FileNotFoundException("Wrong folder, descriptor file already exists:'" + dataFolderToDescriptorFile(backupFolder).getAbsolutePath() + "'");
+            }
+        }
         final String backupFileNamePrefix = MyLog.currentDateTimeFormatted() + "-AndStatusBackup";
-        progressLogger.logProgress("Preparing for backup to folder:'" + backupFolder.getAbsolutePath() + "'; backup prefix:'" + backupFileNamePrefix + "'");
+        File dataFolderToBe = new File(backupFolder, backupFileNamePrefix);
+        if (dataFolderToBe.exists()) {
+            throw new FileNotFoundException("Data folder already exists:'" + dataFolderToBe.getAbsolutePath() + "'");
+        }
+        dataFolder = dataFolderToBe;
+        if (!dataFolder.mkdir() || !dataFolder.exists()) {
+            throw new FileNotFoundException("Couldn't create the data folder:'" + dataFolder.getAbsolutePath() + "'");
+        }
         
-        File descriptorFileTobe = new File(backupFolder, backupFileNamePrefix + MyBackupManager.DESCRIPTOR_FILE_SUFFIX);
-        if (descriptorFileTobe.exists()) {
-            throw new FileNotFoundException("Descriptor file already exists:'" + descriptorFileTobe.getAbsolutePath() + "'");
+        if (getDescriptorFile().exists()) {
+            throw new FileNotFoundException("Descriptor file already exists:'" + getDescriptorFile().getAbsolutePath() + "'");
         }
-        descriptorFileTobe.createNewFile();
-        if (!descriptorFileTobe.exists()) {
-            throw new FileNotFoundException("Couldn't create the descriptor file:'" + descriptorFileTobe.getAbsolutePath() + "'");
-        }
-        this.descriptorFile = descriptorFileTobe;
-
-        if (!getDataFolder().mkdir() || !getDataFolder().exists()) {
-            throw new FileNotFoundException("Couldn't create the data folder:'" + getDataFolder().getAbsolutePath() + "'");
+        getDescriptorFile().createNewFile();
+        if (!getDescriptorFile().exists()) {
+            throw new FileNotFoundException("Couldn't create the descriptor file:'" + getDescriptorFile().getAbsolutePath() + "'");
         }
     }
 
     File getDataFolder() {
-        return descriptorFileToDataFolder(descriptorFile);
+        return dataFolder;
+    }
+
+    File getDescriptorFile() {
+        return dataFolderToDescriptorFile(dataFolder);
     }
     
-    static File descriptorFileToDataFolder(File descriptorFile) {
-        final String backupBaseFileName = descriptorFile.getName().substring(0, descriptorFile.getName().length() - DESCRIPTOR_FILE_SUFFIX.length());
-        File dataFolder = new File(descriptorFile.getParent(), backupBaseFileName + DATA_FOLDER_SUFFIX);
-        return dataFolder;
+    static File dataFolderToDescriptorFile(File dataFolder) {
+        return new File(dataFolder, DESCRIPTOR_FILE_NAME);
     }
     
     void backup() throws IOException {
-        progressLogger.logProgress("Starting backup to:'" + descriptorFile.getAbsolutePath() + "'");
+        progressLogger.logProgress("Starting backup to data folder:'" + dataFolder.getAbsolutePath() + "'");
         backupAgent = new MyBackupAgent();
-        MyBackupDataOutput dataOutput = new MyBackupDataOutput(getDataFolder());
-        ParcelFileDescriptor newState = ParcelFileDescriptor.open(descriptorFile,
+        MyBackupDataOutput dataOutput = new MyBackupDataOutput(dataFolder);
+        ParcelFileDescriptor newState = ParcelFileDescriptor.open(getDescriptorFile(),
                 ParcelFileDescriptor.MODE_READ_WRITE);
         try {
             newDescriptor = MyBackupDescriptor.fromEmptyParcelFileDescriptor(newState, progressLogger);
@@ -118,39 +126,43 @@ class MyBackupManager {
         }
     }
     
-    void prepareForRestore(File descriptorFileIn) throws IOException {
-        if (descriptorFileIn == null) {
-            throw new FileNotFoundException("Backup descriptor file is not selected");
+    void prepareForRestore(File dataFolderOrFile) throws IOException {
+        if (dataFolderOrFile == null) {
+            throw new FileNotFoundException("Data folder of file is not selected");
         }
-        if (!descriptorFileIn.exists()) {
-            throw new FileNotFoundException("Descriptor file doesn't exist:'" + descriptorFileIn.getAbsolutePath() + "'");
+        if (!dataFolderOrFile.exists()) {
+            throw new FileNotFoundException("Data file doesn't exist:'" + dataFolderOrFile.getAbsolutePath() + "'");
         }
-        this.descriptorFile = descriptorFileIn;
+        if (dataFolderOrFile.isDirectory()) {
+            this.dataFolder = dataFolderOrFile;
+        } else {
+            this.dataFolder = dataFolderOrFile.getParentFile();
+        }
+        if (!getDescriptorFile().exists()) {
+            throw new FileNotFoundException("Descriptor file doesn't exist:'" + getDescriptorFile().getAbsolutePath() + "'");
+        }
 
-        progressLogger.logProgress("Preparing to restore from:'" + descriptorFile.getAbsolutePath() + "'");
-        ParcelFileDescriptor newState = ParcelFileDescriptor.open(descriptorFile,
+        ParcelFileDescriptor newState = ParcelFileDescriptor.open(getDescriptorFile(),
                 ParcelFileDescriptor.MODE_READ_ONLY);
         try {
             newDescriptor = MyBackupDescriptor.fromOldParcelFileDescriptor(newState, progressLogger);
             if (newDescriptor.getBackupSchemaVersion() != MyBackupDescriptor.BACKUP_SCHEMA_VERSION) {
                 throw new FileNotFoundException("Unsupported backup schema version: " + newDescriptor.getBackupSchemaVersion()
-                        + "; created with app version code:" + newDescriptor.getApplicationVersionCode());
+                        + "; created with app version code:" + newDescriptor.getApplicationVersionCode()
+                        + "; data folder:'" + dataFolder.getAbsolutePath() + "'");
             }
         } finally {
             newState.close();
         }
-        if ( !getDataFolder().exists()) {
-            throw new FileNotFoundException("Data folder not found: '" + getDataFolder().getAbsolutePath() + "'");
-        }
     }
 
     void restore() throws IOException {
-        MyBackupDataInput dataInput = new MyBackupDataInput(getDataFolder());
+        MyBackupDataInput dataInput = new MyBackupDataInput(dataFolder);
         if (dataInput.listKeys().size() < 3) {
             throw new FileNotFoundException("Not enough keys in the backup: " + Arrays.toString(dataInput.listKeys().toArray()));
         }
         
-        progressLogger.logProgress("Starting restore from:'" + descriptorFile.getAbsolutePath() 
+        progressLogger.logProgress("Starting restore from data folder:'" + dataFolder.getAbsolutePath() 
                 + "', created with app version code:" + newDescriptor.getApplicationVersionCode());
         backupAgent = new MyBackupAgent();
         backupAgent.onRestore(dataInput, newDescriptor.getApplicationVersionCode(), newDescriptor);
@@ -171,10 +183,6 @@ class MyBackupManager {
             directory = context.getFilesDir();
         }
         return new File(directory, "backups/AndStatus");
-    }
-
-    File getDescriptorFile() {
-        return descriptorFile;
     }
     
     MyBackupAgent getBackupAgent() {

@@ -459,7 +459,12 @@ public class MyLog {
     }
     
     public static String currentDateTimeFormatted() {
-        return DateFormat.format("yyyy-MM-dd-HH-mm-ss", new Date(System.currentTimeMillis())).toString();
+        String strTime = DateFormat.format("yyyy-MM-dd-HH-mm-ss", new Date(System.currentTimeMillis())).toString();
+        if (strTime.contains("HH")) {
+            // see http://stackoverflow.com/questions/16763968/android-text-format-dateformat-hh-is-not-recognized-like-with-java-text-simple
+            strTime = DateFormat.format("yyyy-MM-dd-kk-mm-ss", new Date(System.currentTimeMillis())).toString();
+        }
+        return strTime;
     }
 
     public static String trimmedString(String input, int maxLength) {
