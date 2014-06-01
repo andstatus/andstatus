@@ -53,7 +53,9 @@ public class MbUser {
         return new MbUser();
     }
     
-    private MbUser() {}
+    private MbUser() {
+        // Empty
+    }
     
     public boolean isEmpty() {
         return (TextUtils.isEmpty(userName) && TextUtils.isEmpty(oid)) || originId==0;

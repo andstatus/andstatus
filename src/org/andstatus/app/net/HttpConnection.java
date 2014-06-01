@@ -36,7 +36,9 @@ public abstract class HttpConnection {
      */
     public static final Uri CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org");
  
-    public void registerClient(String path) throws ConnectionException {}
+    public void registerClient(String path) throws ConnectionException {
+        // Empty
+    }
     
     protected abstract JSONObject postRequest(String path, JSONObject jso) throws ConnectionException;
 

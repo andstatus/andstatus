@@ -28,9 +28,10 @@ public class TimelinePosition {
 
     public TimelinePosition(String position) {
         if (TextUtils.isEmpty(position)) {
-            position = "";
+            this.position = "";
+        } else {
+            this.position = position;
         }
-        this.position = position;
     }
 
     public String getPosition() {

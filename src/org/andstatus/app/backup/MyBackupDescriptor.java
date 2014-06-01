@@ -167,7 +167,7 @@ public class MyBackupDescriptor {
      }
 
     boolean saved() {
-        return (createdDate != 0);
+        return createdDate != 0;
     }
 
     public long getAccountsCount() {

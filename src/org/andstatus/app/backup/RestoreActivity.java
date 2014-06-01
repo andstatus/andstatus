@@ -59,14 +59,14 @@ public class RestoreActivity extends Activity implements MyActionBarContainer {
             @Override
             public void onClick(View v) {
                 new SimpleFileDialog(RestoreActivity.this,
-                        "FileOpen",
+                        SimpleFileDialog.TypeOfSelection.FILE_OPEN,
                         new SimpleFileDialog.SimpleFileDialogListener() {
                             @Override
                             public void onChosenDir(String selectedFile) {
                                 setBackupFile(new File(selectedFile));
                             }
                         })
-                        .chooseFile_or_Dir(getBackupFolder().getAbsolutePath());
+                        .chooseFileOrDir(getBackupFolder().getAbsolutePath());
             }
         });
 
@@ -90,19 +90,23 @@ public class RestoreActivity extends Activity implements MyActionBarContainer {
             backupFolder = MyBackupManager.getDefaultBackupDirectory(this);
         }
         if (!backupFolder.exists() || !backupFolder.isDirectory()) {
-            backupFolder = new File("/");
+            backupFolder = new File(SimpleFileDialog.getRootFolder());
         }
         return backupFolder;
     }
     
     void setBackupFile(File backupFileIn) {
-        if ( backupFileIn != null && backupFileIn.exists() ) {
+        if ( backupFileIn == null ) {
+            MyLog.i(this, "No backup file selected");
+            return;
+        } else if ( backupFileIn.exists() ) {
             if (backupFileIn.isDirectory()) {
                 MyLog.i(this, "Is not a file '" + backupFileIn.getAbsolutePath() + "'");
                 return;
             }
         } else {
             MyLog.i(this, "The file doesn't exist: '" + backupFileIn.getAbsolutePath() + "'");
+            return;
         }
         TextView view = (TextView) findViewById(R.id.backup_file);
         view.setText(backupFileIn.getAbsolutePath());

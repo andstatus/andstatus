@@ -110,19 +110,23 @@ class HttpApacheUtils {
         return request.postRequest(post);
     }
     
+    /**
+     * @return empty {@link JSONObject} in a case of error
+     */
     protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
         List<NameValuePair> formParams = HttpApacheUtils.jsonToNameValuePair(jso);
         HttpPost postMethod = new HttpPost(request.pathToUrl(path));
+        JSONObject out = new JSONObject();
         try {
             if (formParams != null) {
                 UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams, HTTP.UTF_8);
                 postMethod.setEntity(formEntity);
             }
-            jso = request.postRequest(postMethod);
+            out = request.postRequest(postMethod);
         } catch (UnsupportedEncodingException e) {
             MyLog.e(this, e);
         }
-        return jso;
+        return out;
     }
     
     /**

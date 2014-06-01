@@ -56,21 +56,19 @@ public class DataInserter {
         return insertOrUpdateMsgBySender(message, lum, 0);
     }
     
-    private long insertOrUpdateMsgBySender(MbMessage message, LatestUserMessages lum, long senderIdIn) {
+    private long insertOrUpdateMsgBySender(MbMessage messageIn, LatestUserMessages lum, long senderIdIn) {
         final String funcName = "Inserting/updating msg";
         /**
          * Id of the message in our system, see {@link MyDatabase.Msg#MSG_ID}
          */
         Long rowId = 0L;
         try {
-            if (message.isEmpty()) {
-                MyLog.w(TAG, funcName +", the message is empty, skipping: " + message.toString());
+            if (messageIn.isEmpty()) {
+                MyLog.w(TAG, funcName +", the message is empty, skipping: " + messageIn.toString());
                 return 0;
             }
             
-            /**
-             * Don't insert this message
-             */
+            MbMessage message = messageIn;
             boolean skipIt = false;
             ContentValues values = new ContentValues();
 

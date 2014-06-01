@@ -523,10 +523,12 @@ public class MyProvider extends ContentProvider {
      *      java.lang.String)
      */
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
+    public Cursor query(Uri uri, String[] projection, String selectionIn, String[] selectionArgsIn,
             String sortOrder) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         boolean built = false;
+        String selection = selectionIn;
+        String[] selectionArgs = selectionArgsIn; 
         String sql = "";
 
         MatchedUri matchedUri = MatchedUri.fromInt(URI_MATCHER.match(uri));
@@ -539,7 +541,7 @@ public class MyProvider extends ContentProvider {
 
             case MSG_COUNT:
                 sql = "SELECT count(*) FROM " + Msg.TABLE_NAME + " AS " + MSG_TABLE_ALIAS;
-                if (selection != null && selection.length() > 0) {
+                if (!TextUtils.isEmpty(selection)) {
                     sql += " WHERE " + selection;
                 }
                 break;
@@ -567,7 +569,7 @@ public class MyProvider extends ContentProvider {
                     // Msg.BODY + " LIKE ?");
 
                     // 2. This works also, but yvolk likes it more :-)
-                    if (selection != null && selection.length() > 0) {
+                    if (!TextUtils.isEmpty(selection)) {
                         selection = " AND (" + selection + ")";
                     } else {
                         selection = "";

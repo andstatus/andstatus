@@ -121,8 +121,12 @@ public class AccountData implements Parcelable, AccountDataWriter {
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof AccountData)) return false;
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof AccountData)) {
+            return false;
+        }
         final AccountData other = (AccountData)o;
         return hashCode() == other.hashCode();
     }

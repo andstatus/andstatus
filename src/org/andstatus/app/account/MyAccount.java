@@ -237,11 +237,9 @@ public final class MyAccount {
             // Old preferences file may be deleted, if it exists...
             ok = SharedPreferencesUtil.delete(myContext.context(), myAccount.oAccountName.prefsFileName());
 
-            if (isPersistent()) {
-                if (myAccount.userId != 0) {
-                    // TODO: Delete databases for this User
-                    myAccount.userId = 0;
-                }
+            if (isPersistent() && myAccount.userId != 0) {
+                // TODO: Delete databases for this User
+                myAccount.userId = 0;
             }
             setAndroidAccountDeleted();
             return ok;
@@ -926,12 +924,15 @@ public final class MyAccount {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MyAccount other = (MyAccount) obj;
         try {
             return toJson().toString(2).equals(other.toJson().toString(2));

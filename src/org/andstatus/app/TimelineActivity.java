@@ -780,7 +780,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                                     + "; linkedUserId=" + linkedUserId + " account="
                                     + ((ma != null) ? ma.getAccountName() : "?"));
                 }
-                Uri uri = MyProvider.getTimelineMsgUri(((ma != null) ? ma.getUserId() : 0), timelineType, true, id);
+                Uri uri = MyProvider.getTimelineMsgUri((ma != null) ? ma.getUserId() : 0, timelineType, true, id);
                 return uri;
             }
 

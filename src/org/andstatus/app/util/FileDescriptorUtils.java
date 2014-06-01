@@ -31,6 +31,10 @@ import java.io.InputStream;
 public class FileDescriptorUtils {
     private static final String TAG = FileDescriptorUtils.class.getSimpleName();
     
+    private FileDescriptorUtils() {
+        // Empty
+    }
+    
     public static JSONObject getJSONObject(FileDescriptor fileDescriptor) {
         JSONObject jso = null;
         String fileString = getString(fileDescriptor);

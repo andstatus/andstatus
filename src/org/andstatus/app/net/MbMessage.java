@@ -78,7 +78,9 @@ public class MbMessage {
         return this;
     }
     
-    private MbMessage() {}
+    private MbMessage() {
+        // Empty
+    }
     
     public String getBody() {
         return body;

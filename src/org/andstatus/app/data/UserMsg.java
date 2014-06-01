@@ -98,16 +98,18 @@ public final class UserMsg {
     /** If this message is newer than any we got earlier, remember it
      * @param msgDate may be 0 (will be retrieved here) 
      */
-    public void onNewMsg(long msgId, long msgDate) {
-        if (msgId != 0) {
-            if (msgDate == 0) {
-                msgDate = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, msgId);
-            }
-            if (msgDate > lastMsgDate) {
-                lastMsgDate = msgDate;
-                lastMsgId = msgId;
-                changed = true;
-            }
+    public void onNewMsg(long msgId, long msgDateIn) {
+        if (msgId == 0) {
+            return; 
+        }
+        long msgDate = msgDateIn;
+        if (msgDate == 0) {
+            msgDate = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, msgId);
+        }
+        if (msgDate > lastMsgDate) {
+            lastMsgDate = msgDate;
+            lastMsgId = msgId;
+            changed = true;
         }
     }
     

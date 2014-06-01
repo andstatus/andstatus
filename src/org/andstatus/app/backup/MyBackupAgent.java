@@ -290,11 +290,9 @@ public class MyBackupAgent extends BackupAgent {
     
     /** Returns count of restores files */
     public long restoreFile(MyBackupDataInput data, File dataFile) throws IOException {
-        if (dataFile.exists()) {
-            if (!dataFile.delete()) {
-                throw new FileNotFoundException("Couldn't delete old file before restore '"
-                        + dataFile.getName() + "'");
-            }
+        if (dataFile.exists() && !dataFile.delete()) {
+            throw new FileNotFoundException("Couldn't delete old file before restore '"
+                    + dataFile.getName() + "'");
         }
         final String method = "restoreFile";
         MyLog.i(this, method + " started, " + fileWritten(data.getKey(), dataFile, data.getDataSize()));

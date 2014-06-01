@@ -90,15 +90,11 @@ public class MyBackupDataOutput {
     }
 
     private void createFileIfNeeded(int dataSize, File file) throws IOException {
-        if (file.exists()) {
-            if (!file.delete()) {
-                throw new FileNotFoundException("Couldn't delete " + file.getAbsolutePath());
-            }
+        if (file.exists() && !file.delete()) {
+            throw new FileNotFoundException("Couldn't delete " + file.getAbsolutePath());
         }
-        if (dataSize >= 0) {
-            if (!file.createNewFile()) {
-                throw new FileNotFoundException("Couldn't create " + file.getAbsolutePath());
-            }
+        if (dataSize >= 0 && !file.createNewFile()) {
+            throw new FileNotFoundException("Couldn't create " + file.getAbsolutePath());
         }
     }
     

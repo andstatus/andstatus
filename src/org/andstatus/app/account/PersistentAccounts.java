@@ -378,18 +378,23 @@ public class PersistentAccounts {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         PersistentAccounts other = (PersistentAccounts) obj;
         if (persistentAccounts == null) {
-            if (other.persistentAccounts != null)
+            if (other.persistentAccounts != null) {
                 return false;
-        } else if (!persistentAccounts.equals(other.persistentAccounts))
+            }
+        } else if (!persistentAccounts.equals(other.persistentAccounts)) {
             return false;
+        }
         return true;
     }
 }

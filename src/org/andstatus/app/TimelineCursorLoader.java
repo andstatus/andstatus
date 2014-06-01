@@ -68,12 +68,12 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         }
         serviceConnector.registerReceiver(getContext());
         if (mayReuseResult()) {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) MyLog.v(this, method + " reusing result");
+            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+                MyLog.v(this, method + " reusing result");
+            }
             deliverResultsAndClean(mCursor);
         } else if (getParams().reQuery || taskIsNotRunning()) {
             restartLoader();
-        } else {
-            
         }
     }
 
@@ -102,7 +102,9 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
     private void restartLoader() {
         final String method = "restartLoader";
         boolean ended = false;
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) MyLog.v(this, method +  ", status:" + getAsyncLoaderStatus());
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, method +  ", status:" + getAsyncLoaderStatus());
+        }
         synchronized (asyncLoaderLock) {
             if (cancelAsyncTask(method)) {
                 try {
@@ -304,7 +306,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         
         private void logExecutionStats(Cursor cursor) {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                StringBuilder text = new StringBuilder((getParams().cancelled ? "cancelled" : "ended"));
+                StringBuilder text = new StringBuilder(getParams().cancelled ? "cancelled" : "ended");
                 if (!getParams().cancelled) {
                     String cursorInfo;
                     if (cursor == null) {

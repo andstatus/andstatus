@@ -20,4 +20,7 @@ public class ClassInApplicationPackage {
 
     public static final String PACKAGE_NAME = IntentExtra.class.getPackage().getName();
 
+    private ClassInApplicationPackage() {
+        // Empty
+    }
 }

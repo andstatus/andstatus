@@ -37,10 +37,7 @@ public final class SelectionAndArgs {
   }
   
   public int addSelection(String selectionAdd, String[] selectionArgsAdd) {
-      if (selectionArgsAdd == null) {
-          selectionArgsAdd = new String[] {};
-      }
-      int nArgsAdd = selectionArgsAdd.length;
+      int nArgsAdd = selectionArgsAdd == null ? 0 : selectionArgsAdd.length;
       if (!TextUtils.isEmpty(selectionAdd)) {
           if (selection.length() == 0) {
               selection = selectionAdd;

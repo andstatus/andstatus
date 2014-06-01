@@ -44,12 +44,12 @@ class AccountName {
     private String username;
 
     protected static String accountNameToOriginName(String accountName) {
-        accountName = AccountName.fixAccountName(accountName);
-        int indSeparator = accountName.lastIndexOf(ORIGIN_SEPARATOR);
+        String accountNameFixed = AccountName.fixAccountName(accountName);
+        int indSeparator = accountNameFixed.lastIndexOf(ORIGIN_SEPARATOR);
         String originName = "";
         if (indSeparator >= 0 &&
-            indSeparator < accountName.length()-1) {
-                originName = accountName.substring(indSeparator + 1);
+            indSeparator < accountNameFixed.length()-1) {
+                originName = accountNameFixed.substring(indSeparator + 1);
         }
         return fixOriginName(originName);
     }
@@ -66,11 +66,11 @@ class AccountName {
     }
     
     String accountNameToUsername(String accountName) {
-        accountName = fixAccountName(accountName);
-        int indSeparator = accountName.indexOf(ORIGIN_SEPARATOR);
+        String accountNameFixed = fixAccountName(accountName);
+        int indSeparator = accountNameFixed.indexOf(ORIGIN_SEPARATOR);
         String usernameOut = "";
         if (indSeparator > 0) {
-            usernameOut = accountName.substring(0, indSeparator);
+            usernameOut = accountNameFixed.substring(0, indSeparator);
         }
         return fixUsername(usernameOut);
     }

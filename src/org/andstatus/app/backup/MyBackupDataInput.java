@@ -68,8 +68,54 @@ public class MyBackupDataInput {
 
         @Override
         public int compareTo(BackupHeader another) {
-            return (ordinalNumber == another.ordinalNumber ? 0
-                    : (ordinalNumber > another.ordinalNumber ? 1 : -1));
+            return ordinalNumber == another.ordinalNumber ? 0
+                    : (ordinalNumber > another.ordinalNumber ? 1 : -1);
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + dataSize;
+            result = prime * result + ((fileExtension == null) ? 0 : fileExtension.hashCode());
+            result = prime * result + ((key == null) ? 0 : key.hashCode());
+            result = prime * result + (int) (ordinalNumber ^ (ordinalNumber >>> 32));
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            BackupHeader other = (BackupHeader) obj;
+            if (dataSize != other.dataSize) {
+                return false;
+            }
+            if (fileExtension == null) {
+                if (other.fileExtension != null) {
+                    return false;
+                }
+            } else if (!fileExtension.equals(other.fileExtension)) {
+                return false;
+            }
+            if (key == null) {
+                if (other.key != null) {
+                    return false;
+                }
+            } else if (!key.equals(other.key)) {
+                return false;
+            }
+            if (ordinalNumber != other.ordinalNumber) {
+                return false;
+            }
+            return true;
         }
 
         @Override

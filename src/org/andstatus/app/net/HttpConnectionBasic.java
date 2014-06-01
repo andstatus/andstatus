@@ -164,7 +164,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
      * Set User's password if the Connection object needs it
      */
     @Override
-    public void setPassword(String password) {
+    public void setPassword(String passwordIn) {
+        String password = passwordIn;
         if (password == null) {
             password = "";
         }

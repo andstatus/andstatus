@@ -38,14 +38,15 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
     public void testBackupRestore() throws IOException, JSONException, NameNotFoundException, ConnectionException, InterruptedException {
         PersistentAccounts accountsBefore = PersistentAccounts.getEmpty();
         accountsBefore.initialize();
-        assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
-        
+        if (android.os.Build.VERSION.SDK_INT > 8 ) {
+            assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
+        }
         File outputFolder = MyContextHolder.get().context().getCacheDir();
         File dataFolder = testBackup(outputFolder);
         deleteApplicationData();
         testRestore(dataFolder);
         TestSuite.initialize(this);
-
+        
         assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
         assertEquals(
                 "One account",

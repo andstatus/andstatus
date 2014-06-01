@@ -178,11 +178,7 @@ public class SharedPreferencesUtil {
      * @return true if str is null or zero length or "null"
      */
     public static boolean isEmpty(CharSequence str) {
-        if (TextUtils.isEmpty(str) || str.equals("null")) {
-            return true;
-        } else {
-            return false;
-        }
+        return TextUtils.isEmpty(str) || "null".equals(str);
     }
 
     public static int isTrueAsInt(Object o) {

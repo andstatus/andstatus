@@ -37,7 +37,9 @@ public class MbConfig {
         return config;
     }
     
-    private MbConfig() {}
+    private MbConfig() {
+        // Empty
+    }
     
     public boolean isEmpty() {
         return isEmpty;

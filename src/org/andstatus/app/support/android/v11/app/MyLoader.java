@@ -302,6 +302,7 @@ public class MyLoader<D> {
      * but as a result of a call to {@link #startLoading()}.
      */
     protected void onStartLoading() {
+        // Empty
     }
 
     /**
@@ -358,6 +359,7 @@ public class MyLoader<D> {
      * This will always be called from the process's main thread.
      */
     protected void onForceLoad() {
+        // Empty
     }
 
     /**
@@ -392,6 +394,7 @@ public class MyLoader<D> {
      * This will always be called from the process's main thread.
      */
     protected void onStopLoading() {
+        // Empty
     }
 
     /**
@@ -420,6 +423,7 @@ public class MyLoader<D> {
      * state with {@link #isAbandoned}.
      */
     protected void onAbandon() {        
+        // Empty
     }
     
     /**
@@ -455,6 +459,7 @@ public class MyLoader<D> {
      * This will always be called from the process's main thread.
      */
     protected void onReset() {
+        // Empty
     }
 
     /**
@@ -511,11 +516,19 @@ public class MyLoader<D> {
      * @param args Additional arguments to the dump request.
      */
     public void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
-        writer.print(prefix); writer.print("mId="); writer.print(mId);
-                writer.print(" mListener="); writer.println(mListener);
-        writer.print(prefix); writer.print("mStarted="); writer.print(mStarted);
-                writer.print(" mContentChanged="); writer.print(mContentChanged);
-                writer.print(" mAbandoned="); writer.print(mAbandoned);
-                writer.print(" mReset="); writer.println(mReset);
+        writer.print(prefix);
+        writer.print("mId=");
+        writer.print(mId);
+        writer.print(" mListener=");
+        writer.println(mListener);
+        writer.print(prefix);
+        writer.print("mStarted=");
+        writer.print(mStarted);
+        writer.print(" mContentChanged=");
+        writer.print(mContentChanged);
+        writer.print(" mAbandoned=");
+        writer.print(mAbandoned);
+        writer.print(" mReset=");
+        writer.println(mReset);
     }
 }

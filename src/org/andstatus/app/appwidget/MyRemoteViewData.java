@@ -79,15 +79,15 @@ class MyRemoteViewData {
         }
     }
     
-    public String formatWidgetTime(Context context, long startMillis,
+    public static String formatWidgetTime(Context context, long startMillis,
             long endMillis) {
-        String widgetTime = "";
+        String formatted = "";
         String strStart = "";
         String strEnd = "";
 
         if (endMillis == 0) {
-            widgetTime = "=0 ???";
-            MyLog.e(this, "data.dateUpdated==0");
+            formatted = "=0 ???";
+            MyLog.e(context, "data.dateUpdated==0");
         } else {
             Time timeStart = new Time();
             timeStart.set(startMillis);
@@ -122,16 +122,16 @@ class MyRemoteViewData {
                     strStart = RelativeTime.getDifference(context, endMillis);
                 }
             }
-            widgetTime = strStart;
+            formatted = strStart;
             if (strEnd.length() > 0
                     && strEnd.compareTo(strStart) != 0) {
-                if (widgetTime.length() > 0) {
-                    widgetTime += " - ";
+                if (formatted.length() > 0) {
+                    formatted += " - ";
                 }
-                widgetTime += strEnd;
+                formatted += strEnd;
             }
         }       
-        return widgetTime;
+        return formatted;
     }
     
     /** When user clicks on a widget, launch main AndStatus activity,

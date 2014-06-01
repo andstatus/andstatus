@@ -33,7 +33,7 @@ import org.andstatus.app.util.SimpleFileDialog;
 import java.io.File;
 
 public class BackupActivity extends Activity implements MyActionBarContainer {
-    File backupFolder = new File("/");
+    File backupFolder = new File(SimpleFileDialog.getRootFolder());
     BackupTask asyncTask = null;
     private int progressCounter = 0;
 
@@ -60,13 +60,13 @@ public class BackupActivity extends Activity implements MyActionBarContainer {
             @Override
             public void onClick(View v) {
                 new SimpleFileDialog(BackupActivity.this,
-                        "FolderChoose",
+                        SimpleFileDialog.TypeOfSelection.FOLDER_CHOOSE,
                         new SimpleFileDialog.SimpleFileDialogListener() {
                             @Override
                             public void onChosenDir(String chosenDir) {
                                 setBackupFolder(new File(chosenDir));
                             }
-                        }).chooseFile_or_Dir(backupFolder.getAbsolutePath());
+                        }).chooseFileOrDir(backupFolder.getAbsolutePath());
             }
         });
 

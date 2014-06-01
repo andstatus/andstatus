@@ -33,6 +33,10 @@ import java.io.InputStream;
 public class FileUtils {
     private static final String TAG = FileUtils.class.getSimpleName();
 
+    private FileUtils() {
+        // Empty
+    }
+    
     public static JSONArray getJSONArray(File file) throws IOException {
         JSONArray jso = null;
         String fileString = getString(file);

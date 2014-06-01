@@ -63,28 +63,26 @@ class MyBackupManager {
     }
     
     void prepareForBackup(File backupFolder) throws IOException {
-        progressLogger.logProgress("Data folder will be created inside:'" + backupFolder.getAbsolutePath() + "'");
-        if (backupFolder.exists()) {
-            if (dataFolderToDescriptorFile(backupFolder).exists()) {
-                throw new FileNotFoundException("Wrong folder, descriptor file already exists:'" + dataFolderToDescriptorFile(backupFolder).getAbsolutePath() + "'");
-            }
+        progressLogger.logProgress("Data folder will be created inside:'"
+                + backupFolder.getAbsolutePath() + "'");
+        if (backupFolder.exists() && dataFolderToDescriptorFile(backupFolder).exists()) {
+            throw new FileNotFoundException("Wrong folder, descriptor file already exists:'"
+                    + dataFolderToDescriptorFile(backupFolder).getAbsolutePath() + "'");
         }
         final String backupFileNamePrefix = MyLog.currentDateTimeFormatted() + "-AndStatusBackup";
         File dataFolderToBe = new File(backupFolder, backupFileNamePrefix);
         if (dataFolderToBe.exists()) {
-            throw new FileNotFoundException("Data folder already exists:'" + dataFolderToBe.getAbsolutePath() + "'");
+            throw new FileNotFoundException("Data folder already exists:'"
+                    + dataFolderToBe.getAbsolutePath() + "'");
         }
         dataFolder = dataFolderToBe;
         if (!dataFolder.mkdir() || !dataFolder.exists()) {
-            throw new FileNotFoundException("Couldn't create the data folder:'" + dataFolder.getAbsolutePath() + "'");
+            throw new FileNotFoundException("Couldn't create the data folder:'"
+                    + dataFolder.getAbsolutePath() + "'");
         }
-        
-        if (getDescriptorFile().exists()) {
-            throw new FileNotFoundException("Descriptor file already exists:'" + getDescriptorFile().getAbsolutePath() + "'");
-        }
-        getDescriptorFile().createNewFile();
-        if (!getDescriptorFile().exists()) {
-            throw new FileNotFoundException("Couldn't create the descriptor file:'" + getDescriptorFile().getAbsolutePath() + "'");
+        if (!getDescriptorFile().createNewFile()) {
+            throw new FileNotFoundException("Descriptor file already exists:'"
+                    + getDescriptorFile().getAbsolutePath() + "'");
         }
     }
 
