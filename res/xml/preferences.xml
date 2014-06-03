@@ -65,6 +65,10 @@
 		        <Preference
 		            android:key="backup_restore"
 		            android:persistent="false" />
+				<CheckBoxPreference android:key="enable_android_backup"
+                    android:title="@string/title_preference_enable_android_backup"
+                    android:summaryOff="@string/summary_preference_enable_android_backup_off"
+                    android:summaryOn="@string/summary_preference_enable_android_backup_on" />
 			</PreferenceCategory>
 		</PreferenceScreen>
         

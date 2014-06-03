@@ -274,6 +274,8 @@
 	<string name="summary_preference_add_account_oauth">Щёлкните здесь для открытия сайта Системы в браузере.</string>
     <string name="summary_preference_add_account_basic">Щёлкните здесь для аутентификации пользователя и добавления учётной записи (аккаунта).</string>
     <string name="summary_preference_appearance">Изменить внешний вид программы AndStatus</string>
+	<string name="summary_preference_enable_android_backup_off">AndStatus не будет запрашивать создание бэкапов данных</string>
+	<string name="summary_preference_enable_android_backup_on">AndStatus сообщает Android-у об изменениях данных, требующих архивации (экспериментальная функция)</string>
 	<string name="summary_preference_frequency">Обновления происходят каждые {0}.</string>
 	<string name="summary_preference_history_size">Сохранять историю до {0}.</string>
 	<string name="summary_preference_history_time">Хранить историю за {0}.</string>
@@ -327,6 +329,7 @@
     <string name="title_preference_appearance">Внешний вид</string>
 	<string name="title_preference_change_log">Журнал изменений</string>
 	<string name="title_preference_contact_developer">Свяжитесь с разработчиками</string>
+	<string name="title_preference_enable_android_backup">Разрешить автоматическую архивацию Android-а</string>
 	<string name="title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="title_preference_history_size">Размер истории</string>
 	<string name="title_preference_history_time">Длительность хранения истории</string>

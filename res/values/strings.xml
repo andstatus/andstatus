@@ -267,7 +267,9 @@
     <string name="summary_preference_add_account_oauth">Tap here to open the Microblogging system site in a browser.</string>
     <string name="summary_preference_add_account_basic">Tap here to verify credentials and add the account.</string>
     <string name="summary_preference_appearance">Change the AndStatus look and feel</string>
-    <string name="summary_preference_frequency">Updates are fetched every {0}.</string>
+    <string name="summary_preference_enable_android_backup_off">Android backups will not be requested</string>
+	<string name="summary_preference_enable_android_backup_on">AndStatus notifies Android on data changes to be backed up (experimental)</string>
+	<string name="summary_preference_frequency">Updates are fetched every {0}.</string>
 	<string name="summary_preference_history_size">Remember message history up to {0}.</string>
 	<string name="summary_preference_history_time">Remember message history up to {0}.</string>
 	<string name="summary_preference_host">Host name of the system, e.g. quitter.se</string>
@@ -321,6 +323,7 @@
 	<string name="title_preference_change_log">Change Log</string>
 	<string name="title_preference_contact_developer">Contact Developer</string>
     <string name="title_preference_debugging">Logging and debugging</string>
+	<string name="title_preference_enable_android_backup">Enable automatic Android backup</string>
 	<string name="title_preference_frequency">Sync frequency</string>
 	<string name="title_preference_history_size">History Size</string>
 	<string name="title_preference_history_time">History Time</string>

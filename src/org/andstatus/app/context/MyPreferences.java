@@ -79,7 +79,8 @@ public class MyPreferences {
      * New value for #KEY_USE_EXTERNAL_STORAGE to e confirmed/processed
      */
     public static final String KEY_USE_EXTERNAL_STORAGE_NEW = "use_external_storage_new";
-    /**
+    public static final String KEY_ENABLE_ANDROID_BACKUP = "enable_android_backup";
+	/**
      * Is the timeline combined in {@link TimelineActivity} 
      */
     public static final String KEY_TIMELINE_IS_COMBINED = "timeline_is_combined";
@@ -187,7 +188,7 @@ public class MyPreferences {
             .putLong(KEY_PREFERENCES_CHANGE_TIME,
                     java.lang.System.currentTimeMillis()).commit();
             Context context = MyContextHolder.get().context();
-            if (context != null) {
+            if (context != null && getBoolean(KEY_ENABLE_ANDROID_BACKUP, false)) {
                 new BackupManager(context).dataChanged();
             }
         }
