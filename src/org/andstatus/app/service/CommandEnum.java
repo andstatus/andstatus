@@ -21,34 +21,36 @@ public enum CommandEnum {
     /**
      * The action to fetch all usual timelines in the background.
      */
-    AUTOMATIC_UPDATE("automatic-update", -10),
+    AUTOMATIC_UPDATE("automatic-update", -10, true),
     /**
      * Fetch timeline(s) of the specified type for the specified MyAccount. 
      */
-    FETCH_TIMELINE("fetch-timeline", -4),
+    FETCH_TIMELINE("fetch-timeline", -4, true),
 
     /**
      * Fetch avatar for the specified user and URL 
      */
-    FETCH_AVATAR("fetch-avatar", -9),
+    FETCH_AVATAR("fetch-avatar", -9, true),
     
-    CREATE_FAVORITE("create-favorite"), DESTROY_FAVORITE("destroy-favorite"),
+    CREATE_FAVORITE("create-favorite", 0, true), 
+    DESTROY_FAVORITE("destroy-favorite", 0, true),
 
-    FOLLOW_USER("follow-user"), STOP_FOLLOWING_USER("stop-following-user"),
+    FOLLOW_USER("follow-user", 0, true), 
+    STOP_FOLLOWING_USER("stop-following-user", 0, true),
 
     /**
      * This command is for sending both public and direct messages
      */
-    UPDATE_STATUS("update-status", 10), 
-    DESTROY_STATUS("destroy-status", 3),
-    GET_STATUS("get-status", 5),
+    UPDATE_STATUS("update-status", 10, true), 
+    DESTROY_STATUS("destroy-status", 3, true),
+    GET_STATUS("get-status", 5, true),
 
-    SEARCH_MESSAGE("search-message", -4),
+    SEARCH_MESSAGE("search-message", -4, true),
     
-    REBLOG("reblog", 9),
-    DESTROY_REBLOG("destroy-reblog", 3),
+    REBLOG("reblog", 9, true),
+    DESTROY_REBLOG("destroy-reblog", 3, true),
 
-    RATE_LIMIT_STATUS("rate-limit-status"),
+    RATE_LIMIT_STATUS("rate-limit-status", 0, true),
 
     /**
      * Notify User about commands in the Queue
@@ -82,30 +84,27 @@ public enum CommandEnum {
     /**
      * Broadcast back state of {@link MyService}
      */
-    BROADCAST_SERVICE_STATE("broadcast-service-state"),
-    
-    /**
-     * Save SharePreverence. We try to use it because sometimes Android
-     * doesn't actually store these values to the disk... and the
-     * preferences get lost. I think this is mainly because of several
-     * processes using the same preferences
-     */
-    PUT_BOOLEAN_PREFERENCE("put-boolean-preference"), PUT_LONG_PREFERENCE("put-long-preference"), PUT_STRING_PREFERENCE(
-            "put-string-preference");
+    BROADCAST_SERVICE_STATE("broadcast-service-state");
 
     /**
      * code of the enum that is used in messages
      */
     private final String code;
     private final int priority;
+    private final boolean onlineOnly;
 
     private CommandEnum(String code) {
         this(code, 0);
     }
 
     private CommandEnum(String code, int priority) {
+        this(code, priority, false);
+    }
+
+    private CommandEnum(String code, int priority, boolean onlineOnly) {
         this.code = code;
         this.priority = priority;
+        this.onlineOnly = onlineOnly;
     }
 
     /**
@@ -132,5 +131,9 @@ public enum CommandEnum {
 
     public int getPriority() {
         return priority;
+    }
+
+    public boolean isOnlineOnly() {
+        return onlineOnly;
     }
 }

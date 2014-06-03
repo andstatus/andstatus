@@ -16,35 +16,16 @@
 
 package org.andstatus.app.service;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Intent;
 import android.database.sqlite.SQLiteConstraintException;
-import android.graphics.Color;
-import android.net.Uri;
 
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.appwidget.AppWidgets;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
 class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
-
-    private boolean mNotificationsEnabled;
-    private boolean mNotificationsVibrate;
-    
-    CommandExecutorLoadTimeline() {
-        mNotificationsEnabled = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_enabled", false);
-        mNotificationsVibrate = MyPreferences.getDefaultSharedPreferences().getBoolean("vibration", false);
-    }
     
     /* (non-Javadoc)
      * @see org.andstatus.app.service.OneCommandExecutor#execute()
@@ -58,10 +39,10 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
         if (!execContext.getResult().hasError() || execContext.getResult().getDownloadedCount() > 0) {
             MyLog.v(this, "Notifying of timeline changes");
 
-            notifyViaWidgets(execContext.getResult());
+            notifyViaWidgets();
             
-            notifyViaNotificationManager(execContext.getResult().getMessagesAdded(), 
-                    execContext.getResult().getMentionsAdded(), execContext.getResult().getDirectedAdded());
+            AddedMessagesNotifier.newInstance(execContext.getMyContext()).update(
+                    execContext.getResult());
             
             notifyViaContentResolver();
         }
@@ -121,143 +102,10 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
         }
     }
 
-    private void notifyViaWidgets(CommandResult result) {
+    private void notifyViaWidgets() {
         AppWidgets appWidgets = AppWidgets.newInstance(execContext.getMyContext());
-        appWidgets.updateData(result);
+        appWidgets.updateData(execContext.getResult());
         appWidgets.updateViews();
-    }
-    
-    /** TODO: Change the notification's interface just like {@link #notifyViaWidgets(CommandResult)}  */
-    private void notifyViaNotificationManager(int msgAdded, int mentionsAdded, int directedAdded) {
-        if (mentionsAdded > 0) {
-            notifyViaNotificationManager1Type(mentionsAdded, CommandEnum.NOTIFY_MENTIONS);
-        }
-        if (directedAdded > 0) {
-            notifyViaNotificationManager1Type(directedAdded, CommandEnum.NOTIFY_DIRECT_MESSAGE);
-        }
-        if (msgAdded > 0) {
-            notifyViaNotificationManager1Type(msgAdded, CommandEnum.NOTIFY_HOME_TIMELINE);
-        }
-    }
-    
-    private void notifyViaNotificationManager1Type(int numMessages, CommandEnum msgType) {
-        // If no notifications are enabled, return
-        if (!mNotificationsEnabled || numMessages == 0) {
-            return;
-        }
-
-        MyLog.v(this, "notifyViaNotificationManager n=" + numMessages + "; msgType=" + msgType);
-        
-        boolean notificationsMessages = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_messages", false);
-        boolean notificationsReplies = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_mentions", false);
-        boolean notificationsTimeline = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_timeline", false);
-        String ringtone = MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
-
-        // Make sure that notifications haven't been turned off for the
-        // message type
-        switch (msgType) {
-            case NOTIFY_MENTIONS:
-                if (!notificationsReplies) {
-                    return;
-                }
-                break;
-            case NOTIFY_DIRECT_MESSAGE:
-                if (!notificationsMessages) {
-                    return;
-                }
-                break;
-            case NOTIFY_HOME_TIMELINE:
-                if (!notificationsTimeline) {
-                    return;
-                }
-                break;
-            default:
-                break;
-        }
-
-        // Set up the notification to display to the user
-        Notification notification = new Notification(R.drawable.notification_icon,
-                execContext.getContext().getText(R.string.notification_title), System.currentTimeMillis());
-
-        notification.vibrate = null;
-        if (mNotificationsVibrate) {
-            notification.vibrate = new long[] {
-                    200, 300, 200, 300
-            };
-        }
-
-        notification.flags = Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
-        notification.ledOffMS = 1000;
-        notification.ledOnMS = 500;
-        notification.ledARGB = Color.GREEN;
-
-        if ("".equals(ringtone) || ringtone == null) {
-            notification.sound = null;
-        } else {
-            Uri ringtoneUri = Uri.parse(ringtone);
-            notification.sound = ringtoneUri;
-        }
-
-        // Set up the pending intent
-        PendingIntent contentIntent;
-
-        int messageTitle;
-        Intent intent;
-        String aMessage = "";
-
-        // Prepare "intent" to launch timeline activities exactly like in
-        // org.andstatus.app.TimelineActivity.onOptionsItemSelected
-        switch (msgType) {
-            case NOTIFY_MENTIONS:
-                aMessage = I18n.formatQuantityMessage(execContext.getContext(),
-                        R.string.notification_new_mention_format, numMessages,
-                        R.array.notification_mention_patterns,
-                        R.array.notification_mention_formats);
-                messageTitle = R.string.notification_title_mentions;
-                intent = new Intent(execContext.getContext(), TimelineActivity.class);
-                intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
-                        TimelineTypeEnum.MENTIONS.save());
-                contentIntent = PendingIntent.getActivity(execContext.getContext(), numMessages,
-                        intent, 0);
-                break;
-
-            case NOTIFY_DIRECT_MESSAGE:
-                aMessage = I18n.formatQuantityMessage(execContext.getContext(),
-                        R.string.notification_new_message_format, numMessages,
-                        R.array.notification_message_patterns,
-                        R.array.notification_message_formats);
-                messageTitle = R.string.notification_title_messages;
-                intent = new Intent(execContext.getContext(), TimelineActivity.class);
-                intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
-                        TimelineTypeEnum.DIRECT.save());
-                contentIntent = PendingIntent.getActivity(execContext.getContext(), numMessages,
-                        intent, 0);
-                break;
-
-            case NOTIFY_HOME_TIMELINE:
-            default:
-                aMessage = I18n
-                        .formatQuantityMessage(execContext.getContext(),
-                                R.string.notification_new_tweet_format, numMessages,
-                                R.array.notification_tweet_patterns,
-                                R.array.notification_tweet_formats);
-                messageTitle = R.string.notification_title;
-                intent = new Intent(execContext.getContext(), TimelineActivity.class);
-                intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
-                        TimelineTypeEnum.HOME.save());
-                contentIntent = PendingIntent.getActivity(execContext.getContext(), numMessages,
-                        intent, 0);
-                break;
-        }
-
-        // Set up the scrolling message of the notification
-        notification.tickerText = aMessage;
-
-        // Set the latest event information and send the notification
-        notification.setLatestEventInfo(execContext.getContext(), execContext.getContext().getText(messageTitle), aMessage,
-                contentIntent);
-        NotificationManager nM = (NotificationManager) execContext.getContext().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
-        nM.notify(msgType.ordinal(), notification);
     }
 
     private void notifyViaContentResolver() {

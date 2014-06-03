@@ -37,6 +37,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.IBinder;
@@ -353,7 +354,6 @@ public class MyService extends Service {
             isStopping = isStopping();
             if (!isStopping) {
                 isStopping = mainCommandQueue.isEmpty()
-                        || !isOnline() 
                         || !MyContextHolder.get().isReady();
                 if (isStopping && !calledFromExecutor && executor!= null) {
                     isStopping = (executor.getStatus() != Status.RUNNING);
@@ -361,11 +361,11 @@ public class MyService extends Service {
             }
             if (this.mIsStopping != isStopping) {
                 if (isStopping) {
-                    MyLog.v(this, "Decided to continue; startId=" + lastProcessedStartId);
-                } else {
                     MyLog.v(this, "Decided to stop; startId=" + lastProcessedStartId 
                             + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
                             );
+                } else {
+                    MyLog.v(this, "Decided to continue; startId=" + lastProcessedStartId);
                 }
                 this.mIsStopping = isStopping;
             }
@@ -387,26 +387,29 @@ public class MyService extends Service {
         }
     }
 
-    /**
-     * We use this function before actual requests of Internet services Based on
-     * http
-     * ://stackoverflow.com/questions/1560788/how-to-check-internet-access-on
-     * -android-inetaddress-never-timeouts
-     */
-    public boolean isOnline() {
-        boolean is = false;
-        try {
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            // test for connection
-            if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable()
-                    && cm.getActiveNetworkInfo().isConnected()) {
-                is = true;
-            } else {
-                MyLog.v(this, "Internet Connection Not Present");
-            }
-        } catch (Exception e) {
-            MyLog.v(this, "isOnline", e);
+    boolean isOnline() {
+        if (isOnlineNotLogged()) {
+            return true;
+        } else {
+            MyLog.v(this, "Internet Connection Not Present");
+            return false;
         }
+    }
+
+    /**
+     * Based on http://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-timeouts
+     */
+    private boolean isOnlineNotLogged() {
+        boolean is = false;
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) {
+            return false;
+        }
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        if (networkInfo == null) {
+            return false;
+        }
+        is = networkInfo.isAvailable() && networkInfo.isConnected();
         return is;
     }
     
@@ -588,7 +591,9 @@ public class MyService extends Service {
                 if (commandData == null) {
                     break;
                 }
-                CommandExecutorStrategy.executeCommand(commandData, this);
+                if ( !commandData.getCommand().isOnlineOnly() || isOnline()) {
+                    CommandExecutorStrategy.executeCommand(commandData, this);
+                }
                 if (commandData.getResult().shouldWeRetry()) {
                     synchronized(MyService.this) {
                         // Put the command to the retry queue
@@ -599,12 +604,8 @@ public class MyService extends Service {
                     }        
                 }
                 broadcastState(commandData);
-                if (commandData.getResult().hasError() && !isOnline()) {
-                    // Don't bother with other commands if we're not Online :-)
-                    break;
-                }
             } while (true);
-            MyLog.d(this, "CommandExecutor ended, " + mainCommandQueue.size() + " commands left");
+            MyLog.d(this, "CommandExecutor ended, " + totalQueuesSize() + " commands left");
             return true;
         }
         

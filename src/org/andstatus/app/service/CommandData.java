@@ -251,18 +251,6 @@ public class CommandData implements Comparable<CommandData> {
                 case UPDATE_STATUS:
                     text += bundle.getString(IntentExtra.EXTRA_STATUS.key);
                     break;
-                case PUT_BOOLEAN_PREFERENCE:
-                    text += bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key)
-                            + bundle.getBoolean(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
-                    break;
-                case PUT_LONG_PREFERENCE:
-                    text += bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key)
-                            + bundle.getLong(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
-                    break;
-                case PUT_STRING_PREFERENCE:
-                    text += bundle.getString(IntentExtra.EXTRA_PREFERENCE_KEY.key)
-                            + bundle.getString(IntentExtra.EXTRA_PREFERENCE_VALUE.key);
-                    break;
                 default:
                     break;
             }
