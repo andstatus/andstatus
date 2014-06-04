@@ -21,15 +21,10 @@ import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -68,8 +63,6 @@ public class MyService extends Service {
      * @see CommandEnum
      */
     public static final String ACTION_GO = IntentExtra.MY_ACTION_PREFIX + "GO";
-
-    private volatile boolean mNotificationsEnabled;
 
     /**
      * Communicate state of this service 
@@ -305,8 +298,6 @@ public class MyService extends Service {
 
                 registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
 
-                mNotificationsEnabled = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_enabled", false);
-                
                 mInitialized = true;
                 broadcastState(null);
             }
@@ -469,7 +460,8 @@ public class MyService extends Service {
                 try {
                     unregisterReceiver(intentReceiver);
     
-                    notifyOfQueue();
+                    CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(
+                            mainCommandQueue.size(), retryCommandQueue.size());
                     int count = 0;
                     count += CommandData.saveQueue(this, mainCommandQueue, COMMANDS_QUEUE_FILENAME);
                     count += CommandData.saveQueue(this, retryCommandQueue, RETRY_QUEUE_FILENAME);
@@ -495,58 +487,6 @@ public class MyService extends Service {
                 wakeLock.release();
                 wakeLock = null;
             }
-        }
-    }
-    
-    /**
-     * Notify user of the commands Queue size
-     * 
-     * @return total size of Queues
-     */
-    private int notifyOfQueue() {
-        int count = retryCommandQueue.size() + mainCommandQueue.size();
-        if (count == 0 ) {
-            clearNotifications();
-        } else if (mNotificationsEnabled && MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFICATIONS_QUEUE, false)) {
-            if (!retryCommandQueue.isEmpty()) {
-                MyLog.d(this, retryCommandQueue.size() + " commands in Retry Queue.");
-            }
-            if (!mainCommandQueue.isEmpty()) {
-                MyLog.d(this, mainCommandQueue.size() + " commands in Main Queue.");
-            }
-
-            // Set up the notification to display to the user
-            Notification notification = new Notification(R.drawable.notification_icon,
-                    getText(R.string.notification_title), System.currentTimeMillis());
-
-            int messageTitle;
-            String aMessage = "";
-
-            aMessage = I18n.formatQuantityMessage(getApplicationContext(),
-                    R.string.notification_queue_format, count, R.array.notification_queue_patterns,
-                    R.array.notification_queue_formats);
-            messageTitle = R.string.notification_title_queue;
-
-            // Set up the scrolling message of the notification
-            notification.tickerText = aMessage;
-
-            /**
-             * Kick the commands queue by sending empty command
-             * This Intent will be sent upon a User tapping the notification 
-             */
-            PendingIntent pi = PendingIntent.getBroadcast(this, 0, CommandData.getEmpty().toIntent(intentForThisInitialized()), 0);
-            notification.setLatestEventInfo(this, getText(messageTitle), aMessage, pi);
-
-            NotificationManager nM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            nM.notify(CommandEnum.NOTIFY_QUEUE.ordinal(), notification);
-        }
-        return count;
-    }
-    
-    private void clearNotifications() {
-        NotificationManager nM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (nM != null) {
-            nM.cancel(CommandEnum.NOTIFY_QUEUE.ordinal());
         }
     }
     

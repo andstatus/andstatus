@@ -49,13 +49,13 @@ public class AddedMessagesNotifier {
         if (!MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_enabled", false)) {
             return;
         }
-        notifyViaNotificationManager1Type(result.getMessagesAdded(), CommandEnum.NOTIFY_MENTIONS);
-        notifyViaNotificationManager1Type(result.getMentionsAdded(), CommandEnum.NOTIFY_DIRECT_MESSAGE);
-        notifyViaNotificationManager1Type(result.getDirectedAdded(), CommandEnum.NOTIFY_HOME_TIMELINE);
+        notifyForOneType(result.getMessagesAdded(), CommandEnum.NOTIFY_MENTIONS);
+        notifyForOneType(result.getMentionsAdded(), CommandEnum.NOTIFY_DIRECT_MESSAGE);
+        notifyForOneType(result.getDirectedAdded(), CommandEnum.NOTIFY_HOME_TIMELINE);
     }
     
     
-    private void notifyViaNotificationManager1Type(int numMessages, CommandEnum msgType) {
+    private void notifyForOneType(int numMessages, CommandEnum msgType) {
         // If no notifications are enabled, return
         if (numMessages == 0) {
             return;
