@@ -49,9 +49,9 @@ public class AddedMessagesNotifier {
         if (!MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_enabled", false)) {
             return;
         }
-        notifyForOneType(result.getMessagesAdded(), CommandEnum.NOTIFY_MENTIONS);
-        notifyForOneType(result.getMentionsAdded(), CommandEnum.NOTIFY_DIRECT_MESSAGE);
-        notifyForOneType(result.getDirectedAdded(), CommandEnum.NOTIFY_HOME_TIMELINE);
+        notifyForOneType(result.getMessagesAdded(), CommandEnum.NOTIFY_HOME_TIMELINE);
+        notifyForOneType(result.getMentionsAdded(), CommandEnum.NOTIFY_MENTIONS);
+        notifyForOneType(result.getDirectedAdded(), CommandEnum.NOTIFY_DIRECT_MESSAGE);
     }
     
     
