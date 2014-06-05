@@ -54,7 +54,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                         execContext.getCommandData().getCommand() == CommandEnum.FOLLOW_USER);
                 break;
             case UPDATE_STATUS:
-                String status = execContext.getCommandData().bundle.getString(IntentExtra.EXTRA_STATUS.key).trim();
+                String status = execContext.getCommandData().bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key).trim();
                 long replyToId = execContext.getCommandData().bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
                 long recipientId = execContext.getCommandData().bundle.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
                 updateStatus(status, replyToId, recipientId);

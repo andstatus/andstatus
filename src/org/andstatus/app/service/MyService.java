@@ -64,41 +64,14 @@ public class MyService extends Service {
      */
     public static final String ACTION_GO = IntentExtra.MY_ACTION_PREFIX + "GO";
 
-    /**
-     * Communicate state of this service 
-     */
-    public enum ServiceState {
-        RUNNING,
-        STOPPING,
-        STOPPED,
-        UNKNOWN;
-        
-        /**
-         * Like valueOf but doesn't throw exceptions: it returns UNKNOWN instead 
-         */
-        public static ServiceState load(String str) {
-            ServiceState state;
-            try {
-                state = valueOf(str);
-            } catch (IllegalArgumentException e) {
-                MyLog.v(TAG, e);
-                state = UNKNOWN;
-            }
-            return state;
-        }
-        public String save() {
-            return this.toString();
-        }
-    }
-    
-    private ServiceState getServiceState() {
-        ServiceState state = ServiceState.STOPPED; 
+    private MyServiceState getServiceState() {
+        MyServiceState state = MyServiceState.STOPPED; 
         synchronized (serviceStateLock) {
             if (mInitialized) {
                 if (mIsStopping) {
-                    state = ServiceState.STOPPING;
+                    state = MyServiceState.STOPPING;
                 } else {
-                    state = ServiceState.RUNNING;
+                    state = MyServiceState.RUNNING;
                 }
             }
         }
@@ -187,7 +160,8 @@ public class MyService extends Service {
                 stopDelayed(false);
                 break;
             case BROADCAST_SERVICE_STATE:
-                broadcastState(commandData);
+                MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+                        .broadcast();
                 break;
             case UNKNOWN:
                 MyLog.v(this, "Command " + commandData.getCommand() + " ignored");
@@ -299,7 +273,7 @@ public class MyService extends Service {
                 registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
 
                 mInitialized = true;
-                broadcastState(null);
+                MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
             }
         }
         
@@ -452,7 +426,7 @@ public class MyService extends Service {
                     executor.cancel(true);
                 } else {
                     MyLog.v(this, method + ": Cannot stop now, executor is working");
-                    broadcastState(null);
+                    MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
                     return;
                 }
             }
@@ -477,7 +451,7 @@ public class MyService extends Service {
                 }
             }
         }
-        broadcastState(null);
+        MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
     }
 
     private void relealeWakeLock() {
@@ -498,26 +472,6 @@ public class MyService extends Service {
         return new Intent(MyService.ACTION_GO);
     }
     
-    /**
-     * Send broadcast informing of the current state of this service
-     */
-    private void broadcastState(CommandData commandData) {
-        broadcastState(this, getServiceState(), commandData);
-    }
-
-    /**
-     * Send broadcast informing of the current state of this service
-     */
-    public static void broadcastState(Context context, ServiceState state, CommandData commandData) {
-        Intent intent = new Intent(ACTION_SERVICE_STATE);
-        if (commandData != null) {
-            intent = commandData.toIntent(intent);
-        }
-        intent.putExtra(IntentExtra.EXTRA_SERVICE_STATE.key, state.save());
-        context.sendBroadcast(intent);
-        MyLog.v(TAG, "state: " + state);
-    }
-    
     private class QueueExecutor extends AsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         
         @Override
@@ -531,6 +485,8 @@ public class MyService extends Service {
                 if (commandData == null) {
                     break;
                 }
+                MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+                .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                 if ( !commandData.getCommand().isOnlineOnly() || isOnline()) {
                     CommandExecutorStrategy.executeCommand(commandData, this);
                 }
@@ -543,7 +499,8 @@ public class MyService extends Service {
                         }
                     }        
                 }
-                broadcastState(commandData);
+                MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
             } while (true);
             MyLog.d(this, "CommandExecutor ended, " + totalQueuesSize() + " commands left");
             return true;

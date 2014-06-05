@@ -19,7 +19,9 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyService;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.service.MyService.ServiceState;
+import org.andstatus.app.service.MyServiceBroadcaster;
+import org.andstatus.app.service.MyServiceEvent;
+import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -171,7 +173,9 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         int position1 = getListView().getFirstVisiblePosition();
         long itemId = getListView().getAdapter().getItemId(position1);
         int count1 = getListView().getAdapter().getCount() - 1;
-        MyService.broadcastState(activity, ServiceState.RUNNING, commandData);
+        MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
+                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
+                .broadcast();
         int count2 = 0;
         int position2 = 0;
         int position2Any = -1;

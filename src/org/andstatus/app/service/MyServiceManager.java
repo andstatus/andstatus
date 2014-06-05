@@ -18,7 +18,6 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.service.MyService.ServiceState;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
@@ -47,7 +46,7 @@ public class MyServiceManager extends BroadcastReceiver {
      * Is the service started.
      * @See <a href="http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d">here</a>
      */
-    private static volatile MyService.ServiceState mServiceState = ServiceState.UNKNOWN;
+    private static volatile MyServiceState mServiceState = MyServiceState.UNKNOWN;
     /**
      * {@link System#nanoTime()} when the state was queued or received last time ( 0 - never )  
      */
@@ -69,7 +68,7 @@ public class MyServiceManager extends BroadcastReceiver {
             synchronized (mServiceState) {
                 stateQueuedTime = System.nanoTime();
                 waitingForServiceState = false;
-                mServiceState = MyService.ServiceState.load(intent
+                mServiceState = MyServiceState.load(intent
                         .getStringExtra(IntentExtra.EXTRA_SERVICE_STATE.key));
             }
             MyLog.d(TAG, "Notification received: Service state=" + mServiceState);
@@ -97,9 +96,10 @@ public class MyServiceManager extends BroadcastReceiver {
      */
     public static void sendCommand(CommandData commandData) {
         if (!isServiceAvailable()) {
-            // Imitate soft service error
+            // Imitate a soft service error
             commandData.getResult().incrementNumIoExceptions();
-            MyService.broadcastState(MyContextHolder.get().context(), MyService.ServiceState.STOPPED, commandData);
+            MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.STOPPED)
+            .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
             return;
         }
         
@@ -127,18 +127,18 @@ public class MyServiceManager extends BroadcastReceiver {
      * Doesn't start the service, so absence of the reply will mean that service is stopped 
      * @See <a href="http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d">here</a>
      */
-    public static ServiceState getServiceState() {
+    public static MyServiceState getServiceState() {
         synchronized(mServiceState) {
            long time = System.nanoTime();
            if ( waitingForServiceState && (time - stateQueuedTime) > (STATE_QUERY_TIMEOUT_SECONDS * 1000000000L) ) {
                // Timeout expired
                waitingForServiceState = false;
-               mServiceState = ServiceState.STOPPED;
-           } else if ( !waitingForServiceState && mServiceState == ServiceState.UNKNOWN ) {
+               mServiceState = MyServiceState.STOPPED;
+           } else if ( !waitingForServiceState && mServiceState == MyServiceState.UNKNOWN ) {
                // State is unknown, we need to query the Service again
                waitingForServiceState = true;
                stateQueuedTime = time;
-               mServiceState = ServiceState.UNKNOWN;
+               mServiceState = MyServiceState.UNKNOWN;
                CommandData element = new CommandData(CommandEnum.BROADCAST_SERVICE_STATE, "");
                MyContextHolder.get().context().sendBroadcast(element.toIntent(MyService.intentForThisInitialized()));
            }

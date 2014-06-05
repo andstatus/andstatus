@@ -35,10 +35,11 @@ public enum IntentExtra{
      * ({@link MyService.ServiceState}
      */
     EXTRA_SERVICE_STATE("SERVICE_STATE"),
+    EXTRA_SERVICE_EVENT("SERVICE_EVENT"),
     /**
-     * Text of the status message
+     * Text of the message/"tweet"
      */
-    EXTRA_STATUS("STATUS"),
+    EXTRA_MESSAGE_TEXT("MESSAGE_TEXT"),
     /**
      * Account name, see {@link MyAccount#getAccountName()}
      */

@@ -354,7 +354,7 @@ class MessageEditor {
         if (outState != null && mEditText != null && mAccount != null) {
             String status = mEditText.getText().toString();
             if (!TextUtils.isEmpty(status)) {
-                outState.putString(IntentExtra.EXTRA_STATUS.key, status);
+                outState.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, status);
                 outState.putLong(IntentExtra.EXTRA_INREPLYTOID.key, mReplyToId);
                 outState.putLong(IntentExtra.EXTRA_RECIPIENTID.key, mRecipientId);
                 outState.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, mAccount.getAccountName());
@@ -366,8 +366,8 @@ class MessageEditor {
     public void loadState(Bundle savedInstanceState) {
         if (savedInstanceState != null 
                 && savedInstanceState.containsKey(IntentExtra.EXTRA_INREPLYTOID.key) 
-                && savedInstanceState.containsKey(IntentExtra.EXTRA_STATUS.key)) {
-            String status = savedInstanceState.getString(IntentExtra.EXTRA_STATUS.key);
+                && savedInstanceState.containsKey(IntentExtra.EXTRA_MESSAGE_TEXT.key)) {
+            String status = savedInstanceState.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key);
             if (!TextUtils.isEmpty(status)) {
                 statusRestored = status;
                 replyToIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_INREPLYTOID.key);

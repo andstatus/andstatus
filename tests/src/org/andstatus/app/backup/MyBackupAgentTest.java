@@ -47,7 +47,9 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         testRestore(dataFolder);
         TestSuite.initialize(this);
         
-        assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
+        if (android.os.Build.VERSION.SDK_INT > 8 ) {
+            assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
+        }
         assertEquals(
                 "One account",
                 accountsBefore.fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME),

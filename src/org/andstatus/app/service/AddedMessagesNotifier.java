@@ -57,48 +57,22 @@ public class AddedMessagesNotifier {
     
     private void notifyForOneType(int numMessages, CommandEnum msgType) {
         // If no notifications are enabled, return
-        if (numMessages == 0) {
+        if (numMessages == 0 && !areNotificationsEnabled(msgType)) {
             return;
         }
 
-        MyLog.v(this, "notifyViaNotificationManager n=" + numMessages + "; msgType=" + msgType);
+        MyLog.v(this, "n=" + numMessages + "; msgType=" + msgType);
         
-        boolean notificationsMessages = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_messages", false);
-        boolean notificationsReplies = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_mentions", false);
-        boolean notificationsTimeline = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_timeline", false);
-        String ringtone = MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
-
-        // Make sure that notifications haven't been turned off for the
-        // message type
-        switch (msgType) {
-            case NOTIFY_MENTIONS:
-                if (!notificationsReplies) {
-                    return;
-                }
-                break;
-            case NOTIFY_DIRECT_MESSAGE:
-                if (!notificationsMessages) {
-                    return;
-                }
-                break;
-            case NOTIFY_HOME_TIMELINE:
-                if (!notificationsTimeline) {
-                    return;
-                }
-                break;
-            default:
-                break;
-        }
-
         // Set up the notification to display to the user
         Notification notification = new Notification(R.drawable.notification_icon,
                 myContext.context().getText(R.string.notification_title), System.currentTimeMillis());
 
-        notification.vibrate = null;
         if (mNotificationsVibrate) {
             notification.vibrate = new long[] {
                     200, 300, 200, 300
             };
+        } else {
+            notification.vibrate = null;
         }
 
         notification.flags = Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
@@ -106,6 +80,7 @@ public class AddedMessagesNotifier {
         notification.ledOnMS = 500;
         notification.ledARGB = Color.GREEN;
 
+        String ringtone = MyPreferences.getDefaultSharedPreferences().getString(MyPreferences.KEY_RINGTONE_PREFERENCE, null);
         if ("".equals(ringtone) || ringtone == null) {
             notification.sound = null;
         } else {
@@ -173,5 +148,18 @@ public class AddedMessagesNotifier {
                 contentIntent);
         NotificationManager nM = (NotificationManager) myContext.context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
         nM.notify(msgType.ordinal(), notification);
+    }
+
+    private boolean areNotificationsEnabled(CommandEnum msgType) {
+        switch (msgType) {
+            case NOTIFY_MENTIONS:
+                return MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_mentions", false);
+            case NOTIFY_DIRECT_MESSAGE:
+                return MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_messages", false);
+            case NOTIFY_HOME_TIMELINE:
+                return MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_timeline", false);
+            default:
+                return true;
+        }
     }
 }

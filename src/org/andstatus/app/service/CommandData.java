@@ -138,7 +138,7 @@ public class CommandData implements Comparable<CommandData> {
 
     public static CommandData updateStatus(String accountName, String status, long replyToId, long recipientId) {
         CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS, accountName);
-        commandData.bundle.putString(IntentExtra.EXTRA_STATUS.key, status);
+        commandData.bundle.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, status);
         if (replyToId != 0) {
             commandData.bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key, replyToId);
         }
@@ -165,8 +165,8 @@ public class CommandData implements Comparable<CommandData> {
 
         switch (commandData.command) {
             case UPDATE_STATUS:
-                commandData.bundle.putString(IntentExtra.EXTRA_STATUS.key,
-                        sp.getString(IntentExtra.EXTRA_STATUS.key + si, ""));
+                commandData.bundle.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key,
+                        sp.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, ""));
                 commandData.bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key,
                         sp.getLong(IntentExtra.EXTRA_INREPLYTOID.key + si, 0));
                 commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key,
@@ -249,7 +249,7 @@ public class CommandData implements Comparable<CommandData> {
             }
             switch (command) {
                 case UPDATE_STATUS:
-                    text += bundle.getString(IntentExtra.EXTRA_STATUS.key);
+                    text += bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key);
                     break;
                 default:
                     break;
@@ -334,7 +334,7 @@ public class CommandData implements Comparable<CommandData> {
         }
         switch (command) {
             case UPDATE_STATUS:
-                ed.putString(IntentExtra.EXTRA_STATUS.key + si, bundle.getString(IntentExtra.EXTRA_STATUS.key));
+                ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
                 ed.putLong(IntentExtra.EXTRA_INREPLYTOID.key + si, bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key));
                 ed.putLong(IntentExtra.EXTRA_RECIPIENTID.key + si, bundle.getLong(IntentExtra.EXTRA_RECIPIENTID.key));
                 break;

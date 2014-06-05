@@ -27,8 +27,8 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
-import org.andstatus.app.service.MyService.ServiceState;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -105,7 +105,7 @@ public class MyBackupAgent extends BackupAgent {
         boolean isServiceAvailableStored = MyServiceManager.isServiceAvailable();
         MyServiceManager.setServiceUnavailable();
         for (int ind=0; ; ind++) {
-            if (MyServiceManager.getServiceState() == ServiceState.STOPPED) {
+            if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
                 break;
             }
             if (ind > 5) {

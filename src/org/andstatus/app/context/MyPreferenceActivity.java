@@ -57,8 +57,8 @@ import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.origin.OriginList;
-import org.andstatus.app.service.MyService;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -360,7 +360,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                         @Override
                         public void onClick(DialogInterface dialog, int id) {
                             MyServiceManager.setServiceUnavailable();
-                            if (MyServiceManager.getServiceState() == MyService.ServiceState.STOPPED) {
+                            if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
                                 new MoveDataBetweenStoragesTask().execute();
                             } else {
                                 MyServiceManager.stopService();

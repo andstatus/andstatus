@@ -62,8 +62,8 @@ import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginList;
-import org.andstatus.app.service.MyService;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -421,10 +421,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         MyAccount ma = state.getAccount();
         if (reVerify || ma.getCredentialsVerified() == CredentialsVerificationStatus.NEVER) {
             MyServiceManager.setServiceUnavailable();
-            MyService.ServiceState state2 = MyServiceManager.getServiceState(); 
-            if (state2 != MyService.ServiceState.STOPPED) {
+            MyServiceState state2 = MyServiceManager.getServiceState(); 
+            if (state2 != MyServiceState.STOPPED) {
                 MyServiceManager.stopService();
-                if (state2 != MyService.ServiceState.UNKNOWN) {
+                if (state2 != MyServiceState.UNKNOWN) {
                     Toast.makeText(this, getText(R.string.system_is_busy_try_later) + " (" + state2 + ")", 
                             Toast.LENGTH_LONG).show();
                     return;
