@@ -149,6 +149,8 @@ public class AvatarData {
        rowId = DbUtils.addRowWithRetry(Avatar.TABLE_NAME, values, 3);
        if (rowId == -1) {
            softError = true;
+       } else {
+           MyLog.v(this, "Added userId=" + userId + "; url=" + url.toExternalForm());
        }
     }
 
@@ -176,6 +178,8 @@ public class AvatarData {
 
         if (DbUtils.updateRowWithRetry(Avatar.TABLE_NAME, rowId, values, 3) != 1) {
             softError = true;
+        } else {
+            MyLog.v(this, "Updated userId=" + userId + "; url=" + url.toExternalForm());
         }
         if (!isError() && changeFile) {
             fileStored.delete();
@@ -196,16 +200,16 @@ public class AvatarData {
                 + "; url=" + (url == null ? "(null)" : url.toExternalForm()), e);
     }
     
-    public void deleteOherOfThisUser() {
-        deleteOherOfThisUser(userId, rowId);
+    public void deleteOtherOfThisUser() {
+        deleteOtherOfThisUser(userId, rowId);
     }
 
     public static void deleteAllOfThisUser(long userId) {
-        deleteOherOfThisUser(userId, 0);
+        deleteOtherOfThisUser(userId, 0);
     }
     
-    public static void deleteOherOfThisUser(long userId, long rowId) {
-        final String method = "deleteOherOfThisUser userId=" + userId + (rowId != 0 ? ", rowId=" + rowId : "");
+    public static void deleteOtherOfThisUser(long userId, long rowId) {
+        final String method = "deleteOtherOfThisUser userId=" + userId + (rowId != 0 ? ", rowId=" + rowId : "");
         int rowsDeleted = 0;
         String where = Avatar.USER_ID + "=" + userId
                 + (rowId != 0 ? " AND " + Avatar._ID + "<>" + Long.toString(rowId) : "") ;
@@ -238,7 +242,9 @@ public class AvatarData {
                 }
             }
         }
-        MyLog.v(AvatarData.class, method + (done ? " succeeded" : " failed") + "; deleted " + rowsDeleted + " rows");
+        if (!done || rowsDeleted>0) {
+            MyLog.v(AvatarData.class, method + (done ? " succeeded" : " failed") + "; deleted " + rowsDeleted + " rows");
+        }
     }
     
     public AvatarFile getFile() {

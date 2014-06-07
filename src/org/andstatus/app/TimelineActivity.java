@@ -598,6 +598,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         serviceConnector.unregisterReceiver(this);
         loaderManager.onPauseActivity(LOADER_ID);
+        hideSyncIndicator();
 
         if (positionRestored) {
             // Get rid of the "fast scroll thumb"
@@ -877,10 +878,15 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private void updateAccountButtonText() {
         Button selectAccountButton = (Button) findViewById(R.id.selectAccountButton);
         MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
-        String accountButtonText = "";
+        String accountButtonText = buildAccountButtonText(ma, isTimelineCombined(), getTimelineType());
+        selectAccountButton.setText(accountButtonText);
+    }
+
+    public static String buildAccountButtonText(MyAccount ma, boolean timelineIsCombined, TimelineTypeEnum timelineType) {
+        String accountButtonText;
         if (ma == null) {
             accountButtonText = "?";
-        } else if (isTimelineCombined() || getTimelineType() != TimelineTypeEnum.PUBLIC) {
+        } else if (timelineIsCombined || timelineType != TimelineTypeEnum.PUBLIC) {
             accountButtonText = ma.shortestUniqueAccountName();
             if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
                 accountButtonText = "(" + accountButtonText + ")";
@@ -888,7 +894,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         } else {
             accountButtonText = ma.getOriginName();
         }
-        selectAccountButton.setText(accountButtonText);
+        return accountButtonText;
     }
 
     private void updateRightText(String rightText) {
@@ -1411,7 +1417,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public void onReceive(CommandData commandData, MyServiceEvent event) {
         switch (event) {
             case BEFORE_EXECUTING_COMMAND:
-                if (mShowSyncIndicationOnTimeline) {
+                if (mShowSyncIndicationOnTimeline
+                        && isCommandToShowInSyncIndicator(commandData.getCommand())) {
                     onReceiveBeforeExecutingCommand(commandData);
                 }
                 break;
@@ -1419,21 +1426,39 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 onReceiveAfterExecutingCommand(commandData);
                 break;
             case ON_STOP:
-                if (mSyncIndicator.getVisibility() == View.VISIBLE) {
-                    mSyncIndicator.setVisibility(View.GONE);
-                }
+                hideSyncIndicator();
                 break;
             default:
                 break;
         }
     }
 
+    private boolean isCommandToShowInSyncIndicator(CommandEnum command) {
+        switch (command) {
+            case AUTOMATIC_UPDATE:
+            case FETCH_TIMELINE:
+            case FETCH_AVATAR:
+            case UPDATE_STATUS:
+            case DESTROY_STATUS:
+            case CREATE_FAVORITE:
+            case DESTROY_FAVORITE:
+            case SEARCH_MESSAGE:
+            case FOLLOW_USER:
+            case STOP_FOLLOWING_USER:
+            case REBLOG:
+            case DESTROY_REBLOG:
+                return true;
+            default:
+                return false;
+        }
+    }
+    
     private void onReceiveBeforeExecutingCommand(CommandData commandData) {
         if (mSyncIndicator.getVisibility() != View.VISIBLE) {
             mSyncIndicator.setVisibility(View.VISIBLE);
         }
         String syncMessage = getText(R.string.title_preference_syncing) + ": "
-                + commandData.toCommandSummary(this);
+                + commandData.toCommandSummary(MyContextHolder.get());
         ((TextView) findViewById(R.id.sync_text)).setText(syncMessage);
         MyLog.v(this, syncMessage);
     }
@@ -1454,6 +1479,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 break;
             default:
                 break;
+        }
+    }
+
+    private void hideSyncIndicator() {
+        if (mSyncIndicator.getVisibility() == View.VISIBLE) {
+            mSyncIndicator.setVisibility(View.GONE);
         }
     }
     

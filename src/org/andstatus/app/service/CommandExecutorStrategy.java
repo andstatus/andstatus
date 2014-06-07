@@ -18,6 +18,7 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.ConnectionException;
@@ -54,7 +55,13 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     static void executeStep(CommandExecutionContext execContext, CommandExecutorParent parent) {
         CommandExecutorStrategy strategy = getStrategy(execContext).setParent(parent);
         MyLog.v(strategy, "LaunchingStep " + strategy.execContext);
+        MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
+                .setCommandData(execContext.getCommandDataForOneStep())
+                .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
         strategy.execute();
+        MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
+                .setCommandData(execContext.getCommandDataForOneStep())
+                .setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
         MyLog.v(strategy, "ExecutedStep " + strategy.execContext);
     }
     
@@ -81,7 +88,11 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                     switch (execContext.getCommandData().getCommand()) {
                         case AUTOMATIC_UPDATE:
                         case FETCH_TIMELINE:
-                            strategy = new CommandExecutorLoadTimeline();
+                            if (execContext.getTimelineType() == TimelineTypeEnum.ALL) {
+                                strategy = new CommandExecutorLoadAllTimelines();
+                            } else {
+                                strategy = new CommandExecutorLoadTimeline();
+                            }
                             break;
                         case SEARCH_MESSAGE:
                             strategy = new CommandExecutorSearch();

@@ -25,10 +25,13 @@ import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -94,6 +97,13 @@ public class CommandData implements Comparable<CommandData> {
     private CommandData() {
     }
 
+    public static CommandData forOneExecStep(CommandExecutionContext execContext) {
+        CommandData commandData = CommandData.fromIntent(execContext.getCommandData().toIntent(new Intent()));
+        commandData.accountName = execContext.getMyAccount().getAccountName();
+        commandData.timelineType = execContext.getTimelineType();
+        return commandData;
+    }
+    
     /**
      * Used to decode command from the Intent upon receiving it
      */
@@ -378,9 +388,30 @@ public class CommandData implements Comparable<CommandData> {
         return commandResult;
     }
 
-    public String toCommandSummary(Context context) {
-        return command.name()
-                + (TextUtils.isEmpty(accountName) ? "" : context.getText(R.string.combined_timeline_off) + " "
+    public String toCommandSummary(MyContext myContext) {
+        StringBuilder builder = new StringBuilder();
+        switch (command) {
+            case FETCH_AVATAR:
+                builder.append(command.name() + " ");
+                builder.append(myContext.context().getText(R.string.combined_timeline_off) + " ");
+                builder.append(MyProvider.userIdToName(itemId) );
+                break;
+            case AUTOMATIC_UPDATE:
+            case FETCH_TIMELINE:
+                builder.append(myContext.context().getText(timelineType.getTitleResId()) + " ");
+                if (!TextUtils.isEmpty(accountName)) {
+                    builder.append(myContext.context().getText(R.string.combined_timeline_off) + " ");
+                    MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
+                    builder.append(TimelineActivity.buildAccountButtonText(ma, false, timelineType));
+                }
+                break;
+            default:
+                builder.append(command.name() + " ");
+                builder.append(TextUtils.isEmpty(accountName) ? "" : myContext.context()
+                        .getText(R.string.combined_timeline_off) + " "
                         + accountName);
+                break;
+        }
+        return builder.toString();
     }
 }

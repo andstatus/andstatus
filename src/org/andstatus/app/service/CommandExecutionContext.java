@@ -1,6 +1,7 @@
 package org.andstatus.app.service;
 
 import android.content.Context;
+import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -67,6 +68,10 @@ public class CommandExecutionContext {
 
     public CommandData getCommandData() {
         return commandData;
+    }
+    
+    public CommandData getCommandDataForOneStep() {
+        return CommandData.forOneExecStep(this);
     }
     
     public CommandResult getResult() {

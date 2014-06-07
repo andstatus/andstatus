@@ -63,7 +63,7 @@ class AvatarDownloader {
         downloadAvatarFile();
         data.saveToDatabase();
         if (!data.isError()) {
-            data.deleteOherOfThisUser();
+            data.deleteOtherOfThisUser();
             MyLog.v(this, "Loaded avatar userId:" + data.userId + "; url:" + data.getUrl().toExternalForm());
         }
     }

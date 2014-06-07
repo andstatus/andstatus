@@ -18,67 +18,13 @@ package org.andstatus.app.service;
 
 import android.database.sqlite.SQLiteConstraintException;
 
-import org.andstatus.app.appwidget.AppWidgets;
-import org.andstatus.app.data.DataPruner;
-import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.util.MyLog;
 
 class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
     
-    /* (non-Javadoc)
-     * @see org.andstatus.app.service.OneCommandExecutor#execute()
-     */
     @Override
     void execute() {
-        loadTimelines();
-        if (!execContext.getResult().hasError() && execContext.getCommandData().getTimelineType() == TimelineTypeEnum.ALL && !isStopping()) {
-            new DataPruner(execContext.getContext()).prune();
-        }
-        if (!execContext.getResult().hasError() || execContext.getResult().getDownloadedCount() > 0) {
-            MyLog.v(this, "Notifying of timeline changes");
-
-            notifyViaWidgets();
-            
-            AddedMessagesNotifier.newInstance(execContext.getMyContext()).update(
-                    execContext.getResult());
-            
-            notifyViaContentResolver();
-        }
-    }
-
-    /**
-     * Load Timeline(s) for one MyAccount
-     * @return True if everything Succeeded
-     */
-    private void loadTimelines() {
-        for (TimelineTypeEnum timelineType : getTimelines()) {
-            if (isStopping()) {
-                break;
-            }
-            execContext.setTimelineType(timelineType);
-            loadTimeline();
-        }
-    }
-
-    private TimelineTypeEnum[] getTimelines() {
-        TimelineTypeEnum[] timelineTypes;
-        if (execContext.getCommandData().getTimelineType() == TimelineTypeEnum.ALL) {
-            timelineTypes = new TimelineTypeEnum[] {
-                    TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
-                    TimelineTypeEnum.DIRECT,
-                    TimelineTypeEnum.FOLLOWING_USER
-            };
-        } else {
-            timelineTypes = new TimelineTypeEnum[] {
-                    execContext.getCommandData().getTimelineType()
-            };
-        }
-        return timelineTypes;
-    }
-
-    private void loadTimeline() {
         boolean ok = false;
         try {
             if (execContext.getMyAccount().getConnection().isApiSupported(execContext.getTimelineType().getConnectionApiRoutine())) {
@@ -100,16 +46,5 @@ class CommandExecutorLoadTimeline extends CommandExecutorStrategy {
         } catch (SQLiteConstraintException e) {
             MyLog.e(this, execContext.getTimelineType().toString(), e);
         }
-    }
-
-    private void notifyViaWidgets() {
-        AppWidgets appWidgets = AppWidgets.newInstance(execContext.getMyContext());
-        appWidgets.updateData(execContext.getResult());
-        appWidgets.updateViews();
-    }
-
-    private void notifyViaContentResolver() {
-        // see http://stackoverflow.com/questions/6678046/when-contentresolver-notifychange-is-called-for-a-given-uri-are-contentobserv
-        execContext.getContext().getContentResolver().notifyChange(MyProvider.TIMELINE_URI, null);
     }
 }
