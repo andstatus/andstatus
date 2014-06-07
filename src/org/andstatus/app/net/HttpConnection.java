@@ -24,9 +24,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public abstract class HttpConnection {
-    protected static final Integer DEFAULT_GET_REQUEST_TIMEOUT = 15000;
-    protected static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 20000;
-    
     protected HttpConnectionData data;
 
     static final String USER_AGENT = "AndStatus";

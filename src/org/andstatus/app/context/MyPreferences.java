@@ -51,6 +51,7 @@ public class MyPreferences {
      */
     public static final String KEY_SYNC_FREQUENCY_SECONDS = "fetch_frequency";
     public static final String KEY_SYNC_INDICATOR_ON_TIMELINE = "sync_indicator_on_timeline";
+    public static final String KEY_CONNNECTION_TIMEOUT_SECONDS = "connection_timeout";
     public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
     public static final String KEY_CONTACT_DEVELOPER = "contact_developer";
     public static final String KEY_REPORT_BUG = "report_bug";
@@ -155,22 +156,36 @@ public class MyPreferences {
         }
     }
 
-    private static final int SYNC_FREQUENCY_DEFAULT_SECONDS = 180;
+    private static final long SYNC_FREQUENCY_DEFAULT_SECONDS = 180;
     /**
      * @return the number of seconds between two sync ("fetch"...) actions.
      */
     public static long getSyncFrequencySeconds() {
-        long frequencySeconds = SYNC_FREQUENCY_DEFAULT_SECONDS;
-        SharedPreferences sp = getDefaultSharedPreferences();
-        if (sp != null) {
-            long frequencySecondsStored = Long.parseLong(getDefaultSharedPreferences().getString(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, "0"));
-            if (frequencySecondsStored > 0) { 
-                frequencySeconds = frequencySecondsStored;
-            }
-        }
-        return frequencySeconds;
+        return getLongPreference(KEY_SYNC_FREQUENCY_SECONDS, SYNC_FREQUENCY_DEFAULT_SECONDS);
     }
 
+    public static long getLongPreference(String key, long defaultValue) {
+        long longValue = defaultValue;
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            try {
+                long longValueStored = Long.parseLong(getDefaultSharedPreferences().getString(key, "0"));
+                if (longValueStored > 0) { 
+                    longValue = longValueStored;
+                }
+            } catch (NumberFormatException e) {
+                MyLog.v(TAG, e);
+            }
+        }
+        return longValue;
+    }
+
+    private static final long CONNNECTION_TIMEOUT_DEFAULT_SECONDS = 30;
+    public static int getConnectionTimeoutMs() {
+        return (int) java.util.concurrent.TimeUnit.SECONDS.toMillis(getLongPreference(
+                KEY_CONNNECTION_TIMEOUT_SECONDS, CONNNECTION_TIMEOUT_DEFAULT_SECONDS));
+    }
+    
     /**
      * @return the number of milliseconds between two sync ("fetch"...) actions.
      */

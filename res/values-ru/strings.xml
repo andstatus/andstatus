@@ -81,6 +81,7 @@
 	<string name="dialog_title_executing_command">Исполнение комманды…</string>
 	<string name="dialog_title_external_storage">Внешняя память доступна</string>
 	<string name="dialog_title_external_storage_missing">Внешняя память отсутствует</string>
+    <string name="dialog_title_preference_connection_timeout">Таймаут соединения в секундах</string>
 	<string name="dialog_title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="dialog_title_preference_history_size">Количество сообщений в истории</string>
 	<string name="dialog_title_preference_history_time">Время хранения истории</string>
@@ -330,6 +331,7 @@
     <string name="title_preference_add_account">Добавить эту учётную запись</string>
     <string name="title_preference_appearance">Внешний вид</string>
 	<string name="title_preference_change_log">Журнал изменений</string>
+    <string name="title_preference_connection_timeout">Таймаут соединения</string>
 	<string name="title_preference_contact_developer">Свяжитесь с разработчиками</string>
 	<string name="title_preference_enable_android_backup">Разрешить автоматическую архивацию Android-а</string>
 	<string name="title_preference_frequency">Частота обновлений (синхронизации)</string>

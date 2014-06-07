@@ -217,6 +217,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
      */
     protected void showAllPreferences() {
         showFrequency();
+        showConnectionTimeout();
         showHistorySize();
         showHistoryTime();
         showRingtone();
@@ -232,7 +233,14 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             summary = getText(R.string.summary_preference_accounts_present) + ": " + MyContextHolder.get().persistentAccounts().size();
         }
         myPref.setSummary(summary);
-        
+    }
+
+    protected void showFrequency() {
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, R.array.fetch_frequency_values, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
+    }
+
+    private void showConnectionTimeout() {
+        findPreference(MyPreferences.KEY_CONNNECTION_TIMEOUT_SECONDS).setSummary("" + MyPreferences.getConnectionTimeoutMs()/1000 + "s");
     }
 
     protected void showHistorySize() {
@@ -242,11 +250,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     protected void showHistoryTime() {
         SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_TIME, R.array.history_time_values, R.array.history_time_display, R.string.summary_preference_history_time);
     }
-
-    protected void showFrequency() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, R.array.fetch_frequency_values, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
-    }
-
+    
     protected void showMinLogLevel() {
         SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_MIN_LOG_LEVEL, R.array.log_level_value, R.array.log_level_display, R.string.summary_preference_min_log_level);
     }
@@ -307,23 +311,26 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             MyLog.logSharedPreferencesValue(this, sharedPreferences, key);
             MyPreferences.onPreferencesChanged();
             
-            if (key.equals(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS)) {
+            if (MyPreferences.KEY_SYNC_FREQUENCY_SECONDS.equals(key)) {
                 MyContextHolder.get().persistentAccounts().onMyPreferencesChanged(MyContextHolder.get());
                 showFrequency();
             }
-            if (key.equals(MyPreferences.KEY_RINGTONE_PREFERENCE)) {
+            if (MyPreferences.KEY_CONNNECTION_TIMEOUT_SECONDS.equals(key)) {
+                showConnectionTimeout();
+            }
+            if (MyPreferences.KEY_RINGTONE_PREFERENCE.equals(key)) {
                 showRingtone();
             }
-            if (key.equals(MyPreferences.KEY_HISTORY_SIZE)) {
+            if (MyPreferences.KEY_HISTORY_SIZE.equals(key)) {
                 showHistorySize();
             }
-            if (key.equals(MyPreferences.KEY_HISTORY_TIME)) {
+            if (MyPreferences.KEY_HISTORY_TIME.equals(key)) {
                 showHistoryTime();
             }
-            if (key.equals(MyPreferences.KEY_MIN_LOG_LEVEL)) {
+            if (MyPreferences.KEY_MIN_LOG_LEVEL.equals(key)) {
                 showMinLogLevel();
             }
-            if (key.equals(MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW)
+            if (MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW.equals(key)
                     && !useExternalStorageIsBusy) {
                 useExternalStorageIsBusy = true;
                 showDialog(DLG_MOVE_DATA_BETWEEN_STORAGES);

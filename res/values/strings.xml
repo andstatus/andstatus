@@ -81,6 +81,7 @@
 	<string name="dialog_title_executing_command">Executing command…</string>
 	<string name="dialog_title_external_storage">External Storage Available</string>
 	<string name="dialog_title_external_storage_missing">External Storage Missing</string>
+    <string name="dialog_title_preference_connection_timeout">Connection timeout in seconds</string>
 	<string name="dialog_title_preference_frequency">Sync frequency</string>
 	<string name="dialog_title_preference_history_size">History Size</string>
 	<string name="dialog_title_preference_history_time">History Time</string>
@@ -326,6 +327,7 @@
     <string name="title_preference_add_account">Add this account</string>
     <string name="title_preference_appearance">Appearance</string>
 	<string name="title_preference_change_log">Change Log</string>
+    <string name="title_preference_connection_timeout">Connection timeout</string>
 	<string name="title_preference_contact_developer">Contact Developer</string>
     <string name="title_preference_debugging">Logging and debugging</string>
 	<string name="title_preference_enable_android_backup">Enable automatic Android backup</string>

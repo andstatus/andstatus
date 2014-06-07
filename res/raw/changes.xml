@@ -38,13 +38,14 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="9.0" android:versionCode="102"
-        versionDate="2014-06-07"
+        versionDate="2014-06-08"
         versionTitle="Backup/Restore and Syncing indicator">
         <changes>
             <change>Application data backup and restore implemented. This feature may be used in two ways:
                 <ul>
-                    <li>Manual backup at any time to SD card (Settings-&gt;Storage-&gt;Backup application data) 
-                and manual restore after reinstall (Settings-&gt;Storage-&gt;Restore application data).</li>
+                    <li>Manual backup at any time to SD card (Settings-&gt;Storage-&gt;Backup application
+                         data) and manual restore after reinstall 
+                         (Settings-&gt;Storage-&gt;Restore application data).</li>
                     <li>Automatic backup and restore by Android system. This may work for some devices, 
                         but is useless for the most users due to Android system internal limitations 
                         (see <a href="https://github.com/andstatus/andstatus/pull/49" >the discussion</a>).</li>
@@ -54,6 +55,10 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             <change>AndStatus syncing indicator is added. To turn this new feature on, 
                 go to Settings-&gt;Syncing-&gt;Syncing indicator on timeline.
                 See <a href="https://github.com/andstatus/andstatus/issues/63" >Issue #63</a>.</change>
+            <change>Added an option to change Connection timeout, which defaults to 30 seconds. 
+                (go to Settings-&gt;Syncing-&gt;Connection timeout) 
+                Increasing this value may improve connections with slow servers. 
+                See <a href="https://github.com/andstatus/andstatus/issues/83" >Issue #83</a>.</change>
         </changes>
     </release>
     <release android:versionName="8.4" android:versionCode="100"

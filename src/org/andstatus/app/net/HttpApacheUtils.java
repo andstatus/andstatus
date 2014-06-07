@@ -18,6 +18,7 @@ package org.andstatus.app.net;
 
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
@@ -168,7 +169,7 @@ class HttpApacheUtils {
         HttpConnectionParams.setStaleCheckingEnabled(params, true);
 
         HttpProtocolParams.setUseExpectContinue(params, false);
-        HttpConnectionParams.setSoTimeout(params, 30000);
+        HttpConnectionParams.setSoTimeout(params, MyPreferences.getConnectionTimeoutMs());
         HttpConnectionParams.setSocketBufferSize(params, 2*8192);
         return params;
     }

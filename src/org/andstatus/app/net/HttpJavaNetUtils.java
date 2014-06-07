@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net;
 
+import org.andstatus.app.context.MyPreferences;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,7 +29,6 @@ import java.net.URLEncoder;
 import java.util.Map;
 
 public class HttpJavaNetUtils {
-    private static int CONNECTION_TIMEOUT_MS = 5000;
 
     private HttpJavaNetUtils() {
     }
@@ -66,8 +67,8 @@ public class HttpJavaNetUtils {
 
     public static InputStream urlOpenStream(URL url) throws IOException {
         URLConnection con = url.openConnection();
-        con.setConnectTimeout(CONNECTION_TIMEOUT_MS);
-        con.setReadTimeout(CONNECTION_TIMEOUT_MS);
+        con.setConnectTimeout(MyPreferences.getConnectionTimeoutMs());
+        con.setReadTimeout(MyPreferences.getConnectionTimeoutMs());
         InputStream is = con.getInputStream();
         return is;
     }

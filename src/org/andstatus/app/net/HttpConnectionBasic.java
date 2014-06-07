@@ -21,6 +21,7 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import org.andstatus.app.account.AccountDataWriter;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpEntity;
@@ -70,8 +71,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
             if (getCredentialsPresent()) {
                 postMethod.addHeader("Authorization", "Basic " + getCredentials());
             }
-            client.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, DEFAULT_POST_REQUEST_TIMEOUT);
-            client.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, DEFAULT_POST_REQUEST_TIMEOUT);
+            client.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, MyPreferences.getConnectionTimeoutMs());
+            client.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, MyPreferences.getConnectionTimeoutMs());
             HttpResponse httpResponse = client.execute(postMethod);
             statusCode = httpResponse.getStatusLine().getStatusCode();
             result = retrieveInputStream(httpResponse.getEntity());
@@ -125,8 +126,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         try {
             getMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
             getMethod.addHeader("Authorization", "Basic " + getCredentials());
-            client.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, DEFAULT_GET_REQUEST_TIMEOUT);
-            client.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, DEFAULT_GET_REQUEST_TIMEOUT);
+            client.getParams().setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, MyPreferences.getConnectionTimeoutMs());
+            client.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, MyPreferences.getConnectionTimeoutMs());
             HttpResponse httpResponse = client.execute(getMethod);
             statusCode = httpResponse.getStatusLine().getStatusCode();
             response = retrieveInputStream(httpResponse.getEntity());
