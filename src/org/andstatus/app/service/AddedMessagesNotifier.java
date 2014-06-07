@@ -57,7 +57,7 @@ public class AddedMessagesNotifier {
     
     private void notifyForOneType(int numMessages, CommandEnum msgType) {
         // If no notifications are enabled, return
-        if (numMessages == 0 && !areNotificationsEnabled(msgType)) {
+        if (numMessages == 0 || !areNotificationsEnabled(msgType)) {
             return;
         }
 

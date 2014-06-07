@@ -52,17 +52,6 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
     public void testTimeFormatting() throws Exception {
         MyLog.v(this, "testTimeFormatting started");
     	
-        AppWidgets appWidgets = AppWidgets.newInstance(myContext);
-        MyAppWidgetData widgetData;
-        if (appWidgets.isEmpty()) {
-            widgetData = MyAppWidgetData.newInstance(myContext.context(), 1);
-        } else {
-            widgetData = appWidgets.collection().iterator().next();
-        }
-        
-    	MyRemoteViewData viewData = MyRemoteViewData.fromViewData(myContext.context(), widgetData);
-    	MyLog.v(this, "MyRemoteViewData created");
-    	
         int len = dateTests.length;
         for (int index = 0; index < len; index++) {
             DateTest dateTest = dateTests[index];
@@ -73,10 +62,8 @@ public class MyAppWidgetProviderTest extends InstrumentationTestCase {
             long endMillis = dateTest.date2.toMillis(false /* use isDst */);
             int flags = dateTest.flags;
             String output = DateUtils.formatDateRange(myContext.context(), startMillis, endMillis, flags);
-            String output2 = viewData.formatWidgetTime(myContext.context(), startMillis, endMillis);
+            String output2 = MyRemoteViewData.formatWidgetTime(myContext.context(), startMillis, endMillis);
         	MyLog.v(this, "\"" + output + "\"; \"" + output2 + "\"");
-            
-            //assertEquals(dateTest.expectedOutput, output);
         }         
     }   
 

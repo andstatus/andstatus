@@ -18,5 +18,5 @@ package org.andstatus.app.service;
 
 
 public interface MyServiceListener {
-    void onReceive(CommandData commandData);
+    void onReceive(CommandData commandData, MyServiceEvent myServiceEvent);
 }

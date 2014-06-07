@@ -16,8 +16,8 @@
 	limitations under the License.
  -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Manage Accounts -->
-    <PreferenceCategory android:title="@string/header_manage_accounts" >
+    <!-- Accounts -->
+    <PreferenceCategory android:title="@string/header_accounts" >
         <Preference
             android:key="manage_existing_accounts"
             android:persistent="false"
@@ -28,21 +28,33 @@
             android:persistent="false"
             android:title="@string/header_add_new_account" >
         </Preference>
-        <ListPreference android:entryValues="@array/fetch_frequency_values"
-			android:entries="@array/fetch_frequency_entries" android:summary="@string/summary_preference_frequency"
-			android:dialogTitle="@string/dialog_title_preference_frequency"
-			android:title="@string/title_preference_frequency" android:key="fetch_frequency"
-			android:defaultValue="900" />
-        </PreferenceCategory>
         <Preference
             android:key="manage_origin_systems"
             android:persistent="false"
             android:title="@string/label_manage_origin_systems" >
         </Preference>
+    </PreferenceCategory>
     
     <!-- SETTINGS -->
 	<PreferenceCategory android:title="@string/category_title_preference_settings">
 
+        <!-- SYNCING -->
+        <PreferenceScreen android:key="preference_screen_syncing"
+            android:summary="@string/summary_preference_syncing"
+            android:title="@string/title_preference_syncing">
+            <PreferenceCategory android:title="@string/title_preference_syncing">
+                <ListPreference android:entryValues="@array/fetch_frequency_values"
+                    android:entries="@array/fetch_frequency_entries" android:summary="@string/summary_preference_frequency"
+                    android:dialogTitle="@string/dialog_title_preference_frequency"
+                    android:title="@string/title_preference_frequency" android:key="fetch_frequency"
+                    android:defaultValue="900" />
+                <CheckBoxPreference android:key="sync_indicator_on_timeline"
+                    android:title="@string/title_preference_sync_indicator_on_timeline"
+                    android:summaryOff="@string/summary_preference_sync_indicator_on_timeline_off"
+                    android:summaryOn="@string/summary_preference_sync_indicator_on_timeline_on" />
+            </PreferenceCategory>
+        </PreferenceScreen>
+	    
 		<!-- STORAGE -->
 		<PreferenceScreen android:key="preference_screen_storage"
 			android:summary="@string/summary_preference_storage"

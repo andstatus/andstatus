@@ -43,6 +43,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
@@ -269,7 +270,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     }
 
     @Override
-    public void onReceive(CommandData commandData) {
+    public void onReceive(CommandData commandData, MyServiceEvent event) {
         switch(commandData.getCommand()) {
             case GET_STATUS:
                 if (!commandData.getResult().hasError()) {

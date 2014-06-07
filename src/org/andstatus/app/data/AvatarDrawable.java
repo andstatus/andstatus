@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,32 +18,21 @@ package org.andstatus.app.data;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
-import java.io.File;
-
 public class AvatarDrawable {
-    private long userId;
-    private String fileName;
-    private File file = null;
+    private final long userId;
+    private final AvatarFile avatarFile;
     public static final int AVATAR_SIZE_DIP = 48;
     
-    private static Drawable defaultAvatar = loadDefaultAvatar();
+    private final static Drawable DEFAULT_AVATAR = loadDefaultAvatar();
     
     public AvatarDrawable(long userIdIn, String fileName) {
         userId = userIdIn;
-        this.fileName = fileName;
-        if (!TextUtils.isEmpty(fileName)) {
-            file = new File(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS, null), fileName);
-        }
+        avatarFile = new AvatarFile(fileName);
     }
     
     private static Drawable loadDefaultAvatar() {
@@ -56,23 +45,20 @@ public class AvatarDrawable {
         return avatar;
     }
 
-    public Drawable getDrawable() {
-        if (exists()) {
-            return Drawable.createFromPath(file.getAbsolutePath());
-        }
-        MyServiceManager.sendCommand(new CommandData(CommandEnum.FETCH_AVATAR, null, userId));
-        return defaultAvatar;
-    }
-
-    public boolean exists() {
-        return file != null && file.exists() && file.isFile();
+    public Drawable getDefaultDrawable() {
+        return DEFAULT_AVATAR;
     }
     
-    public File getFile() {
-        return file;
+    public Drawable getDrawable() {
+        if (avatarFile.exists()) {
+            return Drawable.createFromPath(avatarFile.getFile().getAbsolutePath());
+        }
+        new AvatarData(userId).requestDownload();
+        return DEFAULT_AVATAR;
     }
 
-    public String getFileName() {
-        return fileName;
+    @Override
+    public String toString() {
+        return "AvatarDrawable [userId=" + userId + ", " + avatarFile + "]";
     }
 }

@@ -70,6 +70,7 @@ import org.andstatus.app.data.TimelineViewBinder;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
@@ -129,15 +130,13 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     private volatile boolean isFinishing = false;
 
-    /**
-     * Timeline type
-     */
     private TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
 
-    /**
-     * Is the timeline combined? (Timeline shows messages from all accounts)
-     */
-    private boolean timelineCombined = false;
+    /** Combined Timeline shows messages from all accounts */
+    private boolean mTimelineIsCombined = false;
+    
+    private boolean mShowSyncIndicationOnTimeline = false;
+    private View mSyncIndicator = null;    
     
     /**
      * UserId of the MyAccount, for which we show the activity
@@ -199,6 +198,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         preferencesChangeTime = MyContextHolder.initialize(this, this);
+        mShowSyncIndicationOnTimeline = MyPreferences.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, false);
         
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             MyLog.d(this, "onCreate instanceId=" + instanceId 
@@ -216,6 +216,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         MyPreferences.loadTheme(this, this);
         setContentView(R.layout.timeline);
 
+        mSyncIndicator = findViewById(R.id.sync_indicator);
+        
         ViewGroup messageListParent = (ViewGroup) findViewById(R.id.messageListParent);
         // We use "this" as a context, otherwise custom styles are not recognized...
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -238,7 +240,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 messageEditor.loadState(savedInstanceState);
                 contextMenu.loadState(savedInstanceState);
                 if (savedInstanceState.containsKey(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key)) {
-                    timelineCombined = savedInstanceState.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key);
+                    mTimelineIsCombined = savedInstanceState.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key);
                 }
                 if (savedInstanceState.containsKey(SearchManager.QUERY)) {
                     searchQuery = notNullString(savedInstanceState.getString(SearchManager.QUERY));
@@ -249,6 +251,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             }
         }
 
+        
         // Set up notification manager
         mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         
@@ -276,7 +279,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         });
 
         if (!isInstanceStateRestored) {
-            timelineCombined = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false);
+            mTimelineIsCombined = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false);
             processNewIntent(getIntent());
         }
         updateThisOnChangedParameters();
@@ -311,7 +314,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         final String method = "onSearchRequested";
         Bundle appSearchData = new Bundle();
         appSearchData.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
-        appSearchData.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, timelineCombined);
+        appSearchData.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mTimelineIsCombined);
         appSearchData.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, selectedUserId);
         appSearchData.putBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, appGlobalSearch);
         MyLog.v(this, method  + ": " + appSearchData);
@@ -330,7 +333,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 if (preferencesChangeTimeNew != preferencesChangeTime) {
                     MyLog.v(this, method + "; Restarting this Activity to apply all new changes of preferences");
                     finish();
-                    contextMenu.switchTimelineActivity(timelineType, timelineCombined, selectedUserId);
+                    contextMenu.switchTimelineActivity(timelineType, mTimelineIsCombined, selectedUserId);
                 }
             } else { 
                 MyLog.v(this, method + "; Finishing this Activity because there is no Account selected");
@@ -681,7 +684,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 TimelineTypeEnum type = selector.positionToType(which);
                 if (type != TimelineTypeEnum.UNKNOWN) {
                     contextMenu.switchTimelineActivity(type,
-                            timelineCombined, currentMyAccountUserId);
+                            mTimelineIsCombined, currentMyAccountUserId);
                 }
             }
         });
@@ -921,7 +924,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 .getStringExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key));
         if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
             timelineType = timelineTypeNew;
-            timelineCombined = intentNew.getBooleanExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, timelineCombined);
+            mTimelineIsCombined = intentNew.getBooleanExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mTimelineIsCombined);
             searchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
             selectedUserId = intentNew.getLongExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, selectedUserId);
         } else {
@@ -955,7 +958,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 textInitial += text;
             }
             MyLog.v(this, "Intent.ACTION_SEND '" + textInitial +"'");
-            messageEditor.startEditingMessage(textInitial, 0, 0, MyContextHolder.get().persistentAccounts().getCurrentAccount(), timelineCombined);
+            messageEditor.startEditingMessage(textInitial, 0, 0, MyContextHolder.get().persistentAccounts().getCurrentAccount(), mTimelineIsCombined);
         }
 
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
@@ -971,7 +974,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
             if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
                 timelineType = timelineTypeNew;
-                timelineCombined = appSearchData.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, timelineCombined);
+                mTimelineIsCombined = appSearchData.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mTimelineIsCombined);
                 /* The query itself is still from the Intent */
                 searchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
                 selectedUserId = appSearchData.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, selectedUserId);
@@ -995,7 +998,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         MyServiceManager.setServiceAvailable();
         TextView selectedUserText = (TextView) findViewById(R.id.selectedUserText);
         ToggleButton combinedTimelineToggle = (ToggleButton) findViewById(R.id.combinedTimelineToggle);
-        combinedTimelineToggle.setChecked(timelineCombined);
+        combinedTimelineToggle.setChecked(mTimelineIsCombined);
         if (selectedUserId != 0 && selectedUserId != currentMyAccountUserId) {
             combinedTimelineToggle.setVisibility(View.GONE);
             selectedUserText.setText(MyProvider.userIdToName(selectedUserId));
@@ -1276,7 +1279,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             default:
                 break;
         }
-        boolean allAccounts = timelineCombined;
+        boolean allAccounts = mTimelineIsCombined;
         if (userId != 0) {
             allAccounts = false;
             long originId = MyProvider.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, userId);
@@ -1316,7 +1319,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         messageEditor.saveState(outState);
         outState.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
         contextMenu.saveState(outState);
-        outState.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, timelineCombined);
+        outState.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mTimelineIsCombined);
         outState.putString(SearchManager.QUERY, searchQuery);
         outState.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, selectedUserId);
 
@@ -1343,7 +1346,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                             timelineTypeNew = TimelineTypeEnum.HOME;
                         }
                         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-                        contextMenu.switchTimelineActivity(timelineTypeNew, timelineCombined, ma.getUserId());
+                        contextMenu.switchTimelineActivity(timelineTypeNew, mTimelineIsCombined, ma.getUserId());
                     }
                 }
                 break;
@@ -1405,8 +1408,37 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     @Override
-    public void onReceive(CommandData commandData) {
-        MyLog.v(this, "onReceive: " + commandData);
+    public void onReceive(CommandData commandData, MyServiceEvent event) {
+        switch (event) {
+            case BEFORE_EXECUTING_COMMAND:
+                if (mShowSyncIndicationOnTimeline) {
+                    onReceiveBeforeExecutingCommand(commandData);
+                }
+                break;
+            case AFTER_EXECUTING_COMMAND:
+                onReceiveAfterExecutingCommand(commandData);
+                break;
+            case ON_STOP:
+                if (mSyncIndicator.getVisibility() == View.VISIBLE) {
+                    mSyncIndicator.setVisibility(View.GONE);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void onReceiveBeforeExecutingCommand(CommandData commandData) {
+        if (mSyncIndicator.getVisibility() != View.VISIBLE) {
+            mSyncIndicator.setVisibility(View.VISIBLE);
+        }
+        String syncMessage = getText(R.string.title_preference_syncing) + ": "
+                + commandData.toCommandSummary(this);
+        ((TextView) findViewById(R.id.sync_text)).setText(syncMessage);
+        MyLog.v(this, syncMessage);
+    }
+
+    private void onReceiveAfterExecutingCommand(CommandData commandData) {
         switch (commandData.getCommand()) {
             case FETCH_TIMELINE:
             case SEARCH_MESSAGE:
@@ -1447,7 +1479,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     public boolean isTimelineCombined() {
-        return timelineCombined;
+        return mTimelineIsCombined;
     }
 
     @Override

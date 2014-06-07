@@ -353,7 +353,7 @@ public class ConversationViewLoader {
             MyLog.v(this, method
                     + ": msgId=" + oMsg.msgId
                     + (oMsg.avatarDrawable != null ? ", avatar="
-                            + oMsg.avatarDrawable.getFileName() : ""));
+                            + oMsg.avatarDrawable : ""));
         }
         LayoutInflater inflater = LayoutInflater.from(context);
         int layoutResource = R.layout.message_conversation;

@@ -470,9 +470,9 @@ public class MyProvider extends ContentProvider {
         return ContentUris.withAppendedId(MyProvider.ORIGIN_CONTENT_URI, rowId);
     }
 
-    private void loadAvatar(long rowId, ContentValues values) {
+    private void loadAvatar(long userId, ContentValues values) {
         if (MyPreferences.showAvatars() && values.containsKey(User.AVATAR_URL)) {
-            MyServiceManager.sendCommand(new CommandData(CommandEnum.FETCH_AVATAR, null, rowId));
+            new AvatarData(userId).requestDownload();
         }
     }
     

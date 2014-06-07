@@ -17,7 +17,6 @@ import org.andstatus.app.data.DataInserterTest;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyService;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceBroadcaster;
 import org.andstatus.app.service.MyServiceEvent;

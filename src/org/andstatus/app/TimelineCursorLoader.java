@@ -31,6 +31,7 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceReceiver;
 import org.andstatus.app.support.android.v11.app.MyLoader;
@@ -325,7 +326,10 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
     }
 
     @Override
-    public void onReceive(CommandData commandData) {
+    public void onReceive(CommandData commandData, MyServiceEvent event) {
+        if (event != MyServiceEvent.AFTER_EXECUTING_COMMAND) {
+            return;
+        }
         final String method = "onReceive";
         MyLog.v(this, method + ": " + commandData);
         switch (commandData.getCommand()) {

@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -375,5 +376,11 @@ public class CommandData implements Comparable<CommandData> {
 
     public CommandResult getResult() {
         return commandResult;
+    }
+
+    public String toCommandSummary(Context context) {
+        return command.name()
+                + (TextUtils.isEmpty(accountName) ? "" : context.getText(R.string.combined_timeline_off) + " "
+                        + accountName);
     }
 }

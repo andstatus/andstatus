@@ -451,7 +451,8 @@ public class MyService extends Service {
                 }
             }
         }
-        MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
+        MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+                .setEvent(MyServiceEvent.ON_STOP).broadcast();
     }
 
     private void relealeWakeLock() {

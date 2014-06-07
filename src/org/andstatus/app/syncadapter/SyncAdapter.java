@@ -32,6 +32,7 @@ import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyService;
+import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
@@ -106,7 +107,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
     }
 
     @Override
-    public void onReceive(CommandData commandData) {
+    public void onReceive(CommandData commandData, MyServiceEvent event) {
+        if (event != MyServiceEvent.AFTER_EXECUTING_COMMAND) {
+            return;
+        }
         MyLog.d(this, "onReceive, command=" + commandData.getCommand());
         synchronized (syncLock) {
             if (this.commandData != null && this.commandData.equals(commandData)) {
