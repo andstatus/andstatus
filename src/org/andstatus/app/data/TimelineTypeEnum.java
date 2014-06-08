@@ -16,6 +16,8 @@
 
 package org.andstatus.app.data;
 
+import android.content.Context;
+
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
@@ -148,11 +150,13 @@ public enum TimelineTypeEnum {
         return "timeline:" + code;
     }
 
-    /**
-     * The id of the string resource with the localized name to use in UI
-     */
-    public int getTitleResId() {
-        return titleResId;
+    /** Localized title for UI */
+    public CharSequence getTitle(Context context) {
+        if (titleResId == 0 || context == null) {
+            return this.code;
+        } else {
+            return context.getText(titleResId);        
+        }
     }
     
     public Connection.ApiRoutineEnum getConnectionApiRoutine() {

@@ -135,7 +135,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     /** Combined Timeline shows messages from all accounts */
     private boolean mTimelineIsCombined = false;
     
-    private boolean mShowSyncIndicationOnTimeline = false;
+    private boolean mShowSyncIndicatorOnTimeline = false;
     private View mSyncIndicator = null;    
     
     /**
@@ -198,7 +198,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         preferencesChangeTime = MyContextHolder.initialize(this, this);
-        mShowSyncIndicationOnTimeline = MyPreferences.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, false);
+        mShowSyncIndicatorOnTimeline = MyPreferences.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, false);
         
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             MyLog.d(this, "onCreate instanceId=" + instanceId 
@@ -870,7 +870,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private void updateTimelineTypeButtonText() {
-        String timelinename = getString(timelineType.getTitleResId());
+        CharSequence timelinename = timelineType.getTitle(this);
         Button timelineTypeButton = (Button) findViewById(R.id.timelineTypeButton);
         timelineTypeButton.setText(timelinename + (TextUtils.isEmpty(searchQuery) ? "" : " *"));
     }
@@ -1417,7 +1417,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public void onReceive(CommandData commandData, MyServiceEvent event) {
         switch (event) {
             case BEFORE_EXECUTING_COMMAND:
-                if (mShowSyncIndicationOnTimeline
+                if (mShowSyncIndicatorOnTimeline
                         && isCommandToShowInSyncIndicator(commandData.getCommand())) {
                     onReceiveBeforeExecutingCommand(commandData);
                 }

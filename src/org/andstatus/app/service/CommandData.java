@@ -33,6 +33,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
@@ -389,16 +390,19 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public String toCommandSummary(MyContext myContext) {
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder(toShortCommandName(myContext) + " ");
         switch (command) {
             case FETCH_AVATAR:
-                builder.append(command.name() + " ");
                 builder.append(myContext.context().getText(R.string.combined_timeline_off) + " ");
                 builder.append(MyProvider.userIdToName(itemId) );
                 break;
+            case UPDATE_STATUS:
+                builder.append("\"");
+                builder.append(I18n.trimTextAt(bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key), 40));                
+                builder.append("\"");
+                break;
             case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
-                builder.append(myContext.context().getText(timelineType.getTitleResId()) + " ");
                 if (!TextUtils.isEmpty(accountName)) {
                     builder.append(myContext.context().getText(R.string.combined_timeline_off) + " ");
                     MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
@@ -406,10 +410,23 @@ public class CommandData implements Comparable<CommandData> {
                 }
                 break;
             default:
-                builder.append(command.name() + " ");
                 builder.append(TextUtils.isEmpty(accountName) ? "" : myContext.context()
                         .getText(R.string.combined_timeline_off) + " "
                         + accountName);
+                break;
+        }
+        return builder.toString();
+    }
+
+    public String toShortCommandName(MyContext myContext) {
+        StringBuilder builder = new StringBuilder();
+        switch (command) {
+            case AUTOMATIC_UPDATE:
+            case FETCH_TIMELINE:
+                builder.append(timelineType.getTitle(myContext.context()));
+                break;
+            default:
+                builder.append(command.getTitle(myContext.context()));
                 break;
         }
         return builder.toString();

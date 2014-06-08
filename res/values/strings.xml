@@ -195,7 +195,7 @@
         After successful creation of the account please tap \"left arrow\" on an 
         \"Action Bar\" or \"Back\" button on your device. 
         This time Home time line will be opened 
-        and messages for this account will start downloading from the Internet...\n 
+        and messages for this account will start downloading from the Internet…\n 
         Congratulations! Read below what you can do further.\n\n
         And don\'t forget to add AndStatus widget to the Home screen: 
         the widget will inform you about new messages and may be used to launch AndStatus.\n\n
@@ -322,6 +322,9 @@
     <string name="timeline_title_public">Public</string>
     <string name="timeline_title_replies">Replies</string>
     <string name="timeline_title_user">User</string>
+
+    <string name="title_command_fetch_avatar">Avatar</string>
+    <string name="title_command_get_status">Fetch message</string>
     
 	<string name="title_preference_about_application">About AndStatus</string>
     <string name="title_preference_add_account">Add this account</string>

@@ -326,7 +326,10 @@
     <string name="timeline_title_public">Публичные</string>
     <string name="timeline_title_replies">Ответы</string>
     <string name="timeline_title_user">Пользователь</string>
-    
+
+    <string name="title_command_fetch_avatar">Аватар</string>
+    <string name="title_command_get_status">Загрузить сообщение</string>
+        
     <string name="title_preference_about_application">О программе AndStatus</string>
     <string name="title_preference_add_account">Добавить эту учётную запись</string>
     <string name="title_preference_appearance">Внешний вид</string>

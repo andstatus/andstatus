@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.andstatus.app.util;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import java.text.MessageFormat;
 import java.util.regex.Matcher;
@@ -77,5 +78,33 @@ public class I18n {
                     + "; submessage=" + submessage + "; message=" + message);
         }
         return message;
+    }
+    
+    public static CharSequence trimTextAt(CharSequence text, int maxLength) {
+        if (TextUtils.isEmpty(text) || maxLength < 1) {
+            return "";
+        }
+        if (text.length() <= maxLength) {
+            return text;
+        }
+        if (text.length() == maxLength+1 && isSpace(text.charAt(maxLength))) {
+            return text.subSequence(0, maxLength);
+        }
+        if (maxLength == 1 && !isSpace(text.charAt(0))) {
+            return text.subSequence(0, 1);
+        }
+        int lastSpace = maxLength-1;
+        while (lastSpace > 1) {
+            if (isSpace(text.charAt(lastSpace))) {
+                break;
+            }
+            lastSpace--;
+        }
+        MyLog.v(TAG, "'" + text.subSequence(0, lastSpace) + "…" + "' max=" + maxLength);
+        return text.subSequence(0, lastSpace) + "…";
+    }
+
+    private static boolean isSpace(char charAt) {
+        return " ,.;:()[]{}-_=+\"'".indexOf(charAt) >=0;
     }
 }

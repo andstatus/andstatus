@@ -22,10 +22,10 @@ public class TimelineTypeSelector {
         this.context = context;
     }
 
-    public String[] getTitles() {
-        String[] titles = new String[timelineTypes.length];
+    public CharSequence[] getTitles() {
+        CharSequence[] titles = new String[timelineTypes.length];
         for (int ind=0; ind < timelineTypes.length; ind++) {
-            titles[ind] = context.getString(timelineTypes[ind].getTitleResId());
+            titles[ind] = timelineTypes[ind].getTitle(context);
         }
         return titles;
     }

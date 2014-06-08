@@ -1,6 +1,9 @@
 package org.andstatus.app.service;
 
+import android.content.Context;
 import android.text.TextUtils;
+
+import org.andstatus.app.R;
 
 /**
  * The command to the MyService or to MyAppWidgetProvider as a
@@ -21,36 +24,36 @@ public enum CommandEnum {
     /**
      * The action to fetch all usual timelines in the background.
      */
-    AUTOMATIC_UPDATE("automatic-update", -10, true),
+    AUTOMATIC_UPDATE("automatic-update", 0, -10, true),
     /**
      * Fetch timeline(s) of the specified type for the specified MyAccount. 
      */
-    FETCH_TIMELINE("fetch-timeline", -4, true),
+    FETCH_TIMELINE("fetch-timeline", 0, -4, true),
 
     /**
      * Fetch avatar for the specified user and URL 
      */
-    FETCH_AVATAR("fetch-avatar", -9, true),
+    FETCH_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, -9, true),
     
-    CREATE_FAVORITE("create-favorite", 0, true), 
-    DESTROY_FAVORITE("destroy-favorite", 0, true),
+    CREATE_FAVORITE("create-favorite", R.string.menu_item_favorite, 0, true), 
+    DESTROY_FAVORITE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, true),
 
-    FOLLOW_USER("follow-user", 0, true), 
-    STOP_FOLLOWING_USER("stop-following-user", 0, true),
+    FOLLOW_USER("follow-user", R.string.menu_item_follow_user, 0, true), 
+    STOP_FOLLOWING_USER("stop-following-user", R.string.menu_item_stop_following_user, 0, true),
 
     /**
      * This command is for sending both public and direct messages
      */
-    UPDATE_STATUS("update-status", 10, true), 
-    DESTROY_STATUS("destroy-status", 3, true),
-    GET_STATUS("get-status", 5, true),
+    UPDATE_STATUS("update-status", R.string.button_create_message, 10, true), 
+    DESTROY_STATUS("destroy-status", R.string.menu_item_destroy_status, 3, true),
+    GET_STATUS("get-status", R.string.title_command_get_status, 5, true),
 
-    SEARCH_MESSAGE("search-message", -4, true),
+    SEARCH_MESSAGE("search-message", R.string.options_menu_search, -4, true),
     
-    REBLOG("reblog", 9, true),
-    DESTROY_REBLOG("destroy-reblog", 3, true),
+    REBLOG("reblog", R.string.menu_item_reblog, 9, true),
+    DESTROY_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, 3, true),
 
-    RATE_LIMIT_STATUS("rate-limit-status", 0, true),
+    RATE_LIMIT_STATUS("rate-limit-status", 0, 0, true),
 
     /**
      * Notify User about commands in the Queue
@@ -74,7 +77,7 @@ public enum CommandEnum {
     /**
      * Clear previous notifications (because e.g. user opened a Timeline)
      */
-    NOTIFY_CLEAR("notify-clear", 20),
+    NOTIFY_CLEAR("notify-clear", 0, 20),
 
     /**
      * Stop the service after finishing all asynchronous treads (i.e. not immediately!)
@@ -90,6 +93,10 @@ public enum CommandEnum {
      * code of the enum that is used in messages
      */
     private final String code;
+    /**
+     * The id of the string resource with the localized name of this enum to use in UI
+     */
+    private final int titleResId;
     private final int priority;
     private final boolean onlineOnly;
 
@@ -97,12 +104,17 @@ public enum CommandEnum {
         this(code, 0);
     }
 
-    private CommandEnum(String code, int priority) {
-        this(code, priority, false);
+    private CommandEnum(String code, int titleResId) {
+        this(code, titleResId, 0);
     }
 
-    private CommandEnum(String code, int priority, boolean onlineOnly) {
+    private CommandEnum(String code, int titleResId, int priority) {
+        this(code, titleResId, priority, false);
+    }
+
+    private CommandEnum(String code, int titleResId, int priority, boolean onlineOnly) {
         this.code = code;
+        this.titleResId = titleResId;
         this.priority = priority;
         this.onlineOnly = onlineOnly;
     }
@@ -129,6 +141,15 @@ public enum CommandEnum {
         return UNKNOWN;
     }
 
+    /** Localized title for UI */
+    public CharSequence getTitle(Context context) {
+        if (titleResId == 0 || context == null) {
+            return this.code;
+        } else {
+            return context.getText(titleResId);        
+        }
+    }
+    
     public int getPriority() {
         return priority;
     }
