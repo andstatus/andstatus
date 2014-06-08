@@ -31,7 +31,7 @@ public enum OriginType {
     private static final String OAUTH_PATH_DEFAULT = "oauth";
     private static final String USERNAME_REGEX_DEFAULT = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     public static final OriginType ORIGIN_TYPE_DEFAULT = TWITTER;
-	public static final int TEXT_LIMIT_MAXIMUM = 5000;
+    public static final int TEXT_LIMIT_MAXIMUM = 5000;
 
     private long id;
     private String title;

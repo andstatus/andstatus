@@ -1,7 +1,6 @@
 package org.andstatus.app.service;
 
 import android.content.Context;
-import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;

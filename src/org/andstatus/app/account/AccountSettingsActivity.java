@@ -246,7 +246,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         }
     }
     
-	@Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
 
@@ -254,8 +254,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         inflater.inflate(R.menu.account_settings, menu);
         return true;
     }
-	
-	@Override
+    
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
@@ -268,11 +268,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         return super.onOptionsItemSelected(item);
     }
 
-	private void startMyPreferenceActivity() {
-		finish();
+    private void startMyPreferenceActivity() {
+        finish();
         startActivity(new Intent(this, MyPreferenceActivity.class));
-	}
-	
+    }
+    
     /**
      * Show values of all preferences in the "summaries".
      * @see <a href="http://stackoverflow.com/questions/531427/how-do-i-display-the-current-value-of-an-android-preference-in-the-preference-sum"> 
@@ -286,8 +286,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         
         originOfUser = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
         originPreference.setTitle(this.getText(R.string.title_preference_origin_system)
-								  .toString().replace("{0}",originOfUser.getName())
-								  .replace("{1}", originOfUser.getOriginType().getTitle()));
+                                  .toString().replace("{0}",originOfUser.getName())
+                                  .replace("{1}", originOfUser.getOriginType().getTitle()));
 
         originPreference.setEnabled(!state.builder.isPersistent() && TextUtils.isEmpty(ma.getUsername()));
         

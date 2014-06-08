@@ -154,8 +154,7 @@ public abstract class Connection {
         if (TextUtils.isEmpty(path)) {
             String detailMessage = "The API is not supported: '" + routine + "'";
             MyLog.e(this.getClass().getSimpleName(), detailMessage);
-            ConnectionException e = new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " + detailMessage);
-            throw e;
+            throw new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() + ": " + detailMessage);
         } else {
             if (MyLog.isLoggable(null, MyLog.VERBOSE )) {
                 MyLog.v(this.getClass().getSimpleName(), "API '" + routine + "' Path=" + path);  

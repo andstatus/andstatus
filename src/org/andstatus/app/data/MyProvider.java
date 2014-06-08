@@ -51,9 +51,6 @@ import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.Origin;
 import org.andstatus.app.data.MyDatabase.User;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 

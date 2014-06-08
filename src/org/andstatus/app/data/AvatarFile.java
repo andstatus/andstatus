@@ -26,7 +26,7 @@ import java.io.File;
 public class AvatarFile {
     private final String fileName;
     private final File file;
-    private final static AvatarFile EMPTY_AVATAR_FILE = new AvatarFile(null);
+    private static final AvatarFile EMPTY_AVATAR_FILE = new AvatarFile(null);
 
     public AvatarFile(String fileName) {
         this.fileName = fileName;

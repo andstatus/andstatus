@@ -56,10 +56,9 @@ class OriginTwitter extends Origin {
 
     @Override
     public String messagePermalink(String userName, long messageId) {
-        String url = "https://twitter.com/"
-                    + userName 
-                    + "/status/"
-                    + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId);
-        return url;
+        return "https://twitter.com/"
+                + userName
+                + "/status/"
+                + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId);
     }
 }

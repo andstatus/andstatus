@@ -10,7 +10,7 @@ public class DialogFactory {
     }
 
     public static Dialog newNoActionAlertDialog(Activity activity, int titleId, int summaryId) {
-        Dialog dlg = new AlertDialog.Builder(activity)
+        return new AlertDialog.Builder(activity)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle(titleId)
                 .setMessage(summaryId)
@@ -22,7 +22,6 @@ public class DialogFactory {
                                 dialog.dismiss();
                             }
                         }).create();
-        return dlg;
     }
 
     public static void dismissSafely (Dialog dlg) {

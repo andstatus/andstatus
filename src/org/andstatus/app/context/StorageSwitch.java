@@ -39,7 +39,7 @@ import java.io.IOException;
 
 public class StorageSwitch {
 
-    final static Object moveLock = new Object();
+    static final Object MOVE_LOCK = new Object();
     /**
      * This semaphore helps to avoid ripple effect: changes in MyAccount cause
      * changes in this activity ...
@@ -99,7 +99,7 @@ public class StorageSwitch {
     }
 
     private boolean checkAndSetDataBeingMoved() {
-        synchronized (moveLock) {
+        synchronized (MOVE_LOCK) {
             if (mDataBeingMoved) {
                 return false;
             }
@@ -109,12 +109,12 @@ public class StorageSwitch {
     }
 
     boolean isDataBeingMoved() {
-        synchronized (moveLock) {
+        synchronized (MOVE_LOCK) {
             return mDataBeingMoved;
         }
     }
 
-    private class TaskResult {
+    private static class TaskResult {
         boolean success = false;
         boolean moved = false;
         StringBuilder messageBuilder = new StringBuilder();
@@ -151,7 +151,7 @@ public class StorageSwitch {
             try {
                 moveAll(result);
             } finally {
-                synchronized (moveLock) {
+                synchronized (MOVE_LOCK) {
                     mDataBeingMoved = false;
                 }
             }

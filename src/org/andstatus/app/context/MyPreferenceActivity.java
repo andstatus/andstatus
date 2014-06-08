@@ -37,8 +37,6 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 
-import net.jcip.annotations.GuardedBy;
-
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.MyActionBar;
 import org.andstatus.app.MyActionBarContainer;

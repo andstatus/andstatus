@@ -69,7 +69,6 @@ public class HttpJavaNetUtils {
         URLConnection con = url.openConnection();
         con.setConnectTimeout(MyPreferences.getConnectionTimeoutMs());
         con.setReadTimeout(MyPreferences.getConnectionTimeoutMs());
-        InputStream is = con.getInputStream();
-        return is;
+        return con.getInputStream();
     }
 }

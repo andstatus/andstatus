@@ -28,7 +28,7 @@ public class AvatarDrawable {
     private final AvatarFile avatarFile;
     public static final int AVATAR_SIZE_DIP = 48;
     
-    private final static Drawable DEFAULT_AVATAR = loadDefaultAvatar();
+    private static final Drawable DEFAULT_AVATAR = loadDefaultAvatar();
     
     public AvatarDrawable(long userIdIn, String fileName) {
         userId = userIdIn;

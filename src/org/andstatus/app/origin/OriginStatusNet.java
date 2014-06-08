@@ -23,9 +23,8 @@ class OriginStatusNet extends Origin {
 
     @Override
     public String messagePermalink(String userName, long messageId) {
-        String url = "http" + (isSsl() ? "s" : "") +  "://" + host
-                    + "/notice/"
-                    + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId);
-        return url;
+        return "http" + (isSsl() ? "s" : "") + "://" + host
+                + "/notice/"
+                + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId);
     }
 }
