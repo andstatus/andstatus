@@ -17,21 +17,15 @@
 
 package org.andstatus.app.context;
 
-import java.io.File;
-import java.io.IOException;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.CheckBoxPreference;
@@ -42,7 +36,6 @@ import android.preference.RingtonePreference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.text.TextUtils;
 import android.view.KeyEvent;
-import android.widget.Toast;
 
 import net.jcip.annotations.GuardedBy;
 
@@ -54,29 +47,19 @@ import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.origin.OriginList;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-/**
- * Application settings
- * 
- */
+/** Application settings */
 public class MyPreferenceActivity extends PreferenceActivity implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener, MyActionBarContainer {
 
     private static final String KEY_ADD_NEW_ACCOUNT = "add_new_account";
     private static final String KEY_BACKUP_RESTORE = "backup_restore";
     private static final String KEY_MANAGE_EXISTING_ACCOUNTS = "manage_existing_accounts";
-
-    private static final String TAG = MyPreferenceActivity.class.getSimpleName();
 
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs
@@ -94,13 +77,14 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     
     // End Of the list ----------------------------------------
 
-    private CheckBoxPreference mUseExternalStorage;
-    private boolean useExternalStorageIsBusy = false;
+    CheckBoxPreference mUseExternalStorage;
+    private StorageSwitch storageSwitch = null;
     
     private RingtonePreference mNotificationRingtone;
     private Preference mBackupRestore;
     
     private boolean onSharedPreferenceChangedIsBusy = false;
+    volatile boolean dialogIsOpened = false;
 
     private boolean startTimelineActivity = false;
     
@@ -128,6 +112,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                 return false;
             }
         });
+        
+        storageSwitch = new StorageSwitch(this);
         
         Preference myPref = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
         myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -299,14 +285,11 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (dataIsBeingMoved) {
-            return;
-        }
-        if (onSharedPreferenceChangedIsBusy || !MyContextHolder.get().initialized()) {
+        if (dialogIsOpened || onSharedPreferenceChangedIsBusy
+                || !MyContextHolder.get().initialized() || storageSwitch.isDataBeingMoved()) {
             return;
         }
         onSharedPreferenceChangedIsBusy = true;
-
         try {
             MyLog.logSharedPreferencesValue(this, sharedPreferences, key);
             MyPreferences.onPreferencesChanged();
@@ -330,9 +313,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             if (MyPreferences.KEY_MIN_LOG_LEVEL.equals(key)) {
                 showMinLogLevel();
             }
-            if (MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW.equals(key)
-                    && !useExternalStorageIsBusy) {
-                useExternalStorageIsBusy = true;
+            if (MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW.equals(key)) {
+                dialogIsOpened = true;
                 showDialog(DLG_MOVE_DATA_BETWEEN_STORAGES);
             }
         } finally {
@@ -353,36 +335,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 
         switch (id) {
             case DLG_MOVE_DATA_BETWEEN_STORAGES:
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(getText(R.string.dialog_title_external_storage))
-                    .setMessage("")
-                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            MyPreferenceActivity.this.showUseExternalStorage();
-                            MyPreferenceActivity.this.useExternalStorageIsBusy = false;
-                        }
-                    })
-                    .setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            MyServiceManager.setServiceUnavailable();
-                            if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
-                                new MoveDataBetweenStoragesTask().execute();
-                            } else {
-                                MyServiceManager.stopService();
-                                dialog.cancel();
-                                Toast.makeText(MyPreferenceActivity.this, getText(R.string.system_is_busy_try_later), Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    })
-                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                        }
-                    });
-                dlg = builder.create();
+                dlg = storageSwitch.newSwichStorageDialog();
                 break;
             default:
                 switch (id) {
@@ -420,344 +373,6 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                 break;
             default:
                 break;
-        }
-    }
-
-    private final Object moveLock = new Object();
-    /**
-     * This semaphore helps to avoid ripple effect: changes in MyAccount cause
-     * changes in this activity ...
-     */
-    @GuardedBy("moveLock")
-    private volatile boolean dataIsBeingMoved = false;
-     
-    /**
-     * Move Data to/from External Storage
-     *  
-     * @author yvolk@yurivolkov.com
-     */
-    private class MoveDataBetweenStoragesTask extends AsyncTask<Uri, Void, JSONObject> {
-        private ProgressDialog dlg;
-
-        @Override
-        protected void onPreExecute() {
-            // indeterminate duration not cancelable
-            dlg = ProgressDialog.show(MyPreferenceActivity.this,
-                    getText(R.string.dialog_title_external_storage),
-                    getText(R.string.dialog_summary_external_storage), 
-                    true, 
-                    false);
-        }
-
-        @Override
-        protected JSONObject doInBackground(Uri... uris) {
-            JSONObject jso = null;
-            boolean done = false;
-            boolean succeeded = false;
-            StringBuilder messageToAppend = new StringBuilder();
-
-            /**
-             * Did we acquired the lock?
-             */
-            boolean locked = false;
-
-            boolean useExternalStorageOld = MyPreferences.isStorageExternal(null);
-            boolean useExternalStorageNew = MyPreferenceActivity.this.mUseExternalStorage
-                    .isChecked();
-
-            MyLog.d(TAG, "About to move data from " + useExternalStorageOld + " to "
-                    + useExternalStorageNew);
-
-            if (useExternalStorageNew == useExternalStorageOld) {
-                messageToAppend.append(" Nothing to do.");
-                done = true;
-                succeeded = true;
-            }
-            if (!done) {
-                try {
-                    synchronized (moveLock) {
-                        if (dataIsBeingMoved) {
-                            done = true;
-                            messageToAppend.append(" skipped");
-                        } else {
-                            dataIsBeingMoved = true;
-                            locked = true;
-                        }
-                    }
-                    if (!done) {
-                        succeeded = moveDatabase(useExternalStorageNew, messageToAppend);
-                        if (succeeded) {
-                            moveAvatars(useExternalStorageNew, messageToAppend);
-                        }
-                    }
-                } finally {
-                    if (succeeded && ( useExternalStorageOld != useExternalStorageNew)) {
-                        saveNewSettings(useExternalStorageNew, messageToAppend);
-                    }
-                    
-                    if (locked) {
-                        synchronized (moveLock) {
-                            dataIsBeingMoved = false;
-                        }
-                    }
-                }
-            }
-            messageToAppend.insert(0, " Move " + (succeeded ? "succeeded" : "failed"));
-            MyLog.v(this, messageToAppend.toString());
-
-            try {
-                jso = new JSONObject();
-                jso.put("succeeded", succeeded);
-                jso.put("message", messageToAppend.toString());
-            } catch (JSONException e) {
-                MyLog.e(this, e);
-            }
-            return jso;
-        }
-
-        private void moveAvatars(boolean useExternalStorageNew, StringBuilder messageToAppend) {
-            String method = "moveAvatars";
-            boolean succeeded = false;
-            boolean done = false;
-            /**
-             * Did we actually copied anything?
-             */
-            boolean copied = false;
-            File dirOld = null;
-            File dirNew = null;
-            try {
-
-                if (!done) {
-                    dirOld = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS, null);
-                    dirNew = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS, useExternalStorageNew);
-                    if (dirOld == null || !dirOld.exists()) {
-                        messageToAppend.append("No old avatars. ");
-                        done = true;
-                        succeeded = true;
-                    }
-                    if (dirNew == null) {
-                        messageToAppend.append("No directory for new avatars?! ");
-                        done = true;
-                    }                    
-                }
-                if (!done) {
-                    if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                        MyLog.v(this, method + " from: " + dirOld.getPath());
-                        MyLog.v(this, method + " to: " + dirNew.getPath());
-                    }
-                    String fileName = "";
-                    try {
-                        for (File fileOld : dirOld.listFiles()) {
-                            if (fileOld.isFile()) {
-                                fileName = fileOld.getName();
-                                File fileNew = new File(dirNew, fileName);
-                                if (copyFile(fileOld, fileNew)) {
-                                    copied = true;
-                                }
-                            }
-                        }
-                        succeeded = true;
-                    } catch (Exception e) {
-                        String logMsg = method + " couldn't copy'" + fileName + "'";
-                        MyLog.v(this, logMsg, e);
-                        messageToAppend.insert(0, logMsg + ": " + e.getMessage());
-                    }
-                    done = true;
-                }
-            } catch (Exception e) {
-                MyLog.v(this, e);
-                messageToAppend.append(method + " error: " + e.getMessage() + ". ");
-                succeeded = false;
-            } finally {
-                // Delete unnecessary files
-                try {
-                    if (succeeded) {
-                        if (copied) {
-                            for (File fileOld : dirOld.listFiles()) {
-                                if (fileOld.isFile() && !fileOld.delete()) {
-                                    messageToAppend.append(method + " couldn't delete old file " + fileOld.getName());
-                                }
-                            }
-                        }
-                    } else {
-                        if (dirNew != null && dirNew.exists()) {
-                            for (File fileNew : dirNew.listFiles()) {
-                                if (fileNew.isFile() && !fileNew.delete()) {
-                                    messageToAppend.append(method + " couldn't delete new file " + fileNew.getName());
-                                }
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    String logMsg = method + " deleting unnecessary files";
-                    MyLog.v(this, logMsg, e);
-                    messageToAppend.append(logMsg + ": " + e.getMessage());
-                }
-            }
-            MyLog.d(this, method  + " " + (succeeded ? "succeeded" : "failed"));
-        }
-
-        private void saveNewSettings(boolean useExternalStorageNew, StringBuilder messageToAppend) {
-            try {
-                MyPreferences
-                .getDefaultSharedPreferences()
-                .edit()
-                .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE,
-                        useExternalStorageNew).commit();
-                MyPreferences.onPreferencesChanged();
-            } catch (Exception e) {
-                MyLog.v(this, "Save new settings", e);
-                messageToAppend.append("Couldn't save new settings. " + e.getMessage());
-            }
-        }
-
-        private boolean moveDatabase(boolean useExternalStorageNew, StringBuilder messageToAppend) {
-            String method = "moveDatabase";
-            boolean succeeded = false;
-            boolean done = false;
-            /**
-             * Did we actually copied database?
-             */
-            boolean copied = false;
-            File dbFileOld = null;
-            File dbFileNew = null;
-            try {
-
-                if (!done) {
-                    dbFileOld = MyContextHolder.get().context().getDatabasePath(
-                            MyDatabase.DATABASE_NAME);
-                    dbFileNew = MyPreferences.getDatabasePath(
-                            MyDatabase.DATABASE_NAME, useExternalStorageNew);
-                    if (dbFileOld == null) {
-                        messageToAppend.append("No old database. ");
-                        done = true;
-                    }
-                }
-                if (!done) {
-                    if (dbFileNew == null) {
-                        messageToAppend.append("No new database. ");
-                        done = true;
-                    } else {
-                        if (!dbFileOld.exists()) {
-                            messageToAppend.append("No old database. ");
-                            done = true;
-                            succeeded = true;
-                        } else if (dbFileNew.exists()) {
-                            messageToAppend.insert(0, "Database already exists. ");
-                            if (!dbFileNew.delete()) {
-                                messageToAppend.insert(0, "Couldn't delete already existed files. ");
-                                done = true;
-                            }
-                        }
-                    }
-                }
-                if (!done) {
-                    if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                        MyLog.v(this, method + " from: " + dbFileOld.getPath());
-                        MyLog.v(this, method + " to: " + dbFileNew.getPath());
-                    }
-                    try {
-                        if (copyFile(dbFileOld, dbFileNew)) {
-                            copied = true;
-                            succeeded = true;
-                        }
-                    } catch (Exception e) {
-                        MyLog.v(this, "Copy database", e);
-                        messageToAppend.insert(0, "Couldn't copy database: " + e.getMessage() + ". ");
-                    }
-                    done = true;
-                }
-            } catch (Exception e) {
-                MyLog.v(this, e);
-                messageToAppend.append(method + " error: " + e.getMessage() + ". ");
-                succeeded = false;
-            } finally {
-                // Delete unnecessary files
-                try {
-                    if (succeeded
-                            && (copied && dbFileOld != null)
-                            && dbFileOld.exists()
-                            && !dbFileOld.delete()) {
-                        messageToAppend.append(method + " couldn't delete old files. ");
-                    } else if (dbFileNew != null
-                            && dbFileNew.exists()
-                            && !dbFileNew.delete()) {
-                        messageToAppend.append(method + " couldn't delete new files. ");
-
-                    }
-                } catch (Exception e) {
-                    MyLog.v(this, method + " Delete old file", e);
-                    messageToAppend.append(method + " couldn't delete old files. " + e.getMessage() + ". ");
-                }
-            }
-            MyLog.d(this, method  + " " + (succeeded ? "succeeded" : "failed"));
-            return succeeded;
-        }
-        
-        /**
-         * Based on <a href="http://www.screaming-penguin.com/node/7749">Backing
-         * up your Android SQLite database to the SD card</a>
-         * 
-         * @param src
-         * @param dst
-         * @return true if success
-         * @throws IOException
-         */
-        boolean copyFile(File src, File dst) throws IOException {
-            long sizeIn = -1;
-            long sizeCopied = 0;
-            boolean ok = false;
-            if (src != null && src.exists()) {
-                sizeIn = src.length();
-                if (!dst.createNewFile()) {
-                    MyLog.e(TAG, "New file was not created: '" + dst.getCanonicalPath() + "'");
-                } else if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
-                    MyLog.d(TAG, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
-                } else {
-                    java.nio.channels.FileChannel inChannel = null;
-                    java.nio.channels.FileChannel outChannel = null;
-                    try {
-                        inChannel = new java.io.FileInputStream(src).getChannel();
-                        outChannel = new java.io.FileOutputStream(dst)
-                                .getChannel();
-                        sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
-                        ok = (sizeIn == sizeCopied);
-                    } finally {
-                        DbUtils.closeSilently(inChannel);
-                        DbUtils.closeSilently(outChannel);
-                    }
-
-                }
-            }
-            MyLog.d(TAG, "Copied " + sizeCopied + " bytes of " + sizeIn);
-            return ok;
-        }
-
-        // This is in the UI thread, so we can mess with the UI
-        @Override
-        protected void onPostExecute(JSONObject jso) {
-            DialogFactory.dismissSafely(dlg);
-            if (jso != null) {
-                try {
-                    boolean succeeded = jso.getBoolean("succeeded");
-                    String message = jso.getString("message");
-
-                    MyLog.d(TAG, this.getClass().getSimpleName() + " ended, "
-                            + (succeeded ? "moved" : "move failed"));
-                    
-                    if (!succeeded) {
-                        String message2 = MyPreferenceActivity.this
-                        .getString(R.string.error);
-                         message = message2 + ": " + message;
-                    }
-                    Toast.makeText(MyPreferenceActivity.this, message, Toast.LENGTH_LONG).show();
-                    MyPreferenceActivity.this.showUseExternalStorage();
-                    
-                } catch (JSONException e) {
-                    MyLog.e(this, e);
-                }
-            }
-            useExternalStorageIsBusy = false;
         }
     }
 

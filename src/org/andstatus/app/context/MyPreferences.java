@@ -251,21 +251,15 @@ public class MyPreferences {
     public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage, boolean logged) {
         final String method = "getDataFilesDir";
         File dir = null;
-        String textToLog = null;
+        StringBuilder textToLog = new StringBuilder();
         MyContext myContext = MyContextHolder.get();
         if (myContext.context() == null) {
-            textToLog = "No android.content.Context yet";
+            textToLog.append("No android.content.Context yet");
         } else {
             if (isStorageExternal(forcedUseExternalStorage)) {
-                String state = Environment.getExternalStorageState();
-                if (Environment.MEDIA_MOUNTED.equals(state)) {    
-                    // We can read and write the media
+                if (isWritableExternalStorageAvailable(textToLog)) {
                     dir = myContext.context().getExternalFilesDir(type);
-                } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-                    textToLog = "We can only read External storage";
-                } else {    
-                    textToLog = "Error accessing External storage, state='" + state + "'";
-                }                
+                }
             } else {
                 dir = myContext.context().getFilesDir();
                 if (!TextUtils.isEmpty(type)) {
@@ -281,7 +275,7 @@ public class MyPreferences {
                     }
                 } finally {
                     if (!dir.exists()) {
-                        textToLog = "Could not create '" + dir.getPath() + "'";
+                        textToLog.append("Could not create '" + dir.getPath() + "'");
                         dir = null;
                     }
                 }
@@ -295,6 +289,23 @@ public class MyPreferences {
             MyLog.i(TAG, method + "; " + textToLog);
         }
         return dir;
+    }
+
+    public static boolean isWritableExternalStorageAvailable(StringBuilder textToLog) {
+        String state = Environment.getExternalStorageState();
+        boolean available = false;
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            available = true;
+        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            if (textToLog != null) {
+                textToLog.append("We can only read External storage");
+            }
+        } else {    
+            if (textToLog != null) {
+                textToLog.append("Error accessing External storage, state='" + state + "'");
+            }
+        }
+        return available;
     }
     
     public static boolean isStorageExternal(Boolean forcedUseExternalStorage) {
