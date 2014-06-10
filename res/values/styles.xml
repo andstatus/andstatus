@@ -1,16 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-	<style name="DarkThemeSelector" parent="android:Theme" />
-    <style name="LightThemeSelector" parent="android:Theme.Light" />
-    <style name="DeviceDefaultThemeSelector" parent="android:Theme" />
-	<style name="DialogThemeSelector" parent="android:Theme.Dialog" />
-	<style name="WidgetActionButtonOverflow">
-         <item name="android:background">@drawable/overflow</item>
-    </style>
-	<style name="WidgetStyle">
-	     <item name="android:background">@drawable/widget_bg</item>
-	</style>
-	<style name="EmptyStyle">
-	     <item name="android:background">#00000000</item>
-	</style>
+	<style name="DarkThemeSelector" parent="android:Theme.Holo" />
+    <style name="LightThemeSelector" parent="android:Theme.Holo.Light" />
+    <style name="DeviceDefaultThemeSelector" parent="android:Theme.DeviceDefault" />
+	<style name="DialogThemeSelector" parent="android:Theme.DeviceDefault.Dialog" />
 </resources>

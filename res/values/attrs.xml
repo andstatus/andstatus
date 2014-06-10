@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
+    Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +14,9 @@
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 	See the License for the specific language governing permissions and
 	limitations under the License.
+	
+	See http://stackoverflow.com/questions/3441396/defining-custom-attrs
+	https://github.com/android/platform_frameworks_base/blob/master/core/res/res/values/attrs.xml
  -->
 <resources>
 	<declare-styleable name="StyledAttributes">
@@ -41,5 +45,7 @@
 		</attr>
 
 		<attr name="textEditColor" format="reference|color" />
+		
+		<attr name="myActionOverflowButtonStyle" format="reference" />
 	</declare-styleable>
 </resources>

@@ -23,7 +23,7 @@
 	android:versionName="9.0-SNAPSHOT" android:versionCode="102"
 	android:installLocation="internalOnly">
 
-	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="10" />
+	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="19" />
     
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.VIBRATE"/>

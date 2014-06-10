@@ -29,6 +29,8 @@
     <!-- Settings activity title [CHAR LIMIT=40]-->
     <string name="settings_activity_title">Settings</string>
 	
+    <string name="action_menu_overflow_description">More actions…</string>
+    
     <string name="appwidget_configure_instructions">Customize AndStatus Widget message, shown in a case there is nothing new:</string>
     <string name="appwidget_nothingnew_default">Nothing new since:</string>
 	<string name="appwidget_new_tweet_format">{0}</string>

@@ -33,7 +33,7 @@
 		<item name="messageDetailsColor">?android:attr/textColorTertiary</item>
         <item name="messageDetailsStyle">italic</item>
 
-        <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.ActionButton.Overflow</item>
+        <item name="myActionOverflowButtonStyle">@style/MyWidget.ActionButton.Overflow</item>
         <item name="android:windowNoTitle">true</item>
 	</style>
 	<style name="Theme.Light.AndStatus.StandardSize" parent="@style/LightThemeSelector">
@@ -49,7 +49,7 @@
 		<item name="messageDetailsColor">?android:attr/textColorTertiary</item>
 		<item name="messageDetailsStyle">italic</item>
 				
-        <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.Light.ActionButton.Overflow</item>
+        <item name="myActionOverflowButtonStyle">@style/MyWidget.Light.ActionButton.Overflow</item>
 		<item name="android:windowNoTitle">true</item>
 	</style>
 	<style name="Theme.DeviceDefault.AndStatus.StandardSize" parent="@style/DeviceDefaultThemeSelector">
@@ -66,7 +66,7 @@
 		<item name="messageDetailsStyle">italic</item>
 				
 
-        <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.ActionButton.Overflow</item>
+        <item name="myActionOverflowButtonStyle">@style/MyWidget.ActionButton.Overflow</item>
         
         <!-- To try this for the later SDK versions:
         <item name="myActionOverflowButtonStyle">?android:attr/actionOverflowButtonStyle</item>
