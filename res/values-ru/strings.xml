@@ -156,6 +156,8 @@
     <string name="notification_queue_format">{0} отправки в Очереди.</string>
     <string name="notification_title_queue">Не все сообщения были отправлены</string>
 	<string name="oauth_activity_label">OAuth</string>
+    <string name="off">выкл</string>
+    <string name="on">вкл</string>
 	<string name="options_menu_about">О программе AndStatus</string>
 	<string name="options_menu_about_cond">Информация</string>
 	<string name="options_menu_direct_messages">Личные сообщения</string>

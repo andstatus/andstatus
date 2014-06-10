@@ -61,6 +61,10 @@ public class AccountData implements Parcelable, AccountDataWriter {
         }
         android.accounts.AccountManager am = AccountManager.get(myContext.context());
         AccountData accountData = fromJsonString(am.getUserData(account, KEY_ACCOUNT), true);
+        accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
+                ContentResolver.getIsSyncable(account, MyProvider.AUTHORITY) != 0);
+        accountData.setDataBoolean(MyAccount.KEY_SYNC_AUTOMATICALLY,
+                ContentResolver.getSyncAutomatically(account, MyProvider.AUTHORITY));
         accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, getSyncFrequencySeconds(account));
         return accountData;
     }

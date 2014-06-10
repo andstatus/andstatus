@@ -9,6 +9,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.AuthenticatorService;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -46,15 +47,18 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         deleteApplicationData();
         testRestore(dataFolder);
         TestSuite.initialize(this);
+
+        assertEquals("Number of persistent accounts", accountsBefore.size(), MyContextHolder.get().persistentAccounts().size());
         
         if (android.os.Build.VERSION.SDK_INT > 8 ) {
             assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
         }
+        MyAccount oldAccount = accountsBefore.fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
+        MyAccount newAccount = MyContextHolder.get().persistentAccounts()
+                .fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
         assertEquals(
-                "One account",
-                accountsBefore.fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME),
-                MyContextHolder.get().persistentAccounts()
-                        .fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME));
+                "One account, hash codes: " + oldAccount.hashCode() + " and " + newAccount.hashCode(),
+                oldAccount, newAccount);
 
         deleteBackup(dataFolder);
     }

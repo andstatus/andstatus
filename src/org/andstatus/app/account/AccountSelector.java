@@ -45,6 +45,8 @@ import java.util.TreeMap;
  */
 public class AccountSelector extends ListActivity {
     private static final String KEY_VISIBLE_NAME = "visible_name";
+    private static final String KEY_CREDENTIALS_VERIFIED = "credentials_verified";
+    private static final String KEY_SYNC_AUTO = "sync_auto";
     private static final String KEY_NAME = "name";
     private static final String KEY_TYPE = "type";
     
@@ -67,10 +69,11 @@ public class AccountSelector extends ListActivity {
         for (MyAccount ma : accounts.values()) {
             Map<String, String> map = new HashMap<String, String>();
             String visibleName = ma.getAccountName();
-            if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-                visibleName = "(" + visibleName + ")";
-            }
             map.put(KEY_VISIBLE_NAME, visibleName);
+            map.put(KEY_CREDENTIALS_VERIFIED,
+                    ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ? ""
+                            : ma.getCredentialsVerified().name().substring(0, 1));
+            map.put(KEY_SYNC_AUTO, ma.getSyncAutomatically() ? "" : getText(R.string.off).toString());
             map.put(KEY_NAME, ma.getAccountName());
             map.put(KEY_TYPE, TYPE_ACCOUNT);
             data.add(map);
@@ -79,8 +82,8 @@ public class AccountSelector extends ListActivity {
         ListAdapter adapter = new SimpleAdapter(this, 
                 data, 
                 R.layout.accountlist_item, 
-                new String[] {KEY_VISIBLE_NAME, KEY_NAME, KEY_TYPE}, 
-                new int[] {R.id.visible_name, R.id.name, R.id.type});
+                new String[] {KEY_VISIBLE_NAME, KEY_CREDENTIALS_VERIFIED, KEY_SYNC_AUTO, KEY_NAME, KEY_TYPE}, 
+                new int[] {R.id.visible_name, R.id.credentials_verified, R.id.sync_auto, R.id.name, R.id.type});
         
         // Bind to our new adapter.
         setListAdapter(adapter);

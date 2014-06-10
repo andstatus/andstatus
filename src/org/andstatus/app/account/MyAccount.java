@@ -105,6 +105,13 @@ public final class MyAccount {
      */
     public static final String KEY_DELETED = "deleted";
     
+    /** @see {@link ContentResolver#getIsSyncable(Account, String)} */
+    public static final String KEY_IS_SYNCABLE = "is_syncable";
+
+    /** This corresponds to turning syncing on/off in Android Accounts
+     * @see {@link ContentResolver#getSyncAutomatically(Account, String)} */
+    public static final String KEY_SYNC_AUTOMATICALLY = "sync_automatically";
+    
     /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
     public static final class Builder implements Parcelable {
         private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
@@ -317,12 +324,13 @@ public final class MyAccount {
                             myContext.context());
                     am.addAccountExplicitly(androidAccount, myAccount.getPassword(), null);
 
-                    ContentResolver.setIsSyncable(androidAccount, MyProvider.AUTHORITY, 1);
+                    ContentResolver.setIsSyncable(androidAccount, MyProvider.AUTHORITY, myAccount.mIsSyncable ? 1 : 0);
 
-                    // This is not needed because we don't use the "network tickles"... yet?!
+                    // We need to preserve sync on/off during backup/restore.
+                    // don't know about "network tickles"...
                     // See http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
                     ContentResolver
-                            .setSyncAutomatically(androidAccount, MyProvider.AUTHORITY, true);
+                            .setSyncAutomatically(androidAccount, MyProvider.AUTHORITY, myAccount.mSyncAutomatically);
 
                     // Without SyncAdapter we got the error:
                     // SyncManager(865): can't find a sync adapter for SyncAdapterType Key
@@ -566,6 +574,8 @@ public final class MyAccount {
     /** Is this user authenticated with OAuth? */
     private boolean isOAuth = true;
     private long syncFrequencySeconds;
+    private boolean mIsSyncable = true;
+    private boolean mSyncAutomatically = true;
     private final int version;
     public static final int ACCOUNT_VERSION = 16;
     private boolean deleted;
@@ -699,6 +709,8 @@ public final class MyAccount {
         version = accountData.getDataInt(KEY_VERSION, ACCOUNT_VERSION);
         deleted = accountData.getDataBoolean(KEY_DELETED, false);
         syncFrequencySeconds = accountData.getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0L);
+        mIsSyncable = accountData.getDataBoolean(KEY_IS_SYNCABLE, true);
+        mSyncAutomatically = accountData.getDataBoolean(KEY_SYNC_AUTOMATICALLY, true);
         userId = accountData.getDataLong(KEY_USER_ID, 0L);
         userOid = accountData.getDataString(KEY_USER_OID, "");
         setOAuth(TriState.UNKNOWN);
@@ -864,6 +876,12 @@ public final class MyAccount {
             if (version != ACCOUNT_VERSION) {
                 members += "version:" + version + ",";
             }
+            if (mIsSyncable) {
+                members += "syncable,";
+            }
+            if (mSyncAutomatically) {
+                members += "syncauto,";
+            }
         } catch (Exception e) {
             MyLog.v(this, members, e);
         }
@@ -883,6 +901,8 @@ public final class MyAccount {
             connection.save(jso);
         }
         jso.put(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, syncFrequencySeconds);
+        jso.put(KEY_IS_SYNCABLE, mIsSyncable);
+        jso.put(KEY_SYNC_AUTOMATICALLY, mSyncAutomatically);
         jso.put(KEY_VERSION, version);
         return jso;
     }
@@ -940,5 +960,9 @@ public final class MyAccount {
             MyLog.v(this, e);
         }
         return hashCode() == other.hashCode();
+    }
+
+    public boolean getSyncAutomatically() {
+        return mSyncAutomatically;
     }
 }

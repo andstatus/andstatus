@@ -160,7 +160,9 @@
 	<string name="notification_queue_format">{0} waiting in the Queue to be sent.</string>
 	<string name="notification_title_queue">Not all messages were sent</string>
 	<string name="oauth_activity_label">OAuth</string>
-	<string name="options_menu_about">About AndStatus</string>
+    <string name="off">off</string>
+    <string name="on">on</string>
+    <string name="options_menu_about">About AndStatus</string>
 	<string name="options_menu_about_cond">About</string>
 	<string name="options_menu_direct_messages">Direct Messages</string>
 	<string name="options_menu_direct_messages_cond">Messages</string>
