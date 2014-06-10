@@ -26,12 +26,9 @@ import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -39,7 +36,6 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
@@ -56,7 +52,6 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class ConversationActivity extends Activity implements MyServiceListener, ActionableMessageList, MyActionBarContainer {
-    private static final String TAG = ConversationActivity.class.getSimpleName();
 
     /**
      * Id of current Message, which is sort of a "center" of the conversation view
@@ -321,5 +316,10 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     @Override
     public void closeAndGoBack() {
         finish();
+    }
+
+    @Override
+    public boolean hasOptionsMenu() {
+        return false;
     }
 }

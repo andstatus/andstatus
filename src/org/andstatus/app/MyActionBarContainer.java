@@ -25,4 +25,5 @@ import android.app.Activity;
 public interface MyActionBarContainer {
     Activity getActivity();
     void closeAndGoBack();
+    boolean hasOptionsMenu();
 }

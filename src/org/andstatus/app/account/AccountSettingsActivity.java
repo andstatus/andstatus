@@ -1148,4 +1148,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     public Activity getActivity() {
         return this;
     }
+
+    @Override
+    public boolean hasOptionsMenu() {
+        return true;
+    }
 }

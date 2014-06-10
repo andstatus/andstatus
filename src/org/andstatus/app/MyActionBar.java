@@ -163,7 +163,10 @@ public class MyActionBar {
         if (overflowButton == null) {
             return;
         }
-        //overflowButton.set
+        if (!container.hasOptionsMenu()) {
+            overflowButton.setVisibility(View.GONE);
+            return;
+        }
         
         OnClickListener listener = new View.OnClickListener() {
             @Override

@@ -1504,4 +1504,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public void closeAndGoBack() {
         finish();
     }
+
+    @Override
+    public boolean hasOptionsMenu() {
+        return true;
+    }
 }

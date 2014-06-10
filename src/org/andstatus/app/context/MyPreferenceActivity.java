@@ -396,4 +396,9 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         finish();
         startTimelineActivity = true;
     }
+
+    @Override
+    public boolean hasOptionsMenu() {
+        return false;
+    }
 }

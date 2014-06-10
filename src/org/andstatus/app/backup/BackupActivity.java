@@ -148,4 +148,9 @@ public class BackupActivity extends Activity implements MyActionBarContainer {
     public void closeAndGoBack() {
         finish();
     }
+
+    @Override
+    public boolean hasOptionsMenu() {
+        return false;
+    }
 }
