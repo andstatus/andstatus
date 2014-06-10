@@ -39,8 +39,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
@@ -86,7 +84,7 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com, torgny.bjers
  */
-public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener, ActionableMessageList, MyLoaderManager.LoaderCallbacks<Cursor> {
+public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener, ActionableMessageList, MyLoaderManager.LoaderCallbacks<Cursor>, MyActionBarContainer {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
 
     private static final String KEY_LAST_POSITION = "last_position_";
@@ -100,8 +98,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     /** Parameters of currently shown Timeline */
     private TimelineListParameters listParameters = new TimelineListParameters();
-
-    private NotificationManager mNM;
     
     /**
      * Msg are being loaded into the list starting from one page. More Msg
@@ -189,12 +185,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        requestWindowFeature(Window.FEATURE_NO_TITLE);    // Before loading the content view
+        MyActionBar actionBar = new MyActionBar(this, R.layout.timeline_actions);
         super.onCreate(savedInstanceState);
         if (instanceId == 0) {
             instanceId = InstanceId.next();
         } else {
-            MyLog.d(this, "onCreate reuse the same instanceId=" + instanceId);
+            MyLog.d(this, "onCreate reusing the same instanceId=" + instanceId);
         }
 
         preferencesChangeTime = MyContextHolder.initialize(this, this);
@@ -212,24 +208,48 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         currentMyAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         serviceConnector = new MyServiceReceiver(this);
-        
-        MyPreferences.loadTheme(this, this);
+
         setContentView(R.layout.timeline);
-
+        actionBar.attach();
         mSyncIndicator = findViewById(R.id.sync_indicator);
-        
-        ViewGroup messageListParent = (ViewGroup) findViewById(R.id.messageListParent);
-        // We use "this" as a context, otherwise custom styles are not recognized...
-        LayoutInflater inflater = LayoutInflater.from(this);
-        ViewGroup actionsView = (ViewGroup) inflater.inflate(R.layout.timeline_actions, null);
-        messageListParent.addView(actionsView, 0);
-
         contextMenu = new MessageContextMenu(this);
-        
         messageEditor = new MessageEditor(this);
-        // TODO: Maybe this should be a parameter
-        messageEditor.hide();
 
+        boolean isInstanceStateRestored = restoreInstanceState(savedInstanceState);
+        
+        loaderManager = new MyLoaderManager<Cursor>();
+        
+        LayoutInflater inflater = LayoutInflater.from(this);
+        // Create list footer to show the progress of message loading
+        loadingLayout = (LinearLayout) inflater.inflate(R.layout.item_loading, null);
+        getListView().addFooterView(loadingLayout);
+        
+        createListAdapter(new MatrixCursor(getProjection()));
+
+        // Attach listeners to the message list
+        getListView().setOnScrollListener(this);
+        getListView().setOnCreateContextMenuListener(contextMenu);
+        getListView().setOnItemClickListener(this);
+
+        Button accountButton = (Button) findViewById(R.id.selectAccountButton);
+        accountButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (MyContextHolder.get().persistentAccounts().size() > 1) {
+                    Intent i = new Intent(TimelineActivity.this, AccountSelector.class);
+                    startActivityForResult(i, ActivityRequestCode.SELECT_ACCOUNT.id);
+                }
+            }
+        });
+        
+        if (!isInstanceStateRestored) {
+            mTimelineIsCombined = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false);
+            processNewIntent(getIntent());
+        }
+        updateThisOnChangedParameters();
+    }
+
+    private boolean restoreInstanceState(Bundle savedInstanceState) {
         boolean isInstanceStateRestored = false;
         if (savedInstanceState != null) {
             TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(savedInstanceState
@@ -250,39 +270,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 }
             }
         }
-
-        
-        // Set up notification manager
-        mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        
-        loaderManager = new MyLoaderManager<Cursor>();
-        
-        // Create list footer to show the progress of message loading
-        loadingLayout = (LinearLayout) inflater.inflate(R.layout.item_loading, null);
-        getListView().addFooterView(loadingLayout);
-        createListAdapter(new MatrixCursor(getProjection()));
-
-        // Attach listeners to the message list
-        getListView().setOnScrollListener(this);
-        getListView().setOnCreateContextMenuListener(contextMenu);
-        getListView().setOnItemClickListener(this);
-
-        Button accountButton = (Button) findViewById(R.id.selectAccountButton);
-        accountButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (MyContextHolder.get().persistentAccounts().size() > 1) {
-                    Intent i = new Intent(TimelineActivity.this, AccountSelector.class);
-                    startActivityForResult(i, ActivityRequestCode.SELECT_ACCOUNT.id);
-                }
-            }
-        });
-
-        if (!isInstanceStateRestored) {
-            mTimelineIsCombined = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false);
-            processNewIntent(getIntent());
-        }
-        updateThisOnChangedParameters();
+        return isInstanceStateRestored;
     }
 
     /**
@@ -615,20 +603,15 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      *  Cancel notifications of loading timeline, which were set during Timeline downloading 
      */
     private void clearNotifications() {
-        try {
-            // TODO: Check if there are any notifications
-            // and if none than don't waist time for this:
+        NotificationManager mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        
+        mNM.cancel(CommandEnum.NOTIFY_HOME_TIMELINE.ordinal());
+        mNM.cancel(CommandEnum.NOTIFY_MENTIONS.ordinal());
+        mNM.cancel(CommandEnum.NOTIFY_DIRECT_MESSAGE.ordinal());
 
-            mNM.cancel(CommandEnum.NOTIFY_HOME_TIMELINE.ordinal());
-            mNM.cancel(CommandEnum.NOTIFY_MENTIONS.ordinal());
-            mNM.cancel(CommandEnum.NOTIFY_DIRECT_MESSAGE.ordinal());
-
-            MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(currentMyAccountUserId);
-            if (ma != null) {
-                MyServiceManager.sendCommand(new CommandData(CommandEnum.NOTIFY_CLEAR, ma.getAccountName()));
-            }
-        } finally {
-            // Nothing yet...
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(currentMyAccountUserId);
+        if (ma != null) {
+            MyServiceManager.sendCommand(new CommandData(CommandEnum.NOTIFY_CLEAR, ma.getAccountName()));
         }
     }
 
@@ -1515,5 +1498,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public long getSelectedUserId() {
         return selectedUserId;
+    }
+
+    @Override
+    public void closeAndGoBack() {
+        finish();
     }
 }

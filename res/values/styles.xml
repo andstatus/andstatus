@@ -4,7 +4,10 @@
     <style name="LightThemeSelector" parent="android:Theme.Light" />
     <style name="DeviceDefaultThemeSelector" parent="android:Theme" />
 	<style name="DialogThemeSelector" parent="android:Theme.Dialog" />
-    <style name="WidgetStyle">
+	<style name="WidgetActionButtonOverflow">
+         <item name="android:background">@drawable/overflow</item>
+    </style>
+	<style name="WidgetStyle">
 	     <item name="android:background">@drawable/widget_bg</item>
 	</style>
 	<style name="EmptyStyle">

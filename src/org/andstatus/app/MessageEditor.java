@@ -48,8 +48,8 @@ import android.widget.Toast;
  * "Enter your message here" box 
  */
 class MessageEditor {
-    private ActionableMessageList messageList;
-    private android.view.ViewGroup editorView;
+    private ActionableMessageList mMessageList;
+    private android.view.ViewGroup mEditorView;
 
     /**
      * Text to be sent
@@ -88,18 +88,23 @@ class MessageEditor {
     private boolean showAccountRestored = false;
     
     public MessageEditor(ActionableMessageList actionableMessageList) {
-        messageList = actionableMessageList;
+        mMessageList = actionableMessageList;
 
-        ViewGroup messageListParent = (ViewGroup) messageList.getActivity().findViewById(R.id.messageListParent);
-        LayoutInflater inflater = LayoutInflater.from(messageList.getActivity());
-        editorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
-        messageListParent.addView(editorView);
+        ViewGroup messageListParent = (ViewGroup) mMessageList.getActivity().findViewById(R.id.messageListParent);
+        LayoutInflater inflater = LayoutInflater.from(mMessageList.getActivity());
+        mEditorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
+        messageListParent.addView(mEditorView);
         
-        mEditText = (EditText) editorView.findViewById(R.id.messageBodyEditText);
-        mCharsLeftText = (TextView) editorView.findViewById(R.id.messageEditCharsLeftTextView);
-        mDetails = (TextView) editorView.findViewById(R.id.messageEditDetails);
+        mCharsLeftText = (TextView) mEditorView.findViewById(R.id.messageEditCharsLeftTextView);
+        mDetails = (TextView) mEditorView.findViewById(R.id.messageEditDetails);
         
-        Button createMessageButton = (Button) messageList.getActivity().findViewById(R.id.createMessageButton);
+        setupButtons();
+        setupEditText();
+        hide();
+    }
+
+    private void setupButtons() {
+        Button createMessageButton = (Button) mMessageList.getActivity().findViewById(R.id.createMessageButton);
         createMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,19 +112,22 @@ class MessageEditor {
                 if ( isVisible() || accountForButton == null) {
                     hide();
                 } else {
-                    startEditingMessage("", 0, 0, accountForButton, messageList.isTimelineCombined());
+                    startEditingMessage("", 0, 0, accountForButton, mMessageList.isTimelineCombined());
                 }
             }
         });
         
-        Button sendButton = (Button) editorView.findViewById(R.id.messageEditSendButton);
+        Button sendButton = (Button) mEditorView.findViewById(R.id.messageEditSendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 updateStatus();
             }
         });
+    }
 
+    private void setupEditText() {
+        mEditText = (EditText) mEditorView.findViewById(R.id.messageBodyEditText);
         mEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
@@ -207,7 +215,7 @@ class MessageEditor {
         mCharsLeftText.setText(String.valueOf(mAccount
                 .charactersLeftForMessage(mEditText.getText().toString())));
         
-        editorView.setVisibility(View.VISIBLE);
+        mEditorView.setVisibility(View.VISIBLE);
         updateCreateMessageButton();
         
         mEditText.requestFocus();
@@ -217,7 +225,7 @@ class MessageEditor {
     }
     
     private boolean isHardwareKeyboardAttached() {
-        Configuration c = messageList.getActivity().getResources().getConfiguration();
+        Configuration c = mMessageList.getActivity().getResources().getConfiguration();
         switch (c.keyboard) {
             case Configuration.KEYBOARD_12KEY:
             case Configuration.KEYBOARD_QWERTY:
@@ -228,7 +236,7 @@ class MessageEditor {
     }
 
     private void openSoftKeyboard() {
-        InputMethodManager inputMethodManager = (InputMethodManager) messageList.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager inputMethodManager = (InputMethodManager) mMessageList.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.toggleSoftInputFromWindow(mEditText.getWindowToken(), InputMethodManager.SHOW_FORCED, 0);        
     }
     
@@ -238,30 +246,30 @@ class MessageEditor {
         int resId = R.string.button_hide;
         if (!isButtonVisible
                 && accountForButton != null 
-                && messageList.getTimelineType() != TimelineTypeEnum.DIRECT
-                && messageList.getTimelineType() != TimelineTypeEnum.MESSAGESTOACT
+                && mMessageList.getTimelineType() != TimelineTypeEnum.DIRECT
+                && mMessageList.getTimelineType() != TimelineTypeEnum.MESSAGESTOACT
                 && accountForButton.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ) {
             isButtonVisible = true;
             resId = accountForButton.alternativeTermForResourceId(R.string.button_create_message);
         }
-        Button createMessageButton = (Button) messageList.getActivity().findViewById(R.id.createMessageButton);
+        Button createMessageButton = (Button) mMessageList.getActivity().findViewById(R.id.createMessageButton);
         createMessageButton.setText(resId);
         createMessageButton.setVisibility(isButtonVisible ? View.VISIBLE : View.GONE);
     }
     
     public void hide() {
-        editorView.setVisibility(View.GONE);
+        mEditorView.setVisibility(View.GONE);
         closeSoftKeyboard();
         updateCreateMessageButton();
     }
 
     private void closeSoftKeyboard() {
-        InputMethodManager inputMethodManager = (InputMethodManager) messageList.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager inputMethodManager = (InputMethodManager) mMessageList.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
     }
     
     public boolean isVisible() {
-        return editorView.getVisibility() == View.VISIBLE;
+        return mEditorView.getVisibility() == View.VISIBLE;
     }
     
     /**
@@ -328,10 +336,10 @@ class MessageEditor {
     private void updateStatus() {
         String status = mEditText.getText().toString();
         if (TextUtils.isEmpty(status.trim())) {
-            Toast.makeText(messageList.getActivity(), R.string.cannot_send_empty_message,
+            Toast.makeText(mMessageList.getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
         } else if (mAccount.charactersLeftForMessage(status) < 0) {
-            Toast.makeText(messageList.getActivity(), R.string.message_is_too_long,
+            Toast.makeText(mMessageList.getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
             CommandData commandData = CommandData.updateStatus(mAccount.getAccountName(), status, mReplyToId, mRecipientId);

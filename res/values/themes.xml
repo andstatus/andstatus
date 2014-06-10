@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-    Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2010-2014 yvolk (Yuri Volkov), http://yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,7 @@
 		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageDetailsColor">?android:attr/textColorTertiary</item>
 		<item name="messageDetailsStyle">italic</item>
-		
+
 		<item name="android:windowNoTitle">true</item>
 	</style>
 	<style name="Theme.Light.AndStatus.StandardSize" parent="@style/LightThemeSelector">

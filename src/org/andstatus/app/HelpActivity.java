@@ -18,7 +18,10 @@
 package org.andstatus.app;
 
 import org.andstatus.app.account.AccountSettingsActivity;
+import org.andstatus.app.backup.BackupActivity;
+import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferenceActivity;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.MyLog;
@@ -33,6 +36,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -93,8 +98,6 @@ public class HelpActivity extends Activity implements SwipeInterface {
 
         setContentView(R.layout.help);
 
-        mFlipper = ((ViewFlipper) this.findViewById(R.id.help_flipper));
-
         if (savedInstanceState != null) {
             mIsFirstActivity = savedInstanceState.getBoolean(EXTRA_IS_FIRST_ACTIVITY, false);
         }
@@ -124,6 +127,19 @@ public class HelpActivity extends Activity implements SwipeInterface {
             }
         });
 
+        Button restoreButton = (Button) findViewById(R.id.button_restore);
+        if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+            restoreButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(HelpActivity.this, RestoreActivity.class));
+                    finish();
+                }
+            });
+        } else {
+            restoreButton.setVisibility(View.GONE);
+        }
+        
         //The button is always visible in order to avoid a User's confusion,
         final Button getStarted = (Button) findViewById(R.id.button_help_get_started);
         getStarted.setOnClickListener(new OnClickListener() {
@@ -141,6 +157,12 @@ public class HelpActivity extends Activity implements SwipeInterface {
             }
         });
 
+        setupHelpFlipper();
+    }
+
+    private void setupHelpFlipper() {
+        mFlipper = ((ViewFlipper) this.findViewById(R.id.help_flipper));
+        
         // In order to have swipe gestures we need to add listeners to every page
         // Only in case of WebView (changelog) we need to set listener on than WebView,
         // not on its parent: ScrollView
@@ -166,10 +188,8 @@ public class HelpActivity extends Activity implements SwipeInterface {
             }
         }
         
-        
         AlphaAnimation anim = (AlphaAnimation) AnimationUtils.loadAnimation(HelpActivity.this, R.anim.fade_in);
         mFlipper.startAnimation(anim);
-        
     }
 
     @Override

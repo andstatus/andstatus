@@ -55,7 +55,7 @@ import org.andstatus.app.util.MyLog;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class ConversationActivity extends Activity implements MyServiceListener, ActionableMessageList {
+public class ConversationActivity extends Activity implements MyServiceListener, ActionableMessageList, MyActionBarContainer {
     private static final String TAG = ConversationActivity.class.getSimpleName();
 
     /**
@@ -89,7 +89,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        MyActionBar actionBar = new MyActionBar(this, R.layout.conversation_actions);
         super.onCreate(savedInstanceState);
 
         if (instanceId == 0) {
@@ -101,29 +101,13 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         MyServiceManager.setServiceAvailable();
         myServiceReceiver = new MyServiceReceiver(this);
 
-        MyPreferences.loadTheme(TAG, this);
-
         final Intent intent = getIntent();
         Uri uri = intent.getData();
 
         selectedMessageId = MyProvider.uriToMessageId(uri);
 
         setContentView(R.layout.conversation);
-
-        ViewGroup messageListParent = (ViewGroup) findViewById(R.id.messageListParent);
-        LayoutInflater inflater = LayoutInflater.from(this);
-        ViewGroup actionsView = (ViewGroup) inflater.inflate(R.layout.conversation_actions, null);
-        messageListParent.addView(actionsView, 0);
-
-
-        OnClickListener listener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ConversationActivity.this.finish();
-            }
-        };
-        findViewById(R.id.upNavigation).setOnClickListener(listener);
-        findViewById(R.id.actionsIcon).setOnClickListener(listener);
+        actionBar.attach();
         
         messageEditor = new MessageEditor(this);
         messageEditor.hide();
@@ -332,5 +316,10 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     @Override
     public boolean isTimelineCombined() {
         return true;
+    }
+
+    @Override
+    public void closeAndGoBack() {
+        finish();
     }
 }
