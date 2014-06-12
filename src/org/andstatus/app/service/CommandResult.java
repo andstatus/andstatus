@@ -21,8 +21,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 
 /**
  * Result of the command execution
@@ -30,10 +32,13 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public final class CommandResult implements Parcelable {
-    static final int MAX_RETRIES = 10;
+    static final int INITIAL_NUMBER_OF_RETRIES = 10;
     
+    private long createdDate = System.currentTimeMillis();
+    private long lastExecutedDate = 0;
     private int executionCount = 0;
     private int retriesLeft = 0;
+    
     private long numAuthExceptions = 0;
     private long numIoExceptions = 0;
     private long numParseExceptions = 0;
@@ -56,8 +61,10 @@ public final class CommandResult implements Parcelable {
     @Override
     public String toString() {
         StringBuilder message = new StringBuilder();
+        message.append("created:" + RelativeTime.getDifference(MyContextHolder.get().context(), createdDate) + ",");
         if (executionCount > 0) {
             message.append("executed:" + executionCount + ",");
+            message.append("last:" + RelativeTime.getDifference(MyContextHolder.get().context(), lastExecutedDate) + ",");
             if (retriesLeft > 0) {
                 message.append("retriesLeft:" + retriesLeft + ",");
             }
@@ -72,19 +79,21 @@ public final class CommandResult implements Parcelable {
             message.append("downloaded:" + downloadedCount + ",");
         }
         if (messagesAdded > 0) {
-            message.append("messagesAdded:" + messagesAdded + ",");
+            message.append("messages:" + messagesAdded + ",");
         }
         if (mentionsAdded > 0) {
-            message.append("mentionsAdded:" + mentionsAdded + ",");
+            message.append("mentions:" + mentionsAdded + ",");
         }
         if (directedAdded > 0) {
-            message.append("directedAdded:" + directedAdded + ",");
+            message.append("directed:" + directedAdded + ",");
         }
         
         return MyLog.formatKeyValue("CommandResult", message);
     }
 
     public CommandResult(Parcel parcel) {
+        createdDate = parcel.readLong();
+        lastExecutedDate = parcel.readLong();
         executionCount = parcel.readInt();
         downloadedCount = parcel.readInt();
         retriesLeft = parcel.readInt();
@@ -118,7 +127,9 @@ public final class CommandResult implements Parcelable {
 
     void saveToSharedPreferences(android.content.SharedPreferences.Editor ed, int index) {
         String si = Integer.toString(index);
+        ed.putLong(IntentExtra.EXTRA_CREATED_DATE.key + si, createdDate);
         if (executionCount > 0) {
+            ed.putLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, lastExecutedDate);
             ed.putInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
         }
         ed.putInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
@@ -126,12 +137,16 @@ public final class CommandResult implements Parcelable {
 
     void loadFromSharedPreferences(SharedPreferences sp, int index) {
         String si = Integer.toString(index);
+        createdDate = sp.getLong(IntentExtra.EXTRA_CREATED_DATE.key + si, createdDate);
+        lastExecutedDate = sp.getLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, createdDate);
         executionCount = sp.getInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
         retriesLeft = sp.getInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
     }
     
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(createdDate);
+        dest.writeLong(lastExecutedDate);
         dest.writeInt(executionCount);
         dest.writeInt(downloadedCount);
         dest.writeInt(retriesLeft);
@@ -246,7 +261,7 @@ public final class CommandResult implements Parcelable {
     }
     
     void resetRetries(CommandEnum command) {
-        retriesLeft = MAX_RETRIES;
+        retriesLeft = INITIAL_NUMBER_OF_RETRIES;
         switch (command) {
             case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
@@ -283,6 +298,9 @@ public final class CommandResult implements Parcelable {
         if (retriesLeft > 0) {
             retriesLeft -= 1;
         }
+        if (lastExecutedDate == 0) {
+            lastExecutedDate = System.currentTimeMillis();
+        }
     }
     
     boolean shouldWeRetry() {
@@ -299,5 +317,13 @@ public final class CommandResult implements Parcelable {
 
     void setItemId(long itemId) {
         this.itemId = itemId;
+    }
+
+    public long getCreatedDate() {
+        return createdDate;
+    }
+
+    public long getLastExecutedDate() {
+        return lastExecutedDate;
     }
 }

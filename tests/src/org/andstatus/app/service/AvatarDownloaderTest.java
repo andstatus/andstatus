@@ -99,10 +99,14 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
     }
     
     private int changeMaAvatarUrl(String urlString) throws MalformedURLException {
+        return changeAvatarUrl(ma, urlString);
+    }
+
+    static int changeAvatarUrl(MyAccount myAccount, String urlString) throws MalformedURLException {
         ContentValues values = new ContentValues();
         values.put(User.AVATAR_URL, urlString);
         return MyContextHolder.get().getDatabase().getWritableDatabase()
-                .update(User.TABLE_NAME, values, User._ID + "=" + ma.getUserId(), null);
+                .update(User.TABLE_NAME, values, User._ID + "=" + myAccount.getUserId(), null);
     }
 
     private int changeMaAvatarStatus(String urlString, AvatarStatus status) throws MalformedURLException {

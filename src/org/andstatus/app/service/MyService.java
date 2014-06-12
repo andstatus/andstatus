@@ -18,6 +18,7 @@
 package org.andstatus.app.service;
 
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import org.andstatus.app.IntentExtra;
@@ -48,6 +49,7 @@ public class MyService extends Service {
     private static final String TAG = MyService.class.getSimpleName();
     private static final String COMMANDS_QUEUE_FILENAME = TAG + "-commands-queue";
     private static final String RETRY_QUEUE_FILENAME = TAG + "-retry-queue";
+    private static final String ERROR_QUEUE_FILENAME = TAG + "-error-queue";
     
     /**
      * Broadcast with this action is being sent by {@link MyService} to notify of its state.
@@ -113,18 +115,23 @@ public class MyService extends Service {
     @GuardedBy("wakeLockLock")
     private PowerManager.WakeLock wakeLock = null;
 
-    private final Queue<CommandData> mainCommandQueue = new PriorityBlockingQueue<CommandData>(100);
-    private final Queue<CommandData> retryCommandQueue = new PriorityBlockingQueue<CommandData>(100);
+    final Queue<CommandData> mainCommandQueue = new PriorityBlockingQueue<CommandData>(100);
+    final Queue<CommandData> retryCommandQueue = new PriorityBlockingQueue<CommandData>(100);
+    final Queue<CommandData> errorCommandQueue = new LinkedBlockingQueue<CommandData>(200);
 
     /**
      * Time when shared preferences where changed as this knows it.
      */
-    protected volatile long preferencesChangeTime = 0;
+    private volatile long preferencesChangeTime = 0;
     /**
      * Time when shared preferences where analyzed
      */
-    protected volatile long preferencesExamineTime = 0;
+    private volatile long preferencesExamineTime = 0;
 
+    void setContext(Context baseContext) {
+        attachBaseContext(baseContext);
+    }
+    
     /**
      * After this the service state remains "STOPPED": we didn't initialize the instance yet!
      */
@@ -179,7 +186,7 @@ public class MyService extends Service {
                 if (mainCommandQueue.isEmpty()) {
                     moveCommandsFromRetryToMainQueue();
                 }
-                addToTheQueue(commandData);
+                addToMainQueue(commandData);
             } finally {
                 synchronized(serviceStateLock) {
                     dontStop = false;
@@ -209,7 +216,7 @@ public class MyService extends Service {
         boolean ok = false;
         synchronized (serviceStateLock) {
             if (mInitialized) {
-                ok = addToTheQueue(commandData);
+                ok = addToMainQueue(commandData);
             }
         }
         if (!ok) {
@@ -218,37 +225,89 @@ public class MyService extends Service {
         }
     }
 
-    private boolean addToTheQueue(CommandData commandData) {
-        boolean ok = true;
+    private boolean addToMainQueue(CommandData commandData) {
         if ( commandData.getCommand() == CommandEnum.EMPTY) {
-            // Nothing to do
-        } else if (mainCommandQueue.contains(commandData)) {
-            MyLog.d(this, "Duplicated " + commandData);
-            // Reset retries counter on receiving duplicated command
-            for (CommandData cd:mainCommandQueue) {
+            return true;
+        } 
+        if (!checkAndMarkTheCommandInTheQueue("mainQueue", mainCommandQueue, commandData)
+                && !checkAndMarkTheCommandInTheQueue("retryQueue", retryCommandQueue, commandData)) {
+            CommandData commandData2 = checkInErrorQueue(commandData);
+            if (commandData2 == null) {
+                return true;
+            }
+            MyLog.v(this, "Adding to Main queue " + commandData);
+            if (!mainCommandQueue.offer(commandData)) {
+                MyLog.e(this, "Couldn't add to the main queue, size=" + mainCommandQueue.size());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private final static long MAX_MS_IN_ERROR_QUEUE = 3 * 24 * 60 * 60 * 1000; 
+    private CommandData checkInErrorQueue(CommandData commandData) {
+        CommandData found = commandData;
+        if (errorCommandQueue.contains(commandData)) {
+            for (CommandData cd : errorCommandQueue) {
                 if (cd.equals(commandData)) {
+                    if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_MS) {
+                        found = cd;
+                        cd.getResult().resetRetries(commandData.getCommand());
+                        errorCommandQueue.remove(cd);
+                    } else {
+                        found = null;
+                        MyLog.v(this, "Found in Error queue: " + commandData);
+                    }
+                    break;
+                } else {
+                    if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MAX_MS_IN_ERROR_QUEUE) {
+                        MyLog.d(this, "Removed old from Error queue: " + commandData);
+                    }
+                }
+            }
+        }
+        return found;
+    }
+
+    private boolean checkAndMarkTheCommandInTheQueue(String queueName, Queue<CommandData> queue,
+            CommandData commandData) {
+        boolean found = false;
+        if (queue.contains(commandData)) {
+            MyLog.d(this, "Duplicated in " + queueName + ": " + commandData);
+            // Reset retries counter on receiving duplicated command
+            for (CommandData cd : queue) {
+                if (cd.equals(commandData)) {
+                    found = true;
                     cd.getResult().resetRetries(commandData.getCommand());
                     break;
                 }
             }
-        } else {
-            MyLog.d(this, "Adding to the queue " + commandData);
-            if (!mainCommandQueue.offer(commandData)) {
-                MyLog.e(this, "Couldn't add to the main queue, size=" + mainCommandQueue.size());
-                ok = false;
-            }
         }
-        return ok;
+        return found;
     }
 
+    private final static long MIN_RETRY_PERIOD_MS = 180000; 
     private void moveCommandsFromRetryToMainQueue() {
+        Queue<CommandData> tempQueue = new PriorityBlockingQueue<CommandData>(retryCommandQueue.size()+1);
         while (!retryCommandQueue.isEmpty()) {
-            CommandData cd = retryCommandQueue.poll();
-            if (!addToTheQueue(cd)) {
-                if (!retryCommandQueue.offer(cd)) {
-                    MyLog.e(this, "Couldn't return to the retry Queue, size=" + retryCommandQueue.size()
-                            + " command=" + cd);
+            CommandData commandData = retryCommandQueue.poll();
+            boolean added = false;
+            if (System.currentTimeMillis() - commandData.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_MS) {
+                added = addToMainQueue(commandData);
+            }
+            if (!added) {
+                if (!tempQueue.add(commandData)) {
+                    MyLog.e(this, "Couldn't add to temp Queue, size=" + tempQueue.size()
+                            + " command=" + commandData);
+                    break;
                 }
+            }
+        }
+        while (!tempQueue.isEmpty()) {
+            CommandData cd = tempQueue.poll();
+            if (!retryCommandQueue.add(cd)) {
+                MyLog.e(this, "Couldn't return to retry Queue, size=" + retryCommandQueue.size()
+                        + " command=" + cd);
                 break;
             }
         }
@@ -257,7 +316,7 @@ public class MyService extends Service {
     /**
      * Initialize and restore the state if it was not restored yet
      */
-    private void initialize() {
+    void initialize() {
 
         // Check when preferences were changed
         long preferencesChangeTimeNew = MyContextHolder.initialize(this, this);
@@ -265,13 +324,8 @@ public class MyService extends Service {
 
         synchronized (serviceStateLock) {
             if (!mInitialized) {
-                int count = 0;
-                count += CommandData.loadQueue(this, mainCommandQueue, COMMANDS_QUEUE_FILENAME);
-                count += CommandData.loadQueue(this, retryCommandQueue, RETRY_QUEUE_FILENAME);
-                MyLog.d(this, "State restored, " + (count>0 ? Integer.toString(count) : "no") + " msg in the Queues");
-
+                restoreState();
                 registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
-
                 mInitialized = true;
                 MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
             }
@@ -296,6 +350,17 @@ public class MyService extends Service {
         }
     }
 
+    private void restoreState() {
+        int count = 0;
+        count += CommandData.loadQueue(this, mainCommandQueue, COMMANDS_QUEUE_FILENAME);
+        count += CommandData.loadQueue(this, retryCommandQueue, RETRY_QUEUE_FILENAME);
+        int countError = CommandData.loadQueue(this, errorCommandQueue, ERROR_QUEUE_FILENAME);
+        MyLog.d(this, "State restored, " + (count > 0 ? Integer.toString(count) : "no ")
+                + " msg in the Queues, "
+                + (countError > 0 ? Integer.toString(countError) + " in Error queue" : "")
+                );
+    }
+
     /**
      * The idea is to have SharePreferences, that are being edited by
      * the service process only (to avoid problems of concurrent access.
@@ -307,16 +372,14 @@ public class MyService extends Service {
 
     private void decideIfStopTheService(boolean calledFromExecutor) {
         synchronized(serviceStateLock) {
-            boolean isStopping = false;
             if (!mInitialized) {
-                isStopping = false;
                 return;
             }
             if (dontStop) {
                 MyLog.v(this, "decideIfStopTheService: dontStop flag");
                 return;
             }
-            isStopping = isStopping();
+            boolean isStopping = isStopping();
             if (!isStopping) {
                 isStopping = mainCommandQueue.isEmpty()
                         || !MyContextHolder.get().isReady();
@@ -334,8 +397,12 @@ public class MyService extends Service {
                 }
                 this.mIsStopping = isStopping;
             }
-            if (isStopping || calledFromExecutor ) {
-                executor = null;
+            if (isStopping || calledFromExecutor
+                    || (executor != null && (executor.getStatus() != Status.RUNNING))) {
+                if (executor != null) {
+                    MyLog.v(this, "Deleting executor " + executor);
+                    executor = null;
+                }
             }
             if (isStopping) {
                 stopDelayed(true);
@@ -346,7 +413,7 @@ public class MyService extends Service {
                     MyLog.v(this, "Adding new executor " + executor);
                     executor.execute();
                 } else {
-                    MyLog.v(this, "There is an Executor already");
+                    MyLog.v(this, "There is an Executor already " + executor);
                 }
             }
         }
@@ -433,14 +500,9 @@ public class MyService extends Service {
             if( mInitialized) {
                 try {
                     unregisterReceiver(intentReceiver);
-    
                     CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(
                             mainCommandQueue.size(), retryCommandQueue.size());
-                    int count = 0;
-                    count += CommandData.saveQueue(this, mainCommandQueue, COMMANDS_QUEUE_FILENAME);
-                    count += CommandData.saveQueue(this, retryCommandQueue, RETRY_QUEUE_FILENAME);
-                    MyLog.d(this, "State saved, " + (count>0 ? Integer.toString(count) : "no ") + " msg in the Queues");
-    
+                    saveState();
                     relealeWakeLock();
                     stopSelfResult(lastProcessedStartId);
                 } finally {
@@ -455,6 +517,23 @@ public class MyService extends Service {
                 .setEvent(MyServiceEvent.ON_STOP).broadcast();
     }
 
+    private void saveState() {
+        int count = 0;
+        count += CommandData.saveQueue(this, mainCommandQueue, COMMANDS_QUEUE_FILENAME);
+        count += CommandData.saveQueue(this, retryCommandQueue, RETRY_QUEUE_FILENAME);
+        int countError = CommandData.saveQueue(this, errorCommandQueue, ERROR_QUEUE_FILENAME);
+        MyLog.d(this, "State saved, " + (count > 0 ? Integer.toString(count) : "no ")
+                + " msg in the Queues, "
+                + (countError > 0 ? Integer.toString(countError) + " in Error queue" : "")
+                );
+    }
+
+    void clearQueues() {
+        mainCommandQueue.clear();
+        retryCommandQueue.clear();
+        errorCommandQueue.clear();
+    }
+    
     private void relealeWakeLock() {
         synchronized(wakeLockLock) {
             if (wakeLock != null) {
@@ -477,7 +556,7 @@ public class MyService extends Service {
         
         @Override
         protected Boolean doInBackground(Void... arg0) {
-            MyLog.d(this, "CommandExecutor started, " + mainCommandQueue.size() + " commands to process");
+            MyLog.d(this, "Started, " + mainCommandQueue.size() + " commands to process");
             do {
                 if (isStopping()) {
                     break;
@@ -492,19 +571,34 @@ public class MyService extends Service {
                     CommandExecutorStrategy.executeCommand(commandData, this);
                 }
                 if (commandData.getResult().shouldWeRetry()) {
-                    synchronized(MyService.this) {
-                        // Put the command to the retry queue
-                        if (!retryCommandQueue.contains(commandData) 
-                                && !retryCommandQueue.offer(commandData)) {
-                            MyLog.e(this, "mRetryQueue is full?");
-                        }
-                    }        
+                    addToRetryQueue(commandData);        
+                } else if (commandData.getResult().hasError()) {
+                    addToErrorQueue(commandData);
                 }
                 MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
             } while (true);
-            MyLog.d(this, "CommandExecutor ended, " + totalQueuesSize() + " commands left");
+            MyLog.d(this, "Ended, " + totalQueuesSize() + " commands left");
             return true;
+        }
+
+        private void addToRetryQueue(CommandData commandData) {
+            if (!retryCommandQueue.contains(commandData) 
+                    && !retryCommandQueue.offer(commandData)) {
+                MyLog.e(this, "mRetryQueue is full?");
+            }
+        }
+
+        private void addToErrorQueue(CommandData commandData) {
+            if (!errorCommandQueue.contains(commandData)) {
+                if (!errorCommandQueue.offer(commandData)) {
+                    CommandData commandData2 = errorCommandQueue.poll();
+                    MyLog.d(this, "Removed from overloaded Error queue: " + commandData2);
+                }
+                if (!errorCommandQueue.offer(commandData)) {
+                    MyLog.e(this, "Error Queue is full?");
+                }
+            }
         }
         
         /**
@@ -525,6 +619,14 @@ public class MyService extends Service {
         @Override
         public boolean isStopping() {
             return MyService.this.isStopping();
+        }
+
+        @Override
+        public String toString() {
+            return "QueueExecutor:{" + "status:" + getStatus()
+                    + (isCancelled() ? ", cancelled" : "")
+                    + (isStopping() ? ", stopping" : "")
+                    + "}";
         }
         
     }

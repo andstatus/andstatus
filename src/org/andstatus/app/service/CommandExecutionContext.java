@@ -79,10 +79,12 @@ public class CommandExecutionContext {
     
     @Override
     public String toString() {
-        return MyLog.formatKeyValue("CommandExecutionContext",
-        (ma==null ? "" : ma.toString() + ",")
-        + timelineType.toString() + ","
-        + (timelineUserId==0 ? "" : "forUserId:" + timelineUserId + ",")
-        + commandData.toString());
+        return MyLog.formatKeyValue(
+                "CommandExecutionContext",
+                (ma == null ? "" : ma.toString() + ",")
+                        + (TimelineTypeEnum.UNKNOWN.equals(timelineType) ? "" : timelineType
+                                .toString() + ",")
+                        + (timelineUserId == 0 ? "" : "userId:" + timelineUserId + ",")
+                        + commandData.toString());
     }
 }

@@ -276,6 +276,7 @@ public class TestSuite extends TestCase {
 
 
     public static void waitForIdleSync(InstrumentationTestCase instrumentationTestCase) throws InterruptedException {
+        instrumentationTestCase.getInstrumentation().waitForIdleSync();
         Thread.sleep(100);
         if (android.os.Build.VERSION.SDK_INT < 15 ) {
             Thread.sleep(2000);
@@ -283,7 +284,6 @@ public class TestSuite extends TestCase {
         if (android.os.Build.VERSION.SDK_INT < 10 ) {
             Thread.sleep(2000);
         }
-        instrumentationTestCase.getInstrumentation().waitForIdleSync();
     }
     
     public static boolean isScreenLocked(Context context) {

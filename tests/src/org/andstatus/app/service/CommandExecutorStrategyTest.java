@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.service;
 
 import android.test.InstrumentationTestCase;
@@ -59,7 +75,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         assertEquals(0, commandData.getResult().getExecutionCount());
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(1, commandData.getResult().getExecutionCount());
-        assertEquals(CommandResult.MAX_RETRIES - 1, commandData.getResult().getRetriesLeft());
+        assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 1, commandData.getResult().getRetriesLeft());
         assertFalse(commandData.getResult().hasSoftError());
         assertFalse(commandData.getResult().hasHardError());
         long msgId = commandData.getResult().getItemId();
@@ -68,7 +84,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         httpConnection.setException(new ConnectionException(StatusCode.UNKNOWN, "Request was bad"));
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(2, commandData.getResult().getExecutionCount());
-        assertEquals(CommandResult.MAX_RETRIES - 2, commandData.getResult().getRetriesLeft());
+        assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 2, commandData.getResult().getRetriesLeft());
         assertTrue(commandData.getResult().hasSoftError());
         assertFalse(commandData.getResult().hasHardError());
         assertTrue(commandData.getResult().shouldWeRetry());
@@ -76,7 +92,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         httpConnection.setException(null);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(3, commandData.getResult().getExecutionCount());
-        assertEquals(CommandResult.MAX_RETRIES - 3, commandData.getResult().getRetriesLeft());
+        assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 3, commandData.getResult().getRetriesLeft());
         assertFalse(commandData.getResult().hasSoftError());
         assertFalse(commandData.getResult().hasHardError());
         assertFalse(commandData.getResult().shouldWeRetry());
@@ -84,7 +100,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         httpConnection.setException(new ConnectionException(StatusCode.AUTHENTICATION_ERROR, "some text"));
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(4, commandData.getResult().getExecutionCount());
-        assertEquals(CommandResult.MAX_RETRIES - 4, commandData.getResult().getRetriesLeft());
+        assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 4, commandData.getResult().getRetriesLeft());
         assertFalse(commandData.getResult().hasSoftError());
         assertTrue(commandData.getResult().hasHardError());
         assertFalse(commandData.getResult().shouldWeRetry());
