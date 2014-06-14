@@ -38,9 +38,6 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
 import org.andstatus.app.util.MyLog;
 
-/**
- * SyncAdapter implementation. Its only purpose for now is to properly initialize {@link MyService}.
- */
 public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServiceListener {
 
     private final Context context;

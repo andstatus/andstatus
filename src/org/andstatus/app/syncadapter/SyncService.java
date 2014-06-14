@@ -21,6 +21,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -29,36 +30,31 @@ import org.andstatus.app.util.MyLog;
  * IBinder.
  */
 public class SyncService extends Service {
-    static final String TAG = SyncService.class.getSimpleName();
-
-    private static final Object SYNC_ADAPTER_LOCK = new Object();
-    private static SyncAdapter syncAdapter = null;
 
     @Override
     public void onCreate() {
-        synchronized (SYNC_ADAPTER_LOCK) {
-            if (syncAdapter == null) {
-                syncAdapter = new SyncAdapter(getApplicationContext(), true);
-            }
-            MyLog.d(TAG, "onCreate");
-        }
+        MyLog.d(this, "onCreate");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        MyLog.d(TAG, "onStartCommand");
+        MyLog.d(this, "onStartCommand");
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        MyLog.d(TAG, "onBind");
-        return syncAdapter.getSyncAdapterBinder();
+        MyLog.d(this, "onBind");
+        return ResourceHolder.syncAdapter.getSyncAdapterBinder();
     }
+
+	private static class ResourceHolder {          
+	    static SyncAdapter syncAdapter = new SyncAdapter(MyContextHolder.get().context(), true);      
+	} 
 
     @Override
     public void onDestroy() {
-        MyLog.d(TAG, "onDestroy");
+        MyLog.d(this, "onDestroy");
         super.onDestroy();
     }
 }
