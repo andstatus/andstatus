@@ -89,9 +89,15 @@ public class CommandData implements Comparable<CommandData> {
     public CommandData(CommandEnum commandIn, String accountNameIn) {
         command = commandIn;
         priority = command.getPriority();
-        if (!TextUtils.isEmpty(accountNameIn)) {
-            accountName = accountNameIn;
-        }
+		switch (command) {
+			case FETCH_AVATAR:
+				break;
+			default:
+				if (!TextUtils.isEmpty(accountNameIn)) {
+					accountName = accountNameIn;
+				}
+				break;
+		}
         getResult().resetRetries(command);
     }
 
@@ -167,10 +173,12 @@ public class CommandData implements Comparable<CommandData> {
      */
     private static CommandData fromSharedPreferences(SharedPreferences sp, int index) {
         String si = Integer.toString(index);
-        // Decode command
-        String strCommand = sp.getString(IntentExtra.EXTRA_MSGTYPE.key + si,
-                CommandEnum.UNKNOWN.save());
-        CommandData commandData = new CommandData(CommandEnum.load(strCommand),
+        CommandEnum command = CommandEnum.load(sp.getString(IntentExtra.EXTRA_MSGTYPE.key + si,
+                CommandEnum.EMPTY.save()));
+		if (CommandEnum.EMPTY.equals(command)) {
+			return CommandData.getEmpty();
+		}
+        CommandData commandData = new CommandData(command,
                 sp.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, ""),
                 TimelineTypeEnum.load(sp.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, "")),
                 sp.getLong(IntentExtra.EXTRA_ITEMID.key + si, 0));
@@ -195,19 +203,22 @@ public class CommandData implements Comparable<CommandData> {
      * @return Number of items persisted
      */
     static int saveQueue(Context context, Queue<CommandData> q, String prefsFileName) {
+        String method = "saveQueue: ";
         int count = 0;
-        // Delete any existing saved queue
-        SharedPreferencesUtil.delete(context, prefsFileName);
+		SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
+		sp.edit().clear().commit();
         if (!q.isEmpty()) {
-            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
             while (!q.isEmpty()) {
                 CommandData cd = q.poll();
                 cd.saveToSharedPreferences(sp, count);
-                MyLog.v(context, "Command saved: " + cd.toString());
+                MyLog.v(context, method + "Command saved: " + cd.toString());
                 count += 1;
             }
-            MyLog.d(context, "Queue saved to " + prefsFileName  + ", " + count + " msgs");
+            MyLog.d(context, method + "to '" + prefsFileName  + "', " + count + " msgs");
         }
+		// TODO: How to clear all old shared preferences in this file?
+		// Edding Empty command to mark the end.
+		(new CommandData(CommandEnum.EMPTY, "")).saveToSharedPreferences(sp, count);
         return count;
     }
     
@@ -216,28 +227,26 @@ public class CommandData implements Comparable<CommandData> {
      */
     static int loadQueue(Context context, Queue<CommandData> q, String prefsFileName) {
         String method = "loadQueue: ";
-        int count = 0;
+		int count = 0;
         if (SharedPreferencesUtil.exists(context, prefsFileName)) {
-            boolean done = false;
             SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
-            do {
-                CommandData cd = fromSharedPreferences(sp, count);
-                MyLog.v(context, "Restored command " + IntentExtra.EXTRA_MSGTYPE + count + " " + cd);
-                if (cd.getCommand() == CommandEnum.UNKNOWN) {
-                    done = true;
+			for (int index=0; index < 100000; index++) {
+                CommandData cd = fromSharedPreferences(sp, index);
+                if (CommandEnum.EMPTY.equals(cd.getCommand())) {
+                    break;
+				} else if (q.contains(cd)) {
+					MyLog.e(context, method + index + " duplicate skipped " + cd);
+					break;
                 } else {
                     if ( q.offer(cd) ) {
-                        MyLog.v(context, method + cd.toString());
-                        count += 1;
+                        MyLog.v(context, method + index + " " + cd);
+						count++;
                     } else {
-                        MyLog.e(context, method + cd.toString());
+                        MyLog.e(context, method + index + " " + cd);
                     }
-                }
-            } while (!done);
-            sp = null;
-            // Delete this loaded queue
-            SharedPreferencesUtil.delete(context, prefsFileName);
-            MyLog.d(context, "Queue loaded from " + prefsFileName  + ", " + count + " msgs");
+                }				
+			}
+            MyLog.d(context, method + "loaded " + count + " msgs from '" + prefsFileName  + "'");
         }
         return count;
     }
@@ -335,15 +344,9 @@ public class CommandData implements Comparable<CommandData> {
 
         android.content.SharedPreferences.Editor ed = sp.edit();
         ed.putString(IntentExtra.EXTRA_MSGTYPE.key + si, command.save());
-        if (!TextUtils.isEmpty(getAccountName())) {
-            ed.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, getAccountName());
-        }
-        if (timelineType != TimelineTypeEnum.UNKNOWN) {
-            ed.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, timelineType.save());
-        }
-        if (itemId != 0) {
-            ed.putLong(IntentExtra.EXTRA_ITEMID.key + si, itemId);
-        }
+        ed.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, getAccountName());
+        ed.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, timelineType.save());
+        ed.putLong(IntentExtra.EXTRA_ITEMID.key + si, itemId);
         switch (command) {
             case UPDATE_STATUS:
                 ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));

@@ -213,72 +213,73 @@ public class MyService extends Service {
     }
     
     private void addToTheQueueWhileStopping(CommandData commandData) {
-        boolean ok = false;
+		CommandData commandData2 = null;
         synchronized (serviceStateLock) {
             if (mInitialized) {
-                ok = addToMainQueue(commandData);
+                commandData2 = addToMainQueue(commandData);
             }
         }
-        if (!ok) {
-            MyLog.e(this, "The Service is stopping, the command was lost: "
-                    + commandData.getCommand());
-        }
+		if (commandData2 != null) {
+			MyLog.i(this,"Couldn't add command while stopping "
+			+ commandData2);
+		}
     }
 
-    private boolean addToMainQueue(CommandData commandData) {
+	/** returns command back in a case of an error */
+    private CommandData addToMainQueue(CommandData commandData) {
         if ( commandData.getCommand() == CommandEnum.EMPTY) {
-            return true;
+            return null;
         } 
         if (!checkAndMarkTheCommandInTheQueue("mainQueue", mainCommandQueue, commandData)
                 && !checkAndMarkTheCommandInTheQueue("retryQueue", retryCommandQueue, commandData)) {
             CommandData commandData2 = checkInErrorQueue(commandData);
             if (commandData2 == null) {
-                return true;
+                return null;
             }
-            MyLog.v(this, "Adding to Main queue " + commandData);
-            if (!mainCommandQueue.offer(commandData)) {
+            MyLog.v(this, "Adding to Main queue " + commandData2);
+            if (!mainCommandQueue.offer(commandData2)) {
                 MyLog.e(this, "Couldn't add to the main queue, size=" + mainCommandQueue.size());
-                return false;
+                return commandData2;
             }
         }
-        return true;
+        return null;
     }
 
     private final static long MAX_MS_IN_ERROR_QUEUE = 3 * 24 * 60 * 60 * 1000; 
     private CommandData checkInErrorQueue(CommandData commandData) {
-        CommandData found = commandData;
+        CommandData commandData2 = commandData;
         if (errorCommandQueue.contains(commandData)) {
             for (CommandData cd : errorCommandQueue) {
                 if (cd.equals(commandData)) {
                     if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_MS) {
-                        found = cd;
+                        commandData2 = cd;
                         cd.getResult().resetRetries(commandData.getCommand());
                         errorCommandQueue.remove(cd);
                     } else {
-                        found = null;
-                        MyLog.v(this, "Found in Error queue: " + commandData);
+                        commandData2 = null;
+                        MyLog.v(this, "Found in Error queue: " + cd);
                     }
                     break;
                 } else {
                     if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MAX_MS_IN_ERROR_QUEUE) {
-                        MyLog.d(this, "Removed old from Error queue: " + commandData);
+                        MyLog.i(this, "Removed old from Error queue: " + cd);
                     }
                 }
             }
         }
-        return found;
+        return commandData2;
     }
 
     private boolean checkAndMarkTheCommandInTheQueue(String queueName, Queue<CommandData> queue,
             CommandData commandData) {
         boolean found = false;
         if (queue.contains(commandData)) {
-            MyLog.d(this, "Duplicated in " + queueName + ": " + commandData);
             // Reset retries counter on receiving duplicated command
             for (CommandData cd : queue) {
                 if (cd.equals(commandData)) {
                     found = true;
                     cd.getResult().resetRetries(commandData.getCommand());
+		            MyLog.d(this, "Duplicated in " + queueName + ": " + cd);					
                     break;
                 }
             }
@@ -291,11 +292,10 @@ public class MyService extends Service {
         Queue<CommandData> tempQueue = new PriorityBlockingQueue<CommandData>(retryCommandQueue.size()+1);
         while (!retryCommandQueue.isEmpty()) {
             CommandData commandData = retryCommandQueue.poll();
-            boolean added = false;
             if (System.currentTimeMillis() - commandData.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_MS) {
-                added = addToMainQueue(commandData);
+                commandData = addToMainQueue(commandData);
             }
-            if (!added) {
+            if (commandData != null) {
                 if (!tempQueue.add(commandData)) {
                     MyLog.e(this, "Couldn't add to temp Queue, size=" + tempQueue.size()
                             + " command=" + commandData);
@@ -594,9 +594,9 @@ public class MyService extends Service {
                 if (!errorCommandQueue.offer(commandData)) {
                     CommandData commandData2 = errorCommandQueue.poll();
                     MyLog.d(this, "Removed from overloaded Error queue: " + commandData2);
-                }
-                if (!errorCommandQueue.offer(commandData)) {
-                    MyLog.e(this, "Error Queue is full?");
+					if (!errorCommandQueue.offer(commandData)) {
+						MyLog.e(this, "Error Queue is full?");
+					}
                 }
             }
         }

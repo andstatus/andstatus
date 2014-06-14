@@ -76,22 +76,22 @@ public class SharedPreferencesUtil {
     public static boolean delete(Context context, String prefsFileName) {
         boolean isDeleted = false;
 
-        if (context == null || prefsFileName == null || prefsFileName.length() == 0) {
+        if (context == null || TextUtils.isEmpty(prefsFileName)) {
             if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(TAG, "delete: Nothing to do");
+                MyLog.v(TAG, "delete '" + prefsFileName + "' - nothing to do");
+            }
+			return false;
+        }
+        File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
+        if (prefFile.exists()) {
+            isDeleted = prefFile.delete();
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was "
+                        + (isDeleted ? "" : "not ") + " deleted");
             }
         } else {
-            File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
-            if (prefFile.exists()) {
-                isDeleted = prefFile.delete();
-                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                    MyLog.v(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was "
-                            + (isDeleted ? "" : "not ") + " deleted");
-                }
-            } else {
-                if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-                    MyLog.d(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was not found");
-                }
+            if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+                MyLog.d(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was not found");
             }
         }
         return isDeleted;

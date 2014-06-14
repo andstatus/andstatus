@@ -128,10 +128,8 @@ public final class CommandResult implements Parcelable {
     void saveToSharedPreferences(android.content.SharedPreferences.Editor ed, int index) {
         String si = Integer.toString(index);
         ed.putLong(IntentExtra.EXTRA_CREATED_DATE.key + si, createdDate);
-        if (executionCount > 0) {
-            ed.putLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, lastExecutedDate);
-            ed.putInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
-        }
+        ed.putLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, lastExecutedDate);
+        ed.putInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
         ed.putInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
     }
 
@@ -298,17 +296,11 @@ public final class CommandResult implements Parcelable {
         if (retriesLeft > 0) {
             retriesLeft -= 1;
         }
-        if (lastExecutedDate == 0) {
-            lastExecutedDate = System.currentTimeMillis();
-        }
+        lastExecutedDate = System.currentTimeMillis();
     }
     
     boolean shouldWeRetry() {
-        boolean retry = false;
-        if (hasError() && !hasHardError() && retriesLeft > 0) {
-            retry = true;
-        }
-        return retry;
+		return hasError() && !hasHardError() && retriesLeft > 0;
     }
 
     long getItemId() {
