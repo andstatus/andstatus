@@ -102,7 +102,10 @@ public class MyServiceManager extends BroadcastReceiver {
             .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
             return;
         }
-        
+        sendCommandEvenForUnavailable(commandData);
+    }
+
+    static void sendCommandEvenForUnavailable(CommandData commandData) {
         // Using explicit service intent, see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
         Intent serviceIntent = new Intent(MyContextHolder.get().context(), MyService.class);
         if (commandData != null) {
@@ -110,7 +113,7 @@ public class MyServiceManager extends BroadcastReceiver {
         }
         MyContextHolder.get().context().startService(serviceIntent);
     }
-
+    
     /**
      * Stop  {@link MyService} asynchronously
      */

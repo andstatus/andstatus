@@ -21,6 +21,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 
 import java.io.File;
@@ -101,6 +102,8 @@ class MyBackupManager {
     void backup() throws IOException {
         progressLogger.logProgress("Starting backup to data folder:'" + dataFolder.getAbsolutePath() + "'");
         backupAgent = new MyBackupAgent();
+        backupAgent.setContext(MyContextHolder.get().context());
+        
         MyBackupDataOutput dataOutput = new MyBackupDataOutput(dataFolder);
         ParcelFileDescriptor newState = ParcelFileDescriptor.open(getDescriptorFile(),
                 ParcelFileDescriptor.MODE_READ_WRITE);
@@ -163,6 +166,7 @@ class MyBackupManager {
         progressLogger.logProgress("Starting restore from data folder:'" + dataFolder.getAbsolutePath() 
                 + "', created with app version code:" + newDescriptor.getApplicationVersionCode());
         backupAgent = new MyBackupAgent();
+        backupAgent.setContext(MyContextHolder.get().context());
         backupAgent.onRestore(dataInput, newDescriptor.getApplicationVersionCode(), newDescriptor);
         progressLogger.logSuccess();
     }

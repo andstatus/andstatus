@@ -21,7 +21,8 @@ public enum CommandEnum {
      * There is no action
      */
     EMPTY("empty"),
-	HEARTBEAT("heartbeat"),
+    /** For testing purposes only */
+    DROP_QUEUES("drop-queues"),
     /**
      * The action to fetch all usual timelines in the background.
      */

@@ -16,7 +16,6 @@
 
 package org.andstatus.app.service;
 
-import android.content.Intent;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
@@ -50,27 +49,25 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         AvatarDownloaderTest.changeAvatarUrl(ma, urlString);
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
-        MyService myService = new MyService();
-        myService.setContext(MyContextHolder.get().context());
+
+        MyServiceManager.sendCommandEvenForUnavailable(new CommandData(CommandEnum.DROP_QUEUES, ""));
+        
         long startCount = executionStartCount;
         long endCount = executionEndCount;
-        myService.onCreate();
-        myService.initialize();
-        myService.clearQueues();
-        sendNewFetchAvatarCommand(myService, 1);
+        sendNewFetchAvatarCommand();
         assertTrue("First command started executing", waitForCommandExecutionStarted(startCount));
-        sendNewFetchAvatarCommand(myService, 2);
+        sendNewFetchAvatarCommand();
         assertTrue("First command ended executing", waitForCommandExecutionEnded(endCount));
         serviceStopped = false;
-        sendNewFetchAvatarCommand(myService, 3);
+        sendNewFetchAvatarCommand();
         assertFalse("Duplicated commands started executing", waitForCommandExecutionStarted(startCount+1));
         MyServiceManager.stopService();
         assertTrue("Service stopped", waitForServiceStopped());
     }
 
-    private void sendNewFetchAvatarCommand(MyService myService, int startId) {
+    private void sendNewFetchAvatarCommand() {
         CommandData data = new CommandData(CommandEnum.FETCH_AVATAR, "",  ma.getUserId());
-        myService.onStartCommand(data.toIntent(new Intent()), 0, startId);
+        MyServiceManager.sendCommandEvenForUnavailable(data);
     }
 
     private boolean waitForCommandExecutionStarted(long startCount) {

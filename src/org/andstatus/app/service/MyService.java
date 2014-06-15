@@ -23,18 +23,18 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.support.android.v11.os.AsyncTask;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.TriState;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -93,19 +93,24 @@ public class MyService extends Service {
      */
     @GuardedBy("serviceStateLock")
     private boolean mIsStopping = false;
+    private static long ISSTOPPING_CHANGE_MIN_PERIOD_SECONDS = 20;
+    @GuardedBy("serviceStateLock")
+    private long decidedToChangeIsStoppingAt = 0;
     /**
      * Flag to control the Service state persistence
      */
     @GuardedBy("serviceStateLock")
     private boolean mInitialized = false;
-    @GuardedBy("serviceStateLock")
+
     private int lastProcessedStartId = 0;
-    /**
-     * For now let's have only ONE working thread 
-     * (it seems there is some problem in parallel execution...)
-     */
-    @GuardedBy("serviceStateLock")
+    
+    private final Object executorLock = new Object();
+    @GuardedBy("executorLock")
     private QueueExecutor executor = null;
+    @GuardedBy("executorLock")
+    private long executorStartedAt = 0;
+    @GuardedBy("executorLock")
+    private long executorEndedAt = 0;
 	
     private final Object heartBeatLock = new Object();
 	@GuardedBy("heartBeatLock")
@@ -122,28 +127,10 @@ public class MyService extends Service {
     final Queue<CommandData> mainCommandQueue = new PriorityBlockingQueue<CommandData>(100);
     final Queue<CommandData> retryCommandQueue = new PriorityBlockingQueue<CommandData>(100);
     final Queue<CommandData> errorCommandQueue = new LinkedBlockingQueue<CommandData>(200);
-
-    /**
-     * Time when shared preferences where changed as this knows it.
-     */
-    private volatile long preferencesChangeTime = 0;
-    /**
-     * Time when shared preferences where analyzed
-     */
-    private volatile long preferencesExamineTime = 0;
-
-    void setContext(Context baseContext) {
-        attachBaseContext(baseContext);
-    }
     
-    /**
-     * After this the service state remains "STOPPED": we didn't initialize the instance yet!
-     */
     @Override
     public void onCreate() {
-        preferencesChangeTime = MyContextHolder.initialize(this, this);
-        preferencesExamineTime = getMyServicePreferences().getLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, 0);
-        MyLog.d(this, "Service created, preferencesChangeTime=" + preferencesChangeTime + ", examined=" + preferencesExamineTime);
+        MyLog.d(this, "Service created");
 
     }
 
@@ -196,7 +183,7 @@ public class MyService extends Service {
                     dontStop = false;
                 }
             }
-            decideIfStopTheService(false);
+            startStopExecution();
         } else {
             addToTheQueueWhileStopping(commandData);
         }
@@ -231,64 +218,28 @@ public class MyService extends Service {
 
 	/** returns command back in a case of an error */
     private CommandData addToMainQueue(CommandData commandData) {
-        if ( commandData.getCommand() == CommandEnum.EMPTY) {
-            return null;
-        } 
-        if (!checkAndMarkTheCommandInTheQueue("mainQueue", mainCommandQueue, commandData)
-                && !checkAndMarkTheCommandInTheQueue("retryQueue", retryCommandQueue, commandData)) {
-            CommandData commandData2 = checkInErrorQueue(commandData);
-            if (commandData2 == null) {
+        switch (commandData.getCommand()) {
+            case EMPTY:
                 return null;
-            }
-            MyLog.v(this, "Adding to Main queue " + commandData2);
-            if (!mainCommandQueue.offer(commandData2)) {
-                MyLog.e(this, "Couldn't add to the main queue, size=" + mainCommandQueue.size());
-                return commandData2;
-            }
+            case DROP_QUEUES:
+                clearQueues();
+                return null;
+            default:
+                break;
+
+        }
+        MyLog.v(this, "Adding to Main queue " + commandData);
+        if (!mainCommandQueue.offer(commandData)) {
+            MyLog.e(this, "Couldn't add to the main queue, size=" + mainCommandQueue.size());
+            return commandData;
         }
         return null;
     }
 
-    private final static long MAX_MS_IN_ERROR_QUEUE = 3 * 24 * 60 * 60 * 1000; 
-    private CommandData checkInErrorQueue(CommandData commandData) {
-        CommandData commandData2 = commandData;
-        if (errorCommandQueue.contains(commandData)) {
-            for (CommandData cd : errorCommandQueue) {
-                if (cd.equals(commandData)) {
-                    if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_MS) {
-                        commandData2 = cd;
-                        cd.getResult().resetRetries(commandData.getCommand());
-                        errorCommandQueue.remove(cd);
-                    } else {
-                        commandData2 = null;
-                        MyLog.v(this, "Found in Error queue: " + cd);
-                    }
-                    break;
-                } else {
-                    if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MAX_MS_IN_ERROR_QUEUE) {
-                        MyLog.i(this, "Removed old from Error queue: " + cd);
-                    }
-                }
-            }
-        }
-        return commandData2;
-    }
-
-    private boolean checkAndMarkTheCommandInTheQueue(String queueName, Queue<CommandData> queue,
-            CommandData commandData) {
-        boolean found = false;
-        if (queue.contains(commandData)) {
-            // Reset retries counter on receiving duplicated command
-            for (CommandData cd : queue) {
-                if (cd.equals(commandData)) {
-                    found = true;
-                    cd.getResult().resetRetries(commandData.getCommand());
-		            MyLog.d(this, "Duplicated in " + queueName + ": " + cd);					
-                    break;
-                }
-            }
-        }
-        return found;
+    private void clearQueues() {
+        mainCommandQueue.clear();
+        retryCommandQueue.clear();
+        errorCommandQueue.clear();
     }
 
     private final static long MIN_RETRY_PERIOD_MS = 180000; 
@@ -317,47 +268,25 @@ public class MyService extends Service {
         }
     }
     
-    /**
-     * Initialize and restore the state if it was not restored yet
-     */
     void initialize() {
-
-        // Check when preferences were changed
-        long preferencesChangeTimeNew = MyContextHolder.initialize(this, this);
-        long preferencesExamineTimeNew = java.lang.System.currentTimeMillis();
-
+        boolean changed = false;
         synchronized (serviceStateLock) {
             if (!mInitialized) {
                 restoreState();
                 registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
                 mInitialized = true;
-                MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
+                changed = true;
             }
         }
 		synchronized(heartBeatLock) {
 			if (heartBeat == null) {
 				heartBeat = new HeartBeat();
-				heartBeat.execute();
+				heartBeat.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			}
 		}
-        
-        if (preferencesChangeTime != preferencesChangeTimeNew
-                || preferencesExamineTime < preferencesChangeTimeNew) {
-            // Preferences changed...
-            
-            if (preferencesChangeTimeNew > preferencesExamineTime) {
-                MyLog.d(this, "Examine at=" + preferencesExamineTimeNew + " Preferences changed at=" + preferencesChangeTimeNew);
-            } else if (preferencesChangeTimeNew > preferencesChangeTime) {
-                MyLog.d(this, "Preferences changed at=" + preferencesChangeTimeNew);
-            } else if (preferencesChangeTimeNew == preferencesChangeTime) {
-                MyLog.d(this, "Preferences didn't change, still at=" + preferencesChangeTimeNew);
-            } else {
-                MyLog.e(this, "Preferences change time error, time=" + preferencesChangeTimeNew);
-            }
-            preferencesChangeTime = preferencesChangeTimeNew;
-            preferencesExamineTime = preferencesExamineTimeNew;
-            getMyServicePreferences().edit().putLong(MyPreferences.KEY_PREFERENCES_EXAMINE_TIME, preferencesExamineTime).commit();
-        }
+		if (changed) {
+            MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
+		}
     }
 
     private void restoreState() {
@@ -371,90 +300,108 @@ public class MyService extends Service {
                 );
     }
 
-    /**
-     * The idea is to have SharePreferences, that are being edited by
-     * the service process only (to avoid problems of concurrent access.
-     * @return Single instance of SharedPreferences, specific to the class
-     */
-    private SharedPreferences getMyServicePreferences() {
-        return MyPreferences.getSharedPreferences(TAG);
+    private void startStopExecution() {
+        switch (shouldStop()) {
+            case TRUE:
+                stopDelayed(false);
+                break;
+            case FALSE:
+                startExecution();
+                break;
+            default:
+                break;
+        }
     }
 
-    private void decideIfStopTheService(boolean calledFromExecutor) {
-        synchronized(serviceStateLock) {
-            if (!mInitialized) {
-                return;
+    private TriState shouldStop() {
+        if (dontStop) {
+            MyLog.v(this, "decideIfStopTheService: dontStop flag");
+            return TriState.UNKNOWN;
+        }
+        boolean doStop = !MyContextHolder.get().isReady() || mainCommandQueue.isEmpty();
+        if (!couldSetIsStopping(doStop, false)) {
+            return TriState.UNKNOWN;
+        }
+        if (doStop) {
+            return TriState.TRUE;
+        } else {
+            return TriState.FALSE;
+        }
+    }
+
+    private boolean couldSetIsStopping(boolean doStop, boolean forceStopNow) {
+        boolean changed = false;
+        boolean forced = false;
+        synchronized (serviceStateLock) {
+            if (!mInitialized && !doStop) {
+                return false;
             }
-            if (dontStop) {
-                MyLog.v(this, "decideIfStopTheService: dontStop flag");
-                return;
+            if (doStop && dontStop) {
+                MyLog.v(this, "dontStop flag");
+                return false;
             }
-            boolean isStopping = isStopping();
-            if (!isStopping) {
-                isStopping = mainCommandQueue.isEmpty()
-                        || !MyContextHolder.get().isReady();
-                if (isStopping && !calledFromExecutor && executor!= null) {
-                    isStopping = (executor.getStatus() != Status.RUNNING);
+            if (doStop != mIsStopping) {
+                if (System.currentTimeMillis() - decidedToChangeIsStoppingAt < java.util.concurrent.TimeUnit.SECONDS
+                        .toMillis(ISSTOPPING_CHANGE_MIN_PERIOD_SECONDS)) {
+                    if (doStop && forceStopNow) {
+                        forced = true;
+                    } else {
+                        return false;
+                    }
                 }
+                decidedToChangeIsStoppingAt = System.currentTimeMillis();
+                mIsStopping = doStop;
+                changed = true;
             }
-            if (this.mIsStopping != isStopping) {
-                if (isStopping) {
-                    MyLog.v(this, "Decided to stop; startId=" + lastProcessedStartId 
+        }
+        if (changed) {
+            if (doStop) {
+                if (forced) {
+                    MyLog.v(this, "Forced to stop; startId=" + lastProcessedStartId 
                             + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
                             );
                 } else {
-                    MyLog.v(this, "Decided to continue; startId=" + lastProcessedStartId);
+                    MyLog.v(this, "Decided to stop; startId=" + lastProcessedStartId 
+                            + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
+                            );
                 }
-                this.mIsStopping = isStopping;
-            }
-            if (isStopping || calledFromExecutor
-                    || (executor != null && (executor.getStatus() != Status.RUNNING))) {
-                if (executor != null) {
-                    MyLog.v(this, "Deleting executor " + executor);
-                    executor = null;
-                }
-            }
-            if (isStopping) {
-                stopDelayed(true);
             } else {
-                acquireWakeLock();
-                if (executor == null) {
-                    executor = new QueueExecutor();
-                    MyLog.v(this, "Adding new executor " + executor);
-                    executor.execute();
-                } else {
-                    MyLog.v(this, "There is an Executor already " + executor);
-                }
+                MyLog.v(this, "Decided to continue; startId=" + lastProcessedStartId);
             }
         }
+        return true;
     }
 
-    boolean isOnline() {
-        if (isOnlineNotLogged()) {
-            return true;
-        } else {
-            MyLog.v(this, "Internet Connection Not Present");
-            return false;
-        }
-    }
-
-    /**
-     * Based on http://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-timeouts
-     */
-    private boolean isOnlineNotLogged() {
-        boolean is = false;
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm == null) {
-            return false;
-        }
-        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-        if (networkInfo == null) {
-            return false;
-        }
-        is = networkInfo.isAvailable() && networkInfo.isConnected();
-        return is;
+    private void startExecution() {
+        acquireWakeLock();
+        startExecutor();
     }
     
+    private void startExecutor() {
+        final String method = "startExecutor";
+        StringBuilder logMessageBuilder = new StringBuilder();
+        synchronized(executorLock) {
+            if ( executor != null && (executor.getStatus() != Status.RUNNING)) {
+                logMessageBuilder.append(" Deleting executor " + executor);
+                executor = null;
+            }
+            if (executor != null) {
+                logMessageBuilder.append(" There is an Executor already " + executor);
+            } else {
+                // For now let's have only ONE working thread 
+                // (it seems there is some problem in parallel execution...)
+                executor = new QueueExecutor();
+                logMessageBuilder.append(" Adding and starting new executor " + executor);
+                executorStartedAt = System.currentTimeMillis();
+                executorEndedAt = 0;
+                executor.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+        }
+        if (logMessageBuilder.length() > 0) {
+            MyLog.v(this, method + "; " + logMessageBuilder);
+        }
+    }
+
     private void acquireWakeLock() {
         synchronized(wakeLockLock) {
             if (wakeLock == null) {
@@ -484,47 +431,67 @@ public class MyService extends Service {
      * @param boolean forceNow 
      */
     private void stopDelayed(boolean forceNow) {
-        String method = "stopDelayed";
-        synchronized (serviceStateLock) {
-            if (mInitialized) {
-                if (dontStop) {
-                    MyLog.d(this, method + ": dontStop flag");
-                    return;
-                }
-                mIsStopping = true;
-            } else {
-                mIsStopping = false;
-                return;
-            }
-            boolean mayStop = executor == null || executor.getStatus() != Status.RUNNING;
-            if (!mayStop) {
-                if (forceNow) {
-                    MyLog.d(this, method + ": Forced to stop now, cancelling Executor");
-                    executor.cancel(true);
-                } else {
-                    MyLog.v(this, method + ": Cannot stop now, executor is working");
-                    MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
-                    return;
-                }
-            }
-            if( mInitialized) {
-                try {
-                    unregisterReceiver(intentReceiver);
-                    CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(
-                            mainCommandQueue.size(), retryCommandQueue.size());
-                    saveState();
-                    relealeWakeLock();
-                    stopSelfResult(lastProcessedStartId);
-                } finally {
-                    mInitialized = false;
-                    mIsStopping = false;
-                    lastProcessedStartId = 0;
-                    dontStop = false;
-                }
-            }
+        if (!couldSetIsStopping(true, forceNow)) {
+            return;
         }
+        if (!couldStopExecutor(forceNow)) {
+            return;
+        }
+        unInitialize();
         MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
                 .setEvent(MyServiceEvent.ON_STOP).broadcast();
+    }
+
+    private void unInitialize() {
+        int mainQueueSize = mainCommandQueue.size();
+        int retryQueueSize = retryCommandQueue.size();
+        synchronized (serviceStateLock) {
+            if( !mInitialized) {
+                return;
+            }
+            try {
+                unregisterReceiver(intentReceiver);
+            } catch (Exception e) {
+                MyLog.d(this, "On unregisterReceiver", e);
+            }
+            saveState();
+            mInitialized = false;
+            mIsStopping = false;
+            dontStop = false;
+        }
+        relealeWakeLock();
+        stopSelfResult(lastProcessedStartId);
+        lastProcessedStartId = 0;
+        CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(
+                mainQueueSize, retryQueueSize);
+    }
+
+    private boolean couldStopExecutor(boolean forceNow) {
+        final String method = "couldStopExecutor";
+        StringBuilder logMessageBuilder = new StringBuilder();
+        boolean could = true;
+        synchronized(executorLock) {
+            if (executor == null || executorStartedAt == 0) {
+                // Ok
+            } else if ( executor.getStatus() == Status.RUNNING) {
+                if (forceNow) {
+                    logMessageBuilder.append(" Cancelling Executor " + executor);
+                    executor.cancel(true);
+                } else {
+                    logMessageBuilder.append(" Cannot stop now the Executor " + executor);
+                    could = false;
+                }
+            }
+            if (could) {
+                executor = null;
+                executorStartedAt = 0;
+                executorEndedAt = 0;
+            }
+        }
+        if (logMessageBuilder.length() > 0) {
+            MyLog.v(this, method + "; " + logMessageBuilder);
+        }
+        return could;
     }
 
     private void saveState() {
@@ -536,12 +503,6 @@ public class MyService extends Service {
                 + " msg in the Queues, "
                 + (countError > 0 ? Integer.toString(countError) + " in Error queue" : "")
                 );
-    }
-
-    void clearQueues() {
-        mainCommandQueue.clear();
-        retryCommandQueue.clear();
-        errorCommandQueue.clear();
     }
     
     private void relealeWakeLock() {
@@ -563,6 +524,8 @@ public class MyService extends Service {
     }
     
     private class QueueExecutor extends AsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
+        private volatile CommandData currentlyExecuting = null;
+        private volatile long currentlyExecutingSince = 0;
         
         @Override
         protected Boolean doInBackground(Void... arg0) {
@@ -571,10 +534,23 @@ public class MyService extends Service {
                 if (isStopping()) {
                     break;
                 }
-                CommandData commandData = mainCommandQueue.poll();
+                CommandData commandData = null;
+                do {
+                    commandData = mainCommandQueue.poll();
+                    if (commandData == null) {
+                        break;
+                    }
+                    commandData = checkInRetryQueue(commandData);
+                    if (commandData != null) {
+                        commandData = checkInErrorQueue(commandData);
+                    }
+                } while (commandData == null);
+                currentlyExecuting = commandData;
+                currentlyExecutingSince = System.currentTimeMillis();
                 if (commandData == null) {
                     break;
                 }
+                
                 MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
                 .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                 if ( !commandData.getCommand().isOnlineOnly() || isOnline()) {
@@ -592,6 +568,55 @@ public class MyService extends Service {
             return true;
         }
 
+        private CommandData checkInRetryQueue(CommandData commandData) {
+            CommandData commandData2 = commandData;
+            if (retryCommandQueue.contains(commandData)) {
+                for (CommandData cd : retryCommandQueue) {
+                    if (cd.equals(commandData)) {
+                        cd.getResult().resetRetries(commandData.getCommand());
+                        if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_MS) {
+                            commandData2 = cd;
+                            retryCommandQueue.remove(cd);
+                        } else {
+                            commandData2 = null;
+                            MyLog.v(this, "Found in Rettry queue: " + cd);
+                        }
+                        break;
+                    } else {
+                        if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MAX_MS_IN_ERROR_QUEUE) {
+                            MyLog.i(this, "Removed old from Retry queue: " + cd);
+                        }
+                    }
+                }
+            }
+            return commandData2;
+        }
+        
+        private final static long MAX_MS_IN_ERROR_QUEUE = 3 * 24 * 60 * 60 * 1000; 
+        private CommandData checkInErrorQueue(CommandData commandData) {
+            CommandData commandData2 = commandData;
+            if (errorCommandQueue.contains(commandData)) {
+                for (CommandData cd : errorCommandQueue) {
+                    if (cd.equals(commandData)) {
+                        if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_MS) {
+                            commandData2 = cd;
+                            cd.getResult().resetRetries(commandData.getCommand());
+                            errorCommandQueue.remove(cd);
+                        } else {
+                            commandData2 = null;
+                            MyLog.v(this, "Found in Error queue: " + cd);
+                        }
+                        break;
+                    } else {
+                        if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MAX_MS_IN_ERROR_QUEUE) {
+                            MyLog.i(this, "Removed old from Error queue: " + cd);
+                        }
+                    }
+                }
+            }
+            return commandData2;
+        }
+        
         private void addToRetryQueue(CommandData commandData) {
             if (!retryCommandQueue.contains(commandData) 
                     && !retryCommandQueue.offer(commandData)) {
@@ -611,18 +636,52 @@ public class MyService extends Service {
             }
         }
         
+        boolean isOnline() {
+            if (isOnlineNotLogged()) {
+                return true;
+            } else {
+                MyLog.v(this, "Internet Connection Not Present");
+                return false;
+            }
+        }
+
+        /**
+         * Based on http://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-timeouts
+         */
+        private boolean isOnlineNotLogged() {
+            boolean is = false;
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm == null) {
+                return false;
+            }
+            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+            if (networkInfo == null) {
+                return false;
+            }
+            is = networkInfo.isAvailable() && networkInfo.isConnected();
+            return is;
+        }
+        
         @Override
         protected void onPostExecute(Boolean notUsed) {
-            MyLog.v(this, "onPostExecute");
-            decideIfStopTheService(true);
+            onEndedExecution("onPostExecute");
         }
 
         @Override
         protected void onCancelled(Boolean result) {
-            MyLog.v(this, "onCancelled, result=" + result);
-            decideIfStopTheService(true);
+            onEndedExecution("onCancelled");
         }
 
+        private void onEndedExecution(String method) {
+            synchronized(executorLock) {
+                executorEndedAt = System.currentTimeMillis();
+            }
+            MyLog.v(this, method);
+            currentlyExecuting = null;
+            currentlyExecutingSince = 0;
+            startStopExecution();
+        }
+        
         @Override
         public boolean isStopping() {
             return MyService.this.isStopping();
@@ -630,10 +689,29 @@ public class MyService extends Service {
 
         @Override
         public String toString() {
-            return "QueueExecutor:{" + "status:" + getStatus()
-                    + (isCancelled() ? ", cancelled" : "")
-                    + (isStopping() ? ", stopping" : "")
-                    + "}";
+            StringBuilder sb = new StringBuilder(64);
+            long executorStartedAt2 = 0;
+            long executorEndedAt2 = 0;
+            synchronized(executorLock) {
+                executorStartedAt2 = executorStartedAt;
+                executorEndedAt2 = executorEndedAt;
+            }
+            sb.append("started:" + RelativeTime.getDifference(getBaseContext(), executorStartedAt2) + ",");
+            if (currentlyExecuting != null && currentlyExecutingSince > 0) {
+                sb.append("currentlyExecuting:" + currentlyExecuting + ",");
+                sb.append("since:" + RelativeTime.getDifference(getBaseContext(), currentlyExecutingSince) + ",");
+            }
+            if (executorEndedAt2 != 0) {
+                sb.append("ended:" + RelativeTime.getDifference(getBaseContext(), executorEndedAt2) + ",");
+            }
+            sb.append("status:" + getStatus() + ",");
+            if (isCancelled()) {
+                sb.append("cancelled,");
+            }
+            if (isStopping()) {
+                sb.append("stopping,");
+            }
+            return MyLog.formatKeyValue(this, sb.toString());
         }
         
     }
@@ -662,11 +740,10 @@ public class MyService extends Service {
 			return null;
 		}
 
-		@Override
-		protected void onProgressUpdate(Void[] values)
-		{
-			decideIfStopTheService(false);
-		}
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            startStopExecution();
+        }
 	}
 	
     @Override

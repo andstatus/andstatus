@@ -19,6 +19,7 @@ package org.andstatus.app.backup;
 import android.app.backup.BackupAgent;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
+import android.content.Context;
 import android.os.ParcelFileDescriptor;
 
 import org.andstatus.app.R;
@@ -57,6 +58,10 @@ public class MyBackupAgent extends BackupAgent {
     long sharedPreferencesRestored = 0;
 
     public MyBackupAgent() {
+    }
+    
+    void setContext(Context baseContext) {
+        attachBaseContext(baseContext);
     }
     
     @Override

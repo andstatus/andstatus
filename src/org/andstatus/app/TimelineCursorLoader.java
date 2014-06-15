@@ -17,7 +17,6 @@
 package org.andstatus.app;
 
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.text.TextUtils;
 
@@ -35,6 +34,7 @@ import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceReceiver;
 import org.andstatus.app.support.android.v11.app.MyLoader;
+import org.andstatus.app.support.android.v11.os.AsyncTask;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
@@ -82,7 +82,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         boolean isNotRunning = true;
         synchronized (asyncLoaderLock) {
             if (asyncLoader != null) {
-                isNotRunning = (asyncLoader.getStatus() != AsyncTask.Status.RUNNING);
+                isNotRunning = (asyncLoader.getStatus() != Status.RUNNING);
             }
         }
         return isNotRunning;
@@ -110,7 +110,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
             if (cancelAsyncTask(method)) {
                 try {
                     asyncLoader = new AsyncLoader();
-                    asyncLoader.execute();
+                    asyncLoader.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 } catch (Exception e) {
                     MyLog.e(this, method, e);
                     ended = true;
