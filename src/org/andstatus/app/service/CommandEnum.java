@@ -21,6 +21,7 @@ public enum CommandEnum {
      * There is no action
      */
     EMPTY("empty"),
+	HEARTBEAT("heartbeat"),
     /**
      * The action to fetch all usual timelines in the background.
      */

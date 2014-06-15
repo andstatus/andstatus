@@ -285,7 +285,7 @@ public class MyPreferences {
                         + " path: '" + ( (dir == null) ? "(null)" : dir ) + "'");
             }
         }
-        if (logged && textToLog != null) {
+        if (logged && textToLog.length() > 0) {
             MyLog.i(TAG, method + "; " + textToLog);
         }
         return dir;

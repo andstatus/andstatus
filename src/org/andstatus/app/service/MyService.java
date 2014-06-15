@@ -106,6 +106,10 @@ public class MyService extends Service {
      */
     @GuardedBy("serviceStateLock")
     private QueueExecutor executor = null;
+	
+    private final Object heartBeatLock = new Object();
+	@GuardedBy("heartBeatLock")
+	private HeartBeat heartBeat = null;
 
     private final Object wakeLockLock = new Object();
     /**
@@ -330,6 +334,12 @@ public class MyService extends Service {
                 MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
             }
         }
+		synchronized(heartBeatLock) {
+			if (heartBeat == null) {
+				heartBeat = new HeartBeat();
+				heartBeat.execute();
+			}
+		}
         
         if (preferencesChangeTime != preferencesChangeTimeNew
                 || preferencesExamineTime < preferencesChangeTimeNew) {
@@ -601,9 +611,6 @@ public class MyService extends Service {
             }
         }
         
-        /**
-         * This is in the UI thread, so we can mess with the UI
-         */
         @Override
         protected void onPostExecute(Boolean notUsed) {
             MyLog.v(this, "onPostExecute");
@@ -631,6 +638,37 @@ public class MyService extends Service {
         
     }
     
+	private class HeartBeat extends AsyncTask<Void, Void, Void> {
+		private static final long HEARTBEAT_PERIOD_SECONDS = 20;
+
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            for (long iteration = 1; iteration < 10000; iteration++) {
+				try {
+					synchronized(heartBeatLock) {
+                        heartBeatLock.wait(
+						    java.util.concurrent.TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS));
+                    }
+				} catch (InterruptedException e) {
+					break;
+				}
+  				synchronized(serviceStateLock) {
+                    if (!mInitialized) {
+                        break;
+                    }
+				}
+				publishProgress();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onProgressUpdate(Void[] values)
+		{
+			decideIfStopTheService(false);
+		}
+	}
+	
     @Override
     public IBinder onBind(Intent intent) {
         return null;

@@ -72,11 +72,6 @@ public class I18n {
             MessageFormat mf = new MessageFormat(context.getText(messageFormat).toString());
             message = mf.format(new Object[] { submessage });
         }
-
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "formatMessage, num=" + toMatch + "; subformat=" + subformat 
-                    + "; submessage=" + submessage + "; message=" + message);
-        }
         return message;
     }
     
