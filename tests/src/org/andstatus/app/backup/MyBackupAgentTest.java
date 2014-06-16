@@ -37,28 +37,33 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
     }
 
     public void testBackupRestore() throws IOException, JSONException, NameNotFoundException, ConnectionException, InterruptedException {
+        TestSuite.forget();
+        TestSuite.initialize(this);
+        
         PersistentAccounts accountsBefore = PersistentAccounts.getEmpty();
         accountsBefore.initialize();
-        if (android.os.Build.VERSION.SDK_INT > 8 ) {
+        if (android.os.Build.VERSION.SDK_INT > 10 ) {
             assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
         }
         File outputFolder = MyContextHolder.get().context().getCacheDir();
         File dataFolder = testBackup(outputFolder);
         deleteApplicationData();
         testRestore(dataFolder);
+
+        TestSuite.forget();
         TestSuite.initialize(this);
 
         assertEquals("Number of persistent accounts", accountsBefore.size(), MyContextHolder.get().persistentAccounts().size());
         
-        if (android.os.Build.VERSION.SDK_INT > 8 ) {
+        if (android.os.Build.VERSION.SDK_INT > 10 ) {
             assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
         }
         MyAccount oldAccount = accountsBefore.fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
         MyAccount newAccount = MyContextHolder.get().persistentAccounts()
                 .fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
-        assertEquals(
-                "One account, hash codes: " + oldAccount.hashCode() + " and " + newAccount.hashCode(),
-                oldAccount, newAccount);
+        String message = "Compare account, hash codes: " + oldAccount.hashCode() + " and " + newAccount.hashCode() +
+                oldAccount.toJson().toString(2) + " and " + newAccount.toJson().toString(2);
+        assertEquals(message, oldAccount, newAccount);
 
         deleteBackup(dataFolder);
     }

@@ -179,7 +179,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         int position2 = 0;
         int position2Any = -1;
         boolean found = false;
-        for (int attempt = 0; attempt < 3; attempt++) {
+        for (int attempt = 0; attempt < 6; attempt++) {
             TestSuite.waitForIdleSync(this);
             Thread.sleep(2000 * (attempt + 1));
             count2 = getListView().getAdapter().getCount() - 1;

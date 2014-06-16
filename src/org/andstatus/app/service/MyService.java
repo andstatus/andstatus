@@ -1,6 +1,5 @@
 /* 
  * Copyright (c) 2011-2014 yvolk (Yuri Volkov), http://yurivolkov.com
- * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -314,10 +313,6 @@ public class MyService extends Service {
     }
 
     private TriState shouldStop() {
-        if (dontStop) {
-            MyLog.v(this, "decideIfStopTheService: dontStop flag");
-            return TriState.UNKNOWN;
-        }
         boolean doStop = !MyContextHolder.get().isReady() || mainCommandQueue.isEmpty();
         if (!couldSetIsStopping(doStop, false)) {
             return TriState.UNKNOWN;
@@ -382,7 +377,7 @@ public class MyService extends Service {
         StringBuilder logMessageBuilder = new StringBuilder();
         synchronized(executorLock) {
             if ( executor != null && (executor.getStatus() != Status.RUNNING)) {
-                logMessageBuilder.append(" Deleting executor " + executor);
+                logMessageBuilder.append(" Deleting Executor " + executor);
                 executor = null;
             }
             if (executor != null) {
@@ -391,7 +386,7 @@ public class MyService extends Service {
                 // For now let's have only ONE working thread 
                 // (it seems there is some problem in parallel execution...)
                 executor = new QueueExecutor();
-                logMessageBuilder.append(" Adding and starting new executor " + executor);
+                logMessageBuilder.append(" Adding and starting new Executor " + executor);
                 executorStartedAt = System.currentTimeMillis();
                 executorEndedAt = 0;
                 executor.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -478,11 +473,14 @@ public class MyService extends Service {
                     logMessageBuilder.append(" Cancelling Executor " + executor);
                     executor.cancel(true);
                 } else {
-                    logMessageBuilder.append(" Cannot stop now the Executor " + executor);
+                    logMessageBuilder.append(" Cannot stop now Executor " + executor);
                     could = false;
                 }
             }
             if (could) {
+                if (executor != null) {
+                    logMessageBuilder.append(" Removing Executor " + executor);
+                }
                 executor = null;
                 executorStartedAt = 0;
                 executorEndedAt = 0;
@@ -579,12 +577,15 @@ public class MyService extends Service {
                             retryCommandQueue.remove(cd);
                         } else {
                             commandData2 = null;
-                            MyLog.v(this, "Found in Rettry queue: " + cd);
+                            MyLog.v(this, "Found in Retry queue: " + cd);
                         }
-                        break;
                     } else {
                         if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MAX_MS_IN_ERROR_QUEUE) {
-                            MyLog.i(this, "Removed old from Retry queue: " + cd);
+                            if (retryCommandQueue.remove(cd)) {
+                                MyLog.i(this, "Removed old from Retry queue: " + cd);
+                            } else {
+                                MyLog.i(this, "Failed to Remove old from Retry queue: " + cd);
+                            }
                         }
                     }
                 }
@@ -598,18 +599,21 @@ public class MyService extends Service {
             if (errorCommandQueue.contains(commandData)) {
                 for (CommandData cd : errorCommandQueue) {
                     if (cd.equals(commandData)) {
+                        cd.getResult().resetRetries(commandData.getCommand());
                         if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_MS) {
                             commandData2 = cd;
-                            cd.getResult().resetRetries(commandData.getCommand());
                             errorCommandQueue.remove(cd);
                         } else {
                             commandData2 = null;
                             MyLog.v(this, "Found in Error queue: " + cd);
                         }
-                        break;
                     } else {
                         if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MAX_MS_IN_ERROR_QUEUE) {
-                            MyLog.i(this, "Removed old from Error queue: " + cd);
+                            if (errorCommandQueue.remove(cd)) {
+                                MyLog.i(this, "Removed old from Error queue: " + cd);
+                            } else {
+                                MyLog.i(this, "Failed to Remove old from Error queue: " + cd);
+                            }
                         }
                     }
                 }
@@ -721,6 +725,7 @@ public class MyService extends Service {
 
         @Override
         protected Void doInBackground(Void... arg0) {
+            MyLog.v(this, "Started");
             for (long iteration = 1; iteration < 10000; iteration++) {
 				try {
 					synchronized(heartBeatLock) {
@@ -737,11 +742,13 @@ public class MyService extends Service {
 				}
 				publishProgress();
 			}
+            MyLog.v(this, "Ended");
 			return null;
 		}
 
         @Override
         protected void onProgressUpdate(Void... values) {
+            MyLog.v(this, "onProgressUpdate");
             startStopExecution();
         }
 	}

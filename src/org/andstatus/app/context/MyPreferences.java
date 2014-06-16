@@ -107,10 +107,11 @@ public class MyPreferences {
         throw new AssertionError();
     }
     
-    /**
-     * @return DefaultSharedPreferences for this application
-     */
+    private static volatile boolean defaultSharedPreferencesLocked = false;
     public static SharedPreferences getDefaultSharedPreferences() {
+        if (defaultSharedPreferencesLocked) {
+            return null;
+        }
         Context context = MyContextHolder.get().context();
         if (context == null) {
             MyLog.e(TAG, "getDefaultSharedPreferences - Was not initialized yet");
@@ -123,6 +124,14 @@ public class MyPreferences {
         }
     }
 
+    public static void lockDefaultSharedPreferences() {
+        defaultSharedPreferencesLocked = true;
+    }
+
+    public static void unlockDefaultSharedPreferences() {
+        defaultSharedPreferencesLocked = false;
+    }
+    
     public static boolean shouldSetDefaultValues() {
         SharedPreferences sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
         if (sp == null) {

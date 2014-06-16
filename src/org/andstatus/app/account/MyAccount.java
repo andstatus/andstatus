@@ -290,6 +290,8 @@ public final class MyAccount {
                     myAccount.connection.save(myAccount.accountData);
                 }
                 myAccount.accountData.setPersistent(true);
+                myAccount.accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.mIsSyncable);
+                myAccount.accountData.setDataBoolean(MyAccount.KEY_SYNC_AUTOMATICALLY, myAccount.mSyncAutomatically);
                 if (myAccount.syncFrequencySeconds == 0) {
                     myAccount.syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
                 }
@@ -323,14 +325,6 @@ public final class MyAccount {
                     android.accounts.AccountManager am = AccountManager.get(
                             myContext.context());
                     am.addAccountExplicitly(androidAccount, myAccount.getPassword(), null);
-
-                    ContentResolver.setIsSyncable(androidAccount, MyProvider.AUTHORITY, myAccount.mIsSyncable ? 1 : 0);
-
-                    // We need to preserve sync on/off during backup/restore.
-                    // don't know about "network tickles"...
-                    // See http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
-                    ContentResolver
-                            .setSyncAutomatically(androidAccount, MyProvider.AUTHORITY, myAccount.mSyncAutomatically);
 
                     // Without SyncAdapter we got the error:
                     // SyncManager(865): can't find a sync adapter for SyncAdapterType Key
@@ -870,17 +864,18 @@ public final class MyAccount {
             if (connection == null) {
                 members += "connection:null,";
             }
-            if (deleted) {
-                members += "deleted,";
-            }
-            if (version != ACCOUNT_VERSION) {
-                members += "version:" + version + ",";
-            }
+            members += "syncFrequency:" + syncFrequencySeconds + ",";
             if (mIsSyncable) {
                 members += "syncable,";
             }
             if (mSyncAutomatically) {
                 members += "syncauto,";
+            }
+            if (deleted) {
+                members += "deleted,";
+            }
+            if (version != ACCOUNT_VERSION) {
+                members += "version:" + version + ",";
             }
         } catch (Exception e) {
             MyLog.v(this, members, e);

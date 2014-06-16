@@ -55,17 +55,17 @@ public class AccountData implements Parcelable, AccountDataWriter {
         this.persistent = persistent;
     }
     
-    public static AccountData fromAndroidAccount(MyContext myContext, Account account) {
-        if (account == null) {
+    public static AccountData fromAndroidAccount(MyContext myContext, Account androidAccount) {
+        if (androidAccount == null) {
             throw new IllegalArgumentException(TAG + " account is null");
         }
         android.accounts.AccountManager am = AccountManager.get(myContext.context());
-        AccountData accountData = fromJsonString(am.getUserData(account, KEY_ACCOUNT), true);
+        AccountData accountData = fromJsonString(am.getUserData(androidAccount, KEY_ACCOUNT), true);
         accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
-                ContentResolver.getIsSyncable(account, MyProvider.AUTHORITY) != 0);
+                ContentResolver.getIsSyncable(androidAccount, MyProvider.AUTHORITY) != 0);
         accountData.setDataBoolean(MyAccount.KEY_SYNC_AUTOMATICALLY,
-                ContentResolver.getSyncAutomatically(account, MyProvider.AUTHORITY));
-        accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, getSyncFrequencySeconds(account));
+                ContentResolver.getSyncAutomatically(androidAccount, MyProvider.AUTHORITY));
+        accountData.setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, getSyncFrequencySeconds(androidAccount));
         return accountData;
     }
 
@@ -112,9 +112,25 @@ public class AccountData implements Parcelable, AccountDataWriter {
         result.changed = !this.equals(oldData);
         if (result.changed) {
             long syncFrequencySeconds = getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0);
-            if (syncFrequencySeconds > 0 && syncFrequencySeconds != getSyncFrequencySeconds(androidAccount)) {
+            if (syncFrequencySeconds > 0
+                    && syncFrequencySeconds != getSyncFrequencySeconds(androidAccount)) {
                 result.changed = true;
                 setSyncFrequencySeconds(androidAccount, syncFrequencySeconds);
+            }
+            boolean isSyncable = getDataBoolean(MyAccount.KEY_IS_SYNCABLE, true);
+            if (isSyncable != (ContentResolver.getIsSyncable(androidAccount, MyProvider.AUTHORITY) != 0)) {
+                ContentResolver.setIsSyncable(androidAccount, MyProvider.AUTHORITY, isSyncable ? 1
+                        : 0);
+            }
+            boolean syncAutomatically = getDataBoolean(MyAccount.KEY_SYNC_AUTOMATICALLY, true);
+            if (syncAutomatically != ContentResolver.getSyncAutomatically(androidAccount,
+                    MyProvider.AUTHORITY)) {
+                // We need to preserve sync on/off during backup/restore.
+                // don't know about "network tickles"... See:
+                // http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
+                ContentResolver
+                        .setSyncAutomatically(androidAccount, MyProvider.AUTHORITY,
+                                syncAutomatically);
             }
             android.accounts.AccountManager am = AccountManager.get(myContext.context());
             am.setUserData(androidAccount, KEY_ACCOUNT, toJsonString());

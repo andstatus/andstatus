@@ -263,12 +263,12 @@ public class TestSuite extends TestCase {
     public static void waitForListLoaded(InstrumentationTestCase instrumentationTestCase, Activity activity) throws InterruptedException {
         final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
         assertTrue(list != null);
-        for (int ind=0; ind<200; ind++) {
+        for (int ind=0; ind<60; ind++) {
             if (list.getChildCount() > 1) {
                 break;
             }
             instrumentationTestCase.getInstrumentation().waitForIdleSync();
-            Thread.sleep(50);
+            Thread.sleep(1000);
         }
         assertTrue("There are items in the list of " + activity.getClass().getSimpleName(), 
                 list.getChildCount() > 0);

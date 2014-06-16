@@ -109,6 +109,7 @@ public class MyBackupAgent extends BackupAgent {
     boolean checkAndSetServiceUnavailable() throws IOException {
         boolean isServiceAvailableStored = MyServiceManager.isServiceAvailable();
         MyServiceManager.setServiceUnavailable();
+        MyServiceManager.stopService();
         for (int ind=0; ; ind++) {
             if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
                 break;
@@ -239,6 +240,7 @@ public class MyBackupAgent extends BackupAgent {
         }
 
         MyServiceManager.setServiceUnavailable();
+        MyServiceManager.stopService();
         MyDatabase db = MyContextHolder.get().getDatabase();
         if (db != null) {
             db.close();
@@ -247,16 +249,7 @@ public class MyBackupAgent extends BackupAgent {
     }
     
     private void doRestore(MyBackupDataInput data) throws IOException {
-        MyPreferences.setDefaultValues(R.xml.preferences, false);
-        MyContextHolder.release();
-        MyLog.forget();
-        MyContextHolder.initialize(this, this);
-        // For some reason the next line is required for proper work...
-        // MyLog.setMinLogLevel(MyLog.VERBOSE);
-        
-        assertNextHeader(data, SHARED_PREFERENCES_KEY);
-        sharedPreferencesRestored += restoreFile(data, 
-                SharedPreferencesUtil.sharedPreferencesPath(MyContextHolder.get().context()));
+        restoreSharedPreferences(data);
         assertNextHeader(data, DATABASE_KEY + "_" + MyDatabase.DATABASE_NAME);
         databasesRestored += restoreFile(data,
                     MyPreferences.getDatabasePath(MyDatabase.DATABASE_NAME, null));
@@ -274,7 +267,37 @@ public class MyBackupAgent extends BackupAgent {
         MyContextHolder.release();
         MyContextHolder.initialize(this, this);
     }
+
+    private void restoreSharedPreferences(MyBackupDataInput data) throws IOException {
+        MyLog.i(this, "On restoring Shared preferences");
+        MyPreferences.setDefaultValues(R.xml.preferences, true);
+        MyContextHolder.release();
+        MyLog.forget();
+        try {
+            MyPreferences.lockDefaultSharedPreferences();
+            assertNextHeader(data, SHARED_PREFERENCES_KEY);
+            sharedPreferencesRestored += restoreFile(data, 
+                    SharedPreferencesUtil.sharedPreferencesPath(MyContextHolder.get().context()));
+        } finally {
+            MyPreferences.unlockDefaultSharedPreferences();
+        }
+        MyContextHolder.release();
+        MyContextHolder.initialize(this, this);
+        fixExternalStorage();
+    }
     
+    private void fixExternalStorage() {
+        if (!MyPreferences.isStorageExternal(null) ||
+                MyPreferences.isWritableExternalStorageAvailable(null)) {
+            return;
+        }
+        backupDescriptor.getLogger().logProgress("External storage is not available");
+        MyPreferences.getDefaultSharedPreferences().edit()
+                .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false).commit();
+        MyContextHolder.release();
+        MyContextHolder.initialize(this, this);
+    }
+
     private void assertNextHeader(MyBackupDataInput data, String key) throws IOException {
         if (!key.equals(previousKey) && !data.readNextHeader()) {
             throw new FileNotFoundException("Unexpected end of backup on key='" + key + "'");
