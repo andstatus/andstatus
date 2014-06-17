@@ -197,6 +197,10 @@ public class CommandData implements Comparable<CommandData> {
                 commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key,
                         sp.getLong(IntentExtra.EXTRA_RECIPIENTID.key + si, 0));
                 break;
+			case SEARCH_MESSAGE:
+				commandData.bundle.putString(SearchManager.QUERY,
+						sp.getString(SearchManager.QUERY + si, ""));
+				break;			
             default:
                 break;
         }
@@ -358,6 +362,9 @@ public class CommandData implements Comparable<CommandData> {
                 ed.putLong(IntentExtra.EXTRA_INREPLYTOID.key + si, bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key));
                 ed.putLong(IntentExtra.EXTRA_RECIPIENTID.key + si, bundle.getLong(IntentExtra.EXTRA_RECIPIENTID.key));
                 break;
+			case SEARCH_MESSAGE:
+				ed.putString(SearchManager.QUERY + si, bundle.getString(SearchManager.QUERY));
+				break;
             default:
                 break;
         }
@@ -417,6 +424,16 @@ public class CommandData implements Comparable<CommandData> {
                     builder.append(TimelineActivity.buildAccountButtonText(ma, false, timelineType));
                 }
                 break;
+			case SEARCH_MESSAGE:
+				builder.append("\"");
+                builder.append(I18n.trimTextAt(bundle.getString(SearchManager.QUERY), 40));                
+                builder.append("\" ");
+				if (!TextUtils.isEmpty(accountName)) {
+                    builder.append(myContext.context().getText(R.string.combined_timeline_off) + " ");
+                    MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
+                    builder.append(ma != null ? ma.getOriginName() : "?");
+                }
+				break;
             default:
                 builder.append(TextUtils.isEmpty(accountName) ? "" : myContext.context()
                         .getText(R.string.combined_timeline_off) + " "

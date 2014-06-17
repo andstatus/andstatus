@@ -278,10 +278,11 @@ public class MyService extends Service {
             }
         }
 		synchronized(heartBeatLock) {
-			if (heartBeat == null) {
-				heartBeat = new HeartBeat();
-				heartBeat.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+			if (heartBeat != null && heartBeat.getStatus() == Status.RUNNING) {
+				heartBeat.cancel(true);
 			}
+			heartBeat = new HeartBeat();
+			heartBeat.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 		}
 		if (changed) {
             MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
@@ -308,6 +309,7 @@ public class MyService extends Service {
                 startExecution();
                 break;
             default:
+			    MyLog.v(this, "Didn't change execution " + executor);
                 break;
         }
     }
@@ -454,6 +456,9 @@ public class MyService extends Service {
             mIsStopping = false;
             dontStop = false;
         }
+		synchronized(heartBeatLock) {
+			heartBeat = null;
+		}
         relealeWakeLock();
         stopSelfResult(lastProcessedStartId);
         lastProcessedStartId = 0;
@@ -468,7 +473,7 @@ public class MyService extends Service {
         synchronized(executorLock) {
             if (executor == null || executorStartedAt == 0) {
                 // Ok
-            } else if ( executor.getStatus() == Status.RUNNING) {
+            } else if ( executor.isReallyWorking() ) {
                 if (forceNow) {
                     logMessageBuilder.append(" Cancelling Executor " + executor);
                     executor.cancel(true);
@@ -524,6 +529,8 @@ public class MyService extends Service {
     private class QueueExecutor extends AsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         private volatile CommandData currentlyExecuting = null;
         private volatile long currentlyExecutingSince = 0;
+
+		private static final long MAX_COMMAND_EXECUTION_MS = 10 * 60 * 1000;
         
         @Override
         protected Boolean doInBackground(Void... arg0) {
@@ -532,6 +539,11 @@ public class MyService extends Service {
                 if (isStopping()) {
                     break;
                 }
+				synchronized (executorLock) {
+					if (executor != this) {
+						break;
+					}
+				}
                 CommandData commandData = null;
                 do {
                     commandData = mainCommandQueue.poll();
@@ -718,37 +730,55 @@ public class MyService extends Service {
             return MyLog.formatKeyValue(this, sb.toString());
         }
         
+		boolean isReallyWorking() {
+			if (getStatus() != Status.RUNNING
+			    || currentlyExecuting == null
+				|| System.currentTimeMillis() - currentlyExecutingSince > MAX_COMMAND_EXECUTION_MS) {
+				return false;
+			}
+			return true;
+		}
     }
     
-	private class HeartBeat extends AsyncTask<Void, Void, Void> {
+	private class HeartBeat extends AsyncTask<Void, Long, Void> {
 		private static final long HEARTBEAT_PERIOD_SECONDS = 20;
 
         @Override
         protected Void doInBackground(Void... arg0) {
             MyLog.v(this, "Started");
+			String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
 				try {
 					synchronized(heartBeatLock) {
+						if (heartBeat != this) {
+							breakReason = "Other instance found";
+							break;
+						}
                         heartBeatLock.wait(
 						    java.util.concurrent.TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS));
                     }
 				} catch (InterruptedException e) {
+					breakReason = "InterruptedException";
 					break;
 				}
   				synchronized(serviceStateLock) {
                     if (!mInitialized) {
+						breakReason = "Not initialized";
                         break;
                     }
 				}
-				publishProgress();
+				publishProgress(iteration);
 			}
-            MyLog.v(this, "Ended");
+            MyLog.v(this, "Ended; " + breakReason);
+			synchronized(heartBeatLock) {
+				heartBeat = null;
+			}
 			return null;
 		}
 
         @Override
-        protected void onProgressUpdate(Void... values) {
-            MyLog.v(this, "onProgressUpdate");
+        protected void onProgressUpdate(Long... values) {
+            MyLog.v(this, "onProgressUpdate; " + values[0]);
             startStopExecution();
         }
 	}
