@@ -269,21 +269,25 @@ public class MyService extends Service {
     
     void initialize() {
         boolean changed = false;
+        boolean wasNotInitialized = false;
         synchronized (serviceStateLock) {
             if (!mInitialized) {
+                wasNotInitialized = true;
                 restoreState();
                 registerReceiver(intentReceiver, new IntentFilter(ACTION_GO));
                 mInitialized = true;
                 changed = true;
             }
         }
-		synchronized(heartBeatLock) {
-			if (heartBeat != null && heartBeat.getStatus() == Status.RUNNING) {
-				heartBeat.cancel(true);
-			}
-			heartBeat = new HeartBeat();
-			heartBeat.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-		}
+        if (wasNotInitialized) {
+            synchronized(heartBeatLock) {
+                if (heartBeat != null && heartBeat.getStatus() == Status.RUNNING) {
+                    heartBeat.cancel(true);
+                }
+                heartBeat = new HeartBeat();
+                heartBeat.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+        }
 		if (changed) {
             MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
 		}
@@ -327,44 +331,44 @@ public class MyService extends Service {
     }
 
     private boolean couldSetIsStopping(boolean doStop, boolean forceStopNow) {
-        boolean changed = false;
         boolean forced = false;
         synchronized (serviceStateLock) {
+            if (doStop == mIsStopping) {
+                MyLog.v(this, "Not changed: doStop=" + doStop);
+                return true;
+            }
             if (!mInitialized && !doStop) {
+                MyLog.v(this, "!mInitialized && !doStop");
                 return false;
             }
             if (doStop && dontStop) {
                 MyLog.v(this, "dontStop flag");
                 return false;
             }
-            if (doStop != mIsStopping) {
-                if (System.currentTimeMillis() - decidedToChangeIsStoppingAt < java.util.concurrent.TimeUnit.SECONDS
-                        .toMillis(ISSTOPPING_CHANGE_MIN_PERIOD_SECONDS)) {
-                    if (doStop && forceStopNow) {
-                        forced = true;
-                    } else {
-                        return false;
-                    }
-                }
-                decidedToChangeIsStoppingAt = System.currentTimeMillis();
-                mIsStopping = doStop;
-                changed = true;
-            }
-        }
-        if (changed) {
-            if (doStop) {
-                if (forced) {
-                    MyLog.v(this, "Forced to stop; startId=" + lastProcessedStartId 
-                            + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
-                            );
+            long decidedToChangeSeconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - decidedToChangeIsStoppingAt);
+            if (decidedToChangeSeconds < ISSTOPPING_CHANGE_MIN_PERIOD_SECONDS) {
+                if (doStop && forceStopNow) {
+                    forced = true;
                 } else {
-                    MyLog.v(this, "Decided to stop; startId=" + lastProcessedStartId 
-                            + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
-                            );
+                    MyLog.v(this, "Decided to change " + decidedToChangeSeconds + " second ago, doStop=" + doStop);
+                    return false;
                 }
-            } else {
-                MyLog.v(this, "Decided to continue; startId=" + lastProcessedStartId);
             }
+            decidedToChangeIsStoppingAt = System.currentTimeMillis();
+            mIsStopping = doStop;
+        }
+        if (doStop) {
+            if (forced) {
+                MyLog.v(this, "Forced to stop; startId=" + lastProcessedStartId 
+                        + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
+                        );
+            } else {
+                MyLog.v(this, "Stopping; startId=" + lastProcessedStartId 
+                        + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
+                        );
+            }
+        } else {
+            MyLog.v(this, "Reverted to Starting; startId=" + lastProcessedStartId);
         }
         return true;
     }
@@ -428,10 +432,10 @@ public class MyService extends Service {
      * @param boolean forceNow 
      */
     private void stopDelayed(boolean forceNow) {
-        if (!couldSetIsStopping(true, forceNow)) {
+        if (!couldSetIsStopping(true, forceNow) && !forceNow) {
             return;
         }
-        if (!couldStopExecutor(forceNow)) {
+        if (!couldStopExecutor(forceNow) && !forceNow) {
             return;
         }
         unInitialize();
@@ -443,20 +447,22 @@ public class MyService extends Service {
         int mainQueueSize = mainCommandQueue.size();
         int retryQueueSize = retryCommandQueue.size();
         synchronized (serviceStateLock) {
-            if( !mInitialized) {
-                return;
+            if( mInitialized) {
+                try {
+                    unregisterReceiver(intentReceiver);
+                } catch (Exception e) {
+                    MyLog.d(this, "On unregisterReceiver", e);
+                }
+                saveState();
+                mInitialized = false;
+                mIsStopping = false;
+                dontStop = false;
             }
-            try {
-                unregisterReceiver(intentReceiver);
-            } catch (Exception e) {
-                MyLog.d(this, "On unregisterReceiver", e);
-            }
-            saveState();
-            mInitialized = false;
-            mIsStopping = false;
-            dontStop = false;
         }
 		synchronized(heartBeatLock) {
+		    if (heartBeat != null) {
+		        heartBeat.cancel(true);
+		    }
 			heartBeat = null;
 		}
         relealeWakeLock();
@@ -529,18 +535,25 @@ public class MyService extends Service {
     private class QueueExecutor extends AsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         private volatile CommandData currentlyExecuting = null;
         private volatile long currentlyExecutingSince = 0;
-
+        private static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 10;
 		private static final long MAX_COMMAND_EXECUTION_MS = 10 * 60 * 1000;
         
         @Override
         protected Boolean doInBackground(Void... arg0) {
             MyLog.d(this, "Started, " + mainCommandQueue.size() + " commands to process");
+            String breakReason = "";
             do {
                 if (isStopping()) {
+                    breakReason = "isStopping";
+                    break;
+                }
+                if (isCancelled()) {
+                    breakReason = "Cancelled";
                     break;
                 }
 				synchronized (executorLock) {
 					if (executor != this) {
+	                    breakReason = "Other executor";
 						break;
 					}
 				}
@@ -558,6 +571,7 @@ public class MyService extends Service {
                 currentlyExecuting = commandData;
                 currentlyExecutingSince = System.currentTimeMillis();
                 if (commandData == null) {
+                    breakReason = "No more commands";
                     break;
                 }
                 
@@ -574,7 +588,7 @@ public class MyService extends Service {
                 MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
             } while (true);
-            MyLog.d(this, "Ended, " + totalQueuesSize() + " commands left");
+            MyLog.d(this, "Ended, " + breakReason + ", " + totalQueuesSize() + " commands left");
             return true;
         }
 
@@ -731,6 +745,14 @@ public class MyService extends Service {
         }
         
 		boolean isReallyWorking() {
+		    synchronized (executorLock) {
+		        if (executorEndedAt > 0) {
+	                long endedSeconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - executorEndedAt);
+	                if (endedSeconds < DELAY_AFTER_EXECUTOR_ENDED_SECONDS ) {
+	                    return true;
+	                }
+		        }
+		    }
 			if (getStatus() != Status.RUNNING
 			    || currentlyExecuting == null
 				|| System.currentTimeMillis() - currentlyExecutingSince > MAX_COMMAND_EXECUTION_MS) {
@@ -753,6 +775,10 @@ public class MyService extends Service {
 						if (heartBeat != this) {
 							breakReason = "Other instance found";
 							break;
+						}
+						if (isCancelled()) {
+                            breakReason = "Cancelled";
+                            break;
 						}
                         heartBeatLock.wait(
 						    java.util.concurrent.TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS));

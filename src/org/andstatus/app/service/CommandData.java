@@ -281,6 +281,9 @@ public class CommandData implements Comparable<CommandData> {
                 case UPDATE_STATUS:
                     text += bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key);
                     break;
+                case SEARCH_MESSAGE:
+                    text += bundle.getString(SearchManager.QUERY);
+                    break;
                 default:
                     break;
             }
@@ -294,14 +297,34 @@ public class CommandData implements Comparable<CommandData> {
      */
     @Override
     public String toString() {
-        return MyLog.formatKeyValue("CommandData",
-            "command:" + command.save() + ","
-                + (TextUtils.isEmpty(getAccountName()) ? "" : "account:" + getAccountName() + ",")
-                + (timelineType == TimelineTypeEnum.UNKNOWN ? "" : timelineType + ",")
-                + (itemId == 0 ? "" : "id:" + itemId + ",")
-                + "hashCode:" + hashCode() + ","
-                + CommandResult.toString(commandResult)
-            );
+        StringBuilder builder = new StringBuilder();
+        builder.append("command:" + command.save() + ",");
+        switch (command) {
+            case UPDATE_STATUS:
+                builder.append("\"");
+                builder.append(I18n.trimTextAt(bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key), 40));                
+                builder.append("\",");
+                break;
+            case SEARCH_MESSAGE:
+                builder.append("\"");
+                builder.append(I18n.trimTextAt(bundle.getString(SearchManager.QUERY), 40));                
+                builder.append("\",");
+                break;
+            default:
+                break;
+        }
+        if (!TextUtils.isEmpty(getAccountName())) {
+            builder.append("account:" + getAccountName() + ",");
+        }
+        if (timelineType != TimelineTypeEnum.UNKNOWN) {
+            builder.append(timelineType + ",");
+        }
+        if (itemId != 0) {
+            builder.append("id:" + itemId + ",");
+        }
+        builder.append("hashCode:" + hashCode() + ",");
+        builder.append(CommandResult.toString(commandResult));
+        return MyLog.formatKeyValue("CommandData", builder);
     }
 
     /**
