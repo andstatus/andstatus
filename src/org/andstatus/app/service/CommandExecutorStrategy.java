@@ -53,16 +53,18 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     }
 
     static void executeStep(CommandExecutionContext execContext, CommandExecutorParent parent) {
+        execContext.onOneExecStepLaunch();
         CommandExecutorStrategy strategy = getStrategy(execContext).setParent(parent);
         MyLog.v(strategy, "LaunchingStep " + strategy.execContext);
         MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
-                .setCommandData(execContext.getCommandDataForOneStep())
+                .setCommandData(execContext.getCommandData())
                 .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
         strategy.execute();
         MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
-                .setCommandData(execContext.getCommandDataForOneStep())
+                .setCommandData(execContext.getCommandData())
                 .setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
         MyLog.v(strategy, "ExecutedStep " + strategy.execContext);
+        execContext.onOneExecStepEnd();
     }
     
     static CommandExecutorStrategy getStrategy(CommandData commandData, CommandExecutorParent parent) {

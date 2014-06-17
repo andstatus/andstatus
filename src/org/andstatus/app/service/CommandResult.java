@@ -57,6 +57,126 @@ public final class CommandResult implements Parcelable {
 
     public CommandResult() {
     }
+
+    CommandResult forOneExecStep() {
+        Parcel parcel = Parcel.obtain();
+        writeToParcel(parcel, 0);
+        CommandResult oneStepResult = new CommandResult(parcel);
+        oneStepResult.onLaunched();
+        parcel.recycle();
+        return oneStepResult;
+    }
+    
+    void accumulateOneStep(CommandResult oneStepResult) {
+        numAuthExceptions += oneStepResult.numAuthExceptions;
+        numIoExceptions += oneStepResult.numIoExceptions;
+        numParseExceptions += oneStepResult.numParseExceptions;
+        if (itemId == 0) {
+            itemId = oneStepResult.itemId;
+        }
+        hourlyLimit = oneStepResult.hourlyLimit;
+        remainingHits = oneStepResult.remainingHits;
+        messagesAdded += oneStepResult.messagesAdded;
+        mentionsAdded += oneStepResult.mentionsAdded;
+        directedAdded += oneStepResult.directedAdded;
+        downloadedCount += oneStepResult.downloadedCount;
+    }
+    
+    public static final Creator<CommandResult> CREATOR = new Creator<CommandResult>() {
+        @Override
+        public CommandResult createFromParcel(Parcel in) {
+            return new CommandResult(in);
+        }
+
+        @Override
+        public CommandResult[] newArray(int size) {
+            return new CommandResult[size];
+        }
+    };
+    
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(createdDate);
+        dest.writeLong(lastExecutedDate);
+        dest.writeInt(executionCount);
+        dest.writeInt(retriesLeft);
+        dest.writeLong(numAuthExceptions);
+        dest.writeLong(numIoExceptions);
+        dest.writeLong(numParseExceptions);
+        dest.writeLong(itemId);
+        dest.writeInt(hourlyLimit);
+        dest.writeInt(remainingHits);
+        dest.writeInt(downloadedCount);
+    }
+    
+    public CommandResult(Parcel parcel) {
+        createdDate = parcel.readLong();
+        lastExecutedDate = parcel.readLong();
+        executionCount = parcel.readInt();
+        retriesLeft = parcel.readInt();
+        numAuthExceptions = parcel.readLong();
+        numIoExceptions = parcel.readLong();
+        numParseExceptions = parcel.readLong();
+        itemId = parcel.readLong();
+        hourlyLimit = parcel.readInt();
+        remainingHits = parcel.readInt();
+        downloadedCount = parcel.readInt();
+    }
+    
+    void saveToSharedPreferences(android.content.SharedPreferences.Editor ed, int index) {
+        String si = Integer.toString(index);
+        ed.putLong(IntentExtra.EXTRA_CREATED_DATE.key + si, createdDate);
+        ed.putLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, lastExecutedDate);
+        ed.putInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
+        ed.putInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
+        ed.putLong(IntentExtra.EXTRA_NUM_AUTH_EXCEPTIONS.key + si, numAuthExceptions);
+        ed.putLong(IntentExtra.EXTRA_NUM_IO_EXCEPTIONS.key + si, numIoExceptions);
+        ed.putLong(IntentExtra.EXTRA_NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
+        ed.putInt(IntentExtra.EXTRA_DOWNLOADED_COUNT.key + si, downloadedCount);
+    }
+
+    void loadFromSharedPreferences(SharedPreferences sp, int index) {
+        String si = Integer.toString(index);
+        createdDate = sp.getLong(IntentExtra.EXTRA_CREATED_DATE.key + si, createdDate);
+        lastExecutedDate = sp.getLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, lastExecutedDate);
+        executionCount = sp.getInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
+        retriesLeft = sp.getInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
+        numAuthExceptions = sp.getLong(IntentExtra.EXTRA_NUM_AUTH_EXCEPTIONS.key + si, numAuthExceptions);
+        numIoExceptions = sp.getLong(IntentExtra.EXTRA_NUM_IO_EXCEPTIONS.key + si, numIoExceptions);
+        numParseExceptions = sp.getLong(IntentExtra.EXTRA_NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
+        downloadedCount = sp.getInt(IntentExtra.EXTRA_DOWNLOADED_COUNT.key + si, downloadedCount);
+    }
+
+    public int getExecutionCount() {
+        return executionCount;
+    }
+
+    public boolean hasError() {
+        return hasSoftError() || hasHardError();
+    }
+    
+    public boolean hasHardError() {
+        return numAuthExceptions > 0 || numParseExceptions > 0;
+    }
+
+    public boolean hasSoftError() {
+        return numIoExceptions > 0;
+    }
+    
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+    
+    public void setSoftErrorIfNotOk(boolean ok) {
+        if (!ok) {
+            incrementNumIoExceptions();
+        }
+    }
+    
+    public static String toString(CommandResult commandResult) {
+        return commandResult == null ? "(result is null)" : commandResult.toString();
+    }
     
     @Override
     public String toString() {
@@ -90,93 +210,7 @@ public final class CommandResult implements Parcelable {
         
         return MyLog.formatKeyValue("CommandResult", message);
     }
-
-    public CommandResult(Parcel parcel) {
-        createdDate = parcel.readLong();
-        lastExecutedDate = parcel.readLong();
-        executionCount = parcel.readInt();
-        downloadedCount = parcel.readInt();
-        retriesLeft = parcel.readInt();
-        numAuthExceptions = parcel.readLong();
-        numIoExceptions = parcel.readLong();
-        numParseExceptions = parcel.readLong();
-        hourlyLimit = parcel.readInt();
-        remainingHits = parcel.readInt();
-    }
-
-    public int getExecutionCount() {
-        return executionCount;
-    }
-
-    public boolean hasError() {
-        return hasSoftError() || hasHardError();
-    }
     
-    public boolean hasHardError() {
-        return numAuthExceptions > 0 || numParseExceptions > 0;
-    }
-
-    public boolean hasSoftError() {
-        return numIoExceptions > 0;
-    }
-    
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    void saveToSharedPreferences(android.content.SharedPreferences.Editor ed, int index) {
-        String si = Integer.toString(index);
-        ed.putLong(IntentExtra.EXTRA_CREATED_DATE.key + si, createdDate);
-        ed.putLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, lastExecutedDate);
-        ed.putInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
-        ed.putInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
-    }
-
-    void loadFromSharedPreferences(SharedPreferences sp, int index) {
-        String si = Integer.toString(index);
-        createdDate = sp.getLong(IntentExtra.EXTRA_CREATED_DATE.key + si, createdDate);
-        lastExecutedDate = sp.getLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, createdDate);
-        executionCount = sp.getInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
-        retriesLeft = sp.getInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
-    }
-    
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(createdDate);
-        dest.writeLong(lastExecutedDate);
-        dest.writeInt(executionCount);
-        dest.writeInt(downloadedCount);
-        dest.writeInt(retriesLeft);
-        dest.writeLong(numAuthExceptions);
-        dest.writeLong(numIoExceptions);
-        dest.writeLong(numParseExceptions);
-        dest.writeInt(hourlyLimit);
-        dest.writeInt(remainingHits);
-    }
-
-    public static final Creator<CommandResult> CREATOR = new Creator<CommandResult>() {
-        @Override
-        public CommandResult createFromParcel(Parcel in) {
-            return new CommandResult(in);
-        }
-
-        @Override
-        public CommandResult[] newArray(int size) {
-            return new CommandResult[size];
-        }
-    };
-
-    public void setSoftErrorIfNotOk(boolean ok) {
-        if (!ok) {
-            incrementNumIoExceptions();
-        }
-    }
-    
-    public static String toString(CommandResult commandResult) {
-        return commandResult == null ? "(result is null)" : commandResult.toString();
-    }
-
     public long getNumAuthExceptions() {
         return numAuthExceptions;
     }
@@ -280,12 +314,15 @@ public final class CommandResult implements Parcelable {
         numIoExceptions = 0;
         numParseExceptions = 0;
         
+        itemId = 0;
+        
         hourlyLimit = 0;
         remainingHits = 0;
 
         messagesAdded = 0;
         mentionsAdded = 0;
         directedAdded = 0;
+        downloadedCount = 0;
     }
     
     /**

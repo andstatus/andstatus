@@ -106,9 +106,14 @@ public class CommandData implements Comparable<CommandData> {
 
     public static CommandData forOneExecStep(CommandExecutionContext execContext) {
         CommandData commandData = CommandData.fromIntent(execContext.getCommandData().toIntent(new Intent()));
+        commandData.commandResult = execContext.getCommandData().getResult().forOneExecStep();
         commandData.accountName = execContext.getMyAccount().getAccountName();
         commandData.timelineType = execContext.getTimelineType();
         return commandData;
+    }
+    
+    public void accumulateOneStep(CommandData commandData) {
+        commandResult.accumulateOneStep(commandData.getResult());
     }
     
     /**

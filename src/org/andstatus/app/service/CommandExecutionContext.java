@@ -10,6 +10,8 @@ import org.andstatus.app.util.MyLog;
 
 public class CommandExecutionContext {
     private CommandData commandData;
+    private CommandData commandDataStoredBeforeExecStep = null;
+
     private MyAccount ma;
     private TimelineTypeEnum timelineType;    
     /**
@@ -64,13 +66,20 @@ public class CommandExecutionContext {
         this.timelineUserId = timelineUserId;
         return this;
     }
-
+    
     public CommandData getCommandData() {
         return commandData;
     }
     
-    public CommandData getCommandDataForOneStep() {
-        return CommandData.forOneExecStep(this);
+    void onOneExecStepLaunch() {
+        commandDataStoredBeforeExecStep = commandData;
+        commandData = CommandData.forOneExecStep(this);
+    }
+    
+    void onOneExecStepEnd() {
+        commandDataStoredBeforeExecStep.accumulateOneStep(commandData);
+        commandData = commandDataStoredBeforeExecStep;
+        commandDataStoredBeforeExecStep = null;
     }
     
     public CommandResult getResult() {
