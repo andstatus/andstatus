@@ -45,19 +45,19 @@ import java.util.Queue;
  * @author yvolk@yurivolkov.com
  */
 public class CommandData implements Comparable<CommandData> {
-    private CommandEnum command;
+    private final CommandEnum command;
     private int priority = 0;
     
     /**
      * Unique name of {@link MyAccount} for this command. Empty string if command is not Account specific 
      * (e.g. {@link CommandEnum#AUTOMATIC_UPDATE} which works for all accounts) 
      */
-    private String accountName = "";
+    private final String accountName;
 
     /**
      * Timeline type used for the {@link CommandEnum#FETCH_TIMELINE} command 
      */
-    private TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
+    private final TimelineTypeEnum timelineType;
     
     /**
      * This is: 
@@ -75,40 +75,46 @@ public class CommandData implements Comparable<CommandData> {
     private int hashcode = 0;
 
     private CommandResult commandResult = new CommandResult();
-    
-    public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn, long itemIdIn) {
-        this(commandIn, accountNameIn, itemIdIn);
-        timelineType = timelineTypeIn;
+
+    public CommandData(CommandEnum commandIn, String accountNameIn) {
+        this(commandIn, accountNameIn, TimelineTypeEnum.UNKNOWN);
     }
 
     public CommandData(CommandEnum commandIn, String accountNameIn, long itemIdIn) {
-        this(commandIn, accountNameIn);
-        itemId = itemIdIn;
+        this(commandIn, accountNameIn, TimelineTypeEnum.UNKNOWN, itemIdIn);
     }
-
-    public CommandData(CommandEnum commandIn, String accountNameIn) {
+	
+    public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn, long itemIdIn) {
+        this(commandIn, accountNameIn, timelineTypeIn);
+		itemId = itemIdIn;
+    }
+	
+    public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn) {
         command = commandIn;
+		String accountName2 = "";
+		TimelineTypeEnum timelineType2 = TimelineTypeEnum.UNKNOWN;
         priority = command.getPriority();
 		switch (command) {
 			case FETCH_AVATAR:
 				break;
 			default:
 				if (!TextUtils.isEmpty(accountNameIn)) {
-					accountName = accountNameIn;
+					accountName2 = accountNameIn;
 				}
+				timelineType2 = timelineTypeIn;
 				break;
 		}
+		accountName = accountName2;
+		timelineType = timelineType2;
         getResult().resetRetries(command);
     }
 
-    private CommandData() {
-    }
-
     public static CommandData forOneExecStep(CommandExecutionContext execContext) {
-        CommandData commandData = CommandData.fromIntent(execContext.getCommandData().toIntent(new Intent()));
+        CommandData commandData = CommandData.fromIntent(execContext.getCommandData().toIntent(new Intent()),
+			execContext.getMyAccount().getAccountName(),
+			execContext.getTimelineType()
+			);
         commandData.commandResult = execContext.getCommandData().getResult().forOneExecStep();
-        commandData.accountName = execContext.getMyAccount().getAccountName();
-        commandData.timelineType = execContext.getTimelineType();
         return commandData;
     }
     
@@ -119,7 +125,11 @@ public class CommandData implements Comparable<CommandData> {
     /**
      * Used to decode command from the Intent upon receiving it
      */
-    public static CommandData fromIntent(Intent intent) {
+	public static CommandData fromIntent(Intent intent) {
+		return fromIntent(intent, "", TimelineTypeEnum.UNKNOWN);
+	}
+	
+    private static CommandData fromIntent(Intent intent, String accountNameIn, TimelineTypeEnum timelineTypeIn) {
         CommandData commandData = getEmpty();
         if (intent != null) {
             Bundle bundle = intent.getExtras();
@@ -135,11 +145,17 @@ public class CommandData implements Comparable<CommandData> {
                 case EMPTY:
                     break;
                 default:
-                    commandData = new CommandData();
-                    commandData.bundle = bundle;
-                    commandData.command = command;
-                    commandData.accountName = commandData.bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
-                    commandData.timelineType = TimelineTypeEnum.load(commandData.bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+					String accountName2 = accountNameIn;
+					if ( TextUtils.isEmpty(accountName2)) {
+						accountName2 = commandData.bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
+					}
+					TimelineTypeEnum timelineType2 = timelineTypeIn;
+					if ( timelineType2 == TimelineTypeEnum.UNKNOWN ) {
+						timelineType2 = TimelineTypeEnum.load(
+						    commandData.bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+					}
+                    commandData = new CommandData(command, accountName2, timelineType2);
+					commandData.bundle = bundle;
                     commandData.itemId = commandData.bundle.getLong(IntentExtra.EXTRA_ITEMID.key);
                     commandData.commandResult = commandData.bundle.getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
                     break;
@@ -153,8 +169,7 @@ public class CommandData implements Comparable<CommandData> {
     }
     
     public static CommandData searchCommand(String accountName, String queryString) {
-        CommandData commandData = new CommandData(CommandEnum.SEARCH_MESSAGE, accountName);
-        commandData.timelineType = TimelineTypeEnum.PUBLIC;
+        CommandData commandData = new CommandData(CommandEnum.SEARCH_MESSAGE, accountName, TimelineTypeEnum.PUBLIC);
         commandData.bundle.putString(SearchManager.QUERY, queryString);
         return commandData;
     }

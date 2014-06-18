@@ -7,10 +7,11 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
+import java.util.LinkedList;
 
 public class CommandExecutionContext {
     private CommandData commandData;
-    private CommandData commandDataStoredBeforeExecStep = null;
+    private LinkedList<CommandData> stackOfCommandDataOfExecSteps = new LinkedList<CommandData>();
 
     private MyAccount ma;
     private TimelineTypeEnum timelineType;    
@@ -72,14 +73,14 @@ public class CommandExecutionContext {
     }
     
     void onOneExecStepLaunch() {
-        commandDataStoredBeforeExecStep = commandData;
+        stackOfCommandDataOfExecSteps.addFirst(commandData);
         commandData = CommandData.forOneExecStep(this);
     }
     
     void onOneExecStepEnd() {
-        commandDataStoredBeforeExecStep.accumulateOneStep(commandData);
-        commandData = commandDataStoredBeforeExecStep;
-        commandDataStoredBeforeExecStep = null;
+		CommandData storedBeforeExecStep = stackOfCommandDataOfExecSteps.removeFirst();
+		storedBeforeExecStep.accumulateOneStep(commandData);
+		commandData = storedBeforeExecStep;
     }
     
     public CommandResult getResult() {

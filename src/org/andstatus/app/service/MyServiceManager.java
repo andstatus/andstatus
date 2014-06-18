@@ -39,7 +39,7 @@ public class MyServiceManager extends BroadcastReceiver {
     
     public MyServiceManager() {
         instanceId = InstanceId.next();
-        MyLog.v(this, TAG + " created, instanceId=" + instanceId );
+        MyLog.v(this, "Created, instanceId=" + instanceId );
     }
 
     /**
@@ -72,19 +72,11 @@ public class MyServiceManager extends BroadcastReceiver {
                         .getStringExtra(IntentExtra.EXTRA_SERVICE_STATE.key));
             }
             MyLog.d(TAG, "Notification received: Service state=" + mServiceState);
-        } else {
-            if (!MyServiceManager.isServiceAvailable()) {
-                MyLog.d(TAG, "onReceive: Service is unavailable");
-                return;
-            }
-            MyContextHolder.initialize(context, this);
-            if ("android.intent.action.ACTION_SHUTDOWN".equals(action)) {
-                // This system broadcast is Since: API Level 4
-                // We need this to persist unsaved data in the service
-                MyLog.d(TAG, "Stopping service on Shutdown");
-                setServiceUnavailable();
-                stopService();
-            }
+        } else if ("android.intent.action.ACTION_SHUTDOWN".equals(action)) {
+            // We need this to persist unsaved data in the service
+            MyLog.d(TAG, "Stopping service on Shutdown");
+            setServiceUnavailable();
+            stopService();
         }
     }
 
@@ -118,8 +110,10 @@ public class MyServiceManager extends BroadcastReceiver {
      * Stop  {@link MyService} asynchronously
      */
     public static synchronized void stopService() {
-        // Don't do "context.stopService", because we may loose some information and (or) get Force Close
-        
+		if ( !MyContextHolder.get().isReady() ) {
+			return;
+		}
+        // Don't do "context.stopService", because we may lose some information and (or) get Force Close
         //This is "mild" stopping
         CommandData element = new CommandData(CommandEnum.STOP_SERVICE, "");
         MyContextHolder.get().context().sendBroadcast(element.toIntent(MyService.intentForThisInitialized()));
@@ -151,15 +145,16 @@ public class MyServiceManager extends BroadcastReceiver {
 
     private static Object serviceAvailableLock = new Object();
     @GuardedBy("serviceAvailableLock")
-    private static Boolean isServiceAvailable = true;
+    private static Boolean mServiceAvailable = true;
     @GuardedBy("serviceAvailableLock")
     private static long timeWhenTheServiceWillBeAvailable = 0;
+	
     public static boolean isServiceAvailable() {
         boolean isAvailable = MyContextHolder.get().isReady();
         if (!isAvailable) {
             boolean tryToInitialize = false;
             synchronized (serviceAvailableLock) {
-                tryToInitialize = isServiceAvailable;
+                tryToInitialize = mServiceAvailable;
             }
             if (tryToInitialize && !MyContextHolder.get().initialized()) {
                 MyContextHolder.initialize(null, TAG);
@@ -170,10 +165,10 @@ public class MyServiceManager extends BroadcastReceiver {
             long availableInMillis = 0; 
             synchronized (serviceAvailableLock) {
                 availableInMillis = timeWhenTheServiceWillBeAvailable - System.currentTimeMillis();
-                if (!isServiceAvailable && availableInMillis <= 0) {
+                if (!mServiceAvailable && availableInMillis <= 0) {
                     setServiceAvailable();
                 }
-                isAvailable = isServiceAvailable;
+                isAvailable = mServiceAvailable;
             }
             if (!isAvailable) {
                 MyLog.v(TAG,"Service will be available in " 
@@ -187,13 +182,13 @@ public class MyServiceManager extends BroadcastReceiver {
     }
     public static void setServiceAvailable() {
         synchronized (serviceAvailableLock) {
-            isServiceAvailable = true;
+            mServiceAvailable = true;
             timeWhenTheServiceWillBeAvailable = 0;
         }
     }
     public static void setServiceUnavailable() {
         synchronized (serviceAvailableLock) {
-            isServiceAvailable = false;
+            mServiceAvailable = false;
             timeWhenTheServiceWillBeAvailable = System.currentTimeMillis() + 
                     java.util.concurrent.TimeUnit.SECONDS.toMillis(15 * 60);
         }
