@@ -147,12 +147,12 @@ public class CommandData implements Comparable<CommandData> {
                 default:
 					String accountName2 = accountNameIn;
 					if ( TextUtils.isEmpty(accountName2)) {
-						accountName2 = commandData.bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
+						accountName2 = bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
 					}
 					TimelineTypeEnum timelineType2 = timelineTypeIn;
 					if ( timelineType2 == TimelineTypeEnum.UNKNOWN ) {
 						timelineType2 = TimelineTypeEnum.load(
-						    commandData.bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+						    bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
 					}
                     commandData = new CommandData(command, accountName2, timelineType2);
 					commandData.bundle = bundle;

@@ -25,6 +25,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class HttpConnectionMock extends HttpConnection {
+    private long postedCounter = 0;
     private JSONObject postedObject = null;
     private String pathString = "";
     private JSONObject responseObject = null;
@@ -74,6 +75,7 @@ public class HttpConnectionMock extends HttpConnection {
 
     @Override
     protected JSONObject postRequest(String path) throws ConnectionException {
+        postedCounter++;
         pathString = path;
         throwExceptionIfSet();
         return responseObject;
@@ -81,6 +83,7 @@ public class HttpConnectionMock extends HttpConnection {
 
     @Override
     protected JSONObject getRequest(String path) throws ConnectionException {
+        postedCounter++;
         pathString = path;
         throwExceptionIfSet();
         return responseObject;
@@ -139,5 +142,15 @@ public class HttpConnectionMock extends HttpConnection {
 
     public String getPathString() {
         return pathString;
+    }
+
+    public long getPostedCounter() {
+        return postedCounter;
+    }
+
+    public void clearPostedData() {
+        postedCounter = 0;
+        postedObject = null;
+        pathString = "";
     }
 }
