@@ -1462,6 +1462,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             default:
                 break;
         }
+		if (mShowSyncIndicatorOnTimeline
+			&& isCommandToShowInSyncIndicator(commandData.getCommand())) {
+			((TextView) findViewById(R.id.sync_text)).setText("");
+		}
     }
 
     private void hideSyncIndicator() {

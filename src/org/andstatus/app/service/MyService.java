@@ -353,11 +353,11 @@ public class MyService extends Service {
                 return false;
             }
             long decidedToChangeSeconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - decidedToChangeIsStoppingAt);
-            if (decidedToChangeSeconds < ISSTOPPING_CHANGE_MIN_PERIOD_SECONDS) {
-                if (doStop && forceStopNow) {
+            if (doStop && decidedToChangeSeconds < ISSTOPPING_CHANGE_MIN_PERIOD_SECONDS) {
+                if (forceStopNow) {
                     forced = true;
                 } else {
-                    MyLog.v(this, "Decided to change " + decidedToChangeSeconds + " second ago, doStop=" + doStop);
+                    MyLog.v(this, "Waiting: decided to start only " + decidedToChangeSeconds + " second ago");
                     return false;
                 }
             }
@@ -365,15 +365,9 @@ public class MyService extends Service {
             mIsStopping = doStop;
         }
         if (doStop) {
-            if (forced) {
-                MyLog.v(this, "Forced to stop; startId=" + lastProcessedStartId 
+            MyLog.v(this, (forced ? "Forced to stop" : "Stopping") + "; startId=" + lastProcessedStartId 
                         + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
                         );
-            } else {
-                MyLog.v(this, "Stopping; startId=" + lastProcessedStartId 
-                        + "; " + (totalQueuesSize() == 0 ? "queue is empty"  : "queueSize=" + totalQueuesSize())
-                        );
-            }
         } else {
             MyLog.v(this, "Reverted to Starting; startId=" + lastProcessedStartId);
         }
@@ -542,8 +536,8 @@ public class MyService extends Service {
     private class QueueExecutor extends AsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         private volatile CommandData currentlyExecuting = null;
         private volatile long currentlyExecutingSince = 0;
-        private static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 10;
-		private static final long MAX_COMMAND_EXECUTION_MS = 10 * 60 * 1000;
+        private static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 1;
+		private static final long MAX_COMMAND_EXECUTION_SECONDS = 10 * 60;
         
         @Override
         protected Boolean doInBackground(Void... arg0) {
@@ -733,7 +727,11 @@ public class MyService extends Service {
                 executorStartedAt2 = executorStartedAt;
                 executorEndedAt2 = executorEndedAt;
             }
-            sb.append("started:" + RelativeTime.getDifference(getBaseContext(), executorStartedAt2) + ",");
+			if (executorStartedAt2 > 0) {
+	            sb.append("started:" + RelativeTime.getDifference(getBaseContext(), executorStartedAt2) + ",");
+			} else {
+				sb.append("not started,");
+			}
             if (currentlyExecuting != null && currentlyExecutingSince > 0) {
                 sb.append("currentlyExecuting:" + currentlyExecuting + ",");
                 sb.append("since:" + RelativeTime.getDifference(getBaseContext(), currentlyExecutingSince) + ",");
@@ -754,15 +752,14 @@ public class MyService extends Service {
 		boolean isReallyWorking() {
 		    synchronized (executorLock) {
 		        if (executorEndedAt > 0) {
-	                long endedSeconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - executorEndedAt);
-	                if (endedSeconds < DELAY_AFTER_EXECUTOR_ENDED_SECONDS ) {
-	                    return true;
-	                }
+	                return java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() 
+					    - executorEndedAt) < DELAY_AFTER_EXECUTOR_ENDED_SECONDS;
 		        }
 		    }
 			if (getStatus() != Status.RUNNING
 			    || currentlyExecuting == null
-				|| System.currentTimeMillis() - currentlyExecutingSince > MAX_COMMAND_EXECUTION_MS) {
+				|| java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() 
+				- currentlyExecutingSince) > MAX_COMMAND_EXECUTION_SECONDS) {
 				return false;
 			}
 			return true;
