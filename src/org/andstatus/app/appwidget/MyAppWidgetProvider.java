@@ -43,9 +43,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager,
             int[] appWidgetIds) {
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "onUpdate; ids=" + Arrays.toString(appWidgetIds));
-        }
+        MyLog.v(this, "onUpdate; ids=" + Arrays.toString(appWidgetIds));
         AppWidgets appWidgets = AppWidgets.newInstance(MyContextHolder.get());
         for (int id : appWidgetIds) {
             appWidgets.updateView(appWidgetManager, id);
@@ -54,9 +52,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "onDeleted; ids=" + Arrays.toString(appWidgetIds));
-        }
+        MyLog.v(this, "onDeleted; ids=" + Arrays.toString(appWidgetIds));
         // When the user deletes the widget, delete all data, associated with it.
         for (int id : appWidgetIds) {
             MyAppWidgetData.newInstance(context, id).delete();
@@ -65,16 +61,11 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onEnabled(Context context) {
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "onEnabled");
-        }
+        MyLog.v(this, "onEnabled");
     }
 
     @Override
     public void onDisabled(Context context) {
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "onDisabled");
-        }
-
+        MyLog.v(this, "onDisabled");
     }
 }

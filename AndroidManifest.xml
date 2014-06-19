@@ -124,11 +124,15 @@
             android:label="@string/label_accountselector">
 		</activity>
 		
-        <receiver android:name="org.andstatus.app.appwidget.MyAppWidgetProvider">
+        <receiver android:name="org.andstatus.app.appwidget.MyAppWidgetProvider"
+			android:exported="true">
             <meta-data android:name="android.appwidget.provider"
                     android:resource="@xml/appwidget_info" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+				<action android:name="android.appwidget.action.APPWIDGET_DELETED" />
+				<action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
+				<action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
             </intent-filter>
         </receiver>
 

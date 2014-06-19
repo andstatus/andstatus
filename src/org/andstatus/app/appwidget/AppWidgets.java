@@ -25,6 +25,11 @@ public class AppWidgets {
         appWidgets.updateViews();
     }
     
+    public static void updateWidgets(MyContext myContext) {
+        AppWidgets appWidgets = AppWidgets.newInstance(myContext);
+        appWidgets.updateViews();
+    }
+	
     public static AppWidgets newInstance(MyContext myContext) {
         return new AppWidgets(myContext);
     }

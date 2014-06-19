@@ -26,6 +26,7 @@ import org.andstatus.app.support.android.v11.os.AsyncTask;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.appwidget.AppWidgets;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -127,6 +128,8 @@ public class MyService extends Service {
     final Queue<CommandData> retryCommandQueue = new PriorityBlockingQueue<CommandData>(100);
     final Queue<CommandData> errorCommandQueue = new LinkedBlockingQueue<CommandData>(200);
     
+	private static volatile boolean widgetsInitialized = false;
+	
     @Override
     public void onCreate() {
         MyLog.d(this, "Service created");
@@ -280,6 +283,10 @@ public class MyService extends Service {
             }
         }
         if (wasNotInitialized) {
+			if (!widgetsInitialized) {
+				AppWidgets.updateWidgets(MyContextHolder.get());
+				widgetsInitialized = true;
+			}
             synchronized(heartBeatLock) {
                 if (heartBeat != null && heartBeat.getStatus() == Status.RUNNING) {
                     heartBeat.cancel(true);
