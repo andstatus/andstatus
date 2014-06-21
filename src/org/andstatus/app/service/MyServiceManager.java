@@ -71,10 +71,13 @@ public class MyServiceManager extends BroadcastReceiver {
                 mServiceState = MyServiceState.load(intent
                         .getStringExtra(IntentExtra.EXTRA_SERVICE_STATE.key));
             }
-            MyLog.d(TAG, "Notification received: Service state=" + mServiceState);
+            MyLog.d(this, "Notification received: Service state=" + mServiceState);
+        } else if ("android.intent.action.BOOT_COMPLETED".equals(action)) {
+            MyLog.d(this, "Trying to start service on boot");
+            sendCommand(CommandData.getEmpty());            
         } else if ("android.intent.action.ACTION_SHUTDOWN".equals(action)) {
             // We need this to persist unsaved data in the service
-            MyLog.d(TAG, "Stopping service on Shutdown");
+            MyLog.d(this, "Stopping service on Shutdown");
             setServiceUnavailable();
             stopService();
         }
@@ -114,7 +117,7 @@ public class MyServiceManager extends BroadcastReceiver {
 			return;
 		}
         // Don't do "context.stopService", because we may lose some information and (or) get Force Close
-        //This is "mild" stopping
+        // This is "mild" stopping
         CommandData element = new CommandData(CommandEnum.STOP_SERVICE, "");
         MyContextHolder.get().context().sendBroadcast(element.toIntent(MyService.intentForThisInitialized()));
     }

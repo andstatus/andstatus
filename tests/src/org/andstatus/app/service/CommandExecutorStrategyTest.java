@@ -62,7 +62,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorSearch.class, strategy.getClass());
         strategy.execute();
-        assertTrue("Requested '" + httpConnection.getPathString() + "'", httpConnection.getPathString().contains(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT) );
+        assertTrue("Requested '" + httpConnection.getPathStringList().toArray() + "'", httpConnection.getPathStringList().get(0).contains(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT) );
     }
 
     public void testUpdateDestroyStatus() {

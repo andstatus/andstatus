@@ -19,6 +19,7 @@ package org.andstatus.app.service;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
@@ -33,8 +34,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask.Status;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -127,6 +126,9 @@ public class MyService extends Service {
     final Queue<CommandData> mainCommandQueue = new PriorityBlockingQueue<CommandData>(100);
     final Queue<CommandData> retryCommandQueue = new PriorityBlockingQueue<CommandData>(100);
     final Queue<CommandData> errorCommandQueue = new LinkedBlockingQueue<CommandData>(200);
+
+    private final static long RETRY_QUEUE_PROCESSING_PERIOD_SECONDS = 900; 
+    private final AtomicLong retryQueueProcessedAt = new AtomicLong();
     
 	private static volatile boolean widgetsInitialized = false;
 	
@@ -176,9 +178,6 @@ public class MyService extends Service {
         if (setDontStop(startId)) {
             try {
                 initialize();
-                if (mainCommandQueue.isEmpty()) {
-                    moveCommandsFromRetryToMainQueue();
-                }
                 addToMainQueue(commandData);
             } finally {
                 synchronized(serviceStateLock) {
@@ -243,32 +242,6 @@ public class MyService extends Service {
         retryCommandQueue.clear();
         errorCommandQueue.clear();
     }
-
-    private final static long MIN_RETRY_PERIOD_MS = 180000; 
-    private void moveCommandsFromRetryToMainQueue() {
-        Queue<CommandData> tempQueue = new PriorityBlockingQueue<CommandData>(retryCommandQueue.size()+1);
-        while (!retryCommandQueue.isEmpty()) {
-            CommandData commandData = retryCommandQueue.poll();
-            if (System.currentTimeMillis() - commandData.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_MS) {
-                commandData = addToMainQueue(commandData);
-            }
-            if (commandData != null) {
-                if (!tempQueue.add(commandData)) {
-                    MyLog.e(this, "Couldn't add to temp Queue, size=" + tempQueue.size()
-                            + " command=" + commandData);
-                    break;
-                }
-            }
-        }
-        while (!tempQueue.isEmpty()) {
-            CommandData cd = tempQueue.poll();
-            if (!retryCommandQueue.add(cd)) {
-                MyLog.e(this, "Couldn't return to retry Queue, size=" + retryCommandQueue.size()
-                        + " command=" + cd);
-                break;
-            }
-        }
-    }
     
     void initialize() {
         boolean changed = false;
@@ -326,7 +299,8 @@ public class MyService extends Service {
     }
 
     private TriState shouldStop() {
-        boolean doStop = !MyContextHolder.get().isReady() || mainCommandQueue.isEmpty();
+        boolean doStop = !MyContextHolder.get().isReady()
+                || (mainCommandQueue.isEmpty() && !isAnythingToRetryNow());
         if (!couldSetIsStopping(doStop, false)) {
             return TriState.UNKNOWN;
         }
@@ -413,6 +387,12 @@ public class MyService extends Service {
                 wakeLock.acquire();
             }
         }
+    }
+
+    private boolean isAnythingToRetryNow() {
+        return retryCommandQueue.size() > 0
+                && java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
+                        - retryQueueProcessedAt.get()) > RETRY_QUEUE_PROCESSING_PERIOD_SECONDS;
     }
     
     private int totalQueuesSize() {
@@ -561,6 +541,9 @@ public class MyService extends Service {
                 CommandData commandData = null;
                 do {
                     commandData = mainCommandQueue.poll();
+                    if (commandData == null && isAnythingToRetryNow()) {
+                        moveCommandsFromRetryToMainQueue();
+                    }
                     if (commandData == null) {
                         break;
                     }
@@ -575,10 +558,9 @@ public class MyService extends Service {
                     breakReason = "No more commands";
                     break;
                 }
-                
-                MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
-                .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
-                if ( !commandData.getCommand().isOnlineOnly() || isOnline()) {
+                if ( !commandData.getCommand().isOnlineOnly() || MyContextHolder.get().isOnline()) {
+                    MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+                    .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                     CommandExecutorStrategy.executeCommand(commandData, this);
                 }
                 if (commandData.getResult().shouldWeRetry()) {
@@ -593,13 +575,41 @@ public class MyService extends Service {
             return true;
         }
 
+        private final static long MIN_RETRY_PERIOD_SECONDS = 180; 
+        private void moveCommandsFromRetryToMainQueue() {
+            Queue<CommandData> tempQueue = new PriorityBlockingQueue<CommandData>(retryCommandQueue.size()+1);
+            while (!retryCommandQueue.isEmpty()) {
+                CommandData commandData = retryCommandQueue.poll();
+                if (java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
+                        - commandData.getResult().getLastExecutedDate()) > MIN_RETRY_PERIOD_SECONDS) {
+                    commandData = addToMainQueue(commandData);
+                }
+                if (commandData != null) {
+                    if (!tempQueue.add(commandData)) {
+                        MyLog.e(this, "Couldn't add to temp Queue, size=" + tempQueue.size()
+                                + " command=" + commandData);
+                        break;
+                    }
+                }
+            }
+            while (!tempQueue.isEmpty()) {
+                CommandData cd = tempQueue.poll();
+                if (!retryCommandQueue.add(cd)) {
+                    MyLog.e(this, "Couldn't return to retry Queue, size=" + retryCommandQueue.size()
+                            + " command=" + cd);
+                    break;
+                }
+            }
+            retryQueueProcessedAt.set(System.currentTimeMillis());
+        }
+        
         private CommandData checkInRetryQueue(CommandData commandData) {
             CommandData commandData2 = commandData;
             if (retryCommandQueue.contains(commandData)) {
                 for (CommandData cd : retryCommandQueue) {
                     if (cd.equals(commandData)) {
                         cd.getResult().resetRetries(commandData.getCommand());
-                        if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_MS) {
+                        if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_SECONDS) {
                             commandData2 = cd;
                             retryCommandQueue.remove(cd);
                         } else {
@@ -627,7 +637,7 @@ public class MyService extends Service {
                 for (CommandData cd : errorCommandQueue) {
                     if (cd.equals(commandData)) {
                         cd.getResult().resetRetries(commandData.getCommand());
-                        if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_MS) {
+                        if (System.currentTimeMillis() - cd.getResult().getLastExecutedDate() > MIN_RETRY_PERIOD_SECONDS) {
                             commandData2 = cd;
                             errorCommandQueue.remove(cd);
                         } else {
@@ -665,32 +675,6 @@ public class MyService extends Service {
 					}
                 }
             }
-        }
-        
-        boolean isOnline() {
-            if (isOnlineNotLogged()) {
-                return true;
-            } else {
-                MyLog.v(this, "Internet Connection Not Present");
-                return false;
-            }
-        }
-
-        /**
-         * Based on http://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-timeouts
-         */
-        private boolean isOnlineNotLogged() {
-            boolean is = false;
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (cm == null) {
-                return false;
-            }
-            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-            if (networkInfo == null) {
-                return false;
-            }
-            is = networkInfo.isAvailable() && networkInfo.isConnected();
-            return is;
         }
         
         @Override

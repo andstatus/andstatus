@@ -282,7 +282,7 @@ public class CommandData implements Comparable<CommandData> {
     @Override
     public int hashCode() {
         if (hashcode == 0) {
-            String text = Long.toString(command.ordinal());
+            String text = command.save();
             if (!TextUtils.isEmpty(getAccountName())) {
                 text += getAccountName();
             }
@@ -410,7 +410,7 @@ public class CommandData implements Comparable<CommandData> {
         ed.commit();
     }
 
-    private String getAccountName() {
+    public String getAccountName() {
         return accountName;
     }
 

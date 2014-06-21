@@ -25,6 +25,7 @@ import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
+import org.andstatus.app.util.TriState;
 
 import java.util.Locale;
 import java.util.Set;
@@ -38,6 +39,7 @@ public class MyContextForTest implements MyContext {
     private MyContext myContext;
     private Set<AssersionData> dataSet = new CopyOnWriteArraySet<AssersionData>();
     private HttpConnection httpConnection;
+    private TriState mOnline = TriState.UNKNOWN; 
 
     public MyContextForTest setContext(MyContext myContextIn) {
         myContext = myContextIn;
@@ -166,5 +168,19 @@ public class MyContextForTest implements MyContext {
     @Override
     public HttpConnection getHttpConnectionMock() {
         return httpConnection;
+    }
+
+    @Override
+    public boolean isOnline() {
+        switch (mOnline) {
+            case UNKNOWN:
+                return myContext.isOnline();
+            default:
+                return mOnline == TriState.TRUE;
+        }
+    }
+
+    public void setOnline(TriState isOnline) {
+        this.mOnline = isOnline;
     }
 }

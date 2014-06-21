@@ -24,22 +24,21 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.HttpConnectionMock;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TriState;
 
 import java.net.MalformedURLException;
+import java.util.Arrays;
 
 public class MyServiceTest extends InstrumentationTestCase implements MyServiceListener {
     private MyAccount ma;
     private HttpConnectionMock httpConnection;
     MyServiceReceiver serviceConnector;
 
-    private CommandEnum commandToListen = CommandEnum.AUTOMATIC_UPDATE;
-    private long itemIdToListen = 0;
-    private String accountNameToListen = "";
-    private TimelineTypeEnum timelineTypeToListen = TimelineTypeEnum.ALL;
-
-    private long executionStartCount = 0;
-    private long executionEndCount = 0;
-    private boolean serviceStopped = false;
+    private volatile CommandData listentedToCommand = CommandData.getEmpty();
+    
+    private volatile long executionStartCount = 0;
+    private volatile long executionEndCount = 0;
+    private volatile boolean serviceStopped = false;
 
     @Override
     protected void setUp() throws Exception {
@@ -54,6 +53,7 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         TestSuite.setHttpConnection(httpConnection);
         assertEquals("HttpConnection mocked", MyContextHolder.get().getHttpConnectionMock(),
                 httpConnection);
+        TestSuite.getMyContextForTest().setOnline(TriState.TRUE);
         // In order the mocked connection to have effect:
         MyContextHolder.get().persistentAccounts().initialize();
 
@@ -66,21 +66,17 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
     }
 
     public void testRepeatingFailingCommand() throws MalformedURLException {
-        String urlString = "http://andstatus.org/nonexistent2_avatar.png";
+        MyLog.v(this, "testRepeatingFailingCommand started");
+        dropQueues();
+        httpConnection.clearPostedData();
+
+        String urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() +  ".png";
         AvatarDownloaderTest.changeAvatarUrl(ma, urlString);
-
-        commandToListen = CommandEnum.DROP_QUEUES;
-        accountNameToListen = "";
-        timelineTypeToListen = TimelineTypeEnum.UNKNOWN;
-        itemIdToListen = 0;
-        sendListenedToCommand();
-
-        commandToListen = CommandEnum.FETCH_AVATAR;
-        itemIdToListen = ma.getUserId();
+        
+        listentedToCommand = new CommandData(CommandEnum.FETCH_AVATAR, "", TimelineTypeEnum.UNKNOWN, ma.getUserId());
 
         long startCount = executionStartCount;
         long endCount = executionEndCount;
-        httpConnection.clearPostedData();
 
         sendListenedToCommand();
         assertTrue("First command started executing", waitForCommandExecutionStarted(startCount));
@@ -94,25 +90,24 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
                 waitForCommandExecutionStarted(startCount + 1));
         MyServiceManager.stopService();
         assertTrue("Service stopped", waitForServiceStopped());
+        MyLog.v(this, "testRepeatingFailingCommand ended");
+    }
+
+    private void dropQueues() {
+        listentedToCommand = new CommandData(CommandEnum.DROP_QUEUES, "", TimelineTypeEnum.UNKNOWN, 0);
+        sendListenedToCommand();
     }
 
     private void sendListenedToCommand() {
-        CommandData data = new CommandData(commandToListen, accountNameToListen,
-                timelineTypeToListen, itemIdToListen);
-        MyServiceManager.sendCommandEvenForUnavailable(data);
+        MyServiceManager.sendCommandEvenForUnavailable(listentedToCommand);
     }
 
     public void testAutomaticUpdates() {
-        commandToListen = CommandEnum.DROP_QUEUES;
-        accountNameToListen = "";
-        timelineTypeToListen = TimelineTypeEnum.ALL;
-        itemIdToListen = 0;
+        MyLog.v(this, "testAutomaticUpdates started");
+        dropQueues();
         httpConnection.clearPostedData();
-        sendListenedToCommand();
 
-        commandToListen = CommandEnum.AUTOMATIC_UPDATE;
-        itemIdToListen = ma.getUserId();
-
+        listentedToCommand = new CommandData(CommandEnum.AUTOMATIC_UPDATE, "", TimelineTypeEnum.ALL, 0);
         long startCount = executionStartCount;
         long endCount = executionEndCount;
 
@@ -121,40 +116,33 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         assertTrue("First command ended executing", waitForCommandExecutionEnded(endCount));
         assertTrue("Data was posted " + httpConnection.getPostedCounter() + " times",
                 httpConnection.getPostedCounter() > 1);
+        MyLog.v(this, "testAutomaticUpdates ended");
     }
 
     public void testHomeTimeline() {
-        commandToListen = CommandEnum.DROP_QUEUES;
-        accountNameToListen = ma.getAccountName();
-        timelineTypeToListen = TimelineTypeEnum.HOME;
-        itemIdToListen = 0;
+        MyLog.v(this, "testHomeTimeline started");
+        dropQueues();
         httpConnection.clearPostedData();
-        sendListenedToCommand();
 
-        commandToListen = CommandEnum.FETCH_TIMELINE;
-        itemIdToListen = ma.getUserId();
-
+        listentedToCommand = new CommandData(CommandEnum.FETCH_TIMELINE, ma.getAccountName(), TimelineTypeEnum.HOME, 0);
         long startCount = executionStartCount;
         long endCount = executionEndCount;
 
         sendListenedToCommand();
         assertTrue("First command started executing", waitForCommandExecutionStarted(startCount));
         assertTrue("First command ended executing", waitForCommandExecutionEnded(endCount));
-        assertTrue("Data was posted " + httpConnection.getPostedCounter() + " times",
-                httpConnection.getPostedCounter() == 1);
+        String message = "Data was posted " + httpConnection.getPostedCounter() + " times; "
+                + Arrays.toString(httpConnection.getPathStringList().toArray(new String[]{}));
+        assertTrue(message, httpConnection.getPostedCounter() == 1);
+        MyLog.v(this, "testHomeTimeline ended");
     }
 
     public void testRateLimitStatus() {
-        commandToListen = CommandEnum.DROP_QUEUES;
-        accountNameToListen = "";
-        timelineTypeToListen = TimelineTypeEnum.ALL;
-        itemIdToListen = 0;
+        MyLog.v(this, "RateLimitStatus started");
+        dropQueues();
         httpConnection.clearPostedData();
-        sendListenedToCommand();
 
-        commandToListen = CommandEnum.RATE_LIMIT_STATUS;
-        itemIdToListen = 0;
-
+        listentedToCommand = new CommandData(CommandEnum.RATE_LIMIT_STATUS, TestSuite.STATUSNET_TEST_ACCOUNT_NAME, TimelineTypeEnum.ALL, 0);
         long startCount = executionStartCount;
         long endCount = executionEndCount;
 
@@ -163,6 +151,7 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         assertTrue("First command ended executing", waitForCommandExecutionEnded(endCount));
         assertTrue("Data was posted " + httpConnection.getPostedCounter() + " times",
                 httpConnection.getPostedCounter() > 0);
+        MyLog.v(this, "testHomeTimeline ended");
     }
 
     private boolean waitForCommandExecutionStarted(long startCount) {
@@ -212,33 +201,39 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
 
     @Override
     public void onReceive(CommandData commandData, MyServiceEvent myServiceEvent) {
+        String locEvent = "ignored";
         switch (myServiceEvent) {
             case BEFORE_EXECUTING_COMMAND:
-                if (commandData.getCommand() == commandToListen
-                        && commandData.itemId == itemIdToListen) {
+                if (commandData.equals(listentedToCommand)) {
                     executionStartCount++;
+                    locEvent = "execution started";
                 }
                 break;
             case AFTER_EXECUTING_COMMAND:
-                if (commandData.getCommand() == commandToListen
-                        && commandData.itemId == itemIdToListen) {
+                if (commandData.equals(listentedToCommand)) {
                     executionEndCount++;
+                    locEvent = "execution ended";
                 }
                 break;
             case ON_STOP:
                 serviceStopped = true;
+                locEvent = "service stopped";
                 break;
             default:
                 break;
         }
+        MyLog.v(this, "onReceive; " + locEvent + "; " + commandData + "; event=" + myServiceEvent);
 
     }
 
     @Override
     protected void tearDown() throws Exception {
+        MyLog.v(this, "tearDown started");
         serviceConnector.unregisterReceiver(MyContextHolder.get().context());
         TestSuite.setHttpConnection(null);
+        TestSuite.getMyContextForTest().setOnline(TriState.UNKNOWN);
         MyContextHolder.get().persistentAccounts().initialize();
         super.tearDown();
+        MyLog.v(this, "tearDown ended");
     }
 }

@@ -43,6 +43,7 @@ public interface MyContext {
     void release();
     boolean isExpired();
     void setExpired();
+    boolean isOnline();
     
     // For testing
     boolean isTestRun();

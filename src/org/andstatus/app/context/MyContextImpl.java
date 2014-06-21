@@ -18,6 +18,8 @@ package org.andstatus.app.context;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteException;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -219,5 +221,32 @@ public final class MyContextImpl implements MyContext {
     @Override
     public HttpConnection getHttpConnectionMock() {
         return null;
+    }
+
+    @Override
+    public boolean isOnline() {
+        if (isOnlineNotLogged()) {
+            return true;
+        } else {
+            MyLog.v(this, "Internet Connection Not Present");
+            return false;
+        }
+    }
+
+    /**
+     * Based on http://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-timeouts
+     */
+    private boolean isOnlineNotLogged() {
+        boolean is = false;
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) {
+            return false;
+        }
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        if (networkInfo == null) {
+            return false;
+        }
+        is = networkInfo.isAvailable() && networkInfo.isConnected();
+        return is;
     }
 }

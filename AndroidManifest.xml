@@ -27,6 +27,7 @@
     
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -62,11 +63,11 @@
 		<service android:name="org.andstatus.app.service.MyService"
 		    android:exported="false" />
 
-		<receiver android:name="org.andstatus.app.service.MyServiceManager">
+		<receiver android:name="org.andstatus.app.service.MyServiceManager" 
+		    android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
-            </intent-filter>
-            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="org.andstatus.app.action.SERVICE_STATE" />
             </intent-filter>
 		</receiver>
@@ -129,11 +130,11 @@
             <meta-data android:name="android.appwidget.provider"
                     android:resource="@xml/appwidget_info" />
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 				<action android:name="android.appwidget.action.APPWIDGET_DELETED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
 				<action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
-				<action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
-            </intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+			</intent-filter>
         </receiver>
 
         <activity android:name=".appwidget.MyAppWidgetConfigure">

@@ -24,16 +24,22 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class HttpConnectionMock extends HttpConnection {
-    private long postedCounter = 0;
-    private JSONObject postedObject = null;
-    private String pathString = "";
-    private JSONObject responseObject = null;
-    private ConnectionException exception = null;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-    private String password = "password";
-    private String userToken = "token";
-    private String userSecret = "secret";
+public class HttpConnectionMock extends HttpConnection {
+    private volatile long postedCounter = 0;
+    private volatile JSONObject postedObject = null;
+    private final List<String> pathStringList = new CopyOnWriteArrayList<String>();
+    private volatile JSONObject responseObject = null;
+    private volatile ConnectionException exception = null;
+
+    private volatile String password = "password";
+    private volatile String userToken = "token";
+    private volatile String userSecret = "secret";
+    
+    private volatile long networkDelayMs = 1000; 
     
     public void setResponse(JSONObject jso) {
         responseObject = jso;
@@ -45,10 +51,18 @@ public class HttpConnectionMock extends HttpConnection {
     
     @Override
     protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
-        pathString = path;
+        onRequest("postRequestWithObject", path);
         postedObject = jso;
         throwExceptionIfSet();
         return responseObject;
+    }
+
+    private void networkDelay() {
+        try {
+            Thread.sleep(networkDelayMs);
+        } catch (InterruptedException e) {
+            MyLog.v(this, "networkDelay", e);
+        }
     }
 
     private void throwExceptionIfSet() throws ConnectionException {
@@ -75,24 +89,33 @@ public class HttpConnectionMock extends HttpConnection {
 
     @Override
     protected JSONObject postRequest(String path) throws ConnectionException {
-        postedCounter++;
-        pathString = path;
+        onRequest("postRequest", path);
         throwExceptionIfSet();
         return responseObject;
+    }
+
+    private void onRequest(String method, String path) {
+        postedCounter++;
+        MyLog.v(this, method + " num:" + postedCounter + "; path:'" + path +"', host:'" + data.host + "'");
+        MyLog.v(this, Arrays.toString(Thread.currentThread().getStackTrace()));
+        pathStringList.add(path);
+        networkDelay();
     }
 
     @Override
     protected JSONObject getRequest(String path) throws ConnectionException {
-        postedCounter++;
-        pathString = path;
+        return getRequestInner("getRequest", path);
+    }
+
+    private JSONObject getRequestInner(String method, String path) throws ConnectionException {
+        onRequest(method, path);
         throwExceptionIfSet();
         return responseObject;
     }
-
+    
     @Override
     protected JSONArray getRequestAsArray(String path) throws ConnectionException {
-        pathString = path;
-        JSONObject jso = getRequest(path);
+        JSONObject jso = getRequestInner("getRequestAsArray", path);
         JSONArray jsa = null;
         if (jso == null) {
             throw new ConnectionException("Response is null");
@@ -140,8 +163,8 @@ public class HttpConnectionMock extends HttpConnection {
         return postedObject;
     }
 
-    public String getPathString() {
-        return pathString;
+    public List<String> getPathStringList() {
+        return pathStringList;
     }
 
     public long getPostedCounter() {
@@ -151,6 +174,6 @@ public class HttpConnectionMock extends HttpConnection {
     public void clearPostedData() {
         postedCounter = 0;
         postedObject = null;
-        pathString = "";
+        pathStringList.clear();
     }
 }
