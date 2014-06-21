@@ -66,9 +66,9 @@ public class SimpleFileDialog {
     private Context mContext;
     private TextView mTitleView1;
     private TextView mTitleView;
-    public String defaultFileName = "default.txt";
-    private String selectedFileName = defaultFileName;
-    private EditText inputText;
+    public String mDefaultFileName = ".";
+    private String mSelectedFileName = mDefaultFileName;
+    private EditText mInputText;
 
     private String mDir = "";
     private List<String> mSubdirs = null;
@@ -123,13 +123,13 @@ public class SimpleFileDialog {
             @Override
             public void onClick(DialogInterface dialog, int item) {
                 String dirOld = mDir;
-                String sel = "" + ((AlertDialog) dialog).getListView().getAdapter().getItem(item);
-                if (sel.charAt(sel.length() - 1) == '/') {
-                    sel = sel.substring(0, sel.length() - 1);
+                String selectedName = "" + ((AlertDialog) dialog).getListView().getAdapter().getItem(item);
+                if (selectedName.charAt(selectedName.length() - 1) == '/') {
+                    selectedName = selectedName.substring(0, selectedName.length() - 1);
                 }
 
                 // Navigate into the sub-directory
-                if ("..".equals(sel)) {
+                if ("..".equals(selectedName)) {
                     int slashInd = mDir.lastIndexOf("/");
                     if (slashInd >= 0) {
                         mDir = mDir.substring(0, slashInd);
@@ -138,14 +138,14 @@ public class SimpleFileDialog {
                         }
                     }
                 } else {
-                    mDir += "/" + sel;
+                    mDir += "/" + selectedName;
                 }
-                selectedFileName = defaultFileName;
+                mSelectedFileName = mDefaultFileName;
 
                 // If the selection is a regular file
                 if (new File(mDir).isFile()) {
                     mDir = dirOld;
-                    selectedFileName = sel;
+                    mSelectedFileName = selectedName;
                 }
                 updateDirectory();
             }
@@ -161,9 +161,9 @@ public class SimpleFileDialog {
                 // Call registered listener supplied with the chosen directory
                 if (mSimpleFileDialogListener != null) {
                     if (typeOfSelection == TypeOfSelection.FILE_OPEN || typeOfSelection == TypeOfSelection.FILE_SAVE) {
-                        selectedFileName = inputText.getText() + "";
+                        mSelectedFileName = mInputText.getText() + "";
                         mSimpleFileDialogListener
-                                .onChosenDir(mDir + "/" + selectedFileName);
+                                .onChosenDir(mDir + "/" + mSelectedFileName);
                     } else {
                         mSimpleFileDialogListener.onChosenDir(mDir);
                     }
@@ -366,9 +366,9 @@ public class SimpleFileDialog {
         titleLayout.addView(mTitleView);
 
         if (typeOfSelection == TypeOfSelection.FILE_OPEN || typeOfSelection == TypeOfSelection.FILE_SAVE) {
-            inputText = new EditText(mContext);
-            inputText.setText(defaultFileName);
-            titleLayout.addView(inputText);
+            mInputText = new EditText(mContext);
+            mInputText.setText(mDefaultFileName);
+            titleLayout.addView(mInputText);
         }
 
         // Set Views and Finish Dialog builder
@@ -387,7 +387,7 @@ public class SimpleFileDialog {
         mListAdapter.notifyDataSetChanged();
         // #scorch
         if (typeOfSelection == TypeOfSelection.FILE_SAVE || typeOfSelection == TypeOfSelection.FILE_OPEN) {
-            inputText.setText(selectedFileName);
+            mInputText.setText(mSelectedFileName);
         }
     }
 
