@@ -48,7 +48,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
     private final TimelineListParameters mParams;
     private Cursor mCursor = null;
 
-    private int instanceId = InstanceId.next();
+    private long instanceId = InstanceId.next();
     private MyServiceReceiver serviceConnector;
 
     private final Object asyncLoaderLock = new Object();

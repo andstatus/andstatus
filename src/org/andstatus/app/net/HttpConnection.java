@@ -19,6 +19,7 @@ package org.andstatus.app.net;
 import android.net.Uri;
 
 import org.andstatus.app.account.AccountDataWriter;
+import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -112,5 +113,16 @@ public abstract class HttpConnection {
 
     String getUserSecret() {
         return "";
+    }
+
+    public HttpConnection getNewInstance() {
+        try {
+            return getClass().newInstance();
+        } catch (InstantiationException e) {
+            MyLog.e(this, e);
+        } catch (IllegalAccessException e) {
+            MyLog.e(this, e);
+        }
+        return null;
     }
 }

@@ -183,4 +183,14 @@ public class MyContextForTest implements MyContext {
     public void setOnline(TriState isOnline) {
         this.mOnline = isOnline;
     }
+
+    @Override
+    public boolean isInForeground() {
+        return myContext.isInForeground();
+    }
+
+    @Override
+    public void setInForeground(boolean inForeground) {
+        myContext.setInForeground(inForeground);
+    }
 }

@@ -312,6 +312,8 @@
 	<string name="summary_preference_storage_external_on">Store data on External Memory</string>
     <string name="summary_preference_sync_indicator_on_timeline_off">No sync indicator</string>
     <string name="summary_preference_sync_indicator_on_timeline_on">You will see timeline sync progress in a separate bar above timeline</string>
+    <string name="summary_preference_sync_while_using_application_off">No background sync while browsing timeline and conversations in order to preserve smoothness of scrolling</string>
+    <string name="summary_preference_sync_while_using_application_on">Background sync is always on. Timeline may freeze sometimes.</string>
     <string name="summary_preference_syncing">When to sync timeline and how to indicate this</string>
     <string name="summary_preference_theme_size">Select text size</string>
 	<string name="summary_preference_username">Your username in the Microblogging system</string>
@@ -363,7 +365,8 @@
 	<string name="title_preference_ssl">SSL</string>
 	<string name="title_preference_storage_external">Use External Storage</string>
 	<string name="title_preference_sync_indicator_on_timeline">Syncing indicator on timeline</string>
-    <string name="title_preference_syncing">Syncing</string>
+    <string name="title_preference_sync_while_using_application">Sync while using application</string>
+	<string name="title_preference_syncing">Syncing</string>
 	<string name="title_preference_theme_size">Size</string>
 	<string name="title_preference_username">Username</string>
 	<string name="title_preference_username_pumpio">Webfinger ID</string>

@@ -324,7 +324,7 @@ class MessageEditor {
         
         if (mAccount.getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
             // Start asynchronous task that will show Rate limit status
-            MyServiceManager.sendCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccount.getAccountName()));
+            MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.RATE_LIMIT_STATUS, mAccount.getAccountName()));
         }
         
         show();
@@ -343,7 +343,7 @@ class MessageEditor {
                     Toast.LENGTH_SHORT).show();
         } else {
             CommandData commandData = CommandData.updateStatus(mAccount.getAccountName(), status, mReplyToId, mRecipientId);
-            MyServiceManager.sendCommand(commandData);
+            MyServiceManager.sendForegroundCommand(commandData);
 
             // Let's assume that everything will be Ok
             // so we may clear the text box with the sent message text...

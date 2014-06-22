@@ -43,7 +43,7 @@ public class CommandsQueueNotifier {
         int count = mainQueueSize + retryQueueSize;
         if (count == 0 ) {
             clearNotifications();
-        } else if (mNotificationsEnabled && MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFICATIONS_QUEUE, false)) {
+        } else if (mNotificationsEnabled && MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE, false)) {
             if (mainQueueSize != 0) {
                 MyLog.d(this, mainQueueSize + " commands in Main Queue.");
             }

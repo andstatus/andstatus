@@ -316,6 +316,8 @@
 	<string name="summary_preference_storage_external_on">Сохранять данные во внешней памяти</string>
     <string name="summary_preference_sync_indicator_on_timeline_off">Индикатор отключён</string>
     <string name="summary_preference_sync_indicator_on_timeline_on">Вы увидите процесс синхронизации на отдельной панели линии времени</string>
+    <string name="summary_preference_sync_while_using_application_off">При просмотре линии времени не будет происходить её обновления из Интернета, чтобы не нарушать плавность прокрутки</string>
+    <string name="summary_preference_sync_while_using_application_on">Фоновые обновления через Интернет происходят постоянно. Линия времени может иногда "подтормаживать"</string>
     <string name="summary_preference_syncing">Когда синхронизировать Линии времени и как это показывать Пользователю</string>
 	<string name="summary_preference_theme_color">Выберите цветовую тему</string>
 	<string name="summary_preference_theme_size">Выберите размер текста</string>
@@ -367,6 +369,7 @@
 	<string name="title_preference_ssl">SSL</string>
 	<string name="title_preference_storage_external">Использовать внешнюю память</string>
     <string name="title_preference_sync_indicator_on_timeline">Индикатор синхронизации на Линии времени</string>
+    <string name="title_preference_sync_while_using_application">Синхронизировать при использовании приложения</string>
     <string name="title_preference_syncing">Синхронизация</string>
     <string name="title_preference_theme_color">Цветовая тема</string>
 	<string name="title_preference_theme_size">Размер</string>

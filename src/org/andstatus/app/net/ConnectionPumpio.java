@@ -266,14 +266,8 @@ public class ConnectionPumpio extends Connection {
             HttpConnectionData connectionData1 = http.data.clone();
             connectionData1.oauthClientKeys = null;
             connectionData1.host = host;
-            try {
-                conu.httpConnection = http.getClass().newInstance();
-                conu.httpConnection.setConnectionData(connectionData1);
-            } catch (InstantiationException e) {
-                MyLog.e(this, e);
-            } catch (IllegalAccessException e) {
-                MyLog.e(this, e);
-            }
+            conu.httpConnection = http.getNewInstance();
+            conu.httpConnection.setConnectionData(connectionData1);
         }
         if (!conu.httpConnection.data.areOAuthClientKeysPresent()) {
             conu.httpConnection.registerClient(getApiPath(ApiRoutineEnum.REGISTER_CLIENT));

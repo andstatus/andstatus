@@ -30,7 +30,7 @@ import org.andstatus.app.util.MyLog;
  */
 public final class MyServiceReceiver extends BroadcastReceiver {
     static final Class<?> TAG = MyServiceReceiver.class;
-    private int instanceId;
+    private long instanceId;
     private MyServiceListener listener;
 
     public MyServiceReceiver(MyServiceListener listener) {

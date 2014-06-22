@@ -44,6 +44,9 @@ public interface MyContext {
     boolean isExpired();
     void setExpired();
     boolean isOnline();
+    /** Is our application in Foreground now? **/
+    boolean isInForeground();
+    void setInForeground(boolean inForeground);
     
     // For testing
     boolean isTestRun();

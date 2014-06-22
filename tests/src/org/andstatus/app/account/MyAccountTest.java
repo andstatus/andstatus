@@ -19,6 +19,7 @@ package org.andstatus.app.account;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -50,4 +51,24 @@ public class MyAccountTest  extends InstrumentationTestCase {
         assertEquals("Creating account for '" + originType + "'", origin.getId(), builder.getAccount().getOriginId());
         assertEquals("Creating account for '" + originType + "'", userName + AccountName.ORIGIN_SEPARATOR + origin.getName(), builder.getAccount().getAccountName());
     }
+    
+
+    public static void fixPersistentAccounts() {
+        for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
+            fixAccountByName(ma.getAccountName());
+        }
+    }
+    
+    public static void fixAccountByName(String accountName) {
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
+        assertTrue("Account " + accountName + " exists", ma != null);
+        assertTrue("Account " + accountName + " is valid", ma.isValid());
+        if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ) {
+            return;
+        }
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(MyContextHolder.get(), accountName, TriState.UNKNOWN);
+        builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
+        builder.saveSilently();
+    }
+
 }

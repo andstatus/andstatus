@@ -38,7 +38,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="9.0" android:versionCode="102"
-        versionDate="2014-06-21"
+        versionDate="2014-06-22"
         versionTitle="Backup/Restore and Syncing indicator">
         <changes>
             <change>Application data backup and restore implemented. This feature may be used in two ways:
@@ -59,6 +59,10 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 (go to Settings-&gt;Syncing-&gt;Connection timeout) 
                 Increasing this value may improve connections with slow servers. 
                 See <a href="https://github.com/andstatus/andstatus/issues/83" >Issue #83</a>.</change>
+            <change>&quot;Sync while using application&quot; option added (turned on by default, as it was earlier). 
+                When this option is turned off, there is no background sync while browsing timeline and conversations 
+                in order to preserve smoothness of scrolling. Manually initiated updates 
+                occur in background though.</change>
             <change>Overflow button added to Action bars of Activities, which have an Options menu.</change>    
             <change>BOOT_COMPLETED permission added in order to update widget after boot.</change>
         </changes>

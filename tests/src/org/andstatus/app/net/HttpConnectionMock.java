@@ -19,6 +19,7 @@ package org.andstatus.app.net;
 import android.text.TextUtils;
 
 import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,7 +40,12 @@ public class HttpConnectionMock extends HttpConnection {
     private volatile String userToken = "token";
     private volatile String userSecret = "secret";
     
-    private volatile long networkDelayMs = 1000; 
+    private volatile long networkDelayMs = 1000;
+    protected final long mInstanceId = InstanceId.next(); 
+    
+    public HttpConnectionMock() {
+        MyLog.v(this, "Created, instanceId:" + mInstanceId);
+    }
     
     public void setResponse(JSONObject jso) {
         responseObject = jso;
@@ -96,7 +102,8 @@ public class HttpConnectionMock extends HttpConnection {
 
     private void onRequest(String method, String path) {
         postedCounter++;
-        MyLog.v(this, method + " num:" + postedCounter + "; path:'" + path +"', host:'" + data.host + "'");
+        MyLog.v(this, method + " num:" + postedCounter + "; path:'" + path +"', host:'" 
+        + data.host + "', instanceId:" + mInstanceId );
         MyLog.v(this, Arrays.toString(Thread.currentThread().getStackTrace()));
         pathStringList.add(path);
         networkDelay();
@@ -175,5 +182,14 @@ public class HttpConnectionMock extends HttpConnection {
         postedCounter = 0;
         postedObject = null;
         pathStringList.clear();
+    }
+
+    public long getInstanceId() {
+        return mInstanceId;
+    }
+
+    @Override
+    public HttpConnection getNewInstance() {
+        return this;
     }
 }

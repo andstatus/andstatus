@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,26 +43,30 @@ import java.util.Locale;
 public final class MyContextImpl implements MyContext {
     private static final String TAG = MyContextImpl.class.getSimpleName();
 
-    private MyContextState state = MyContextState.EMPTY;
+    private MyContextState mState = MyContextState.EMPTY;
     /**
      * Single context object for which we will request SharedPreferences
      */
-    private Context context = null;
+    private Context mContext = null;
     /**
      * Name of the object that initialized the class
      */
-    private String initializedBy;
+    private String mInitializedBy;
     /**
      * When preferences, loaded into this class, were changed
      */
-    private long preferencesChangeTime = 0;
-    private MyDatabase db;
-    private PersistentAccounts persistentAccounts;
-    private PersistentOrigins persistentOrigins;
+    private long mPreferencesChangeTime = 0;
+    private MyDatabase mDb;
+    private PersistentAccounts mPersistentAccounts;
+    private PersistentOrigins mPersistentOrigins;
     
-    private volatile boolean isExpired = false;
+    private volatile boolean mExpired = false;
 
-    private final Locale locale = Locale.getDefault();
+    private final Locale mLocale = Locale.getDefault();
+    
+    private static volatile boolean mInForeground = false;
+    private static volatile long mInForegroundChangedAt = 0;
+    private static final long CONSIDER_IN_BACKGROUND_AFTER_SECONDS = 20;
     
     private MyContextImpl() {
     }
@@ -71,26 +75,26 @@ public final class MyContextImpl implements MyContext {
     public MyContext newInitialized(Context context, String initializerName) {
         final String method = "newInitialized";
         MyContextImpl newMyContext = getCreator(context, initializerName);
-        if ( newMyContext.context != null) {
+        if ( newMyContext.mContext != null) {
             MyLog.v(TAG, method + " Starting initialization by " + initializerName);
-            newMyContext.preferencesChangeTime = MyPreferences.getPreferencesChangeTime();
-            MyDatabase newDb = new MyDatabase(newMyContext.context);
+            newMyContext.mPreferencesChangeTime = MyPreferences.getPreferencesChangeTime();
+            MyDatabase newDb = new MyDatabase(newMyContext.mContext);
             try {
-                newMyContext.state = newDb.checkState();
-                switch (newMyContext.state) {
+                newMyContext.mState = newDb.checkState();
+                switch (newMyContext.mState) {
                     case READY:
-                            newMyContext.db = newDb;
-                            newMyContext.persistentOrigins.initialize(newMyContext);
-                            newMyContext.persistentAccounts.initialize(newMyContext);
+                            newMyContext.mDb = newDb;
+                            newMyContext.mPersistentOrigins.initialize(newMyContext);
+                            newMyContext.mPersistentAccounts.initialize(newMyContext);
                         break;
                     default: 
                         break;
                 }
             } catch (SQLiteException e) {
                 MyLog.e(TAG, method + " Error", e);
-                newMyContext.state = MyContextState.ERROR;
+                newMyContext.mState = MyContextState.ERROR;
                 newDb.close();
-                newMyContext.db = null;
+                newMyContext.mDb = null;
             }
         }
 
@@ -100,20 +104,20 @@ public final class MyContextImpl implements MyContext {
     
     @Override
     public String toString() {
-        return  MyLog.objTagToString(this) +  " initialized by " + initializedBy + "; state=" + state +  "; " + (context == null ? "no context" : "context=" + context.getClass().getName());
+        return  MyLog.objTagToString(this) +  " initialized by " + mInitializedBy + "; state=" + mState +  "; " + (mContext == null ? "no context" : "context=" + mContext.getClass().getName());
     }
 
     @Override
     public MyContext newCreator(Context context, String initializerName) {
         MyContextImpl newMyContext = getCreator(context, initializerName);
-        MyLog.v(this, "newCreator by " + newMyContext.initializedBy 
-                + (newMyContext.context == null ? "" : " context: " + newMyContext.context.getClass().getName()));
+        MyLog.v(this, "newCreator by " + newMyContext.mInitializedBy 
+                + (newMyContext.mContext == null ? "" : " context: " + newMyContext.mContext.getClass().getName()));
         return newMyContext;
     }
 
     private MyContextImpl getCreator(Context context, String initializerName) {
         MyContextImpl newMyContext = getEmpty();
-        newMyContext.initializedBy = initializerName;
+        newMyContext.mInitializedBy = initializerName;
         if (context != null) {
             Context contextToUse = context.getApplicationContext();
         
@@ -127,51 +131,51 @@ public final class MyContextImpl implements MyContext {
                 MyLog.w(TAG, "Incompatible context: " + contextToUse.getClass().getName());
                 contextToUse = null;
             }
-            newMyContext.context = contextToUse;
+            newMyContext.mContext = contextToUse;
         }
         return newMyContext;
     }
     
     public static MyContextImpl getEmpty() {
         MyContextImpl myContext = new MyContextImpl();
-        myContext.persistentAccounts = PersistentAccounts.getEmpty();
-        myContext.persistentOrigins = PersistentOrigins.getEmpty();
+        myContext.mPersistentAccounts = PersistentAccounts.getEmpty();
+        myContext.mPersistentOrigins = PersistentOrigins.getEmpty();
         return myContext;
     }
 
     @Override
     public boolean initialized() {
-        return state != MyContextState.EMPTY;
+        return mState != MyContextState.EMPTY;
     }
 
     @Override
     public boolean isReady() {
-        return state == MyContextState.READY && !MyDatabaseConverterController.isUpgrading();
+        return mState == MyContextState.READY && !MyDatabaseConverterController.isUpgrading();
     }
 
     @Override
     public MyContextState state() {
-        return state;
+        return mState;
     }
     
     @Override
     public Context context() {
-        return context;
+        return mContext;
     }
 
     @Override
     public String initializedBy() {
-        return initializedBy;
+        return mInitializedBy;
     }
     
     @Override
     public long preferencesChangeTime() {
-        return preferencesChangeTime;
+        return mPreferencesChangeTime;
     }
     
     @Override
     public MyDatabase getDatabase() {
-        return db;
+        return mDb;
     }
 
     @Override
@@ -185,7 +189,7 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public PersistentAccounts persistentAccounts() {
-        return persistentAccounts;
+        return mPersistentAccounts;
     }
 
     @Override
@@ -200,22 +204,22 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public boolean isExpired() {
-        return isExpired;
+        return mExpired;
     }
 
     @Override
     public void setExpired() {
-        isExpired = true;
+        mExpired = true;
     }
 
     @Override
     public Locale getLocale() {
-        return locale;
+        return mLocale;
     }
 
     @Override
     public PersistentOrigins persistentOrigins() {
-        return persistentOrigins;
+        return mPersistentOrigins;
     }
 
     @Override
@@ -238,7 +242,7 @@ public final class MyContextImpl implements MyContext {
      */
     private boolean isOnlineNotLogged() {
         boolean is = false;
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) {
             return false;
         }
@@ -248,5 +252,23 @@ public final class MyContextImpl implements MyContext {
         }
         is = networkInfo.isAvailable() && networkInfo.isConnected();
         return is;
+    }
+
+    @Override
+    public boolean isInForeground() {
+        if (!mInForeground
+                && java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
+                        - mInForegroundChangedAt) < CONSIDER_IN_BACKGROUND_AFTER_SECONDS) {
+            return true;
+        }
+        return mInForeground;
+    }
+
+    @Override
+    public void setInForeground(boolean inForeground) {
+        if (mInForeground != inForeground) {
+            mInForegroundChangedAt = System.currentTimeMillis();
+        }
+        mInForeground = inForeground;
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package org.andstatus.app.util;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class InstanceId {
     /**
      * IDs used for testing purposes to identify instances of reference types.
      */
-    private static final AtomicInteger PREV_INSTANCE_ID = new AtomicInteger(0);
+    private static final AtomicLong PREV_INSTANCE_ID = new AtomicLong(0);
 
     private InstanceId() {
     }
@@ -30,7 +30,7 @@ public class InstanceId {
     /**
      * @return Unique for this process integer, numbers are given in the order starting from 1
      */
-    public static int next() {
+    public static long next() {
         return PREV_INSTANCE_ID.incrementAndGet();
     }
 }

@@ -35,10 +35,9 @@ import net.jcip.annotations.GuardedBy;
 public class MyServiceManager extends BroadcastReceiver {
     private static final String TAG = MyServiceManager.class.getSimpleName();
 
-    private final int instanceId;
+    private final long instanceId = InstanceId.next();
     
     public MyServiceManager() {
-        instanceId = InstanceId.next();
         MyLog.v(this, "Created, instanceId=" + instanceId );
     }
 
@@ -100,6 +99,11 @@ public class MyServiceManager extends BroadcastReceiver {
         sendCommandEvenForUnavailable(commandData);
     }
 
+    public static void sendForegroundCommand(CommandData commandData) {
+        commandData.setInForeground(true);
+        sendCommand(commandData);
+    }
+    
     static void sendCommandEvenForUnavailable(CommandData commandData) {
         // Using explicit service intent, see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
         Intent serviceIntent = new Intent(MyContextHolder.get().context(), MyService.class);

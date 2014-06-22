@@ -51,6 +51,7 @@ public class MyPreferences {
      */
     public static final String KEY_SYNC_FREQUENCY_SECONDS = "fetch_frequency";
     public static final String KEY_SYNC_INDICATOR_ON_TIMELINE = "sync_indicator_on_timeline";
+    public static final String KEY_SYNC_WHILE_USING_APPLICATION = "sync_while_using_application";
     public static final String KEY_CONNNECTION_TIMEOUT_SECONDS = "connection_timeout";
     public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
     public static final String KEY_CONTACT_DEVELOPER = "contact_developer";
@@ -90,18 +91,8 @@ public class MyPreferences {
      * Version code of last opened application (int) 
      */
     public static final String KEY_VERSION_CODE_LAST = "version_code_last";
-    
-    /**
-     * System time when shared preferences were examined and took into account
-     * by some receiver. We use this for the Service to track time when it
-     * recreated alarms last time...
-     */
-    public static final String KEY_PREFERENCES_EXAMINE_TIME = "preferences_examine_time";
 
-    /**
-     * Notify of commands in the queue
-     */
-    public static final String KEY_NOTIFICATIONS_QUEUE = "notifications_queue";
+    public static final String KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE = "notifications_queue";
     
     private MyPreferences(){
         throw new AssertionError();
@@ -327,11 +318,15 @@ public class MyPreferences {
         return useExternalStorage;
     }
 
+    public static boolean isSyncWhileUsingApplicationEnabled() {
+        return getBoolean(KEY_SYNC_WHILE_USING_APPLICATION, true);
+    }
+    
     public static boolean getBoolean(String key, boolean defaultValue) {
         boolean value = defaultValue;
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
-            value = getDefaultSharedPreferences().getBoolean(key, false); 
+            value = getDefaultSharedPreferences().getBoolean(key, defaultValue); 
         }
         return value;
     }

@@ -28,6 +28,7 @@ import android.os.Bundle;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;

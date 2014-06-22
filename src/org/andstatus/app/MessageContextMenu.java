@@ -276,19 +276,19 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     }
                     break;
                 case REBLOG:
-                    MyServiceManager.sendCommand( new CommandData(CommandEnum.REBLOG, ma.getAccountName(), mCurrentMsgId));
+                    MyServiceManager.sendForegroundCommand( new CommandData(CommandEnum.REBLOG, ma.getAccountName(), mCurrentMsgId));
                     return true;
                 case DESTROY_REBLOG:
-                    MyServiceManager.sendCommand( new CommandData(CommandEnum.DESTROY_REBLOG, ma.getAccountName(), mCurrentMsgId));
+                    MyServiceManager.sendForegroundCommand( new CommandData(CommandEnum.DESTROY_REBLOG, ma.getAccountName(), mCurrentMsgId));
                     return true;
                 case DESTROY_STATUS:
-                    MyServiceManager.sendCommand( new CommandData(CommandEnum.DESTROY_STATUS, ma.getAccountName(), mCurrentMsgId));
+                    MyServiceManager.sendForegroundCommand( new CommandData(CommandEnum.DESTROY_STATUS, ma.getAccountName(), mCurrentMsgId));
                     return true;
                 case FAVORITE:
-                    MyServiceManager.sendCommand( new CommandData(CommandEnum.CREATE_FAVORITE, ma.getAccountName(), mCurrentMsgId));
+                    MyServiceManager.sendForegroundCommand( new CommandData(CommandEnum.CREATE_FAVORITE, ma.getAccountName(), mCurrentMsgId));
                     return true;
                 case DESTROY_FAVORITE:
-                    MyServiceManager.sendCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, ma.getAccountName(), mCurrentMsgId));
+                    MyServiceManager.sendForegroundCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, ma.getAccountName(), mCurrentMsgId));
                     return true;
                 case SHARE:
                     String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
@@ -358,19 +358,19 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     break;
                 case FOLLOW_SENDER:
                     senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
-                    MyServiceManager.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), senderId));
+                    MyServiceManager.sendForegroundCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), senderId));
                     return true;
                 case STOP_FOLLOWING_SENDER:
                     senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
-                    MyServiceManager.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), senderId));
+                    MyServiceManager.sendForegroundCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), senderId));
                     return true;
                 case FOLLOW_AUTHOR:
                     authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    MyServiceManager.sendCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), authorId));
+                    MyServiceManager.sendForegroundCommand( new CommandData(CommandEnum.FOLLOW_USER, ma.getAccountName(), authorId));
                     return true;
                 case STOP_FOLLOWING_AUTHOR:
                     authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    MyServiceManager.sendCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), authorId));
+                    MyServiceManager.sendForegroundCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), authorId));
                     return true;
                 case ACT_AS:
                     Intent i = new Intent(getContext(), AccountSelector.class);

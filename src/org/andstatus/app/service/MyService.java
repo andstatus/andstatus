@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.support.android.v11.os.AsyncTask;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -221,9 +222,11 @@ public class MyService extends Service {
     private CommandData addToMainQueue(CommandData commandData) {
         switch (commandData.getCommand()) {
             case EMPTY:
+                broadcastAfterExecutingCommand(commandData);
                 return null;
             case DROP_QUEUES:
                 clearQueues();
+                broadcastAfterExecutingCommand(commandData);
                 return null;
             default:
                 break;
@@ -241,6 +244,12 @@ public class MyService extends Service {
         mainCommandQueue.clear();
         retryCommandQueue.clear();
         errorCommandQueue.clear();
+        MyLog.v(this,"Queues cleared");
+    }
+    
+    private void broadcastAfterExecutingCommand(CommandData commandData) {
+        MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
+        .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
     }
     
     void initialize() {
@@ -299,8 +308,7 @@ public class MyService extends Service {
     }
 
     private TriState shouldStop() {
-        boolean doStop = !MyContextHolder.get().isReady()
-                || (mainCommandQueue.isEmpty() && !isAnythingToRetryNow());
+        boolean doStop = !MyContextHolder.get().isReady() || !isAnythingToExecuteNow();
         if (!couldSetIsStopping(doStop, false)) {
             return TriState.UNKNOWN;
         }
@@ -389,10 +397,51 @@ public class MyService extends Service {
         }
     }
 
+    private boolean isAnythingToExecuteNow() {
+        return isAnythingToExecuteInMainQueueNow() || isAnythingToRetryNow();
+    }
+    
+    private boolean isAnythingToExecuteInMainQueueNow() {
+        if (mainCommandQueue.size() == 0) {
+            return false;
+        }
+        if (MyContextHolder.get().isInForeground()) {
+            return hasQueueForegroundTasks(mainCommandQueue);
+        }
+        return true;
+    }
+    
     private boolean isAnythingToRetryNow() {
-        return retryCommandQueue.size() > 0
-                && java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
-                        - retryQueueProcessedAt.get()) > RETRY_QUEUE_PROCESSING_PERIOD_SECONDS;
+        if (retryCommandQueue.size() == 0
+                || java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
+                        - retryQueueProcessedAt.get()) < RETRY_QUEUE_PROCESSING_PERIOD_SECONDS) {
+            return false;
+        }
+        if (MyContextHolder.get().isInForeground()) {
+            return hasQueueForegroundTasks(retryCommandQueue);
+        }
+        return true;
+    }
+    
+    private boolean hasQueueForegroundTasks(Queue<CommandData> queue) {
+        boolean has = false;
+        Queue<CommandData> tempQueue = new PriorityBlockingQueue<CommandData>(queue.size()+1);
+        while (!queue.isEmpty()) {
+            CommandData commandData = queue.poll();
+            if (commandData.isInForeground()) {
+                has = true;
+                break;
+            }
+        }
+        while (!tempQueue.isEmpty()) {
+            CommandData cd = tempQueue.poll();
+            if (!queue.add(cd)) {
+                MyLog.e(this, "Couldn't return to queue, size=" + queue.size()
+                        + " command=" + cd);
+                break;
+            }
+        }
+        return has;
     }
     
     private int totalQueuesSize() {
@@ -538,20 +587,7 @@ public class MyService extends Service {
 						break;
 					}
 				}
-                CommandData commandData = null;
-                do {
-                    commandData = mainCommandQueue.poll();
-                    if (commandData == null && isAnythingToRetryNow()) {
-                        moveCommandsFromRetryToMainQueue();
-                    }
-                    if (commandData == null) {
-                        break;
-                    }
-                    commandData = checkInRetryQueue(commandData);
-                    if (commandData != null) {
-                        commandData = checkInErrorQueue(commandData);
-                    }
-                } while (commandData == null);
+                CommandData commandData = pollQueue();
                 currentlyExecuting = commandData;
                 currentlyExecutingSince = System.currentTimeMillis();
                 if (commandData == null) {
@@ -568,11 +604,40 @@ public class MyService extends Service {
                 } else if (commandData.getResult().hasError()) {
                     addToErrorQueue(commandData);
                 }
-                MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
-                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
+                broadcastAfterExecutingCommand(commandData);
             } while (true);
             MyLog.d(this, "Ended, " + breakReason + ", " + totalQueuesSize() + " commands left");
             return true;
+        }
+
+        private CommandData pollQueue() {
+            Queue<CommandData> tempQueue = new PriorityBlockingQueue<CommandData>(mainCommandQueue.size()+1);
+            CommandData commandData = null;
+            do {
+                commandData = mainCommandQueue.poll();
+                if (commandData == null && isAnythingToRetryNow()) {
+                    moveCommandsFromRetryToMainQueue();
+                }
+                if (commandData == null) {
+                    break;
+                }
+                commandData = checkInRetryQueue(commandData);
+                if (commandData != null) {
+                    commandData = checkInErrorQueue(commandData);
+                }
+                if (commandData != null && !commandData.isInForeground() && MyContextHolder.get().isInForeground()) {
+                    tempQueue.add(commandData);
+                }
+            } while (commandData == null);
+            while (!tempQueue.isEmpty()) {
+                CommandData cd = tempQueue.poll();
+                if (!mainCommandQueue.add(cd)) {
+                    MyLog.e(this, "Couldn't return to main Queue, size=" + mainCommandQueue.size()
+                            + " command=" + cd);
+                    break;
+                }
+            }
+            return commandData;
         }
 
         private final static long MIN_RETRY_PERIOD_SECONDS = 900; 
@@ -580,7 +645,8 @@ public class MyService extends Service {
             Queue<CommandData> tempQueue = new PriorityBlockingQueue<CommandData>(retryCommandQueue.size()+1);
             while (!retryCommandQueue.isEmpty()) {
                 CommandData commandData = retryCommandQueue.poll();
-                if (java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
+                if ((commandData.isInForeground() || !MyContextHolder.get().isInForeground())  
+                        && java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
                         - commandData.getResult().getLastExecutedDate()) > MIN_RETRY_PERIOD_SECONDS) {
                     commandData = addToMainQueue(commandData);
                 }

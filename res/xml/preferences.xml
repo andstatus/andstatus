@@ -48,6 +48,11 @@
                     android:dialogTitle="@string/dialog_title_preference_frequency"
                     android:title="@string/title_preference_frequency" android:key="fetch_frequency"
                     android:defaultValue="900" />
+                <CheckBoxPreference android:key="sync_while_using_application"
+                    android:title="@string/title_preference_sync_while_using_application"
+                    android:summaryOff="@string/summary_preference_sync_while_using_application_off"
+                    android:summaryOn="@string/summary_preference_sync_while_using_application_on"
+                    android:defaultValue="true" />
                 <CheckBoxPreference android:key="sync_indicator_on_timeline"
                     android:title="@string/title_preference_sync_indicator_on_timeline"
                     android:summaryOff="@string/summary_preference_sync_indicator_on_timeline_off"

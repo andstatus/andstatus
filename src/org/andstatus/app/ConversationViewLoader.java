@@ -268,7 +268,7 @@ public class ConversationViewLoader {
 
     private void retrieveFromInternet(long msgId) {
         MyLog.v(this, "Message id=" + msgId + " should be retrieved from the Internet");
-        MyServiceManager.sendCommand(new CommandData(CommandEnum.GET_STATUS, ma
+        MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.GET_STATUS, ma
                 .getAccountName(), msgId));
     }
 

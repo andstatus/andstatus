@@ -62,7 +62,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
      */
     private volatile MyAccount ma = null;
 
-    protected int instanceId;
+    protected long instanceId;
     MyServiceReceiver myServiceReceiver;
 
     private MessageContextMenu contextMenu;
@@ -239,6 +239,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         isPaused = false;
         super.onResume();
         myServiceReceiver.registerReceiver(this);
+        MyContextHolder.get().setInForeground(true);
     }
 
     @Override
@@ -246,6 +247,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         isPaused = true;
         super.onPause();
         myServiceReceiver.unregisterReceiver(this);
+        MyContextHolder.get().setInForeground(false);
     }
 
     @Override

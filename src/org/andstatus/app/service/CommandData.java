@@ -58,13 +58,15 @@ public class CommandData implements Comparable<CommandData> {
      * Timeline type used for the {@link CommandEnum#FETCH_TIMELINE} command 
      */
     private final TimelineTypeEnum timelineType;
+
+    private volatile boolean mInForeground = false;
     
     /**
      * This is: 
      * 1. Generally: Message ID ({@link MyDatabase.Msg#MSG_ID} of the {@link MyDatabase.Msg}).
      * 2. User ID ( {@link MyDatabase.User#USER_ID} ) for the {@link CommandEnum#FETCH_USER_TIMELINE}, 
      *      {@link CommandEnum#FOLLOW_USER}, {@link CommandEnum#STOP_FOLLOWING_USER} 
-     */
+       */
     protected long itemId = 0;
 
     /**
@@ -157,6 +159,7 @@ public class CommandData implements Comparable<CommandData> {
                     commandData = new CommandData(command, accountName2, timelineType2);
 					commandData.bundle = bundle;
                     commandData.itemId = commandData.bundle.getLong(IntentExtra.EXTRA_ITEMID.key);
+                    commandData.mInForeground = commandData.bundle.getBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key);
                     commandData.commandResult = commandData.bundle.getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
                     break;
             }
@@ -170,12 +173,14 @@ public class CommandData implements Comparable<CommandData> {
     
     public static CommandData searchCommand(String accountName, String queryString) {
         CommandData commandData = new CommandData(CommandEnum.SEARCH_MESSAGE, accountName, TimelineTypeEnum.PUBLIC);
+        commandData.mInForeground = true;
         commandData.bundle.putString(SearchManager.QUERY, queryString);
         return commandData;
     }
 
     public static CommandData updateStatus(String accountName, String status, long replyToId, long recipientId) {
         CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS, accountName);
+        commandData.mInForeground = true;
         commandData.bundle.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, status);
         if (replyToId != 0) {
             commandData.bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key, replyToId);
@@ -202,6 +207,8 @@ public class CommandData implements Comparable<CommandData> {
                 sp.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, ""),
                 TimelineTypeEnum.load(sp.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, "")),
                 sp.getLong(IntentExtra.EXTRA_ITEMID.key + si, 0));
+        commandData.bundle.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key,
+                sp.getBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key + si, false));
 
         switch (commandData.command) {
             case UPDATE_STATUS:
@@ -314,6 +321,9 @@ public class CommandData implements Comparable<CommandData> {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("command:" + command.save() + ",");
+        if (mInForeground) {
+            builder.append("foreground,");
+        }
         switch (command) {
             case UPDATE_STATUS:
                 builder.append("\"");
@@ -363,6 +373,7 @@ public class CommandData implements Comparable<CommandData> {
         if (itemId != 0) {
             bundle.putLong(IntentExtra.EXTRA_ITEMID.key, itemId);
         }
+        bundle.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key, mInForeground);
         bundle.putParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key, commandResult);        
         intent.putExtras(bundle);
         return intent;
@@ -394,6 +405,7 @@ public class CommandData implements Comparable<CommandData> {
         ed.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, getAccountName());
         ed.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, timelineType.save());
         ed.putLong(IntentExtra.EXTRA_ITEMID.key + si, itemId);
+        ed.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key + si, mInForeground);
         switch (command) {
             case UPDATE_STATUS:
                 ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
@@ -506,5 +518,13 @@ public class CommandData implements Comparable<CommandData> {
                 break;
         }
         return builder.toString();
+    }
+    
+    public boolean isInForeground() {
+        return mInForeground;
+    }
+
+    public void setInForeground(boolean inForeground) {
+        mInForeground = inForeground;
     }
 }

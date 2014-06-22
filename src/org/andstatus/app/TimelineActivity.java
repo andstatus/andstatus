@@ -118,7 +118,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     /**
      * For testing purposes
      */
-    private int mInstanceId = 0;
+    private long mInstanceId = 0;
     MyServiceReceiver mServiceConnector;
 
     /**
@@ -329,6 +329,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             }
         }
         if (!mFinishing) {
+            MyContextHolder.get().setInForeground(true);
             mServiceConnector.registerReceiver(this);
             mLoaderManager.onResumeActivity(LOADER_ID);
         }
@@ -597,6 +598,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             }
             mPositionRestored = false;
         }        
+        MyContextHolder.get().setInForeground(false);
     }
    
     /**
@@ -611,7 +613,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mCurrentMyAccountUserId);
         if (ma != null) {
-            MyServiceManager.sendCommand(new CommandData(CommandEnum.NOTIFY_CLEAR, ma.getAccountName()));
+            MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.NOTIFY_CLEAR, ma.getAccountName()));
         }
     }
 
@@ -970,7 +972,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                         && appSearchData.getBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, false)) {
                     MyLog.v(this, "Global search: " + mSearchQuery);
                     setLoading(true);
-                    MyServiceManager.sendCommand(
+                    MyServiceManager.sendForegroundCommand(
                             CommandData.searchCommand(
                                     isTimelineCombined()
                                             ? ""
@@ -1288,7 +1290,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         setLoading(true);
-        MyServiceManager.sendCommand(
+        MyServiceManager.sendForegroundCommand(
                 new CommandData(CommandEnum.FETCH_TIMELINE,
                         allAccounts ? "" : ma.getAccountName(), timelineTypeForReload, userId)
                 );
