@@ -575,7 +575,7 @@ public class MyService extends Service {
             return true;
         }
 
-        private final static long MIN_RETRY_PERIOD_SECONDS = 180; 
+        private final static long MIN_RETRY_PERIOD_SECONDS = 900; 
         private void moveCommandsFromRetryToMainQueue() {
             Queue<CommandData> tempQueue = new PriorityBlockingQueue<CommandData>(retryCommandQueue.size()+1);
             while (!retryCommandQueue.isEmpty()) {

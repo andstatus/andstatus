@@ -446,8 +446,13 @@ public class CommandData implements Comparable<CommandData> {
         StringBuilder builder = new StringBuilder(toShortCommandName(myContext) + " ");
         switch (command) {
             case FETCH_AVATAR:
-                builder.append(myContext.context().getText(R.string.combined_timeline_off) + " ");
+                builder.append(myContext.context().getText(R.string.combined_timeline_off_account) + " ");
                 builder.append(MyProvider.userIdToName(itemId) );
+                if (myContext.persistentAccounts().getDistinctOriginsCount() > 1) {
+                    long originId = MyProvider.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, itemId);
+                    builder.append(" " + myContext.context().getText(R.string.combined_timeline_off_origin) + " ");
+                    builder.append(myContext.persistentOrigins().fromId(originId).getName() );
+                }
                 break;
             case UPDATE_STATUS:
                 builder.append("\"");
@@ -457,7 +462,7 @@ public class CommandData implements Comparable<CommandData> {
             case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
                 if (!TextUtils.isEmpty(accountName)) {
-                    builder.append(myContext.context().getText(R.string.combined_timeline_off) + " ");
+                    builder.append(timelineType.getPrepositionForNotCombinedTimeline(myContext.context()) + " ");
                     MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
                     builder.append(TimelineActivity.buildAccountButtonText(ma, false, timelineType));
                 }
@@ -467,15 +472,23 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append(I18n.trimTextAt(bundle.getString(SearchManager.QUERY), 40));                
                 builder.append("\" ");
 				if (!TextUtils.isEmpty(accountName)) {
-                    builder.append(myContext.context().getText(R.string.combined_timeline_off) + " ");
+                    builder.append(myContext.context().getText(R.string.combined_timeline_off_origin) + " ");
                     MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
                     builder.append(ma != null ? ma.getOriginName() : "?");
                 }
 				break;
             default:
-                builder.append(TextUtils.isEmpty(accountName) ? "" : myContext.context()
-                        .getText(R.string.combined_timeline_off) + " "
-                        + accountName);
+                if (!TextUtils.isEmpty(accountName)) {
+                    builder.append(timelineType.getPrepositionForNotCombinedTimeline(myContext
+                            .context())
+                            + " ");
+                    if (TimelineTypeEnum.PUBLIC.equals(timelineType)) {
+                        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
+                        builder.append(ma != null ? ma.getOriginName() : "?");
+                    } else {
+                        builder.append(accountName);
+                    }
+                }
                 break;
         }
         return builder.toString();

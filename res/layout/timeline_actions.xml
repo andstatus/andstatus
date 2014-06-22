@@ -30,7 +30,7 @@
         android:layout_marginTop="5dp"
         android:layout_toRightOf="@+id/selectedUserText"
         android:onClick="onCombinedTimelineToggle"
-        android:textOff="@string/combined_timeline_off"
+        android:textOff="@string/combined_timeline_off_account"
         android:textOn="@string/combined_timeline_on" />
 
     <Button android:id="@+id/selectAccountButton"

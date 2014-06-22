@@ -60,8 +60,9 @@
 	<string name="category_title_preference_settings">Настройки</string>
 	<string name="category_title_preference_origin">Система микроблогов</string>
     <string name="combined_timeline_on">вместе</string>
-    <string name="combined_timeline_off">для</string>
-	<string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>
+    <string name="combined_timeline_off_account">для</string>
+    <string name="combined_timeline_off_origin">в</string>
+    <string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>
 	<string name="dialog_summary_acquiring_a_request_token">Пожалуйста подождите завершения получения токена запроса для OAuth</string>
 	<string name="dialog_summary_authentication_failed">Пожалуйста проверьте Ваши имя пользователя и пароль.</string>
 	<string name="dialog_summary_checking_credentials">Пожалуйста подождите завершения проверки имени пользователя и пароля учётной записи (аккаунта).</string>

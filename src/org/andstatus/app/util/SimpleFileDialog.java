@@ -66,7 +66,7 @@ public class SimpleFileDialog {
     private Context mContext;
     private TextView mTitleView1;
     private TextView mTitleView;
-    public String mDefaultFileName = ".";
+    private String mDefaultFileName = "";
     private String mSelectedFileName = mDefaultFileName;
     private EditText mInputText;
 
@@ -140,14 +140,28 @@ public class SimpleFileDialog {
                 } else {
                     mDir += "/" + selectedName;
                 }
-                mSelectedFileName = mDefaultFileName;
 
-                // If the selection is a regular file
-                if (new File(mDir).isFile()) {
+                mSelectedFileName = mDefaultFileName;
+                File dir = new File(mDir);
+                if (dir.isFile()) {
                     mDir = dirOld;
                     mSelectedFileName = selectedName;
+                } else {
+                    autoSelectFileInDirectory(dir);
                 }
                 updateDirectory();
+            }
+
+            private void autoSelectFileInDirectory(File dir) {
+                File[] files = dir.listFiles();
+                if (files != null ) {
+                    for (File file : files) {
+                        if (file.isFile()) {
+                            mSelectedFileName = file.getName();
+                            break;
+                        }
+                    }
+                }
             }
         }
 

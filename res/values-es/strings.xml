@@ -55,7 +55,8 @@
 	<string name="category_title_preference_origin">Parámetros del sistema de Microblogging</string>
 	<string name="category_title_preference_settings">Configuración</string>
     <string name="combined_timeline_on">combinado</string>
-    <string name="combined_timeline_off">para</string>
+    <string name="combined_timeline_off_account">para</string>
+    <string name="combined_timeline_off_origin">para</string>
     <string name="dialog_summary_acquiring_an_access_token">Por favor, espere mientras AndStatus está intercambiando una solicitud de prueba de OAuth para la prueba de acceso</string>
 	<string name="dialog_summary_acquiring_a_request_token">Por favor espere mientras AndStatus está adquiriendo una prueba de solicitud de OAuth</string>
 	<string name="dialog_summary_authentication_failed">Por favor verifique su nombre de usuario y contraseña.</string>

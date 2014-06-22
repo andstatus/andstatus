@@ -36,6 +36,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     
     @Override
     public void onReceive(Context context, Intent intent) {
+        MyLog.i(this, "onReceive; action=" + intent.getAction());
         MyContextHolder.initialize(context, this);
         super.onReceive(context, intent);
     }

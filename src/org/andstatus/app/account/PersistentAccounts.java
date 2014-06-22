@@ -21,7 +21,9 @@ import org.json.JSONObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PersistentAccounts {
@@ -39,6 +41,7 @@ public class PersistentAccounts {
     private volatile String currentAccountName = "";
     
     private Map<String,MyAccount> persistentAccounts = new ConcurrentHashMap<String, MyAccount>();
+    private int distinctOriginsCount = 0;
     
     private PersistentAccounts() {
     }
@@ -62,7 +65,7 @@ public class PersistentAccounts {
     public int size() {
         return persistentAccounts.size();
     }
-
+    
     public PersistentAccounts initialize() {
         return initialize(MyContextHolder.get());
     }
@@ -80,8 +83,21 @@ public class PersistentAccounts {
                 MyLog.e(this, "The account is not valid: " + ma);
             }
         }
-        MyLog.v(this, "Account list initialized, " + persistentAccounts.size() + " accounts");
+        calculateDistinctOriginsCount();
+        MyLog.v(this, "Account list initialized, " + persistentAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
         return this;
+    }
+
+    public int getDistinctOriginsCount() {
+        return distinctOriginsCount;
+    }
+    
+    private void calculateDistinctOriginsCount() {
+        Set<Long> originIds = new HashSet<Long>();
+        for (MyAccount ma : persistentAccounts.values()) {
+            originIds.add(ma.getOriginId());
+        }
+        distinctOriginsCount = originIds.size();
     }
     
     public static PersistentAccounts getEmpty() {
