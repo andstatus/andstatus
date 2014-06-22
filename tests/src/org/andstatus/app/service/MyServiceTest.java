@@ -19,7 +19,6 @@ package org.andstatus.app.service;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.account.MyAccountTest;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -30,6 +29,8 @@ import org.andstatus.app.util.TriState;
 
 import java.net.MalformedURLException;
 import java.util.Arrays;
+import java.util.Queue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class MyServiceTest extends InstrumentationTestCase implements MyServiceListener {
     private volatile MyAccount ma;
@@ -76,7 +77,8 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
     }
 
     public void testRepeatingFailingCommand() throws MalformedURLException {
-        MyLog.v(this, "testRepeatingFailingCommand started");
+        final String method = "testRepeatingFailingCommand";
+        MyLog.v(this, method + " started");
 
         String urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() +  ".png";
         AvatarDownloaderTest.changeAvatarUrl(ma, urlString);
@@ -92,13 +94,11 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         assertTrue("First command ended executing", waitForCommandExecutionEnded(endCount));
         assertTrue("Data was posted " + httpConnection.getPostedCounter() + " times",
                 httpConnection.getPostedCounter() == 0);
-        serviceStopped = false;
         sendListenedToCommand();
         assertFalse("Duplicated commands started executing",
                 waitForCommandExecutionStarted(startCount + 1));
-        MyServiceManager.stopService();
         assertTrue("Service stopped", waitForServiceStopped());
-        MyLog.v(this, "testRepeatingFailingCommand ended");
+        MyLog.v(this, method + " ended");
     }
 
     public void testAutomaticUpdates() {
@@ -107,12 +107,14 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         listentedToCommand = new CommandData(CommandEnum.AUTOMATIC_UPDATE, "", TimelineTypeEnum.ALL, 0);
         long startCount = executionStartCount;
         long endCount = executionEndCount;
-
+        
         sendListenedToCommand();
+        
         assertTrue("First command started executing", waitForCommandExecutionStarted(startCount));
         assertTrue("First command ended executing", waitForCommandExecutionEnded(endCount));
         assertTrue("Data was posted " + httpConnection.getPostedCounter() + " times",
                 httpConnection.getPostedCounter() > 1);
+        assertTrue("Service stopped", waitForServiceStopped());
         MyLog.v(this, "testAutomaticUpdates ended");
     }
 
@@ -125,6 +127,7 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         long endCount = executionEndCount;
 
         sendListenedToCommand();
+        
         assertTrue("First command started executing", waitForCommandExecutionStarted(startCount));
         assertTrue("First command ended executing", waitForCommandExecutionEnded(endCount));
         String message = "Data was posted " + httpConnection.getPostedCounter() + " times; "
@@ -132,6 +135,7 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         MyLog.v(this, method  + "; " + message);
         assertEquals("connection istance Id", connectionInstanceId, httpConnection.getInstanceId());
         assertTrue(message, httpConnection.getPostedCounter() == 1);
+        assertTrue("Service stopped", waitForServiceStopped());
         MyLog.v(this, method + " ended");
     }
 
@@ -147,13 +151,16 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         assertTrue("First command ended executing", waitForCommandExecutionEnded(endCount));
         assertTrue("Data was posted " + httpConnection.getPostedCounter() + " times",
                 httpConnection.getPostedCounter() > 0);
+        assertTrue("Service stopped", waitForServiceStopped());
         MyLog.v(this, "testRateLimitStatus ended");
     }
     
     public void testSyncInForeground() throws InterruptedException {
         MyLog.v(this, "testSyncInForeground started");
 
-        listentedToCommand = new CommandData(CommandEnum.FETCH_TIMELINE, TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineTypeEnum.DIRECT, 0);
+        CommandData cd1 = new CommandData(CommandEnum.FETCH_TIMELINE,
+                TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineTypeEnum.DIRECT, 0);
+        listentedToCommand = cd1;
 
         long startCount = executionStartCount;
         long endCount = executionEndCount;
@@ -165,14 +172,47 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
                 httpConnection.getPostedCounter() == 1);
 
         MyContextHolder.get().setInForeground(true);
-                serviceStopped = false;
         sendListenedToCommand();
-        Thread.sleep(5000);
-        
-        MyServiceManager.stopService();
+
+        CommandData cd2 = new CommandData(CommandEnum.FETCH_TIMELINE,
+                TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineTypeEnum.MENTIONS, 0);
+        listentedToCommand = cd2;
+        sendListenedToCommand();
+
         assertTrue("Service stopped", waitForServiceStopped());
-        assertTrue("No new data was posted while in foreround " + httpConnection.getPostedCounter() + " times",
+        assertTrue("No new data was posted while in foreround " + httpConnection.getPostedCounter()
+                + " times",
                 httpConnection.getPostedCounter() == 1);
+
+        Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
+        CommandData.loadQueue(MyContextHolder.get().context(), queue,
+                MyService.COMMANDS_QUEUE_FILENAME);
+        assertFalse("Main queue is not empty", queue.isEmpty());
+        assertTrue("The command stayed in the main queue", queue.contains(cd1));
+        assertTrue("The command stayed in the main queue", queue.contains(cd2));
+
+        CommandData cd3 = new CommandData(CommandEnum.FETCH_TIMELINE,
+                TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineTypeEnum.HOME, 0);
+        cd3.setInForeground(true);
+        listentedToCommand = cd3;
+
+        startCount = executionStartCount;
+        endCount = executionEndCount;
+        sendListenedToCommand();
+
+        assertTrue("Foreground command started executing",
+                waitForCommandExecutionStarted(startCount));
+        assertTrue("Foreground command ended executing", waitForCommandExecutionEnded(endCount));
+        assertTrue("Service stopped", waitForServiceStopped());
+
+        queue = new PriorityBlockingQueue<CommandData>(100);
+        CommandData.loadQueue(MyContextHolder.get().context(), queue,
+                MyService.COMMANDS_QUEUE_FILENAME);
+        assertFalse("Main queue is not empty", queue.isEmpty());
+        assertFalse("First duplicated command was found in retry queue", queue.contains(cd1));
+        assertTrue("The command stayed in the main queue", queue.contains(cd2));
+        assertFalse("Foreground command is not in main queue", queue.contains(cd3));
+
         MyLog.v(this, "testSyncInForeground ended");
     }
 
@@ -255,6 +295,7 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
                     executionStartCount++;
                     locEvent = "execution started";
                 }
+                serviceStopped = false;
                 break;
             case AFTER_EXECUTING_COMMAND:
                 if (commandData.equals(listentedToCommand)) {

@@ -171,6 +171,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         super.onResume();
 
         MyContextHolder.initialize(this, this);
+        MyContextHolder.get().setInForeground(true);
         
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
@@ -191,6 +192,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
         }
+        MyContextHolder.get().setInForeground(false);
     }
 
     /**

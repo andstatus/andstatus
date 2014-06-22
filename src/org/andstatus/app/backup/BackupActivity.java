@@ -27,6 +27,7 @@ import android.view.View.OnClickListener;
 import org.andstatus.app.MyActionBar;
 import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SimpleFileDialog;
 
@@ -152,5 +153,17 @@ public class BackupActivity extends Activity implements MyActionBarContainer {
     @Override
     public boolean hasOptionsMenu() {
         return false;
+    }
+
+    @Override
+    protected void onResume() {
+        MyContextHolder.get().setInForeground(true);
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MyContextHolder.get().setInForeground(false);
     }
 }

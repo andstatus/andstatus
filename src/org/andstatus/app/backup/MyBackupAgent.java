@@ -67,6 +67,11 @@ public class MyBackupAgent extends BackupAgent {
     @Override
     public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data,
             ParcelFileDescriptor newState) throws IOException {
+        if (MyContextHolder.get().isTestRun()) {
+            String message = "onBackup; skipped due to test run";
+            MyLog.i(this, message);
+            throw new FileNotFoundException(message);
+        }
         onBackup(
                 MyBackupDescriptor.fromOldParcelFileDescriptor(oldState, ProgressLogger.getEmpty()),
                 new MyBackupDataOutput(data),

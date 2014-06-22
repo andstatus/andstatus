@@ -387,6 +387,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     @Override
     protected void onResume() {
         super.onResume();
+        MyContextHolder.get().setInForeground(true);
 
         MyContextHolder.initialize(this, this);
         MyServiceManager.setServiceUnavailable();
@@ -463,6 +464,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 returnToOurActivity();
             }
         }
+        MyContextHolder.get().setInForeground(false);
     }
 
     private void returnToOurActivity() {

@@ -35,6 +35,7 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.Queue;
@@ -233,14 +234,14 @@ public class CommandData implements Comparable<CommandData> {
     /**
      * @return Number of items persisted
      */
-    static int saveQueue(Context context, Queue<CommandData> q, String prefsFileName) {
+    static int saveQueue(Context context, Queue<CommandData> queue, String prefsFileName) {
         String method = "saveQueue: ";
         int count = 0;
 		SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
 		sp.edit().clear().commit();
-        if (!q.isEmpty()) {
-            while (!q.isEmpty()) {
-                CommandData cd = q.poll();
+        if (!queue.isEmpty()) {
+            while (!queue.isEmpty()) {
+                CommandData cd = queue.poll();
                 cd.saveToSharedPreferences(sp, count);
                 MyLog.v(context, method + "Command saved: " + cd.toString());
                 count += 1;
@@ -527,4 +528,10 @@ public class CommandData implements Comparable<CommandData> {
     public void setInForeground(boolean inForeground) {
         mInForeground = inForeground;
     }
+
+    public boolean executedMoreSecondsAgoThan(long predefinedPeriodSeconds) {
+        return RelativeTime.moreSecondsAgoThan(getResult().getLastExecutedDate(),
+                predefinedPeriodSeconds);
+    }
+    
 }

@@ -29,15 +29,13 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public final class MyServiceReceiver extends BroadcastReceiver {
-    static final Class<?> TAG = MyServiceReceiver.class;
-    private long instanceId;
-    private MyServiceListener listener;
+    private final long mInstanceId = InstanceId.next();
+    private final MyServiceListener listener;
 
     public MyServiceReceiver(MyServiceListener listener) {
         super();
         this.listener = listener;
-        instanceId = InstanceId.next();
-        MyLog.v(this, "Created, instanceId=" + instanceId + (listener != null ? "; listener='"
+        MyLog.v(this, "Created, instanceId=" + mInstanceId + (listener != null ? "; listener='"
                 + listener.toString() + "'" : ""));
     }
     
@@ -60,9 +58,7 @@ public final class MyServiceReceiver extends BroadcastReceiver {
         if (event == MyServiceEvent.UNKNOWN) {
             return;
         }
-        MyLog.v(this, "onReceive " + event);
-        if (listener != null) {
-            listener.onReceive(CommandData.fromIntent(intent), event);
-        }
+        MyLog.v(this, "onReceive " + event + " for " + MyLog.objTagToString(listener) + ", instanceId:" + mInstanceId);
+        listener.onReceive(CommandData.fromIntent(intent), event);
     }
 }

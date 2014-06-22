@@ -130,4 +130,13 @@ public class RelativeTime {
     public String toString() {
         return getDifference(mContext, mCalendar.getTimeInMillis());
     }
+
+    public static boolean moreSecondsAgoThan(long previousTime, long predefinedPeriodSeconds) {
+        return secondsAgo(previousTime) > predefinedPeriodSeconds;
+    }
+    
+    public static long secondsAgo(long previousTime) {
+        return java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
+                - previousTime);
+    }
 }
