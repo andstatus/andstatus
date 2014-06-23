@@ -51,6 +51,8 @@ public class MyService extends Service {
     static final String RETRY_QUEUE_FILENAME = TAG + "-retry-queue";
     static final String ERROR_QUEUE_FILENAME = TAG + "-error-queue";
     
+	public static final long MAX_COMMAND_EXECUTION_SECONDS = 10 * 60;
+	
     /**
      * Broadcast with this action is being sent by {@link MyService} to notify of its state.
      *  Actually {@link MyServiceManager} receives it.
@@ -557,7 +559,6 @@ public class MyService extends Service {
         private volatile CommandData currentlyExecuting = null;
         private volatile long currentlyExecutingSince = 0;
         private static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 1;
-		private static final long MAX_COMMAND_EXECUTION_SECONDS = 10 * 60;
         
         @Override
         protected Boolean doInBackground(Void... arg0) {

@@ -39,20 +39,26 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
 import org.andstatus.app.util.MyLog;
 
+import net.jcip.annotations.GuardedBy;
+
 public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServiceListener {
 
-    private final Context context;
-    private volatile CommandData commandData;
-    private volatile boolean syncCompleted = false;
-    private Object syncLock = new Object();
-    private volatile SyncResult syncResult;
-    
-    private MyServiceReceiver intentReceiver;
+    private final Context mContext;
+    private volatile CommandData mCommandData;
+	private final Object syncLock = new Object();
+	@GuardedBy("syncLock")
+    private boolean mSyncCompleted = false;
+	@GuardedBy("syncLock")
+	private long mNumAuthExceptions = 0;
+	@GuardedBy("syncLock")
+    private long mNumIoExceptions = 0;
+	@GuardedBy("syncLock")
+    private long mNumParseExceptions = 0;
     
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
-        this.context = context;
-        MyLog.d(this, "created, context=" + context.getClass().getCanonicalName());
+        this.mContext = context;
+        MyLog.v(this, "created, context:" + context.getClass().getCanonicalName());
     }
 
     @Override
@@ -61,63 +67,81 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements MyServic
         String method = "onPerformSync";
         if (!MyServiceManager.isServiceAvailable()) {
             syncResult.stats.numIoExceptions++;
-            MyLog.d(this, method + " Service not available, account=" + account.name);
+            MyLog.d(this, method + "; Service not available, account:" + account.name);
             return;
         }
-        MyContextHolder.initialize(context, this);
+        MyContextHolder.initialize(mContext, this);
         if (!MyContextHolder.get().isReady()) {
             syncResult.stats.numIoExceptions++;
-            MyLog.d(this, method + " Context is not ready, account=" + account.name);
+            MyLog.d(this, method + "; Context is not ready, account:" + account.name);
             return;
         }
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(account.name);
         if (ma == null) {
-            MyLog.d(this, method + " The account was not loaded, account=" + account.name);
-            return;
-            
+			syncResult.stats.numIoExceptions++;
+	        MyLog.d(this, method + "; The account was not loaded, account:" + account.name);
+            return;      
         } else if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-            MyLog.d(this, method + " Credentials failed, skipping; account=" + account.name);
+            syncResult.stats.numAuthExceptions++;
+            MyLog.d(this, method + "; Credentials failed, skipping; account:" + account.name);
             return;
         }
-        intentReceiver = new MyServiceReceiver(this);
-        syncCompleted = false;
+		
+        synchronized(syncLock) {
+            mSyncCompleted = false;
+			mNumAuthExceptions = 0;
+			mNumIoExceptions = 0;
+			mNumParseExceptions = 0;
+	    }
+		MyServiceReceiver intentReceiver = new MyServiceReceiver(this);
+     	boolean interrupted = true;
         try {
-            this.syncResult = syncResult;
-            MyLog.d(this, method + " started, account=" + account.name);
-            intentReceiver.registerReceiver(context);
-            commandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
+            MyLog.v(this, method + "; Started, account:" + account.name);
+            mCommandData = new CommandData(CommandEnum.AUTOMATIC_UPDATE, account.name,
                     TimelineTypeEnum.ALL, 0);
-            MyServiceManager.sendCommand(commandData);
+			intentReceiver.registerReceiver(mContext);	
+            MyServiceManager.sendCommand(mCommandData);
+			final long numIterations = 10;
             synchronized(syncLock) {
-                for (int iteration = 0; iteration < 10; iteration++) {
-                    if (syncCompleted) {
+                for (int iteration = 0; iteration < numIterations; iteration++) {
+                    if (mSyncCompleted) {
                         break;
                     }
-                    syncLock.wait(java.util.concurrent.TimeUnit.SECONDS.toMillis(30));
+                    syncLock.wait(java.util.concurrent.TimeUnit.SECONDS.toMillis(
+					    MyService.MAX_COMMAND_EXECUTION_SECONDS / numIterations ));
                 }
             }
-            MyLog.d(this, method + " ended, " + (syncResult.hasError() ? "has error" : "ok"));
+			interrupted = false;
         } catch (InterruptedException e) {
-            MyLog.d(this, method + " interrupted", e);
+            MyLog.d(this, method + "; Interrupted", e);
         } finally {
-            intentReceiver.unregisterReceiver(context);            
+			synchronized(syncLock) {
+				if (interrupted || !mSyncCompleted) {
+                    syncResult.stats.numIoExceptions++;
+			    }
+				syncResult.stats.numAuthExceptions += mNumAuthExceptions;
+				syncResult.stats.numIoExceptions += mNumIoExceptions;
+				syncResult.stats.numParseExceptions += mNumParseExceptions;
+			}
+            intentReceiver.unregisterReceiver(mContext);            
         }
+		MyLog.v(this, method + "; Ended, " 
+		    + (syncResult.hasError() ? "has error" : "ok"));
     }
 
     @Override
     public void onReceive(CommandData commandData, MyServiceEvent event) {
-        if (event != MyServiceEvent.AFTER_EXECUTING_COMMAND) {
+        if (event != MyServiceEvent.AFTER_EXECUTING_COMMAND 
+			|| mCommandData == null || !mCommandData.equals(commandData) ) {
             return;
         }
-        MyLog.d(this, "onReceive, command=" + commandData.getCommand());
+        MyLog.v(this, "onReceive; command:" + commandData.getCommand());
         synchronized (syncLock) {
-            if (this.commandData != null && this.commandData.equals(commandData)) {
-                syncCompleted = true;
-                syncResult.stats.numAuthExceptions += commandData.getResult().getNumAuthExceptions();
-                syncResult.stats.numIoExceptions += commandData.getResult().getNumIoExceptions();
-                syncResult.stats.numParseExceptions += commandData.getResult().getNumParseExceptions();
-                syncLock.notifyAll();
-            }
+            mSyncCompleted = true;
+            mNumAuthExceptions += commandData.getResult().getNumAuthExceptions();
+            mNumIoExceptions += commandData.getResult().getNumIoExceptions();
+            mNumParseExceptions += commandData.getResult().getNumParseExceptions();
+            syncLock.notifyAll();
         }
     }
 }
