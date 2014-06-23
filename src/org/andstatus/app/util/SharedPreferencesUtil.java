@@ -17,6 +17,8 @@
 package org.andstatus.app.util;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Environment;
 import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
@@ -25,6 +27,7 @@ import android.text.TextUtils;
 import java.io.IOException;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.Map.Entry;
 
 public class SharedPreferencesUtil {
     private static final String TAG = SharedPreferencesUtil.class.getSimpleName();
@@ -208,5 +211,31 @@ public class SharedPreferencesUtil {
             MyLog.v(TAG, o.toString(), e);
         }
         return is;
+    }
+    
+    public static long copyAll(SharedPreferences from, SharedPreferences to) {
+        long entryCounter = 0;
+        Editor editor = to.edit();
+        for (Entry<String, ?> entry : from.getAll().entrySet()) {
+            Object value = entry.getValue();
+            if (Boolean.class.isInstance(value)) {
+                editor.putBoolean(entry.getKey(), (Boolean) value);
+            } else if (Integer.class.isInstance(value)) {
+                editor.putInt(entry.getKey(), (Integer) value);
+            } else if (Long.class.isInstance(value)) {
+                editor.putLong(entry.getKey(), (Long) value);
+            } else if (Float.class.isInstance(value)) {
+                editor.putFloat(entry.getKey(), (Float) value);
+            } else if (String.class.isInstance(value)) {
+                editor.putString(entry.getKey(), value.toString());
+            } else {
+                MyLog.e(TAG, "Unknown type of shared preference: "
+                        + value.getClass() + ", value: " + value.toString());
+                entryCounter--;
+            }
+            entryCounter++;
+        }
+        editor.commit();
+        return entryCounter;
     }
 }

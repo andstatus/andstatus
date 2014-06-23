@@ -20,7 +20,9 @@ import android.app.backup.BackupAgent;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.ParcelFileDescriptor;
+import android.preference.PreferenceManager;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.PersistentAccounts;
@@ -275,20 +277,20 @@ public class MyBackupAgent extends BackupAgent {
 
     private void restoreSharedPreferences(MyBackupDataInput data) throws IOException {
         MyLog.i(this, "On restoring Shared preferences");
-        MyPreferences.setDefaultValues(R.xml.preferences, true);
-        MyContextHolder.release();
-        MyLog.forget();
-        try {
-            MyPreferences.lockDefaultSharedPreferences();
-            assertNextHeader(data, SHARED_PREFERENCES_KEY);
-            sharedPreferencesRestored += restoreFile(data, 
-                    SharedPreferencesUtil.sharedPreferencesPath(MyContextHolder.get().context()));
-        } finally {
-            MyPreferences.unlockDefaultSharedPreferences();
+        MyPreferences.setDefaultValues(R.xml.preferences, false);
+        assertNextHeader(data, SHARED_PREFERENCES_KEY);
+        final String fileName = "preferences";
+        File tempFile = new File(SharedPreferencesUtil.prefsDirectory(MyContextHolder.get()
+                .context()), fileName + ".xml");
+        sharedPreferencesRestored += restoreFile(data, tempFile);
+        SharedPreferencesUtil.copyAll(MyPreferences.getSharedPreferences(fileName),
+                MyPreferences.getDefaultSharedPreferences());
+        if (!tempFile.delete()) {
+            MyLog.v(this, "Couldn't delete " + tempFile.getAbsolutePath());
         }
+        fixExternalStorage();
         MyContextHolder.release();
         MyContextHolder.initialize(this, this);
-        fixExternalStorage();
     }
     
     private void fixExternalStorage() {
@@ -299,8 +301,6 @@ public class MyBackupAgent extends BackupAgent {
         backupDescriptor.getLogger().logProgress("External storage is not available");
         MyPreferences.getDefaultSharedPreferences().edit()
                 .putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false).commit();
-        MyContextHolder.release();
-        MyContextHolder.initialize(this, this);
     }
 
     private void assertNextHeader(MyBackupDataInput data, String key) throws IOException {
