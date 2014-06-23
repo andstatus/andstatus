@@ -633,6 +633,13 @@ public class MyService extends Service {
                     break;
                 }
             }
+            MyLog.v(this, "Polled in "
+                    + (MyContextHolder.get().isInForeground() ? "foreground"
+                            + " "
+                            + (MyPreferences.isSyncWhileUsingApplicationEnabled() ? "enabled"
+                                    : "disabled")
+                            : "background")
+                    + " " + commandData);
             return commandData;
         }
 

@@ -17,6 +17,7 @@
 package org.andstatus.app.net;
 
 import android.test.InstrumentationTestCase;
+import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -62,15 +63,18 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
                 origin.getConnectionData(TriState.UNKNOWN));
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
-        // Saving
-        connectionData.host = "identi.ca";
+        if (TextUtils.isEmpty(connectionData.host)) {
+            connectionData.host = "identi.ca";
+        }
         OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
-        keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-        // Checking
-        OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
-        assertEquals("Keys are loaded", true, keys2.areKeysPresent());
-        assertEquals(consumerKey, keys2.getConsumerKey());
-        assertEquals(consumerSecret, keys2.getConsumerSecret());
+        if (!keys1.areKeysPresent()) {
+            keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+            // Checking
+            OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
+            assertEquals("Keys are loaded", true, keys2.areKeysPresent());
+            assertEquals(consumerKey, keys2.getConsumerKey());
+            assertEquals(consumerSecret, keys2.getConsumerSecret());
+        }
     }
     
     @Override

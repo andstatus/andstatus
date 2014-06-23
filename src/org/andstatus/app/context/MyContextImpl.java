@@ -31,6 +31,7 @@ import org.andstatus.app.data.MyDatabaseConverterController;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RelativeTime;
 
 import java.util.Locale;
 
@@ -257,8 +258,8 @@ public final class MyContextImpl implements MyContext {
     @Override
     public boolean isInForeground() {
         if (!mInForeground
-                && java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
-                        - mInForegroundChangedAt) < CONSIDER_IN_BACKGROUND_AFTER_SECONDS) {
+                && !RelativeTime.moreSecondsAgoThan(mInForegroundChangedAt,
+                        CONSIDER_IN_BACKGROUND_AFTER_SECONDS)) {
             return true;
         }
         return mInForeground;

@@ -5,6 +5,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.MbConfig;
+import org.andstatus.app.net.OAuthClientKeysTest;
 import org.andstatus.app.origin.Origin.Builder;
 
 public class OriginTest  extends InstrumentationTestCase {
@@ -85,6 +86,10 @@ public class OriginTest  extends InstrumentationTestCase {
             builder.setHtmlContentAllowed(allowHtml);
             builder.save();
             Origin origin = builder.build();
+            if (origin.isOAuthDefault() || origin.canChangeOAuth()) {
+                OAuthClientKeysTest.insertTestKeys(origin);
+            }
+            
             checkAttributes(originName, host, isSsl, allowHtml, origin);
             
             MyContextHolder.get().persistentOrigins().initialize();

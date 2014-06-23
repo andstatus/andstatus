@@ -465,6 +465,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         return state;
     }
     
+    public static final long ORIGIN_ID_TWITTER =  1L;
     /**
      * On datatypes in SQLite see <a href="http://www.sqlite.org/datatype3.html">Datatypes In SQLite Version 3</a>.
      * See also <a href="http://sqlite.org/autoinc.html">SQLite Autoincrement</a>.
@@ -595,7 +596,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + "%s"
                 + ")";
         String[] values = {
-                "1, 1, 'Twitter', 'api.twitter.com',    1, 0,  140, 23",
+                Long.toString(ORIGIN_ID_TWITTER) + 
+                 ", 1, 'Twitter', 'api.twitter.com',    1, 0,  140, 23",
                 "2, 2, 'pump.io', '',                   1, 1, 5000,  0",
                 "3, 3, 'Quitter', 'quitter.se',         1, 0,  140,  0",
                 "4, 3, 'LoadAverage','loadaverage.org', 1, 0, 5000,  0",

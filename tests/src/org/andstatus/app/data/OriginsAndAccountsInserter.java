@@ -38,7 +38,6 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         
         Origin pumpioOrigin = myContext.persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
         assertEquals("Origin for conversation created", pumpioOrigin.getOriginType(), TestSuite.CONVERSATION_ORIGIN_TYPE);
-        OAuthClientKeysTest.insertTestKeys(pumpioOrigin);
         
         addAccount(pumpioOrigin, "acct:firstTestUser@identi.ca", "firstTestUser@identi.ca", "");
         addAccount(pumpioOrigin, "acct:t131t@identi.ca", "t131t@identi.ca", "");

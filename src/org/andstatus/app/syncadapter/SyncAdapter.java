@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+* Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
 * Based on the sample: com.example.android.samplesync.syncadapter
 * Copyright (C) 2010 The Android Open Source Project
 *
@@ -28,7 +28,6 @@ import android.os.Bundle;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;

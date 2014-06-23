@@ -23,14 +23,14 @@ import org.andstatus.app.util.MyLog;
 
 class HttpConnectionData implements Cloneable {
     protected OriginType originType;
-
+    protected long originId;
     protected boolean isSsl;
     protected String basicPath;
     protected String oauthPath;
     protected String accountUsername;
     protected String host;
-    protected String hostForUserToken = "";
-    protected AccountDataReader dataReader = null;
+    protected String hostForUserToken;
+    protected AccountDataReader dataReader;
 
     protected OAuthClientKeys oauthClientKeys;
 
@@ -38,9 +38,14 @@ class HttpConnectionData implements Cloneable {
         return oauthClientKeys != null && oauthClientKeys.areKeysPresent();
     }
     
+    private HttpConnectionData() {
+        // Empty
+    }
+    
     static HttpConnectionData fromConnectionData(OriginConnectionData oConnectionData) {
         HttpConnectionData data = new HttpConnectionData();
         data.originType = oConnectionData.getOriginType();
+        data.originId = oConnectionData.getOriginId();
         data.isSsl = oConnectionData.isSsl();
         data.basicPath = oConnectionData.getBasicPath();
         data.oauthPath = oConnectionData.getOauthPath();
@@ -63,7 +68,7 @@ class HttpConnectionData implements Cloneable {
 
     @Override
     public String toString() {
-        return "HttpConnectionData {" + originType + ", isSsl:" + isSsl + ", basicPath:"
+        return "HttpConnectionData {" + originId + ", " + originType + ", isSsl:" + isSsl + ", basicPath:"
                 + basicPath + ", oauthPath:" + oauthPath + ", accountUsername:" + accountUsername
                 + ", host:" + host + ", hostForUserToken:" + hostForUserToken + ", dataReader:"
                 + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}";

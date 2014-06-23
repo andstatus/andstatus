@@ -18,9 +18,11 @@ package org.andstatus.app.service;
 
 import android.test.InstrumentationTestCase;
 
+import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccountTest;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.HttpConnectionMock;
@@ -157,7 +159,8 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
     
     public void testSyncInForeground() throws InterruptedException {
         MyLog.v(this, "testSyncInForeground started");
-
+        MyPreferences.getDefaultSharedPreferences().edit()
+                .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false).commit();
         CommandData cd1 = new CommandData(CommandEnum.FETCH_TIMELINE,
                 TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineTypeEnum.DIRECT, 0);
         listentedToCommand = cd1;
@@ -319,6 +322,8 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         MyLog.v(this, "tearDown started");
         dropQueues();
         MyContextHolder.get().setInForeground(false);
+        MyPreferences.getDefaultSharedPreferences().edit()
+                .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true).commit();
         
         serviceConnector.unregisterReceiver(MyContextHolder.get().context());
         TestSuite.setHttpConnection(null);

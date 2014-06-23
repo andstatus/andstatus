@@ -21,7 +21,6 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.AsyncTask;
 import android.widget.Toast;
 
 import net.jcip.annotations.GuardedBy;
@@ -29,8 +28,10 @@ import net.jcip.annotations.GuardedBy;
 import org.andstatus.app.R;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
+import org.andstatus.app.support.android.v11.os.AsyncTask;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 
@@ -95,7 +96,7 @@ public class StorageSwitch {
     }
 
     void move() {
-       new MoveDataBetweenStoragesTask().execute();
+       new MoveDataBetweenStoragesTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private boolean checkAndSetDataBeingMoved() {
@@ -177,9 +178,11 @@ public class StorageSwitch {
                 return;
             }
             try {
-                result.success = moveDatabase(useExternalStorageNew, result.messageBuilder);
+                result.success = moveDatabase(useExternalStorageNew, result.messageBuilder, MyDatabase.DATABASE_NAME);
                 if (result.success) {
                     result.moved = true;
+                    moveDatabase(useExternalStorageNew, result.messageBuilder, 
+                            TimelineSearchSuggestionsProvider.DATABASE_NAME);
                     moveAvatars(useExternalStorageNew, result.messageBuilder);
                 }
             } finally {
@@ -189,8 +192,8 @@ public class StorageSwitch {
             }
         }
 
-        private boolean moveDatabase(boolean useExternalStorageNew, StringBuilder messageToAppend) {
-            String method = "moveDatabase";
+        private boolean moveDatabase(boolean useExternalStorageNew, StringBuilder messageToAppend, String databaseName) {
+            final String method = "moveDatabase";
             boolean succeeded = false;
             boolean done = false;
             /**
@@ -203,25 +206,25 @@ public class StorageSwitch {
 
                 if (!done) {
                     dbFileOld = MyContextHolder.get().context().getDatabasePath(
-                            MyDatabase.DATABASE_NAME);
+                            databaseName);
                     dbFileNew = MyPreferences.getDatabasePath(
-                            MyDatabase.DATABASE_NAME, useExternalStorageNew);
+                            databaseName, useExternalStorageNew);
                     if (dbFileOld == null) {
-                        messageToAppend.append("No old database. ");
+                        messageToAppend.append("No old database " + databaseName);
                         done = true;
                     }
                 }
                 if (!done) {
                     if (dbFileNew == null) {
-                        messageToAppend.append("No new database. ");
+                        messageToAppend.append("No new database " + databaseName);
                         done = true;
                     } else {
                         if (!dbFileOld.exists()) {
-                            messageToAppend.append("No old database. ");
+                            messageToAppend.append("No old database " + databaseName);
                             done = true;
                             succeeded = true;
                         } else if (dbFileNew.exists()) {
-                            messageToAppend.insert(0, "Database already exists. ");
+                            messageToAppend.insert(0, "Database already exists " + databaseName);
                             if (!dbFileNew.delete()) {
                                 messageToAppend
                                         .insert(0, "Couldn't delete already existed files. ");
@@ -241,9 +244,9 @@ public class StorageSwitch {
                             succeeded = true;
                         }
                     } catch (Exception e) {
-                        MyLog.v(this, "Copy database", e);
-                        messageToAppend.insert(0, "Couldn't copy database: " + e.getMessage()
-                                + ". ");
+                        MyLog.v(this, "Copy database " + databaseName, e);
+                        messageToAppend.insert(0, "Couldn't copy database " 
+                                + databaseName + ": " + e.getMessage()  + ". ");
                     }
                     done = true;
                 }
@@ -273,7 +276,7 @@ public class StorageSwitch {
                             + ". ");
                 }
             }
-            MyLog.d(this, method + " " + (succeeded ? "succeeded" : "failed"));
+            MyLog.d(this, method + "; " + databaseName + " " + (succeeded ? "succeeded" : "failed"));
             return succeeded;
         }
 
