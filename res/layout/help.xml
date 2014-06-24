@@ -18,14 +18,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/andstatus_splash"
     android:gravity="center"
     android:orientation="vertical" >
 
     <LinearLayout
         android:id="@+id/help_container"
         android:layout_width="match_parent"
-        android:layout_height="0dip"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center"
         android:orientation="vertical" >
@@ -57,12 +56,12 @@
                     android:id="@+id/splash_payoff_line"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dip"
+                    android:layout_marginBottom="12dp"
                     android:focusable="false"
                     android:focusableInTouchMode="false"
                     android:gravity="center_horizontal"
                     android:text="@string/splash_payoff_line"
-                    android:textSize="14dip"
+                    android:textSize="20sp"
                     android:typeface="sans" >
                 </TextView>
 
@@ -71,8 +70,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="(application version)"
-                    android:textColor="#ff7bc7cb"
-                    android:textSize="14dip" >
+                    android:textSize="20sp" >
                 </TextView>
             </LinearLayout>
 
@@ -89,18 +87,16 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="10dip"
+                        android:padding="10dp"
                         android:text="@string/user_manual_page_1"
-                        android:textColor="#ffffffff"
-                        android:textSize="8pt" />
+                        android:textSize="20sp" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="10dip"
                         android:text="@string/user_manual_page_2"
-                        android:textColor="#ffffffff"
-                        android:textSize="8pt" />
+                        android:textSize="20sp" />
                 </LinearLayout>
             </ScrollView>
 
@@ -120,16 +116,15 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#44000000"
         android:gravity="center"
-        android:paddingTop="3dip" >
+        android:paddingTop="3dp" >
 
         <Button
             android:id="@+id/button_help_learn_more"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dip"
-            android:paddingRight="10dip"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:text="@string/splash_button_learn_more" >
         </Button>
 
@@ -137,17 +132,17 @@
             android:id="@+id/button_restore"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minWidth="90dip"
+            android:minWidth="90dp"
             android:paddingLeft="10dp"
-            android:paddingRight="10dip"
+            android:paddingRight="10dp"
             android:text="@string/button_restore" />
         
         <Button
             android:id="@+id/button_help_get_started"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dip"
-            android:paddingRight="10dip"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:text="@string/splash_button_get_started" >
         </Button>
 

@@ -18,10 +18,8 @@
 package org.andstatus.app;
 
 import org.andstatus.app.account.AccountSettingsActivity;
-import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferenceActivity;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.ActivitySwipeDetector;
 import org.andstatus.app.util.MyLog;
@@ -36,8 +34,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -51,7 +47,7 @@ import android.widget.ViewFlipper;
  * @author yvolk@yurivolkov.com
  * @author Torgny 
  */
-public class HelpActivity extends Activity implements SwipeInterface {
+public class HelpActivity extends Activity implements SwipeInterface, MyActionBarContainer {
 
     // Constants
     public static final String TAG = "HelpActivity";
@@ -80,6 +76,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        MyActionBar actionBar = new MyActionBar(this);
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
@@ -97,6 +94,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.help);
+        actionBar.attach();
 
         if (savedInstanceState != null) {
             mIsFirstActivity = savedInstanceState.getBoolean(EXTRA_IS_FIRST_ACTIVITY, false);
@@ -105,11 +103,11 @@ public class HelpActivity extends Activity implements SwipeInterface {
             mIsFirstActivity = getIntent().getBooleanExtra(EXTRA_IS_FIRST_ACTIVITY, mIsFirstActivity);
         }
 
+        TextView versionText = (TextView) findViewById(R.id.splash_application_version);
         try {
-            TextView version = (TextView) findViewById(R.id.splash_application_version);
             PackageManager pm = getPackageManager();
             PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
-            version.setText(pi.packageName + " v." + pi.versionName + " (" + pi.versionCode + ")");
+            versionText.setText(pi.packageName + " v." + pi.versionName + " (" + pi.versionCode + ")");
         } catch (NameNotFoundException e) {
             MyLog.e(this, "Unable to obtain package information", e);
         }
@@ -117,8 +115,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
         // Show the Change log
         Xslt.toWebView(this, R.id.help_changelog, R.raw.changes, R.raw.changesxsl);
         
-        View splashContainer = findViewById(R.id.splash_container);
-        splashContainer.setOnClickListener(new OnClickListener() {
+        versionText.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -277,5 +274,20 @@ public class HelpActivity extends Activity implements SwipeInterface {
             context.startActivity(intent);
         }
         return doFinish;
+    }
+
+    @Override
+    public Activity getActivity() {
+        return this;
+    }
+
+    @Override
+    public void closeAndGoBack() {
+        finish();
+    }
+
+    @Override
+    public boolean hasOptionsMenu() {
+        return false;
     }
 }

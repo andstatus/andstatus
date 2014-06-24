@@ -178,7 +178,9 @@ public class MyActionBar {
     }
     
     public void setTitle(int resId) {
-        setTitle(container.getActivity().getText(resId).toString());
+        if (resId != 0) {
+            setTitle(container.getActivity().getText(resId).toString());
+        }
     }
 
     public void setTitle(String titleText) {
