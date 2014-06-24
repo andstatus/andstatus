@@ -194,7 +194,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         mPreferencesChangeTime = MyContextHolder.initialize(this, this);
-        mShowSyncIndicatorOnTimeline = MyPreferences.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, false);
+        mShowSyncIndicatorOnTimeline = MyPreferences.getBoolean(
+		    MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, true);
         
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
             MyLog.d(this, "onCreate instanceId=" + mInstanceId 

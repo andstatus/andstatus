@@ -35,7 +35,8 @@ public class RelativeTime {
     private static final int HOUR = 60 * MINUTE;
     private static final int DAY = 24 * HOUR;
     private static final int MONTH = 30 * DAY;
-
+	public static final long SECONDS_IN_A_DAY = DAY;
+	
     private Calendar mCalendar;
     private Context mContext;
     

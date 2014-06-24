@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -31,18 +32,22 @@ import org.andstatus.app.util.SelectionAndArgs;
 
 import java.io.File;
 import java.util.Date;
+import org.andstatus.app.util.*;
 
 /**
  * Clean database from outdated information
  * currently only old Messages are being deleted 
  */
 public class DataPruner {
+	private MyContext mMyContext;
     private ContentResolver mContentResolver;
     private int mDeleted = 0;
     static final long MAX_DAYS_LOGS_TO_KEEP = 10;
+    static final long PRUNE_MIN_PERIOD_DAYS = 1;	
     
-    public DataPruner(Context context) {
-        mContentResolver = context.getContentResolver();
+    public DataPruner(MyContext myContext) {
+		mMyContext = myContext;
+        mContentResolver = myContext.context().getContentResolver();
     }
 
     /**
@@ -53,6 +58,9 @@ public class DataPruner {
      * @return true if succeeded
      */
     public boolean prune() {
+		if (!isTimeToPrune()) {
+			return true;
+		}
         final String method = "prune";
         boolean ok = true;
        
@@ -142,8 +150,16 @@ public class DataPruner {
                     + nDeletedSize + " of " + nTweets + " messages, before " + new Date(latestTimestampSize).toString());
         }
         pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
+		MyPreferences.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, System.currentTimeMillis());
         return ok;
     }
+
+	private boolean isTimeToPrune()
+	{
+		return !mMyContext.isInForeground() && RelativeTime.moreSecondsAgoThan(
+		    MyPreferences.getLong(MyPreferences.KEY_DATA_PRUNED_DATE), 
+			PRUNE_MIN_PERIOD_DAYS * RelativeTime.SECONDS_IN_A_DAY);
+	}
 
     long pruneLogs(long maxDaysToKeep) {
         final String method = "pruneLogs";

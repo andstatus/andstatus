@@ -38,33 +38,35 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="9.0" android:versionCode="102"
-        versionDate="2014-06-22"
+        versionDate="2014-06-24"
         versionTitle="Backup/Restore and Syncing indicator">
         <changes>
             <change>Application data backup and restore implemented. This feature may be used in two ways:
                 <ul>
                     <li>Manual backup at any time to SD card (Settings-&gt;Storage-&gt;Backup application
-                         data) and manual restore after reinstall 
-                         (Settings-&gt;Storage-&gt;Restore application data).</li>
+                         data) and manual restore after reinstall: from the first screen and from 
+                         Settings-&gt;Storage-&gt;Restore application data.</li>
                     <li>Automatic backup and restore by Android system. This may work for some devices, 
-                        but is useless for the most users due to Android system internal limitations 
-                        (see <a href="https://github.com/andstatus/andstatus/pull/49" >the discussion</a>).</li>
+                        but currently is useless for the most users due to Android system internal limitations 
+                        (see <a href="https://github.com/andstatus/andstatus/pull/49" >this discussion</a>).</li>
                 </ul>
                 Preferences, messages and accounts with their credentials are backed up. Avatars are not. 
                 See <a href="https://github.com/andstatus/andstatus/issues/86" >Issue #86</a>.</change>
-            <change>AndStatus syncing indicator is added. To turn this new feature on, 
+            <change>&quot;Sync while using application&quot; option added (turned on by default, as it was earlier). 
+                When this option is turned off (in Settings-&gt;Syncing), 
+				there is no background sync while browsing timeline and conversations 
+                in order to preserve smoothness of scrolling. Manually initiated updates 
+                occur in background though.</change>
+            <change>AndStatus syncing indicator is added to the Timeline screen. 
+				To turn this feature off, 
                 go to Settings-&gt;Syncing-&gt;Syncing indicator on timeline.
                 See <a href="https://github.com/andstatus/andstatus/issues/63" >Issue #63</a>.</change>
             <change>Added an option to change Connection timeout, which defaults to 30 seconds. 
                 (go to Settings-&gt;Syncing-&gt;Connection timeout) 
                 Increasing this value may improve connections with slow servers. 
                 See <a href="https://github.com/andstatus/andstatus/issues/83" >Issue #83</a>.</change>
-            <change>&quot;Sync while using application&quot; option added (turned on by default, as it was earlier). 
-                When this option is turned off, there is no background sync while browsing timeline and conversations 
-                in order to preserve smoothness of scrolling. Manually initiated updates 
-                occur in background though.</change>
-            <change>Overflow button added to Action bars of Activities, which have an Options menu.</change>    
-            <change>BOOT_COMPLETED permission added in order to update widget after boot.</change>
+            <change>Overflow button added to Action bars of Activities, which have Options menues.</change>    
+            <change>BOOT_COMPLETED permission added in order to update a Widget after boot.</change>
         </changes>
     </release>
     <release android:versionName="8.4" android:versionCode="100"
@@ -370,7 +372,8 @@ even if they were downloaded from different systems.
 The "Home Combined" timeline shows not only messages from "Home" timelines of all accounts, 
 but also messages, downloaded during other requests: e.g. previous messages of Conversations.
 You can do all usual operations with messages in the Combined Timeline, including favoriting,
-replying and reblogging.            </change>
+replying and reblogging.
+            </change>
             <change>Timeline type selection (Home/Favorites/Mentions/Direct Messages) moved 
             from a legacy "Options menu" to the top bar.
             </change>

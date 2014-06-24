@@ -34,7 +34,7 @@ class CommandExecutorLoadAllTimelines extends CommandExecutorStrategy {
             CommandExecutorStrategy.executeStep(execContext, this);
         }
         if (!execContext.getResult().hasError() && !isStopping()) {
-            new DataPruner(execContext.getContext()).prune();
+            new DataPruner(execContext.getMyContext()).prune();
         }
         if (!execContext.getResult().hasError() || execContext.getResult().getDownloadedCount() > 0) {
             MyLog.v(this, "Notifying of timeline changes");

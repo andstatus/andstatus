@@ -63,6 +63,7 @@ public class MyPreferences {
      * System time when shared preferences were changed
      */
     public static final String KEY_PREFERENCES_CHANGE_TIME = "preferences_change_time";
+    public static final String KEY_DATA_PRUNED_DATE = "data_pruned_date";
     /**
      * Minimum logging level for the whole application (i.e. for any tag)
      */
@@ -198,32 +199,38 @@ public class MyPreferences {
      *  Remember when last changes to the preferences were made
      */
     public static void onPreferencesChanged() {
-        SharedPreferences sp = getDefaultSharedPreferences();
-        if (sp != null) {
-            sp.edit()
-            .putLong(KEY_PREFERENCES_CHANGE_TIME,
-                    java.lang.System.currentTimeMillis()).commit();
-            Context context = MyContextHolder.get().context();
-            if (context != null && getBoolean(KEY_ENABLE_ANDROID_BACKUP, false)) {
-                new BackupManager(context).dataChanged();
-            }
+        putLong(KEY_PREFERENCES_CHANGE_TIME, System.currentTimeMillis());
+        Context context = MyContextHolder.get().context();
+        if (context != null && getBoolean(KEY_ENABLE_ANDROID_BACKUP, false)) {
+            new BackupManager(context).dataChanged();
         }
     }
-    
+
+	public static void putLong(String key, long value) {
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            sp.edit().putLong(key, value).commit();
+        }
+    }
+	
     /**
      * @return System time when AndStatus preferences were last time changed. 
      * We take into account here time when accounts were added/removed...
      */
     public static long getPreferencesChangeTime() {
-        long preferencesChangeTime = 0;
-        SharedPreferences sp = getDefaultSharedPreferences();
-        if (sp != null) {
-            preferencesChangeTime = getDefaultSharedPreferences().getLong(KEY_PREFERENCES_CHANGE_TIME, 0);            
-        }
-        return preferencesChangeTime;
+		return getLong(KEY_PREFERENCES_CHANGE_TIME);
     }
     
-    /**
+    public static long getLong(String key) {
+        long value = 0;
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            value = getDefaultSharedPreferences().getLong(key, 0);            
+        }
+        return value;
+    }
+	
+	/**
      * Standard directory in which to place databases
      */
     public static final String DIRECTORY_DATABASES = "databases";
