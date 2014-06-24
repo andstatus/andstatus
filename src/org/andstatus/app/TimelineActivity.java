@@ -245,9 +245,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         
         if (!isInstanceStateRestored) {
             mTimelineIsCombined = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false);
-            processNewIntent(getIntent());
+            parseNewIntent(getIntent());
         }
-        updateThisOnChangedParameters();
+        updateScreen();
+        queryListData(false);
     }
 
     private boolean restoreInstanceState(Bundle savedInstanceState) {
@@ -900,17 +901,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         super.onNewIntent(intent);
         MyContextHolder.initialize(this, this);
-        processNewIntent(intent);
-        updateThisOnChangedParameters();
+        parseNewIntent(intent);
+        updateScreen();
+        queryListData(false);
     }
 
-    /**
-     * Change the Activity according to the new intent. This procedure is done
-     * both {@link #onCreate(Bundle)} and {@link #onNewIntent(Intent)}
-     * 
-     * @param intentNew
-     */
-    private void processNewIntent(Intent intentNew) {
+    private void parseNewIntent(Intent intentNew) {
         TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(intentNew
                 .getStringExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key));
         if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
@@ -985,12 +981,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
     }
 
-    private void updateThisOnChangedParameters() {
+    private void updateScreen() {
         MyServiceManager.setServiceAvailable();
         TextView selectedUserText = (TextView) findViewById(R.id.selectedUserText);
         ToggleButton combinedTimelineToggle = (ToggleButton) findViewById(R.id.combinedTimelineToggle);
-        combinedTimelineToggle.setChecked(mTimelineIsCombined);
         combinedTimelineToggle.setTextOff(mTimelineType.getPrepositionForNotCombinedTimeline(this));
+        combinedTimelineToggle.setChecked(mTimelineIsCombined);
         if (mSelectedUserId != 0 && mSelectedUserId != mCurrentMyAccountUserId) {
             combinedTimelineToggle.setVisibility(View.GONE);
             selectedUserText.setText(MyProvider.userIdToName(mSelectedUserId));
@@ -1013,8 +1009,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         } else {
             mMessageEditor.updateCreateMessageButton();
         }
-        
-        queryListData(false);
     }
     
     /**

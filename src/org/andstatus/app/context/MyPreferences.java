@@ -162,15 +162,15 @@ public class MyPreferences {
      * @return the number of seconds between two sync ("fetch"...) actions.
      */
     public static long getSyncFrequencySeconds() {
-        return getLongPreference(KEY_SYNC_FREQUENCY_SECONDS, SYNC_FREQUENCY_DEFAULT_SECONDS);
+        return getLongStoredAsString(KEY_SYNC_FREQUENCY_SECONDS, SYNC_FREQUENCY_DEFAULT_SECONDS);
     }
 
-    public static long getLongPreference(String key, long defaultValue) {
+    private static long getLongStoredAsString(String key, long defaultValue) {
         long longValue = defaultValue;
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
             try {
-                long longValueStored = Long.parseLong(getDefaultSharedPreferences().getString(key, "0"));
+                long longValueStored = Long.parseLong(sp.getString(key, "0"));
                 if (longValueStored > 0) { 
                     longValue = longValueStored;
                 }
@@ -183,7 +183,7 @@ public class MyPreferences {
 
     private static final long CONNNECTION_TIMEOUT_DEFAULT_SECONDS = 30;
     public static int getConnectionTimeoutMs() {
-        return (int) java.util.concurrent.TimeUnit.SECONDS.toMillis(getLongPreference(
+        return (int) java.util.concurrent.TimeUnit.SECONDS.toMillis(getLongStoredAsString(
                 KEY_CONNNECTION_TIMEOUT_SECONDS, CONNNECTION_TIMEOUT_DEFAULT_SECONDS));
     }
     
