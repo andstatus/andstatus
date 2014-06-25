@@ -90,10 +90,10 @@ class MessageEditor {
     public MessageEditor(ActionableMessageList actionableMessageList) {
         mMessageList = actionableMessageList;
 
-        ViewGroup messageListParent = (ViewGroup) mMessageList.getActivity().findViewById(R.id.messageListParent);
+        ViewGroup layoutParent = (ViewGroup) mMessageList.getActivity().findViewById(R.id.myLayoutParent);
         LayoutInflater inflater = LayoutInflater.from(mMessageList.getActivity());
         mEditorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
-        messageListParent.addView(mEditorView);
+        layoutParent.addView(mEditorView);
         
         mCharsLeftText = (TextView) mEditorView.findViewById(R.id.messageEditCharsLeftTextView);
         mDetails = (TextView) mEditorView.findViewById(R.id.messageEditDetails);

@@ -17,6 +17,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
     protected void setUp() throws Exception {
         super.setUp();
         TestSuite.initializeWithData(this);
+        MyContextHolder.get().setInForeground(false);
     }
     
     public void testPruneLogs() {
@@ -35,9 +36,9 @@ public class DataPrunerTest extends InstrumentationTestCase  {
         assertTrue("File is fresh", logFile1.exists());
         long pruneDate1 = MyPreferences.getLong(MyPreferences.KEY_DATA_PRUNED_DATE);
         assertTrue(
-                "Pruning date updated "
+                "Pruning date updated " + pruneDate1 + " - "
                         + RelativeTime.getDifference(MyContextHolder.get().context(),
-                                System.currentTimeMillis()),
+                                pruneDate1),
                 !RelativeTime.moreSecondsAgoThan(pruneDate1, 300));
         dp.prune();
         assertEquals("No more pruning", pruneDate1,

@@ -121,7 +121,8 @@
 
         <Button
             android:id="@+id/button_help_learn_more"
-            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
@@ -130,7 +131,8 @@
 
         <Button
             android:id="@+id/button_restore"
-            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:minWidth="90dp"
             android:paddingLeft="10dp"
@@ -139,7 +141,8 @@
         
         <Button
             android:id="@+id/button_help_get_started"
-            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"

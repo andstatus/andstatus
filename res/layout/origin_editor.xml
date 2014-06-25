@@ -1,44 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/myLayoutParent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <Button
-            android:id="@+id/button_save"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="10dp"
-            android:minEms="5"
-            android:text="@string/button_save" />
-
-        <Button
-            android:id="@+id/button_discard"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@+id/button_save"
-            android:minEms="5"
-            android:text="@string/button_discard" />
-
-        <Button
-            android:id="@+id/button_delete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@+id/button_discard"
-            android:minEms="5"
-            android:text="@string/button_delete" />
-
-    </RelativeLayout>
 
     <TextView
         android:id="@+id/label_origin_type"
@@ -93,4 +58,37 @@
         android:layout_height="wrap_content"
         android:text="@string/label_allow_html_content" />
 
+    <LinearLayout
+        android:id="@+id/filler"
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/button_discard"
+            android:layout_weight="1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/button_discard" />
+
+        <Button
+            android:id="@+id/button_delete"
+            android:layout_weight="1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/button_delete" />
+    
+        <Button
+            android:id="@+id/button_save"
+            android:layout_weight="1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/button_save" />
+    </LinearLayout>
+    
 </LinearLayout>

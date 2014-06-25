@@ -15,9 +15,10 @@
     limitations under the License.
  -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/myLayoutParent"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".backup.RestoreActivity" >
 
@@ -36,46 +37,32 @@
         android:layout_margin="5dp"
         android:hint="@string/label_backup_file" />
 
-    <RelativeLayout
+    <TextView
+        android:id="@+id/progress_log"
+        android:layout_weight="1"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_margin="5dp" />
+    
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
         <Button
-            android:id="@+id/button_cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="10dp"
-            android:minEms="5"
-            android:text="@string/button_cancel" />
-
-        <Button
             android:id="@+id/button_select_backup_file"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@id/button_cancel"
-            android:minEms="5"
+            android:layout_gravity="bottom"
+            android:layout_weight="1"
             android:text="@string/button_select_backup_file" />
 
         <Button
             android:id="@+id/button_restore"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@id/button_select_backup_file"
-            android:minEms="5"
+            android:layout_weight="1"
             android:text="@string/button_restore" />
 
-    </RelativeLayout>
-    
-    <TextView
-        android:id="@+id/progress_log"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_margin="5dp" />
+    </LinearLayout>
     
 </LinearLayout>

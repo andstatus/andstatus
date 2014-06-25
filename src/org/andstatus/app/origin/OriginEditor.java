@@ -51,13 +51,14 @@ public class OriginEditor extends Activity implements MyActionBarContainer {
     private EditText editTextHost;
     private CheckBox checkBoxIsSsl;
     private CheckBox checkBoxAllowHtml;
+
+    private MyActionBar actionBar;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        actionBar = new MyActionBar(this);
         super.onCreate(savedInstanceState);
-        MyActionBar actionBar = new MyActionBar(this);
         setContentView(R.layout.origin_editor);
-        actionBar.attach();
 
         buttonSave = (Button) findViewById(R.id.button_save);
         Button buttonDiscard = (Button) findViewById(R.id.button_discard);
@@ -84,7 +85,8 @@ public class OriginEditor extends Activity implements MyActionBarContainer {
         editTextHost = (EditText) findViewById(R.id.host);
         checkBoxIsSsl = (CheckBox) findViewById(R.id.is_ssl);
         checkBoxAllowHtml = (CheckBox) findViewById(R.id.allow_html);
-        
+
+        actionBar.attach();
         processNewIntent(getIntent());
     }
 
@@ -117,7 +119,7 @@ public class OriginEditor extends Activity implements MyActionBarContainer {
         if (origin.isPersistent()) {
             title = origin.getName() + " - " + title;
         }
-        setTitle(title);
+        actionBar.setTitle(title);
     }
     
     @Override

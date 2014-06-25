@@ -70,16 +70,6 @@ public class RestoreActivity extends Activity implements MyActionBarContainer {
                         .chooseFileOrDir(getBackupFolder().getAbsolutePath());
             }
         });
-
-        findViewById(R.id.button_cancel).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (asyncTask == null || asyncTask.getStatus() != Status.RUNNING) {
-                    closeAndGoBack();
-                }
-            }
-        });
-        
         actionBar.attach();
     }
 

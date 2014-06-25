@@ -9,8 +9,7 @@
     <RelativeLayout android:id="@+id/upNavigation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        >
+        android:layout_centerVertical="true">
 	    <ImageView android:id="@+id/upNavigationIcon"
 	        android:src="@drawable/ic_ab_back_holo_light_am"
 	        android:layout_width="wrap_content"
@@ -35,16 +34,21 @@
 	        android:textColor="@android:color/primary_text_dark" />
     </RelativeLayout>
 
-    <Button
+    <RelativeLayout
         android:id="@+id/button_overflow"
-        style="?attr/myActionOverflowButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="6dip"
-        android:layout_marginRight="6dip"
-        android:contentDescription="@string/button_overflow"
-        android:visibility="visible" />
+        android:minHeight="@dimen/my_action_button_min_height"
+        android:minWidth="@dimen/my_action_button_min_width" >
+
+        <ImageView
+           style="?attr/myActionOverflowButtonStyle"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_centerInParent="true"
+           android:contentDescription="@string/button_overflow" />
+    </RelativeLayout>
 
 </RelativeLayout>

@@ -26,7 +26,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -68,7 +67,7 @@ public class MyActionBar {
     }
     
     private boolean attachToKnownView(ViewGroup actionsView) {
-        ViewGroup viewGroup = (ViewGroup) container.getActivity().findViewById(R.id.messageListParent);
+        ViewGroup viewGroup = (ViewGroup) container.getActivity().findViewById(R.id.myLayoutParent);
         if (viewGroup != null) {
             viewGroup.addView(actionsView, 0);
             return true;
@@ -159,7 +158,7 @@ public class MyActionBar {
     }
 
     private void setupOverflowButton() {
-        Button overflowButton = (Button) container.getActivity().findViewById(R.id.button_overflow);
+        View overflowButton = container.getActivity().findViewById(R.id.button_overflow);
         if (overflowButton == null) {
             return;
         }
