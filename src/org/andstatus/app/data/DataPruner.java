@@ -150,8 +150,12 @@ public class DataPruner {
                     + nDeletedSize + " of " + nTweets + " messages, before " + new Date(latestTimestampSize).toString());
         }
         pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
-		MyPreferences.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, System.currentTimeMillis());
+		setDataPrunedNow();
         return ok;
+    }
+
+    public static void setDataPrunedNow() {
+        MyPreferences.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, System.currentTimeMillis());
     }
 
 	private boolean isTimeToPrune()

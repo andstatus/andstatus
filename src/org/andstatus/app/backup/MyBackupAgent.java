@@ -28,6 +28,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.service.MyServiceManager;
@@ -266,6 +267,8 @@ public class MyBackupAgent extends BackupAgent {
         }
         MyContextHolder.release();
         MyContextHolder.initialize(this, this);
+        
+        DataPruner.setDataPrunedNow();
         
         data.setMyContext(MyContextHolder.get());
         assertNextHeader(data, PersistentAccounts.KEY_ACCOUNT);
