@@ -59,6 +59,7 @@ public class DataPruner {
      */
     public boolean prune() {
 		if (!isTimeToPrune()) {
+		    MyLog.v(this, "Prune skipped");
 			return true;
 		}
         final String method = "prune";

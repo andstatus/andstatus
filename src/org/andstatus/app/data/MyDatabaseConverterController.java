@@ -179,7 +179,9 @@ public class MyDatabaseConverterController {
             shouldTriggerDatabaseUpgrade = false;
             stillUpgrading();
         }
-        boolean success = new MyDatabaseConverter().execute(new UpgradeParams(upgradeRequestor, db, oldVersion, newVersion));
+        MyContextHolder.get().setInForeground(true);
+        boolean success = new MyDatabaseConverter().execute(new UpgradeParams(upgradeRequestor, db,
+                oldVersion, newVersion));
         synchronized(UPGRADE_LOCK) {
             upgradeEnded = true;
             upgradeEndedSuccessfully = success;

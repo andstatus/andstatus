@@ -22,6 +22,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
     
     public void testPruneLogs() {
         final String method = "testPruneLogs";
+        MyLog.v(this, method + "; Started");
         MyLog.setLogToFile(true);
         String fileName = MyLog.getLogFileName();
         File logFile1 = MyLog.getLogFile(fileName, true);
@@ -57,7 +58,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
         } else {
             fail("Couldn't set modification date to " + millisToDateString(lastModifiedNew));
         }
-        
+        MyLog.v(this, method + "; Ended");
     }
 
     private String millisToDateString(long dateTime) {

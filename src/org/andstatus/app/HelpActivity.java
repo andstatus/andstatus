@@ -125,7 +125,7 @@ public class HelpActivity extends Activity implements SwipeInterface, MyActionBa
         });
 
         Button restoreButton = (Button) findViewById(R.id.button_restore);
-        if (MyContextHolder.get().persistentAccounts().isEmpty()) {
+        if (MyContextHolder.get().isReady() && MyContextHolder.get().persistentAccounts().isEmpty()) {
             restoreButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {

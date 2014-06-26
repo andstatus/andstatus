@@ -282,6 +282,11 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void getStatus() {
         boolean ok = false;
         String oid = MyProvider.idToOid(OidEnum.MSG_OID, execContext.getCommandData().itemId, 0);
+        if (TextUtils.isEmpty(oid)) {
+            execContext.getResult().incrementParseExceptions();
+            MyLog.w(this, "getStatus failed, no OID for id=" + execContext.getCommandData().itemId);
+            return;
+        }
         try {
             MbMessage message = execContext.getMyAccount().getConnection().getMessage(oid);
             if (!message.isEmpty()) {
