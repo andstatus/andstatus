@@ -37,8 +37,8 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
-    <release android:versionName="9.0" android:versionCode="102"
-        versionDate="2014-06-24"
+    <release android:versionName="9.0" android:versionCode="103"
+        versionDate="2014-06-28"
         versionTitle="Backup/Restore and Syncing indicator">
         <changes>
             <change>Application data backup and restore implemented. This feature may be used in two ways:

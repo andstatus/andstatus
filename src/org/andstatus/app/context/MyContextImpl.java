@@ -267,6 +267,13 @@ public final class MyContextImpl implements MyContext {
 
     @Override
     public void setInForeground(boolean inForeground) {
+        setInForegroundStatic(inForeground);
+    }
+    
+    /** To avoid "Write to static field" warning  
+     *  On static members in interfaces: http://stackoverflow.com/questions/512877/why-cant-i-define-a-static-method-in-a-java-interface
+     * */
+    private static void setInForegroundStatic(boolean inForeground) {
         if (mInForeground != inForeground) {
             mInForegroundChangedAt = System.currentTimeMillis();
         }

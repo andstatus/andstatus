@@ -51,8 +51,8 @@ public class MyService extends Service {
     static final String RETRY_QUEUE_FILENAME = TAG + "-retry-queue";
     static final String ERROR_QUEUE_FILENAME = TAG + "-error-queue";
     
-	public static final long MAX_COMMAND_EXECUTION_SECONDS = 10 * 60;
-	
+    public static final long MAX_COMMAND_EXECUTION_SECONDS = 10 * 60;
+    
     /**
      * Broadcast with this action is being sent by {@link MyService} to notify of its state.
      *  Actually {@link MyServiceManager} receives it.
@@ -93,10 +93,10 @@ public class MyService extends Service {
     private long mExecutorStartedAt = 0;
     @GuardedBy("executorLock")
     private long mExecutorEndedAt = 0;
-	
+    
     private final Object heartBeatLock = new Object();
-	@GuardedBy("heartBeatLock")
-	private HeartBeat mHeartBeat = null;
+    @GuardedBy("heartBeatLock")
+    private HeartBeat mHeartBeat = null;
 
     private final Object wakeLockLock = new Object();
     /**
@@ -110,10 +110,10 @@ public class MyService extends Service {
     private final Queue<CommandData> mRetryCommandQueue = new PriorityBlockingQueue<CommandData>(100);
     private final Queue<CommandData> mErrorCommandQueue = new LinkedBlockingQueue<CommandData>(200);
 
-    private final static long RETRY_QUEUE_PROCESSING_PERIOD_SECONDS = 900; 
+    private static final long RETRY_QUEUE_PROCESSING_PERIOD_SECONDS = 900; 
     private final AtomicLong mRetryQueueProcessedAt = new AtomicLong();
     
-	private static volatile boolean widgetsInitialized = false;
+    private static volatile boolean widgetsInitialized = false;
 
     private MyServiceState getServiceState() {
         MyServiceState state = MyServiceState.STOPPED; 
@@ -133,7 +133,7 @@ public class MyService extends Service {
             return mIsStopping;
         }
     }
-	
+    
     @Override
     public void onCreate() {
         MyLog.d(this, "Service created");
@@ -195,19 +195,19 @@ public class MyService extends Service {
     }
 
     private void addToTheQueueWhileStopping(CommandData commandData) {
-		CommandData commandData2 = null;
+        CommandData commandData2 = null;
         synchronized (serviceStateLock) {
             if (mInitialized) {
                 commandData2 = addToMainQueue(commandData);
             }
         }
-		if (commandData2 != null) {
-			MyLog.i(this,"Couldn't add command while stopping "
-			+ commandData2);
-		}
+        if (commandData2 != null) {
+            MyLog.i(this,"Couldn't add command while stopping "
+            + commandData2);
+        }
     }
 
-	/** returns command back in a case of an error */
+    /** returns command back in a case of an error */
     private CommandData addToMainQueue(CommandData commandData) {
         switch (commandData.getCommand()) {
             case EMPTY:
@@ -253,10 +253,10 @@ public class MyService extends Service {
             }
         }
         if (wasNotInitialized) {
-			if (!widgetsInitialized) {
-				AppWidgets.updateWidgets(MyContextHolder.get());
-				widgetsInitialized = true;
-			}
+            if (!widgetsInitialized) {
+                AppWidgets.updateWidgets(MyContextHolder.get());
+                widgetsInitialized = true;
+            }
             synchronized(heartBeatLock) {
                 if (mHeartBeat != null && mHeartBeat.getStatus() == Status.RUNNING) {
                     mHeartBeat.cancel(true);
@@ -265,9 +265,9 @@ public class MyService extends Service {
                 mHeartBeat.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
         }
-		if (changed) {
+        if (changed) {
             MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState()).broadcast();
-		}
+        }
     }
 
     private void restoreState() {
@@ -290,7 +290,7 @@ public class MyService extends Service {
                 startExecution();
                 break;
             default:
-			    MyLog.v(this, "Didn't change execution " + mExecutor);
+                MyLog.v(this, "Didn't change execution " + mExecutor);
                 break;
         }
     }
@@ -400,7 +400,7 @@ public class MyService extends Service {
     }
     
     private boolean isAnythingToExecuteInMainQueueNow() {
-        if (mMainCommandQueue.size() == 0) {
+        if (mMainCommandQueue.isEmpty()) {
             return false;
         }
         if (!MyPreferences.isSyncWhileUsingApplicationEnabled()
@@ -411,7 +411,7 @@ public class MyService extends Service {
     }
     
     private boolean isAnythingToRetryNow() {
-        if (mRetryCommandQueue.size() == 0
+        if (mRetryCommandQueue.isEmpty()
                 || !RelativeTime.moreSecondsAgoThan(mRetryQueueProcessedAt.get(),
                         RETRY_QUEUE_PROCESSING_PERIOD_SECONDS)) {
             return false;
@@ -487,12 +487,12 @@ public class MyService extends Service {
                 decidedToChangeIsStoppingAt = 0;
             }
         }
-		synchronized(heartBeatLock) {
-		    if (mHeartBeat != null) {
-		        mHeartBeat.cancel(true);
-		    }
-			mHeartBeat = null;
-		}
+        synchronized(heartBeatLock) {
+            if (mHeartBeat != null) {
+                mHeartBeat.cancel(true);
+            }
+            mHeartBeat = null;
+        }
         relealeWakeLock();
         stopSelfResult(mLatestProcessedStartId);
         mLatestProcessedStartId = 0;
@@ -573,12 +573,12 @@ public class MyService extends Service {
                     breakReason = "Cancelled";
                     break;
                 }
-				synchronized (executorLock) {
-					if (mExecutor != this) {
-	                    breakReason = "Other executor";
-						break;
-					}
-				}
+                synchronized (executorLock) {
+                    if (mExecutor != this) {
+                        breakReason = "Other executor";
+                        break;
+                    }
+                }
                 CommandData commandData = pollQueue();
                 currentlyExecuting = commandData;
                 currentlyExecutingSince = System.currentTimeMillis();
@@ -643,7 +643,7 @@ public class MyService extends Service {
             return commandData;
         }
 
-        private final static long MIN_RETRY_PERIOD_SECONDS = 900; 
+        private static final long MIN_RETRY_PERIOD_SECONDS = 900; 
         private void moveCommandsFromRetryToMainQueue() {
             for (CommandData cd : mRetryCommandQueue) {
                 if (cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
@@ -713,13 +713,12 @@ public class MyService extends Service {
         }
 
         private void addToErrorQueue(CommandData commandData) {
-            if (!mErrorCommandQueue.contains(commandData)) {
+            if (!mErrorCommandQueue.contains(commandData)
+                    && !mErrorCommandQueue.offer(commandData)) {
+                CommandData commandData2 = mErrorCommandQueue.poll();
+                MyLog.d(this, "Removed from overloaded Error queue: " + commandData2);
                 if (!mErrorCommandQueue.offer(commandData)) {
-                    CommandData commandData2 = mErrorCommandQueue.poll();
-                    MyLog.d(this, "Removed from overloaded Error queue: " + commandData2);
-					if (!mErrorCommandQueue.offer(commandData)) {
-						MyLog.e(this, "Error Queue is full?");
-					}
+                    MyLog.e(this, "Error Queue is full?");
                 }
             }
         }
@@ -758,11 +757,11 @@ public class MyService extends Service {
                 executorStartedAt2 = mExecutorStartedAt;
                 executorEndedAt2 = mExecutorEndedAt;
             }
-			if (executorStartedAt2 > 0) {
-	            sb.append("started:" + RelativeTime.getDifference(getBaseContext(), executorStartedAt2) + ",");
-			} else {
-				sb.append("not started,");
-			}
+            if (executorStartedAt2 > 0) {
+                sb.append("started:" + RelativeTime.getDifference(getBaseContext(), executorStartedAt2) + ",");
+            } else {
+                sb.append("not started,");
+            }
             if (currentlyExecuting != null && currentlyExecutingSince > 0) {
                 sb.append("currentlyExecuting:" + currentlyExecuting + ",");
                 sb.append("since:" + RelativeTime.getDifference(getBaseContext(), currentlyExecutingSince) + ",");
@@ -797,53 +796,53 @@ public class MyService extends Service {
         }
     }
     
-	private class HeartBeat extends AsyncTask<Void, Long, Void> {
-		private static final long HEARTBEAT_PERIOD_SECONDS = 20;
+    private class HeartBeat extends AsyncTask<Void, Long, Void> {
+        private static final long HEARTBEAT_PERIOD_SECONDS = 20;
 
         @Override
         protected Void doInBackground(Void... arg0) {
             MyLog.v(this, "Started");
-			String breakReason = "";
+            String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
-				try {
-					synchronized(heartBeatLock) {
-						if (mHeartBeat != this) {
-							breakReason = "Other instance found";
-							break;
-						}
-						if (isCancelled()) {
+                try {
+                    synchronized(heartBeatLock) {
+                        if (mHeartBeat != this) {
+                            breakReason = "Other instance found";
+                            break;
+                        }
+                        if (isCancelled()) {
                             breakReason = "Cancelled";
                             break;
-						}
+                        }
                         heartBeatLock.wait(
-						    java.util.concurrent.TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS));
+                            java.util.concurrent.TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS));
                     }
-				} catch (InterruptedException e) {
-					breakReason = "InterruptedException";
-					break;
-				}
-  				synchronized(serviceStateLock) {
+                } catch (InterruptedException e) {
+                    breakReason = "InterruptedException";
+                    break;
+                }
+                synchronized(serviceStateLock) {
                     if (!mInitialized) {
-						breakReason = "Not initialized";
+                        breakReason = "Not initialized";
                         break;
                     }
-				}
-				publishProgress(iteration);
-			}
+                }
+                publishProgress(iteration);
+            }
             MyLog.v(this, "Ended; " + breakReason);
-			synchronized(heartBeatLock) {
-				mHeartBeat = null;
-			}
-			return null;
-		}
+            synchronized(heartBeatLock) {
+                mHeartBeat = null;
+            }
+            return null;
+        }
 
         @Override
         protected void onProgressUpdate(Long... values) {
             MyLog.v(this, "onProgressUpdate; " + values[0]);
             startStopExecution();
         }
-	}
-	
+    }
+    
     @Override
     public IBinder onBind(Intent intent) {
         return null;

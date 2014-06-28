@@ -232,6 +232,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
     private final AtomicBoolean mCancelled = new AtomicBoolean();
     private final AtomicBoolean mTaskInvoked = new AtomicBoolean();
 
+    @SuppressWarnings("all")
     private static class SerialExecutor implements Executor {
         final Queue<Runnable> mTasks = new LinkedBlockingQueue<Runnable>();
         Runnable mActive;
