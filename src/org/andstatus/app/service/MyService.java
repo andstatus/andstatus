@@ -676,7 +676,7 @@ public class MyService extends Service {
             return cdOut;
         }
         
-        private static final long MAX_SECONDS_IN_ERROR_QUEUE = 3 * 24 * 60 * 60; 
+        private static final long MAX_DAYS_IN_ERROR_QUEUE = 10; 
         private CommandData findInErrorQueue(CommandData cdIn) {
             CommandData cdOut = cdIn;
             if (mErrorCommandQueue.contains(cdIn)) {
@@ -692,7 +692,7 @@ public class MyService extends Service {
                             MyLog.v(this, "Found in Error queue: " + cd);
                         }
                     } else {
-                        if (cd.executedMoreSecondsAgoThan(MAX_SECONDS_IN_ERROR_QUEUE)) {
+                        if (cd.executedMoreSecondsAgoThan(MAX_DAYS_IN_ERROR_QUEUE * RelativeTime.SECONDS_IN_A_DAY)) {
                             if (mErrorCommandQueue.remove(cd)) {
                                 MyLog.i(this, "Removed old from Error queue: " + cd);
                             } else {

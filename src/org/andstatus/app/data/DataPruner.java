@@ -36,7 +36,7 @@ import org.andstatus.app.util.*;
 
 /**
  * Clean database from outdated information
- * currently only old Messages are being deleted 
+ * old Messages, log files...
  */
 public class DataPruner {
 	private MyContext mMyContext;
@@ -51,19 +51,15 @@ public class DataPruner {
     }
 
     /**
-     * Do prune the data!
-
-     * Remove old records to ensure that the database does not grow too large.
-     * Maximum number of records is configured in "history_size" preference
-     * @return true if succeeded
+     * @return true if done successfully, false if skipped or an error
      */
     public boolean prune() {
-		if (!isTimeToPrune()) {
-		    MyLog.v(this, "Prune skipped");
-			return true;
-		}
         final String method = "prune";
-        boolean ok = true;
+        boolean pruned = false;
+		if (!isTimeToPrune()) {
+		    MyLog.v(this, method + " skipped");
+			return pruned;
+		}
        
         mDeleted = 0;
         int nDeletedTime = 0;
@@ -71,7 +67,7 @@ public class DataPruner {
         SharedPreferences sp = MyPreferences
                 .getDefaultSharedPreferences();
 
-        // Don't delete messages which are favorited by any user
+        // Don't delete messages, which are favorited by any user
         String sqlNotFavoritedMessage = "NOT EXISTS ("
                 + "SELECT * FROM " + MsgOfUser.TABLE_NAME + " AS gnf WHERE "
                 + Msg.TABLE_NAME + "." + Msg._ID + "=gnf." + MyDatabase.MsgOfUser.MSG_ID
@@ -137,22 +133,23 @@ public class DataPruner {
                     }
                 }
             }
+			pruned = true;
         } catch (Exception e) {
-            MyLog.e(this, method + " failed", e);
+            MyLog.i(this, method + " failed", e);
         } finally {
             DbUtils.closeSilently(cursor);
         }
         mDeleted = nDeletedTime + nDeletedSize;
+		pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
+		setDataPrunedNow();
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this,
-                    method + "; History time=" + maxDays + " days; deleted " + nDeletedTime
+                    method + " " + (pruned ? "succeded" : "failed") + "; History time=" + maxDays + " days; deleted " + nDeletedTime
                             + " , before " + new Date(latestTimestamp).toString());
             MyLog.v(this, method + "; History size=" + maxSize + " messages; deleted "
                     + nDeletedSize + " of " + nTweets + " messages, before " + new Date(latestTimestampSize).toString());
         }
-        pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
-		setDataPrunedNow();
-        return ok;
+        return pruned;
     }
 
     public static void setDataPrunedNow() {
