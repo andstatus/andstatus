@@ -73,7 +73,7 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         
         dropQueues();
         httpConnection.clearPostedData();
-        MyContextHolder.get().setInForeground(false);
+        assertTrue(TestSuite.setAndWaitForIsInForeground(false));
         
         MyLog.i(this, "setUp ended instanceId=" + connectionInstanceId);
     }
@@ -174,7 +174,7 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         assertTrue("Data was posted " + httpConnection.getPostedCounter() + " times",
                 httpConnection.getPostedCounter() == 1);
 
-        MyContextHolder.get().setInForeground(true);
+        assertTrue(TestSuite.setAndWaitForIsInForeground(true));
         sendListenedToCommand();
 
         CommandData cd2 = new CommandData(CommandEnum.FETCH_TIMELINE,
@@ -321,7 +321,6 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
     protected void tearDown() throws Exception {
         MyLog.v(this, "tearDown started");
         dropQueues();
-        MyContextHolder.get().setInForeground(false);
         MyPreferences.getDefaultSharedPreferences().edit()
                 .putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true).commit();
         

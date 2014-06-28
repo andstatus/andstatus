@@ -292,4 +292,20 @@ public class TestSuite extends TestCase {
             return km.inKeyguardRestrictedInputMode();
         }
     }
+
+    public static boolean setAndWaitForIsInForeground(boolean isInForeground) {
+        MyContextHolder.get().setInForeground(isInForeground);
+        for (int pass = 0; pass < 300; pass++) {
+            if (MyContextHolder.get().isInForeground() == isInForeground) {
+                return true;
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return false;
+    }
 }
