@@ -84,17 +84,20 @@ public class OriginList extends ListActivity {
             buttonAdd.setVisibility(android.view.View.VISIBLE);
             buttonAdd.setOnClickListener(new AddClickListener());
         }
-        fillList();
+        fillList(actionPick);
     }
 
-    private void fillList() {
+    private void fillList(boolean actionPick) {
         data.clear();
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
-            Map<String, String> map = new HashMap<String, String>();
-            String visibleName = origin.getName();
-            map.put(KEY_VISIBLE_NAME, visibleName);
-            map.put(KEY_NAME, origin.getName());
-            data.add(map);
+            if ((actionPick && android.os.Build.VERSION.SDK_INT >= 17)
+                    || origin.originType != OriginType.TWITTER) {
+                Map<String, String> map = new HashMap<String, String>();
+                String visibleName = origin.getName();
+                map.put(KEY_VISIBLE_NAME, visibleName);
+                map.put(KEY_NAME, origin.getName());
+                data.add(map);
+            }
         }
         MyLog.v(this, "fillList, " + data.size() + " items");
         ((SimpleAdapter) getListAdapter()).notifyDataSetChanged(); 
@@ -133,7 +136,7 @@ public class OriginList extends ListActivity {
         MyLog.v(this, "onActivityResult " + ActivityRequestCode.fromId(requestCode) );
         switch (ActivityRequestCode.fromId(requestCode)) {
             case EDIT_ORIGIN:
-                fillList();
+                fillList(false);
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);

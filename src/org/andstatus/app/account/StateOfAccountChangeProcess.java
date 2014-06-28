@@ -25,6 +25,7 @@ import android.text.TextUtils;
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -160,10 +161,12 @@ class StateOfAccountChangeProcess {
         
         if (state.builder == null) {
             if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
+                Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(
+                        android.os.Build.VERSION.SDK_INT >= 17 ? OriginType.ORIGIN_TYPE_DEFAULT
+                                : OriginType.ORIGIN_TYPE_DEFAULT_BEFORE_API17);
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                        MyContextHolder.get(), 
-                        AccountName.ORIGIN_SEPARATOR 
-                        + MyContextHolder.get().persistentOrigins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT).getName(), TriState.UNKNOWN);
+                        MyContextHolder.get(),
+                        AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
             } else {
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(),
