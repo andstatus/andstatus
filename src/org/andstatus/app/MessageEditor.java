@@ -43,6 +43,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import org.andstatus.app.context.*;
+import org.andstatus.app.util.*;
 
 /**
  * "Enter your message here" box 
@@ -342,6 +344,9 @@ class MessageEditor {
             Toast.makeText(mMessageList.getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
+			if (MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
+				MyLog.setLogToFile(true);
+			}
             CommandData commandData = CommandData.updateStatus(mAccount.getAccountName(), status, mReplyToId, mRecipientId);
             MyServiceManager.sendForegroundCommand(commandData);
 
