@@ -335,7 +335,7 @@ public final class CommandResult implements Parcelable {
     }
     
     boolean shouldWeRetry() {
-        return (!executed || (hasError() && !hasHardError())) && retriesLeft > 0;
+        return (!executed || hasError()) && !hasHardError() && (retriesLeft > 0);
     }
 
     long getItemId() {
