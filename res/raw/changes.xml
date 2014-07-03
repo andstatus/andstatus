@@ -37,6 +37,14 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="9.1" android:versionCode="104"
+        versionDate="2014-07-03"
+        versionTitle="Fixed commands lost when created offline">
+        <changes>
+            <change>Fixed: If you tried to send update while offline, the update was lost. 
+                Now it is put into retry queue.</change>
+        </changes>
+    </release>
     <release android:versionName="9.0" android:versionCode="103"
         versionDate="2014-06-28"
         versionTitle="Backup/Restore and Syncing indicator">
@@ -54,11 +62,11 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 See <a href="https://github.com/andstatus/andstatus/issues/86" >Issue #86</a>.</change>
             <change>&quot;Sync while using application&quot; option added (turned on by default, as it was earlier). 
                 When this option is turned off (in Settings-&gt;Syncing), 
-				there is no background sync while browsing timeline and conversations 
+                there is no background sync while browsing timeline and conversations 
                 in order to preserve smoothness of scrolling. Manually initiated updates 
                 occur in background though.</change>
             <change>AndStatus syncing indicator is added to the Timeline screen. 
-				To turn this feature off, 
+                To turn this feature off, 
                 go to Settings-&gt;Syncing-&gt;Syncing indicator on timeline.
                 See <a href="https://github.com/andstatus/andstatus/issues/63" >Issue #63</a>.</change>
             <change>Added an option to change Connection timeout, which defaults to 30 seconds. 
@@ -67,6 +75,9 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 See <a href="https://github.com/andstatus/andstatus/issues/83" >Issue #83</a>.</change>
             <change>Overflow button added to Action bars of Activities, which have Options menues.</change>    
             <change>BOOT_COMPLETED permission added in order to update a Widget after boot.</change>
+            <change>Due to incompatibility with changed Twitter site behavior, addition of new Twitter
+                accounts is allowed only for Android v.4.2. and higher. You may workaround this using 
+                backup/restore. see <a href="https://github.com/andstatus/andstatus/issues/92" >Issue #92</a></change>
         </changes>
     </release>
     <release android:versionName="8.4" android:versionCode="100"

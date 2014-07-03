@@ -31,11 +31,11 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     static void executeCommand(CommandData commandData, CommandExecutorParent parent) {
         CommandExecutorStrategy strategy = getStrategy(new CommandExecutionContext(commandData, commandData.getAccount()))
                 .setParent(parent);
-        commandData.getResult().onLaunched();
+        commandData.getResult().prepareForLaunch();
         logLaunch(strategy);
         // This may cause recursive calls to executors...
         strategy.execute();
-        commandData.getResult().onExecuted();
+        commandData.getResult().afterExecutionEnded();
         logEnd(strategy);
     }
 

@@ -43,8 +43,8 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertEquals(0, commandData.getResult().getExecutionCount());
         assertEquals(0, commandData.getResult().getLastExecutedDate());
         assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES, commandData.getResult().getRetriesLeft());
-        commandData.getResult().onLaunched();
-        commandData.getResult().onExecuted();
+        commandData.getResult().prepareForLaunch();
+        commandData.getResult().afterExecutionEnded();
         Thread.sleep(50);
         long time1 = System.currentTimeMillis();
         assertTrue(commandData.getResult().getLastExecutedDate() >= time0);

@@ -220,6 +220,7 @@ public class MyService extends Service {
                 break;
 
         }
+        commandData.getResult().prepareForLaunch();
         MyLog.v(this, "Adding to Main queue " + commandData);
         if (!mMainCommandQueue.offer(commandData)) {
             MyLog.e(this, "Couldn't add to the main queue, size=" + mMainCommandQueue.size());
@@ -590,6 +591,8 @@ public class MyService extends Service {
                     MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
                     .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                     CommandExecutorStrategy.executeCommand(commandData, this);
+                } else {
+                    commandData.getResult().incrementNumIoExceptions();
                 }
                 if (commandData.getResult().shouldWeRetry()) {
                     addToRetryQueue(commandData);        

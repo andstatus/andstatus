@@ -83,7 +83,9 @@ public class MyLog {
      */
     private static volatile int minLogLevel = VERBOSE;
 
-    private static volatile ThreadLocal<String> logFileName = new ThreadLocal<String>();
+    private static Object logFileLock = new Object();
+    @GuardedBy("logFileLock")
+    private static String logFileName = null;
 
     private static final String COMMA = ",";
 
@@ -401,18 +403,25 @@ public class MyLog {
     }
 
     public static void setLogToFile(boolean logEnabled) {
-        if (logEnabled) {
-            String fileName = currentDateTimeFormatted() + "_log.txt";
-            logFileName.set(fileName); 
-        } else { 
-            logFileName.remove();
+        String fileName = currentDateTimeFormatted() + "_log.txt";
+        synchronized (logFileLock) {
+            if (logEnabled) {
+                if (logFileName == null) {
+                    logFileName = fileName; 
+                }
+            } else { 
+                logFileName = null;
+            }
         }
     }
     
     static boolean isLogToFileEnabled() {
-        return logFileName.get() != null;
+        synchronized (logFileLock) {
+            return logFileName != null;
+        }
     }
     
+    private static Object logFileWriterLock = new Object();
     static void logToFile(int logLevel, String tag, String msg, Throwable tr) {
         String fileName = getLogFileName();
         if (fileName == null) {
@@ -436,11 +445,15 @@ public class MyLog {
             builder.append(getStackTrace(tr));
         }
         builder.append("\n");
-        writeStringToFile(builder.toString(), fileName, true, false);
+        synchronized (logFileWriterLock) {
+            writeStringToFile(builder.toString(), fileName, true, false);
+        }
     }
     
     public static String getLogFileName() {
-        return logFileName.get();
+        synchronized (logFileLock) {
+            return logFileName;
+        }
     }
     
     static String logLevelToString(int logLevel) {

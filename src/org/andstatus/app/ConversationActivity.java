@@ -254,6 +254,12 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     public void onReceive(CommandData commandData, MyServiceEvent event) {
         switch(commandData.getCommand()) {
             case GET_STATUS:
+            case UPDATE_STATUS:
+            case CREATE_FAVORITE:
+            case DESTROY_FAVORITE:
+            case REBLOG:
+            case DESTROY_REBLOG:
+            case DESTROY_STATUS:
                 if (!commandData.getResult().hasError()) {
                     showConversation();
                 }

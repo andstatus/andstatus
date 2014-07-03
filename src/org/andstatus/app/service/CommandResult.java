@@ -39,6 +39,7 @@ public final class CommandResult implements Parcelable {
     private int executionCount = 0;
     private int retriesLeft = 0;
     
+    private boolean executed = false;
     private long numAuthExceptions = 0;
     private long numIoExceptions = 0;
     private long numParseExceptions = 0;
@@ -62,7 +63,7 @@ public final class CommandResult implements Parcelable {
         Parcel parcel = Parcel.obtain();
         writeToParcel(parcel, 0);
         CommandResult oneStepResult = new CommandResult(parcel);
-        oneStepResult.onLaunched();
+        oneStepResult.prepareForLaunch();
         parcel.recycle();
         return oneStepResult;
     }
@@ -306,10 +307,9 @@ public final class CommandResult implements Parcelable {
         }
     }
 
-    /**
-     * Before execution started
-     */
-    void onLaunched() {
+    void prepareForLaunch() {
+        executed = false;
+        
         numAuthExceptions = 0;
         numIoExceptions = 0;
         numParseExceptions = 0;
@@ -325,10 +325,8 @@ public final class CommandResult implements Parcelable {
         downloadedCount = 0;
     }
     
-    /**
-     * After execution ended
-     */
-    void onExecuted() {
+    void afterExecutionEnded() {
+        executed = true;
         executionCount++;
         if (retriesLeft > 0) {
             retriesLeft -= 1;
@@ -337,7 +335,7 @@ public final class CommandResult implements Parcelable {
     }
     
     boolean shouldWeRetry() {
-		return hasError() && !hasHardError() && retriesLeft > 0;
+        return (!executed || (hasError() && !hasHardError())) && retriesLeft > 0;
     }
 
     long getItemId() {
