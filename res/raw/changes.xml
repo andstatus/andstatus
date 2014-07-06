@@ -38,11 +38,12 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="9.1" android:versionCode="104"
-        versionDate="2014-07-03"
-        versionTitle="Fixed commands lost when created offline">
+        versionDate="2014-07-06"
+        versionTitle="Fixed: Commands lost when created offline">
         <changes>
             <change>Fixed: If you tried to send update while offline, the update was lost. 
                 Now it is put into retry queue.</change>
+            <change>Conversation view is updated after replying, favoriting etc.</change>
         </changes>
     </release>
     <release android:versionName="9.0" android:versionCode="103"
@@ -77,33 +78,19 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             <change>BOOT_COMPLETED permission added in order to update a Widget after boot.</change>
             <change>Due to incompatibility with changed Twitter site behavior, addition of new Twitter
                 accounts is allowed only for Android v.4.2. and higher. You may workaround this using 
-                backup/restore. see <a href="https://github.com/andstatus/andstatus/issues/92" >Issue #92</a></change>
+                backup/restore. See <a href="https://github.com/andstatus/andstatus/issues/92" >Issue #92</a></change>
         </changes>
     </release>
     <release android:versionName="8.4" android:versionCode="100"
         versionDate="2014-04-20"
-        versionTitle="Fixed 'Preserve screen position after content update'">
-        <changes>
-            <change>Fixed "Preserve screen position after content update". As a Timeline is being
-                updated in the background, new messages don't cause unexpected list scrolling any more.
-                See <a href="https://github.com/andstatus/andstatus/issues/7" >Issue #7</a>.</change>
-            <change>Spanish translation updated, thanks to <a href="https://identi.ca/susobaco" >Suso Comesaña</a>.</change>
-            <change><a href="https://loadaverage.org/">LoadAverage</a> 
-                and <a href="http://status.vinilox.eu/">Vinilox</a> "GNU social" sites are preconfigured,
-                in addition to <a href="https://quitter.se/">Quitter</a>.</change>
-            <change>Fixed: Public timeline is per a Microblogging system, not per an Account.</change>
-        </changes>
-    </release>
-    <release android:versionName="8.2" android:versionCode="98"
-        versionDate="2014-04-06"
         versionTitle="Public Timeline and Global Search">
         <changes>
             <change>"Public" Timeline added to the list of available timelines. 
                 The latest messages from the Public Timeline may be fetched on demand 
                 for StatusNet-type microblogging systems via "Reload" context menu item.                  
-                See <a href="https://github.com/andstatus/andstatus/issues/73" >Issue #73</a></change>
-            <change> 
-                Context menu on Public Timeline has a "Global search" item,
+                See <a href="https://github.com/andstatus/andstatus/issues/73" >Issue #73</a>.
+                Public timeline is per a Microblogging system, not per an Account.</change>
+            <change>Context menu on Public Timeline has a "Global search" item,
                 allowing searching messages online for Twitter and StatusNet-type systems 
                 (requires Internet connection). <a href="https://github.com/e14n/pump.io/issues/503" >Pump.io 
                 doesn't have a global search service yet</a>.<br/> 
@@ -117,6 +104,12 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 and doesn't freeze. Potentially long operations moved to the background thread.                  
                 See <a href="https://github.com/andstatus/andstatus/issues/33" >Issue #33</a></change>
             <change>Spanish translation added, thanks to <a href="https://identi.ca/susobaco" >Suso Comesaña</a></change>
+            <change>Fixed "Preserve screen position after content update". As a Timeline is being
+                updated in the background, new messages don't cause unexpected list scrolling any more.
+                See <a href="https://github.com/andstatus/andstatus/issues/7" >Issue #7</a>.</change>
+            <change><a href="https://loadaverage.org/">Load Average</a> 
+                and <a href="http://status.vinilox.eu/">Vinilox</a> "GNU social" sites are preconfigured,
+                in addition to <a href="https://quitter.se/">Quitter</a>.</change>
             </changes>
     </release>
     <release android:versionName="7.1" android:versionCode="95"
