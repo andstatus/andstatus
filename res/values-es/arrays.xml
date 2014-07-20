@@ -17,8 +17,8 @@
  -->
 <resources>
 	<string-array name="appwidget_message_formats">
-		<item>"{0} mensage"</item>
-		<item>"{0} mensages"</item>
+		<item>"{0} mensaje"</item>
+		<item>"{0} mensajes"</item>
 	</string-array>
 	<string-array name="appwidget_message_patterns">
 		<item>"1"</item>
@@ -103,12 +103,12 @@
         <item>status.net</item>
     </string-array>
     <string-array name="theme_color_entries">
-		<item>Dispositivo predeterminado</item>
+		<item>Predeterminado</item>
 		<item>Claro</item>
 		<item>Oscuro</item>
 	</string-array>
 	<string-array name="theme_color_values">
-		<item>Dispositivo predeterminado</item>
+		<item>Predeterminado</item>
 		<item>Claro</item>
 		<item>Oscuro</item>
 	</string-array>
@@ -119,19 +119,19 @@
 	</string-array>
 	<string-array name="theme_size_values">
 		<item>Normal</item>
-		<item>Tamaño Estandar</item>
+		<item>Tamaño estándar</item>
 		<item>Grande</item>
 	</string-array>
 	<string-array name="history_size_entries">
-		<item>500 mensages</item>
-		<item>1000 mensages</item>
-		<item>2000 mensages</item>
-		<item>5000 mensages</item>
-		<item>10000 mensages</item>
-		<item>20000 mensages</item>
-		<item>50000 mensages</item>
-		<item>100000 mensages</item>
-        <item>1 mln mensages</item>
+		<item>500 mensajes</item>
+		<item>1000 mensajes</item>
+		<item>2000 mensajes</item>
+		<item>5000 mensajes</item>
+		<item>10000 mensajes</item>
+		<item>20000 mensajes</item>
+		<item>50000 mensajes</item>
+		<item>100000 mensajes</item>
+        <item>1 mln mensajes</item>
     </string-array>
 	<string-array name="history_size_values">
 		<item>500</item>
@@ -145,14 +145,14 @@
         <item>1000000</item>
     </string-array>
 	<string-array name="history_size_display">
-		<item>500 mensages</item>
-		<item>1000 mensages</item>
-		<item>2000 mensages</item>
-		<item>5000 mensages</item>
-		<item>10000 mensages</item>
-		<item>20000 mensages</item>
-		<item>50000 mensages</item>
-		<item>100000 mensages</item>
+		<item>500 mensajes</item>
+		<item>1000 mensajes</item>
+		<item>2000 mensajes</item>
+		<item>5000 mensajes</item>
+		<item>10000 mensajes</item>
+		<item>20000 mensajes</item>
+		<item>50000 mensajes</item>
+		<item>100000 mensajes</item>
         <item>1 mln messages</item>
     </string-array>
 	<string-array name="history_time_entries">
@@ -192,15 +192,15 @@
         <item>10 años</item>
     </string-array>
 	<string-array name="notification_tweet_formats">
-		<item>"{0} mensage"</item>
-		<item>"{0} mensages"</item>
+		<item>"{0} mensaje"</item>
+		<item>"{0} mensajes"</item>
 	</string-array>
 	<string-array name="notification_tweet_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
 	<string-array name="notification_mention_formats">
-		<item>"{0} mencion"</item>
+		<item>"{0} mención"</item>
 		<item>"{0} menciones"</item>
 	</string-array>
 	<string-array name="notification_mention_patterns">
@@ -208,16 +208,16 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="notification_message_formats">
-		<item>"{0} mensage directo"</item>
-		<item>"{0} mensages directos"</item>
+		<item>"{0} mensaje directo"</item>
+		<item>"{0} mensajes directos"</item>
 	</string-array>
 	<string-array name="notification_message_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
 	<string-array name="notification_queue_formats">
-		<item>"{0} es mensage"</item>
-		<item>"{0} son mensages"</item>
+		<item>"{0} mensaje"</item>
+		<item>"{0} son mensajes"</item>
 	</string-array>
 	<string-array name="notification_queue_patterns">
 		<item>"1"</item>
