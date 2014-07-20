@@ -1,6 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- 
+    Copyright (C) 2010-2014 Yuri Volkov, yvolk@yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
+	Copyright (C) 2014 Vinzenz Vietzke, vinz@vinzv.de
+				       Parts of the German translation by Benjamin Schirmer (codename.matrix@gmail.com) 
 	
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -14,169 +17,372 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
  -->
- 
- <!--
- 	German translation by Benjamin Schirmer (codename.matrix@gmail.com) 
- -->
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 	<string name="app_name">AndStatus</string>
-	<string name="timeline_title_direct_messages">Nachrichten</string>
-	<string name="timeline_title_mentions">Erwähnungen</string>
-	<string name="timeline_title_home">Freunde</string>
+
+    <!-- Menu item -->
+    <string name="account_settings_action">AndStatus Accounteinstellungen</string>
+    <string name="account_settings_activity_title">Account</string>
+    <!-- On Settings screen, summary line when called via AccountManager [CHAR LIMIT=50] -->
+    <string name="account_settings_summary">Synchronisation Frequenz, Benachrichtigungen etc.</string>
+
+    <!-- Menu item for settings [CHAR LIMIT=40]-->
+    <string name="settings_action">Einstellungen</string>
+    <!-- Settings activity title [CHAR LIMIT=40]-->
+    <string name="settings_activity_title">Einstellungen</string>
+	
+    <string name="action_menu_overflow_description">Weitere Aktionen…</string>
     
-    <string name="authentication_successful">Anmeldung erfolgreich!</string>
-
     <string name="appwidget_configure_instructions">Passe die Mitteilung an, die im AndStatus
-    widget gezeigt wird, falls sich nichts geändert hat:</string>
+    Widget gezeigt wird, falls sich nichts geändert hat:</string>
     <string name="appwidget_nothingnew_default">Nichts Neues seit:</string>
+	<string name="appwidget_new_tweet_format">{0}</string>
+	<string name="appwidget_new_message_format">{0}</string>
+	<string name="appwidget_new_mention_format">{0}</string>
+    <string name="appwidget_nodata">Noch keine Daten.</string>
 
+	<string name="authentication_never">Bisher nicht angemeldet</string>
+	<string name="authentication_successful">Anmeldung erfolgreich!</string>
+    <string name="button_add">Hinzufügen</string>
+	<string name="button_add_origin">Neues System hinzufügen</string>
+    <string name="button_backup">Backup</string>
+    <string name="button_cancel">Abbrechen</string>
+    <string name="button_change_folder">Verzeichnis ändern</string>
+    <string name="button_select_backup_file">Backupdatei auswählen</string>
+    <string name="button_create_message">Blog</string>
+    <string name="button_create_message_twitter">Tweet</string>
+    <string name="button_delete">Löschen</string>
+    <string name="button_discard">Verwerfen</string>
+    <string name="button_hide">Verstecken</string>
+    <string name="button_overflow">Overflow</string>
+    <string name="button_restore">Wiederherstellen</string>
+    <string name="button_save">Speichern</string>
 	<string name="button_send">Senden</string>
-	<string name="cannot_send_empty_message">Kann keine leere Nachricht senden.</string>
+    <string name="cannot_send_empty_message">Kann keine leere Nachricht senden.</string>
 	<string name="category_title_preference_appearance">Design</string>
 	<string name="category_title_preference_credentials">Anmeldedaten</string>
+	<string name="category_title_preference_information">Information</string>
 	<string name="category_title_preference_notifications">Benachrichtigungen</string>
+	<string name="category_title_preference_origin">Microbloggingsystem</string>
 	<string name="category_title_preference_settings">Einstellungen</string>
-	<string name="dialog_summary_authentication_failed">Bitte überprüfe Benutzername und Passwort.</string>
-	<string name="dialog_summary_checking_credentials">Bitte warten, während die Zugangsdaten überprüft werden.</string>
+    <string name="combined_timeline_on">kombiniert</string>
+    <string name="combined_timeline_off_account">für</string>
+    <string name="combined_timeline_off_origin">auf</string>
+    <string name="dialog_summary_acquiring_an_access_token">Bitte warten, während AndStatus OAuth Request Token und Access Token austauscht</string>
+	<string name="dialog_summary_acquiring_a_request_token">Bitte warten, während AndStatus ein Request Token für OAuth abholt</string>
+	<string name="dialog_summary_authentication_failed">Bitte überprüfe Username und Passwort.</string>
+	<string name="dialog_summary_checking_credentials">Bitte warte, während dein Account verifiziert wird.</string>
 	<string name="dialog_summary_connection_timeout">Zeitüberschreitung der Verbindung. Bitte versuche es später noch einmal.</string>
 	<string name="dialog_summary_executing_command">Bitte warten, während der Befehl auf dem Server ausgeführt wird.</string>
 	<string name="dialog_summary_external_storage">Externer Speicher entdeckt. Soll AndStatus seine Daten dort speichern? Alte Daten können nicht verschoben werden, aber bleiben im internen Speicher vorhanden.</string>
 	<string name="dialog_summary_external_storage_missing">Externer Speicher nicht verfügbar oder eingebunden. Willst du den internen Speicher verwenden? Alle Daten auf dem externen Speicher sind bleiben verfügbar.</string>
+	<string name="dialog_summary_registering_client">Bitte warte, während sich AndStatus selbst als Client Anwendung registriert</string>
 	<string name="dialog_summary_sending_message">Bitte warten, während die Nachricht gesendet wird.</string>
 	<string name="dialog_summary_service_unavailable">Twitter ist derzeit überlastet. Bitte versuche es später noch einmal.</string>
 	<string name="dialog_summary_timeline_loading">Bitte warten, während die Chronik aktualisiert wird. Dies kann, je nach Verbindung, einige Minuten dauern.</string>
+	<string name="dialog_title_acquiring_an_access_token">Hole ein Access Token</string>
+	<string name="dialog_title_acquiring_a_request_token">Hole ein Request Token</string>
 	<string name="dialog_title_authentication_failed">Anmeldung fehlgeschlagen</string>
 	<string name="dialog_title_checking_credentials">Bestätige…</string>
 	<string name="dialog_title_connection_timeout">Zeitüberschreitung der Verbindung</string>
 	<string name="dialog_title_executing_command">Führe Befehl aus…</string>
 	<string name="dialog_title_external_storage">Externer Speicher verfügbar</string>
 	<string name="dialog_title_external_storage_missing">Externer Speicher fehlt</string>
+	<string name="dialog_title_preference_connection_timeout">Sekunden bis zur Zeitüberschreitung</string>
 	<string name="dialog_title_preference_frequency">Aktualisierungsfrequenz</string>
+	<string name="dialog_title_preference_history_size">History Size</string>
+	<string name="dialog_title_preference_history_time">History Time</string>
+	<string name="dialog_title_preference_min_log_level">Minimum logging level</string>
 	<string name="dialog_title_preference_password">Passwort</string>
-	<string name="dialog_title_preference_theme_color">Design wählen</string>
-	<string name="dialog_title_preference_username">Benutzername</string>
-	<string name="dialog_title_sending_message">Nachricht senden…</string>
-	<string name="dialog_title_service_unavailable">Dienst nicht verfügbar</string>
-	<string name="dialog_title_timeline_loading">Aktualisiere Chronik…</string>
-	<string name="error_twitter_404">Die Seite wurde nicht gefunden. Bitte melde diesen Fehler!</string>
+    <string name="dialog_title_preference_theme_color">Farbthema wählen</string>
+    <string name="dialog_title_preference_theme_size">Größe auswählen</string>
+    <string name="dialog_title_preference_username">Username</string>
+	<string name="dialog_title_preference_username_pumpio">Webfinger ID</string>
+	<string name="dialog_title_registering_client">Registriere AndStatus</string>
+	<string name="dialog_title_select_timeline">Wähle eine Timeline</string>
+    <string name="dialog_title_sending_message">Sende eine Nachricht…</string>
+	<string name="dialog_title_service_unavailable">Service nicht erreichbar</string>
+	<string name="dialog_title_timeline_loading">Aktualisiere eine Timeline…</string>
+    <string name="error">Fehler</string>
+    <string name="error_twitter_404">Seite konnte nicht gefunden werden. Bitte melde diesen Fehler!</string>
 	<string name="error_connection_error">Ein Verbindungsfehler ist aufgetreten. Bitte melde diesen Fehler!</string>
-	<string name="favorite_created">Favorit erstellt.</string>
-	<string name="favorite_destroyed">Favorit entfernt.</string>
-	<string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
-    <string name="loading">Lade…</string>
-	<string name="message_edit_hint">Gib deinen tweet hier ein!</string>
-	<string name="message_characters_left">Verbleibende Zeichen:</string>
-	<string name="menu_item_block">blockieren</string>
-	<string name="menu_item_destroy_favorite">Favorit entfernen</string>
-	<string name="menu_item_destroy_status">Tweet entfernen</string>
-	<string name="menu_item_direct_message">Direktnachrichten</string>
-	<string name="menu_item_favorite">Als Favorit</string>
+	<string name="error_set_username">Konnte den Usernamen nicht verwenden: </string>
+	<string name="error_credentials_of_other_user">Dieser Name ist bereits vergeben</string>
+	<string name="favorite_created">Favorit erstellt</string>
+	<string name="favorite_destroyed">Nachricht nicht mehr favorisiert.</string>
+    <string name="header_accounts">Accounts</string>    
+	<string name="header_add_new_account">Neuen Account hinzufügen</string>    
+    <string name="header_manage_existing_accounts">Bestehende Accounts verwalten</string>    
+    <string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
+    <string name="id_of_this_message_was_not_specified">Id of this message was not specified</string>
+	<string name="label_accountselector">Select an Account</string>
+    <string name="label_allow_html_content">Allow HTML content</string>
+    <string name="label_backup">Backup application data to SD card</string>
+    <string name="label_backup_file">Backup file</string>
+    <string name="label_backup_folder">Backup folder</string>
+    <string name="label_conversation">Conversation</string>
+    <string name="label_host">Host</string>
+    <string name="label_manage_origin_systems">Manage microblogging systems</string>
+    <string name="label_origin_list">Microblogging systems</string>
+    <string name="label_origin_name">Name of Microblogging system (unique and not changeable)</string>
+    <string name="label_origin_system">Microblogging system</string>
+    <string name="label_origin_type">Type of Microblogging system</string>
+    <string name="label_restore">Restore application data from Backup</string>
+    <string name="label_upgrading">Upgrade is in progress. Please wait.</string>
+    <string name="loading">Loading…</string>
+    <string name="message">Message</string>
+    <string name="message_twitter">Tweet</string>
+    <string name="message_edit_hint">Enter your message here!</string>
+	<string name="message_characters_left">Characters left:</string>
+    <string name="message_is_too_long">Message is too long.</string>
+	<string name="menu_item_act_as">Act as…</string>
+    <string name="menu_item_act_as_user">Act as "%1s"</string>
+    <string name="menu_item_block">Block</string>
+	<string name="menu_item_destroy_favorite">Undo favorite</string>
+    <string name="menu_item_destroy_reblog">Undo reblog</string>
+    <string name="menu_item_destroy_reblog_twitter">Undo retweet</string>
+    <string name="menu_item_destroy_status">Remove message</string>
+    <string name="menu_item_direct_message">Direct Message</string>
+	<string name="menu_item_favorite">Favorite</string>
 	<string name="menu_item_follow_user">Follow "%1s"</string>
-	<string name="menu_item_reply">Antworten</string>
+    <string name="menu_item_reply">Reply</string>
 	<string name="menu_item_reblog">Reblog</string>
-    <string name="menu_item_reblog_twitter">Retweet</string>
+	<string name="menu_item_reblog_twitter">Retweet</string>
+	<string name="menu_item_share">Share</string>
 	<string name="menu_item_stop_following_user">Stop following "%1s"</string>
-	<string name="menu_item_view_profile">Profil anschauen</string>
-	<string name="message_sent">Deine Nachricht wurde gesendet.</string>
-	<string name="messages_activity">Direktnachrichten</string>
+    <string name="menu_item_user_messages">Messages by "%1s"</string>
+    <string name="menu_item_view_profile">View Profile</string>
+	<string name="message_sent">Your message has been sent.</string>
+	<string name="messages_activity">Direct Messages</string>
+    <string name="not_set">not set</string>
 	<string name="notification_title">AndStatus</string>
-	<string name="notification_new_tweet_format">Du hast {0}.</string>
-	<string name="notification_new_message_format">Du hast {0}.</string>
-	<string name="notification_title_messages">Neue Direktnachrichten</string>
-	<string name="notification_new_mention_format">Du hast {0}.</string>
-	<string name="notification_title_mentions">Neue Erwähnungen</string>
-	<string name="options_menu_about">Über AndStatus</string>
-	<string name="options_menu_about_cond">Über</string>
-	<string name="options_menu_direct_messages">Direktnachrichten</string>
-	<string name="options_menu_direct_messages_cond">Nachrichten</string>
-	<string name="options_menu_home_timeline">Chronik der Freunde</string>
-	<string name="options_menu_home_timeline_cond">Freunde</string>
-	<string name="options_menu_help">Hilfe</string>
-	<string name="options_menu_reload">Aktualisieren</string>
-	<string name="options_menu_mentions">Erwähnungen</string>
-	<string name="options_menu_search">Suche</string>
-	<string name="reltime_just_now">gerade eben</string>
+	<string name="notification_new_tweet_format">You have {0}.</string>
+	<string name="notification_new_message_format">You have {0}.</string>
+	<string name="notification_title_messages">New Direct Messages</string>
+	<string name="notification_new_mention_format">You have {0}.</string>
+	<string name="notification_title_mentions">New Mentions</string>
+	<string name="notification_queue_format">{0} waiting in the Queue to be sent.</string>
+	<string name="notification_title_queue">Not all messages were sent</string>
+	<string name="oauth_activity_label">OAuth</string>
+    <string name="off">off</string>
+    <string name="on">on</string>
+    <string name="options_menu_about">About AndStatus</string>
+	<string name="options_menu_about_cond">About</string>
+	<string name="options_menu_direct_messages">Direct Messages</string>
+	<string name="options_menu_direct_messages_cond">Messages</string>
+	<string name="options_menu_favorites_timeline">Favorites Timeline</string>
+	<string name="options_menu_favorites_timeline_cond">Favorites</string>
+	<string name="options_menu_home_timeline">Home Timeline</string>
+	<string name="options_menu_home_timeline_cond">Home</string>
+    <string name="options_menu_global_search">Global search</string>
+	<string name="options_menu_help">Help</string>
+	<string name="options_menu_reload">Reload</string>
+	<string name="options_menu_mentions">Mentions</string>
+	<string name="options_menu_search">Search</string>
+	<string name="origin_settings_action">Microblogging system</string>
+	<string name="reltime_just_now">just now</string>
 	<string name="reltime_years_ago">more than a year ago</string>
-	<string name="resolve_view">Zeige Tweet</string>
-	<string name="splash_button_learn_more">Mehr Informationen</string>
-	<string name="splash_button_get_started">Los gehts</string>
-	<string name="splash_payoff_line">schlanker Twitter, pump.io, 
-        StatusNet (GNU social) Client für Android™</string>
-    <string name="user_manual_page_1">(The German transtalion is outdated, 
-        please switch to English for the up-to-date information.\n 
-        Please help to update the translation!)</string>
-	<string name="user_manual_page_2"><h1><b>1. AndStatus EINFÜHRUNG</b></h1>\n\n
-        Die erste Ansicht von AndStatus zeigt die Chronik deiner Freunde.\n
-        Um eine Aktion zu einem bestimmten Tweet in der Liste durchzuführen, kannst du ihn <b>lange halten</b> um zu einem Menü zu gelangen.\n
-        <b>Klicke</b> auf einen Tweet für mehr Informationen zu erhalten.\n
-        Drücke den <b>Menü</b> Knopf um zu anderen Ansichten zu wechseln.\n\n
-    	<h1><b>2. EMPFANGEN UND ANTWORTEN</b></h1>\n\n
-        Um deinen Status zu aktualisieren, gib ihn einfach in das Textfeld ein und drücke <b>Senden</b>.\n
-        Um zu antworten, <b>halte</b> einen Tweet, wähle <b>Antworten</b> und gib deine Antwort unten ein.\n
-        Um eine Antwort abzubrechen, lösche den gesamten Text aus dem Textfeld.\n\n
-        <h1><b>3. DIREKTNACHRICHTEN</b></h1>\n\n
-        Drücke <b>Menü</b> und dann <b>Nachrichten</b>.\n
-        Um Direktnachrichten zu <b>löschen</b>, <b>halte</b> sie und wähle <b>Löschen</b>.\n
-        Neue Nachrichten werden geladen, wenn du <b>automatische Aktualisierungen</b> aktiviert hast.\n\n
-        <h1><b>4. ERWÄHNUNGEN AUFLISTEN</b></h1>\n\n
-        Drücke <b>Menü</b> und dann <b>Erwähnungen</b>.\n
-        Erwähnungen listen jeden Tweet auf, der deinen <b>@Benutzername</b> enthält.\n\n
-        <h1><b>5. SUCHEN</b></h1>\n\n
-        Drücke <b>Menü</b> und dann <b>Suchen</b>, oder drücke den <b>Suchen</b> Knopf auf deinem Telefon.\n
-        Eine Suche findet jeden Text in einem Tweet. Wenn du Tweets von einem bestimmten Benutzer anzeigen willst, 
-        suche nach "<b>Benutzername</b>".\n
-        Um Erwähnungen von einem bestimmten Benutzer anzuzeigen, suche nach "<b>@Benutzername</b>"</string>
-	<string name="search_timeline_label">Suche Tweets, Benutzer und Tags</string>
-	<string name="search_timeline_hint">Name/Wort eingeben</string>
+	<string name="resolve_view">View Message</string>
+	<string name="splash_button_learn_more">Learn More</string>
+	<string name="splash_button_get_started">Get Started</string>
+	<string name="splash_payoff_line">Traffic-efficient microblogging client for Twitter, 
+	    StatusNet (GNU social) and pump.io.\n Open Source license.</string>
+    <string name="syncing">Syncing…</string>
+    <!-- http://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling -->
+    <string name="syncing_timeline_for_somebody">Syncing %1$s for %2$s</string>
+   	<string name="user_manual_page_1"><h1><b>AndStatus User Guide</b></h1>\n\n
+   	    AndStatuc is a traffic-efficient microblogging client for Twitter, 
+   	    StatusNet (GNU social) and pump.io.\n
+        Link to this guide is available in the menu&gt;Settings&gt;About AndStatus&gt;Learn More.\n\n  
+        <h2><b>1. Getting started</b></h2>\n\n
+        Tap \"Get Started\" button below: screen to add new account will be opened.\n
+        You may change default Microblogging system (\"Twitter\") to some other system
+        (Twitter, pump.io and Quitter, LoadAverage and Vinilox as three examples of 
+        the StatusNet-type (GNU social) system, are preconfigured).\n
+        In a case your (StatusNet-type) system is not listed, open Options menu, select \"Settings - 
+        Manage microblogging systems\" and \"Add new system\" before adding the new account.\n
+        For Twitter you are allowed to press \"Add this account\" immediately. 
+        For other systems you will be prompted to type your Username and Password before
+        the \"Add this account\" gets enabled.\n
+        After successful creation of the account please tap \"left arrow\" on an 
+        \"Action Bar\" or \"Back\" button on your device. 
+        This time Home time line will be opened 
+        and messages for this account will start downloading from the Internet…\n 
+        Congratulations! Read below what you can do further.\n\n
+        And don\'t forget to add AndStatus widget to the Home screen: 
+        the widget will inform you about new messages and may be used to launch AndStatus.\n\n
+        <h2><b>2. AndStatus BASICS</b></h2>\n\n
+        The first view of AndStatus (after at least one account has been added) contains the Home timeline.\n
+        In order to perform an action on a message in the list you should <b>hold down</b>
+        on it to get a context menu.\n
+        You may <b>click</b> on a message to get more details on it or to see
+        a conversation tree to which the message belongs.\n
+        Tap the <b>Home</b> button on the \"Action bar\" to switch to the other views.\n\n
+        <h2><b>3. SENDING AND REPLYING</b></h2>\n\n
+        In order to update your status, tap the \"Blog\" button (\"Tweet\" for Twitter),
+        type in a text into the text area at the bottom of the screen and tap <b>Send</b>.\n
+        In order to reply, <b>hold down</b> a message and select <b>Reply</b>,
+        type in your reply at the bottom.\n
+        To abort a reply, simply tap the \"Hide\" button to hide the text area.
+	</string>
+    <string name="user_manual_page_2">
+        <h2><b>4. DIRECT MESSAGES</b></h2>\n\n
+        Tap the <b>Home</b> (Timeline type) button 
+        and select <b>Direct Messages</b> from the list.\n
+        In order to <b>delete</b> your direct message (or your public message), 
+        <b>hold down</b> on it and select <b>Delete</b>.\n\n
+        New messages are fetched to timelines if you have turned on <b>Automatic sync</b>
+        in Android Account and Sync settings for this Account. 
+        In any case you may always get updates from the Internet
+        manually using \"Reload\" command in the Options Menu.\n\n
+        <h2><b>5. MENTIONS</b></h2>\n\n
+        Tap <b>Home</b> and then select <b>Mentions</b>.\n
+        Mentions will list every message that mentions your <b>@username</b>
+        (or even mentions of all your AndStatus accounts for a \"combined\" timeline).\n\n
+        <h2><b>6. (LOCAL) SEARCH</b></h2>\n\n
+        Local search searches among messages already loaded from the Internet.
+        Hence it is available even offline.\n
+        1.  In order to find any word or phrase in a text of messages,
+        click \"Menu\" to open the Options Menu and then <b>Search</b> 
+        or you can click the dedicated <b>Search</b> button on your device.\n
+        If you wish to show messages from a specific user, 
+        please search for \"username\".\n
+        To see mentions of a specific user, search for \"@username\".\n\n
+        2. To search quickly for messages by a user 
+        (an Author or a Sender of a selected message), select 
+        \"Messages by UserName\" from the context menu of the message. This is actually
+        a sort of Global Search (see below).\n\n
+        <h2><b>7. GLOBAL SEARCH</b></h2>\n\n
+        Global search function requests search results directly 
+        from Microblogging System\'s servers. 
+        This is why live Internet connection to the systems is required.
+        First, you are presented with the results of the Local search. In parallel,
+        AndStatus requests results from a Microblogging System of the selected Account
+        (or from all Microblogging systems, if the Timeline is \"combined\").
+        The search results being updated upon receiving responses from the servers.
+        In a case of no connection 
+        (i.e. no response from a server of a Microblogging System)
+        you will see results of the Local Search only.\n
+        Please note that pump.io system doesn\'t support Global search yet.\n
+        1. Global search by a word or a phrase may be started 
+        from the \"Public\" Timeline only.
+        After switсhing to this timeline, 
+        click \"Menu\" to open the Options Menu and then <b>Global search</b>.\n
+        2. Another way to search globally for messages by an Author or a Sender
+        of the selected message is to select 
+        \"Messages by UserName\" from the context menu of this message.
+    </string>
+	<string name="search_timeline_label">Nachrichten, User und Hashtags durchsuchen</string>
+	<string name="search_timeline_hint">Username/Stichwort eingeben</string>
 	<string name="search_direct_messages_label">Direktnachrichten durchsuchen</string>
-	<string name="search_direct_messages_hint">Name oder Wort suchen</string>
-	<string name="status_destroyed">Der Tweet wurde entfernt.</string>
-	<string name="summary_preference_appearance">Ändere das Aussehen von AndStatus</string>
-	<string name="summary_preference_frequency">Aktualisierungen werden {0} abgerufen.</string>
+	<string name="search_direct_messages_hint">Usernamen oder Stichwort eingeben</string>
+    <string name="status_destroyed">Die Nachricht wurde gelöscht.</string>
+    <string name="summary_preference_accounts_absent">Noch keine AndStatus Accounts</string>
+    <string name="summary_preference_accounts_present">Anzahl der AndStatus Accounts</string>
+    <string name="summary_preference_add_account_oauth">Tap here to open the Microblogging system site in a browser.</string>
+    <string name="summary_preference_add_account_basic">Tap here to verify credentials and add the account.</string>
+    <string name="summary_preference_appearance">Change the AndStatus look and feel</string>
+    <string name="summary_preference_enable_android_backup_off">Android backups will not be requested</string>
+	<string name="summary_preference_enable_android_backup_on">AndStatus notifies Android on data changes to be backed up (experimental)</string>
+	<string name="summary_preference_frequency">Hole Updates alle {0}.</string>
+	<string name="summary_preference_history_size">Nachrichtenverlauf behalten bis zu {0}.</string>
+	<string name="summary_preference_history_time">Nachrichtenverlauf behalten bis zu {0}.</string>
+	<string name="summary_preference_host">Hostname des Systems, z.B. quitter.se</string>
+	<string name="summary_preference_theme_color">Farbe und Stil</string>
+    <string name="summary_preference_min_log_level">Das Level ist {0}.</string>
 	<string name="summary_preference_no_ringtone">Stumm</string>
 	<string name="summary_preference_notifications">Benachrichtigungsoptionen</string>
-	<string name="summary_preference_notifications_enabled">Sollen Benachrichtigungen aktiviert werden?</string>
 	<string name="summary_preference_notifications_enabled_off">Benachrichtigungen sind deaktiviert</string>
 	<string name="summary_preference_notifications_enabled_on">Benachrichtigungen sind aktiviert</string>
-	<string name="summary_preference_notifications_messages">Bei neuen Direktnachrichten benachrichtigen?</string>
 	<string name="summary_preference_notifications_messages_off">Keine Benachrichtigungen für Direktnachrichten</string>
 	<string name="summary_preference_notifications_messages_on">Benachrichtigungen für Direktnachrichten</string>
-	<string name="summary_preference_notifications_mentions">Benachrichtigung bei Erwähnungen?</string>
 	<string name="summary_preference_notifications_mentions_off">Keine Benachrichtigung bei Erwähnungen</string>
 	<string name="summary_preference_notifications_mentions_on">Du wirst bei Erwähnungen benachrichtigt</string>
-	<string name="summary_preference_notifications_timeline">Bei neuen Tweets benachrichtigen?</string>
-	<string name="summary_preference_notifications_timeline_off">Keine Benachrichtigungen bei Tweets</string>
-	<string name="summary_preference_notifications_timeline_on">Du wirst bei neuen Tweets benachrichtigt</string>
-	<string name="summary_preference_password">Dein Twitter Passwort</string>
+    <string name="summary_preference_notifications_queue_off">Keine Benachrichtigung bei Befehlen in der Warteschlange</string>
+    <string name="summary_preference_notifications_queue_on">Du wirst benachrichtigt bei neuen Befehlen in der Warteschlange</string>
+	<string name="summary_preference_notifications_timeline_off">Keine Benachrichtigungen bei Home Nachrichten</string>
+	<string name="summary_preference_notifications_timeline_on">Du wirst bei neuen Home Nachrichten benachrichtigt</string>
+    <string name="summary_preference_oauth_off">Basis Authentifizierung</string>
+	<string name="summary_preference_oauth_on">OAuth (sicher Authentifizierung) ist an</string>
+    <string name="summary_preference_origin_system">Tippe hier um ein Microbloggingsystem zu wählen</string>
+    <string name="summary_preference_password">Dein Passwort auf diesem Microbloggingsystem</string>
+    <string name="summary_preference_show_avatars_off">Keine User Avatare werden angezeigt</string>
+    <string name="summary_preference_show_avatars_on">User Avatare werden angezeigt</string>
+    <string name="summary_preference_ssl_off">Kein SSL</string>
+	<string name="summary_preference_ssl_on">SSL ist an</string>
 	<string name="summary_preference_storage">Speicherort für Daten und Bilder</string>
 	<string name="summary_preference_storage_external_off">Internen Speicher verwenden</string>
 	<string name="summary_preference_storage_external_on">Externen Speicher verwenden</string>
-	<string name="summary_preference_theme_color">Standard/Das helle Design wird benutzt.</string>
-	<string name="summary_preference_show_avatars_off">Benutzeravatare werden nicht angezeigt</string>
-	<string name="summary_preference_show_avatars_on">Benutzeravatare werden angezeigt</string>
-	<string name="summary_preference_username">Dein Twitter Benutzername</string>
-	<string name="summary_preference_vibration">Bei neuen Nachrichten vibrieren</string>
-	<string name="summary_preference_vibration_off">Vibration ist ausgeschaltet</string>
-	<string name="summary_preference_vibration_on">Vibration bei neuen Nachrichten</string>
-	<string name="timeline_reloaded">Chronik wurde aktualisiert.</string>
-	<string name="title_preference_appearance">Design</string>
-	<string name="title_preference_frequency">Aktualisierungsfrequenz</string>
-	<string name="title_preference_theme_color">Design</string>
-	<string name="title_preference_notification_sound">Benachrichtigung mit Ton</string>
+    <string name="summary_preference_sync_indicator_on_timeline_off">Keine Sync-Anzeige</string>
+    <string name="summary_preference_sync_indicator_on_timeline_on">Du wirst den Fortschritt der Synchronisation in einer separaten Leiste oberhalb der Timeline sehen</string>
+    <string name="summary_preference_sync_while_using_application_off">Keine Synchronisation im Hintergrund während des Lesens von Timeline oder Gesprächen um flüssiges Scrollen sicherzustellen</string>
+    <string name="summary_preference_sync_while_using_application_on">Synchronisation im Hintergrund ist immer aktiv. Die Timeline friert manchmal ein.</string>
+    <string name="summary_preference_syncing">Zeitpunkt und Anzeige der Synchronisation der Timeline </string>
+    <string name="summary_preference_theme_size">Schriftgröße wählen</string>
+	<string name="summary_preference_username">Dein Username beim Microbloggingsystem</string>
+	<string name="summary_preference_username_pumpio">Trage deine ID auf deiner pump.io Seite ein. Diese sieht wie eine Emailadresse aus: dein Username, dann \"@\"  gefolgt von deinem Server; z.B.: andstatus@identi.ca</string>
+	<string name="summary_preference_verify_credentials">Dieser Account ist überprüft und aktiviert. Tippe auf Zurück (&lt;) um fortzufahren or tippe hier um die Zugangsdaten des Users erneut zu prüfen.</string>
+    <string name="summary_preference_verify_credentials_failed">Überprüfung fehlgeschlagen. Hier tippen zur überprüfen der Zugangsdaten und zum Aktivieren dieses Benutzerkontos</string>
+	<string name="summary_preference_vibration_off">Vibration ist abgeschaltet</string>
+	<string name="summary_preference_vibration_on">Vibrieren bei eingehender Nachricht</string>
+    <string name="system_is_busy_try_later">Das System ist beschäftigt. Bitte versuche es später erneut.</string>
+    <string name="timeline_reloaded">Timeline wurde neu geladen.</string>
+    
+    <string name="timeline_title_direct_messages">Direktnachrichten</string>
+    <string name="timeline_title_favorites">Favoriten</string>
+    <string name="timeline_title_following_user">Folgend</string>
+    <string name="timeline_title_home">Home</string>
+    <string name="timeline_title_mentions">Erwähnungen</string>
+    <string name="timeline_title_public">Öffentlich</string>
+    <string name="timeline_title_replies">Antworten</string>
+    <string name="timeline_title_user">User</string>
+
+    <string name="title_command_fetch_avatar">Avatar</string>
+    <string name="title_command_get_status">Nachricht holen</string>
+    
+	<string name="title_preference_about_application">Über AndStatus</string>
+    <string name="title_preference_add_account">Diesen Account hinzufügen</string>
+    <string name="title_preference_appearance">Design</string>
+	<string name="title_preference_change_log">Log ändern</string>
+    <string name="title_preference_connection_timeout">Zeitüberschreitung der Verbindung</string>
+	<string name="title_preference_contact_developer">Kontakt zum Entwickler</string>
+    <string name="title_preference_debugging">Logging und debugging</string>
+	<string name="title_preference_enable_android_backup">Automatisches Android Backup aktivieren</string>
+	<string name="title_preference_frequency">Synchronisationsfrequenz</string>
+	<string name="title_preference_history_size">Verlauf Größe</string>
+	<string name="title_preference_history_time">Verlauf Zeitraum</string>
+	<string name="title_preference_theme_color">Farbthema</string>
+    <string name="title_preference_min_log_level">Minimum logging level</string>
+	<string name="title_preference_notification_sound">Benachrichtigungston</string>
 	<string name="title_preference_notifications">Benachrichtigungen</string>
 	<string name="title_preference_notifications_enabled">Benachrichtigungen aktivieren</string>
-	<string name="title_preference_notifications_messages">Benachrichtigungen bei neuen Direktnachrichten</string>
-	<string name="title_preference_notifications_mentions">Benachrichtigungen neuen Erwähnungen</string>
-	<string name="title_preference_notifications_timeline">Benachrichtigungen bei neuen Tweets</string>
-	<string name="title_preference_password">Passwort</string>
+	<string name="title_preference_notifications_messages">Neue Direktnachrichten</string>
+	<string name="title_preference_notifications_mentions">Neue Erwähnungen</string>
+    <string name="title_preference_notifications_queue">Befehle in der Warteschlange</string>
+    <string name="title_preference_notifications_timeline">Neue Nachricht in Home</string>
+    <string name="title_preference_oauth">OAuth</string>
+    <string name="title_preference_origin_system">{0}, type: {1}</string>
+    <string name="title_preference_password">Passwort</string>
+	<string name="title_preference_report_bug">Fehler melden</string>
 	<string name="title_preference_storage">Speicher</string>
+	<string name="title_preference_ssl">SSL</string>
 	<string name="title_preference_storage_external">Externen Speicher verwenden</string>
-	<string name="title_preference_theme_size">Design</string>
-	<string name="title_preference_username">Benutzername</string>
+	<string name="title_preference_sync_indicator_on_timeline">Anzeige für Synchronisation in der Timeline</string>
+    <string name="title_preference_sync_while_using_application">Während der Nutzung synchronisieren</string>
+	<string name="title_preference_syncing">Synchronisiere</string>
+	<string name="title_preference_theme_size">Größe</string>
+	<string name="title_preference_username">Username</string>
+	<string name="title_preference_username_pumpio">Webfinger ID</string>
+    <string name="title_sending_messages_log_enabled">Gesendete Mitteilungen in eine Datei loggen</string>
 	<string name="title_preference_show_avatars">Avatare anzeigen</string>
+    <string name="title_preference_verify_credentials">Zugangsdaten reverifizieren</string>
+	<string name="title_preference_verify_credentials_failed">Zugangsdaten verifizieren</string>
 	<string name="title_preference_vibration">Vibration</string>
 	<string name="message_source_from">von %1$s</string>
 	<string name="message_source_in_reply_to">als Antwort auf %1$s</string>
+	<string name="message_source_to">an %1$s</string>
+	<string name="reblogged_by">reblogged von %1$s</string>
+	<string name="reblogged_by_twitter">retweeted von %1$s</string>
 	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
-	<string name="unimplemented">Nicht Implementiert.</string>
+	<string name="unimplemented">Nicht implementiert.</string>
 </resources>
