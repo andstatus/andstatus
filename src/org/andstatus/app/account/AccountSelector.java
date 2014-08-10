@@ -16,6 +16,7 @@
 
 package org.andstatus.app.account;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,8 +27,10 @@ import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
 
@@ -52,6 +55,12 @@ public class AccountSelector extends ListActivity {
     
     private static final String TYPE_ACCOUNT = "account";
 
+    public static void selectAccount(Activity activity, long originId, ActivityRequestCode requestCode) {
+        Intent intent = new Intent(activity, AccountSelector.class);
+        intent.putExtra(IntentExtra.ORIGIN_ID.key, originId);
+        activity.startActivityForResult(intent, requestCode.id, null);
+    }
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +73,13 @@ public class AccountSelector extends ListActivity {
             if (originId==0 || ma.getOriginId() == originId) {
                 accounts.put(ma.getAccountName(), ma);
             }
+        }
+        if (accounts.isEmpty()) {
+            returnSelectedAccount(null);
+            return;
+        } else if (accounts.size() == 1) {
+            returnSelectedAccount(accounts.entrySet().iterator().next().getValue());
+            return;
         }
         List<Map<String, String>> data = new ArrayList<Map<String, String>>();
         for (MyAccount ma : accounts.values()) {
@@ -93,13 +109,17 @@ public class AccountSelector extends ListActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String  accountName = ((TextView)view.findViewById(R.id.name)).getText().toString();
                 MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
-                if (ma != null) {
-                    Intent dataToReturn = new Intent();
-                    dataToReturn.putExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key, ma.getAccountName());
-                    AccountSelector.this.setResult(RESULT_OK, dataToReturn);
-                    finish();
-                }
+                returnSelectedAccount(ma);
             }
         });
+    }
+
+    private void returnSelectedAccount(MyAccount ma) {
+        Intent dataToReturn = new Intent();
+        if (ma != null) {
+            dataToReturn.putExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key, ma.getAccountName());
+        }
+        setResult(RESULT_OK, dataToReturn);
+        finish();
     }
 }

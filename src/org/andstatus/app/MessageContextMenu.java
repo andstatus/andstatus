@@ -58,6 +58,8 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
+import java.nio.channels.SelectableChannel;
+
 /**
  * Context menu and corresponding actions on messages from the list 
  * @author yvolk@yurivolkov.com
@@ -373,9 +375,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     MyServiceManager.sendForegroundCommand( new CommandData(CommandEnum.STOP_FOLLOWING_USER, ma.getAccountName(), authorId));
                     return true;
                 case ACT_AS:
-                    Intent i = new Intent(getContext(), AccountSelector.class);
-                    i.putExtra(IntentExtra.ORIGIN_ID.key, ma.getOriginId());
-                    messageList.getActivity().startActivityForResult(i, ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS.id);
+                    AccountSelector.selectAccount(messageList.getActivity(), ma.getOriginId(), ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS);
                     return true;
                 case ACT_AS_USER:
                     setAccountUserIdToActAs(ma.firstOtherAccountOfThisOrigin().getUserId());

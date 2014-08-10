@@ -177,8 +177,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             message += "New state; ";
             state = newState;
             if (state.accountShouldBeSelected) {
-                Intent i = new Intent(this, AccountSelector.class);
-                startActivityForResult(i, ActivityRequestCode.SELECT_ACCOUNT.id);
+                AccountSelector.selectAccount(this, 0, ActivityRequestCode.SELECT_ACCOUNT);
                 message += "Select account; ";
             }
             message += "action=" + state.getAccountAction() + "; ";

@@ -162,6 +162,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     private static final int LOADER_ID = 1;
     private MyLoaderManager<Cursor> mLoaderManager = null;
+
+    private String mTextToShareViaThisApp = "";
     
     private boolean isLoading() {
         return mLoadingLayout.getVisibility() == View.VISIBLE;
@@ -237,8 +239,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             @Override
             public void onClick(View v) {
                 if (MyContextHolder.get().persistentAccounts().size() > 1) {
-                    Intent i = new Intent(TimelineActivity.this, AccountSelector.class);
-                    startActivityForResult(i, ActivityRequestCode.SELECT_ACCOUNT.id);
+                    AccountSelector.selectAccount(TimelineActivity.this, 0, ActivityRequestCode.SELECT_ACCOUNT);
                 }
             }
         });
@@ -928,29 +929,55 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             mSelectedUserId = mCurrentMyAccountUserId;
         }
 
-        // Are we supposed to send a tweet?
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
-            String textInitial = "";
-            // This is Title of the page is Sharing Web page
-            String subject = intentNew.getStringExtra(Intent.EXTRA_SUBJECT);
-            // This is URL of the page if sharing web page
-            String text = intentNew.getStringExtra(Intent.EXTRA_TEXT);
-            if (!TextUtils.isEmpty(subject)) {
-                textInitial += subject;
-            }
-            if (!TextUtils.isEmpty(text)) {
-                if (!TextUtils.isEmpty(textInitial)) {
-                    textInitial += " ";
-                }
-                textInitial += text;
-            }
-            MyLog.v(this, "Intent.ACTION_SEND '" + textInitial +"'");
-            mMessageEditor.startEditingMessage(textInitial, 0, 0, MyContextHolder.get().persistentAccounts().getCurrentAccount(), mTimelineIsCombined);
+            shareViaThisApplication(intentNew.getStringExtra(Intent.EXTRA_SUBJECT), intentNew.getStringExtra(Intent.EXTRA_TEXT));
         }
 
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, "processNewIntent; " + mTimelineType);
         }
+    }
+
+    private void shareViaThisApplication(String subject, String text) {
+        if (TextUtils.isEmpty(subject) && TextUtils.isEmpty(text)) {
+            return;
+        }
+        mTextToShareViaThisApp = "";
+        if (subjectHasAdditionalContent(subject, text)) {
+            mTextToShareViaThisApp += subject;
+        }
+        if (!TextUtils.isEmpty(text)) {
+            if (!TextUtils.isEmpty(mTextToShareViaThisApp)) {
+                mTextToShareViaThisApp += " ";
+            }
+            mTextToShareViaThisApp += text;
+        }
+        MyLog.v(this, "Share via this app '" + mTextToShareViaThisApp +"'");
+        AccountSelector.selectAccount(this, 0, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA);
+    }
+
+    static boolean subjectHasAdditionalContent(String subject, String text) {
+        if (TextUtils.isEmpty(subject)) {
+            return false;
+        }
+        if (TextUtils.isEmpty(text)) {
+            return true;
+        }
+        return !text.startsWith(stripEllipsis(subject));
+    }
+
+    static String stripEllipsis(String textIn) {
+        if (TextUtils.isEmpty(textIn)) {
+            return "";
+        }
+        int ind = textIn.length() - 1;
+        while (ind >= 0 && (textIn.charAt(ind) == '.' || textIn.charAt(ind) == '.')) {
+            ind--;
+        }
+        if (ind < -1) {
+            return "";
+        }
+        return textIn.substring(0, ind+1);
     }
 
     private void parseAppSearchData(Intent intentNew) {
@@ -1342,6 +1369,14 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     if (ma != null) {
                         mContextMenu.setAccountUserIdToActAs(ma.getUserId());
                         mContextMenu.showContextMenu();
+                    }
+                }
+                break;
+            case SELECT_ACCOUNT_TO_SHARE_VIA:
+                if (resultCode == RESULT_OK) {
+                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                    if (ma != null) {
+                        mMessageEditor.startEditingMessage(mTextToShareViaThisApp, 0, 0, ma, mTimelineIsCombined);
                     }
                 }
                 break;
