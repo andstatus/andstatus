@@ -21,6 +21,7 @@ import android.graphics.drawable.Drawable;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 public class AvatarDrawable {
@@ -28,25 +29,26 @@ public class AvatarDrawable {
     private final AvatarFile avatarFile;
     public static final int AVATAR_SIZE_DIP = 48;
     
-    private static final Drawable DEFAULT_AVATAR = loadDefaultAvatar();
+    private static final Drawable DEFAULT_AVATAR = loadDefaultAvatar(false);
+    private static final Drawable DEFAULT_AVATAR_LIGHT = loadDefaultAvatar(true);
     
     public AvatarDrawable(long userIdIn, String fileName) {
         userId = userIdIn;
         avatarFile = new AvatarFile(fileName);
     }
     
-    private static Drawable loadDefaultAvatar() {
+    private static Drawable loadDefaultAvatar(boolean lightTheme) {
         Drawable avatar = null;
         MyLog.v(AvatarDrawable.class, "Loading default avatar");
         Context context = MyContextHolder.get().context();
         if (context != null) {
-            avatar = context.getResources().getDrawable(R.drawable.avatar_default);
+            avatar = context.getResources().getDrawable(lightTheme ? R.drawable.ic_action_user_light : R.drawable.ic_action_user);
         }
         return avatar;
     }
 
     public Drawable getDefaultDrawable() {
-        return DEFAULT_AVATAR;
+        return MyPreferences.isThemeLight() ? DEFAULT_AVATAR_LIGHT : DEFAULT_AVATAR;
     }
     
     public Drawable getDrawable() {
@@ -54,7 +56,7 @@ public class AvatarDrawable {
             return Drawable.createFromPath(avatarFile.getFile().getAbsolutePath());
         }
         new AvatarData(userId).requestDownload();
-        return DEFAULT_AVATAR;
+        return getDefaultDrawable();
     }
 
     @Override

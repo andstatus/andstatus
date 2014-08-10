@@ -382,6 +382,10 @@ public class MyPreferences {
         }
         context.setTheme(themeId);
     }
+    
+    public static boolean isThemeLight() {
+       return getDefaultSharedPreferences().getString(KEY_THEME_COLOR, "DeviceDefault").contains("Light");
+    }
 
     /**
      * @param context
