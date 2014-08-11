@@ -963,15 +963,40 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (TextUtils.isEmpty(text)) {
             return true;
         }
-        return !text.startsWith(stripEllipsis(subject));
+        return !text.startsWith(stripEllipsis(stripBeginning(subject)));
     }
 
+    /**
+     * Strips e.g. "Message - " or "Message:"
+     */
+    static String stripBeginning(String textIn) {
+        if (TextUtils.isEmpty(textIn)) {
+            return "";
+        }
+        int ind = textIn.indexOf("-");
+        if (ind < 0) {
+            ind = textIn.indexOf(":");
+        }
+        if (ind < 0) {
+            return textIn;
+        }
+        String beginningSeparators = "-:;,.[] ";
+        while ((ind < textIn.length()) && beginningSeparators.contains(String.valueOf(textIn.charAt(ind)))) {
+            ind++;
+        }
+        if (ind >= textIn.length()) {
+            return textIn;
+        }
+        return textIn.substring(ind);
+    }
+    
     static String stripEllipsis(String textIn) {
         if (TextUtils.isEmpty(textIn)) {
             return "";
         }
         int ind = textIn.length() - 1;
-        while (ind >= 0 && (textIn.charAt(ind) == '.' || textIn.charAt(ind) == '.')) {
+        String ellipsis = "… .";
+        while (ind >= 0 && ellipsis.contains(String.valueOf(textIn.charAt(ind)))) {
             ind--;
         }
         if (ind < -1) {
