@@ -1401,7 +1401,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 if (resultCode == RESULT_OK) {
                     MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
                     if (ma != null) {
-                        mMessageEditor.startEditingMessage(mTextToShareViaThisApp, 0, 0, ma, mTimelineIsCombined);
+                        mMessageEditor.startEditingMessage(mTextToShareViaThisApp, 0, 0, ma, mTimelineIsCombined 
+						    || mCurrentMyAccountUserId != ma.getUserId());
                     }
                 }
                 break;
