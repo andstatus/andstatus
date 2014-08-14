@@ -138,6 +138,7 @@
 	<string name="menu_item_direct_message">Личное сообщение</string>
 	<string name="menu_item_favorite">Добавить в избранное</string>
 	<string name="menu_item_follow_user">Следить за "%1s"</string>
+	<string name="menu_item_open_message_permalink">Открыть в Интернете</string>
 	<string name="menu_item_reply">Ответить</string>
 	<string name="menu_item_reblog">Пересказать</string>
 	<string name="menu_item_reblog_twitter">Пересказать</string>

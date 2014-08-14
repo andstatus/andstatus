@@ -26,6 +26,7 @@ import static org.andstatus.app.ContextMenuItem.DIRECT_MESSAGE;
 import static org.andstatus.app.ContextMenuItem.FAVORITE;
 import static org.andstatus.app.ContextMenuItem.FOLLOW_AUTHOR;
 import static org.andstatus.app.ContextMenuItem.FOLLOW_SENDER;
+import static org.andstatus.app.ContextMenuItem.OPEN_MESSAGE_PERMALINK;
 import static org.andstatus.app.ContextMenuItem.REBLOG;
 import static org.andstatus.app.ContextMenuItem.REPLY;
 import static org.andstatus.app.ContextMenuItem.SENDER_MESSAGES;
@@ -222,6 +223,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                                     MyProvider.userIdToName(md.authorId)));
                 }
             }
+			OPEN_MESSAGE_PERMALINK.addTo(menu, menuItemId++, R.string.menu_item_open_message_permalink);
             switch (md.ma.accountsOfThisOrigin()) {
                 case 1:
                     break;

@@ -38,6 +38,7 @@ public enum ContextMenuItem {
     BLOCK(16),
     ACT_AS_USER(17),
     ACT_AS(18),
+	OPEN_MESSAGE_PERMALINK(19),
     UNKNOWN(100);
 
     private final int id;
