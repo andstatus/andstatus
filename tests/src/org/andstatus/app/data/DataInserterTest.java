@@ -121,7 +121,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertFalse( "Data put", data.isEmpty());
         assertEquals("Message Oid", messageOid, data.getValues().getAsString(MyDatabase.Msg.MSG_OID));
         assertEquals("Message permalink before storage", message.url, data.getValues().getAsString(MyDatabase.Msg.URL));
-        assertEquals("Message permalink", message.url, ma.messagePermalink(message.sender.userName, messageId));
+        assertEquals("Message permalink", message.url, MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId()).messagePermalink(messageId));
 
         long authorId = MyProvider.msgIdToLongColumnValue(Msg.AUTHOR_ID, messageId);
         assertEquals("Author of the message", somebodyId, authorId);

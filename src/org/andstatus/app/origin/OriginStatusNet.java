@@ -22,7 +22,7 @@ import org.andstatus.app.data.MyDatabase.Msg;
 class OriginStatusNet extends Origin {
 
     @Override
-    public String messagePermalink(String userName, long messageId) {
+    public String messagePermalink(long messageId) {
         return "http" + (isSsl() ? "s" : "") + "://" + host
                 + "/notice/"
                 + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId);

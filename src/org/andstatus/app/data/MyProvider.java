@@ -1215,7 +1215,7 @@ public class MyProvider extends ContentProvider {
      * @param tableName e.g. {@link Msg#TABLE_NAME} 
      * @param columnName without table name
      * @param systemId tableName._id
-     * @return "" in case not found or error or systemId==0
+     * @return not null; "" in a case not found or error or systemId==0
      */
     private static String idToStringColumnValue(String tableName, String columnName, long systemId) {
         String method = "idToStringColumnValue";
@@ -1234,7 +1234,6 @@ public class MyProvider extends ContentProvider {
                 columnValue = prog.simpleQueryForString();
             } catch (SQLiteDoneException e) {
                 MyLog.ignored(TAG, e);
-                columnValue = "";
             } catch (Exception e) {
                 MyLog.e(TAG, method + " table='" + tableName 
                         + "', column='" + columnName + "'", e);
@@ -1246,7 +1245,7 @@ public class MyProvider extends ContentProvider {
                 MyLog.v(TAG, method + " table=" + tableName + ", column=" + columnName + ", id=" + systemId + " -> " + columnValue );
             }
         }
-        return columnValue;
+        return TextUtils.isEmpty(columnValue) ? "" : columnValue;
     }
     
     public static long msgIdToUserId(String msgUserColumnName, long systemId) {
@@ -1267,6 +1266,10 @@ public class MyProvider extends ContentProvider {
         return userId;
     }
 
+    public static long msgIdToOriginId(long systemId) {
+        return msgIdToLongColumnValue(Msg.ORIGIN_ID, systemId);
+    }
+    
     /**
      * Convenience method to get column value from {@link MyDatabase.Msg} table
      * @param columnName without table name

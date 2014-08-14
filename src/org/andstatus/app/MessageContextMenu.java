@@ -34,11 +34,12 @@ import static org.andstatus.app.ContextMenuItem.SHARE;
 import static org.andstatus.app.ContextMenuItem.STOP_FOLLOWING_AUTHOR;
 import static org.andstatus.app.ContextMenuItem.STOP_FOLLOWING_SENDER;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -50,16 +51,14 @@ import android.widget.TextView;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
-
-import java.nio.channels.SelectableChannel;
 
 /**
  * Context menu and corresponding actions on messages from the list 
@@ -295,47 +294,9 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     MyServiceManager.sendForegroundCommand( new CommandData(CommandEnum.DESTROY_FAVORITE, ma.getAccountName(), mCurrentMsgId));
                     return true;
                 case SHARE:
-                    String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
-                    Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), messageList.getTimelineType(), true, mCurrentMsgId);
-                    Cursor cursor = null;
-                    try {
-                        cursor = getContext().getContentResolver().query(uri, new String[] {
-                                MyDatabase.Msg.MSG_ID, MyDatabase.Msg.BODY
-                        }, null, null, null);
-                        if (cursor != null && cursor.moveToFirst()) {
-        
-                            StringBuilder subject = new StringBuilder();
-                            StringBuilder text = new StringBuilder();
-                            String msgBody = cursor.getString(cursor.getColumnIndex(MyDatabase.Msg.BODY));
-        
-                            subject.append(getContext().getText(ma.alternativeTermForResourceId(R.string.message)));
-                            subject.append(" - " + msgBody);
-                            int maxlength = 80;
-                            if (subject.length() > maxlength) {
-                                subject.setLength(maxlength);
-                                // Truncate at the last space
-                                subject.setLength(subject.lastIndexOf(" "));
-                                subject.append("...");
-                            }
-        
-                            text.append(msgBody);
-                            text.append("\n-- \n" + userName);
-                            text.append("\n URL: " + ma.messagePermalink(userName, 
-                                    cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.MSG_ID))));
-                            
-                            Intent share = new Intent(android.content.Intent.ACTION_SEND); 
-                            share.setType("text/plain"); 
-                            share.putExtra(Intent.EXTRA_SUBJECT, subject.toString()); 
-                            share.putExtra(Intent.EXTRA_TEXT, text.toString()); 
-                            messageList.getActivity().startActivity(Intent.createChooser(share, getContext().getText(R.string.menu_item_share)));
-                        }
-                    } catch (Exception e) {
-                        MyLog.e(this, "onContextItemSelected", e);
-                        return false;
-                    } finally {
-                        DbUtils.closeSilently(cursor);
-                    }
-                    return true;
+                    return shareMessage(messageList.getActivity(), mCurrentMsgId);
+                case OPEN_MESSAGE_PERMALINK:
+                    return openMessagePermalink(messageList.getActivity(), mCurrentMsgId);
                 case SENDER_MESSAGES:
                     senderId = MyProvider.msgIdToUserId(MyDatabase.Msg.SENDER_ID, mCurrentMsgId);
                     if (senderId != 0) {
@@ -391,6 +352,63 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         return false;
     }
 
+    /**
+     * @return true if succeeded
+     */
+    private static boolean shareMessage(Activity activity, long messageId) {
+        Origin origin = MyContextHolder.get().persistentOrigins().fromId(MyProvider.msgIdToOriginId(messageId));
+        if (origin == null) {
+            MyLog.v(activity, "Origin not found for messageId=" + messageId);
+            return false;
+        }
+        StringBuilder subject = new StringBuilder();
+        StringBuilder text = new StringBuilder();
+        String msgBody = MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, messageId);
+
+        subject.append(activity.getText(origin.alternativeTermForResourceId(R.string.message)));
+        subject.append(" - " + msgBody);
+        int maxlength = 80;
+        if (subject.length() > maxlength) {
+            subject.setLength(maxlength);
+            // Truncate at the last space
+            subject.setLength(subject.lastIndexOf(" "));
+            subject.append("...");
+        }
+
+        text.append(msgBody);
+        text.append("\n-- \n" + MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId));
+        text.append("\n URL: " + origin.messagePermalink(messageId));
+
+        Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject.toString());
+        intent.putExtra(Intent.EXTRA_TEXT, text.toString());
+        activity.startActivity(
+                Intent.createChooser(intent, activity.getText(R.string.menu_item_share)));
+        return true;
+    }
+
+
+    /**
+     * @return true if succeeded
+     */
+    private static boolean openMessagePermalink(Activity activity, long messageId) {
+        Origin origin = MyContextHolder.get().persistentOrigins().fromId(MyProvider.msgIdToOriginId(messageId));
+        if (origin == null) {
+            MyLog.v(activity, "Origin not found for messageId=" + messageId);
+            return false;
+        }
+        Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
+        String permalinkString = origin.messagePermalink(messageId);
+        if (TextUtils.isEmpty(permalinkString)) {
+            return false;
+        } else {
+            intent.setData(Uri.parse(permalinkString));
+            activity.startActivity(intent);
+            return true;
+        }
+    }
+    
     void switchTimelineActivity(TimelineTypeEnum timelineType, boolean isTimelineCombined, long selectedUserId) {
         Intent intent;
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {

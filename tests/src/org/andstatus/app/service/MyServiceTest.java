@@ -18,7 +18,6 @@ package org.andstatus.app.service;
 
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccountTest;
 import org.andstatus.app.context.MyContextHolder;

@@ -797,10 +797,6 @@ public final class MyAccount {
     public int alternativeTermForResourceId(int resId) {
         return oAccountName.getOrigin().alternativeTermForResourceId(resId);
     }
-    
-    public String messagePermalink(String userName, long messageId) {
-        return oAccountName.getOrigin().messagePermalink(userName, messageId);
-    }
 
     /**
      * @return the oAuth

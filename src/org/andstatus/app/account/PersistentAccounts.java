@@ -284,7 +284,7 @@ public class PersistentAccounts {
         if ((messageId == 0) || (ma == null)) {
             ma = fromUserId(preferredOtherUserId);
         }
-        long originId = MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.ORIGIN_ID, messageId);
+        long originId = MyProvider.msgIdToOriginId(messageId);
         if ((ma == null) || (originId != ma.getOriginId())) {
            ma = findFirstMyAccountByOriginId(originId); 
         }

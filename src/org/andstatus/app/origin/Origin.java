@@ -167,7 +167,7 @@ public class Origin {
         return resId;
     }
 
-    public String messagePermalink(String userName, long messageId) {
+    public String messagePermalink(long messageId) {
         return "";
     }
 

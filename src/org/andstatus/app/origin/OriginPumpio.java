@@ -42,7 +42,7 @@ class OriginPumpio extends Origin {
     }
     
     @Override
-    public String messagePermalink(String userName, long messageId) {
+    public String messagePermalink(long messageId) {
         return MyProvider.msgIdToStringColumnValue(Msg.URL, messageId);
     }
     
