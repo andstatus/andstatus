@@ -4,6 +4,9 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
+import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.origin.Origin;
 
 /**
  * The command to the MyService or to MyAppWidgetProvider as a
@@ -143,13 +146,19 @@ public enum CommandEnum {
         return UNKNOWN;
     }
 
-    /** Localized title for UI */
-    public CharSequence getTitle(Context context) {
-        if (titleResId == 0 || context == null) {
+    /** Localized title for UI 
+     * @param accountName */
+    public CharSequence getTitle(MyContext myContext, String accountName) {
+        if (titleResId == 0 || myContext == null) {
             return this.code;
-        } else {
-            return context.getText(titleResId);        
         }
+        int resId = titleResId;
+        MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
+        if (ma != null) {
+            resId = myContext.persistentOrigins().fromId(ma.getOriginId())
+                    .alternativeTermForResourceId(titleResId);
+        }
+        return myContext.context().getText(resId);
     }
     
     public int getPriority() {

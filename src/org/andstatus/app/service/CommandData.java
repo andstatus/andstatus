@@ -515,7 +515,7 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append(timelineType.getTitle(myContext.context()));
                 break;
             default:
-                builder.append(command.getTitle(myContext.context()));
+                builder.append(command.getTitle(myContext, accountName));
                 break;
         }
         return builder.toString();
