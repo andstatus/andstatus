@@ -123,7 +123,7 @@ class MessageEditor {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                updateStatus();
+                sendMessageAndCloseEditor();
             }
         });
     }
@@ -155,10 +155,11 @@ class MessageEditor {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     switch (keyCode) {
                         case KeyEvent.KEYCODE_DPAD_CENTER:
-                            updateStatus();
+                            sendMessageAndCloseEditor();
                             return true;
                         case KeyEvent.KEYCODE_ENTER:
-                            if (event.isAltPressed()) {
+                            if (event.isAltPressed() || 
+							        !MyPreferences.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, true)) {
                                 mEditText.append("\n");
                                 return true;
                             }
@@ -179,7 +180,7 @@ class MessageEditor {
                 if (event != null && event.isAltPressed()) {
                     return false;
                 }
-                updateStatus();
+                sendMessageAndCloseEditor();
                 return true;
             }
         });
@@ -332,10 +333,7 @@ class MessageEditor {
         show();
     }
     
-    /**
-     * Send the message asynchronously
-     */
-    private void updateStatus() {
+    private void sendMessageAndCloseEditor() {
         String status = mEditText.getText().toString();
         if (TextUtils.isEmpty(status.trim())) {
             Toast.makeText(mMessageList.getActivity(), R.string.cannot_send_empty_message,

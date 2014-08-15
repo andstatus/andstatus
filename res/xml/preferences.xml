@@ -119,6 +119,9 @@
 					android:title="@string/title_preference_show_avatars"
 					android:summaryOff="@string/summary_preference_show_avatars_off"
 					android:summaryOn="@string/summary_preference_show_avatars_on" />
+				<CheckBoxPreference android:key="enter_sends_message"
+					android:title="@string/title_preference_enter_sends_message"
+					android:defaultValue="true" />
 			</PreferenceCategory>
 		</PreferenceScreen>
 

@@ -94,7 +94,8 @@ public class MyPreferences {
     public static final String KEY_VERSION_CODE_LAST = "version_code_last";
 
     public static final String KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE = "notifications_queue";
-    
+	public static final String KEY_ENTER_SENDS_MESSAGE = "enter_sends_message";
+	
     private MyPreferences(){
         throw new AssertionError();
     }

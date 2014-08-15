@@ -350,6 +350,7 @@
     <string name="title_preference_connection_timeout">Таймаут соединения</string>
 	<string name="title_preference_contact_developer">Свяжитесь с разработчиками</string>
 	<string name="title_preference_enable_android_backup">Разрешить автоматическую архивацию Android-а</string>
+	<string name="title_preference_enter_sends_message">ENTER отправляет сообщение</string>
 	<string name="title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="title_preference_history_size">Размер истории</string>
 	<string name="title_preference_history_time">Длительность хранения истории</string>

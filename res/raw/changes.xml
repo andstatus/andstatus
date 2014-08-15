@@ -37,6 +37,18 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="10.0" android:versionCode="105"
+        versionDate="2014-08-17"
+        versionTitle="Open on Internet">
+        <changes>
+            <change>&quot;Open on Internet&quot; message context menu
+				item added.</change>
+            <change>Added &quot;ENTER key sends message&quot; option (on by default
+				to preserve existing behaviour). 
+				Setting it to &quot;off&quot; allows inserting newline
+				in the message.</change>
+        </changes>
+    </release>
     <release android:versionName="9.1" android:versionCode="104"
         versionDate="2014-07-06"
         versionTitle="Fixed: Commands lost when created offline">
