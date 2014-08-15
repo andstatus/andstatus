@@ -90,7 +90,7 @@ public class OriginList extends ListActivity {
     private void fillList(boolean actionPick) {
         data.clear();
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
-            if ((actionPick && android.os.Build.VERSION.SDK_INT >= 17)
+            if (actionPick || android.os.Build.VERSION.SDK_INT >= 17
                     || origin.originType != OriginType.TWITTER) {
                 Map<String, String> map = new HashMap<String, String>();
                 String visibleName = origin.getName();
