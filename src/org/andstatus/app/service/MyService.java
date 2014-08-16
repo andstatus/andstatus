@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.support.android.v11.os.AsyncTask;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -600,6 +601,7 @@ public class MyService extends Service {
                     addToErrorQueue(commandData);
                 }
                 broadcastAfterExecutingCommand(commandData);
+                addSyncOfThisToQueue(commandData);
             } while (true);
             MyLog.d(this, "Ended, " + breakReason + ", " + totalQueuesSize() + " commands left");
             return true;
@@ -724,6 +726,18 @@ public class MyService extends Service {
                     MyLog.e(this, "Error Queue is full?");
                 }
             }
+        }
+
+        private void addSyncOfThisToQueue(CommandData commandDataExecuted) {
+            if (commandDataExecuted.getResult().hasError()
+                    || commandDataExecuted.getCommand() != CommandEnum.UPDATE_STATUS
+                    || !MyPreferences.getBoolean(
+                            MyPreferences.KEY_SYNC_AFTER_MESSAGE_WAS_SENT, false)) {
+                return;
+            }
+            addToMainQueue(new CommandData(CommandEnum.FETCH_TIMELINE,
+                    commandDataExecuted.getAccountName(), TimelineTypeEnum.HOME)
+                    .setInForeground(commandDataExecuted.isInForeground()));
         }
         
         @Override

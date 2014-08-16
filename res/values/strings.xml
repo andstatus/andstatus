@@ -350,7 +350,6 @@
 	<string name="title_preference_frequency">Sync frequency</string>
 	<string name="title_preference_history_size">History Size</string>
 	<string name="title_preference_history_time">History Time</string>
-	<string name="title_preference_theme_color">Color Theme</string>
     <string name="title_preference_min_log_level">Minimum logging level</string>
 	<string name="title_preference_notification_sound">Notification Ringtone</string>
 	<string name="title_preference_notifications">Notifications</string>
@@ -367,9 +366,11 @@
 	<string name="title_preference_storage">Storage</string>
 	<string name="title_preference_ssl">SSL</string>
 	<string name="title_preference_storage_external">Use External Storage</string>
+    <string name="title_preference_sync_after_message_was_sent">Sync after message was sent</string>
 	<string name="title_preference_sync_indicator_on_timeline">Syncing indicator on timeline</string>
     <string name="title_preference_sync_while_using_application">Sync while using application</string>
 	<string name="title_preference_syncing">Syncing</string>
+    <string name="title_preference_theme_color">Color Theme</string>
 	<string name="title_preference_theme_size">Size</string>
 	<string name="title_preference_username">Username</string>
 	<string name="title_preference_username_pumpio">Webfinger ID</string>

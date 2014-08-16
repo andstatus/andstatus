@@ -58,7 +58,10 @@
                     android:summaryOff="@string/summary_preference_sync_indicator_on_timeline_off"
                     android:summaryOn="@string/summary_preference_sync_indicator_on_timeline_on"
                     android:defaultValue="true" />
-		        <EditTextPreference
+                <CheckBoxPreference android:key="sync_after_message_was_sent"
+                    android:title="@string/title_preference_sync_after_message_was_sent"
+                    android:defaultValue="false" />
+                <EditTextPreference
 		            android:dialogTitle="@string/dialog_title_preference_connection_timeout"
 		            android:key="connection_timeout"
 		            android:persistent="true"

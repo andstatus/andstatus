@@ -371,7 +371,8 @@
 	<string name="title_preference_storage">Память</string>
 	<string name="title_preference_ssl">SSL</string>
 	<string name="title_preference_storage_external">Использовать внешнюю память</string>
-    <string name="title_preference_sync_indicator_on_timeline">Индикатор синхронизации на Линии времени</string>
+    <string name="title_preference_sync_after_message_was_sent">Синхронизировать после отправки сообщения</string>
+	<string name="title_preference_sync_indicator_on_timeline">Индикатор синхронизации на Линии времени</string>
     <string name="title_preference_sync_while_using_application">Синхронизировать при использовании приложения</string>
     <string name="title_preference_syncing">Синхронизация</string>
     <string name="title_preference_theme_color">Цветовая тема</string>

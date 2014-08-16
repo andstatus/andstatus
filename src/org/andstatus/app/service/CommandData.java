@@ -525,8 +525,9 @@ public class CommandData implements Comparable<CommandData> {
         return mInForeground;
     }
 
-    public void setInForeground(boolean inForeground) {
+    public CommandData setInForeground(boolean inForeground) {
         mInForeground = inForeground;
+        return this;
     }
 
     public boolean executedMoreSecondsAgoThan(long predefinedPeriodSeconds) {
