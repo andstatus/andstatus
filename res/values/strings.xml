@@ -360,6 +360,7 @@
     <string name="title_preference_notifications_queue">Commands in the queue</string>
     <string name="title_preference_notifications_timeline">New Home messages</string>
     <string name="title_preference_oauth">OAuth</string>
+    <string name="title_preference_old_messages_first_in_conversation">Old messages first in Conversation view</string>
     <string name="title_preference_origin_system">{0}, type: {1}</string>
     <string name="title_preference_password">Password</string>
 	<string name="title_preference_report_bug">Report a bug</string>

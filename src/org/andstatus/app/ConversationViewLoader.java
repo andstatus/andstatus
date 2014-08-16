@@ -108,6 +108,10 @@ public class ConversationViewLoader {
         findPreviousMessagesRecursively(new ConversationOneMessage(selectedMessageId, 0));
         Collections.sort(oMsgs, replyLevelComparator);
         enumerateMessages();
+        if (MyPreferences.getBoolean(
+                MyPreferences.KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION, false)) {
+            reverseListOrder();
+        }
         Collections.sort(oMsgs);
     }
 
@@ -486,6 +490,12 @@ public class ConversationViewLoader {
             }
         }
         return 0;
+    }
+
+    private void reverseListOrder() {
+        for (ConversationOneMessage oMsg : oMsgs) {
+            oMsg.listOrder = oMsgs.size() - oMsg.listOrder - 1; 
+        }
     }
     
 }

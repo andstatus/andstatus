@@ -122,6 +122,9 @@
 				<CheckBoxPreference android:key="enter_sends_message"
 					android:title="@string/title_preference_enter_sends_message"
 					android:defaultValue="true" />
+                <CheckBoxPreference android:key="old_messages_first_in_conversation"
+                    android:title="@string/title_preference_old_messages_first_in_conversation"
+                    android:defaultValue="false" />
 			</PreferenceCategory>
 		</PreferenceScreen>
 
