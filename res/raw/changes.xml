@@ -39,14 +39,22 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
 
     <release android:versionName="10.0" android:versionCode="105"
         versionDate="2014-08-17"
-        versionTitle="Open on Internet">
+        versionTitle="Open on Internet and Newline in Posts">
         <changes>
             <change>&quot;Open on Internet&quot; message context menu
-				item added.</change>
+				item added. See <a href="https://github.com/andstatus/andstatus/issues/97" >Issue #97</a>.</change>
             <change>Added &quot;ENTER key sends message&quot; option (on by default
 				to preserve existing behaviour). 
 				Setting it to &quot;off&quot; allows inserting newline
-				in the message.</change>
+				in the message. In order to see these new lines in the messages, 
+				&quot;Allow HTML content&quot; option should be set for this Microblogging System.</change>
+            <change>Added &quot;Old messages first in Conversation view&quot; option allowing 
+                to reverse the order of messages in the Conversation view.
+                See <a href="https://github.com/andstatus/andstatus/issues/67" >Issue #67</a>.</change>
+            <change>Added &quot;Sync after message was sent&quot; option.
+                See <a href="https://github.com/andstatus/andstatus/issues/65" >Issue #65</a>.</change>
+            <change>&quot;Blog&quot; term changed to &quot;Post&quot; in all Microblogging systems except Twitter.
+                See <a href="https://github.com/andstatus/andstatus/issues/15" >Issue #15</a>.</change>
         </changes>
     </release>
     <release android:versionName="9.1" android:versionCode="104"

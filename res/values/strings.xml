@@ -46,7 +46,7 @@
     <string name="button_cancel">Cancel</string>
     <string name="button_change_folder">Change folder</string>
     <string name="button_select_backup_file">Select backup file</string>
-    <string name="button_create_message">Blog</string>
+    <string name="button_create_message">Post</string>
     <string name="button_create_message_twitter">Tweet</string>
     <string name="button_delete">Delete</string>
     <string name="button_discard">Discard</string>
@@ -136,7 +136,7 @@
     <string name="menu_item_act_as_user">Act as "%1s"</string>
     <string name="menu_item_block">Block</string>
 	<string name="menu_item_destroy_favorite">Undo favorite</string>
-    <string name="menu_item_destroy_reblog">Undo reblog</string>
+    <string name="menu_item_destroy_reblog">Undo repost</string>
     <string name="menu_item_destroy_reblog_twitter">Undo retweet</string>
     <string name="menu_item_destroy_status">Remove message</string>
     <string name="menu_item_direct_message">Direct Message</string>
@@ -144,7 +144,7 @@
 	<string name="menu_item_follow_user">Follow "%1s"</string>
 	<string name="menu_item_open_message_permalink">Open on Internet</string>
     <string name="menu_item_reply">Reply</string>
-	<string name="menu_item_reblog">Reblog</string>
+	<string name="menu_item_reblog">Repost</string>
 	<string name="menu_item_reblog_twitter">Retweet</string>
 	<string name="menu_item_share">Share</string>
 	<string name="menu_item_stop_following_user">Stop following "%1s"</string>
@@ -217,7 +217,7 @@
         a conversation tree to which the message belongs.\n
         Tap the <b>Home</b> button on the \"Action bar\" to switch to the other views.\n\n
         <h2><b>3. SENDING AND REPLYING</b></h2>\n\n
-        In order to update your status, tap the \"Blog\" button (\"Tweet\" for Twitter),
+        In order to update your status, tap the \"Post\" button (\"Tweet\" for Twitter),
         type in a text into the text area at the bottom of the screen and tap <b>Send</b>.\n
         In order to reply, <b>hold down</b> a message and select <b>Reply</b>,
         type in your reply at the bottom.\n
@@ -382,7 +382,7 @@
 	<string name="message_source_from">from %1$s</string>
 	<string name="message_source_in_reply_to">in reply to %1$s</string>
 	<string name="message_source_to">to %1$s</string>
-	<string name="reblogged_by">reblogged by %1$s</string>
+	<string name="reblogged_by">reposted by %1$s</string>
 	<string name="reblogged_by_twitter">retweeted by %1$s</string>
 	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Not implemented.</string>

@@ -44,7 +44,7 @@
     <string name="button_cancel">Отмена</string>
     <string name="button_change_folder">Изменить папку</string>
     <string name="button_select_backup_file">Выбор файла бэкапа</string>
-    <string name="button_create_message">Блог</string>
+    <string name="button_create_message">Пост</string>
     <string name="button_create_message_twitter">Твит</string>
     <string name="button_delete">Удалить</string>
     <string name="button_discard">Отмена</string>
@@ -224,7 +224,7 @@
         на другие \"Ленты времени\".\n\n
         <h2><b>3. ОТПРАВКА СООБЩЕНИЙ И ОТВЕТЫ НА СООБЩЕНИЯ</b></h2>\n\n
         Для обновления Вашего статуса (для сообщения о том, что происходит…) нажмите кнопку
-        \"Блог\", наберите текст в открывшемся поле внизу окна
+        \"Пост\", наберите текст в открывшемся поле внизу окна
         и нажмите кнопку <b>Отправить</b>.\n
         Для того, чтобы ответить на сообщение, <b>длительно нажмите</b> на него,
         выберите <b>Ответить</b>
