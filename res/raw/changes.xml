@@ -43,10 +43,10 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <changes>
             <change>&quot;Open on Internet&quot; message context menu
 				item added. See <a href="https://github.com/andstatus/andstatus/issues/97" >Issue #97</a>.</change>
-            <change>Added &quot;ENTER key sends message&quot; option (on by default
+            <change>Added &quot;ENTER key sends message&quot; option (&quot;on&quot; by default 
 				to preserve existing behaviour). 
-				Setting it to &quot;off&quot; allows inserting newline
-				in the message. In order to see these new lines in the messages, 
+				Setting it to &quot;off&quot; allows inserting newline 
+				in the message. In order to see these new lines in the messages,  
 				&quot;Allow HTML content&quot; option should be set for this Microblogging System.</change>
             <change>Added &quot;Old messages first in Conversation view&quot; option allowing 
                 to reverse the order of messages in the Conversation view.
@@ -55,6 +55,8 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 See <a href="https://github.com/andstatus/andstatus/issues/65" >Issue #65</a>.</change>
             <change>&quot;Blog&quot; term changed to &quot;Post&quot; in all Microblogging systems except Twitter.
                 See <a href="https://github.com/andstatus/andstatus/issues/15" >Issue #15</a>.</change>
+            <change>Added &quot;Mark replies in Timeline&quot; option.
+                See <a href="https://github.com/andstatus/andstatus/issues/108" >Issue #108</a>.</change>
         </changes>
     </release>
     <release android:versionName="9.1" android:versionCode="104"

@@ -374,7 +374,7 @@ public class ConversationViewLoader {
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
         if (oMsg.msgId == selectedMessageId && oMsgs.size() > 1) {
-            messageIndented.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.message_current_background));
+            messageIndented.setBackground(context.getResources().getDrawable(R.drawable.message_current_background));
         }
 
         int viewToTheLeftId = 0;

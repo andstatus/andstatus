@@ -128,7 +128,10 @@
                 <CheckBoxPreference android:key="old_messages_first_in_conversation"
                     android:title="@string/title_preference_old_messages_first_in_conversation"
                     android:defaultValue="false" />
-			</PreferenceCategory>
+                <CheckBoxPreference android:key="mark_replies_in_timeline"
+                    android:title="@string/title_preference_mark_replies_in_timeline"
+                    android:defaultValue="false" />
+            </PreferenceCategory>
 		</PreferenceScreen>
 
 		<!-- NOTIFICATIONS -->

@@ -35,6 +35,8 @@
 
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.ActionButton.Overflow</item>
         <item name="android:windowNoTitle">true</item>
+
+        <item name="replyBackground">@drawable/reply_timeline_background</item>
 	</style>
 	<style name="Theme.Light.AndStatus.StandardSize" parent="@style/LightThemeSelector">
 		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
@@ -51,6 +53,8 @@
 				
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.Light.ActionButton.Overflow</item>
 		<item name="android:windowNoTitle">true</item>
+
+        <item name="replyBackground">@drawable/reply_timeline_background_light</item>
 	</style>
 	<style name="Theme.DeviceDefault.AndStatus.StandardSize" parent="@style/DeviceDefaultThemeSelector">
 		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
@@ -75,6 +79,8 @@
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.Light.ActionButton.Overflow</item>
         -->
 		<item name="android:windowNoTitle">true</item>
+
+        <item name="replyBackground">@drawable/reply_timeline_background</item>
 	</style>
 				
 	<style name="Theme.Dark.AndStatus.Small" parent="@style/Theme.Dark.AndStatus.StandardSize">

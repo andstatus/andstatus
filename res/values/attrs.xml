@@ -47,5 +47,10 @@
 		<attr name="textEditColor" format="reference|color" />
 		
 		<attr name="myActionOverflowButtonStyle" format="reference" />
+
+		<!-- Reference to a styled drawable, see  
+ http://stackoverflow.com/questions/8041537/how-to-reference-style-attributes-from-a-drawable/13471695
+		-->
+		<attr name="replyBackground" format="reference" />
 	</declare-styleable>
 </resources>

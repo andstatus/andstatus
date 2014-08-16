@@ -1,12 +1,10 @@
 package org.andstatus.app.service;
 
-import android.content.Context;
 import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.origin.Origin;
 
 /**
  * The command to the MyService or to MyAppWidgetProvider as a

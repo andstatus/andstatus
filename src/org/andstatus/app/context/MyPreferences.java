@@ -97,6 +97,7 @@ public class MyPreferences {
 	public static final String KEY_ENTER_SENDS_MESSAGE = "enter_sends_message";
     public static final String KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION = "old_messages_first_in_conversation";
     public static final String KEY_SYNC_AFTER_MESSAGE_WAS_SENT = "sync_after_message_was_sent";
+    public static final String KEY_MARK_REPLIES_IN_TIMELINE = "mark_replies_in_timeline";
 	
     private MyPreferences(){
         throw new AssertionError();

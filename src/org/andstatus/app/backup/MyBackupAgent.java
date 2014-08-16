@@ -20,9 +20,7 @@ import android.app.backup.BackupAgent;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.ParcelFileDescriptor;
-import android.preference.PreferenceManager;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.PersistentAccounts;

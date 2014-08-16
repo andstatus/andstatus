@@ -18,7 +18,13 @@ package org.andstatus.app.support.android.v11.widget;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.view.View;
 import android.widget.SimpleCursorAdapter;
+
+import org.andstatus.app.R;
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.util.MyLog;
 
 /**
  * TODO: Needed only to get rid of auto-requery. Starting from API 11 we may use another constructor,
@@ -26,7 +32,9 @@ import android.widget.SimpleCursorAdapter;
  * @author yvolk@yurivolkov.com
  */
 public class MySimpleCursorAdapter extends SimpleCursorAdapter {
-
+    private boolean markReplies = MyPreferences.getBoolean(
+            MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false);
+    
     public MySimpleCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to,
             int flags) {
         super(context, layout, c, from, to);
@@ -35,6 +43,29 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
     @Override
     protected void onContentChanged() {
         // Ignore at this level. Will be handled elsewhere...
+    }
+
+    @Override
+    public void bindView(View view, Context context, Cursor cursor) {
+        if (!markReplies || !markReply(view, context, cursor)) {
+            view.setBackground(null);
+            view.setPadding(0, 0, 0, 0);
+        }
+        super.bindView(view, context, cursor);
+    }
+
+    private boolean markReply(View view, Context context, Cursor cursor) {
+        boolean backgroundSet = false;
+        int columnIndex2 = cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID);
+        if (columnIndex2 >= 0) {
+            long replyToMsgId = cursor.getLong(columnIndex2);
+            if (replyToMsgId != 0) {
+                // For some reason, referring to the style drawable doesn't work (to "?attr:replyBackground" ) 
+                view.setBackground(context.getResources().getDrawable(MyPreferences.isThemeLight() ? R.drawable.reply_timeline_background_light : R.drawable.reply_timeline_background));
+                backgroundSet = true;
+            }
+        }
+        return backgroundSet;
     }
 
 }

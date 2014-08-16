@@ -16,4 +16,8 @@
  -->
 <resources>
 	<color name="source_link">#FFFFFFFF</color>
+    <color name="messageBackgroundColor">#FF000000</color>
+    <color name="messageBackgroundColorLight">#FFFFFFFF</color>
+    <color name="replyMarkColor">#FF47a4ee</color>
+    <color name="replyMarkColorLight">#FF47a4ee</color>
 </resources>
