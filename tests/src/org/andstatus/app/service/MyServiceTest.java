@@ -194,8 +194,8 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         assertTrue("The command stayed in the main queue", queue.contains(cd2));
 
         CommandData cd3 = new CommandData(CommandEnum.FETCH_TIMELINE,
-                TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineTypeEnum.HOME, 0);
-        cd3.setInForeground(true);
+                TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineTypeEnum.HOME, 0)
+                .setInForeground(true);
         listentedToCommand = cd3;
 
         startCount = executionStartCount;

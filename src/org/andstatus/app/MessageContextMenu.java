@@ -185,6 +185,8 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                                 MyProvider.userIdToName(md.authorId)));
             }
 
+            OPEN_MESSAGE_PERMALINK.addTo(menu, menuItemId++, R.string.menu_item_open_message_permalink);
+            
             if (md.isSender) {
                 // This message is by current User, hence we may delete it.
                 if (md.isDirect) {
@@ -222,7 +224,6 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                                     MyProvider.userIdToName(md.authorId)));
                 }
             }
-			OPEN_MESSAGE_PERMALINK.addTo(menu, menuItemId++, R.string.menu_item_open_message_permalink);
             switch (md.ma.accountsOfThisOrigin()) {
                 case 1:
                     break;
