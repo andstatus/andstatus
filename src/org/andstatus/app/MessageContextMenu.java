@@ -39,6 +39,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -364,10 +365,13 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         }
         StringBuilder subject = new StringBuilder();
         StringBuilder text = new StringBuilder();
-        String msgBody = MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, messageId);
+        String msgBodyPlainText = MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, messageId);
+        if (origin.isHtmlContentAllowed()) {
+            msgBodyPlainText = Html.fromHtml(msgBodyPlainText).toString();
+        }
 
         subject.append(activity.getText(origin.alternativeTermForResourceId(R.string.message)));
-        subject.append(" - " + msgBody);
+        subject.append(" - " + msgBodyPlainText);
         int maxlength = 80;
         if (subject.length() > maxlength) {
             subject.setLength(maxlength);
@@ -376,7 +380,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             subject.append("...");
         }
 
-        text.append(msgBody);
+        text.append(msgBodyPlainText);
         text.append("\n-- \n" + MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId));
         text.append("\n URL: " + origin.messagePermalink(messageId));
 
