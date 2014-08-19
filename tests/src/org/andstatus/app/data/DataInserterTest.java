@@ -37,6 +37,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 
@@ -415,7 +416,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 + "<p>This is a second line, <b>Bold</b> formatting." 
                 + "<br /><i>This is italics</i>. <b>And this is bold</b> <u>The text is underlined</u>.</p>"
                 + "<p>A separate paragraph.</p>";
-        assertFalse("HTML removed", MbMessage.stripHtml(bodyString).contains("<"));
+        assertFalse("HTML removed", MyHtml.stripHtml(bodyString).contains("<"));
         assertHtmlMessage(author1, bodyString);
 
         String bodyImgString = "A message with <b>HTML</b> <i>img</i> tag: " 
@@ -443,6 +444,6 @@ public class DataInserterTest extends InstrumentationTestCase {
         MbMessage msg2 = buildPumpIoMessage(author, bodyString, null, null);
         long msgId2 = addMessage(msg2);
         String body2 = MyProvider.msgIdToStringColumnValue(Msg.BODY, msgId2);
-        assertEquals("HTML removed", MbMessage.stripHtml(bodyString), body2);
+        assertEquals("HTML removed", MyHtml.stripHtml(bodyString), body2);
     }
 }

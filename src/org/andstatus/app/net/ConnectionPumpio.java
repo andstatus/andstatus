@@ -19,8 +19,10 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.json.JSONArray;
@@ -205,6 +207,7 @@ public class ConnectionPumpio extends Connection {
 
     @Override
     public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
+        message = toHtmlIfAllowed(message);
         ActivitySender sender = ActivitySender.fromContent(this, message);
         if (!TextUtils.isEmpty(inReplyToId)) {
             sender.setInReplyTo(inReplyToId);
@@ -212,6 +215,11 @@ public class ConnectionPumpio extends Connection {
         return messageFromJson(sender.sendMe("post"));
     }
     
+    protected String toHtmlIfAllowed(String message) {
+        return MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(data.getOriginId()) ?
+            message : MyHtml.htmLify(message);
+    }
+
     String oidToObjectType(String oid) {
         String objectType = "";
         if (oid.contains("/comment/")) {
@@ -286,6 +294,7 @@ public class ConnectionPumpio extends Connection {
     
     @Override
     public MbMessage postDirectMessage(String message, String recipientId) throws ConnectionException {
+        message = toHtmlIfAllowed(message);
         ActivitySender sender = ActivitySender.fromContent(this, message);
         if (!TextUtils.isEmpty(recipientId)) {
             sender.setRecipient(recipientId);

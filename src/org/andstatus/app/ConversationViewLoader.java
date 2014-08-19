@@ -45,10 +45,10 @@ import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.TimelineTypeEnum;
-import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -435,7 +435,7 @@ public class ConversationViewLoader {
             body.setFocusableInTouchMode(true);
             Spanned spanned = Html.fromHtml(oMsg.body);
             body.setText(spanned);
-            if (!MbMessage.hasUrlSpans(spanned)) {
+            if (!MyHtml.hasUrlSpans(spanned)) {
                 Linkify.addLinks(body, Linkify.ALL);
             }
         }

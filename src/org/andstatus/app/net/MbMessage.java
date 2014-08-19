@@ -16,12 +16,10 @@
 
 package org.andstatus.app.net;
 
-import android.text.Html;
-import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.style.URLSpan;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.TriState;
 
 /**
@@ -91,42 +89,12 @@ public class MbMessage {
         } else if (MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(originId)) {
             this.body = body.trim();
         } else {
-            this.body = stripHtml(body);
+            this.body = MyHtml.stripHtml(body);
         }
     }
     
     public boolean isEmpty() {
         return this.isEmpty || TextUtils.isEmpty(oid) || originId==0;
-    }
-    
-    public static String stripHtml(String text) {
-        if (TextUtils.isEmpty(text)) {
-            return "";
-        } else if ( hasHtmlMarkup(text)) {
-            // Double conversion removes extra lines!
-            return Html.fromHtml(Html.fromHtml(text.trim()).toString()).toString().trim();
-        } else {
-            return text.trim();
-        }
-    }
-
-    /** Very simple method  
-     */
-    private static boolean hasHtmlMarkup(String text) {
-        boolean has = false;
-        if (text != null){
-            has = text.contains("<") && text.contains(">");
-        }
-        return has; 
-    }
-    
-    public static boolean hasUrlSpans (Spanned spanned) {
-        boolean has = false;
-        if (spanned != null){
-            URLSpan[] spans = spanned.getSpans(0, spanned.length(), URLSpan.class);
-            has = spans != null && spans.length > 0;
-        }
-        return has; 
     }
     
 }
