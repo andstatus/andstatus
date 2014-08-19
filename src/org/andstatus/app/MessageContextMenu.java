@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Html;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -59,6 +58,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 
 /**
@@ -367,7 +367,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         StringBuilder text = new StringBuilder();
         String msgBodyPlainText = MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, messageId);
         if (origin.isHtmlContentAllowed()) {
-            msgBodyPlainText = Html.fromHtml(msgBodyPlainText).toString();
+            msgBodyPlainText = MyHtml.fromHtml(msgBodyPlainText);
         }
 
         subject.append(activity.getText(origin.alternativeTermForResourceId(R.string.message)));

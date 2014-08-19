@@ -42,25 +42,22 @@ public class MyHtmlTest extends InstrumentationTestCase {
         assertTrue(MyHtml.hasHtmlMarkup(string2));
     }
 
-    public void testStripHtml() {
+    public void testFromHtml() {
         String string = "";
-        String expected = "This message\nhas newline";
-
-        string = "<p>This <a href='#as'>message</a></p>   <br/>has <p>newline</p> ";
-        assertEquals(expected, MyHtml.stripHtml(string));
+        String expected = "This message\nhas \nnewline";
         
-        string = "This message<br >has newline ";
-        assertEquals(expected, MyHtml.stripHtml(string));
-        string = "This message<br>has newline";
-        assertEquals(expected, MyHtml.stripHtml(string));
-        string = "This message<br />has newline";
-        assertEquals(expected, MyHtml.stripHtml(string));
-        assertEquals(expected, MyHtml.stripHtml(expected));
-        string = "This <a href='#as'>message</a><br />has newline";
-        assertEquals(expected, MyHtml.stripHtml(string));
+        string = "This message<br >has <br>newline ";
+        assertEquals(expected, MyHtml.fromHtml(string));
+        string = "This message<br />has <p>newline</p>";
+        assertEquals(expected, MyHtml.fromHtml(string));
+        assertEquals(expected, MyHtml.fromHtml(expected));
+        string = "This <a href='#as'>message</a><br />has <br><br>newline";
+        assertEquals(expected, MyHtml.fromHtml(string));
+        string = "<p>This <a href='#as'>message</a></p><br />has <p>newline</p>";
+        assertEquals(expected, MyHtml.fromHtml(string));
         string = "<p>This <a href='#as'>message</a></p>has <p>newline</p>";
-        assertEquals(expected, MyHtml.stripHtml(string));
-        string = "<p>This <a href='#as'>message</a></p><br/>has <p>newline</p>";
-        assertEquals(expected, MyHtml.stripHtml(string));
+        assertEquals(expected, MyHtml.fromHtml(string));
+        string = "<p>This <a href='#as'>message</a></p>   has <p>newline</p> ";
+        assertEquals(expected, MyHtml.fromHtml(string));
     }
 }

@@ -30,20 +30,19 @@ public class MyHtml {
         return messageIn.replaceAll("(\r\n|\n)", "<br />");
     }
 
-    private static String NEWLINE_TEMP = "newline_temp_subst";
-    public static String stripHtml(String text) {
+    private static String NEWLINE_SEARCH = "\n";
+    private static String NEWLINE_REPLACE = "\n";
+    public static String fromHtml(String text) {
         if (TextUtils.isEmpty(text)) {
             return "";
         } else if ( MyHtml.hasHtmlMarkup(text)) {
             String text2 = text.trim();
-            text2 = text2.replaceAll("<br\\s?[/]?>", NEWLINE_TEMP);
-            text2 = text2.replaceAll("</p>", "\1" + NEWLINE_TEMP);
-            text2 = text2.replaceAll(NEWLINE_TEMP + "\\s*" + NEWLINE_TEMP, NEWLINE_TEMP);
-            if (text2.endsWith(NEWLINE_TEMP)) {
-                text2 = text2.substring(0, text2.length() - NEWLINE_TEMP.length());
+            text2 = Html.fromHtml(text2).toString().trim();
+            text2 = text2.replaceAll(NEWLINE_SEARCH + "\\s*" + NEWLINE_SEARCH, NEWLINE_REPLACE);
+            if (text2.endsWith(NEWLINE_REPLACE)) {
+                text2 = text2.substring(0, text2.length() - NEWLINE_REPLACE.length());
             }
-            text2 = Html.fromHtml(Html.fromHtml(text2.trim()).toString()).toString().trim();
-            return text2.replaceAll(NEWLINE_TEMP, "\n");
+            return text2;
         } else {
             return text.trim();
         }

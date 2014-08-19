@@ -89,7 +89,7 @@ public class MbMessage {
         } else if (MyContextHolder.get().persistentOrigins().isHtmlContentAllowed(originId)) {
             this.body = body.trim();
         } else {
-            this.body = MyHtml.stripHtml(body);
+            this.body = MyHtml.fromHtml(body);
         }
     }
     

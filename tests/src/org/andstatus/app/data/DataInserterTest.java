@@ -416,7 +416,7 @@ public class DataInserterTest extends InstrumentationTestCase {
                 + "<p>This is a second line, <b>Bold</b> formatting." 
                 + "<br /><i>This is italics</i>. <b>And this is bold</b> <u>The text is underlined</u>.</p>"
                 + "<p>A separate paragraph.</p>";
-        assertFalse("HTML removed", MyHtml.stripHtml(bodyString).contains("<"));
+        assertFalse("HTML removed", MyHtml.fromHtml(bodyString).contains("<"));
         assertHtmlMessage(author1, bodyString);
 
         String bodyImgString = "A message with <b>HTML</b> <i>img</i> tag: " 
@@ -444,6 +444,6 @@ public class DataInserterTest extends InstrumentationTestCase {
         MbMessage msg2 = buildPumpIoMessage(author, bodyString, null, null);
         long msgId2 = addMessage(msg2);
         String body2 = MyProvider.msgIdToStringColumnValue(Msg.BODY, msgId2);
-        assertEquals("HTML removed", MyHtml.stripHtml(bodyString), body2);
+        assertEquals("HTML removed", MyHtml.fromHtml(bodyString), body2);
     }
 }
