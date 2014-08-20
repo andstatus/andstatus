@@ -22,9 +22,9 @@ import android.view.View;
 import android.widget.SimpleCursorAdapter;
 
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.util.MyLog;
 
 /**
  * TODO: Needed only to get rid of auto-requery. Starting from API 11 we may use another constructor,
@@ -56,12 +56,16 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
 
     private boolean markReply(View view, Context context, Cursor cursor) {
         boolean backgroundSet = false;
-        int columnIndex2 = cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID);
+        int columnIndex2 = cursor.getColumnIndex(Msg.IN_REPLY_TO_USER_ID);
         if (columnIndex2 >= 0) {
-            long replyToMsgId = cursor.getLong(columnIndex2);
-            if (replyToMsgId != 0) {
-                // For some reason, referring to the style drawable doesn't work (to "?attr:replyBackground" ) 
-                view.setBackground(context.getResources().getDrawable(MyPreferences.isThemeLight() ? R.drawable.reply_timeline_background_light : R.drawable.reply_timeline_background));
+            long replyToUserId = cursor.getLong(columnIndex2);
+            if (replyToUserId != 0
+                    && MyContextHolder.get().persistentAccounts().fromUserId(replyToUserId) != null) {
+                // For some reason, referring to the style drawable doesn't work
+                // (to "?attr:replyBackground" )
+                view.setBackground(context.getResources().getDrawable(
+                        MyPreferences.isThemeLight() ? R.drawable.reply_timeline_background_light
+                                : R.drawable.reply_timeline_background));
                 backgroundSet = true;
             }
         }

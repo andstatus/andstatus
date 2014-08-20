@@ -1242,6 +1242,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             columnNames.add(Msg.AUTHOR_ID);
             columnNames.add(MyDatabase.Avatar.FILE_NAME);
         }
+        if (MyPreferences.getBoolean(
+                MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false)) {
+            columnNames.add(Msg.IN_REPLY_TO_USER_ID);
+        }
         return columnNames.toArray(new String[]{});
     }
 
