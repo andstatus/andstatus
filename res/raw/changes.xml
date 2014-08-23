@@ -38,7 +38,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="10.1" android:versionCode="106"
-        versionDate="2014-08-24"
+        versionDate="2014-08-23"
         versionTitle="Mark replies to myself in Timeline">
         <changes>
             <change>Added &quot;Mark replies to myself in Timeline&quot; option allowing
@@ -47,7 +47,10 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             <change>In posts to Pump.io &quot;new lines&quot; (inserted e.g. by pressing ENTER key) 
                 are automatically translated to HTML line breaks,
                 so resulted post has line breaks, as expected.</change>
-            <change>Pressing ENTER key while editing post inserts newline at current position, not at the end as before.</change>
+            <change>Pressing ENTER key while editing post inserts newline at the current position, 
+                not at the end as before.</change>
+            <change>HTML-formatted messages are shared both as HTML and as a plain text 
+                (according to Android docs).</change>
         </changes>
     </release>
     <release android:versionName="10.0" android:versionCode="105"
