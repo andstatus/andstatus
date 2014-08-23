@@ -47,6 +47,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             <change>In posts to Pump.io &quot;new lines&quot; (inserted e.g. by pressing ENTER key) 
                 are automatically translated to HTML line breaks,
                 so resulted post has line breaks, as expected.</change>
+            <change>Pressing ENTER key while editing post inserts newline at current position, not at the end as before.</change>
         </changes>
     </release>
     <release android:versionName="10.0" android:versionCode="105"

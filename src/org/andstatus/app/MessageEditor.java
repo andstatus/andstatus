@@ -157,13 +157,6 @@ class MessageEditor {
                         case KeyEvent.KEYCODE_DPAD_CENTER:
                             sendMessageAndCloseEditor();
                             return true;
-                        case KeyEvent.KEYCODE_ENTER:
-                            if (event.isAltPressed() || 
-							        !MyPreferences.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, true)) {
-                                mEditText.append("\n");
-                                return true;
-                            }
-                            break;
                         default:
                             mCharsLeftText.setText(String.valueOf(mAccount
                                     .charactersLeftForMessage(mEditText.getText().toString())));
@@ -177,7 +170,8 @@ class MessageEditor {
         mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (event != null && event.isAltPressed()) {
+                if (event != null && (event.isAltPressed() || 
+                        !MyPreferences.getBoolean(MyPreferences.KEY_ENTER_SENDS_MESSAGE, true))) {
                     return false;
                 }
                 sendMessageAndCloseEditor();
