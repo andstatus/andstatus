@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.data;
 
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -30,7 +46,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
     public void insert() throws NameNotFoundException, ConnectionException {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
 
-        OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME, TestSuite.TWITTER_TEST_ORIGIN_NAME + ".example.com", true, true);
+        OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME, TestSuite.TWITTER_TEST_ORIGIN_NAME + ".example.com", true, false);
         OriginTest.createOneOrigin(TestSuite.CONVERSATION_ORIGIN_TYPE, TestSuite.CONVERSATION_ORIGIN_NAME, TestSuite.CONVERSATION_ORIGIN_NAME + ".example.com", true, true);
         OriginTest.createOneOrigin(OriginType.STATUSNET, TestSuite.STATUSNET_TEST_ORIGIN_NAME, TestSuite.STATUSNET_TEST_ORIGIN_NAME + ".example.com", true, true);
         myContext.persistentOrigins().initialize();

@@ -2,7 +2,7 @@ package org.andstatus.app;
 
 import android.test.InstrumentationTestCase;
 
-public class testSharingToThisApp extends InstrumentationTestCase {
+public class SharingToThisAppTest extends InstrumentationTestCase {
     public void testInputSharedContent() {
         String part1 = "This is a long a long post";
         String text = part1 + " that doesn't fit into subject";

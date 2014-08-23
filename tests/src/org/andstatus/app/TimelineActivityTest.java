@@ -13,7 +13,7 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.DataInserterTest;
+import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -173,7 +173,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         long itemId = getListView().getAdapter().getItemId(position1);
         int count1 = getListView().getAdapter().getCount() - 1;
 
-        new DataInserterTest().insertConversation("p1");
+        new ConversationInserter().insertConversation("p1");
         CommandData commandData = new CommandData(CommandEnum.CREATE_FAVORITE, TestSuite.CONVERSATION_ACCOUNT_NAME);
         MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
@@ -184,18 +184,21 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         boolean found = false;
         for (int attempt = 0; attempt < 6; attempt++) {
             TestSuite.waitForIdleSync(this);
-            Thread.sleep(2000 * (attempt + 1));
             count2 = getListView().getAdapter().getCount() - 1;
-            position2 = getListView().getFirstVisiblePosition();
-            for (int ind = 0; ind < count2; ind++) {
-                if (itemId == getListView().getAdapter().getItemId(ind)) {
-                    position2Any = ind;
+            if (count2 > count1) {
+                position2 = getListView().getFirstVisiblePosition();
+                for (int ind = 0; ind < count2; ind++) {
+                    if (itemId == getListView().getAdapter().getItemId(ind)) {
+                        position2Any = ind;
+                    }
+                    if ( ind >= position2 && ind <= position2 + 2 
+                            && itemId == getListView().getAdapter().getItemId(ind)) {
+                        found = true;
+                        break;
+                    }
                 }
-                if ( ind >= position2 && ind <= position2 + 2 
-                        && itemId == getListView().getAdapter().getItemId(ind)) {
-                    found = true;
-                    break;
-                }
+            } else {
+                Thread.sleep(2000 * (attempt + 1));
             }
             if (found) {
                 break;

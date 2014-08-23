@@ -32,7 +32,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DataInserterTest;
+import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.OriginsAndAccountsInserter;
 import org.andstatus.app.data.StatusNetMessagesInserter;
 import org.andstatus.app.net.ConnectionException;
@@ -202,7 +202,7 @@ public class TestSuite extends TestCase {
         if (!dataAdded) {
             dataAdded = true;
             new OriginsAndAccountsInserter(getMyContextForTest()).insert();
-            new DataInserterTest().insertConversation("");
+            new ConversationInserter().insertConversation("");
             new StatusNetMessagesInserter().insertData();
         }
 
@@ -221,6 +221,7 @@ public class TestSuite extends TestCase {
     public static final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
     public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/andstatus/images/AndStatus_logo.png";
     public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + System.nanoTime();
+    public static final String HTML_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/htmlfakeuri" + System.nanoTime();
     public static final String STATUSNET_TEST_ORIGIN_NAME = "StatusnetTest";
     public static final String STATUSNET_TEST_ACCOUNT_USERNAME = "t131t";
     public static final String STATUSNET_TEST_ACCOUNT_NAME = STATUSNET_TEST_ACCOUNT_USERNAME + "/" + STATUSNET_TEST_ORIGIN_NAME;
@@ -229,6 +230,7 @@ public class TestSuite extends TestCase {
     public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
     public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
     public static final String TWITTER_TEST_ACCOUNT_NAME = TWITTER_TEST_ACCOUNT_USERNAME + "/" + TWITTER_TEST_ORIGIN_NAME;
+    public static final String PLAIN_TEXT_MESSAGE_OID = "2167283" + System.nanoTime();
     public static final String PUBLIC_MESSAGE_TEXT = "UniqueText" + System.nanoTime();
     public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "AndStatus";
     
