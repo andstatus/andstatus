@@ -45,6 +45,8 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         if (android.os.Build.VERSION.SDK_INT > 10 ) {
             assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
         }
+        compareOneAccount(MyContextHolder.get().persistentAccounts(), accountsBefore, TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
+        
         File outputFolder = MyContextHolder.get().context().getCacheDir();
         File dataFolder = testBackup(outputFolder);
         deleteApplicationData();
@@ -58,14 +60,17 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         if (android.os.Build.VERSION.SDK_INT > 10 ) {
             assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
         }
-        MyAccount oldAccount = accountsBefore.fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
-        MyAccount newAccount = MyContextHolder.get().persistentAccounts()
-                .fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
+        compareOneAccount(accountsBefore, MyContextHolder.get().persistentAccounts(), TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
+
+        deleteBackup(dataFolder);
+    }
+
+    private void compareOneAccount(PersistentAccounts accountsExpected, PersistentAccounts accountsActual, String accountName) throws JSONException {
+        MyAccount oldAccount = accountsExpected.fromAccountName(accountName);
+        MyAccount newAccount = accountsActual.fromAccountName(accountName);
         String message = "Compare account, hash codes: " + oldAccount.hashCode() + " and " + newAccount.hashCode() +
                 oldAccount.toJson().toString(2) + " and " + newAccount.toJson().toString(2);
         assertEquals(message, oldAccount, newAccount);
-
-        deleteBackup(dataFolder);
     }
 
     private File testBackup(File backupFolder) throws IOException, JSONException {

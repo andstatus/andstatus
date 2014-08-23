@@ -51,11 +51,13 @@ public class MessageShareTest extends InstrumentationTestCase {
                 intent.getStringExtra(Intent.EXTRA_TEXT),
                 intent.getStringExtra(Intent.EXTRA_TEXT).contains(
                         MyHtml.fromHtml(HtmlContentInserter.HTML_BODY_IMG_STRING)));
-        assertTrue(intent.getExtras().containsKey(Intent.EXTRA_HTML_TEXT));
-        assertTrue(
-                intent.getStringExtra(Intent.EXTRA_HTML_TEXT),
-                intent.getStringExtra(Intent.EXTRA_HTML_TEXT).contains(
-                        HtmlContentInserter.HTML_BODY_IMG_STRING));
+        if (android.os.Build.VERSION.SDK_INT >= 16) {
+            assertTrue(intent.getExtras().containsKey(Intent.EXTRA_HTML_TEXT));
+            assertTrue(
+                    intent.getStringExtra(Intent.EXTRA_HTML_TEXT),
+                    intent.getStringExtra(Intent.EXTRA_HTML_TEXT).contains(
+                            HtmlContentInserter.HTML_BODY_IMG_STRING));
+        }
     }
     
     public void testSharePlainText() {

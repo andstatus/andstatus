@@ -161,9 +161,13 @@ class StateOfAccountChangeProcess {
         
         if (state.builder == null) {
             if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-                Origin origin = MyContextHolder.get().persistentOrigins().firstOfType(
-                        android.os.Build.VERSION.SDK_INT >= 17 ? OriginType.ORIGIN_TYPE_DEFAULT
-                                : OriginType.ORIGIN_TYPE_DEFAULT_BEFORE_API17);
+                Origin origin = MyContextHolder
+                        .get()
+                        .persistentOrigins()
+                        .firstOfType(
+                                android.os.Build.VERSION.SDK_INT >= OriginType.TWITTER_ACCOUNT_ADDING_MIN
+                                        ? OriginType.ORIGIN_TYPE_DEFAULT
+                                        : OriginType.ORIGIN_TYPE_DEFAULT_BEFORE_TWITTER);
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(),
                         AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);

@@ -57,7 +57,7 @@ public class AccountSelector extends ListActivity {
     public static void selectAccount(Activity activity, long originId, ActivityRequestCode requestCode) {
         Intent intent = new Intent(activity, AccountSelector.class);
         intent.putExtra(IntentExtra.ORIGIN_ID.key, originId);
-        activity.startActivityForResult(intent, requestCode.id, null);
+        activity.startActivityForResult(intent, requestCode.id);
     }
     
     @Override

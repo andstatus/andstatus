@@ -16,8 +16,10 @@
 
 package org.andstatus.app.support.android.v11.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.SimpleCursorAdapter;
 
@@ -48,10 +50,19 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         if (!markReplies || !markReply(view, context, cursor)) {
-            view.setBackground(null);
+            setBackgroundCompat(view, null);
             view.setPadding(0, 0, 0, 0);
         }
         super.bindView(view, context, cursor);
+    }
+
+    @SuppressLint("NewApi")
+    public static void setBackgroundCompat(View view, Drawable drawable) {
+        if (android.os.Build.VERSION.SDK_INT >= 16)  {
+            view.setBackground(drawable); 
+        } else {
+            view.setBackgroundDrawable(drawable);
+        }
     }
 
     private boolean markReply(View view, Context context, Cursor cursor) {
@@ -63,7 +74,7 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
                     && MyContextHolder.get().persistentAccounts().fromUserId(replyToUserId) != null) {
                 // For some reason, referring to the style drawable doesn't work
                 // (to "?attr:replyBackground" )
-                view.setBackground(context.getResources().getDrawable(
+                setBackgroundCompat(view, context.getResources().getDrawable(
                         MyPreferences.isThemeLight() ? R.drawable.reply_timeline_background_light
                                 : R.drawable.reply_timeline_background));
                 backgroundSet = true;

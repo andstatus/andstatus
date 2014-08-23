@@ -39,11 +39,14 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
 
     <release android:versionName="10.1" android:versionCode="106"
         versionDate="2014-08-23"
-        versionTitle="Mark replies to myself in Timeline">
+        versionTitle="Mark replies to myself in Timeline. Twitter for old devices back again">
         <changes>
             <change>Added &quot;Mark replies to myself in Timeline&quot; option allowing
                 to easily see posts, which are most relevant for a User.
                 See <a href="https://github.com/andstatus/andstatus/issues/108" >Issue #108</a>.</change>
+            <change>Fixed incompatibility with changed Twitter site behavior. Addition of new Twitter
+                accounts is allowed for all supported devices!
+                See <a href="https://github.com/andstatus/andstatus/issues/92" >Issue #92</a></change>
             <change>In posts to Pump.io &quot;new lines&quot; (inserted e.g. by pressing ENTER key) 
                 are automatically translated to HTML line breaks,
                 so resulted post has line breaks, as expected.</change>

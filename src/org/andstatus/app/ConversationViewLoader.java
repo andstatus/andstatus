@@ -48,6 +48,7 @@ import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.support.android.v11.widget.MySimpleCursorAdapter;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
@@ -374,7 +375,7 @@ public class ConversationViewLoader {
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
         if (oMsg.msgId == selectedMessageId && oMsgs.size() > 1) {
-            messageIndented.setBackground(context.getResources().getDrawable(R.drawable.message_current_background));
+            MySimpleCursorAdapter.setBackgroundCompat(messageIndented, context.getResources().getDrawable(R.drawable.message_current_background));
         }
 
         int viewToTheLeftId = 0;
