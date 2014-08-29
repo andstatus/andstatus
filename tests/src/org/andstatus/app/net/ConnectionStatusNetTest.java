@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.ContentTypeEnum;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -28,6 +29,8 @@ import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -118,4 +121,20 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         assertEquals("Number of items in the Timeline", size, timeline.size());
     }
     
+    public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
+        // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
+        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
+        httpConnection.setResponse(jso);
+        
+        MbMessage msg = connection.getMessage("2215662");
+        assertNotNull("message returned", msg);
+        assertEquals("has attachment", msg.attachments.size(), 1);
+        MbAttachment attachment = MbAttachment.fromOriginAndOid(connectionData.getOriginId(), 
+                "https://quitter.se/file/mcscx-20131110T222250-427wlgn.png");
+        attachment.url = new URL("https://quitter.se/file/mcscx-20131110T222250-427wlgn.png");
+        attachment.contentType = ContentTypeEnum.IMAGE;
+        attachment.thumbUrl = new URL("https://quitter.se/file/mcscx-20131110T222250-3xpl5ld.png");
+        assertEquals("attachment", attachment, msg.attachments.get(0));
+    }
 }

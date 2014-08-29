@@ -20,11 +20,14 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.ContentTypeEnum;
+import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,5 +125,35 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
         if (!bodyFound) {
             super.setMessageBodyFromJson(message, jso);
         }
+    }
+
+    private static final String ATTACHMENTS_FIELD_NAME = "attachments";
+    @Override
+    protected MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
+        final String method = "messageFromJson";
+        MbMessage message = super.messageFromJson(jso);
+        if (jso.has(ATTACHMENTS_FIELD_NAME)) {
+            try {
+                JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
+                for (int ind = 0; ind < jArr.length(); ind++) {
+                    JSONObject attachment = (JSONObject) jArr.get(ind);
+                    URL url = FileUtils.json2Url(attachment, "url");
+                    MbAttachment mbAttachment = MbAttachment.fromOriginAndOid(data.getOriginId(),
+                            url != null ? url.toExternalForm() : "");
+                    mbAttachment.url = url;
+                    mbAttachment.thumbUrl = FileUtils.json2Url(attachment, "thumb_url");
+                    mbAttachment.contentType = ContentTypeEnum.fromUrl(mbAttachment.url,
+                            attachment.optString("mimetype"));
+                    if (mbAttachment.isValid()) {
+                        message.attachments.add(mbAttachment);
+                    } else {
+                        MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
+                    }
+                }
+            } catch (JSONException e) {
+                MyLog.d(this, method, e);
+            }
+        }
+        return message;
     }
 }

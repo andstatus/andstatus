@@ -139,7 +139,7 @@ public enum TimelineTypeEnum {
     }
 
     /**
-     * String code for the Command to be used in messages
+     * String to be used for persistence
      */
     public String save() {
         return code;
@@ -172,7 +172,7 @@ public enum TimelineTypeEnum {
     }
     
     /**
-     * Returns the enum for a String action code or UNKNOWN
+     * Returns the enum or UNKNOWN
      */
     public static TimelineTypeEnum load(String strCode) {
         for (TimelineTypeEnum tt : TimelineTypeEnum.values()) {

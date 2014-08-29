@@ -20,8 +20,10 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.ContentTypeEnum;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.OriginConnectionData;
+import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -29,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -509,6 +512,21 @@ public class ConnectionPumpio extends Connection {
             }
             message.url = jso.optString("url");
 
+            if (jso.has("fullImage") || jso.has("image")) {
+                MbAttachment mbAttachment =  MbAttachment.fromOriginAndOid(data.getOriginId(), jso.optString("id"));
+                mbAttachment.url = getImageUrl(jso, "fullImage");
+                mbAttachment.thumbUrl = getImageUrl(jso, "image");
+                if (mbAttachment.url == null) {
+                    mbAttachment.url = mbAttachment.thumbUrl;
+                }
+                mbAttachment.contentType = ContentTypeEnum.fromUrl(mbAttachment.url, ContentTypeEnum.IMAGE);
+                if (mbAttachment.isValid()) {
+                    message.attachments.add(mbAttachment);
+                } else {
+                    MyLog.d(this, "Invalid attachment; " + jso.toString());
+                }
+            }
+
             // If the Msg is a Reply to other message
             if (jso.has("inReplyTo")) {
                 JSONObject inReplyToObject = jso.getJSONObject("inReplyTo");
@@ -517,6 +535,14 @@ public class ConnectionPumpio extends Connection {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, e, jso, "Parsing comment/note");
         }
+    }
+
+    private URL getImageUrl(JSONObject jso, String imageTag) throws JSONException {
+        if (jso.has(imageTag)) {
+            JSONObject attachment = jso.getJSONObject(imageTag);
+            return FileUtils.json2Url(attachment, "url");
+        } 
+        return null;
     }
     
     private MbMessage messageFromJsonComment(JSONObject jso) throws ConnectionException {

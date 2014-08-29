@@ -78,11 +78,23 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         TestSuite.waitForIdleSync(this);
         getInstrumentation().sendStringSync(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
-        TestSuite.waitForIdleSync(this);
-        Button view = (Button) activity.getWindow().getDecorView().findViewById(R.id.timelineTypeButton);
-        assertTrue("Global search menu item clicked '" + view.getText() + "'", String.valueOf(view.getText()).contains(" *"));
-        TestSuite.waitForIdleSync(this);
+        waitForButtonClickedEvidence("Global search menu item clicked");
         assertMessagesArePublic(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
+    }
+
+    private void waitForButtonClickedEvidence(String caption) throws InterruptedException {
+        boolean found = false;
+        Button view = (Button) activity.getWindow().getDecorView().findViewById(R.id.timelineTypeButton);
+        for (int attempt = 0; attempt < 6; attempt++) {
+            TestSuite.waitForIdleSync(this);
+            if (String.valueOf(view.getText()).contains(" *")) {
+                found = true;
+                break;
+            } else {
+                Thread.sleep(2000 * (attempt + 1));
+            }
+        }
+        assertTrue(caption + " '" + view.getText() + "'", found);
     }
     
     public void testSearch() throws InterruptedException {
@@ -93,10 +105,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         TestSuite.waitForIdleSync(this);
         getInstrumentation().sendStringSync(TestSuite.PUBLIC_MESSAGE_TEXT);
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
-        TestSuite.waitForIdleSync(this);
-        Button view = (Button) activity.getWindow().getDecorView().findViewById(R.id.timelineTypeButton);
-        assertTrue("Search menu item clicked '" + view.getText() + "'", String.valueOf(view.getText()).contains(" *"));
-        TestSuite.waitForIdleSync(this);
+        waitForButtonClickedEvidence("Search menu item clicked");
         assertMessagesArePublic(TestSuite.PUBLIC_MESSAGE_TEXT);
     }
 

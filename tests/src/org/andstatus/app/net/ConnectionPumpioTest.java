@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.ContentTypeEnum;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.Origin;
@@ -32,6 +33,8 @@ import org.andstatus.app.util.TriState;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
 
@@ -259,4 +262,21 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         }
         assertTrue(thrown);
     }
+    
+    public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
+        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
+        httpConnection.setResponse(jso);
+
+        MbMessage msg = connection.getMessage("w9wME-JVQw2GQe6POK7FSQ");
+        assertNotNull("message returned", msg);
+        assertEquals("has attachment", msg.attachments.size(), 1);
+        MbAttachment attachment = MbAttachment.fromOriginAndOid(connectionData.getOriginId(), 
+                "https://io.jpope.org/api/image/L0wcaKS8Te-DME_sgSETNw");
+        attachment.url = new URL("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg");
+        attachment.contentType = ContentTypeEnum.IMAGE;
+        attachment.thumbUrl = new URL("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw_thumb.jpg");
+        assertEquals("attachment", attachment, msg.attachments.get(0));
+    }
+    
 }

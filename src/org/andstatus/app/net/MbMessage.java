@@ -22,6 +22,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.TriState;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 'Mb' stands for "Microblogging system" 
  * @author yvolk@yurivolkov.com
@@ -41,6 +44,8 @@ public class MbMessage {
     public String url="";
     private boolean isPublic = false;
 
+    public List<MbAttachment> attachments = new ArrayList<MbAttachment>();
+    
     public boolean isPublic() {
         return isPublic;
     }

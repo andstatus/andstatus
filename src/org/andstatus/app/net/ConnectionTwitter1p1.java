@@ -19,11 +19,15 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.data.ContentTypeEnum;
+import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -110,4 +114,43 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         JSONArray jArr = getRequestArrayInObject(builder.build().toString(), "statuses");
         return jArrToTimeline(jArr, apiRoutine, url);
     }
+    
+    private static final String ATTACHMENTS_FIELD_NAME = "media";
+    @Override
+    protected MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
+        final String method = "messageFromJson";
+        MbMessage message = super.messageFromJson(jso);
+        // See https://dev.twitter.com/docs/entities
+        JSONObject entities = jso.optJSONObject("entities");
+        if (entities != null) {
+            if (entities.has(ATTACHMENTS_FIELD_NAME)) {
+                try {
+                    JSONArray jArr = entities.getJSONArray(ATTACHMENTS_FIELD_NAME);
+                    for (int ind = 0; ind < jArr.length(); ind++) {
+                        JSONObject attachment = (JSONObject) jArr.get(ind);
+                        MbAttachment mbAttachment =  MbAttachment.fromOriginAndOid(data.getOriginId(), attachment.optString("id_str"));
+                        mbAttachment.url = FileUtils.json2Url(attachment, "media_url_https");
+                        if (mbAttachment.url == null) {
+                            mbAttachment.url = FileUtils.json2Url(attachment, "media_url_http");
+                        }
+                        if (mbAttachment.url != null) {
+                            mbAttachment.thumbUrl = new URL(mbAttachment.url.toExternalForm() + ":thumb");
+                            mbAttachment.contentType = ContentTypeEnum.fromUrl(mbAttachment.url, ContentTypeEnum.IMAGE);
+                        }
+                        if (mbAttachment.isValid()) {
+                            message.attachments.add(mbAttachment);
+                        } else {
+                            MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
+                        }
+                    }
+                } catch (JSONException e) {
+                    MyLog.d(this, method, e);
+                } catch (MalformedURLException e) {
+                    MyLog.d(this, method, e);
+                }
+            }
+        }
+        return message;
+    }
+    
 }

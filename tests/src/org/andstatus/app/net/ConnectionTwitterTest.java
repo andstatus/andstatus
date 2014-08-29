@@ -21,6 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.ContentTypeEnum;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -28,6 +29,8 @@ import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -128,6 +131,24 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         stringDate = "Thu Sep 26 22:23:05 GMT+04:00 2013";   // date.toString gives wrong value!!!
         long parsed = connection.parseDate(stringDate);
         assertEquals("Testing the date: Thu Sep 26 18:23:05 +0000 2013 (" + stringDate + " vs " + new Date(parsed).toString() + ")", date.getTime(), parsed);
+    }
+
+    public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
+        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.twitter_message_with_media);
+        httpConnection.setResponse(jso);
+
+        MbMessage msg = connection.getMessage("503799441900314624");
+        assertNotNull("message returned", msg);
+        assertEquals("has attachment", msg.attachments.size(), 1);
+        MbAttachment attachment = MbAttachment.fromOriginAndOid(connectionData.getOriginId(), 
+                "503799441740922882");
+        attachment.url = new URL("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg");
+        attachment.contentType = ContentTypeEnum.IMAGE;
+        attachment.thumbUrl = new URL("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg:thumb");
+        assertEquals("attachment", attachment, msg.attachments.get(0));
+        attachment.url = new URL("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg");
+        assertNotSame("attachment", attachment, msg.attachments.get(0));
     }
     
 }
