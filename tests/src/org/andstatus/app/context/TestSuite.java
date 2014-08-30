@@ -209,11 +209,13 @@ public class TestSuite extends TestCase {
         if (MyContextHolder.get().persistentAccounts().size() == 0) {
             fail("No persistent accounts");
         }
+        MyContextHolder.initialize(context, TAG);
         setSuccessfulAccountAsCurrent();
         
         MyLog.v(TAG, method + ": ended");
     }
     
+    private static final String TEST_ORIGIN_PARENT_HOST = "example.com";
     public static final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
     public static final String CONVERSATION_ORIGIN_NAME = "PumpioTest";
     public static final String CONVERSATION_ACCOUNT_USERNAME = "testerofandstatus@identi.ca";
@@ -233,6 +235,10 @@ public class TestSuite extends TestCase {
     public static final String PLAIN_TEXT_MESSAGE_OID = "2167283" + System.nanoTime();
     public static final String PUBLIC_MESSAGE_TEXT = "UniqueText" + System.nanoTime();
     public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "AndStatus";
+    
+    public static String getTestOriginHost(String testOriginName) {
+        return TEST_ORIGIN_PARENT_HOST + "." + testOriginName;
+    }
     
     private static void setSuccessfulAccountAsCurrent() {
         MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().persistentAccounts().size());
@@ -265,15 +271,18 @@ public class TestSuite extends TestCase {
     public static void waitForListLoaded(InstrumentationTestCase instrumentationTestCase, Activity activity) throws InterruptedException {
         final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
         assertTrue(list != null);
+        int itemsCount = 0;
         for (int ind=0; ind<60; ind++) {
-            if (list.getChildCount() > 1) {
+            Thread.sleep(2000);
+            instrumentationTestCase.getInstrumentation().waitForIdleSync();
+            int itemsCountNew = list.getChildCount();
+            if (itemsCountNew > 1 && itemsCount == itemsCountNew) {
                 break;
             }
-            instrumentationTestCase.getInstrumentation().waitForIdleSync();
-            Thread.sleep(1000);
+            itemsCount = itemsCountNew;
         }
         assertTrue("There are items in the list of " + activity.getClass().getSimpleName(), 
-                list.getChildCount() > 0);
+                itemsCount > 0);
     }
 
 

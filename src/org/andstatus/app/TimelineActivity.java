@@ -910,6 +910,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private void parseNewIntent(Intent intentNew) {
         TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(intentNew
                 .getStringExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+        long newMyAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
+        if ( mCurrentMyAccountUserId != newMyAccountUserId) {
+            mCurrentMyAccountUserId = newMyAccountUserId;
+            mSelectedUserId = 0;
+        }
         if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
             mTimelineType = timelineTypeNew;
             mTimelineIsCombined = intentNew.getBooleanExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mTimelineIsCombined);
@@ -924,7 +929,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             mSearchQuery = "";
             mSelectedUserId = 0;
         }
-        mCurrentMyAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         if (mSelectedUserId == 0 && mTimelineType == TimelineTypeEnum.USER) {
             mSelectedUserId = mCurrentMyAccountUserId;
         }
@@ -934,7 +938,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "processNewIntent; " + mTimelineType);
+            MyLog.v(this, "processNewIntent; " + mTimelineType + "; accountId=" + mCurrentMyAccountUserId);
         }
     }
 

@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net;
 
+import android.content.Context;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.AccountDataReaderEmpty;
@@ -39,6 +40,12 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
     private Connection connection;
     private HttpConnectionMock httpConnection;
     private OriginConnectionData connectionData;
+    
+    public static MbMessage getMessageWithAttachment(Context context) throws Exception {
+        ConnectionStatusNetTest test = new ConnectionStatusNetTest();
+        test.setUp();
+        return test.privateGetMessageWithAttachment(context);
+    }
     
     @Override
     protected void setUp() throws Exception {
@@ -122,11 +129,14 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
     }
     
     public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
+        privateGetMessageWithAttachment(this.getInstrumentation().getContext());
+    }
+
+    private MbMessage privateGetMessageWithAttachment(Context context) throws ConnectionException, MalformedURLException {
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
-        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+        JSONObject jso = RawResourceUtils.getJSONObject(context, 
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         httpConnection.setResponse(jso);
-        
         MbMessage msg = connection.getMessage("2215662");
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);
@@ -136,5 +146,6 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         attachment.contentType = ContentTypeEnum.IMAGE;
         attachment.thumbUrl = new URL("https://quitter.se/file/mcscx-20131110T222250-3xpl5ld.png");
         assertEquals("attachment", attachment, msg.attachments.get(0));
+        return msg;
     }
 }

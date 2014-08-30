@@ -31,6 +31,7 @@ import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.ConnectionStatusNetTest;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.origin.Origin;
@@ -43,53 +44,53 @@ import java.util.Set;
 
 public class DataInserterTest extends InstrumentationTestCase {
     private Context context;
-    private MbUser accountMbUser;
-    private MyAccount ma;
-    private Origin origin;
+    private MyAccount mMyAccount;
+    private MbUser mAccountMbUser;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         TestSuite.initialize(this);
         context = TestSuite.getMyContextForTest().context();
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME); 
-        assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", ma != null);
-        origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
-        assertTrue("Origin for " + ma.getAccountName() + " exists", origin != null);
+        mMyAccount = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME); 
+        assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", mMyAccount != null);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromId(mMyAccount.getOriginId());
+        assertTrue("Origin for " + mMyAccount.getAccountName() + " exists", origin != null);
 
-        accountMbUser = new MessageInserter(ma).buildUserFromOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
-        accountMbUser.avatarUrl = TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL;
+        mAccountMbUser = new MessageInserter(mMyAccount).buildUserFromOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
+        mAccountMbUser.avatarUrl = TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL;
+
+        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
     }
     
     public void testFollowingUser() throws ConnectionException {
-        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         String messageOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
-        deleteOldMessage(origin.getId(), messageOid);
+        deleteOldMessage(mMyAccount.getOriginId(), messageOid);
         
-        CommandExecutionContext counters = new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(TimelineTypeEnum.HOME);
+        CommandExecutionContext counters = new CommandExecutionContext(CommandData.getEmpty(), mMyAccount).setTimelineType(TimelineTypeEnum.HOME);
         DataInserter di = new DataInserter(counters);
         String username = "somebody@identi.ca";
         String userOid =  "acct:" + username;
-        MbUser somebody = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
+        MbUser somebody = MbUser.fromOriginAndUserOid(mMyAccount.getOriginId(), userOid);
         somebody.userName = username;
-        somebody.actor = accountMbUser;
+        somebody.actor = mAccountMbUser;
         somebody.followedByActor = TriState.FALSE;
         somebody.url = "http://identi.ca/somebody";
         di.insertOrUpdateUser(somebody);
 
-        long somebodyId = MyProvider.oidToId(OidEnum.USER_OID, origin.getId(), userOid);
+        long somebodyId = MyProvider.oidToId(OidEnum.USER_OID, mMyAccount.getOriginId(), userOid);
         assertTrue( "User " + username + " added", somebodyId != 0);
         
-        Set<Long> followedIds = MyProvider.getIdsOfUsersFollowedBy(ma.getUserId());
+        Set<Long> followedIds = MyProvider.getIdsOfUsersFollowedBy(mMyAccount.getUserId());
         assertFalse( "User " + username + " is not followed", followedIds.contains(somebodyId));
 
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid);
+        MbMessage message = MbMessage.fromOriginAndOid(mMyAccount.getOriginId(), messageOid);
         message.setBody("The test message by Somebody");
         message.sentDate = 13312696000L;
         message.via = "MyCoolClient";
         message.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
         message.sender = somebody;
-        message.actor = accountMbUser;
+        message.actor = mAccountMbUser;
         TestSuite.clearAssertionData();
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
@@ -97,7 +98,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertFalse( "Data put", data.isEmpty());
         assertEquals("Message Oid", messageOid, data.getValues().getAsString(MyDatabase.Msg.MSG_OID));
         assertEquals("Message permalink before storage", message.url, data.getValues().getAsString(MyDatabase.Msg.URL));
-        assertEquals("Message permalink", message.url, MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId()).messagePermalink(messageId));
+        assertEquals("Message permalink", message.url, MyContextHolder.get().persistentOrigins().fromId(mMyAccount.getOriginId()).messagePermalink(messageId));
 
         long authorId = MyProvider.msgIdToLongColumnValue(Msg.AUTHOR_ID, messageId);
         assertEquals("Author of the message", somebodyId, authorId);
@@ -108,7 +109,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         url = MyProvider.userIdToStringColumnValue(User.URL, senderId);
         assertEquals("Url of the sender " + somebody.userName , somebody.url, url);
         
-        Uri contentUri = MyProvider.getTimelineUri(ma.getUserId(), TimelineTypeEnum.FOLLOWING_USER, false);
+        Uri contentUri = MyProvider.getTimelineUri(mMyAccount.getUserId(), TimelineTypeEnum.FOLLOWING_USER, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.FollowingUser.FOLLOWING_USER_ID + " = ?",
@@ -125,7 +126,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         somebody.followedByActor = TriState.TRUE;
         di.insertOrUpdateUser(somebody);
 
-        followedIds = MyProvider.getIdsOfUsersFollowedBy(ma.getUserId());
+        followedIds = MyProvider.getIdsOfUsersFollowedBy(mMyAccount.getUserId());
         assertTrue( "User " + username + ", id=" + somebodyId + " is followed", followedIds.contains(somebodyId));
 
         cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection, sa.selectionArgs, sortOrder);
@@ -133,27 +134,25 @@ public class DataInserterTest extends InstrumentationTestCase {
         cursor.close();
     }
     
-    
     public void testDirectMessageToMyAccount() throws ConnectionException {
-        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         String messageOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ";
-        deleteOldMessage(origin.getId(), messageOid);
+        deleteOldMessage(mMyAccount.getOriginId(), messageOid);
 
         String username = "t131t@pumpity.net";
-        MbUser author = MbUser.fromOriginAndUserOid(origin.getId(), "acct:" + username);
+        MbUser author = MbUser.fromOriginAndUserOid(mMyAccount.getOriginId(), "acct:" + username);
         author.userName = username;
-        author.actor = accountMbUser;
+        author.actor = mAccountMbUser;
         
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid);
+        MbMessage message = MbMessage.fromOriginAndOid(mMyAccount.getOriginId(), messageOid);
         message.setBody("Hello, this is a test Direct message by your namesake from http://pumpity.net");
         message.sentDate = 13312699000L;
         message.via = "AnyOtherClient";
         message.sender = author;
-        message.actor = accountMbUser;
-        message.recipient = accountMbUser;
+        message.actor = mAccountMbUser;
+        message.recipient = mAccountMbUser;
         long messageId = addMessage(message);
         
-        Uri contentUri = MyProvider.getTimelineUri(ma.getUserId(), TimelineTypeEnum.HOME, false);
+        Uri contentUri = MyProvider.getTimelineUri(mMyAccount.getUserId(), TimelineTypeEnum.HOME, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
@@ -169,26 +168,24 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("Cursor returned", cursor != null);
         assertTrue("Message found, id=" + messageId, cursor.getCount() == 1);
         cursor.moveToFirst();
-        assertEquals("Recipient " + ma.getAccountName() + "; Id", ma.getUserId(), cursor.getLong(0));
-        assertEquals("Message is directed to AccountUser", ma.getUserId(), cursor.getLong(1));
+        assertEquals("Recipient " + mMyAccount.getAccountName() + "; Id", mMyAccount.getUserId(), cursor.getLong(0));
+        assertEquals("Message is directed to AccountUser", mMyAccount.getUserId(), cursor.getLong(1));
         assertTrue("Message " + messageId + " is direct", cursor.getInt(2) == 1);
         cursor.close();
     }
 
     public void testMessageFavoritedByOtherUser() throws ConnectionException {
-        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-
         String username = "anybody@pumpity.net";
-        MbUser author = MbUser.fromOriginAndUserOid(origin.getId(), "acct:" + username);
+        MbUser author = MbUser.fromOriginAndUserOid(mMyAccount.getOriginId(), "acct:" + username);
         author.userName = username;
-        author.actor = accountMbUser;
+        author.actor = mAccountMbUser;
 
         username = "firstreader@identi.ca";
-        MbUser firstReader = MbUser.fromOriginAndUserOid(origin.getId(), "acct:" + username);
+        MbUser firstReader = MbUser.fromOriginAndUserOid(mMyAccount.getOriginId(), "acct:" + username);
         firstReader.userName = username;
-        firstReader.actor = accountMbUser;
+        firstReader.actor = mAccountMbUser;
         
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED");
+        MbMessage message = MbMessage.fromOriginAndOid(mMyAccount.getOriginId(), "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED");
         message.setBody("The test message by Anybody from http://pumpity.net");
         message.sentDate = 13312697000L;
         message.via = "SomeOtherClient";
@@ -196,11 +193,11 @@ public class DataInserterTest extends InstrumentationTestCase {
         message.actor = firstReader;
         message.favoritedByActor = TriState.TRUE;
 
-        DataInserter di = new DataInserter(ma);
+        DataInserter di = new DataInserter(mMyAccount);
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
         
-        Uri contentUri = MyProvider.getTimelineUri(ma.getUserId(), TimelineTypeEnum.HOME, false);
+        Uri contentUri = MyProvider.getTimelineUri(mMyAccount.getUserId(), TimelineTypeEnum.HOME, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
@@ -219,26 +216,24 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
 
     public void testMessageFavoritedByAccountUser() throws ConnectionException {
-        assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
-
         String username = "example@pumpity.net";
-        MbUser author = MbUser.fromOriginAndUserOid(origin.getId(), "acct:" + username);
+        MbUser author = MbUser.fromOriginAndUserOid(mMyAccount.getOriginId(), "acct:" + username);
         author.userName = username;
-        author.actor = accountMbUser;
+        author.actor = mAccountMbUser;
 
-        MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123");
+        MbMessage message = MbMessage.fromOriginAndOid(mMyAccount.getOriginId(), "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123");
         message.setBody("The test message by Example from the http://pumpity.net");
         message.sentDate = 13312795000L;
         message.via = "UnknownClient";
         message.sender = author;
-        message.actor = accountMbUser;
+        message.actor = mAccountMbUser;
         message.favoritedByActor = TriState.TRUE;
 
-        DataInserter di = new DataInserter(ma);
+        DataInserter di = new DataInserter(mMyAccount);
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
         
-        Uri contentUri = MyProvider.getTimelineUri(ma.getUserId(), TimelineTypeEnum.HOME, false);
+        Uri contentUri = MyProvider.getTimelineUri(mMyAccount.getUserId(), TimelineTypeEnum.HOME, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
@@ -254,12 +249,40 @@ public class DataInserterTest extends InstrumentationTestCase {
         assertTrue("Message found, id=" + messageId, cursor.getCount() == 1);
         cursor.moveToFirst();
         assertTrue("Message favorited", cursor.getInt(0) == 1);
-        assertTrue("Message not favorited by AccountUser", cursor.getLong(1) == ma.getUserId());
+        assertTrue("Message not favorited by AccountUser", cursor.getLong(1) == mMyAccount.getUserId());
+        cursor.close();
+    }
+
+    public void testMessageWithAttachment() throws Exception {
+        MbMessage message = ConnectionStatusNetTest.getMessageWithAttachment(this.getInstrumentation().getContext());
+
+        MyAccount myAccount = MyContextHolder.get().persistentAccounts().findFirstMyAccountByOriginId(message.originId);
+        DataInserter di = new DataInserter(myAccount);
+        long messageId = di.insertOrUpdateMsg(message);
+        assertTrue( "Message added", messageId != 0);
+        
+        Uri contentUri = MyProvider.getTimelineUri(myAccount.getUserId(), TimelineTypeEnum.PUBLIC, false);
+        SelectionAndArgs sa = new SelectionAndArgs();
+        String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
+        sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
+                new String[] {
+                        Long.toString(messageId)
+                });
+        String[] PROJECTION = new String[] {
+                Msg.MSG_ID,
+                Msg.BODY
+        };
+        Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection, sa.selectionArgs, sortOrder);
+        assertTrue("Cursor returned", cursor != null);
+        assertEquals("Message found, id=" + messageId, 1, cursor.getCount());
+        cursor.moveToFirst();
+        //assertTrue("Message favorited", cursor.getInt(0) == 1);
+        //assertTrue("Message not favorited by AccountUser", cursor.getLong(1) == myAccount.getUserId());
         cursor.close();
     }
     
     private long addMessage(MbMessage message) {
-        return new MessageInserter(ma).addMessage(message);
+        return new MessageInserter(mMyAccount).addMessage(message);
     }
     
     private void deleteOldMessage(long originId, String messageOid) {

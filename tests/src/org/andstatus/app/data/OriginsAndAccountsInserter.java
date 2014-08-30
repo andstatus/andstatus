@@ -46,9 +46,13 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
     public void insert() throws NameNotFoundException, ConnectionException {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
 
-        OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME, TestSuite.TWITTER_TEST_ORIGIN_NAME + ".example.com", true, false);
-        OriginTest.createOneOrigin(TestSuite.CONVERSATION_ORIGIN_TYPE, TestSuite.CONVERSATION_ORIGIN_NAME, TestSuite.CONVERSATION_ORIGIN_NAME + ".example.com", true, true);
-        OriginTest.createOneOrigin(OriginType.STATUSNET, TestSuite.STATUSNET_TEST_ORIGIN_NAME, TestSuite.STATUSNET_TEST_ORIGIN_NAME + ".example.com", true, true);
+        OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME,
+                TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME), true, false);
+        OriginTest.createOneOrigin(TestSuite.CONVERSATION_ORIGIN_TYPE,
+                TestSuite.CONVERSATION_ORIGIN_NAME,
+                TestSuite.getTestOriginHost(TestSuite.CONVERSATION_ORIGIN_NAME), true, true);
+        OriginTest.createOneOrigin(OriginType.STATUSNET, TestSuite.STATUSNET_TEST_ORIGIN_NAME,
+                TestSuite.getTestOriginHost(TestSuite.STATUSNET_TEST_ORIGIN_NAME), true, true);
         myContext.persistentOrigins().initialize();
         
         Origin pumpioOrigin = myContext.persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);

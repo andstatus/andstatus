@@ -88,4 +88,10 @@ public class MbAttachment {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "MbAttachment [oid=" + oid + ", url=" + url + ", thumbUrl=" + thumbUrl
+                + ", contentType=" + contentType + ", originId=" + originId + "]";
+    }
 }

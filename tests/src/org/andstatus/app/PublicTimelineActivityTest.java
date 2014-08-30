@@ -48,7 +48,9 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         assertTrue(ma != null);
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         
-        Intent intent = new Intent();
+        assertEquals(ma.getUserId(), MyContextHolder.get().persistentAccounts().getCurrentAccountUserId());
+        
+        final Intent intent = new Intent();
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key, TimelineTypeEnum.PUBLIC.save());
         // In order to shorten opening of activity in a case of large database
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, false);
@@ -57,6 +59,20 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         activity = getActivity();
         TestSuite.waitForListLoaded(this, activity);
 
+        if ( ma.getUserId() != activity.getCurrentMyAccountUserId()) {
+            activity.runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    activity.onNewIntent(intent);
+                }
+                
+            });
+            TestSuite.waitForListLoaded(this, activity);
+        }
+        
+        assertEquals(ma.getUserId(), activity.getCurrentMyAccountUserId());
+        
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
     }

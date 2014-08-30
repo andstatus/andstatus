@@ -299,7 +299,9 @@ public class PersistentAccounts {
      * Current account selection is not persistent
      */
     public void setCurrentAccount(MyAccount ma) {
-        if (ma != null) {
+        if (ma != null && !currentAccountName.equals(ma.getAccountName()) ) 
+        {
+            MyLog.v(this, "Changing current account from '" + currentAccountName + "' to '" + ma.getAccountName() + "'");
             currentAccountName = ma.getAccountName();
         }
     }

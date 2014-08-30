@@ -130,7 +130,11 @@ public final class MyContextHolder {
     public static MyContext getBlocking(Context context, Object calledBy) throws InterruptedException {
         MyContext myContext =  myInitializedContext;
         while (myContext == null || !myContext.initialized() || myContext.isExpired()) {
-            if (myFutureContext == null || myFutureContext.isExpired()) {
+            MyFutureTaskExpirable<MyContext> myFutureContextCopy = null;
+            synchronized (CONTEXT_LOCK) {
+                myFutureContextCopy = myFutureContext;
+            }
+            if (myFutureContextCopy == null || myFutureContextCopy.isExpired()) {
                 myContext = createMyFutureContext(context, calledBy, myContext);
             } else {
                 myContext = waitForMyFutureContext(myContext, calledBy);
@@ -177,7 +181,13 @@ public final class MyContextHolder {
         MyContext myContextOut = myContextIn;
         try {
             MyLog.v(TAG, method + " may block at Future.get: " + callerName);
-            myContextOut = myFutureContext.get();
+            
+            MyFutureTaskExpirable<MyContext> myFutureContextCopy = null;
+            synchronized (CONTEXT_LOCK) {
+                myFutureContextCopy = myFutureContext;
+            }
+            myContextOut = myFutureContextCopy.get();
+            
             MyLog.v(TAG, method + " passed Future.get: " + callerName);
             synchronized (CONTEXT_LOCK) {
                 if (myFutureContext == null || myFutureContext.isExpired()) {
