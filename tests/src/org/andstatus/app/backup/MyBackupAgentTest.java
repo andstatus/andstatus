@@ -136,7 +136,7 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
     }
 
     private void deleteFiles(Context context, boolean useExternalStorage) {
-        deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS, useExternalStorage));
+        deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, useExternalStorage));
         deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, useExternalStorage));
         deleteFilesRecursively(SharedPreferencesUtil.prefsDirectory(context));
     }

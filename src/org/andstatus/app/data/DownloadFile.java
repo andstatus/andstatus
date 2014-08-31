@@ -23,15 +23,15 @@ import org.andstatus.app.util.MyLog;
 
 import java.io.File;
 
-public class AvatarFile {
+public class DownloadFile {
     private final String fileName;
     private final File file;
-    private static final AvatarFile EMPTY_AVATAR_FILE = new AvatarFile(null);
+    private static final DownloadFile EMPTY_DOWNLOAD_FILE = new DownloadFile(null);
 
-    public AvatarFile(String fileName) {
+    public DownloadFile(String fileName) {
         this.fileName = fileName;
         if (!TextUtils.isEmpty(fileName)) {
-            file = new File(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS, null), fileName);
+            file = new File(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, null), fileName);
         } else {
             file = null;
         }
@@ -49,8 +49,8 @@ public class AvatarFile {
         return fileName;
     }
 
-    public static AvatarFile getEmpty() {
-        return EMPTY_AVATAR_FILE;
+    public static DownloadFile getEmpty() {
+        return EMPTY_DOWNLOAD_FILE;
     }
 
     /** returns true if the file existed and was deleted */
@@ -73,7 +73,7 @@ public class AvatarFile {
 
     @Override
     public String toString() {
-        return "AvatarFile [fileName=" + fileName + "]";
+        return MyLog.objTagToString(this) + " [fileName=" + fileName + "]";
     }
 
     @Override
@@ -95,7 +95,7 @@ public class AvatarFile {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        AvatarFile other = (AvatarFile) obj;
+        DownloadFile other = (DownloadFile) obj;
         if (fileName == null) {
             if (other.fileName != null) {
                 return false;

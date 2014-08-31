@@ -333,8 +333,8 @@ public class StorageSwitch {
             try {
 
                 if (!done) {
-                    dirOld = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS, null);
-                    dirNew = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_AVATARS,
+                    dirOld = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, null);
+                    dirNew = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS,
                             useExternalStorageNew);
                     if (dirOld == null || !dirOld.exists()) {
                         messageToAppend.append("No old avatars. ");

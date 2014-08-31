@@ -17,7 +17,7 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.data.AvatarData;
-import org.andstatus.app.data.AvatarFile;
+import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.HttpJavaNetUtils;
@@ -70,7 +70,7 @@ class AvatarDownloader {
 
     private void downloadAvatarFile() {
         final String method = "downloadAvatarFile";
-        AvatarFile fileTemp = new AvatarFile("temp_" + data.getFileNameNew());
+        DownloadFile fileTemp = new DownloadFile("temp_" + data.getFileNameNew());
         try {
             InputStream is = HttpJavaNetUtils.urlOpenStream(data.getUrl());
             try {
@@ -99,7 +99,7 @@ class AvatarDownloader {
         if (data.isError()) {
             fileTemp.delete();
         }
-        AvatarFile fileNew = new AvatarFile(data.getFileNameNew());
+        DownloadFile fileNew = new DownloadFile(data.getFileNameNew());
         fileNew.delete();
         if (!data.isError() && !fileTemp.getFile().renameTo(fileNew.getFile())) {
             data.softErrorLogged(method + ", Couldn't rename file " + fileTemp + " to " + fileNew, null);

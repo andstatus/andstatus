@@ -14,6 +14,8 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -101,7 +103,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         final String method = "testOpeningConversationActivity";
         TestSuite.waitForListLoaded(this, activity);
         
-        selectListPosition(method, 0);
+        selectListPosition(method, getPositionOfReply());
 
         ActivityMonitor activityMonitor = getInstrumentation().addMonitor(ConversationActivity.class.getName(), null, false);
         
@@ -126,6 +128,18 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         TestSuite.waitForListLoaded(this, nextActivity);
         Thread.sleep(500);
         nextActivity.finish();        
+    }
+
+    private int getPositionOfReply() {
+        int position = 0;
+        for (int ind = 0; ind < getListView().getCount(); ind++) {
+            long itemId = getListView().getAdapter().getItemId(position);
+            if (MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, itemId) != 0) {
+                break;
+            }
+            position++;
+        }
+        return position;
     }
 
     private void selectListPosition(final String method, final int positionIn) throws InterruptedException {

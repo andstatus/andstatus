@@ -26,7 +26,7 @@ import org.andstatus.app.util.MyLog;
 
 public class AvatarDrawable {
     private final long userId;
-    private final AvatarFile avatarFile;
+    private final DownloadFile avatarFile;
     public static final int AVATAR_SIZE_DIP = 48;
     
     private static final Drawable DEFAULT_AVATAR = loadDefaultAvatar(false);
@@ -34,7 +34,7 @@ public class AvatarDrawable {
     
     public AvatarDrawable(long userIdIn, String fileName) {
         userId = userIdIn;
-        avatarFile = new AvatarFile(fileName);
+        avatarFile = new DownloadFile(fileName);
     }
     
     private static Drawable loadDefaultAvatar(boolean lightTheme) {

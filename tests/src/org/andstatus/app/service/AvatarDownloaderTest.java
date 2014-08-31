@@ -7,7 +7,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.AvatarData;
-import org.andstatus.app.data.AvatarFile;
+import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.User;
@@ -89,7 +89,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         assertTrue("Existence of " + data.getFileName(), data.getFile().exists());
         assertTrue("Is File" + data.getFileName(), data.getFile().getFile().isFile());
 
-        AvatarFile avatarFile = data.getFile();
+        DownloadFile avatarFile = data.getFile();
         AvatarData.deleteAllOfThisUser(ma.getUserId());
         assertFalse(avatarFile.exists());
 

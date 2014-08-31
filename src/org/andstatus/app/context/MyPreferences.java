@@ -238,7 +238,7 @@ public class MyPreferences {
      * Standard directory in which to place databases
      */
     public static final String DIRECTORY_DATABASES = "databases";
-    public static final String DIRECTORY_AVATARS = "avatars";
+    public static final String DIRECTORY_DOWNLOADS = "avatars";
     
     /**
      * This function works just like {@link android.content.Context#getExternalFilesDir

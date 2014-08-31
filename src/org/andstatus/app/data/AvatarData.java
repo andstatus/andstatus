@@ -37,14 +37,14 @@ public class AvatarData {
     public final long userId;
     private DownloadStatus status = DownloadStatus.UNKNOWN; 
     private long rowId = 0;
-    private AvatarFile fileStored = AvatarFile.getEmpty();
+    private DownloadFile fileStored = DownloadFile.getEmpty();
     private URL url = null;
 
     private boolean hardError = false;
     private boolean softError = false;
 
     private long loadTimeNew = 0;
-    private AvatarFile fileNew = AvatarFile.getEmpty();
+    private DownloadFile fileNew = DownloadFile.getEmpty();
 
     public AvatarData(long userIdIn) {
         userId = userIdIn;
@@ -84,7 +84,7 @@ public class AvatarData {
             while (cursor.moveToNext()) {
                 status = DownloadStatus.load(cursor.getInt(0));
                 rowId = cursor.getLong(1);
-                fileStored = new AvatarFile(cursor.getString(2));
+                fileStored = new DownloadFile(cursor.getString(2));
             }
         } finally {
             DbUtils.closeSilently(cursor);
@@ -93,7 +93,7 @@ public class AvatarData {
 
     private void fixFieldsAfterLoad() {
         if (fileStored == null) {
-            fileStored = AvatarFile.getEmpty();
+            fileStored = DownloadFile.getEmpty();
         }
         fileNew = fileStored;
         if (hardError) {
@@ -110,7 +110,7 @@ public class AvatarData {
         softError = false;
         hardError = false;
         loadTimeNew =  System.currentTimeMillis();
-        fileNew =  new AvatarFile(Long.toString(userId) + "_" + Long.toString(loadTimeNew));
+        fileNew =  new DownloadFile(Long.toString(userId) + "_" + Long.toString(loadTimeNew));
     }
     
     public void saveToDatabase() {
@@ -227,7 +227,7 @@ public class AvatarData {
                 cursor = db.rawQuery(sql, null);
                 while (cursor.moveToNext()) {
                     long rowIdOld = cursor.getLong(0);
-                    new AvatarFile(cursor.getString(1)).delete();
+                    new DownloadFile(cursor.getString(1)).delete();
                     rowsDeleted += db.delete(Download.TABLE_NAME, Download._ID + "=" + Long.toString(rowIdOld), null);
                 }
                 done = true;
@@ -249,7 +249,7 @@ public class AvatarData {
         }
     }
     
-    public AvatarFile getFile() {
+    public DownloadFile getFile() {
         return fileStored;
     }
     
