@@ -75,7 +75,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
     }
 
     private void deleteMaAvatar() {
-        AvatarData data = new AvatarData(ma.getUserId());
+        AvatarData data = AvatarData.newInstanse(ma.getUserId());
         assertTrue("Loaded avatar file deleted", data.getFile().delete());
     }
 
@@ -85,7 +85,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         assertEquals(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
-        AvatarData data = new AvatarData(ma.getUserId());
+        AvatarData data = AvatarData.newInstanse(ma.getUserId());
         assertTrue("Existence of " + data.getFileName(), data.getFile().exists());
         assertTrue("Is File" + data.getFileName(), data.getFile().getFile().isFile());
 
@@ -94,7 +94,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         assertFalse(avatarFile.exists());
 
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
-        data = new AvatarData(ma.getUserId());
+        data = AvatarData.newInstanse(ma.getUserId());
         assertTrue(data.getFile().exists());
     }
     
@@ -124,7 +124,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
         loader.load(commandData);
 
-        AvatarData data = new AvatarData(ma.getUserId());
+        AvatarData data = AvatarData.newInstanse(ma.getUserId());
         if (DownloadStatus.LOADED.equals(status)) {
             assertFalse("Loaded " + data.getUrl(), commandData.getResult().hasError());
             assertEquals("Loaded " + data.getUrl(), status, loader.getStatus());

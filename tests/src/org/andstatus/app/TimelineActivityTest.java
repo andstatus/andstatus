@@ -103,7 +103,8 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         final String method = "testOpeningConversationActivity";
         TestSuite.waitForListLoaded(this, activity);
         
-        selectListPosition(method, getPositionOfReply());
+        final int position = getPositionOfReply();
+        selectListPosition(method, position);
 
         ActivityMonitor activityMonitor = getInstrumentation().addMonitor(ConversationActivity.class.getName(), null, false);
         
@@ -112,7 +113,6 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
             // http://stackoverflow.com/questions/8094268/android-listview-performitemclick
             @Override
             public void run() {
-                int position = 0;
                 long rowId = ((ListActivity) activity).getListAdapter().getItemId(position);
                 MyLog.v(this, method + "-Log on performClick, rowId=" + rowId);
                 getListView().performItemClick(

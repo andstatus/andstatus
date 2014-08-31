@@ -35,7 +35,7 @@ class AvatarDownloader {
     boolean mockNetworkError = false;
     
     AvatarDownloader(long userIdIn) {
-        data = new AvatarData(userIdIn);
+        data = AvatarData.newInstanse(userIdIn);
     }
     
     void load(CommandData commandData) {

@@ -470,7 +470,7 @@ public class MyProvider extends ContentProvider {
 
     private void loadAvatar(long userId, ContentValues values) {
         if (MyPreferences.showAvatars() && values.containsKey(User.AVATAR_URL)) {
-            new AvatarData(userId).requestDownload();
+            AvatarData.newInstanse(userId).requestDownload();
         }
     }
     

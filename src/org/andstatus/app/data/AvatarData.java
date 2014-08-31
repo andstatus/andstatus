@@ -46,7 +46,7 @@ public class AvatarData {
     private long loadTimeNew = 0;
     private DownloadFile fileNew = DownloadFile.getEmpty();
 
-    public AvatarData(long userIdIn) {
+    private AvatarData(long userIdIn) {
         userId = userIdIn;
         loadUrl();
         if (!hardError) {
@@ -249,6 +249,10 @@ public class AvatarData {
         }
     }
     
+    public static AvatarData newInstanse(long userIdIn) {
+        return new AvatarData(userIdIn);
+    }
+
     public DownloadFile getFile() {
         return fileStored;
     }
