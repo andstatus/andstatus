@@ -44,7 +44,7 @@ import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MyDatabase.Avatar;
+import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
@@ -78,8 +78,8 @@ public class MyProvider extends ContentProvider {
         MSG_PROJECTION_MAP.put(Msg.MSG_OID, Msg.MSG_OID);
         MSG_PROJECTION_MAP.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
         MSG_PROJECTION_MAP.put(User.AUTHOR_NAME, User.AUTHOR_NAME);
-        MSG_PROJECTION_MAP.put(Avatar.FILE_NAME, Avatar.FILE_NAME);
-        MSG_PROJECTION_MAP.put(Avatar.STATUS, Avatar.STATUS);
+        MSG_PROJECTION_MAP.put(Download.FILE_NAME, Download.FILE_NAME);
+        MSG_PROJECTION_MAP.put(Download.DOWNLOAD_STATUS, Download.DOWNLOAD_STATUS);
         MSG_PROJECTION_MAP.put(Msg.SENDER_ID, Msg.SENDER_ID);
         MSG_PROJECTION_MAP.put(User.SENDER_NAME, User.SENDER_NAME);
         MSG_PROJECTION_MAP.put(Msg.BODY, Msg.BODY);
@@ -782,15 +782,15 @@ public class MyProvider extends ContentProvider {
             authorNameDefined = true;
             authorTableName = "author";
         }
-        if (authorNameDefined && columns.contains(MyDatabase.Avatar.FILE_NAME)) {
+        if (authorNameDefined && columns.contains(MyDatabase.Download.FILE_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
-                    + MyDatabase.Avatar.USER_ID + ", "
-                    + MyDatabase.Avatar.STATUS + ", "
-                    + MyDatabase.Avatar.FILE_NAME
-                    + " FROM " + MyDatabase.Avatar.TABLE_NAME + ") AS av ON "
-                    + "av." + Avatar.STATUS 
-                    + "=" + AvatarStatus.LOADED.save() + " AND " 
-                    + "av." + MyDatabase.Avatar.USER_ID 
+                    + MyDatabase.Download.USER_ID + ", "
+                    + MyDatabase.Download.DOWNLOAD_STATUS + ", "
+                    + MyDatabase.Download.FILE_NAME
+                    + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS av ON "
+                    + "av." + Download.DOWNLOAD_STATUS 
+                    + "=" + DownloadStatus.LOADED.save() + " AND " 
+                    + "av." + MyDatabase.Download.USER_ID 
                     + "=" + authorTableName + "." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.SENDER_NAME)) {

@@ -23,7 +23,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.ContentTypeEnum;
+import org.andstatus.app.data.ContentType;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.Origin;
@@ -274,7 +274,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         MbAttachment attachment = MbAttachment.fromOriginAndOid(connectionData.getOriginId(), 
                 "https://io.jpope.org/api/image/L0wcaKS8Te-DME_sgSETNw");
         attachment.url = new URL("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg");
-        attachment.contentType = ContentTypeEnum.IMAGE;
+        attachment.contentType = ContentType.IMAGE;
         attachment.thumbUrl = new URL("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw_thumb.jpg");
         assertEquals("attachment", attachment, msg.attachments.get(0));
     }

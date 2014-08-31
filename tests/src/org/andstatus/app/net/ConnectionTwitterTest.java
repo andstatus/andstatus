@@ -21,7 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.ContentTypeEnum;
+import org.andstatus.app.data.ContentType;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -144,7 +144,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         MbAttachment attachment = MbAttachment.fromOriginAndOid(connectionData.getOriginId(), 
                 "503799441740922882");
         attachment.url = new URL("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg");
-        attachment.contentType = ContentTypeEnum.IMAGE;
+        attachment.contentType = ContentType.IMAGE;
         attachment.thumbUrl = new URL("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg:thumb");
         assertEquals("attachment", attachment, msg.attachments.get(0));
         attachment.url = new URL("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg");

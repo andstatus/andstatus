@@ -18,7 +18,7 @@ package org.andstatus.app.net;
 
 import android.text.TextUtils;
 
-import org.andstatus.app.data.ContentTypeEnum;
+import org.andstatus.app.data.ContentType;
 
 import java.net.URL;
 
@@ -26,7 +26,7 @@ public class MbAttachment {
     public String oid="";
     public URL url = null;
     public URL thumbUrl = null;
-    public ContentTypeEnum contentType = ContentTypeEnum.UNKNOWN;
+    public ContentType contentType = ContentType.UNKNOWN;
 
     // In our system
     public long originId = 0L;
@@ -43,7 +43,7 @@ public class MbAttachment {
     }
     
     public boolean isValid() {
-        return url != null && !TextUtils.isEmpty(oid) && contentType != ContentTypeEnum.UNKNOWN && originId != 0L;
+        return url != null && !TextUtils.isEmpty(oid) && contentType != ContentType.UNKNOWN && originId != 0L;
     }
 
     @Override

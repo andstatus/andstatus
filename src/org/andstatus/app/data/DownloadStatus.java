@@ -18,7 +18,7 @@ package org.andstatus.app.data;
 
 import org.andstatus.app.util.MyLog;
 
-public enum AvatarStatus {
+public enum DownloadStatus {
     NEW(1),
     LOADED(2),
     EXPIRED(3),
@@ -26,29 +26,31 @@ public enum AvatarStatus {
     HARD_ERROR(5),
     ABSENT(6),
     UNKNOWN(0);
+
+    private static final String TAG = DownloadStatus.class.getSimpleName();
     
-    private int code;
-    private AvatarStatus(int codeIn) {
+    private long code;
+    private DownloadStatus(long codeIn) {
         code = codeIn;
     }
     
     public String save() {
-        return Integer.toString(code);
+        return Long.toString(code);
     }
     
-    public static AvatarStatus load(String strCode) {
+    public static DownloadStatus load(String strCode) {
         try {
-            return load(Integer.parseInt(strCode));
+            return load(Long.parseLong(strCode));
         } catch (NumberFormatException e) {
-            MyLog.v("AvatarState", "Error converting '" + strCode + "'", e);
+            MyLog.v(TAG, "Error converting '" + strCode + "'", e);
         }
         return UNKNOWN;
     }
     
-    public static AvatarStatus load(int codeIn) {
-        for (AvatarStatus tt : AvatarStatus.values()) {
-            if (tt.code == codeIn) {
-                return tt;
+    public static DownloadStatus load(long codeIn) {
+        for (DownloadStatus val : values()) {
+            if (val.code == codeIn) {
+                return val;
             }
         }
         return UNKNOWN;

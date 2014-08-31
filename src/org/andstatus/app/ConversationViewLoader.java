@@ -39,7 +39,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyDatabase.Avatar;
+import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
@@ -68,7 +68,7 @@ public class ConversationViewLoader {
             Msg.IN_REPLY_TO_MSG_ID,
             Msg.AUTHOR_ID,
             User.AUTHOR_NAME,
-            Avatar.FILE_NAME,
+            Download.FILE_NAME,
             Msg.SENDER_ID,
             Msg.BODY,
             Msg.VIA,
@@ -197,7 +197,7 @@ public class ConversationViewLoader {
                     oMsg.via = Html.fromHtml(via).toString().trim();
                 }
                 if (MyPreferences.showAvatars()) {
-                    oMsg.avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Avatar.FILE_NAME)));
+                    oMsg.avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Download.FILE_NAME)));
                 }
                 int colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
                 if (colIndex > -1) {

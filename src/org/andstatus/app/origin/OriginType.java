@@ -196,35 +196,35 @@ public enum OriginType {
     }
     
     public static OriginType fromId( long id) {
-        OriginType originEnum = UNKNOWN;
-        for(OriginType oe : values()) {
-            if (oe.id == id) {
-                originEnum = oe;
+        OriginType obj = UNKNOWN;
+        for(OriginType val : values()) {
+            if (val.id == id) {
+                obj = val;
                 break;
             }
         }
-        return originEnum;
+        return obj;
     }
 
     public static OriginType fromName( String name) {
-        OriginType originEnum = UNKNOWN;
-        for(OriginType oe : values()) {
-            if (oe.title.equalsIgnoreCase(name)) {
-                originEnum = oe;
+        OriginType obj = UNKNOWN;
+        for(OriginType val : values()) {
+            if (val.title.equalsIgnoreCase(name)) {
+                obj = val;
                 break;
             }
         }
-        return originEnum;
+        return obj;
     }
 
     public static OriginType fromEntriesPosition( int position) {
-        OriginType originEnum = UNKNOWN;
-        for(OriginType oe : values()) {
-            if (oe.ordinal() == position) {
-                originEnum = oe;
+        OriginType obj = UNKNOWN;
+        for(OriginType val : values()) {
+            if (val.ordinal() == position) {
+                obj = val;
                 break;
             }
         }
-        return originEnum;
+        return obj;
     }
 }

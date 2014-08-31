@@ -18,7 +18,7 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.data.AvatarData;
 import org.andstatus.app.data.AvatarFile;
-import org.andstatus.app.data.AvatarStatus;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.HttpJavaNetUtils;
 import org.andstatus.app.util.MyLog;
@@ -106,7 +106,7 @@ class AvatarDownloader {
         }
     }
 
-    public AvatarStatus getStatus() {
+    public DownloadStatus getStatus() {
         return data.getStatus();
     }
     

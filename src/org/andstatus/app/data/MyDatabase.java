@@ -40,6 +40,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
+     * v.17 2014-08-30 Attachment added
      * v.16 2014-05-03 Account persistence changed
      * v.15 2014-02-16 Public timeline added
      * v.14 2013-12-15 Origin table added
@@ -361,42 +362,44 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String SENDER_FOLLOWED = "sender_followed";
     }
-    
-    public static final class Avatar implements BaseColumns {
-        public static final String TABLE_NAME = Avatar.class.getSimpleName().toLowerCase(Locale.US);
-        private Avatar() {
+
+    /** Avatar, Message attachment...
+     */
+    public static final class Download implements BaseColumns {
+        public static final String TABLE_NAME = Download.class.getSimpleName().toLowerCase(Locale.US);
+        private Download() {
         }
-        /**
-         * Every avatar is connected to exactly one user.
-         */
-        public static final String USER_ID = "user_id";
+        /** See {@link DownloadType} */
+        public static final String DOWNLOAD_TYPE = "download_type";
+        /** Avatar is connected to exactly one user */
+        public static final String USER_ID = User.USER_ID;
+        /** Attachment is connected to a message */
+        public static final String MSG_ID =  Msg.MSG_ID;
+        /** See {@link ContentType} */
+        public static final String CONTENT_TYPE = "content_type";
         /**
          * Date and time of the information. Used to decide which 
          * (version of) information
          * is newer (we may upload older information later...)
          */
-        public static final String VALID_FROM = "avatar_valid_from";
+        public static final String VALID_FROM = "valid_from";
+        public static final String URL = "url";
         /**
-         * Url of the avatar 
+         * Date and time there was last attempt to load avatar. The attempt may be successful or not.
          */
-        public static final String URL = "avatar_url";
+        public static final String LOADED_DATE = "loaded_date";
         /**
-         * See {@link AvatarStatus}
+         * See {@link DownloadStatus}
          */
-        public static final String STATUS = "avatar_status";
-        public static final String FILE_NAME = "avatar_file_name";
-        /**
-         * Date and time there was last attempt to load avatar. The attempt may be successfull or not.
-         */
-        public static final String LOADED_DATE = "avatar_loaded_date";
+        public static final String DOWNLOAD_STATUS = "download_status";
+        public static final String FILE_NAME = "file_name";
         
         /*
          * Derived columns (they are not stored in this table but are result of joins)
          */
-        /**
-         * Alias for the primary key
-         */
+        /** Alias for the primary key */
         public static final String AVATAR_ID = "avatar_id";
+        public static final String IMAGE_ID = "image_id";
     }
 
     public static final class Origin implements BaseColumns {
@@ -476,7 +479,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         db.execSQL("CREATE TABLE " + Msg.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + Msg.ORIGIN_ID + " INTEGER NOT NULL," 
-                + Msg.MSG_OID + " STRING," 
+                + Msg.MSG_OID + " TEXT," 
                 + Msg.AUTHOR_ID + " INTEGER," 
                 + Msg.SENDER_ID + " INTEGER," 
                 + Msg.RECIPIENT_ID + " INTEGER," 
@@ -553,21 +556,30 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + " CONSTRAINT pk_followinguser PRIMARY KEY (" + FollowingUser.USER_ID + " ASC, " + FollowingUser.FOLLOWING_USER_ID + " ASC)"
                 + ")");
 
-        db.execSQL("CREATE TABLE " + Avatar.TABLE_NAME + " (" 
+        db.execSQL("CREATE TABLE " + Download.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
-                + Avatar.USER_ID + " INTEGER NOT NULL," 
-                + Avatar.VALID_FROM + " INTEGER NOT NULL,"
-                + Avatar.URL + " TEXT NOT NULL," 
-                + Avatar.FILE_NAME + " TEXT," 
-                + Avatar.STATUS + " INTEGER NOT NULL DEFAULT 0," 
-                + Avatar.LOADED_DATE + " INTEGER"
+                + Download.DOWNLOAD_TYPE + " INTEGER NOT NULL," 
+                + Download.USER_ID + " INTEGER," 
+                + Download.MSG_ID + " INTEGER," 
+                + Download.CONTENT_TYPE + " INTEGER NOT NULL," 
+                + Download.VALID_FROM + " INTEGER NOT NULL,"
+                + Download.URL + " TEXT NOT NULL," 
+                + Download.LOADED_DATE + " INTEGER,"
+                + Download.DOWNLOAD_STATUS + " INTEGER NOT NULL DEFAULT 0," 
+                + Download.FILE_NAME + " TEXT" 
                 + ")");
 
-        db.execSQL("CREATE INDEX idx_avatar_user ON " + Avatar.TABLE_NAME + " (" 
-                + Avatar.USER_ID + ", "
-                + Avatar.STATUS
+        db.execSQL("CREATE INDEX idx_download_user ON " + Download.TABLE_NAME + " (" 
+                + Download.USER_ID + ", "
+                + Download.DOWNLOAD_STATUS
                 + ")");
 
+        db.execSQL("CREATE INDEX idx_download_msg ON " + Download.TABLE_NAME + " (" 
+                + Download.MSG_ID + ", "
+                + Download.CONTENT_TYPE  + ", "
+                + Download.DOWNLOAD_STATUS
+                + ")");
+        
         db.execSQL("CREATE TABLE " + Origin.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + Origin.ORIGIN_TYPE_ID + " INTEGER NOT NULL," 

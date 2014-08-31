@@ -1244,7 +1244,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         columnNames.add(User.LINKED_USER_ID);
         if (MyPreferences.showAvatars()) {
             columnNames.add(Msg.AUTHOR_ID);
-            columnNames.add(MyDatabase.Avatar.FILE_NAME);
+            columnNames.add(MyDatabase.Download.FILE_NAME);
         }
         if (MyPreferences.getBoolean(
                 MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false)) {
@@ -1436,7 +1436,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         int listItemLayoutId = R.layout.message_basic;
         if (MyPreferences.showAvatars()) {
             listItemLayoutId = R.layout.message_avatar;
-            columnNames.add(MyDatabase.Avatar.FILE_NAME);
+            columnNames.add(MyDatabase.Download.FILE_NAME);
             viewIds.add(R.id.avatar_image);
         }
         MySimpleCursorAdapter messageAdapter = new MySimpleCursorAdapter(TimelineActivity.this,

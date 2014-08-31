@@ -18,7 +18,7 @@ package org.andstatus.app.util;
 
 import android.text.TextUtils;
 
-import org.andstatus.app.data.ContentTypeEnum;
+import org.andstatus.app.data.ContentType;
 import org.andstatus.app.data.DbUtils;
 import org.json.JSONArray;
 import org.json.JSONException;

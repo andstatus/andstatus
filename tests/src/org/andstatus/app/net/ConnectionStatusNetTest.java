@@ -22,7 +22,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.ContentTypeEnum;
+import org.andstatus.app.data.ContentType;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -143,7 +143,7 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         MbAttachment attachment = MbAttachment.fromOriginAndOid(connectionData.getOriginId(), 
                 "https://quitter.se/file/mcscx-20131110T222250-427wlgn.png");
         attachment.url = new URL("https://quitter.se/file/mcscx-20131110T222250-427wlgn.png");
-        attachment.contentType = ContentTypeEnum.IMAGE;
+        attachment.contentType = ContentType.IMAGE;
         attachment.thumbUrl = new URL("https://quitter.se/file/mcscx-20131110T222250-3xpl5ld.png");
         assertEquals("attachment", attachment, msg.attachments.get(0));
         return msg;

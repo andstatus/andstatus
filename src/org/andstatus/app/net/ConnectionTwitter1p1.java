@@ -19,7 +19,7 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import org.andstatus.app.data.ContentTypeEnum;
+import org.andstatus.app.data.ContentType;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
@@ -135,7 +135,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
                         }
                         if (mbAttachment.url != null) {
                             mbAttachment.thumbUrl = new URL(mbAttachment.url.toExternalForm() + ":thumb");
-                            mbAttachment.contentType = ContentTypeEnum.fromUrl(mbAttachment.url, ContentTypeEnum.IMAGE);
+                            mbAttachment.contentType = ContentType.fromUrl(mbAttachment.url, ContentType.IMAGE);
                         }
                         if (mbAttachment.isValid()) {
                             message.attachments.add(mbAttachment);

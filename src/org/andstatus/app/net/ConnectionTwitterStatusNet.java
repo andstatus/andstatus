@@ -20,7 +20,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.ContentTypeEnum;
+import org.andstatus.app.data.ContentType;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
@@ -142,7 +142,7 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
                             url != null ? url.toExternalForm() : "");
                     mbAttachment.url = url;
                     mbAttachment.thumbUrl = FileUtils.json2Url(attachment, "thumb_url");
-                    mbAttachment.contentType = ContentTypeEnum.fromUrl(mbAttachment.url,
+                    mbAttachment.contentType = ContentType.fromUrl(mbAttachment.url,
                             attachment.optString("mimetype"));
                     if (mbAttachment.isValid()) {
                         message.attachments.add(mbAttachment);
