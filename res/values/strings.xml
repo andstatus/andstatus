@@ -341,6 +341,7 @@
     <string name="timeline_title_replies">Replies</string>
     <string name="timeline_title_user">User</string>
 
+    <string name="title_command_fetch_attachment">Fetch attachment</string>
     <string name="title_command_fetch_avatar">Avatar</string>
     <string name="title_command_get_status">Fetch message</string>
     

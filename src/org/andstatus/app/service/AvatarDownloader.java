@@ -17,6 +17,7 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.data.AvatarData;
+import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.DbUtils;
@@ -31,7 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 class AvatarDownloader {
-    private final AvatarData data;
+    private final DownloadData data;
     boolean mockNetworkError = false;
     
     AvatarDownloader(long userIdIn) {

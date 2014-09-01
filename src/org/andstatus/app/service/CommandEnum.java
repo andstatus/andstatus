@@ -34,9 +34,10 @@ public enum CommandEnum {
     FETCH_TIMELINE("fetch-timeline", 0, -4, true),
 
     /**
-     * Fetch avatar for the specified user and URL 
+     * Fetch avatar for the specified user 
      */
     FETCH_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, -9, true),
+    FETCH_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, -11, true),
     
     CREATE_FAVORITE("create-favorite", R.string.menu_item_favorite, 0, true), 
     DESTROY_FAVORITE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, true),
