@@ -19,9 +19,12 @@ package org.andstatus.app.data;
 import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.FollowingUser;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
@@ -30,7 +33,10 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SelectionAndArgs;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import org.andstatus.app.util.*;
 
 /**
@@ -139,6 +145,9 @@ public class DataPruner {
             DbUtils.closeSilently(cursor);
         }
         mDeleted = nDeletedTime + nDeletedSize;
+        if (mDeleted > 0) {
+            pruneAttachments();
+        }
 		pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
 		setDataPrunedNow();
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
@@ -149,6 +158,36 @@ public class DataPruner {
                     + nDeletedSize + " of " + nTweets + " messages, before " + new Date(latestTimestampSize).toString());
         }
         return pruned;
+    }
+
+    long pruneAttachments() {
+        final String method = "pruneAttachments";
+        String sql = "SELECT DISTINCT " + Download.MSG_ID + " FROM " + Download.TABLE_NAME
+                + " WHERE " + Download.MSG_ID + " NOT NULL"
+                + " AND NOT EXISTS (" 
+                + "SELECT * FROM " + Msg.TABLE_NAME 
+                + " WHERE " + Msg.TABLE_NAME + "." + Msg._ID + "=" + Download.MSG_ID 
+                + ")";
+        SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
+        long nDeleted = 0;
+        List<Long> list = new ArrayList<Long>();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(sql, null);
+            while (cursor.moveToNext()) {
+                list.add(cursor.getLong(0));
+            }
+        } finally {
+            DbUtils.closeSilently(cursor);
+        }
+        for (Long msgId : list) {
+            DownloadData.deleteAllOfThisMsg(msgId);
+            nDeleted++;
+        }
+        if (nDeleted > 0) {
+            MyLog.v(this, method + "; Attachments deleted for " + nDeleted + " messages");
+        }
+        return nDeleted;
     }
 
     public static void setDataPrunedNow() {

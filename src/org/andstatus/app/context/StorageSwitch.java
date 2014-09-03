@@ -183,7 +183,7 @@ public class StorageSwitch {
                     result.moved = true;
                     moveDatabase(useExternalStorageNew, result.messageBuilder, 
                             TimelineSearchSuggestionsProvider.DATABASE_NAME);
-                    moveAvatars(useExternalStorageNew, result.messageBuilder);
+                    moveDownloads(useExternalStorageNew, result.messageBuilder);
                 }
             } finally {
                 if (result.success) {
@@ -320,14 +320,11 @@ public class StorageSwitch {
         }
 
 
-        private void moveAvatars(boolean useExternalStorageNew, StringBuilder messageToAppend) {
-            String method = "moveAvatars";
+        private void moveDownloads(boolean useExternalStorageNew, StringBuilder messageToAppend) {
+            String method = "moveDownloads";
             boolean succeeded = false;
             boolean done = false;
-            /**
-             * Did we actually copied anything?
-             */
-            boolean copied = false;
+            boolean didWeCopyAnything = false;
             File dirOld = null;
             File dirNew = null;
             try {
@@ -358,7 +355,7 @@ public class StorageSwitch {
                                 fileName = fileOld.getName();
                                 File fileNew = new File(dirNew, fileName);
                                 if (copyFile(fileOld, fileNew)) {
-                                    copied = true;
+                                    didWeCopyAnything = true;
                                 }
                             }
                         }
@@ -378,7 +375,7 @@ public class StorageSwitch {
                 // Delete unnecessary files
                 try {
                     if (succeeded) {
-                        if (copied) {
+                        if (didWeCopyAnything) {
                             for (File fileOld : dirOld.listFiles()) {
                                 if (fileOld.isFile() && !fileOld.delete()) {
                                     messageToAppend.append(method + " couldn't delete old file "

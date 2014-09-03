@@ -9,6 +9,8 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
 
 public class DataPrunerTest extends InstrumentationTestCase  {
@@ -20,7 +22,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
         assertTrue(TestSuite.setAndWaitForIsInForeground(false));
     }
     
-    public void testPrune() {
+    public void testPrune() throws MalformedURLException {
         final String method = "testPrune";
         MyLog.v(this, method + "; Started");
         MyLog.setLogToFile(true);
@@ -33,6 +35,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
         clearPrunedDate();
         DataPruner dp = new DataPruner(MyContextHolder.get());
         assertTrue("Pruned", dp.prune());
+        
         assertTrue("File is fresh", logFile1.exists());
         long pruneDate1 = MyPreferences.getLong(MyPreferences.KEY_DATA_PRUNED_DATE);
         assertTrue(
@@ -63,6 +66,15 @@ public class DataPrunerTest extends InstrumentationTestCase  {
         assertFalse("Prune while in foreground skipped", dp.prune());
         
         MyLog.v(this, method + "; Ended");
+    }
+
+    public void testPruneAttachments() throws MalformedURLException {
+        DataPruner dp = new DataPruner(MyContextHolder.get());
+        dp.pruneAttachments();
+        DownloadData dd = DownloadData.newForMessage(-555L, ContentType.IMAGE, new URL("http://example.com/image.png"));
+        dd.saveToDatabase();
+        assertEquals(1, dp.pruneAttachments());
+        assertEquals(0, dp.pruneAttachments());
     }
 
     private void clearPrunedDate() {

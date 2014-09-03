@@ -325,7 +325,7 @@ public class DownloadData {
                 }
                 done = true;
             } catch (SQLiteException e) {
-                MyLog.i(AvatarData.class, method + ", Database is locked, pass=" + pass + "; sql='" + sql + "'", e);
+                MyLog.i(DownloadData.class, method + ", Database is locked, pass=" + pass + "; sql='" + sql + "'", e);
             } finally {
                 DbUtils.closeSilently(cursor);
             }
@@ -333,12 +333,12 @@ public class DownloadData {
                 try {
                     Thread.sleep(Math.round((Math.random() + 1) * 500));
                 } catch (InterruptedException e) {
-                    MyLog.e(AvatarData.class, e);
+                    MyLog.e(DownloadData.class, e);
                 }
             }
         }
         if (!done || rowsDeleted>0) {
-            MyLog.v(AvatarData.class, method + (done ? " succeeded" : " failed") + "; deleted " + rowsDeleted + " rows");
+            MyLog.v(DownloadData.class, method + (done ? " succeeded" : " failed") + "; deleted " + rowsDeleted + " rows");
         }
     }
 
