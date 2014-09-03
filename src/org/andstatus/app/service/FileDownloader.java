@@ -31,12 +31,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-class AvatarDownloader {
+class FileDownloader {
     private final DownloadData data;
     boolean mockNetworkError = false;
     
-    AvatarDownloader(long userIdIn) {
-        data = AvatarData.newInstanse(userIdIn);
+    static FileDownloader newForUser(long userIdIn) {
+        return new FileDownloader(AvatarData.newForUser(userIdIn));
+    }
+
+    static FileDownloader newForDownloadRow(long rowIdIn) {
+        return new FileDownloader(DownloadData.fromRowId(rowIdIn));
+    }
+    
+    private FileDownloader(DownloadData dataIn) {
+        data = dataIn;
     }
     
     void load(CommandData commandData) {
@@ -61,7 +69,7 @@ class AvatarDownloader {
             return;
         }
         data.onNewDownload();
-        downloadAvatarFile();
+        downloadFile();
         data.saveToDatabase();
         if (!data.isError()) {
             data.deleteOtherOfThisUser();
@@ -69,8 +77,8 @@ class AvatarDownloader {
         }
     }
 
-    private void downloadAvatarFile() {
-        final String method = "downloadAvatarFile";
+    private void downloadFile() {
+        final String method = "downloadFile";
         DownloadFile fileTemp = new DownloadFile("temp_" + data.getFileNameNew());
         try {
             InputStream is = HttpJavaNetUtils.urlOpenStream(data.getUrl());

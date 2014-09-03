@@ -26,7 +26,7 @@ import org.andstatus.app.util.MyLog;
 
 public class AvatarDrawable {
     private final long userId;
-    private final DownloadFile avatarFile;
+    private final DownloadFile downloadFile;
     public static final int AVATAR_SIZE_DIP = 48;
     
     private static final Drawable DEFAULT_AVATAR = loadDefaultAvatar(false);
@@ -34,7 +34,7 @@ public class AvatarDrawable {
     
     public AvatarDrawable(long userIdIn, String fileName) {
         userId = userIdIn;
-        avatarFile = new DownloadFile(fileName);
+        downloadFile = new DownloadFile(fileName);
     }
     
     private static Drawable loadDefaultAvatar(boolean lightTheme) {
@@ -52,15 +52,15 @@ public class AvatarDrawable {
     }
     
     public Drawable getDrawable() {
-        if (avatarFile.exists()) {
-            return Drawable.createFromPath(avatarFile.getFile().getAbsolutePath());
-        }
-        AvatarData.newInstanse(userId).requestDownload();
+        if (downloadFile.exists()) {
+            return Drawable.createFromPath(downloadFile.getFile().getAbsolutePath());
+        } 
+        AvatarData.newForUser(userId).requestDownload();
         return getDefaultDrawable();
     }
 
     @Override
     public String toString() {
-        return "AvatarDrawable [userId=" + userId + ", " + avatarFile + "]";
+        return "AvatarDrawable [userId=" + userId + ", " + downloadFile + "]";
     }
 }

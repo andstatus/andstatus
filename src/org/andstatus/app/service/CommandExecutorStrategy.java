@@ -75,6 +75,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     static CommandExecutorStrategy getStrategy(CommandExecutionContext execContext) {
         CommandExecutorStrategy strategy;
         switch (execContext.getCommandData().getCommand()) {
+            case FETCH_ATTACHMENT:
             case FETCH_AVATAR:
                 strategy = new CommandExecutorOther();
                 break;

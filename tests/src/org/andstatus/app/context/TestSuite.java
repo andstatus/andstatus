@@ -107,7 +107,10 @@ public class TestSuite extends TestCase {
                 MyLog.i(TAG, "Default values has been set");   
             }
         }
-        MyPreferences.getDefaultSharedPreferences().edit().putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE)).commit();
+        MyPreferences.getDefaultSharedPreferences().edit()
+            .putString(MyPreferences.KEY_MIN_LOG_LEVEL, Integer.toString(MyLog.VERBOSE))
+            .putBoolean(MyPreferences.KEY_SHOW_ATTACHED_IMAGES, true)
+            .commit();
         MyLog.forget();
         assertTrue("Log level set to verbose", MyLog.isLoggable(TAG, MyLog.VERBOSE));
         MyServiceManager.setServiceUnavailable();
@@ -215,6 +218,8 @@ public class TestSuite extends TestCase {
         MyLog.v(TAG, method + ": ended");
     }
     
+    public static final String TESTRUN_UID = String.valueOf(System.currentTimeMillis());
+    
     private static final String TEST_ORIGIN_PARENT_HOST = "example.com";
     public static final OriginType CONVERSATION_ORIGIN_TYPE = OriginType.PUMPIO;
     public static final String CONVERSATION_ORIGIN_NAME = "PumpioTest";
@@ -222,8 +227,8 @@ public class TestSuite extends TestCase {
     public static final String CONVERSATION_ACCOUNT_NAME = CONVERSATION_ACCOUNT_USERNAME + "/" + CONVERSATION_ORIGIN_NAME;
     public static final String CONVERSATION_ACCOUNT_USER_OID = "acct:" + CONVERSATION_ACCOUNT_USERNAME;
     public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/andstatus/images/AndStatus_logo.png";
-    public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + System.nanoTime();
-    public static final String HTML_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/htmlfakeuri" + System.nanoTime();
+    public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + TESTRUN_UID;
+    public static final String HTML_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
     public static final String STATUSNET_TEST_ORIGIN_NAME = "StatusnetTest";
     public static final String STATUSNET_TEST_ACCOUNT_USERNAME = "t131t";
     public static final String STATUSNET_TEST_ACCOUNT_NAME = STATUSNET_TEST_ACCOUNT_USERNAME + "/" + STATUSNET_TEST_ORIGIN_NAME;
@@ -232,8 +237,8 @@ public class TestSuite extends TestCase {
     public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
     public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";
     public static final String TWITTER_TEST_ACCOUNT_NAME = TWITTER_TEST_ACCOUNT_USERNAME + "/" + TWITTER_TEST_ORIGIN_NAME;
-    public static final String PLAIN_TEXT_MESSAGE_OID = "2167283" + System.nanoTime();
-    public static final String PUBLIC_MESSAGE_TEXT = "UniqueText" + System.nanoTime();
+    public static final String PLAIN_TEXT_MESSAGE_OID = "2167283" + TESTRUN_UID;
+    public static final String PUBLIC_MESSAGE_TEXT = "UniqueText" + TESTRUN_UID;
     public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "AndStatus";
     
     public static String getTestOriginHost(String testOriginName) {
@@ -268,7 +273,7 @@ public class TestSuite extends TestCase {
         return cal.getTime();        
     }
 
-    public static void waitForListLoaded(InstrumentationTestCase instrumentationTestCase, Activity activity) throws InterruptedException {
+    public static int waitForListLoaded(InstrumentationTestCase instrumentationTestCase, Activity activity) throws InterruptedException {
         final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
         assertTrue(list != null);
         int itemsCount = 0;
@@ -283,6 +288,7 @@ public class TestSuite extends TestCase {
         }
         assertTrue("There are items in the list of " + activity.getClass().getSimpleName(), 
                 itemsCount > 0);
+        return itemsCount;
     }
 
 

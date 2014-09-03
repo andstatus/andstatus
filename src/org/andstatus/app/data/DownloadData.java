@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteException;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -19,9 +18,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class DownloadData {
-    private final DownloadType downloadType;
-    public final long userId;
-    public final long msgId;
+    private DownloadType downloadType = DownloadType.UNKNOWN;
+    public long userId = 0;
+    public long msgId = 0;
     private ContentType contentType = ContentType.UNKNOWN;
     private DownloadStatus status = DownloadStatus.UNKNOWN; 
     private long rowId = 0;
@@ -37,15 +36,49 @@ public class DownloadData {
     protected DownloadData(long userIdIn, String urlString) {
         downloadType = DownloadType.AVATAR;
         userId = userIdIn;
-        msgId = 0;
         contentType = ContentType.IMAGE;
         url = stringToUrl(urlString);
-        if (!hardError) {
-            loadOtherFields();
-        }
+        loadOtherFields();
         fixFieldsAfterLoad();
     }
 
+    public static DownloadData fromRowId(long rowIdIn) {
+        DownloadData dd = new DownloadData();
+        dd.rowId = rowIdIn;
+        dd.loadOtherFields();
+        dd.fixFieldsAfterLoad();
+        return dd;
+    }
+    
+    public static DownloadData newForMessage(long msgIdIn, ContentType contentTypeIn, URL urlIn) {
+        return new DownloadData(msgIdIn, contentTypeIn, urlIn);
+    }
+    
+    private DownloadData(long msgIdIn, ContentType contentTypeIn, URL urlIn) {
+        switch (contentTypeIn) {
+        case IMAGE:
+            downloadType = DownloadType.IMAGE;
+            break;
+        case TEXT:
+            downloadType = DownloadType.TEXT;
+            break;
+        default:
+            downloadType = DownloadType.UNKNOWN;
+            hardError = true;
+            break;
+        }
+        userId = 0;
+        msgId = msgIdIn;
+        contentType = contentTypeIn;
+        url = urlIn;
+        loadOtherFields();
+        fixFieldsAfterLoad();
+    }
+
+    private DownloadData() {
+        // Empty
+    }
+    
     private URL stringToUrl(String urlString) {
         hardError = TextUtils.isEmpty(urlString);
         URL url1 = null;
@@ -60,9 +93,17 @@ public class DownloadData {
     }
     
     private void loadOtherFields() {
+        if (hardError) {
+            return;
+        }
         String sql = "SELECT " + Download.DOWNLOAD_STATUS + ", "
-                + Download._ID + ", "
                 + Download.FILE_NAME
+                + (downloadType == DownloadType.UNKNOWN ? ", " + Download.DOWNLOAD_TYPE : "")
+                + (userId == 0 ? ", " + Download.USER_ID : "")
+                + (msgId == 0 ? ", " + Download.MSG_ID : "")
+                + (contentType == ContentType.UNKNOWN ? ", " + Download.CONTENT_TYPE : "")
+                + (rowId == 0 ? ", " + Download._ID : "")
+                + (url == null ? ", " + Download.URL : "")
                 + " FROM " + Download.TABLE_NAME 
                 + " WHERE " + getWhereClause();
         
@@ -71,10 +112,27 @@ public class DownloadData {
         try {
             cursor = db.rawQuery(sql, null);
             status = DownloadStatus.ABSENT;
-            while (cursor.moveToNext()) {
-                status = DownloadStatus.load(cursor.getInt(0));
-                rowId = cursor.getLong(1);
-                fileStored = new DownloadFile(cursor.getString(2));
+            if (cursor.moveToNext()) {
+                status = DownloadStatus.load(cursor.getLong(0));
+                fileStored = new DownloadFile(cursor.getString(1));
+                if (downloadType == DownloadType.UNKNOWN) {
+                    downloadType = DownloadType.load(cursor.getLong(cursor.getColumnIndex(Download.DOWNLOAD_TYPE)));
+                }
+                if (userId == 0) {
+                    userId = cursor.getLong(cursor.getColumnIndex(Download.USER_ID));
+                }
+                if (msgId == 0) {
+                    msgId = cursor.getLong(cursor.getColumnIndex(Download.MSG_ID));
+                }
+                if (contentType == ContentType.UNKNOWN) {
+                    contentType = ContentType.load(cursor.getLong(cursor.getColumnIndex(Download.CONTENT_TYPE)));
+                }
+                if (rowId == 0) {
+                    rowId = cursor.getLong(cursor.getColumnIndex(Download._ID));
+                }
+                if (url == null) {
+                    url = stringToUrl(cursor.getString(cursor.getColumnIndex(Download.URL)));
+                }
             }
         } finally {
             DbUtils.closeSilently(cursor);
@@ -82,13 +140,20 @@ public class DownloadData {
     }
 
     protected String getWhereClause() {
+        StringBuilder builder = new StringBuilder();
         if (userId != 0) {
-            return Download.USER_ID + "=" + userId
-                    + " AND " + Download.URL + "=" + MyProvider.quoteIfNotQuoted(url.toExternalForm());
+            builder.append(Download.USER_ID + "=" + userId);
+        } else if (msgId != 0) {
+            builder.append(Download.MSG_ID + "=" + msgId  + optionalUrlWhereClause());
         } else {
-            return Download.MSG_ID + "=" + msgId
-                    + " AND " + Download.URL + "=" + MyProvider.quoteIfNotQuoted(url.toExternalForm());
+            builder.append(Download._ID + "=" + rowId  + optionalUrlWhereClause());
         }
+        builder.append(optionalUrlWhereClause());
+        return builder.toString();
+    }
+
+    private String optionalUrlWhereClause() {
+        return url != null ? " AND " + Download.URL + "=" + MyProvider.quoteIfNotQuoted(url.toExternalForm()) : "";
     }
 
     private void fixFieldsAfterLoad() {
@@ -168,7 +233,7 @@ public class DownloadData {
        if (rowId == -1) {
            softError = true;
        } else {
-           MyLog.v(this, "Added userId=" + userId + "; url=" + url.toExternalForm());
+           MyLog.v(this, "Added " + userMsgUrlToString());
        }
     }
 
@@ -197,25 +262,33 @@ public class DownloadData {
         if (DbUtils.updateRowWithRetry(Download.TABLE_NAME, rowId, values, 3) != 1) {
             softError = true;
         } else {
-            MyLog.v(this, "Updated userId=" + userId + "; url=" + url.toExternalForm());
+            MyLog.v(this, "Updated " + userMsgUrlToString());
         }
         if (!isError() && changeFile) {
             fileStored.delete();
         }
     }
 
+    public String userMsgUrlToString() {
+        StringBuilder builder = new StringBuilder();
+        if (userId != 0) {
+            builder.append("userId=" + userId + "; ");
+        }
+        if (msgId != 0) {
+            builder.append("msgId=" + msgId + "; ");
+        }
+        builder.append("url=" + (url == null ? "(null)" : url.toExternalForm()) + "; ");
+        return builder.toString();
+    }
+    
     public void hardErrorLogged(String message, Exception e) {
         hardError = true;
-        MyLog.i(this, message 
-                + "; userId=" + userId 
-                + "; url=" + (url == null ? "(null)" : url.toExternalForm()), e);
+        MyLog.i(this, message + "; " + userMsgUrlToString(), e);
     }
-
+    
     public void softErrorLogged(String message, Exception e) {
         softError = true;
-        MyLog.v(this, message 
-                + "; userId=" + userId 
-                + "; url=" + (url == null ? "(null)" : url.toExternalForm()), e);
+        MyLog.v(this, message + "; " + userMsgUrlToString(), e);
     }
     
     public void deleteOtherOfThisUser() {
@@ -228,13 +301,17 @@ public class DownloadData {
     
     public static void deleteOtherOfThisUser(long userId, long rowId) {
         final String method = "deleteOtherOfThisUser userId=" + userId + (rowId != 0 ? ", rowId=" + rowId : "");
-        int rowsDeleted = 0;
         String where = Download.USER_ID + "=" + userId
                 + (rowId != 0 ? " AND " + Download._ID + "<>" + Long.toString(rowId) : "") ;
+        deleteSelected(method, where);
+    }
+
+    private static void deleteSelected(final String method, String where) {
         String sql = "SELECT " + Download._ID + ", "
                 + Download.FILE_NAME
                 + " FROM " + Download.TABLE_NAME 
                 + " WHERE " + where;
+        int rowsDeleted = 0;
         boolean done = false;
         for (int pass=0; !done && pass<3; pass++) {
             SQLiteDatabase db = MyContextHolder.get().getDatabase().getWritableDatabase();
@@ -265,6 +342,11 @@ public class DownloadData {
         }
     }
 
+    public static void deleteAllOfThisMsg(long msgId) {
+        final String method = "deleteAllOfThisMsg msgId=" + msgId;
+        deleteSelected(method, Download.MSG_ID + "=" + msgId);
+    }
+    
     public DownloadFile getFile() {
         return fileStored;
     }
@@ -296,7 +378,7 @@ public class DownloadData {
         if (!DownloadStatus.LOADED.equals(status) && !hardError) {
             MyServiceManager.sendCommand(
                     userId != 0 ? new CommandData(CommandEnum.FETCH_AVATAR, null, userId)
-                            : new CommandData(CommandEnum.FETCH_ATTACHMENT, null, rowId));
+                            : CommandData.fetchAttachment(msgId, rowId));
         }
     }
 

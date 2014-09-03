@@ -37,8 +37,10 @@ import android.widget.ImageView.ScaleType;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
@@ -63,23 +65,6 @@ import java.util.List;
 import java.util.Set;
 
 public class ConversationViewLoader {
-    private static final String[] PROJECTION = new String[] {
-            Msg._ID,
-            Msg.IN_REPLY_TO_MSG_ID,
-            Msg.AUTHOR_ID,
-            User.AUTHOR_NAME,
-            Download.FILE_NAME,
-            Msg.SENDER_ID,
-            Msg.BODY,
-            Msg.VIA,
-            User.IN_REPLY_TO_NAME,
-            Msg.IN_REPLY_TO_MSG_ID,
-            User.RECIPIENT_NAME,
-            Msg.CREATED_DATE,
-            User.LINKED_USER_ID,
-            MsgOfUser.REBLOGGED,
-            MsgOfUser.FAVORITED
-    };
     private static final int MAX_INDENT_LEVEL = 19;
     
     private Context context;
@@ -165,7 +150,7 @@ public class ConversationViewLoader {
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.ALL, true, oMsg.msgId);
         Cursor cursor = null;
         try {
-            cursor = context.getContentResolver().query(uri, PROJECTION, null, null, null);
+            cursor = context.getContentResolver().query(uri, getProjection(), null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 loadMessageFromCursor(oMsg, cursor);
             }
@@ -174,6 +159,34 @@ public class ConversationViewLoader {
         }
     }
 
+    private String[] getProjection() {
+        List<String> columnNames = new ArrayList<String>();
+        columnNames.add(Msg._ID);
+        columnNames.add(Msg.AUTHOR_ID);
+        columnNames.add(User.AUTHOR_NAME);
+        columnNames.add(Msg.SENDER_ID);
+        columnNames.add(Msg.BODY);
+        columnNames.add(Msg.VIA);
+        columnNames.add(Msg.IN_REPLY_TO_MSG_ID);
+        columnNames.add(User.IN_REPLY_TO_NAME);
+        columnNames.add(User.RECIPIENT_NAME);
+        columnNames.add(MsgOfUser.FAVORITED);
+        columnNames.add(Msg.CREATED_DATE);
+        columnNames.add(User.LINKED_USER_ID);
+        if (MyPreferences.showAvatars()) {
+            columnNames.add(MyDatabase.Download.AVATAR_FILE_NAME);
+        }
+        if (MyPreferences.showAttachedImages()) {
+            columnNames.add(Download.IMAGE_ID);
+            columnNames.add(MyDatabase.Download.IMAGE_FILE_NAME);
+        }
+        if (MyPreferences.getBoolean(
+                MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false)) {
+            columnNames.add(Msg.IN_REPLY_TO_USER_ID);
+        }
+        return columnNames.toArray(new String[]{});
+    }
+    
     private void loadMessageFromCursor(ConversationOneMessage oMsg, Cursor cursor) {
         /**
          * IDs of all known senders of this message except for the Author
@@ -197,7 +210,10 @@ public class ConversationViewLoader {
                     oMsg.via = Html.fromHtml(via).toString().trim();
                 }
                 if (MyPreferences.showAvatars()) {
-                    oMsg.avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Download.FILE_NAME)));
+                    oMsg.avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Download.AVATAR_FILE_NAME)));
+                }
+                if (MyPreferences.showAttachedImages()) {
+                    oMsg.imageDrawable = AttachedImageDrawable.drawableFromCursor(cursor);
                 }
                 int colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
                 if (colIndex > -1) {
@@ -414,6 +430,14 @@ public class ConversationViewLoader {
             ((ViewGroup) messageIndented.getParent()).addView(avatarView);
         }
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
+        
+        ImageView imageView = (ImageView) messageView.findViewById(R.id.attached_image);
+        if (oMsg.imageDrawable != null) {
+            imageView.setImageDrawable(oMsg.imageDrawable);
+            imageView.setVisibility(View.VISIBLE);
+        } else {
+            imageView.setVisibility(View.GONE);
+        }
         
         TextView id = (TextView) messageView.findViewById(R.id.id);
         id.setText(Long.toString(oMsg.msgId));

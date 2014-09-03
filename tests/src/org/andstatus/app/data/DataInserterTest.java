@@ -25,6 +25,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
@@ -35,6 +36,7 @@ import org.andstatus.app.net.ConnectionStatusNetTest;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.service.AvatarDownloaderTest;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.SelectionAndArgs;
@@ -50,7 +52,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        TestSuite.initialize(this);
+        TestSuite.initializeWithData(this);
         context = TestSuite.getMyContextForTest().context();
         mMyAccount = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.CONVERSATION_ACCOUNT_NAME); 
         assertTrue(TestSuite.CONVERSATION_ACCOUNT_NAME + " exists", mMyAccount != null);
@@ -261,24 +263,8 @@ public class DataInserterTest extends InstrumentationTestCase {
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added", messageId != 0);
         
-        Uri contentUri = MyProvider.getTimelineUri(myAccount.getUserId(), TimelineTypeEnum.PUBLIC, false);
-        SelectionAndArgs sa = new SelectionAndArgs();
-        String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
-        sa.addSelection(MyDatabase.Msg.MSG_ID + " = ?",
-                new String[] {
-                        Long.toString(messageId)
-                });
-        String[] PROJECTION = new String[] {
-                Msg.MSG_ID,
-                Msg.BODY
-        };
-        Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection, sa.selectionArgs, sortOrder);
-        assertTrue("Cursor returned", cursor != null);
-        assertEquals("Message found, id=" + messageId, 1, cursor.getCount());
-        cursor.moveToFirst();
-        //assertTrue("Message favorited", cursor.getInt(0) == 1);
-        //assertTrue("Message not favorited by AccountUser", cursor.getLong(1) == myAccount.getUserId());
-        cursor.close();
+        DownloadData dd = DownloadData.newForMessage(messageId, message.attachments.get(0).contentType, null);
+        assertEquals("Image URL stored", message.attachments.get(0).url , dd.getUrl());
     }
     
     private long addMessage(MbMessage message) {

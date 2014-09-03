@@ -65,6 +65,8 @@ public class MyProvider extends ContentProvider {
     private static final String TAG = MyProvider.class.getSimpleName();
 
     public static final String MSG_TABLE_ALIAS = "msg1";
+    public static final String ATTACHMENT_IMAGE_TABLE_ALIAS = "img";
+    public static final String AVATAR_IMAGE_TABLE_ALIAS = "av";
     /**
      * Projection map used by SQLiteQueryBuilder
      * Projection map for the {@link MyDatabase.Msg} table
@@ -78,8 +80,12 @@ public class MyProvider extends ContentProvider {
         MSG_PROJECTION_MAP.put(Msg.MSG_OID, Msg.MSG_OID);
         MSG_PROJECTION_MAP.put(Msg.AUTHOR_ID, Msg.AUTHOR_ID);
         MSG_PROJECTION_MAP.put(User.AUTHOR_NAME, User.AUTHOR_NAME);
-        MSG_PROJECTION_MAP.put(Download.FILE_NAME, Download.FILE_NAME);
         MSG_PROJECTION_MAP.put(Download.DOWNLOAD_STATUS, Download.DOWNLOAD_STATUS);
+        MSG_PROJECTION_MAP.put(Download.FILE_NAME, Download.FILE_NAME);
+        MSG_PROJECTION_MAP.put(Download.AVATAR_FILE_NAME, AVATAR_IMAGE_TABLE_ALIAS + "." + Download.FILE_NAME + " AS " + Download.AVATAR_FILE_NAME);
+        MSG_PROJECTION_MAP.put(Download.IMAGE_FILE_NAME, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.FILE_NAME + " AS " + Download.IMAGE_FILE_NAME);
+        MSG_PROJECTION_MAP.put(Download.IMAGE_ID, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download._ID + " AS " + Download.IMAGE_ID);
+        MSG_PROJECTION_MAP.put(Download.IMAGE_URL, ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.URL + " AS " + Download.IMAGE_URL);
         MSG_PROJECTION_MAP.put(Msg.SENDER_ID, Msg.SENDER_ID);
         MSG_PROJECTION_MAP.put(User.SENDER_NAME, User.SENDER_NAME);
         MSG_PROJECTION_MAP.put(Msg.BODY, Msg.BODY);
@@ -433,7 +439,7 @@ public class MyProvider extends ContentProvider {
             if (rowId == -1) {
                 throw new SQLException("Failed to insert row into " + uri);
             } else if ( User.TABLE_NAME.equals(table)) {
-                loadAvatar(rowId, values);
+                optionallyLoadAvatar(rowId, values);
             }
             
             msgOfUserValues.setMsgId(rowId);
@@ -468,9 +474,9 @@ public class MyProvider extends ContentProvider {
         return ContentUris.withAppendedId(MyProvider.ORIGIN_CONTENT_URI, rowId);
     }
 
-    private void loadAvatar(long userId, ContentValues values) {
+    private void optionallyLoadAvatar(long userId, ContentValues values) {
         if (MyPreferences.showAvatars() && values.containsKey(User.AVATAR_URL)) {
-            AvatarData.newInstanse(userId).requestDownload();
+            AvatarData.newForUser(userId).requestDownload();
         }
     }
     
@@ -782,16 +788,31 @@ public class MyProvider extends ContentProvider {
             authorNameDefined = true;
             authorTableName = "author";
         }
-        if (authorNameDefined && columns.contains(MyDatabase.Download.FILE_NAME)) {
+        if (authorNameDefined && columns.contains(MyDatabase.Download.AVATAR_FILE_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + MyDatabase.Download.USER_ID + ", "
                     + MyDatabase.Download.DOWNLOAD_STATUS + ", "
                     + MyDatabase.Download.FILE_NAME
-                    + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS av ON "
+                    + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS " + AVATAR_IMAGE_TABLE_ALIAS 
+                    + " ON "
                     + "av." + Download.DOWNLOAD_STATUS 
                     + "=" + DownloadStatus.LOADED.save() + " AND " 
                     + "av." + MyDatabase.Download.USER_ID 
                     + "=" + authorTableName + "." + BaseColumns._ID;
+        }
+        if (columns.contains(MyDatabase.Download.IMAGE_FILE_NAME)) {
+            tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
+                    + MyDatabase.Download._ID + ", "
+                    + MyDatabase.Download.MSG_ID + ", "
+                    + MyDatabase.Download.CONTENT_TYPE + ", "
+                    + (columns.contains(MyDatabase.Download.IMAGE_URL) ? MyDatabase.Download.URL + ", " : "")
+                    + MyDatabase.Download.FILE_NAME
+                    + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS " + ATTACHMENT_IMAGE_TABLE_ALIAS 
+                    +  " ON "
+                    + ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.CONTENT_TYPE 
+                    + "=" + ContentType.IMAGE.save() + " AND " 
+                    + ATTACHMENT_IMAGE_TABLE_ALIAS + "." + MyDatabase.Download.MSG_ID 
+                    + "=" + MSG_TABLE_ALIAS + "." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.SENDER_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
@@ -897,7 +918,7 @@ public class MyProvider extends ContentProvider {
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
                         selectionArgs);
                 followingUserValues.update(db);
-                loadAvatar(selectedUserId, values);
+                optionallyLoadAvatar(selectedUserId, values);
                 break;
 
             default:

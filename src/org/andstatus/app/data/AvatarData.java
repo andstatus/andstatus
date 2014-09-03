@@ -20,7 +20,7 @@ import org.andstatus.app.data.MyDatabase.User;
 
 public class AvatarData extends DownloadData {
 
-    public static DownloadData newInstanse(long userIdIn) {
+    public static DownloadData newForUser(long userIdIn) {
         return new AvatarData(userIdIn);
     }
     

@@ -76,7 +76,7 @@ public class MyService extends Service {
     /** No way back */
     @GuardedBy("serviceStateLock")
     private boolean mForcedToStop = false;
-    private static long START_TO_STOP_CHANGE_MIN_PERIOD_SECONDS = 20;
+    private static long START_TO_STOP_CHANGE_MIN_PERIOD_SECONDS = 10;
     @GuardedBy("serviceStateLock")
     private long decidedToChangeIsStoppingAt = 0;
     /**
@@ -814,7 +814,7 @@ public class MyService extends Service {
     }
     
     private class HeartBeat extends AsyncTask<Void, Long, Void> {
-        private static final long HEARTBEAT_PERIOD_SECONDS = 20;
+        private static final long HEARTBEAT_PERIOD_SECONDS = 11;
 
         @Override
         protected Void doInBackground(Void... arg0) {

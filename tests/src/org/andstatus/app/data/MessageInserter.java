@@ -21,6 +21,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.ConnectionPumpio;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
@@ -44,9 +45,9 @@ public class MessageInserter extends InstrumentationTestCase {
     
     public MbUser buildUser() {
         if (origin.getOriginType() == OriginType.PUMPIO) {
-            return buildUserFromOid("acct:user" + String.valueOf(System.nanoTime()));
+            return buildUserFromOid("acct:userOf" + origin.getName() + TestSuite.TESTRUN_UID);
         }
-        return buildUserFromOid(String.valueOf(System.nanoTime()));
+        return buildUserFromOid(TestSuite.TESTRUN_UID);
     }
     
     public MbUser buildUserFromOid(String userOid) {
@@ -56,6 +57,8 @@ public class MessageInserter extends InstrumentationTestCase {
             mbUser.userName = connection.userOidToUsername(userOid);
             mbUser.url = "http://" + connection.usernameToHost(mbUser.userName) + "/"
                     + connection.usernameToNickname(mbUser.userName);
+        } else {
+            mbUser.userName = "userOf" + origin.getName() + userOid;
         }
         if (accountMbUser != null) {
             mbUser.actor = accountMbUser;

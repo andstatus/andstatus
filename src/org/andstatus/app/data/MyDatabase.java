@@ -400,6 +400,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         /** Alias for the primary key */
         public static final String AVATAR_ID = "avatar_id";
         public static final String IMAGE_ID = "image_id";
+
+        public static final String AVATAR_FILE_NAME = "avatar_file_name";
+        /** Alias helping to show first attached image */
+        public static final String IMAGE_FILE_NAME = "image_file_name";
+        public static final String IMAGE_URL = "image_url";
     }
 
     public static final class Origin implements BaseColumns {

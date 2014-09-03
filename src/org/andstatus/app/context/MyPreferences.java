@@ -73,6 +73,7 @@ public class MyPreferences {
     public static final String KEY_THEME_SIZE = "theme_size";
     public static final String KEY_THEME_COLOR = "theme_color";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
+    public static final String KEY_SHOW_ATTACHED_IMAGES = "show_attached_images";
 
     /**
      * Use this dir: http://developer.android.com/reference/android/content/Context.html#getExternalFilesDir(java.lang.String)
@@ -238,7 +239,7 @@ public class MyPreferences {
      * Standard directory in which to place databases
      */
     public static final String DIRECTORY_DATABASES = "databases";
-    public static final String DIRECTORY_DOWNLOADS = "avatars";
+    public static final String DIRECTORY_DOWNLOADS = "downloads";
     
     /**
      * This function works just like {@link android.content.Context#getExternalFilesDir
@@ -424,5 +425,9 @@ public class MyPreferences {
 
     public static boolean showAvatars() {
         return getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_SHOW_AVATARS, true);
+    }
+
+    public static boolean showAttachedImages() {
+        return getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_SHOW_ATTACHED_IMAGES, false);
     }
 }

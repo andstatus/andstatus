@@ -138,6 +138,7 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         httpConnection.setResponse(jso);
         MbMessage msg = connection.getMessage("2215662");
+        msg.oid += "_" + TestSuite.TESTRUN_UID;
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);
         MbAttachment attachment = MbAttachment.fromOriginAndOid(connectionData.getOriginId(), 

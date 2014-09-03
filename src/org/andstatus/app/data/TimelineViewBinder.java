@@ -18,6 +18,7 @@
 package org.andstatus.app.data;
 
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.View;
@@ -60,6 +61,11 @@ public class TimelineViewBinder implements ViewBinder {
             case R.id.avatar_image:
                 if ( view instanceof ImageView) {
                     setAvatar(cursor, columnIndex, (ImageView) view);
+                }
+                break;
+            case R.id.attached_image:
+                if ( view instanceof ImageView) {
+                    setAttachedImage(cursor, columnIndex, (ImageView) view);
                 }
                 break;
             case R.id.message_favorited:
@@ -136,6 +142,16 @@ public class TimelineViewBinder implements ViewBinder {
         }
         AvatarDrawable avatarDrawable = new AvatarDrawable(authorId, fileName);
         view.setImageDrawable(avatarDrawable.getDrawable());
+    }
+
+    private void setAttachedImage(Cursor cursor, int columnIndex, ImageView view) {
+        Drawable drawable = AttachedImageDrawable.drawableFromCursor(cursor);
+        if (drawable != null) {
+            view.setVisibility(View.VISIBLE);
+            view.setImageDrawable(drawable);
+        } else {
+            view.setVisibility(View.GONE);
+        }
     }
     
     private void setFavorited(Cursor cursor, ImageView view) {

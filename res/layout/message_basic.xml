@@ -54,6 +54,12 @@
         android:textColor="?attr/messageBodyColor"
         android:textStyle="?attr/messageBodyStyle" />
 
+    <ImageView
+        android:id="@+id/attached_image"
+        android:layout_width="match_parent"
+        android:layout_height="200dip"
+        android:visibility="gone" />
+    
     <TextView
         android:id="@+id/message_details"
         android:layout_width="match_parent"
@@ -73,5 +79,4 @@
         android:layout_width="0dip"
         android:layout_height="wrap_content"
         android:visibility="gone" />
-
 </LinearLayout>

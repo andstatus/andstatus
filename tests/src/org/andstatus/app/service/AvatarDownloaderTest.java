@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.service;
 
 import android.content.ContentValues;
@@ -13,7 +29,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.service.AvatarDownloader;
+import org.andstatus.app.service.FileDownloader;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.util.MyLog;
@@ -41,7 +57,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         
         AvatarData.deleteAllOfThisUser(ma.getUserId());
         
-        AvatarDownloader loader = new AvatarDownloader(ma.getUserId());
+        FileDownloader loader = FileDownloader.newForUser(ma.getUserId());
         assertEquals("Not loaded yet", DownloadStatus.ABSENT, loader.getStatus());
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         
@@ -76,7 +92,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
     }
 
     private void deleteMaAvatar() {
-        DownloadData data = AvatarData.newInstanse(ma.getUserId());
+        DownloadData data = AvatarData.newForUser(ma.getUserId());
         assertTrue("Loaded avatar file deleted", data.getFile().delete());
     }
 
@@ -86,7 +102,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         assertEquals(TestSuite.CONVERSATION_ACCOUNT_AVATAR_URL, urlString);
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
-        DownloadData data = AvatarData.newInstanse(ma.getUserId());
+        DownloadData data = AvatarData.newForUser(ma.getUserId());
         assertTrue("Existence of " + data.getFileName(), data.getFile().exists());
         assertTrue("Is File" + data.getFileName(), data.getFile().getFile().isFile());
 
@@ -95,7 +111,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         assertFalse(avatarFile.exists());
 
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
-        data = AvatarData.newInstanse(ma.getUserId());
+        data = AvatarData.newForUser(ma.getUserId());
         assertTrue(data.getFile().exists());
     }
     
@@ -120,12 +136,12 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
     }
 
     private long loadAndAssertStatusForMa(DownloadStatus status, boolean mockNetworkError) throws IOException {
-        AvatarDownloader loader = new AvatarDownloader(ma.getUserId());
+        FileDownloader loader = FileDownloader.newForUser(ma.getUserId());
         loader.mockNetworkError = mockNetworkError;
         CommandData commandData = new CommandData(CommandEnum.FETCH_AVATAR, null);
         loader.load(commandData);
 
-        DownloadData data = AvatarData.newInstanse(ma.getUserId());
+        DownloadData data = AvatarData.newForUser(ma.getUserId());
         if (DownloadStatus.LOADED.equals(status)) {
             assertFalse("Loaded " + data.getUrl(), commandData.getResult().hasError());
             assertEquals("Loaded " + data.getUrl(), status, loader.getStatus());

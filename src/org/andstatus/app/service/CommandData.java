@@ -34,6 +34,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -79,6 +80,18 @@ public class CommandData implements Comparable<CommandData> {
 
     private CommandResult commandResult = new CommandResult();
 
+    public static CommandData fetchAttachment(long msgId, long downloadDataRowId) {
+        CommandData commandData = new CommandData(CommandEnum.FETCH_ATTACHMENT, null, downloadDataRowId);
+        if (msgId != 0) {
+            commandData.bundle.putString(
+                    IntentExtra.EXTRA_MESSAGE_TEXT.key,
+                    trimmedTextForSummary(
+                            MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId))
+                            .toString());
+        }
+        return commandData;
+    }
+    
     public CommandData(CommandEnum commandIn, String accountNameIn) {
         this(commandIn, accountNameIn, TimelineTypeEnum.UNKNOWN);
     }
@@ -98,7 +111,8 @@ public class CommandData implements Comparable<CommandData> {
 		TimelineTypeEnum timelineType2 = TimelineTypeEnum.UNKNOWN;
         priority = command.getPriority();
 		switch (command) {
-			case FETCH_AVATAR:
+		    case FETCH_ATTACHMENT:
+		    case FETCH_AVATAR:
 				break;
 			default:
 				if (!TextUtils.isEmpty(accountNameIn)) {
@@ -467,9 +481,10 @@ public class CommandData implements Comparable<CommandData> {
                     builder.append(myContext.persistentOrigins().fromId(originId).getName() );
                 }
                 break;
+            case FETCH_ATTACHMENT:
             case UPDATE_STATUS:
                 builder.append("\"");
-                builder.append(I18n.trimTextAt(bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key), 40));                
+                builder.append(trimmedTextForSummary(bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key)));                
                 builder.append("\"");
                 break;
             case AUTOMATIC_UPDATE:
@@ -505,6 +520,10 @@ public class CommandData implements Comparable<CommandData> {
                 break;
         }
         return builder.toString();
+    }
+
+    private static CharSequence trimmedTextForSummary(String text) {
+        return I18n.trimTextAt(MyHtml.fromHtml(text), 40);
     }
 
     public String toShortCommandName(MyContext myContext) {

@@ -384,7 +384,8 @@
 	<string name="title_preference_username_pumpio">Webfinger ID</string>
     <string name="title_sending_messages_log_enabled">Log Sending messages to file</string>
 	<string name="title_preference_show_avatars">Display Avatars</string>
-    <string name="title_preference_verify_credentials">Reverify credentials</string>
+    <string name="title_preference_show_attached_images">Display attached images</string>
+	<string name="title_preference_verify_credentials">Reverify credentials</string>
 	<string name="title_preference_verify_credentials_failed">Verify credentials</string>
 	<string name="title_preference_vibration">Vibration</string>
 	<string name="message_source_from">from %1$s</string>

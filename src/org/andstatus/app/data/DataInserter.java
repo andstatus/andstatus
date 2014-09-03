@@ -22,8 +22,10 @@ import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.net.MbAttachment;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.service.CommandData;
@@ -69,7 +71,6 @@ public class DataInserter {
             }
             
             MbMessage message = messageIn;
-            boolean skipIt = false;
             ContentValues values = new ContentValues();
 
             // We use Created date from this message as "Sent date" even for reblogs in order to
@@ -135,179 +136,176 @@ public class DataInserter {
                 values.put(MyDatabase.Msg.AUTHOR_ID, authorId);
             }
 
-            if (SharedPreferencesUtil.isEmpty(rowOid)) {
-                MyLog.w(TAG, funcName +": no message id");
-                skipIt = true;
+            /**
+             * Is the row first time retrieved?
+             * Actually we count a message as "New" also in a case
+             *  there was only "a stub" stored (without a sent date and a body)
+             */
+            boolean isNew = true;
+
+            // Lookup the System's (AndStatus) id from the Originated system's id
+            rowId = MyProvider.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
+            // Construct the Uri to the Msg
+            Uri msgUri = MyProvider.getTimelineMsgUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false, rowId);
+
+            long sentDateStored = 0;
+            if (rowId != 0) {
+                sentDateStored = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, rowId);
+                isNew = (sentDateStored == 0);
+                if (!isNew) {
+                  long senderIdStored = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, rowId);
+                  isNew = (senderIdStored == 0);
+                }
             }
-            if (!skipIt) {
-                /**
-                 * Is the row first time retrieved?
-                 * Actually we count a message as "New" also in a case
-                 *  there was only "a stub" stored (without a sent date and a body)
-                 */
-                boolean isNew = true;
-                /**
-                 * Is the message newer than stored in the database (e.g. the newer reblog of existing message)
-                 */
-                boolean isNewer = false;
-                /**
-                 * Count this message. 
-                 */
-                boolean countIt = false;
 
-                // Lookup the System's (AndStatus) id from the Originated system's id
-                rowId = MyProvider.oidToId(OidEnum.MSG_OID, execContext.getMyAccount().getOriginId(), rowOid);
-                // Construct the Uri to the Msg
-                Uri msgUri = MyProvider.getTimelineMsgUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false, rowId);
-
-                long sentDateStored = 0;
-                if (rowId != 0) {
-                    sentDateStored = MyProvider.msgIdToLongColumnValue(Msg.SENT_DATE, rowId);
-                    isNew = (sentDateStored == 0);
-                    if (!isNew) {
-                      long senderIdStored = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, rowId);
-                      isNew = (senderIdStored == 0);
-                    }
-                }
-                if (sentDate > sentDateStored) {
-                    isNewer = true;
-                    // This message is newer than already stored in our database, so count it!
-                    countIt = true;
-                }
-                
-                String body = message.getBody();
-
-                if (isNew) {
-                    values.put(MyDatabase.Msg.CREATED_DATE, createdDate);
-                    
-                    if (senderId != 0) {
-                        // Store the Sender only for the first retrieved message.
-                        // Don't overwrite the original sender (especially the first reblogger) 
-                        values.put(MyDatabase.Msg.SENDER_ID, senderId);
-                    }
-
-                    values.put(MyDatabase.Msg.MSG_OID, rowOid);
-                    values.put(MyDatabase.Msg.ORIGIN_ID, execContext.getMyAccount().getOriginId());
-                    values.put(MyDatabase.Msg.BODY, body);
-                }
-                if (isNewer) {
-                    // Remember the latest sent date in order to see the reblogged message 
-                    // at the top of the sorted list 
-                    values.put(MyDatabase.Msg.SENT_DATE, sentDate);
-                }
-                
-                // If the Msg is a Reply to other message
-                Long inReplyToUserId = 0L;
-                Long inReplyToMessageId = 0L;
-
-                if (message.recipient != null) {
-                    long recipientId = insertOrUpdateUser(message.recipient, lum);
-                    values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
-                    if (recipientId == execContext.getMyAccount().getUserId()) {
-                        values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
-                        MyLog.v(this, "Message '" + message.oid + "' is Directed to " 
-                                + execContext.getMyAccount().getAccountName() );
-                    }
-                }
-                boolean mentioned = execContext.getTimelineType() == TimelineTypeEnum.MENTIONS;
-                if (execContext.getTimelineType() == TimelineTypeEnum.HOME) {
-                    values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
-                }
-                if (!TextUtils.isEmpty(message.via)) {
-                    values.put(MyDatabase.Msg.VIA, message.via);
-                }
-                if (!TextUtils.isEmpty(message.url)) {
-                    values.put(MyDatabase.Msg.URL, message.url);
-                }
-                if (message.favoritedByActor != TriState.UNKNOWN
-                        && actorId != 0
-                        && actorId == execContext.getMyAccount().getUserId()) {
-                    values.put(MyDatabase.MsgOfUser.FAVORITED,
-                            SharedPreferencesUtil.isTrue(message.favoritedByActor));
-                    MyLog.v(this,
-                            "Message '"
-                                    + message.oid
-                                    + "' "
-                                    + (message.favoritedByActor.toBoolean(false) ? "favorited"
-                                            : "unfavorited")
-                                    + " by " + execContext.getMyAccount().getAccountName());
-                }
-
-                if (message.inReplyToMessage != null) {
-                    // Type of the timeline is ALL meaning that message does not belong to this timeline
-                    DataInserter di = new DataInserter(execContext);
-                    inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
-                    if (message.inReplyToMessage.sender != null) {
-                        inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
-                    } else if (inReplyToMessageId != 0) {
-                        inReplyToUserId = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, inReplyToMessageId);
-                    }
-                }
-                if (inReplyToUserId != 0) {
-                    values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
-
-                    if (execContext.getMyAccount().getUserId() == inReplyToUserId) {
-                        values.put(MyDatabase.MsgOfUser.REPLIED, 1);
-                        // We count replies as Mentions 
-                        mentioned = true;
-                    }
-                }
-                if (inReplyToMessageId != 0) {
-                    values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
-                }
-                if (message.isPublic()) {
-                    values.put(MyDatabase.Msg.PUBLIC, 1);
-                }
-                
-                if (countIt) { 
-                    execContext.getResult().incrementMessagesCount(execContext.getTimelineType());
-                    }
-                // Check if current user was mentioned in the text of the message
-                if (body.length() > 0 
-                        && !mentioned 
-                        && body.contains("@" + execContext.getMyAccount().getUsername())) {
-                    mentioned = true;
-                }
-                if (mentioned) {
-                    if (countIt) { 
-                        execContext.getResult().incrementMentionsCount();
-                        }
-                  values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
-                }
-                
-                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                    MyLog.v(TAG, ((rowId==0) ? "insertMsg" : "updateMsg") 
-                            + ":" 
-                            + (isNew ? " new;" : "") 
-                            + (isNewer ? " newer, sent at " + new Date(sentDate).toString() + ";" : "") );
-                }
-                if (MyContextHolder.get().isTestRun()) {
-                    MyContextHolder.get().put(new AssersionData("insertOrUpdateMsg", values));
-                }
-                if (rowId == 0) {
-                    // There was no such row so add the new one
-                    msgUri = execContext.getContext().getContentResolver().insert(MyProvider.getTimelineUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false), values);
-                    rowId = MyProvider.uriToMessageId(msgUri);
-                } else {
-                    execContext.getContext().getContentResolver().update(msgUri, values, null, null);
-                }
+            if (isNew) {
+                values.put(MyDatabase.Msg.CREATED_DATE, createdDate);
                 
                 if (senderId != 0) {
-                    // Remember all messages that we added or updated
-                    lum.onNewUserMsg(new UserMsg(senderId, rowId, sentDate));
+                    // Store the Sender only for the first retrieved message.
+                    // Don't overwrite the original sender (especially the first reblogger) 
+                    values.put(MyDatabase.Msg.SENDER_ID, senderId);
                 }
-                if ( authorId != 0 && authorId != senderId ) {
-                    lum.onNewUserMsg(new UserMsg(authorId, rowId, createdDate));
+
+                values.put(MyDatabase.Msg.MSG_OID, rowOid);
+                values.put(MyDatabase.Msg.ORIGIN_ID, execContext.getMyAccount().getOriginId());
+                values.put(MyDatabase.Msg.BODY, message.getBody());
+            }
+            
+            /**
+             * Is the message newer than stored in the database (e.g. the newer reblog of existing message)
+             */
+            boolean isNewerThanInDatabase = sentDate > sentDateStored;
+            if (isNewerThanInDatabase) {
+                // Remember the latest sent date in order to see the reblogged message 
+                // at the top of the sorted list 
+                values.put(MyDatabase.Msg.SENT_DATE, sentDate);
+            }
+            
+            if (message.recipient != null) {
+                long recipientId = insertOrUpdateUser(message.recipient, lum);
+                values.put(MyDatabase.Msg.RECIPIENT_ID, recipientId);
+                if (recipientId == execContext.getMyAccount().getUserId()) {
+                    values.put(MyDatabase.MsgOfUser.DIRECTED, 1);
+                    MyLog.v(this, "Message '" + message.oid + "' is Directed to " 
+                            + execContext.getMyAccount().getAccountName() );
                 }
             }
-            if (skipIt) {
-                MyLog.w(TAG, funcName +": the message was skipped: " + message.toString());
+            if (execContext.getTimelineType() == TimelineTypeEnum.HOME) {
+                values.put(MyDatabase.MsgOfUser.SUBSCRIBED, 1);
+            }
+            if (!TextUtils.isEmpty(message.via)) {
+                values.put(MyDatabase.Msg.VIA, message.via);
+            }
+            if (!TextUtils.isEmpty(message.url)) {
+                values.put(MyDatabase.Msg.URL, message.url);
+            }
+            if (message.isPublic()) {
+                values.put(MyDatabase.Msg.PUBLIC, 1);
+            }
+
+            if (message.favoritedByActor != TriState.UNKNOWN
+                    && actorId != 0
+                    && actorId == execContext.getMyAccount().getUserId()) {
+                values.put(MyDatabase.MsgOfUser.FAVORITED,
+                        SharedPreferencesUtil.isTrue(message.favoritedByActor));
+                MyLog.v(this,
+                        "Message '"
+                                + message.oid
+                                + "' "
+                                + (message.favoritedByActor.toBoolean(false) ? "favorited"
+                                        : "unfavorited")
+                                + " by " + execContext.getMyAccount().getAccountName());
+            }
+
+            boolean mentioned = isMentionedAndPutInReplyToMessage(message, lum, values);
+            
+            if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                MyLog.v(this, ((rowId==0) ? "insertMsg" : "updateMsg") 
+                        + ":" 
+                        + (isNew ? " new;" : "") 
+                        + (isNewerThanInDatabase ? " newer, sent at " + new Date(sentDate).toString() + ";" : "") );
+            }
+            
+            if (MyContextHolder.get().isTestRun()) {
+                MyContextHolder.get().put(new AssersionData("insertOrUpdateMsg", values));
+            }
+            if (rowId == 0) {
+                // There was no such row so add the new one
+                msgUri = execContext.getContext().getContentResolver().insert(MyProvider.getTimelineUri(execContext.getMyAccount().getUserId(), execContext.getTimelineType(), false), values);
+                rowId = MyProvider.uriToMessageId(msgUri);
+            } else {
+                execContext.getContext().getContentResolver().update(msgUri, values, null, null);
+            }
+
+            if (isNew) {
+                for (MbAttachment attachment : message.attachments) {
+                    DownloadData dd = DownloadData.newForMessage(rowId, attachment.contentType, attachment.url);
+                    dd.saveToDatabase();
+                    if (attachment.contentType == ContentType.IMAGE && MyPreferences.showAttachedImages()) {
+                        dd.requestDownload();
+                    }
+                }
+            }
+            
+            if (isNewerThanInDatabase) {
+                // This message is newer than already stored in our database, so count it!
+                execContext.getResult().incrementMessagesCount(execContext.getTimelineType());
+                if (mentioned) {
+                    execContext.getResult().incrementMentionsCount();
+                }
+            }
+            if (senderId != 0) {
+                // Remember all messages that we added or updated
+                lum.onNewUserMsg(new UserMsg(senderId, rowId, sentDate));
+            }
+            if ( authorId != 0 && authorId != senderId ) {
+                lum.onNewUserMsg(new UserMsg(authorId, rowId, createdDate));
             }
         } catch (Exception e) {
             MyLog.e(this, funcName, e);
         }
 
         return rowId;
+    }
+
+    private boolean isMentionedAndPutInReplyToMessage(MbMessage message, LatestUserMessages lum, ContentValues values) {
+        boolean mentioned = execContext.getTimelineType() == TimelineTypeEnum.MENTIONS;
+        if (message.inReplyToMessage != null) {
+            // If the Msg is a Reply to another message
+            Long inReplyToMessageId = 0L;
+            Long inReplyToUserId = 0L;
+            // Type of the timeline is ALL meaning that message does not belong to this timeline
+            DataInserter di = new DataInserter(execContext);
+            inReplyToMessageId = di.insertOrUpdateMsg(message.inReplyToMessage, lum);
+            if (message.inReplyToMessage.sender != null) {
+                inReplyToUserId = MyProvider.oidToId(OidEnum.USER_OID, message.originId, message.inReplyToMessage.sender.oid);
+            } else if (inReplyToMessageId != 0) {
+                inReplyToUserId = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, inReplyToMessageId);
+            }
+            if (inReplyToMessageId != 0) {
+                values.put(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, inReplyToMessageId);
+            }
+            if (inReplyToUserId != 0) {
+                values.put(MyDatabase.Msg.IN_REPLY_TO_USER_ID, inReplyToUserId);
+
+                if (execContext.getMyAccount().getUserId() == inReplyToUserId) {
+                    values.put(MyDatabase.MsgOfUser.REPLIED, 1);
+                    // We count replies as Mentions 
+                    mentioned = true;
+                }
+            }
+        }
+        // Check if current user was mentioned in the text of the message
+        if (message.getBody().length() > 0 
+                && !mentioned 
+                && message.getBody().contains("@" + execContext.getMyAccount().getUsername())) {
+            mentioned = true;
+        }
+        if (mentioned) {
+            values.put(MyDatabase.MsgOfUser.MENTIONED, 1);
+        }
+        return mentioned;
     }
 
     public long insertOrUpdateUser(MbUser user) {

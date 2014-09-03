@@ -58,6 +58,7 @@ import org.andstatus.app.context.MyPreferenceActivity;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AccountUserIds;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
@@ -1244,7 +1245,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         columnNames.add(User.LINKED_USER_ID);
         if (MyPreferences.showAvatars()) {
             columnNames.add(Msg.AUTHOR_ID);
-            columnNames.add(MyDatabase.Download.FILE_NAME);
+            columnNames.add(MyDatabase.Download.AVATAR_FILE_NAME);
+        }
+        if (MyPreferences.showAttachedImages()) {
+            columnNames.add(Download.IMAGE_ID);
+            columnNames.add(MyDatabase.Download.IMAGE_FILE_NAME);
         }
         if (MyPreferences.getBoolean(
                 MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false)) {
@@ -1436,8 +1441,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         int listItemLayoutId = R.layout.message_basic;
         if (MyPreferences.showAvatars()) {
             listItemLayoutId = R.layout.message_avatar;
-            columnNames.add(MyDatabase.Download.FILE_NAME);
+            columnNames.add(MyDatabase.Download.AVATAR_FILE_NAME);
             viewIds.add(R.id.avatar_image);
+        }
+        if (MyPreferences.showAttachedImages()) {
+            columnNames.add(MyDatabase.Download.IMAGE_ID);
+            viewIds.add(R.id.attached_image);
         }
         MySimpleCursorAdapter messageAdapter = new MySimpleCursorAdapter(TimelineActivity.this,
                 listItemLayoutId, cursor, columnNames.toArray(new String[]{}),
@@ -1486,6 +1495,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         switch (command) {
             case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
+            case FETCH_ATTACHMENT:
             case FETCH_AVATAR:
             case UPDATE_STATUS:
             case DESTROY_STATUS:

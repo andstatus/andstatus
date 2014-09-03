@@ -74,8 +74,11 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             case RATE_LIMIT_STATUS:
                 rateLimitStatus();
                 break;
+            case FETCH_ATTACHMENT:
+                FileDownloader.newForDownloadRow(execContext.getCommandData().itemId).load(execContext.getCommandData());
+                break;
             case FETCH_AVATAR:
-                new AvatarDownloader(execContext.getCommandData().itemId).load(execContext.getCommandData());
+                FileDownloader.newForUser(execContext.getCommandData().itemId).load(execContext.getCommandData());
                 break;
             case NOTIFY_CLEAR:
                 AppWidgets.clearAndUpdateWidgets(execContext.getMyContext());
