@@ -136,29 +136,11 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
     }
 
     private void deleteFiles(Context context, boolean useExternalStorage) {
-        deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, useExternalStorage));
-        deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, useExternalStorage));
-        deleteFilesRecursively(SharedPreferencesUtil.prefsDirectory(context));
+        FileUtils.deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, useExternalStorage));
+        FileUtils.deleteFilesRecursively(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, useExternalStorage));
+        FileUtils.deleteFilesRecursively(SharedPreferencesUtil.prefsDirectory(context));
     }
 
-    private void deleteFilesRecursively(File rootDirectory) {
-        if (rootDirectory == null) {
-            return;
-        }
-        File[] files = rootDirectory.listFiles();
-        if (files == null) {
-            MyLog.v(this, "No files inside " + rootDirectory.getAbsolutePath());
-            return;
-        }
-        for (File file : files) {
-            if (file.isDirectory()) {
-                deleteFilesRecursively(file);
-            } else {
-                file.delete();
-            }
-        }
-    }
-    
     private void testRestore(File dataFolder)
             throws IOException {
         

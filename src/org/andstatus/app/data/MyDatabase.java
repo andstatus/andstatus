@@ -54,7 +54,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    public static final int DATABASE_VERSION = 16;
+    public static final int DATABASE_VERSION = 17;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
     /**
@@ -481,7 +481,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
     @Override
     public void onCreate(SQLiteDatabase db) {
         MyLog.i(this, "Creating tables");
-        db.execSQL("CREATE TABLE " + Msg.TABLE_NAME + " (" 
+        execSQL(db, "CREATE TABLE " + Msg.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + Msg.ORIGIN_ID + " INTEGER NOT NULL," 
                 + Msg.MSG_OID + " TEXT," 
@@ -499,12 +499,12 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Msg.PUBLIC + " BOOLEAN DEFAULT 0 NOT NULL" 
                 + ")");
 
-        db.execSQL("CREATE UNIQUE INDEX idx_msg_origin ON " + Msg.TABLE_NAME + " (" 
+        execSQL(db, "CREATE UNIQUE INDEX idx_msg_origin ON " + Msg.TABLE_NAME + " (" 
                 + Msg.ORIGIN_ID + ", "
                 + Msg.MSG_OID
                 + ")");
         
-        db.execSQL("CREATE TABLE " + MsgOfUser.TABLE_NAME + " (" 
+        execSQL(db, "CREATE TABLE " + MsgOfUser.TABLE_NAME + " (" 
                 + MsgOfUser.USER_ID + " INTEGER NOT NULL," 
                 + MsgOfUser.MSG_ID + " INTEGER NOT NULL," 
                 + MsgOfUser.SUBSCRIBED + " BOOLEAN DEFAULT 0 NOT NULL," 
@@ -517,7 +517,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + " CONSTRAINT pk_msgofuser PRIMARY KEY (" + MsgOfUser.USER_ID + " ASC, " + MsgOfUser.MSG_ID + " ASC)"
                 + ")");
         
-        db.execSQL("CREATE TABLE " + User.TABLE_NAME + " (" 
+        execSQL(db, "CREATE TABLE " + User.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + User.ORIGIN_ID + " INTEGER NOT NULL," 
                 + User.USER_OID + " TEXT," 
@@ -549,19 +549,19 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL" 
                 + ")");
 
-        db.execSQL("CREATE UNIQUE INDEX idx_username ON " + User.TABLE_NAME + " (" 
+        execSQL(db, "CREATE UNIQUE INDEX idx_username ON " + User.TABLE_NAME + " (" 
                 + User.ORIGIN_ID + ", "
                 + User.USERNAME  
                 + ")");
 
-        db.execSQL("CREATE TABLE " + FollowingUser.TABLE_NAME + " (" 
+        execSQL(db, "CREATE TABLE " + FollowingUser.TABLE_NAME + " (" 
                 + FollowingUser.USER_ID + " INTEGER NOT NULL," 
                 + FollowingUser.FOLLOWING_USER_ID + " INTEGER NOT NULL," 
                 + FollowingUser.USER_FOLLOWED + " BOOLEAN DEFAULT 1 NOT NULL," 
                 + " CONSTRAINT pk_followinguser PRIMARY KEY (" + FollowingUser.USER_ID + " ASC, " + FollowingUser.FOLLOWING_USER_ID + " ASC)"
                 + ")");
 
-        db.execSQL("CREATE TABLE " + Download.TABLE_NAME + " (" 
+        execSQL(db, "CREATE TABLE " + Download.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + Download.DOWNLOAD_TYPE + " INTEGER NOT NULL," 
                 + Download.USER_ID + " INTEGER," 
@@ -574,18 +574,18 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Download.FILE_NAME + " TEXT" 
                 + ")");
 
-        db.execSQL("CREATE INDEX idx_download_user ON " + Download.TABLE_NAME + " (" 
+        execSQL(db, "CREATE INDEX idx_download_user ON " + Download.TABLE_NAME + " (" 
                 + Download.USER_ID + ", "
                 + Download.DOWNLOAD_STATUS
                 + ")");
 
-        db.execSQL("CREATE INDEX idx_download_msg ON " + Download.TABLE_NAME + " (" 
+        execSQL(db, "CREATE INDEX idx_download_msg ON " + Download.TABLE_NAME + " (" 
                 + Download.MSG_ID + ", "
                 + Download.CONTENT_TYPE  + ", "
                 + Download.DOWNLOAD_STATUS
                 + ")");
         
-        db.execSQL("CREATE TABLE " + Origin.TABLE_NAME + " (" 
+        execSQL(db, "CREATE TABLE " + Origin.TABLE_NAME + " (" 
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + Origin.ORIGIN_TYPE_ID + " INTEGER NOT NULL," 
                 + Origin.ORIGIN_NAME + " TEXT NOT NULL," 
@@ -596,7 +596,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Origin.SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0" 
                 + ")");
         
-        db.execSQL("CREATE UNIQUE INDEX idx_origin_name ON " + Origin.TABLE_NAME + " (" 
+        execSQL(db, "CREATE UNIQUE INDEX idx_origin_name ON " + Origin.TABLE_NAME + " (" 
                 + Origin.ORIGIN_NAME
                 + ")");
         
@@ -621,11 +621,15 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 "5, 3, 'Vinilox', 'status.vinilox.eu',  0, 0,  256,  0"
         };
         for (String value : values) {
-            db.execSQL(sqlIns.replace("%s", value));
+            execSQL(db, sqlIns.replace("%s", value));
         }
         
     }
 
+    public static void execSQL(SQLiteDatabase db, String sql) {
+        MyLog.v("execSQL", sql);
+        db.execSQL(sql);
+    }
     /**
      * We don't need here neither try-catch nor transactions because they are
      * being used in calling method

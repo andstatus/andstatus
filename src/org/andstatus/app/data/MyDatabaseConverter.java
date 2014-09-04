@@ -23,9 +23,13 @@ import android.database.sqlite.SQLiteDatabase;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccountConverter;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabaseConverterController.UpgradeParams;
 import org.andstatus.app.util.DialogFactory;
+import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
+
+import java.io.File;
 
 class MyDatabaseConverter {
     long startTime = java.lang.System.currentTimeMillis();
@@ -122,6 +126,9 @@ class MyDatabaseConverter {
         if (currentVersion == 15) {
             currentVersion = convert15to16(db, currentVersion);
         }
+        if (currentVersion == 16) {
+            currentVersion = convert16to17(db, currentVersion);
+        }
         if ( currentVersion == newVersion) {
             MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
                     + newVersion + ".");
@@ -131,7 +138,7 @@ class MyDatabaseConverter {
             throw new ApplicationUpgradeException("Database upgrade failed. Current database version=" + currentVersion);
         }
     }
- 
+
     private int convert14to15(SQLiteDatabase db, int oldVersion) {
         final int versionTo = 15;
         boolean ok = false;
@@ -140,9 +147,9 @@ class MyDatabaseConverter {
             MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
             
             sql = "ALTER TABLE msg ADD COLUMN public BOOLEAN DEFAULT 0 NOT NULL";
-            db.execSQL(sql);
+            MyDatabase.execSQL(db, sql);
             sql = "UPDATE msg SET public=0";
-            db.execSQL(sql);
+            MyDatabase.execSQL(db, sql);
             
             ok = true;
         } catch (Exception e) {
@@ -157,7 +164,6 @@ class MyDatabaseConverter {
         }
         return ok ? versionTo : oldVersion;
     }
-    
 
     private int convert15to16(SQLiteDatabase db, int oldVersion) {
         final int versionTo = 16;
@@ -169,8 +175,44 @@ class MyDatabaseConverter {
             ok = MyAccountConverter.convert14to16(db, oldVersion) == versionTo;
             if (ok) {
                 sql = "DELETE FROM Origin WHERE _ID IN(6, 7)";
-                db.execSQL(sql);
+                MyDatabase.execSQL(db, sql);
             }
+        } catch (Exception e) {
+            MyLog.e(this, e);
+        }
+        if (ok) {
+            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
+        } else {
+            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
+                    + " to version " + versionTo
+                    + " SQL='" + sql +"'");
+        }
+        return ok ? versionTo : oldVersion;
+    }
+
+    private int convert16to17(SQLiteDatabase db, int oldVersion) {
+        final int versionTo = 17;
+        boolean ok = false;
+        String sql = "";
+        try {
+            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+
+            File avatarsDir = MyPreferences.getDataFilesDir("avatars", null);
+            if (avatarsDir.exists()) {
+                FileUtils.deleteFilesRecursively(avatarsDir);
+                avatarsDir.delete();
+            }
+            
+            sql = "DROP TABLE IF EXISTS Avatars";
+            MyDatabase.execSQL(db, sql);
+            sql = "CREATE TABLE download (_id INTEGER PRIMARY KEY AUTOINCREMENT,download_type INTEGER NOT NULL,user_id INTEGER,msg_id INTEGER,content_type INTEGER NOT NULL,valid_from INTEGER NOT NULL,url TEXT NOT NULL,loaded_date INTEGER,download_status INTEGER NOT NULL DEFAULT 0,file_name TEXT)";
+            MyDatabase.execSQL(db, sql);
+            sql = "CREATE INDEX idx_download_user ON download (user_id, download_status)";
+            MyDatabase.execSQL(db, sql);
+            sql = "CREATE INDEX idx_download_msg ON download (msg_id, content_type, download_status)";
+            MyDatabase.execSQL(db, sql);
+            
+            ok = true;
         } catch (Exception e) {
             MyLog.e(this, e);
         }

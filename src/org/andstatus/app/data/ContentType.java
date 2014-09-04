@@ -67,7 +67,7 @@ public enum ContentType {
             } 
             if ("jpg.jpeg.png.gif".contains(extension)) {
                 val = IMAGE;
-            } else if ("txt.html".contains(extension)) {
+            } else if ("txt.html.htm".contains(extension)) {
                 val = TEXT;
             }
         } 

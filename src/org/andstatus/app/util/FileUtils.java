@@ -142,4 +142,37 @@ public class FileUtils {
         return null;
     }
 
+    public static void deleteFilesRecursively(File rootDirectory) {
+        if (rootDirectory == null) {
+            return;
+        }
+        MyLog.i(TAG, "On delete all files inside '" + rootDirectory.getAbsolutePath() +"'");
+        MyLog.i(TAG, "Deleted files and dirs: " + deleteFilesRecursively(rootDirectory, 1));
+    }
+
+    private static long deleteFilesRecursively(File rootDirectory, long level) {
+        if (rootDirectory == null) {
+            return 0;
+        }
+        File[] files = rootDirectory.listFiles();
+        if (files == null) {
+            MyLog.v(TAG, "No files inside " + rootDirectory.getAbsolutePath());
+            return 0;
+        }
+        long nDeleted = 0;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                nDeleted += deleteFilesRecursively(file, level + 1);
+                if (level > 1) {
+                    file.delete();
+                    nDeleted++;
+                }
+            } else {
+                file.delete();
+                nDeleted++;
+            }
+        }
+        return nDeleted;
+    }
+    
 }

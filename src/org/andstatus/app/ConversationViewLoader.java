@@ -171,6 +171,7 @@ public class ConversationViewLoader {
         columnNames.add(User.IN_REPLY_TO_NAME);
         columnNames.add(User.RECIPIENT_NAME);
         columnNames.add(MsgOfUser.FAVORITED);
+        columnNames.add(MsgOfUser.REBLOGGED);
         columnNames.add(Msg.CREATED_DATE);
         columnNames.add(User.LINKED_USER_ID);
         if (MyPreferences.showAvatars()) {
