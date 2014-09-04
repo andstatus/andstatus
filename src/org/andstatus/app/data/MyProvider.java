@@ -687,7 +687,7 @@ public class MyProvider extends ContentProvider {
      */
     private static String tablesForTimeline(Uri uri, String[] projection) {
         TimelineTypeEnum tt = uriToTimelineType(uri);
-        boolean isCombined = uriToIsCombined(uri);
+        boolean isCombined = uriToIsCombined(uri) || tt == TimelineTypeEnum.USER;
         AccountUserIds userIds = new AccountUserIds(isCombined, uriToAccountUserId(uri));
 
         Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));

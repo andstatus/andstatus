@@ -376,7 +376,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             if (lastPosition >= itemCount) {
                 lastPosition = itemCount - 1;
             }
-            if (lastPosition >= 0) {
+            if (lastPosition >= PAGE_SIZE) {
                 lastItemId = la.getItemId(lastPosition);
             }
         }
@@ -1266,19 +1266,29 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     
     @Override
     public void onLoadFinished(MyLoader<Cursor> loader, Cursor cursor) {
-        MyLog.v(this, "onLoadFinished");
+        final String method = "onLoadFinished"; 
+        MyLog.v(this, method);
         TimelineTypeEnum timelineToReload = TimelineTypeEnum.UNKNOWN;
+        boolean requestNextPage = false;
         if (loader.isStarted()) {
             if (loader instanceof TimelineCursorLoader) {
                 TimelineCursorLoader myLoader = (TimelineCursorLoader) loader;
                 changeListContent(myLoader.getParams(), cursor);
                 timelineToReload = myLoader.getParams().timelineToReload;
+                if (!myLoader.getParams().loadOneMorePage && myLoader.getParams().lastItemId !=0 && cursor.getCount() < PAGE_SIZE) {
+                    MyLog.v(this, method + "; Requesting next page...");
+                    requestNextPage = true;
+                }
             } else {
-                MyLog.e(this, "Wrong type of loader: " + MyLog.objTagToString(loader));
+                MyLog.e(this, method + "; Wrong type of loader: " + MyLog.objTagToString(loader));
             }
         }
         setLoading(false);
-        launchReloadIfNeeded(timelineToReload);
+        if (requestNextPage) {
+            queryListData(true);
+        } else {
+            launchReloadIfNeeded(timelineToReload);
+        }
     }
     
     private void changeListContent(TimelineListParameters params, Cursor cursor) {

@@ -262,6 +262,7 @@ public class MyPreferences {
 
     public static File getDataFilesDir(String type, Boolean forcedUseExternalStorage, boolean logged) {
         final String method = "getDataFilesDir";
+        boolean logEnabled = false;
         File dir = null;
         StringBuilder textToLog = new StringBuilder();
         MyContext myContext = MyContextHolder.get();
@@ -292,7 +293,7 @@ public class MyPreferences {
                     }
                 }
             }
-            if (logged && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+            if (logged && logEnabled && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(TAG, method + "; " + (isStorageExternal(forcedUseExternalStorage) ? "External" : "Internal") 
                         + " path: '" + ( (dir == null) ? "(null)" : dir ) + "'");
             }

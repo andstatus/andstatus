@@ -64,20 +64,23 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
     @Override
     protected void onStartLoading() {
         final String method = "onStartLoading";
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, method + ", " + getParams());
-        }
+        logV(method, getParams());
         serviceConnector.registerReceiver(getContext());
         if (mayReuseResult()) {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                MyLog.v(this, method + " reusing result");
-            }
+            logV(method, "reusing result");
             deliverResultsAndClean(mCursor);
         } else if (getParams().reQuery || taskIsNotRunning()) {
             restartLoader();
         }
     }
 
+    private void logV(String method, Object obj) {
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            String message = (obj != null) ? obj.toString() : "";
+            MyLog.v(this, String.valueOf(instanceId) + " " + method + "; " + message);
+        }
+    }
+    
     private boolean taskIsNotRunning() {
         boolean isNotRunning = true;
         synchronized (asyncLoaderLock) {
@@ -103,24 +106,29 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
     private void restartLoader() {
         final String method = "restartLoader";
         boolean ended = false;
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, method +  ", status:" + getAsyncLoaderStatus());
-        }
         synchronized (asyncLoaderLock) {
+            if (MyLog.isLoggable(this, MyLog.VERBOSE) && asyncLoader != null) {
+                logV(method, "status:" + getAsyncLoaderStatus());
+            }
             if (cancelAsyncTask(method)) {
                 try {
                     asyncLoader = new AsyncLoader();
                     asyncLoader.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 } catch (Exception e) {
-                    MyLog.e(this, method, e);
+                    logD(method, "", e);
                     ended = true;
                     asyncLoader = null;
                 }
             }
         }
         if (ended) {
+            logV(method, "deliver null as result");
             deliverResultsAndClean(null);
         }
+    }
+    
+    private void logD(String method, String message, Throwable tr) {
+        MyLog.d(this, String.valueOf(instanceId) + " " + method + "; " + message, tr);
     }
     
     private void deliverResultsAndClean(Cursor cursor) {
@@ -146,14 +154,14 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
     private boolean cancelAsyncTask(String callerMethod) {
         boolean cancelled = false;
         synchronized (asyncLoaderLock) {
-            if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                MyLog.v(this, callerMethod + "-cancelAsyncTask status:" + getAsyncLoaderStatus());
+            if (MyLog.isLoggable(this, MyLog.VERBOSE) && asyncLoader != null) {
+                logV(callerMethod + "-cancelAsyncTask", "status:" + getAsyncLoaderStatus());
             }
             if (asyncLoader != null && asyncLoader.getStatus() == Status.RUNNING) {
                 if (asyncLoader.cancel(true)) {
-                    MyLog.v(this, callerMethod + " task cancelled");
+                    logV(callerMethod, "task cancelled");
                 } else {
-                    MyLog.d(this, callerMethod + " couldn't cancel task");
+                    logV(callerMethod, "couldn't cancel task");
                 }
             }
             asyncLoader = null;
@@ -227,7 +235,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
             getParams().timelineToReload = TimelineTypeEnum.UNKNOWN;
             
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                MyLog.v(this, (TextUtils.isEmpty(getParams().searchQuery) ? ""
+                logV("markStart", (TextUtils.isEmpty(getParams().searchQuery) ? ""
                         : "queryString=\"" + getParams().searchQuery + "\"; ")
                         + getParams().timelineType
                         + "; isCombined=" + (getParams().timelineCombined ? "yes" : "no"));
@@ -246,6 +254,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
         }
 
         private Cursor queryDatabase() {
+            final String method = "queryDatabase";
             Cursor cursor = null;
             for (int attempt = 0; attempt < 3 && !isCancelled(); attempt++) {
                 try {
@@ -254,12 +263,12 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
                                     getParams().sa.selectionArgs, getParams().sortOrder);
                     break;
                 } catch (IllegalStateException e) {
-                    MyLog.d(this, "Attempt " + attempt + " to prepare cursor", e);
+                    logD(method, "Attempt " + attempt + " to prepare cursor", e);
                     DbUtils.closeSilently(cursor);
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e2) {
-                        MyLog.d(this, "Attempt " + attempt + " to prepare cursor was interrupted",
+                        logD(method, "Attempt " + attempt + " to prepare cursor was interrupted",
                                 e2);
                         break;
                     }
@@ -320,7 +329,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
                     text.append(", " + cursorInfo);
                 }
                 text.append(", " + Double.valueOf((System.nanoTime() - getParams().startTime)/1.0E6).longValue() + " ms");
-                MyLog.v(this, text.toString());
+                logV("stats", text.toString());
             }
         }
     }
@@ -331,7 +340,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
             return;
         }
         final String method = "onReceive";
-        MyLog.v(this, method + ": " + commandData);
+        logV(method, commandData.toString());
         switch (commandData.getCommand()) {
             case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
@@ -339,7 +348,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
             case SEARCH_MESSAGE:
                 if (commandData.getResult().getDownloadedCount() > 0) {
                     if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                        MyLog.v(this, method + ": Content changed, downloaded " + commandData.getResult().getDownloadedCount());
+                        logV(method, "Content changed, downloaded " + commandData.getResult().getDownloadedCount());
                     }
                     onContentChanged();
                 }
@@ -352,7 +361,7 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
             case UPDATE_STATUS:
                 if (!commandData.getResult().hasError()) {
                     if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                        MyLog.v(this, method + ": Content changed, command " + commandData.getCommand());
+                        logV(method, "Content changed, command " + commandData.getCommand());
                     }
                     onContentChanged();
                 }

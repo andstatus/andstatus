@@ -203,7 +203,7 @@ class MyDatabaseConverter {
                 avatarsDir.delete();
             }
             
-            sql = "DROP TABLE IF EXISTS Avatars";
+            sql = "DROP TABLE avatar";
             MyDatabase.execSQL(db, sql);
             sql = "CREATE TABLE download (_id INTEGER PRIMARY KEY AUTOINCREMENT,download_type INTEGER NOT NULL,user_id INTEGER,msg_id INTEGER,content_type INTEGER NOT NULL,valid_from INTEGER NOT NULL,url TEXT NOT NULL,loaded_date INTEGER,download_status INTEGER NOT NULL DEFAULT 0,file_name TEXT)";
             MyDatabase.execSQL(db, sql);
