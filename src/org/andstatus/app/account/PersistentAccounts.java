@@ -327,6 +327,21 @@ public class PersistentAccounts {
         }
     }
 
+    public boolean isGlobalSearchSupported(MyAccount ma, boolean forAllAccounts) {
+        boolean yes = false;
+        if (forAllAccounts) {
+            for (MyAccount ma1 : collection()) {
+                if (ma1.isGlobalSearchSupported()) {
+                    yes = true;
+                    break;
+                }
+            }
+        } else if (ma != null) {
+            yes = ma.isGlobalSearchSupported();
+        }
+        return yes;
+    }
+    
     public static final String KEY_ACCOUNT = "account";
     public long onBackup(MyBackupDataOutput data, MyBackupDescriptor newDescriptor) throws IOException {
         long backedUpCount = 0;

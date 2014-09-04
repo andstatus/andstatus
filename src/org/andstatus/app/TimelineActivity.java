@@ -305,7 +305,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private boolean onSearchRequested(boolean appGlobalSearch) {
         final String method = "onSearchRequested";
         Bundle appSearchData = new Bundle();
-        appSearchData.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, mTimelineType.save());
+        appSearchData.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key,
+                appGlobalSearch ? TimelineTypeEnum.PUBLIC.save() : mTimelineType.save());
         appSearchData.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mTimelineIsCombined);
         appSearchData.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
         appSearchData.putBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, appGlobalSearch);
@@ -704,10 +705,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         item.setEnabled(enableReload);
         item.setVisible(enableReload);
 
-        boolean enableGlobalSearch = TimelineTypeEnum.PUBLIC == getTimelineType() 
-                && ma != null
-                && ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED
-                && ma.getConnection().isApiSupported(ApiRoutineEnum.SEARCH_MESSAGES);
+        boolean enableGlobalSearch = MyContextHolder.get().persistentAccounts()
+                .isGlobalSearchSupported(ma, isTimelineCombined());
         item = menu.findItem(R.id.global_search_menu_id);
         item.setEnabled(enableGlobalSearch);
         item.setVisible(enableGlobalSearch);
@@ -1275,7 +1274,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 TimelineCursorLoader myLoader = (TimelineCursorLoader) loader;
                 changeListContent(myLoader.getParams(), cursor);
                 timelineToReload = myLoader.getParams().timelineToReload;
-                if (!myLoader.getParams().loadOneMorePage && myLoader.getParams().lastItemId !=0 && cursor.getCount() < PAGE_SIZE) {
+                if (!myLoader.getParams().loadOneMorePage && myLoader.getParams().lastItemId != 0
+                        && cursor != null && cursor.getCount() < PAGE_SIZE) {
                     MyLog.v(this, method + "; Requesting next page...");
                     requestNextPage = true;
                 }

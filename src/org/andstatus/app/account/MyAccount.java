@@ -36,6 +36,7 @@ import org.andstatus.app.data.MyDatabaseConverterController;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.net.MbConfig;
 import org.andstatus.app.net.MbUser;
@@ -819,6 +820,11 @@ public final class MyAccount {
     
     public boolean isUsernameValidToStartAddingNewAccount() {
         return oAccountName.getOrigin().isUsernameValidToStartAddingNewAccount(getUsername(), isOAuth());
+    }
+    
+    public boolean isGlobalSearchSupported() {
+        return getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED
+                && getConnection().isApiSupported(ApiRoutineEnum.SEARCH_MESSAGES);        
     }
     
     public void requestSync() {
