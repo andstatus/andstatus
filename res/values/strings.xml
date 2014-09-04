@@ -356,7 +356,8 @@
 	<string name="title_preference_enter_sends_message">ENTER key sends message</string>
 	<string name="title_preference_frequency">Sync frequency</string>
 	<string name="title_preference_history_size">History Size</string>
-	<string name="title_preference_history_time">History Time</string>
+    <string name="title_preference_history_time">History Time</string>
+	<string name="title_preference_is_default_account">This is default account</string>
     <string name="title_preference_min_log_level">Minimum logging level</string>
 	<string name="title_preference_notification_sound">Notification Ringtone</string>
 	<string name="title_preference_notifications">Notifications</string>

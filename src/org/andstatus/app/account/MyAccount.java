@@ -96,6 +96,8 @@ public final class MyAccount {
      */
     public static final String KEY_OAUTH = "oauth";
 
+    public static final String KEY_IS_DEFAULT_ACCOUNT = "is_default_account";
+    
     /**
      * Storing version of the account data
      */

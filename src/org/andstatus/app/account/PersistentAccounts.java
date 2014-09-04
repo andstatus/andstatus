@@ -70,7 +70,7 @@ public class PersistentAccounts {
     }
     
     public PersistentAccounts initialize(MyContext myContext) {
-        defaultAccountName = MyPreferences.getDefaultSharedPreferences().getString(KEY_DEFAULT_ACCOUNT_NAME, "");
+        defaultAccountName = getDefaultAccountName();
         persistentAccounts.clear();
         android.accounts.AccountManager am = AccountManager.get(myContext.context());
         android.accounts.Account[] aa = am.getAccountsByType( AuthenticatorService.ANDROID_ACCOUNT_TYPE );
@@ -85,6 +85,10 @@ public class PersistentAccounts {
         calculateDistinctOriginsCount();
         MyLog.v(this, "Account list initialized, " + persistentAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
         return this;
+    }
+
+    public String getDefaultAccountName() {
+        return MyPreferences.getDefaultSharedPreferences().getString(KEY_DEFAULT_ACCOUNT_NAME, "");
     }
 
     public int getDistinctOriginsCount() {
@@ -310,7 +314,7 @@ public class PersistentAccounts {
      * Set provided MyAccount as a default one.
      * Default account selection is persistent
      */
-    private void setDefaultAccount(MyAccount ma) {
+    public void setDefaultAccount(MyAccount ma) {
         if (ma != null) {
             defaultAccountName = ma.getAccountName();
         }

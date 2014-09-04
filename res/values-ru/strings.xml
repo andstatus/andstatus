@@ -356,7 +356,8 @@
 	<string name="title_preference_frequency">Частота обновлений (синхронизации)</string>
 	<string name="title_preference_history_size">Размер истории</string>
 	<string name="title_preference_history_time">Длительность хранения истории</string>
-    <string name="title_preference_mark_replies_in_timeline">Отметить Ответы мне на Линии времени</string>
+    <string name="title_preference_is_default_account">Это аккаунт по умолчанию</string>
+	<string name="title_preference_mark_replies_in_timeline">Отметить Ответы мне на Линии времени</string>
 	<string name="title_preference_min_log_level">Минимальный уровень журналирования</string>
 	<string name="title_preference_notification_sound">Мелодия звонка для уведомлений</string>
 	<string name="title_preference_notifications">Уведомления</string>

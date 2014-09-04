@@ -109,6 +109,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     private EditTextPreference usernameText;
     private EditTextPreference passwordText;
     private Preference addAccountOrVerifyCredentials;
+    private CheckBoxPreference defaultAccountCheckBox;
     private boolean onSharedPreferenceChangedIsBusy = false;
     private MyActionBar actionBar;
 
@@ -137,6 +138,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         oAuthCheckBox = (CheckBoxPreference) findPreference(MyAccount.KEY_OAUTH);
         usernameText = (EditTextPreference) findPreference(MyAccount.KEY_USERNAME_NEW);
         passwordText = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
+        defaultAccountCheckBox = (CheckBoxPreference) findPreference(MyAccount.KEY_IS_DEFAULT_ACCOUNT);
 
         actionBar.attach();
         
@@ -375,6 +377,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         addAccountOrVerifyCredentials.setTitle(titleResId);
         addAccountOrVerifyCredentials.setSummary(summary);
         addAccountOrVerifyCredentials.setEnabled(addAccountOrVerifyCredentialsEnabled);
+
+        boolean isDefaultAccount = ma.getAccountName().equals(MyContextHolder.get().persistentAccounts().getDefaultAccountName());
+        defaultAccountCheckBox.setEnabled(state.builder.isPersistent() && !isDefaultAccount);
+        defaultAccountCheckBox.setChecked(isDefaultAccount);
         
         String title = getText(R.string.account_settings_activity_title).toString();
         if (ma.isValid()) {
@@ -577,9 +583,13 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      */
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
-        MyLog.d(TAG, "Preference clicked:" + preference.toString());
+        MyLog.d(TAG, "Preference clicked:" + preference.getKey());
         if (preference.getKey().compareTo(MyPreferences.KEY_VERIFY_CREDENTIALS) == 0) {
             verifyCredentials(true);
+        }
+        if (preference.getKey().compareTo(MyAccount.KEY_IS_DEFAULT_ACCOUNT) == 0) {
+            MyContextHolder.get().persistentAccounts().setDefaultAccount(state.getAccount());
+            showUserPreferences();
         }
         return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
