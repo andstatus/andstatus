@@ -80,7 +80,7 @@
             android:textColor="?attr/messageBodyColor"
             android:textStyle="?attr/messageBodyStyle" />
 
-        <ImageView
+        <org.andstatus.app.AttachedImageView
             android:id="@+id/attached_image"
             android:layout_width="match_parent"
             android:layout_height="200dip"

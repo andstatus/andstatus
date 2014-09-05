@@ -24,10 +24,14 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.net.ConnectionException;
+import org.andstatus.app.net.MbAttachment;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class ConversationInserter extends InstrumentationTestCase {
     private static volatile int iteration = 0;
@@ -70,7 +74,7 @@ public class ConversationInserter extends InstrumentationTestCase {
         mySetup();
     }
     
-    private void insertAndTestConversation() throws ConnectionException {
+    private void insertAndTestConversation() throws ConnectionException, MalformedURLException {
         assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, TestSuite.CONVERSATION_ORIGIN_TYPE  );
         
         MbUser author2 = buildUserFromOid("acct:second@identi.ca");
@@ -85,6 +89,12 @@ public class ConversationInserter extends InstrumentationTestCase {
         MbMessage reply2 = buildPumpIoMessage(author2, "Reply 2 to selected is public", selected, null);
         addPublicMessage(reply2, true);
         MbMessage reply3 = buildPumpIoMessage(getAuthor1(), "Reply 3 to selected by the same author", selected, null);
+        reply3.attachments
+        .add(MbAttachment
+                .fromUrlAndContentType(
+                        new URL(
+                                "http://www.publicdomainpictures.net/pictures/100000/nahled/broadcasting-tower-14081029181fC.jpg"),
+                        ContentType.IMAGE));
         addMessage(selected);
         addMessage(reply3);
         addMessage(reply1);
@@ -100,11 +110,19 @@ public class ConversationInserter extends InstrumentationTestCase {
         addPublicMessage(reply7, true);
         
         MbMessage reply8 = buildPumpIoMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
+        
         MbMessage reply9 = buildPumpIoMessage(author2, "Reply 9 to Reply 7", reply7, null);
+        reply9.attachments
+                .add(MbAttachment
+                        .fromUrlAndContentType(
+                                new URL(
+                                        "http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg"),
+                                ContentType.IMAGE));
         addMessage(reply9);
+        
         MbMessage reply10 = buildPumpIoMessage(author3, "Reply 10 to Reply 8", reply8, null);
         addMessage(reply10);
-        MbMessage reply11 = buildPumpIoMessage(author2, "Reply 11 to Reply 7 with " + TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
+        MbMessage reply11 = buildPumpIoMessage(author2, "Reply 11 to Reply 7, " + TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
         addPublicMessage(reply11, true);
     }
 

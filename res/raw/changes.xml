@@ -37,6 +37,22 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="11.0" android:versionCode="107"
+        versionDate="2014-09-XX"
+        versionTitle="Viewing attached images">
+        <changes>
+            <change>Added an option to view attached images for all supported systems. Turn this option off
+                in Menu-&gt;Settings-&gt;Appearance-&gt;&quot;Display attached images&quot;.
+                See <a href="https://github.com/andstatus/andstatus/issues/93" >Issue #93</a>.</change>
+            <change>Added an option to set Default Account (account, which timeline is
+                opened on application launch).</change>
+            <change>Global search is available from any timeline. Switch to Public timeline
+                is automatic.</change>
+            <change>Fixed: User timeline worked correctly in Combined mode only.</change>    
+            <change>Fixed: Cannot load next timeline page if previous position was stored,
+                when too few rows existed.</change>    
+            </changes>
+    </release>
     <release android:versionName="10.1" android:versionCode="106"
         versionDate="2014-08-23"
         versionTitle="Mark replies to myself in Timeline. Twitter for old devices back again">

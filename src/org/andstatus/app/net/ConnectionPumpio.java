@@ -513,13 +513,11 @@ public class ConnectionPumpio extends Connection {
             message.url = jso.optString("url");
 
             if (jso.has("fullImage") || jso.has("image")) {
-                MbAttachment mbAttachment =  MbAttachment.fromOriginAndOid(data.getOriginId(), jso.optString("id"));
-                mbAttachment.url = getImageUrl(jso, "fullImage");
-                mbAttachment.thumbUrl = getImageUrl(jso, "image");
-                if (mbAttachment.url == null) {
-                    mbAttachment.url = mbAttachment.thumbUrl;
+                URL url = getImageUrl(jso, "fullImage");
+                if (url == null) {
+                    url = getImageUrl(jso, "image");
                 }
-                mbAttachment.contentType = ContentType.fromUrl(mbAttachment.url, ContentType.IMAGE);
+                MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, ContentType.IMAGE);
                 if (mbAttachment.isValid()) {
                     message.attachments.add(mbAttachment);
                 } else {

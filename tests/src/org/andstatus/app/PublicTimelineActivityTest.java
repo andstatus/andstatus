@@ -58,18 +58,6 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         
         activity = getActivity();
         TestSuite.waitForListLoaded(this, activity);
-
-        if ( ma.getUserId() != activity.getCurrentMyAccountUserId()) {
-            activity.runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    activity.onNewIntent(intent);
-                }
-                
-            });
-            TestSuite.waitForListLoaded(this, activity);
-        }
         
         assertEquals(ma.getUserId(), activity.getCurrentMyAccountUserId());
         

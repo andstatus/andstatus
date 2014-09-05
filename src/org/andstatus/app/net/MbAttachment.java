@@ -16,8 +16,6 @@
 
 package org.andstatus.app.net;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.data.ContentType;
 
 import java.net.URL;
@@ -28,13 +26,10 @@ public class MbAttachment {
     public URL thumbUrl = null;
     public ContentType contentType = ContentType.UNKNOWN;
 
-    // In our system
-    public long originId = 0L;
-
-    public static MbAttachment fromOriginAndOid(long originId, String oid) {
+    public static MbAttachment fromUrlAndContentType(URL urlIn, ContentType contentTypeIn) {
         MbAttachment attachment = new MbAttachment();
-        attachment.originId = originId;
-        attachment.oid = oid;
+        attachment.url = urlIn;
+        attachment.contentType = ContentType.fromUrl(urlIn, contentTypeIn);
         return attachment;
     }
 
@@ -43,7 +38,7 @@ public class MbAttachment {
     }
     
     public boolean isValid() {
-        return url != null && !TextUtils.isEmpty(oid) && contentType != ContentType.UNKNOWN && originId != 0L;
+        return url != null && contentType != ContentType.UNKNOWN;
     }
 
     @Override
@@ -52,7 +47,6 @@ public class MbAttachment {
         int result = 1;
         result = prime * result + ((contentType == null) ? 0 : contentType.hashCode());
         result = prime * result + ((oid == null) ? 0 : oid.hashCode());
-        result = prime * result + (int) (originId ^ (originId >>> 32));
         result = prime * result + ((thumbUrl == null) ? 0 : thumbUrl.hashCode());
         result = prime * result + ((url == null) ? 0 : url.hashCode());
         return result;
@@ -74,8 +68,6 @@ public class MbAttachment {
                 return false;
         } else if (!oid.equals(other.oid))
             return false;
-        if (originId != other.originId)
-            return false;
         if (thumbUrl == null) {
             if (other.thumbUrl != null)
                 return false;
@@ -92,6 +84,6 @@ public class MbAttachment {
     @Override
     public String toString() {
         return "MbAttachment [oid=" + oid + ", url=" + url + ", thumbUrl=" + thumbUrl
-                + ", contentType=" + contentType + ", originId=" + originId + "]";
+                + ", contentType=" + contentType + "]";
     }
 }

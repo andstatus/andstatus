@@ -141,11 +141,8 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         MbMessage msg = connection.getMessage("503799441900314624");
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);
-        MbAttachment attachment = MbAttachment.fromOriginAndOid(connectionData.getOriginId(), 
-                "503799441740922882");
-        attachment.url = new URL("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg");
-        attachment.contentType = ContentType.IMAGE;
-        attachment.thumbUrl = new URL("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg:thumb");
+        MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
+                "https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"), ContentType.IMAGE);
         assertEquals("attachment", attachment, msg.attachments.get(0));
         attachment.url = new URL("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg");
         assertNotSame("attachment", attachment, msg.attachments.get(0));

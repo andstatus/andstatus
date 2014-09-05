@@ -271,11 +271,8 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         MbMessage msg = connection.getMessage("w9wME-JVQw2GQe6POK7FSQ");
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);
-        MbAttachment attachment = MbAttachment.fromOriginAndOid(connectionData.getOriginId(), 
-                "https://io.jpope.org/api/image/L0wcaKS8Te-DME_sgSETNw");
-        attachment.url = new URL("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg");
-        attachment.contentType = ContentType.IMAGE;
-        attachment.thumbUrl = new URL("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw_thumb.jpg");
+        MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
+                "https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg"), ContentType.IMAGE);
         assertEquals("attachment", attachment, msg.attachments.get(0));
     }
     

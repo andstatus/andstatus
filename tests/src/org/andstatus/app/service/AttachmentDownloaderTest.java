@@ -48,10 +48,12 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
         String body = "A message with an image attachment";
         MessageInserter mi = new MessageInserter(ma);
         MbMessage message = mi.buildMessage(mi.buildUser(), body, null, null);
-        MbAttachment attachment = MbAttachment.fromOriginAndOid(ma.getOriginId(), "anything");
-        attachment.contentType = ContentType.IMAGE;
-        attachment.url = new URL("http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg");
-        message.attachments.add(attachment);
+        message.attachments
+                .add(MbAttachment
+                        .fromUrlAndContentType(
+                                new URL(
+                                        "http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),
+                                ContentType.IMAGE));
         long msgId = mi.addMessage(message);
         
         DownloadData dd = DownloadData.newForMessage(msgId, message.attachments.get(0).contentType, null);

@@ -141,11 +141,9 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         msg.oid += "_" + TestSuite.TESTRUN_UID;
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);
-        MbAttachment attachment = MbAttachment.fromOriginAndOid(connectionData.getOriginId(), 
-                "https://quitter.se/file/mcscx-20131110T222250-427wlgn.png");
-        attachment.url = new URL("https://quitter.se/file/mcscx-20131110T222250-427wlgn.png");
-        attachment.contentType = ContentType.IMAGE;
-        attachment.thumbUrl = new URL("https://quitter.se/file/mcscx-20131110T222250-3xpl5ld.png");
+        MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
+                "https://quitter.se/file/mcscx-20131110T222250-427wlgn.png")
+                , ContentType.IMAGE);
         assertEquals("attachment", attachment, msg.attachments.get(0));
         return msg;
     }

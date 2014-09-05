@@ -128,15 +128,11 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
                     JSONArray jArr = entities.getJSONArray(ATTACHMENTS_FIELD_NAME);
                     for (int ind = 0; ind < jArr.length(); ind++) {
                         JSONObject attachment = (JSONObject) jArr.get(ind);
-                        MbAttachment mbAttachment =  MbAttachment.fromOriginAndOid(data.getOriginId(), attachment.optString("id_str"));
-                        mbAttachment.url = FileUtils.json2Url(attachment, "media_url_https");
-                        if (mbAttachment.url == null) {
-                            mbAttachment.url = FileUtils.json2Url(attachment, "media_url_http");
+                        URL url = FileUtils.json2Url(attachment, "media_url_https");
+                        if (url == null) {
+                            url = FileUtils.json2Url(attachment, "media_url_http");
                         }
-                        if (mbAttachment.url != null) {
-                            mbAttachment.thumbUrl = new URL(mbAttachment.url.toExternalForm() + ":thumb");
-                            mbAttachment.contentType = ContentType.fromUrl(mbAttachment.url, ContentType.IMAGE);
-                        }
+                        MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, ContentType.IMAGE);
                         if (mbAttachment.isValid()) {
                             message.attachments.add(mbAttachment);
                         } else {
@@ -144,8 +140,6 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
                         }
                     }
                 } catch (JSONException e) {
-                    MyLog.d(this, method, e);
-                } catch (MalformedURLException e) {
                     MyLog.d(this, method, e);
                 }
             }

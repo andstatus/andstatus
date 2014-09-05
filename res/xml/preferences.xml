@@ -123,7 +123,7 @@
 					android:summaryOff="@string/summary_preference_show_avatars_off"
 					android:summaryOn="@string/summary_preference_show_avatars_on" />
                 <CheckBoxPreference android:key="show_attached_images"
-                    android:defaultValue="false"
+                    android:defaultValue="true"
                     android:title="@string/title_preference_show_attached_images" />
 				<CheckBoxPreference android:key="enter_sends_message"
 					android:title="@string/title_preference_enter_sends_message"

@@ -429,6 +429,6 @@ public class MyPreferences {
     }
 
     public static boolean showAttachedImages() {
-        return getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_SHOW_ATTACHED_IMAGES, false);
+        return getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_SHOW_ATTACHED_IMAGES, true);
     }
 }

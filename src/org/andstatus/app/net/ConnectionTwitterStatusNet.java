@@ -138,12 +138,10 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
                 for (int ind = 0; ind < jArr.length(); ind++) {
                     JSONObject attachment = (JSONObject) jArr.get(ind);
                     URL url = FileUtils.json2Url(attachment, "url");
-                    MbAttachment mbAttachment = MbAttachment.fromOriginAndOid(data.getOriginId(),
-                            url != null ? url.toExternalForm() : "");
-                    mbAttachment.url = url;
-                    mbAttachment.thumbUrl = FileUtils.json2Url(attachment, "thumb_url");
-                    mbAttachment.contentType = ContentType.fromUrl(mbAttachment.url,
-                            attachment.optString("mimetype"));
+                    if (url == null) {
+                        url = FileUtils.json2Url(attachment, "thumb_url");
+                    }
+                    MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, ContentType.fromUrl(url, attachment.optString("mimetype")));
                     if (mbAttachment.isValid()) {
                         message.attachments.add(mbAttachment);
                     } else {

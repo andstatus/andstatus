@@ -18,21 +18,21 @@ package org.andstatus.app;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import org.andstatus.app.support.android.v11.widget.MyImageView;
 import org.andstatus.app.util.MyLog;
 
 /**
  * This custom ImageView allows dynamically crop its image according to the height of the other view
  * @author yvolk@yurivolkov.com
  */
-public class ConversationIndentImageView extends ImageView {
+public class ConversationIndentImageView extends MyImageView {
     private View referencedView;
     private int widthPixels;
     private static final int MIN_HEIGH = 80;
     /** It's a height of the underlying bitmap (not cropped) */
-    private static final int MAX_HEIGH = 1000;
+    private static final int MAX_HEIGH = 2500;
     
     public ConversationIndentImageView(Context contextIn, View referencedViewIn, int widthPixelsIn) {
         super(contextIn);
@@ -47,8 +47,9 @@ public class ConversationIndentImageView extends ImageView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        final String method = "onMeasure";
         int height = referencedView.getMeasuredHeight();
-        MyLog.v(this, "onMeasure, indent=" + widthPixels + ", refHeight=" + height + ", spec=" + MeasureSpec.toString(heightMeasureSpec));
+        MyLog.v(this, method + "; indent=" + widthPixels + ", refHeight=" + height + ", spec=" + MeasureSpec.toString(heightMeasureSpec));
         int mode = MeasureSpec.EXACTLY;
         if (height == 0) {
             height = MAX_HEIGH;
@@ -66,29 +67,5 @@ public class ConversationIndentImageView extends ImageView {
             measuredHeight = myResolveSizeAndState(height, heightMeasureSpec, 0);
         }
         setMeasuredDimension(measuredWidth, measuredHeight);
-    }
-
-    /**
-     * This very useful function is since API 11: {@link #resolveSizeAndState(int, int, int)}
-     * so we copy-pasted it here for compatibility with API 8 
-     */
-    private static int myResolveSizeAndState(int size, int measureSpec, int childMeasuredState) {
-        int specMode = MeasureSpec.getMode(measureSpec);
-        int specSize =  MeasureSpec.getSize(measureSpec);
-        int result = size;
-        switch (specMode) {
-        case MeasureSpec.AT_MOST:
-            if (specSize < size) {
-                result = specSize | MEASURED_STATE_TOO_SMALL;
-            }
-            break;
-        case MeasureSpec.EXACTLY:
-            result = specSize;
-            break;
-        case MeasureSpec.UNSPECIFIED:
-        default:
-            break;
-        }
-        return result | (childMeasuredState&MEASURED_STATE_MASK);
     }
 }

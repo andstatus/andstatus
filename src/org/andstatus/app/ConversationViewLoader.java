@@ -395,6 +395,14 @@ public class ConversationViewLoader {
             MySimpleCursorAdapter.setBackgroundCompat(messageIndented, context.getResources().getDrawable(R.drawable.message_current_background));
         }
 
+        AttachedImageView imageView = (AttachedImageView) messageView.findViewById(R.id.attached_image);
+        if (oMsg.imageDrawable != null) {
+            imageView.setImageDrawable(oMsg.imageDrawable);
+            imageView.setVisibility(View.VISIBLE);
+        } else {
+            imageView.setVisibility(View.GONE);
+        }
+        
         int viewToTheLeftId = 0;
         if (oMsg.indentLevel > 0) {
             View divider = messageView.findViewById(R.id.divider);
@@ -431,14 +439,6 @@ public class ConversationViewLoader {
             ((ViewGroup) messageIndented.getParent()).addView(avatarView);
         }
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
-        
-        ImageView imageView = (ImageView) messageView.findViewById(R.id.attached_image);
-        if (oMsg.imageDrawable != null) {
-            imageView.setImageDrawable(oMsg.imageDrawable);
-            imageView.setVisibility(View.VISIBLE);
-        } else {
-            imageView.setVisibility(View.GONE);
-        }
         
         TextView id = (TextView) messageView.findViewById(R.id.id);
         id.setText(Long.toString(oMsg.msgId));

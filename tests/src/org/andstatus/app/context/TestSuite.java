@@ -239,7 +239,7 @@ public class TestSuite extends TestCase {
     public static final String TWITTER_TEST_ACCOUNT_NAME = TWITTER_TEST_ACCOUNT_USERNAME + "/" + TWITTER_TEST_ORIGIN_NAME;
     public static final String PLAIN_TEXT_MESSAGE_OID = "2167283" + TESTRUN_UID;
     public static final String PUBLIC_MESSAGE_TEXT = "UniqueText" + TESTRUN_UID;
-    public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "AndStatus";
+    public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "Public_in_AndStatus_" + TESTRUN_UID;
     
     public static String getTestOriginHost(String testOriginName) {
         return TEST_ORIGIN_PARENT_HOST + "." + testOriginName;
