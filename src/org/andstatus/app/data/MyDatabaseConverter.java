@@ -212,6 +212,22 @@ class MyDatabaseConverter {
             sql = "CREATE INDEX idx_download_msg ON download (msg_id, content_type, download_status)";
             MyDatabase.execSQL(db, sql);
             
+            sql = "ALTER TABLE origin RENAME TO oldorigin";
+            MyDatabase.execSQL(db, sql);
+            sql = "DROP INDEX idx_origin_name";
+            MyDatabase.execSQL(db, sql);
+
+            sql = "CREATE TABLE origin (_id INTEGER PRIMARY KEY AUTOINCREMENT,origin_type_id INTEGER NOT NULL,origin_name TEXT NOT NULL,origin_url TEXT NOT NULL,ssl BOOLEAN DEFAULT 0 NOT NULL,allow_html BOOLEAN DEFAULT 0 NOT NULL,text_limit INTEGER NOT NULL,short_url_length INTEGER NOT NULL DEFAULT 0)";
+            MyDatabase.execSQL(db, sql);
+            sql = "CREATE UNIQUE INDEX idx_origin_name ON origin (origin_name)";
+            MyDatabase.execSQL(db, sql);
+            sql = "INSERT INTO origin (_id, origin_type_id, origin_name, origin_url, ssl, allow_html, text_limit, short_url_length)" + 
+            " SELECT _id, origin_type_id, origin_name, host, ssl, allow_html, text_limit, short_url_length" +
+                    " FROM oldorigin";
+            MyDatabase.execSQL(db, sql);
+            sql = "DROP TABLE oldorigin";
+            MyDatabase.execSQL(db, sql);
+            
             ok = true;
         } catch (Exception e) {
             MyLog.e(this, e);
