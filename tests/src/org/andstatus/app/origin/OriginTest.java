@@ -7,6 +7,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.MbConfig;
 import org.andstatus.app.net.OAuthClientKeysTest;
 import org.andstatus.app.origin.Origin.Builder;
+import org.andstatus.app.util.UrlUtils;
 
 public class OriginTest  extends InstrumentationTestCase {
 
@@ -66,22 +67,24 @@ public class OriginTest  extends InstrumentationTestCase {
             String seed = Long.toString(System.nanoTime());
             String originName = "snTest" + seed;
             OriginType originType = OriginType.STATUSNET;
-            String host = "sn" + seed + ".example.org";
+            String hostOrUrl = "sn" + seed + ".example.org";
             boolean isSsl = true;
             boolean allowHtml = true;
-            createOneOrigin(originType, originName, host, isSsl, allowHtml);
+            createOneOrigin(originType, originName, hostOrUrl, isSsl, allowHtml);
+            createOneOrigin(originType, originName, "https://" + hostOrUrl + "/somepath", isSsl, allowHtml);
+            createOneOrigin(originType, originName, "https://" + hostOrUrl + "/pathwithslash/", isSsl, allowHtml);
             isSsl = false;
-            Origin.Builder builder = createOneOrigin(originType, originName, host, isSsl, allowHtml);
+            Origin.Builder builder = createOneOrigin(originType, originName, hostOrUrl, isSsl, allowHtml);
             Origin origin = builder.build();
             assertEquals("New origin has no children", false, origin.hasChildren());
             assertEquals("Origin deleted", true, builder.delete());
         }
         
-        public static Builder createOneOrigin(OriginType originType, String originName, String host,
+        public static Builder createOneOrigin(OriginType originType, String originName, String hostOrUrl,
                 boolean isSsl, boolean allowHtml) {
             Origin.Builder builder = new Origin.Builder(originType);
             builder.setName(originName);
-            builder.setHost(host);
+            builder.setHostOrUrl(hostOrUrl);
             builder.setSsl(isSsl);
             builder.setHtmlContentAllowed(allowHtml);
             builder.save();
@@ -90,23 +93,28 @@ public class OriginTest  extends InstrumentationTestCase {
                 OAuthClientKeysTest.insertTestKeys(origin);
             }
             
-            checkAttributes(originName, host, isSsl, allowHtml, origin);
+            checkAttributes(originName, hostOrUrl, isSsl, allowHtml, origin);
             
             MyContextHolder.get().persistentOrigins().initialize();
             Origin origin2 = MyContextHolder.get().persistentOrigins().fromId(origin.getId());
-            checkAttributes(originName, host, isSsl, allowHtml, origin2);
+            checkAttributes(originName, hostOrUrl, isSsl, allowHtml, origin2);
             
             return builder;
         }
 
-        private static void checkAttributes(String originName, String host, boolean isSsl,
+        private static void checkAttributes(String originName, String hostOrUrl, boolean isSsl,
                 boolean allowHtml, Origin origin) {
             assertTrue("Origin " + originName + " added", origin.isPersistent());
             assertEquals(originName, origin.getName());
-            if (origin.canSetHostOfOrigin()) {
-                assertEquals(host, origin.getHost());
+            if (origin.canSetUrlOfOrigin()) {
+                if (UrlUtils.isHostOnly(UrlUtils.buildUrl(hostOrUrl, isSsl))) {
+                    assertEquals((isSsl ? "https" : "http") + "://" + hostOrUrl, origin.getUrl().toExternalForm());
+                } else {
+                    String hostOrUrl2 = hostOrUrl.endsWith("/") ? hostOrUrl : hostOrUrl + "/";
+                    assertEquals("Input host or URL: '" + hostOrUrl + "'", UrlUtils.buildUrl(hostOrUrl2, origin.isSsl()), origin.getUrl());
+                }
             } else {
-                assertEquals(origin.getOriginType().hostDefault, origin.getHost());
+                assertEquals(origin.getOriginType().urlDefault, origin.getUrl());
             }
             assertEquals(isSsl, origin.isSsl());
             assertEquals(allowHtml, origin.isHtmlContentAllowed());

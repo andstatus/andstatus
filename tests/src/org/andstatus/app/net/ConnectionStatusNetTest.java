@@ -64,7 +64,7 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         connection.setAccountData(connectionData);
         httpConnection = (HttpConnectionMock) connection.http;
 
-        httpConnection.data.host = origin.getHost();
+        httpConnection.data.originUrl = origin.getUrl();
     }
 
     public void testGetPublicTimeline() throws ConnectionException {

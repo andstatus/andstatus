@@ -17,7 +17,6 @@
 package org.andstatus.app.net;
 
 import android.test.InstrumentationTestCase;
-import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
@@ -25,6 +24,7 @@ import org.andstatus.app.net.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UrlUtils;
 
 public class OAuthClientKeysTest extends InstrumentationTestCase {
 
@@ -42,7 +42,7 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
        final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
        final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
 
-       connectionData.host = "example.com";
+       connectionData.originUrl = UrlUtils.string2Url("https://example.com");
        OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
        keys1.clear();
        assertEquals("Keys are cleared", false, keys1.areKeysPresent());
@@ -63,8 +63,8 @@ public class OAuthClientKeysTest extends InstrumentationTestCase {
                 origin.getConnectionData(TriState.UNKNOWN));
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
-        if (TextUtils.isEmpty(connectionData.host)) {
-            connectionData.host = "identi.ca";
+        if (connectionData.originUrl == null) {
+            connectionData.originUrl = UrlUtils.string2Url("https://identi.ca");
         }
         OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
         if (!keys1.areKeysPresent()) {

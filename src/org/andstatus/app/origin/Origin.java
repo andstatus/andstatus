@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@ import org.andstatus.app.net.Connection.ApiEnum;
 import org.andstatus.app.net.MbConfig;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UrlUtils;
+
+import java.net.URL;
 
 /**
  * Microblogging system (twitter.com, identi.ca, ... ) where messages are being
@@ -47,18 +50,15 @@ public class Origin {
     protected int shortUrlLength = 0;
 
     protected OriginType originType = OriginType.UNKNOWN;
-    public static final String KEY_ORIGIN_TYPE = "origin_type";
 
     protected String name = "";
     public static final String KEY_ORIGIN_NAME = "origin_name";
 
     protected long id = 0;
 
-    protected String host = "";
-    public static final String KEY_HOST_OF_ORIGIN = "host_of_origin";
+    protected URL url = null;
 
     protected boolean ssl = true;
-    public static final String KEY_SSL = "ssl";
 
     private boolean allowHtml = false;
 
@@ -100,7 +100,7 @@ public class Origin {
     public boolean isValid() {
         return originType != OriginType.UNKNOWN
                 && isNameValid()
-                && hostIsValid()
+                && urlIsValid()
                 && (isSsl() == originType.sslDefault || originType.canChangeSsl);
     }
 
@@ -175,8 +175,8 @@ public class Origin {
         return OriginConnectionData.fromOrigin(this, triStateOAuth);
     }
 
-    public boolean canSetHostOfOrigin() {
-        return originType.canSetHostOfOrigin();
+    public boolean canSetUrlOfOrigin() {
+        return originType.canSetUrlOfOrigin();
     }
 
     public boolean isNameValid() {
@@ -192,27 +192,16 @@ public class Origin {
         return ok;
     }
 
-    public String getHost() {
-        return host;
+    public URL getUrl() {
+        return url;
     }
 
-    public boolean hostIsValid() {
-        if (originType.canSetHostOfOrigin()) {
-            return hostIsValid(host);
+    public boolean urlIsValid() {
+        if (originType.canSetUrlOfOrigin()) {
+            return url != null;
         } else {
             return true;
         }
-    }
-
-    public boolean hostIsValid(String host) {
-        boolean ok = false;
-        if (host != null) {
-            // From
-            // http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
-            String validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
-            ok = host.matches(validHostnameRegex);
-        }
-        return ok;
     }
 
     public boolean canChangeSsl() {
@@ -270,7 +259,7 @@ public class Origin {
             origin = new Origin();
             origin.originType = OriginType.UNKNOWN;
         }
-        origin.host = origin.originType.hostDefault;
+        origin.url = origin.originType.urlDefault;
         origin.ssl = origin.originType.sslDefault;
         origin.allowHtml = origin.originType.allowHtmlDefault;
         origin.shortUrlLength = origin.originType.shortUrlLengthDefault;
@@ -280,7 +269,7 @@ public class Origin {
 
     @Override
     public String toString() {
-        return "Origin [name:" + getName() + "; host:" + getHost() + "; type:"
+        return "Origin [name:" + getName() + "; url:" + getUrl() + "; type:"
                 + originType.toString() + "]";
     }
 
@@ -325,15 +314,8 @@ public class Origin {
 
             origin.id = c.getLong(c.getColumnIndex(MyDatabase.Origin._ID));
             origin.name = c.getString(c.getColumnIndex(MyDatabase.Origin.ORIGIN_NAME));
-            if (originType1.canSetHostOfOrigin()) {
-                String host1 = c.getString(c.getColumnIndex(MyDatabase.Origin.HOST));
-                if (origin.hostIsValid(host1)) {
-                    origin.host = host1;
-                }
-            }
-            if (originType1.canChangeSsl) {
-                origin.ssl = (c.getInt(c.getColumnIndex(MyDatabase.Origin.SSL)) != 0);
-            }
+            setHostOrUrl(c.getString(c.getColumnIndex(MyDatabase.Origin.ORIGIN_URL)));
+            setSsl(c.getInt(c.getColumnIndex(MyDatabase.Origin.SSL)) != 0);
             origin.allowHtml = (c.getInt(c.getColumnIndex(MyDatabase.Origin.ALLOW_HTML)) != 0);
             if (originType1.shortUrlLengthDefault == 0) {
                 origin.shortUrlLength = c.getInt(c
@@ -352,7 +334,7 @@ public class Origin {
             Origin cloned = getEmpty(original.originType);
             cloned.id = original.id;
             cloned.name = original.name;
-            cloned.host = original.host;
+            cloned.url = original.url;
             cloned.ssl = original.ssl;
             cloned.allowHtml = original.allowHtml;
             cloned.shortUrlLength = original.shortUrlLength;
@@ -371,10 +353,19 @@ public class Origin {
             return this;
         }
 
-        public Builder setHost(String hostOfOrigin) {
-            if (origin.originType.canSetHostOfOrigin()
-                    && origin.hostIsValid(hostOfOrigin)) {
-                origin.host = hostOfOrigin;
+        public Builder setUrl(URL urlIn) {
+           return urlIn == null ? this : setHostOrUrl(urlIn.toExternalForm());
+        }
+        
+        public Builder setHostOrUrl(String hostOrUrl) {
+            if (origin.originType.canSetUrlOfOrigin()) {
+               URL url1 = UrlUtils.buildUrl(hostOrUrl, origin.isSsl());
+               if (url1 != null) {
+                   if (!UrlUtils.isHostOnly(url1) && !url1.toExternalForm().endsWith("/")) {
+                       url1 = UrlUtils.string2Url(url1.toExternalForm() + "/");
+                   }
+                   origin.url = url1;
+               }
             }
             return this;
         }
@@ -382,6 +373,7 @@ public class Origin {
         public Builder setSsl(boolean ssl) {
             if (origin.originType.canChangeSsl) {
                 origin.ssl = ssl;
+                setUrl(origin.getUrl());
             }
             return this;
         }
@@ -417,7 +409,7 @@ public class Origin {
             }
 
             ContentValues values = new ContentValues();
-            values.put(MyDatabase.Origin.HOST, origin.host);
+            values.put(MyDatabase.Origin.ORIGIN_URL, origin.url != null ? origin.url.toExternalForm() : "");
             values.put(MyDatabase.Origin.SSL, origin.ssl);
             values.put(MyDatabase.Origin.ALLOW_HTML, origin.allowHtml);
             values.put(MyDatabase.Origin.SHORT_URL_LENGTH, origin.shortUrlLength);

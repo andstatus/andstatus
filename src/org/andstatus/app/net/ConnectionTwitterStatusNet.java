@@ -21,8 +21,8 @@ import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ContentType;
-import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -137,9 +137,9 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
                 JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
                 for (int ind = 0; ind < jArr.length(); ind++) {
                     JSONObject attachment = (JSONObject) jArr.get(ind);
-                    URL url = FileUtils.json2Url(attachment, "url");
+                    URL url = UrlUtils.json2Url(attachment, "url");
                     if (url == null) {
-                        url = FileUtils.json2Url(attachment, "thumb_url");
+                        url = UrlUtils.json2Url(attachment, "thumb_url");
                     }
                     MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, ContentType.fromUrl(url, attachment.optString("mimetype")));
                     if (mbAttachment.isValid()) {

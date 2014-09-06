@@ -37,12 +37,12 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UrlUtils;
 import org.json.JSONObject;
 
 public class VerifyCredentialsTest extends InstrumentationTestCase {
     Context context;
     Connection connection;
-    String host = "twitter.com";
     HttpConnectionMock httpConnection;
     OriginConnectionData connectionData;
 
@@ -63,7 +63,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         connection.setAccountData(connectionData);
         httpConnection = (HttpConnectionMock) connection.http;
 
-        httpConnection.data.host = host;
+        httpConnection.data.originUrl = UrlUtils.string2Url("https://twitter.com");
         httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
         keyStored = httpConnection.data.oauthClientKeys.getConsumerKey();
         secretStored = httpConnection.data.oauthClientKeys.getConsumerSecret();

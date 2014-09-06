@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.test.InstrumentationTestCase;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.R;
@@ -273,7 +274,7 @@ public class TestSuite extends TestCase {
         return cal.getTime();        
     }
 
-    public static int waitForListLoaded(InstrumentationTestCase instrumentationTestCase, Activity activity) throws InterruptedException {
+    public static int waitForListLoaded(InstrumentationTestCase instrumentationTestCase, Activity activity, int minCount) throws InterruptedException {
         final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
         assertTrue(list != null);
         int itemsCount = 0;
@@ -281,13 +282,17 @@ public class TestSuite extends TestCase {
             Thread.sleep(2000);
             instrumentationTestCase.getInstrumentation().waitForIdleSync();
             int itemsCountNew = list.getChildCount();
-            if (itemsCountNew > 1 && itemsCount == itemsCountNew) {
+            if (ListView.class.isInstance(list)) {
+                itemsCountNew = ((ListView) list).getCount();
+            }
+            MyLog.v(TAG, "waitForListLoaded; countNew=" + itemsCountNew + ", prev=" + itemsCount + ", min=" + minCount);
+            if (itemsCountNew >= minCount && itemsCount == itemsCountNew) {
                 break;
             }
             itemsCount = itemsCountNew;
         }
         assertTrue("There are items in the list of " + activity.getClass().getSimpleName(), 
-                itemsCount > 0);
+                itemsCount >= minCount);
         return itemsCount;
     }
 

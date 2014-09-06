@@ -40,7 +40,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
-     * v.17 2014-08-30 Attachment added
+     * v.17 2014-09-05 Attachment added. Origin "URL" instead of "host"
      * v.16 2014-05-03 Account persistence changed
      * v.15 2014-02-16 Public timeline added
      * v.14 2013-12-15 Origin table added
@@ -416,7 +416,8 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String ORIGIN_TYPE_ID = "origin_type_id";
         public static final String ORIGIN_NAME = "origin_name";
-        public static final String HOST = "host";
+        public static final String ORIGIN_URL = "origin_url";
+        //public static final String HOST = "host";
         public static final String SSL = "ssl";
         public static final String ALLOW_HTML = "allow_html";
         public static final String TEXT_LIMIT = "text_limit";
@@ -589,7 +590,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
                 + Origin.ORIGIN_TYPE_ID + " INTEGER NOT NULL," 
                 + Origin.ORIGIN_NAME + " TEXT NOT NULL," 
-                + Origin.HOST + " TEXT NOT NULL," 
+                + Origin.ORIGIN_URL + " TEXT NOT NULL," 
                 + Origin.SSL + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + Origin.ALLOW_HTML + " BOOLEAN DEFAULT 0 NOT NULL," 
                 + Origin.TEXT_LIMIT + " INTEGER NOT NULL,"
@@ -604,7 +605,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + BaseColumns._ID + "," 
                 + Origin.ORIGIN_TYPE_ID + "," 
                 + Origin.ORIGIN_NAME + "," 
-                + Origin.HOST + "," 
+                + Origin.ORIGIN_URL + "," 
                 + Origin.SSL + "," 
                 + Origin.ALLOW_HTML + "," 
                 + Origin.TEXT_LIMIT + ","
@@ -614,11 +615,11 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + ")";
         String[] values = {
                 Long.toString(ORIGIN_ID_TWITTER) + 
-                 ", 1, 'Twitter', 'api.twitter.com',    1, 0,  140, 23",
+                 ", 1, 'Twitter', 'https://api.twitter.com',    1, 0,  140, 23",
                 "2, 2, 'pump.io', '',                   1, 1, 5000,  0",
-                "3, 3, 'Quitter', 'quitter.se',         1, 0,  140,  0",
-                "4, 3, 'LoadAverage','loadaverage.org', 1, 0, 5000,  0",
-                "5, 3, 'Vinilox', 'status.vinilox.eu',  0, 0,  256,  0"
+                "3, 3, 'Quitter', 'https://quitter.se',         1, 0,  140,  0",
+                "4, 3, 'LoadAverage','https://loadaverage.org', 1, 0, 5000,  0",
+                "5, 3, 'Vinilox', 'http://status.vinilox.eu',  0, 0,  256,  0"
         };
         for (String value : values) {
             execSQL(db, sqlIns.replace("%s", value));

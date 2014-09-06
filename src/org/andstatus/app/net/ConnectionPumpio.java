@@ -23,10 +23,10 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ContentType;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.OriginConnectionData;
-import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,7 +50,7 @@ public class ConnectionPumpio extends Connection {
     public void enrichConnectionData(OriginConnectionData connectionData) {
         super.enrichConnectionData(connectionData);
         if (!TextUtils.isEmpty(connectionData.getAccountUsername())) {
-            connectionData.setHost(usernameToHost(connectionData.getAccountUsername()));
+            connectionData.setOriginUrl(UrlUtils.buildUrl(usernameToHost(connectionData.getAccountUsername()), connectionData.isSsl()));
         }
     }
     
@@ -272,18 +272,18 @@ public class ConnectionPumpio extends Connection {
         conu.httpConnection = http;
         if (TextUtils.isEmpty(host)) {
             throw new IllegalArgumentException(apiRoutine + ": host is empty for the userId=" + userId);
-        } else if (host.compareToIgnoreCase(http.data.host) != 0) {
+        } else if (http.data.originUrl == null || host.compareToIgnoreCase(http.data.originUrl.getHost()) != 0) {
             MyLog.v(this, "Requesting data from the host: " + host);
             HttpConnectionData connectionData1 = http.data.clone();
             connectionData1.oauthClientKeys = null;
-            connectionData1.host = host;
+            connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl);
             conu.httpConnection = http.getNewInstance();
             conu.httpConnection.setConnectionData(connectionData1);
         }
         if (!conu.httpConnection.data.areOAuthClientKeysPresent()) {
             conu.httpConnection.registerClient(getApiPath(ApiRoutineEnum.REGISTER_CLIENT));
             if (!conu.httpConnection.getCredentialsPresent()) {
-                throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, conu.httpConnection.data.host, "No credentials");
+                throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, conu.httpConnection.data.originUrl, "No credentials");
             }
         }
         conu.url = conu.url.replace("%nickname%", nickname);
@@ -538,7 +538,7 @@ public class ConnectionPumpio extends Connection {
     private URL getImageUrl(JSONObject jso, String imageTag) throws JSONException {
         if (jso.has(imageTag)) {
             JSONObject attachment = jso.getJSONObject(imageTag);
-            return FileUtils.json2Url(attachment, "url");
+            return UrlUtils.json2Url(attachment, "url");
         } 
         return null;
     }

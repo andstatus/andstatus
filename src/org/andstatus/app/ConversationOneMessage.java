@@ -19,7 +19,6 @@ package org.andstatus.app;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 
-import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.AvatarDrawable;
 
 /**

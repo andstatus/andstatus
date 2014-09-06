@@ -83,7 +83,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
 
     public void testBlogButton() throws InterruptedException {
         final String method = "testBlogButton";
-        TestSuite.waitForListLoaded(this, activity);
+        TestSuite.waitForListLoaded(this, activity, 2);
         
         final Button createMessageButton = (Button) activity.findViewById(R.id.createMessageButton);
         assertTrue(createMessageButton != null);
@@ -117,7 +117,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     public void testOpeningConversationActivity() throws InterruptedException {
         final String method = "testOpeningConversationActivity";
-        TestSuite.waitForListLoaded(this, activity);
+        TestSuite.waitForListLoaded(this, activity, 10);
         
         final int position = getPositionOfReply();
         selectListPosition(method, position);
@@ -141,7 +141,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         MyLog.v(this, method + "-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(this, nextActivity);
+        TestSuite.waitForListLoaded(this, nextActivity, 2);
         Thread.sleep(500);
         nextActivity.finish();        
     }
@@ -196,7 +196,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, Exception {
         final String method = "testPositionOnContentChange" + iterationId;
-        TestSuite.waitForListLoaded(this, activity);
+        TestSuite.waitForListLoaded(this, activity, 10);
         
         selectListPosition(method, position0);
         int position1 = getListView().getFirstVisiblePosition();
@@ -245,7 +245,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     public void testOpeningAccountSelector() throws InterruptedException {
         final String method = "testOpeningAccountSelector";
-        TestSuite.waitForListLoaded(this, activity);
+        TestSuite.waitForListLoaded(this, activity, 10);
 
         ActivityMonitor activityMonitor = getInstrumentation().addMonitor(AccountSelector.class.getName(), null, false);
 
@@ -267,7 +267,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         MyLog.v(this, method + "-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(this, nextActivity);
+        TestSuite.waitForListLoaded(this, nextActivity, 3);
         Thread.sleep(500);
         nextActivity.finish();        
     }

@@ -29,6 +29,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UrlUtils;
+
+import java.net.URL;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -60,10 +63,16 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
 
         host = originName + ". badhost.example.com";
         forOneOrigin(originType, originName, host, isSsl, allowHtml);
+
+        host = "http://" + originName + ".fourth.example.com";
+        forOneOrigin(originType, originName, host, isSsl, allowHtml);
+
+        host = "http://" + originName + ".fifth.example.com/status";
+        forOneOrigin(originType, originName, host, isSsl, allowHtml);
     }
     
     public void forOneOrigin(final OriginType originType, final String originName,
-            final String host, final boolean isSsl, final boolean allowHtml)
+            final String hostOrUrl, final boolean isSsl, final boolean allowHtml)
             throws InterruptedException {
         final String method = "OriginEditorTest";
 
@@ -103,7 +112,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
             public void run() {
                 spinnerOriginType.setSelection(originType.getEntriesPosition());
                 editTextOriginName.setText(originName);
-                editTextHost.setText(host);
+                editTextHost.setText(hostOrUrl);
                 checkBoxIsSsl.setChecked(isSsl);
                 checkBoxAllowHtml.setChecked(allowHtml);
                 try {
@@ -122,10 +131,17 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(originName);
         assertEquals("Origin '" + originName + "' added", originName, origin.getName());
         assertEquals(originType, origin.getOriginType());
-        if (host.contains("bad")) {
-            assertEquals(originOld.getHost(), origin.getHost());
+        if (hostOrUrl.contains("bad")) {
+            assertEquals(originOld.getUrl(), origin.getUrl());
         } else {
-            assertEquals(host, origin.getHost());
+            URL url2 = UrlUtils.buildUrl(hostOrUrl, isSsl);
+            if (!url2.equals(origin.getUrl())) {
+                if (!UrlUtils.isHostOnly(url2) && !hostOrUrl.endsWith("/")) {
+                    assertEquals(UrlUtils.buildUrl(hostOrUrl + "/", isSsl), origin.getUrl());
+                } else {
+                    assertEquals(UrlUtils.buildUrl(hostOrUrl, isSsl), origin.getUrl());
+                }
+            }
         }
         assertEquals(isSsl, origin.isSsl());
         assertEquals(allowHtml, origin.isHtmlContentAllowed());

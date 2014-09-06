@@ -20,6 +20,7 @@ import android.net.Uri;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,13 +46,7 @@ public abstract class HttpConnection {
     }  
     
     public String pathToUrl(String path) {
-        if (path.contains("://")) {
-            return path;
-        } else {
-            return "http" + (data.isSsl ? "s" : "")
-                    + "://" + data.host
-                    + "/" + path;
-        }
+        return UrlUtils.pathToUrl(data.originUrl, path);
     }
     
     protected abstract JSONObject postRequest(String path) throws ConnectionException;

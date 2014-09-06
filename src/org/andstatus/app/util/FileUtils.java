@@ -18,7 +18,6 @@ package org.andstatus.app.util;
 
 import android.text.TextUtils;
 
-import org.andstatus.app.data.ContentType;
 import org.andstatus.app.data.DbUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,8 +29,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public class FileUtils {
     private static final String TAG = FileUtils.class.getSimpleName();
@@ -128,18 +125,6 @@ public class FileUtils {
             }
         }
         return new byte[0];
-    }
-
-    public static URL json2Url(JSONObject jso, String urlTag) throws JSONException {
-        if (jso != null && !TextUtils.isEmpty(urlTag) && jso.has(urlTag)) {
-            String strUrl = jso.getString(urlTag);
-            try {
-                return new URL(strUrl);
-            } catch (MalformedURLException e) {
-                MyLog.d(TAG, "tag:'" + urlTag + "' has malformed URL:'" + strUrl + "'", e);
-            }
-        } 
-        return null;
     }
 
     public static void deleteFilesRecursively(File rootDirectory) {

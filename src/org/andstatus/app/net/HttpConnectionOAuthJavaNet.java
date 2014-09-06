@@ -54,7 +54,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
      */
     @Override
     public void registerClient(String path) throws ConnectionException {
-        MyLog.v(this, "Registering client for " + data.host);
+        MyLog.v(this, "Registering client for " + data.originUrl);
         String consumerKey = "";
         String consumerSecret = "";
         data.oauthClientKeys.clear();
@@ -98,9 +98,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             DbUtils.closeSilently(writer);
         }
         if (data.oauthClientKeys.areKeysPresent()) {
-            MyLog.v(this, "Registered client for " + data.host);
+            MyLog.v(this, "Registered client for " + data.originUrl);
         } else {
-            throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, data.host, "No client keys for the host yet");
+            throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST, data.originUrl, "No client keys for the host yet");
         }
     }
 
@@ -264,7 +264,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             throws OAuthMessageSignerException, OAuthExpectationFailedException,
             OAuthCommunicationException {
         if (getCredentialsPresent()) {
-            if (data.host.contentEquals(data.hostForUserToken)) {
+            if (data.originUrl.getHost().contentEquals(data.urlForUserToken.getHost())) {
                 consumer.sign(conn);
             } else {
                 // See http://tools.ietf.org/html/draft-prodromou-dialback-00
@@ -273,9 +273,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     consumer.sign(conn);
                 } else {
                     conn.setRequestProperty("Authorization", "Dialback");
-                    conn.setRequestProperty("host", data.hostForUserToken);
+                    conn.setRequestProperty("host", data.urlForUserToken.getHost());
                     conn.setRequestProperty("token", getUserToken());
-                    MyLog.v(this, "Dialback authorization at " + data.host + "; host=" + data.hostForUserToken + "; token=" + getUserToken());
+                    MyLog.v(this, "Dialback authorization at " + data.originUrl + "; urlForUserToken=" + data.urlForUserToken + "; token=" + getUserToken());
                     consumer.sign(conn);
                 }
             }

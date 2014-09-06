@@ -251,14 +251,14 @@ public abstract class Connection {
      * Returns a list of users the specified user is following.
      */
     public List<MbUser> getUsersFollowedBy(String userId) throws ConnectionException {
-        throw ConnectionException.fromStatusCodeAndHost(StatusCode.UNSUPPORTED_API, "(any host)", "getUsersFollowedBy for userOid=" + userId);
+        throw ConnectionException.fromStatusCodeAndHost(StatusCode.UNSUPPORTED_API, null, "getUsersFollowedBy for userOid=" + userId);
     }
     
     /**
      * Returns a list of IDs for every user the specified user is following.
      */
     public List<String> getIdsOfUsersFollowedBy(String userId) throws ConnectionException {
-        throw ConnectionException.fromStatusCodeAndHost(StatusCode.UNSUPPORTED_API, "(any host)", "getIdsOfUsersFollowedBy for userOid=" + userId);
+        throw ConnectionException.fromStatusCodeAndHost(StatusCode.UNSUPPORTED_API, null, "getIdsOfUsersFollowedBy for userOid=" + userId);
     }
     
     /**

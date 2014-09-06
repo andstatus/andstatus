@@ -95,8 +95,7 @@ public class TimeLineActivityLayoutToggleTest extends android.test.ActivityInstr
     }
 
     private void oneIteration() throws InterruptedException {
-        int itemsCount = TestSuite.waitForListLoaded(this, activity);
-        assertTrue("Items in the list = " + itemsCount, itemsCount > 2 );
+        TestSuite.waitForListLoaded(this, activity, 3);
     }
 
     public void testToggleAttachedImages2() throws InterruptedException {

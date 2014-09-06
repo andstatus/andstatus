@@ -30,6 +30,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UrlUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,7 +42,7 @@ import java.util.List;
 public class ConnectionPumpioTest extends InstrumentationTestCase {
     Context context;
     ConnectionPumpio connection;
-    String host = "identi.ca";
+    URL originUrl = UrlUtils.string2Url("https://identi.ca");
     HttpConnectionMock httpConnection;
     OriginConnectionData connectionData;
 
@@ -62,7 +63,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         connection.setAccountData(connectionData);
         httpConnection = (HttpConnectionMock) connection.http;
 
-        httpConnection.data.host = host;
+        httpConnection.data.originUrl = originUrl;
         httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
         keyStored = httpConnection.data.oauthClientKeys.getConsumerKey();
         secretStored = httpConnection.data.oauthClientKeys.getConsumerSecret();
@@ -128,19 +129,19 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         for (int ind=0; ind < userOids.length; ind++) {
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.GET_USER, userOids[ind]);
             assertEquals("Expecting '" + urls[ind] + "'", urls[ind], conu.url);
-            assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.host);
+            assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.originUrl.getHost());
         }
     }
     
     public void testGetTimeline() throws ConnectionException {
-        String sinceId = "http://" + host + "/activity/frefq3232sf";
+        String sinceId = originUrl.toExternalForm() + "/activity/frefq3232sf";
 
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.user_t131t_inbox);
         httpConnection.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
-                new TimelinePosition(sinceId) , 20, "acct:t131t@" + host);
+                new TimelinePosition(sinceId) , 20, "acct:t131t@" + originUrl.getHost());
         assertNotNull("timeline returned", timeline);
         int size = 6;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -190,7 +191,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS));        
         assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS_IDS));        
         
-        List<MbUser> users = connection.getUsersFollowedBy("acct:t131t@" + host);
+        List<MbUser> users = connection.getUsersFollowedBy("acct:t131t@" + originUrl.getHost());
         assertNotNull("List of users returned", users);
         int size = 5;
         assertEquals("Response for t131t", size, users.size());
@@ -205,7 +206,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         String body = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnection.setResponse(new JSONObject());
-        connection.data.setAccountUserOid("acct:mytester@" + host);
+        connection.data.setAccountUserOid("acct:mytester@" + originUrl.getHost());
         connection.updateStatus(body, inReplyToId);
         JSONObject activity = httpConnection.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
@@ -233,7 +234,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.unfollow_pumpio);
         httpConnection.setResponse(jso);
-        connection.data.setAccountUserOid("acct:t131t@" + host);
+        connection.data.setAccountUserOid("acct:t131t@" + originUrl.getHost());
         String userOid = "acct:evan@e14n.com";
         MbUser user = connection.followUser(userOid, false);
         assertTrue("User is present", !user.isEmpty());

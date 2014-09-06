@@ -103,7 +103,7 @@ public class HttpConnectionMock extends HttpConnection {
     private void onRequest(String method, String path) {
         postedCounter++;
         MyLog.v(this, method + " num:" + postedCounter + "; path:'" + path +"', host:'" 
-        + data.host + "', instanceId:" + mInstanceId );
+        + data.originUrl + "', instanceId:" + mInstanceId );
         MyLog.v(this, Arrays.toString(Thread.currentThread().getStackTrace()));
         pathStringList.add(path);
         networkDelay();

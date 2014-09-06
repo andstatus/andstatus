@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package org.andstatus.app.net;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.util.MyLog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.URL;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -51,7 +51,7 @@ public class ConnectionException extends Exception {
     }
     private StatusCode statusCode = StatusCode.UNKNOWN;
     private boolean isHardError = false;
-    private String host = "";
+    private URL host = null;
 
     public static ConnectionException loggedJsonException(Object objTag, Exception e, Object obj, String detailMessage) throws ConnectionException {
         MyLog.d(objTag, detailMessage + (e != null ? ": " + e.getMessage() : ""));
@@ -97,9 +97,9 @@ public class ConnectionException extends Exception {
         }
     }
 
-    public static ConnectionException fromStatusCodeAndHost(StatusCode statusCode, String host, final String detailMessage) {
+    public static ConnectionException fromStatusCodeAndHost(StatusCode statusCode, URL host2, final String detailMessage) {
         ConnectionException e = new ConnectionException(statusCode, detailMessage);
-        e.host = host;
+        e.host = host2;
         return e;
     }
     
@@ -148,7 +148,7 @@ public class ConnectionException extends Exception {
 
     @Override
     public String toString() {
-        return this.statusCode + (isHardError ? "; hard" : "; soft") + (TextUtils.isEmpty(host) ? "" : "; host=" + host) + "; " + super.toString();
+        return this.statusCode + (isHardError ? "; hard" : "; soft") + (host == null ? "" : "; host=" + host) + "; " + super.toString();
     }
 
     public void setHardError(boolean isHardError) {
@@ -157,9 +157,5 @@ public class ConnectionException extends Exception {
 
     public boolean isHardError() {
         return isHardError;
-    }
-    
-    public String getHost() {
-        return host;
     }
 }

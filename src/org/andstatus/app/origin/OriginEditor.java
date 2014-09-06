@@ -36,6 +36,7 @@ import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UrlUtils;
 
 /**
  * Add/Update Microblogging system
@@ -109,7 +110,15 @@ public class OriginEditor extends Activity implements MyActionBarContainer {
         MyLog.v(this, "processNewIntent: " + origin.toString());
         spinnerOriginType.setSelection(origin.originType.getEntriesPosition());
         editTextOriginName.setText(origin.getName());
-        editTextHost.setText(origin.getHost());
+        
+        String strHost = "";
+        if (UrlUtils.isHostOnly(origin.getUrl())) {
+            strHost = origin.getUrl().getHost();
+        } else if (origin.getUrl() != null) {
+            strHost = origin.getUrl().toExternalForm();
+        }
+        editTextHost.setText(strHost);
+        
         checkBoxIsSsl.setChecked(origin.isSsl());
         checkBoxAllowHtml.setChecked(origin.isHtmlContentAllowed());
         
@@ -145,7 +154,7 @@ public class OriginEditor extends Activity implements MyActionBarContainer {
     }
     
     private void saveOthers() {
-        builder.setHost(editTextHost.getText().toString());
+        builder.setHostOrUrl(editTextHost.getText().toString());
         builder.setSsl(checkBoxIsSsl.isChecked());
         builder.setHtmlContentAllowed(checkBoxAllowHtml.isChecked());
         builder.save();

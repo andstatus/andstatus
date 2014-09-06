@@ -19,6 +19,7 @@ package org.andstatus.app.net;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.util.MyLog;
 
 /**
  * CLient Keys, obtained dynamically for each host and Origin.
@@ -36,7 +37,11 @@ public class OAuthClientKeysDynamic implements OAuthClientKeysStrategy {
 
     @Override
     public void initialize(HttpConnectionData connectionData) {
-        keySuffix = Long.toString(connectionData.originId) + "-" + connectionData.host; 
+        if (connectionData.originUrl == null) {
+            MyLog.v(this, "OriginUrl is null; " + connectionData.toString());
+            return;
+        }
+        keySuffix = Long.toString(connectionData.originId) + "-" + connectionData.originUrl.getHost(); 
         keyConsumerKey = KEY_OAUTH_CLIENT_KEY + keySuffix;
         keyConsumerSecret = KEY_OAUTH_CLIENT_SECRET + keySuffix;
         consumerKey = MyPreferences.getDefaultSharedPreferences().getString(keyConsumerKey, "");

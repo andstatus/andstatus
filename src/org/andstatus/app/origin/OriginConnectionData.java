@@ -23,12 +23,14 @@ import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.net.HttpConnectionEmpty;
 import org.andstatus.app.util.TriState;
 
+import java.net.URL;
+
 public class OriginConnectionData {
     private OriginType originType;
     private long originId = 0;
     private boolean isSsl = true;
     private boolean isOAuth = true;
-    private String host = "";
+    private URL originUrl = null;
     private String basicPath = "";
     private String oauthPath = "oauth";
     
@@ -44,7 +46,7 @@ public class OriginConnectionData {
         
     protected static OriginConnectionData fromOrigin(Origin origin, TriState triStateOAuth) {
         OriginConnectionData connectionData = new OriginConnectionData();
-        connectionData.host = origin.getHost();
+        connectionData.originUrl = origin.getUrl();
         connectionData.basicPath = origin.getOriginType().basicPath;
         connectionData.oauthPath = origin.getOriginType().oauthPath;
         connectionData.isSsl = origin.isSsl();
@@ -73,12 +75,12 @@ public class OriginConnectionData {
         return isOAuth;
     }
 
-    public String getHost() {
-        return host;
+    public URL getOriginUrl() {
+        return originUrl;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+    public void setOriginUrl(URL urlIn) {
+        this.originUrl = urlIn;
     }
 
     public String getBasicPath() {

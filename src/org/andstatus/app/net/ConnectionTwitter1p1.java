@@ -20,13 +20,12 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.ContentType;
-import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
@@ -128,9 +127,9 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
                     JSONArray jArr = entities.getJSONArray(ATTACHMENTS_FIELD_NAME);
                     for (int ind = 0; ind < jArr.length(); ind++) {
                         JSONObject attachment = (JSONObject) jArr.get(ind);
-                        URL url = FileUtils.json2Url(attachment, "media_url_https");
+                        URL url = UrlUtils.json2Url(attachment, "media_url_https");
                         if (url == null) {
-                            url = FileUtils.json2Url(attachment, "media_url_http");
+                            url = UrlUtils.json2Url(attachment, "media_url_http");
                         }
                         MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, ContentType.IMAGE);
                         if (mbAttachment.isValid()) {

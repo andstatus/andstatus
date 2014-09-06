@@ -66,7 +66,6 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.TimelineViewBinder;
-import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;

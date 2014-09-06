@@ -10,6 +10,9 @@ import org.andstatus.app.net.HttpConnectionOAuthJavaNet;
 import org.andstatus.app.net.Connection.ApiEnum;
 import org.andstatus.app.net.ConnectionTwitterStatusNet;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UrlUtils;
+
+import java.net.URL;
 
 public enum OriginType {
     /**
@@ -39,7 +42,7 @@ public enum OriginType {
     private String title;
 
     private ApiEnum api;
-    protected boolean canSetHostOfOrigin = false;
+    protected boolean canSetUrlOfOrigin = false;
 
     private Class<? extends Origin> originClass = Origin.class;
     private Class<? extends org.andstatus.app.net.Connection> connectionClass = ConnectionEmpty.class;
@@ -78,7 +81,7 @@ public enum OriginType {
      * Maximum number of characters in the message
      */
     protected int textLimitDefault = 0;
-    protected String hostDefault = "";
+    protected URL urlDefault = null;
     protected String basicPath = BASIC_PATH_DEFAULT;
     protected String oauthPath = OAUTH_PATH_DEFAULT;
     
@@ -91,14 +94,14 @@ public enum OriginType {
                 isOAuthDefault = true;
                 // Starting from 2010-09 twitter.com allows OAuth only
                 canChangeOAuth = false;  
-                canSetHostOfOrigin = true;
+                canSetUrlOfOrigin = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 // TODO: Read from Config
                 shortUrlLengthDefault = 23; 
                 usernameRegEx = USERNAME_REGEX_DEFAULT;
                 textLimitDefault = 140;
-                hostDefault = "api.twitter.com";
+                urlDefault = UrlUtils.string2Url("https://api.twitter.com");
                 basicPath = "1.1";
                 oauthPath = OAUTH_PATH_DEFAULT;
                 originClass = OriginTwitter.class;
@@ -109,7 +112,7 @@ public enum OriginType {
             case PUMPIO:
                 isOAuthDefault = true;  
                 canChangeOAuth = false;
-                canSetHostOfOrigin = false;
+                canSetUrlOfOrigin = false;
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
                 usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
@@ -125,7 +128,7 @@ public enum OriginType {
             case STATUSNET_TWITTER:
                 isOAuthDefault = false;  
                 canChangeOAuth = false; 
-                canSetHostOfOrigin = true;
+                canSetUrlOfOrigin = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 usernameRegEx = USERNAME_REGEX_DEFAULT;
@@ -174,8 +177,8 @@ public enum OriginType {
         return api;
     }
 
-    public boolean canSetHostOfOrigin() {
-        return canSetHostOfOrigin;
+    public boolean canSetUrlOfOrigin() {
+        return canSetUrlOfOrigin;
     }
     
     @Override

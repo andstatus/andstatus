@@ -57,7 +57,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         setActivityIntent(intent);
         
         activity = getActivity();
-        TestSuite.waitForListLoaded(this, activity);
+        TestSuite.waitForListLoaded(this, activity, 2);
         
         assertEquals(ma.getUserId(), activity.getCurrentMyAccountUserId());
         

@@ -21,6 +21,8 @@ import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 
+import java.net.URL;
+
 class HttpConnectionData implements Cloneable {
     protected OriginType originType;
     protected long originId;
@@ -28,8 +30,8 @@ class HttpConnectionData implements Cloneable {
     protected String basicPath;
     protected String oauthPath;
     protected String accountUsername;
-    protected String host;
-    protected String hostForUserToken;
+    protected URL originUrl;
+    protected URL urlForUserToken;
     protected AccountDataReader dataReader;
 
     protected OAuthClientKeys oauthClientKeys;
@@ -50,8 +52,8 @@ class HttpConnectionData implements Cloneable {
         data.basicPath = oConnectionData.getBasicPath();
         data.oauthPath = oConnectionData.getOauthPath();
         data.accountUsername = oConnectionData.getAccountUsername();
-        data.host = oConnectionData.getHost();
-        data.hostForUserToken = oConnectionData.getHost();
+        data.originUrl = oConnectionData.getOriginUrl();
+        data.urlForUserToken = oConnectionData.getOriginUrl();
         data.dataReader = oConnectionData.getDataReader();
         return data;
     }
@@ -70,7 +72,7 @@ class HttpConnectionData implements Cloneable {
     public String toString() {
         return "HttpConnectionData {" + originId + ", " + originType + ", isSsl:" + isSsl + ", basicPath:"
                 + basicPath + ", oauthPath:" + oauthPath + ", accountUsername:" + accountUsername
-                + ", host:" + host + ", hostForUserToken:" + hostForUserToken + ", dataReader:"
+                + ", originUrl:" + originUrl + ", hostForUserToken:" + urlForUserToken + ", dataReader:"
                 + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}";
     }
 }

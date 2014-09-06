@@ -57,7 +57,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         connection.setAccountData(connectionData);
         httpConnection = (HttpConnectionMock) connection.http;
 
-        httpConnection.data.host = origin.getHost();
+        httpConnection.data.originUrl = origin.getUrl();
         httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
 
         if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {

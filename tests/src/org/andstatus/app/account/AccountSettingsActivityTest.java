@@ -90,7 +90,7 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
         MyLog.v(this, method + "-Log after waitForMonitor: " 
                 + nextActivity);
         assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(this, nextActivity);
+        TestSuite.waitForListLoaded(this, nextActivity, 8);
         Thread.sleep(500);
         nextActivity.finish();        
     }
