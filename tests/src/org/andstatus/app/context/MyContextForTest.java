@@ -25,7 +25,7 @@ import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
-import org.andstatus.app.util.TriState;
+import org.andstatus.app.service.ConnectionRequired;
 
 import java.util.Locale;
 import java.util.Set;
@@ -39,7 +39,7 @@ public class MyContextForTest implements MyContext {
     private MyContext myContext;
     private Set<AssersionData> dataSet = new CopyOnWriteArraySet<AssersionData>();
     private HttpConnection httpConnection;
-    private TriState mOnline = TriState.UNKNOWN; 
+    private ConnectionRequired mOnline = ConnectionRequired.ANY; 
 
     public MyContextForTest setContext(MyContext myContextIn) {
         myContext = myContextIn;
@@ -171,17 +171,26 @@ public class MyContextForTest implements MyContext {
     }
 
     @Override
-    public boolean isOnline() {
+    public boolean isOnline(ConnectionRequired connectionRequired) {
         switch (mOnline) {
-            case UNKNOWN:
-                return myContext.isOnline();
+            case ANY:
+                return myContext.isOnline(connectionRequired);
             default:
-                return mOnline == TriState.TRUE;
+                switch (connectionRequired) {
+                    case ONLINE:
+                        return (mOnline == ConnectionRequired.ONLINE || mOnline == ConnectionRequired.WIFI);
+                    case WIFI:
+                        return (mOnline == ConnectionRequired.WIFI);
+                    case OFFLINE:
+                        return (mOnline == ConnectionRequired.OFFLINE);
+                    default:
+                        return true;
+                }
         }
     }
 
-    public void setOnline(TriState isOnline) {
-        this.mOnline = isOnline;
+    public void setOnline(ConnectionRequired connectionState) {
+        this.mOnline = connectionState;
     }
 
     @Override

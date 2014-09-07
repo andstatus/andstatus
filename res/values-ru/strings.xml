@@ -351,6 +351,8 @@
 	<string name="title_preference_change_log">Журнал изменений</string>
     <string name="title_preference_connection_timeout">Таймаут соединения</string>
 	<string name="title_preference_contact_developer">Свяжитесь с разработчиками</string>
+    <string name="title_preference_debugging">Журналирование и отладка</string>
+	<string name="title_preference_download_attachments_over_wifi_only">Загружать вложения только через Wi-Fi</string>
 	<string name="title_preference_enable_android_backup">Разрешить автоматическую архивацию Android-а</string>
 	<string name="title_preference_enter_sends_message">ENTER отправляет сообщение</string>
 	<string name="title_preference_frequency">Частота обновлений (синхронизации)</string>

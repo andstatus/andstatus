@@ -588,7 +588,7 @@ public class MyService extends Service {
                     breakReason = "No more commands";
                     break;
                 }
-                if ( !commandData.getCommand().isOnlineOnly() || MyContextHolder.get().isOnline()) {
+                if (MyContextHolder.get().isOnline(commandData.getCommand().getConnetionRequired())) {
                     MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
                     .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                     CommandExecutorStrategy.executeCommand(commandData, this);

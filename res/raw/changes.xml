@@ -43,7 +43,9 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <changes>
             <change>Added an option to view attached images for all supported systems. Turn this option off
                 in Menu-&gt;Settings-&gt;Appearance-&gt;&quot;Display attached images&quot;.
-                See <a href="https://github.com/andstatus/andstatus/issues/93" >Issue #93</a>.</change>
+                See <a href="https://github.com/andstatus/andstatus/issues/93" >Issue #93</a>.<br/>
+                An accompanying option added: Menu-&gt;Settings-&gt;Syncing-&gt;&quot;Download 
+                attachments over Wi-Fi only&quot; (&quot;on&quot; by default).</change>
             <change>Added an option to set Default Account (account, which timeline is
                 opened on application launch).</change>
             <change>Added support for instances of Microblogging systems, which are located in a folder of the host 

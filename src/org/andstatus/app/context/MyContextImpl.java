@@ -30,6 +30,7 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverterController;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
+import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 
@@ -229,32 +230,55 @@ public final class MyContextImpl implements MyContext {
     }
 
     @Override
-    public boolean isOnline() {
-        if (isOnlineNotLogged()) {
-            return true;
-        } else {
-            MyLog.v(this, "Internet Connection Not Present");
-            return false;
+    public boolean isOnline(ConnectionRequired connectionRequired) {
+        final String method = "isOnline";
+        switch (connectionRequired) {
+            case ONLINE:
+                if (isOnlineNotLogged(false)) {
+                    return true;
+                }
+                MyLog.v(this, method + "; No Internet Connection");
+                return false;
+            case WIFI:
+                boolean prefWiFiOnly = MyPreferences.getBoolean(
+                        MyPreferences.KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY, true);
+                if (isOnlineNotLogged(prefWiFiOnly)) {
+                    return true;
+                }
+                MyLog.v(this, method + "; "
+                        + (prefWiFiOnly ? "WiFi is not connected"
+                                : "No Internet Connection (WiFi not required)"));
+                return false;
+            case OFFLINE:
+                if (!isOnlineNotLogged(false)) {
+                    return true;
+                }
+                MyLog.v(this, method + "; Not offline");
+                return false;
+            default:
+                return true;
         }
     }
 
     /**
      * Based on http://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-timeouts
      */
-    private boolean isOnlineNotLogged() {
+    private boolean isOnlineNotLogged(boolean wiFiOnly) {
         boolean is = false;
-        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm == null) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) {
             return false;
         }
-        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        NetworkInfo networkInfo = wiFiOnly ? connectivityManager
+                .getNetworkInfo(ConnectivityManager.TYPE_WIFI) : connectivityManager
+                .getActiveNetworkInfo();
         if (networkInfo == null) {
             return false;
         }
         is = networkInfo.isAvailable() && networkInfo.isConnected();
         return is;
     }
-
+    
     @Override
     public boolean isInForeground() {
         if (!mInForeground

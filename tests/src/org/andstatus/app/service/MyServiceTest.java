@@ -26,7 +26,6 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.HttpConnectionMock;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TriState;
 
 import java.net.MalformedURLException;
 import java.util.Arrays;
@@ -59,7 +58,7 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         TestSuite.setHttpConnection(httpConnection);
         assertEquals("HttpConnection mocked", MyContextHolder.get().getHttpConnectionMock(),
                 httpConnection);
-        TestSuite.getMyContextForTest().setOnline(TriState.TRUE);
+        TestSuite.getMyContextForTest().setOnline(ConnectionRequired.WIFI);
         MyAccountTest.fixPersistentAccounts();
         // In order the mocked connection to have effect:
         MyContextHolder.get().persistentAccounts().initialize();
@@ -325,7 +324,7 @@ public class MyServiceTest extends InstrumentationTestCase implements MyServiceL
         
         serviceConnector.unregisterReceiver(MyContextHolder.get().context());
         TestSuite.setHttpConnection(null);
-        TestSuite.getMyContextForTest().setOnline(TriState.UNKNOWN);
+        TestSuite.getMyContextForTest().setOnline(ConnectionRequired.ANY);
         MyContextHolder.get().persistentAccounts().initialize();
         super.tearDown();
         MyLog.v(this, "tearDown ended");

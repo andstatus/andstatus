@@ -52,6 +52,7 @@ public class MyPreferences {
     public static final String KEY_SYNC_FREQUENCY_SECONDS = "fetch_frequency";
     public static final String KEY_SYNC_INDICATOR_ON_TIMELINE = "sync_indicator_on_timeline";
     public static final String KEY_SYNC_WHILE_USING_APPLICATION = "sync_while_using_application";
+    public static final String KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY = "download_attachments_over_wifi_only";
     public static final String KEY_CONNNECTION_TIMEOUT_SECONDS = "connection_timeout";
     public static final String KEY_RINGTONE_PREFERENCE = "notification_ringtone";
     public static final String KEY_CONTACT_DEVELOPER = "contact_developer";

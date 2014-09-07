@@ -61,6 +61,9 @@
                 <CheckBoxPreference android:key="sync_after_message_was_sent"
                     android:title="@string/title_preference_sync_after_message_was_sent"
                     android:defaultValue="false" />
+                <CheckBoxPreference android:key="download_attachments_over_wifi_only"
+                    android:title="@string/title_preference_download_attachments_over_wifi_only"
+                    android:defaultValue="true" />
                 <EditTextPreference
 		            android:dialogTitle="@string/dialog_title_preference_connection_timeout"
 		            android:key="connection_timeout"

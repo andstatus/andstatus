@@ -23,6 +23,7 @@ import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
+import org.andstatus.app.service.ConnectionRequired;
 
 import java.util.Locale;
 
@@ -43,7 +44,7 @@ public interface MyContext {
     void release();
     boolean isExpired();
     void setExpired();
-    boolean isOnline();
+    boolean isOnline(ConnectionRequired connectionRequired);
     /** Is our application in Foreground now? **/
     boolean isInForeground();
     void setInForeground(boolean inForeground);

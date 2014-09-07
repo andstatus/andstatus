@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.andstatus.app.service;
 
 import android.text.TextUtils;
@@ -27,37 +43,37 @@ public enum CommandEnum {
     /**
      * The action to fetch all usual timelines in the background.
      */
-    AUTOMATIC_UPDATE("automatic-update", 0, -10, true),
+    AUTOMATIC_UPDATE("automatic-update", 0, -12, ConnectionRequired.ONLINE),
     /**
      * Fetch timeline(s) of the specified type for the specified MyAccount. 
      */
-    FETCH_TIMELINE("fetch-timeline", 0, -4, true),
+    FETCH_TIMELINE("fetch-timeline", 0, -4, ConnectionRequired.ONLINE),
 
     /**
      * Fetch avatar for the specified user 
      */
-    FETCH_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, -9, true),
-    FETCH_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, -11, true),
+    FETCH_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, -9, ConnectionRequired.ONLINE),
+    FETCH_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, -11, ConnectionRequired.WIFI),
     
-    CREATE_FAVORITE("create-favorite", R.string.menu_item_favorite, 0, true), 
-    DESTROY_FAVORITE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, true),
+    CREATE_FAVORITE("create-favorite", R.string.menu_item_favorite, 0, ConnectionRequired.ONLINE), 
+    DESTROY_FAVORITE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, ConnectionRequired.ONLINE),
 
-    FOLLOW_USER("follow-user", R.string.menu_item_follow_user, 0, true), 
-    STOP_FOLLOWING_USER("stop-following-user", R.string.menu_item_stop_following_user, 0, true),
+    FOLLOW_USER("follow-user", R.string.menu_item_follow_user, 0, ConnectionRequired.ONLINE), 
+    STOP_FOLLOWING_USER("stop-following-user", R.string.menu_item_stop_following_user, 0, ConnectionRequired.ONLINE),
 
     /**
      * This command is for sending both public and direct messages
      */
-    UPDATE_STATUS("update-status", R.string.button_create_message, 10, true), 
-    DESTROY_STATUS("destroy-status", R.string.menu_item_destroy_status, 3, true),
-    GET_STATUS("get-status", R.string.title_command_get_status, 5, true),
+    UPDATE_STATUS("update-status", R.string.button_create_message, 10, ConnectionRequired.ONLINE), 
+    DESTROY_STATUS("destroy-status", R.string.menu_item_destroy_status, 3, ConnectionRequired.ONLINE),
+    GET_STATUS("get-status", R.string.title_command_get_status, 5, ConnectionRequired.ONLINE),
 
-    SEARCH_MESSAGE("search-message", R.string.options_menu_search, -4, true),
+    SEARCH_MESSAGE("search-message", R.string.options_menu_search, -4, ConnectionRequired.ONLINE),
     
-    REBLOG("reblog", R.string.menu_item_reblog, 9, true),
-    DESTROY_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, 3, true),
+    REBLOG("reblog", R.string.menu_item_reblog, 9, ConnectionRequired.ONLINE),
+    DESTROY_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, 3, ConnectionRequired.ONLINE),
 
-    RATE_LIMIT_STATUS("rate-limit-status", 0, 0, true),
+    RATE_LIMIT_STATUS("rate-limit-status", 0, 0, ConnectionRequired.ONLINE),
 
     /**
      * Notify User about commands in the Queue
@@ -102,7 +118,7 @@ public enum CommandEnum {
      */
     private final int titleResId;
     private final int priority;
-    private final boolean onlineOnly;
+    private final ConnectionRequired connectionRequired;
 
     private CommandEnum(String code) {
         this(code, 0);
@@ -113,14 +129,14 @@ public enum CommandEnum {
     }
 
     private CommandEnum(String code, int titleResId, int priority) {
-        this(code, titleResId, priority, false);
+        this(code, titleResId, priority, ConnectionRequired.ANY);
     }
 
-    private CommandEnum(String code, int titleResId, int priority, boolean onlineOnly) {
+    private CommandEnum(String code, int titleResId, int priority, ConnectionRequired connectionRequired) {
         this.code = code;
         this.titleResId = titleResId;
         this.priority = priority;
-        this.onlineOnly = onlineOnly;
+        this.connectionRequired = connectionRequired;
     }
 
     /**
@@ -164,7 +180,7 @@ public enum CommandEnum {
         return priority;
     }
 
-    public boolean isOnlineOnly() {
-        return onlineOnly;
+    public ConnectionRequired getConnetionRequired() {
+        return connectionRequired;
     }
 }
