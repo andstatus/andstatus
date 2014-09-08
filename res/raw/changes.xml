@@ -38,7 +38,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="11.0" android:versionCode="107"
-        versionDate="2014-09-XX"
+        versionDate="2014-09-08"
         versionTitle="Viewing attached images">
         <changes>
             <change>Added an option to view attached images for all supported systems. Turn this option off
@@ -52,11 +52,12 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 (i.e. not in the root of the host). To configure such a system in AndStatus 
                 type full address (i.e. URL, including http...)  of the system into the "Host" field 
                 of the Microblogging system's editor.
-                See <a href="https://github.com/andstatus/andstatus/issues/116" >Issue #116</a>.</change>
+                See <a href="https://github.com/andstatus/andstatus/issues/116" >Issue #116</a> 
+                with an example of connecting to SDF GNU Social site.</change>
             <change>Global search is available from any timeline. Switch to Public timeline
                 is automatic.</change>
             <change>Fixed: User timeline worked correctly in Combined mode only.</change>    
-            <change>Fixed: Cannot load next timeline page if previous position was stored,
+            <change>Fixed: Cannot load next timeline page if previous position was stored
                 when too few rows existed.</change>    
             </changes>
     </release>

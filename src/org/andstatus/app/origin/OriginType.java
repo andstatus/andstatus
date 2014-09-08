@@ -76,7 +76,7 @@ public enum OriginType {
     protected boolean sslDefault = true;
     protected boolean canChangeSsl = false;
 
-    protected boolean allowHtmlDefault = false;
+    protected boolean allowHtmlDefault = true;
     /**
      * Maximum number of characters in the message
      */
@@ -116,7 +116,6 @@ public enum OriginType {
                 shouldSetNewUsernameManuallyIfOAuth = true;
                 shouldSetNewUsernameManuallyNoOAuth = false;
                 usernameRegEx = "[a-zA-Z_0-9/\\.\\-\\(\\)]+@[a-zA-Z_0-9/\\.\\-\\(\\)]+";
-                allowHtmlDefault = true;
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM;
                 basicPath = BASIC_PATH_DEFAULT;

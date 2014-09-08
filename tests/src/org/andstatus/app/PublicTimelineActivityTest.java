@@ -113,7 +113,19 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         assertMessagesArePublic(TestSuite.PUBLIC_MESSAGE_TEXT);
     }
 
-    private void assertMessagesArePublic(String publicMessageText) {
+    private void assertMessagesArePublic(String publicMessageText) throws InterruptedException {
+        int msgCount = 0;
+        for (int attempt=0; attempt < 3; attempt++) {
+            msgCount = oneAttempt(publicMessageText);
+            if (msgCount > 0) {
+                break;
+            }
+            Thread.sleep(2000 * (attempt + 1));
+        }
+        assertTrue("Messages found", msgCount > 0);
+    }
+
+    private int oneAttempt(String publicMessageText) {
         final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
         int msgCount = 0;
         for (int index = 0; index < list.getChildCount(); index++) {
@@ -130,6 +142,6 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
             }
         }
         MyLog.v(this, "Public messages with '" + publicMessageText + "' found: " + msgCount);
-        assertTrue("Messages found", msgCount > 0);
+        return msgCount;
     }
 }
