@@ -371,7 +371,11 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
 
                 @Override
                 public void run() {
-                    viewOfTheContext.showContextMenu();
+                    try {
+                        viewOfTheContext.showContextMenu();
+                    } catch (NullPointerException e) {
+                        MyLog.d(this, "on showContextMenu; " + (viewOfTheContext != null ? "viewOfTheContext is not null" : ""), e);
+                    }
                 }
             });                    
         }
