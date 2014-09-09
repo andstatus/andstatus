@@ -143,12 +143,11 @@ public class DataInserterTest extends InstrumentationTestCase {
         author.userName = username;
         author.actor = mAccountMbUser;
         
-        MbMessage message = MbMessage.fromOriginAndOid(mMyAccount.getOriginId(), messageOid);
-        message.setBody("Hello, this is a test Direct message by your namesake from http://pumpity.net");
+        MbMessage message = new MessageInserter(mMyAccount).buildMessage(author, 
+                "Hello, this is a test Direct message by your namesake from http://pumpity.net", 
+                null, messageOid);
         message.sentDate = 13312699000L;
         message.via = "AnyOtherClient";
-        message.sender = author;
-        message.actor = mAccountMbUser;
         message.recipient = mAccountMbUser;
         long messageId = addMessage(message);
         

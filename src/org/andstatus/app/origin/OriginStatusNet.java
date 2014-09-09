@@ -18,13 +18,21 @@ package org.andstatus.app.origin;
 
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.util.MyLog;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 class OriginStatusNet extends Origin {
 
     @Override
     public String messagePermalink(long messageId) {
-        return "http" + (isSsl() ? "s" : "") + "://" + url
-                + "/notice/"
-                + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId);
+        try {
+            return  new URL(url, "notice/"
+                    + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId)).toExternalForm();
+        } catch (MalformedURLException e) {
+            MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e);
+        }
+        return "";
     }
 }

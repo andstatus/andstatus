@@ -30,6 +30,9 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UrlUtils;
+
+import java.net.URL;
 
 public class MessageInserter extends InstrumentationTestCase {
     private MyAccount ma;
@@ -82,6 +85,9 @@ public class MessageInserter extends InstrumentationTestCase {
         message.sender = author;
         message.actor = accountMbUser;
         message.inReplyToMessage = inReplyToMessage;
+        if (origin.getOriginType() == OriginType.PUMPIO) {
+            message.url = message.oid;
+        }        
         try {
             Thread.sleep(2);
         } catch (InterruptedException ignored) {
@@ -97,7 +103,16 @@ public class MessageInserter extends InstrumentationTestCase {
         DataInserter di = new DataInserter(new CommandExecutionContext(CommandData.getEmpty(), ma).setTimelineType(tt));
         long messageId = di.insertOrUpdateMsg(message);
         assertTrue( "Message added " + message.oid, messageId != 0);
-        
+
+        String permalink = origin.messagePermalink(messageId);
+        URL urlPermalink = UrlUtils.string2Url(permalink); 
+        assertTrue("Message permalink is a valid URL '" + permalink + "', " + message.toString(),  urlPermalink != null);
+        if (origin.getUrl() != null) {
+            assertEquals("Message permalink has the same host as origin, " + message.toString(), origin.getUrl().getHost(), urlPermalink.getHost());
+        }
+        if (!TextUtils.isEmpty(message.url)) {
+            assertEquals("Message permalink", message.url, origin.messagePermalink(messageId));
+        }
         
         if (message.isPublic() ) {
             long msgIdFromMsgOfUser = MyProvider.conditionToLongColumnValue(MyDatabase.MsgOfUser.TABLE_NAME, MyDatabase.MsgOfUser.MSG_ID, 

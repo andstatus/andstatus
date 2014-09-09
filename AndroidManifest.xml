@@ -20,7 +20,7 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="11.0" android:versionCode="107"
+	android:versionName="11.1" android:versionCode="108"
 	android:installLocation="internalOnly">
 
 	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="19" />

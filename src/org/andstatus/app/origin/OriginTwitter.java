@@ -20,6 +20,10 @@ import org.andstatus.app.R;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.util.MyLog;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 class OriginTwitter extends Origin {
 
@@ -58,9 +62,13 @@ class OriginTwitter extends Origin {
     @Override
     public String messagePermalink(long messageId) {
         String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId);
-        return "https://twitter.com/"
-                + userName
-                + "/status/"
-                + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId);
+        try {
+            return  new URL(url, userName
+                    + "/status/"
+                    + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId)).toExternalForm();
+        } catch (MalformedURLException e) {
+            MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e);
+        }
+        return "";
     }
 }

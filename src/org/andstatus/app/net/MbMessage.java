@@ -101,5 +101,15 @@ public class MbMessage {
     public boolean isEmpty() {
         return this.isEmpty || TextUtils.isEmpty(oid) || originId==0;
     }
+
+    @Override
+    public String toString() {
+        return "MbMessage [isEmpty=" + isEmpty + ", oid=" + oid + ", sentDate=" + sentDate
+                + ", sender=" + sender + ", recipient=" + recipient + ", body=" + body
+                + ", rebloggedMessage=" + rebloggedMessage + ", inReplyToMessage="
+                + inReplyToMessage + ", via=" + via + ", url=" + url + ", isPublic=" + isPublic
+                + ", attachments=" + attachments + ", actor=" + actor + ", favoritedByActor="
+                + favoritedByActor + ", originId=" + originId + "]";
+    }
     
 }

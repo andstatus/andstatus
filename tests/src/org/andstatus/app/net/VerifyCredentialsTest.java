@@ -120,9 +120,9 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         cursor.moveToFirst();
         long messageId = cursor.getLong(0);
         cursor.close();
-        assertEquals("Message permalink at twitter", "https://twitter.com/"
+
+        assertEquals("Message permalink at twitter", "https://" + origin.getUrl().getHost() + "/"
                 + builder.getAccount().getUsername() + "/status/" + msgOid,
-                MyContextHolder.get().persistentOrigins()
-                        .fromId(builder.getAccount().getOriginId()).messagePermalink(messageId));
+                origin.messagePermalink(messageId));
     }
 }

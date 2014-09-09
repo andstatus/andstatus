@@ -53,7 +53,7 @@ public class ConversationInserter extends InstrumentationTestCase {
 
     public void insertMessage(String body) throws Exception {
         mySetup();
-        MbMessage message = buildPumpIoMessage(getAuthor1(), body, null, null);
+        MbMessage message = buildMessage(getAuthor1(), body, null, null);
         addMessage(message);
     }
     
@@ -83,12 +83,12 @@ public class ConversationInserter extends InstrumentationTestCase {
         author3.avatarUrl = "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif";
         MbUser author4 = buildUserFromOid("acct:fourthWithoutAvatar@pump.example.com");
         
-        MbMessage minus1 = buildPumpIoMessage(author2, "Older one message", null, null);
-        MbMessage selected = buildPumpIoMessage(getAuthor1(), "Selected message", minus1, TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
-        MbMessage reply1 = buildPumpIoMessage(author3, "Reply 1 to selected", selected, null);
-        MbMessage reply2 = buildPumpIoMessage(author2, "Reply 2 to selected is public", selected, null);
+        MbMessage minus1 = buildMessage(author2, "Older one message", null, null);
+        MbMessage selected = buildMessage(getAuthor1(), "Selected message", minus1, TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
+        MbMessage reply1 = buildMessage(author3, "Reply 1 to selected", selected, null);
+        MbMessage reply2 = buildMessage(author2, "Reply 2 to selected is public", selected, null);
         addPublicMessage(reply2, true);
-        MbMessage reply3 = buildPumpIoMessage(getAuthor1(), "Reply 3 to selected by the same author", selected, null);
+        MbMessage reply3 = buildMessage(getAuthor1(), "Reply 3 to selected by the same author", selected, null);
         reply3.attachments
         .add(MbAttachment
                 .fromUrlAndContentType(
@@ -99,19 +99,19 @@ public class ConversationInserter extends InstrumentationTestCase {
         addMessage(reply3);
         addMessage(reply1);
         addMessage(reply2);
-        MbMessage reply4 = buildPumpIoMessage(author4, "Reply 4 to Reply 1 other author", reply1, null);
+        MbMessage reply4 = buildMessage(author4, "Reply 4 to Reply 1 other author", reply1, null);
         addMessage(reply4);
         addPublicMessage(reply4, false);
-        addMessage(buildPumpIoMessage(author2, "Reply 5 to Reply 4", reply4, null));
-        addMessage(buildPumpIoMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
+        addMessage(buildMessage(author2, "Reply 5 to Reply 4", reply4, null));
+        addMessage(buildMessage(author3, "Reply 6 to Reply 4 - the second", reply4, null));
 
-        MbMessage reply7 = buildPumpIoMessage(getAuthor1(), "Reply 7 to Reply 2 is about " 
+        MbMessage reply7 = buildMessage(getAuthor1(), "Reply 7 to Reply 2 is about " 
         + TestSuite.PUBLIC_MESSAGE_TEXT + " and something else", reply2, null);
         addPublicMessage(reply7, true);
         
-        MbMessage reply8 = buildPumpIoMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
+        MbMessage reply8 = buildMessage(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
         
-        MbMessage reply9 = buildPumpIoMessage(author2, "Reply 9 to Reply 7", reply7, null);
+        MbMessage reply9 = buildMessage(author2, "Reply 9 to Reply 7", reply7, null);
         reply9.attachments
                 .add(MbAttachment
                         .fromUrlAndContentType(
@@ -120,9 +120,9 @@ public class ConversationInserter extends InstrumentationTestCase {
                                 ContentType.IMAGE));
         addMessage(reply9);
         
-        MbMessage reply10 = buildPumpIoMessage(author3, "Reply 10 to Reply 8", reply8, null);
+        MbMessage reply10 = buildMessage(author3, "Reply 10 to Reply 8", reply8, null);
         addMessage(reply10);
-        MbMessage reply11 = buildPumpIoMessage(author2, "Reply 11 to Reply 7, " + TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
+        MbMessage reply11 = buildMessage(author2, "Reply 11 to Reply 7, " + TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT + " text", reply7, null);
         addPublicMessage(reply11, true);
     }
 
@@ -144,7 +144,7 @@ public class ConversationInserter extends InstrumentationTestCase {
         return new MessageInserter(ma).buildUserFromOid(userOid);
     }
     
-    private MbMessage buildPumpIoMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
+    private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
         return new MessageInserter(ma).buildMessage(author, body
                 + (inReplyToMessage != null ? " it" + iteration : "") + bodySuffix,
                 inReplyToMessage, messageOidIn);
