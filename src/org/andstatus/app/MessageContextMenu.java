@@ -266,12 +266,12 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             MyLog.v(this, "onContextItemSelected: " + contextMenuItem + "; actor=" + ma.getAccountName());
             switch (contextMenuItem) {
                 case REPLY:
-                    messageList.getMessageEditor().startEditingMessage("", mCurrentMsgId, 0, ma, messageList.isTimelineCombined());
+                    messageList.getMessageEditor().startEditingMessage("", null, mCurrentMsgId, 0, ma, messageList.isTimelineCombined());
                     return true;
                 case DIRECT_MESSAGE:
                     authorId = MyProvider.msgIdToUserId(MyDatabase.Msg.AUTHOR_ID, mCurrentMsgId);
                     if (authorId != 0) {
-                        messageList.getMessageEditor().startEditingMessage("", mCurrentMsgId, authorId, ma, messageList.isTimelineCombined());
+                        messageList.getMessageEditor().startEditingMessage("", null, mCurrentMsgId, authorId, ma, messageList.isTimelineCombined());
                         return true;
                     }
                     break;

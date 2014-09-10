@@ -46,7 +46,7 @@ public class MyContextForTest implements MyContext {
         return this;
     }
 
-    public void setHttpConnection(HttpConnection httpConnection) {
+    public void setHttpConnectionMock(HttpConnection httpConnection) {
         this.httpConnection = httpConnection;
     }
     

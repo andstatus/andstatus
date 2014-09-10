@@ -17,12 +17,9 @@
 package org.andstatus.app;
 
 import android.app.Activity;
-import android.app.Instrumentation.ActivityMonitor;
-import android.app.ListActivity;
 import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.andstatus.app.account.AccountSelector;
@@ -30,8 +27,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.ConversationInserter;
-import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -46,7 +41,7 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class TimelineActivityTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
-    private TimelineActivity activity;
+    private TimelineActivity mActivity;
     
     @Override
     protected void setUp() throws Exception {
@@ -65,7 +60,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, false);
         setActivityIntent(intent);
         
-        activity = getActivity();
+        mActivity = getActivity();
 
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
@@ -83,104 +78,35 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
 
     public void testBlogButton() throws InterruptedException {
         final String method = "testBlogButton";
-        TestSuite.waitForListLoaded(this, activity, 2);
+        TestSuite.waitForListLoaded(this, mActivity, 2);
         
-        final Button createMessageButton = (Button) activity.findViewById(R.id.createMessageButton);
+        final Button createMessageButton = (Button) mActivity.findViewById(R.id.createMessageButton);
         assertTrue(createMessageButton != null);
         assertTrue("Blog button is visible", createMessageButton.getVisibility() == android.view.View.VISIBLE);
-        View editorView = activity.findViewById(R.id.message_editor);
+        View editorView = mActivity.findViewById(R.id.message_editor);
         assertTrue(editorView != null);
-        Button sendButton = (Button) activity.findViewById(R.id.messageEditSendButton);
-        assertTrue(sendButton != null);
         assertFalse(editorView.getVisibility() == android.view.View.VISIBLE);
-
-        Runnable clicker = new Runnable() {
-            @Override
-            public void run() {
-                MyLog.v(this, method + "-Log before click");
-                createMessageButton.performClick();
-            }
-          };
-        
-        MyLog.v(this, method + "-Log before run clicker 1");
-        activity.runOnUiThread(clicker);
-        getInstrumentation().waitForIdleSync();
-        Thread.sleep(500);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, mActivity);
+        helper.clickButton(method + " clicker 1", createMessageButton);
         assertTrue("Editor appeared", editorView.getVisibility() == android.view.View.VISIBLE);
-
-        MyLog.v(this, method + "-Log before run clicker 2");
-        activity.runOnUiThread(clicker);
-        getInstrumentation().waitForIdleSync();
-        Thread.sleep(500);
+        helper.clickButton(method + " clicker 2", createMessageButton);
         assertFalse("Editor hidden again", editorView.getVisibility() == android.view.View.VISIBLE);
     }
     
     public void testOpeningConversationActivity() throws InterruptedException {
         final String method = "testOpeningConversationActivity";
-        TestSuite.waitForListLoaded(this, activity, 10);
-        
-        final int position = getPositionOfReply();
-        selectListPosition(method, position);
-
-        ActivityMonitor activityMonitor = getInstrumentation().addMonitor(ConversationActivity.class.getName(), null, false);
-        
-        activity.runOnUiThread(new Runnable() {
-            // See
-            // http://stackoverflow.com/questions/8094268/android-listview-performitemclick
-            @Override
-            public void run() {
-                long rowId = ((ListActivity) activity).getListAdapter().getItemId(position);
-                MyLog.v(this, method + "-Log on performClick, rowId=" + rowId);
-                getListView().performItemClick(
-                        getListView().getAdapter().getView(position, null, null),
-                        position, rowId);
-            }
-        });
-
-        Activity nextActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 40000);
-        MyLog.v(this, method + "-Log after waitForMonitor: " 
-                + nextActivity);
-        assertNotNull("Next activity is opened and captured", nextActivity);
-        TestSuite.waitForListLoaded(this, nextActivity, 2);
+        TestSuite.waitForListLoaded(this, mActivity, 10);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, ConversationActivity.class); 
+        int position = helper.getPositionOfReply();
+        helper.selectListPosition(method, position);
+        helper.clickListPosition(method, position);
+        Activity nextActivity = helper.waitForNextActivity(method, 40000);
         Thread.sleep(500);
         nextActivity.finish();        
     }
 
-    private int getPositionOfReply() {
-        int position = 0;
-        for (int ind = 0; ind < getListView().getCount(); ind++) {
-            long itemId = getListView().getAdapter().getItemId(position);
-            if (MyProvider.msgIdToLongColumnValue(MyDatabase.Msg.IN_REPLY_TO_MSG_ID, itemId) != 0) {
-                break;
-            }
-            position++;
-        }
-        return position;
-    }
-
-    private void selectListPosition(final String method, final int positionIn) throws InterruptedException {
-        TestSuite.waitForIdleSync(this);
-        MyLog.v(this, method + " before setSelection " + positionIn);
-        
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                int position = positionIn;
-                ListAdapter la = getListView().getAdapter();
-                if (la.getCount() <= position) {
-                    position = la.getCount() - 1;
-                }
-                MyLog.v(this, method + " on     setSelection " + position 
-                        + " of " + (la.getCount() - 1));
-                getListView().setSelection(position);
-            }
-        });
-        TestSuite.waitForIdleSync(this);
-        MyLog.v(this, method + " after  setSelection");
-    }
-
     private ListView getListView() {
-        return (ListView) activity.findViewById(android.R.id.list);
+        return (ListView) mActivity.findViewById(android.R.id.list);
     }
 
     /** It really makes difference if we are near the end of the list or not
@@ -196,9 +122,9 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, Exception {
         final String method = "testPositionOnContentChange" + iterationId;
-        TestSuite.waitForListLoaded(this, activity, 10);
+        TestSuite.waitForListLoaded(this, mActivity, 10);
         
-        selectListPosition(method, position0);
+        new ListActivityTestHelper<TimelineActivity>(this, mActivity).selectListPosition(method, position0);
         int position1 = getListView().getFirstVisiblePosition();
         long itemId = getListView().getAdapter().getItemId(position1);
         int count1 = getListView().getAdapter().getCount() - 1;
@@ -245,28 +171,10 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     public void testOpeningAccountSelector() throws InterruptedException {
         final String method = "testOpeningAccountSelector";
-        TestSuite.waitForListLoaded(this, activity, 10);
-
-        ActivityMonitor activityMonitor = getInstrumentation().addMonitor(AccountSelector.class.getName(), null, false);
-
-        final Button accountButton = (Button) activity.findViewById(R.id.selectAccountButton);
-        assertTrue(accountButton != null);
-        
-        Runnable clicker = new Runnable() {
-            @Override
-            public void run() {
-                MyLog.v(this, method + "-Log before click");
-                accountButton.performClick();
-            }
-          };
-    
-        MyLog.v(this, method + "-Log before run clicker 1");
-        activity.runOnUiThread(clicker);
-          
-        Activity nextActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 15000);
-        MyLog.v(this, method + "-Log after waitForMonitor: " 
-                + nextActivity);
-        assertNotNull("Next activity is opened and captured", nextActivity);
+        TestSuite.waitForListLoaded(this, mActivity, 10);
+        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
+        helper.clickButton(method, R.id.selectAccountButton);
+        Activity nextActivity = helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(this, nextActivity, 3);
         Thread.sleep(500);
         nextActivity.finish();        

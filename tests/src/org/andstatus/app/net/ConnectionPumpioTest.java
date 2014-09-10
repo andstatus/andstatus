@@ -43,7 +43,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     Context context;
     ConnectionPumpio connection;
     URL originUrl = UrlUtils.string2Url("https://identi.ca");
-    HttpConnectionMock httpConnection;
+    HttpConnectionMock httpConnectionMock;
     OriginConnectionData connectionData;
 
     String keyStored;
@@ -61,15 +61,15 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         connection.enrichConnectionData(connectionData);
         connectionData.setHttpConnectionClass(HttpConnectionMock.class);
         connection.setAccountData(connectionData);
-        httpConnection = (HttpConnectionMock) connection.http;
+        httpConnectionMock = (HttpConnectionMock) connection.http;
 
-        httpConnection.data.originUrl = originUrl;
-        httpConnection.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnection.data);
-        keyStored = httpConnection.data.oauthClientKeys.getConsumerKey();
-        secretStored = httpConnection.data.oauthClientKeys.getConsumerSecret();
+        httpConnectionMock.data.originUrl = originUrl;
+        httpConnectionMock.data.oauthClientKeys = OAuthClientKeys.fromConnectionData(httpConnectionMock.data);
+        keyStored = httpConnectionMock.data.oauthClientKeys.getConsumerKey();
+        secretStored = httpConnectionMock.data.oauthClientKeys.getConsumerSecret();
 
-        if (!httpConnection.data.oauthClientKeys.areKeysPresent()) {
-            httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341");
+        if (!httpConnectionMock.data.oauthClientKeys.areKeysPresent()) {
+            httpConnectionMock.data.oauthClientKeys.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341");
         }
     }
     
@@ -77,7 +77,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         if (!TextUtils.isEmpty(keyStored)) {
-            httpConnection.data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
+            httpConnectionMock.data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);        
         }
     }
 
@@ -138,7 +138,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
 
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.user_t131t_inbox);
-        httpConnection.setResponse(jso);
+        httpConnectionMock.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
                 new TimelinePosition(sinceId) , 20, "acct:t131t@" + originUrl.getHost());
@@ -186,7 +186,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     public void testGetUsersFollowedBy() throws ConnectionException {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.user_t131t_following);
-        httpConnection.setResponse(jso);
+        httpConnectionMock.setResponse(jso);
         
         assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS));        
         assertTrue(connection.isApiSupported(ApiRoutineEnum.GET_FRIENDS_IDS));        
@@ -205,10 +205,10 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     public void testUpdateStatus() throws ConnectionException, JSONException {
         String body = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
-        httpConnection.setResponse(new JSONObject());
+        httpConnectionMock.setResponse(new JSONObject());
         connection.data.setAccountUserOid("acct:mytester@" + originUrl.getHost());
         connection.updateStatus(body, inReplyToId);
-        JSONObject activity = httpConnection.getPostedJSONObject();
+        JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
         assertEquals("Message content", body, obj.getString("content"));
@@ -221,7 +221,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         body = "Testing the application...";
         inReplyToId = "";
         connection.updateStatus(body, inReplyToId);
-        activity = httpConnection.getPostedJSONObject();
+        activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
         assertEquals("Message content", body, obj.getString("content"));
@@ -233,7 +233,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     public void testUnfollowUser() throws ConnectionException {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.unfollow_pumpio);
-        httpConnection.setResponse(jso);
+        httpConnectionMock.setResponse(jso);
         connection.data.setAccountUserOid("acct:t131t@" + originUrl.getHost());
         String userOid = "acct:evan@e14n.com";
         MbUser user = connection.followUser(userOid, false);
@@ -251,7 +251,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     public void testDestroyStatus() throws JSONException, ConnectionException {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.destroy_status_response_pumpio);
-        httpConnection.setResponse(jso);
+        httpConnectionMock.setResponse(jso);
         connection.data.setAccountUserOid(TestSuite.CONVERSATION_ACCOUNT_USER_OID);
         assertTrue("Success", connection.destroyStatus("https://identi.ca.example.com/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
 
@@ -267,7 +267,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
-        httpConnection.setResponse(jso);
+        httpConnectionMock.setResponse(jso);
 
         MbMessage msg = connection.getMessage("w9wME-JVQw2GQe6POK7FSQ");
         assertNotNull("message returned", msg);

@@ -27,18 +27,20 @@ import org.andstatus.app.net.HttpConnectionMock;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 
+import java.util.Arrays;
+
 public class CommandExecutorStrategyTest extends InstrumentationTestCase {
 
-    private HttpConnectionMock httpConnection;
+    private HttpConnectionMock httpConnectionMock;
     MyAccount ma;
 
     @Override
     protected void setUp() throws Exception {
         TestSuite.initializeWithData(this);
 
-        httpConnection = new HttpConnectionMock();
-        TestSuite.setHttpConnection(httpConnection);
-        assertEquals("HttpConnection mocked", MyContextHolder.get().getHttpConnectionMock(), httpConnection);
+        httpConnectionMock = new HttpConnectionMock();
+        TestSuite.setHttpConnectionMock(httpConnectionMock);
+        assertEquals("HttpConnection mocked", MyContextHolder.get().getHttpConnectionMock(), httpConnectionMock);
         // In order the mocked connection to have effect:
         MyContextHolder.get().persistentAccounts().initialize();
         ma = MyAccount.Builder.newOrExistingFromAccountName(
@@ -62,12 +64,12 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         strategy = CommandExecutorStrategy.getStrategy(commandData, null);
         assertEquals(CommandExecutorSearch.class, strategy.getClass());
         strategy.execute();
-        assertTrue("Requested '" + httpConnection.getPathStringList().toArray() + "'", httpConnection.getPathStringList().get(0).contains(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT) );
+        assertTrue("Requested '" + Arrays.toString(httpConnectionMock.getPostedPaths().toArray()) + "'", httpConnectionMock.getPostedPaths().get(0).contains(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT) );
     }
 
     public void testUpdateDestroyStatus() {
         String body = "Some text to send " + System.currentTimeMillis() + "ms"; 
-        httpConnection.setResponse(RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+        httpConnectionMock.setResponse(RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.update_status_response_status_net));
        
         CommandData commandData = CommandData.updateStatus(TestSuite.STATUSNET_TEST_ACCOUNT_NAME, 
@@ -81,7 +83,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         long msgId = commandData.getResult().getItemId();
         assertTrue(msgId != 0);
 
-        httpConnection.setException(new ConnectionException(StatusCode.UNKNOWN, "Request was bad"));
+        httpConnectionMock.setException(new ConnectionException(StatusCode.UNKNOWN, "Request was bad"));
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(2, commandData.getResult().getExecutionCount());
         assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 2, commandData.getResult().getRetriesLeft());
@@ -89,7 +91,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         assertFalse(commandData.getResult().hasHardError());
         assertTrue(commandData.getResult().shouldWeRetry());
         
-        httpConnection.setException(null);
+        httpConnectionMock.setException(null);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(3, commandData.getResult().getExecutionCount());
         assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 3, commandData.getResult().getRetriesLeft());
@@ -97,7 +99,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         assertFalse(commandData.getResult().hasHardError());
         assertFalse(commandData.getResult().shouldWeRetry());
         
-        httpConnection.setException(new ConnectionException(StatusCode.AUTHENTICATION_ERROR, "some text"));
+        httpConnectionMock.setException(new ConnectionException(StatusCode.AUTHENTICATION_ERROR, "some text"));
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(4, commandData.getResult().getExecutionCount());
         assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 4, commandData.getResult().getRetriesLeft());
@@ -105,7 +107,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         assertTrue(commandData.getResult().hasHardError());
         assertFalse(commandData.getResult().shouldWeRetry());
 
-        httpConnection.setException(null);
+        httpConnectionMock.setException(null);
         commandData = new CommandData(CommandEnum.DESTROY_STATUS, TestSuite.STATUSNET_TEST_ACCOUNT_NAME, msgId);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.getResult().hasError());
@@ -115,12 +117,12 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.getResult().hasError());
         
-        httpConnection.setException(null);
+        httpConnectionMock.setException(null);
     }
     
     @Override
     protected void tearDown() throws Exception {
-        TestSuite.setHttpConnection(null);
+        TestSuite.setHttpConnectionMock(null);
         MyContextHolder.get().persistentAccounts().initialize();
         super.tearDown();
     }

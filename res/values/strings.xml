@@ -126,6 +126,7 @@
     <string name="label_origin_type">Type of Microblogging system</string>
     <string name="label_restore">Restore application data from Backup</string>
     <string name="label_upgrading">Upgrade is in progress. Please wait.</string>
+    <string name="label_with_media">with media</string>
     <string name="loading">Loading…</string>
     <string name="message">Message</string>
     <string name="message_twitter">Tweet</string>

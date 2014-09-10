@@ -184,8 +184,8 @@ public class TestSuite extends TestCase {
         return myContextForTest;
     }
     
-    public static void setHttpConnection(HttpConnection httpConnection) {
-        getMyContextForTest().setHttpConnection(httpConnection);
+    public static void setHttpConnectionMock(HttpConnection httpConnection) {
+        getMyContextForTest().setHttpConnectionMock(httpConnection);
     }
     
     private static volatile boolean dataAdded = false;
@@ -291,7 +291,7 @@ public class TestSuite extends TestCase {
             }
             itemsCount = itemsCountNew;
         }
-        assertTrue("There are items in the list of " + activity.getClass().getSimpleName(), 
+        assertTrue("There are " + itemsCount + " items (min=" + minCount + ") in the list of " + activity.getClass().getSimpleName(), 
                 itemsCount >= minCount);
         return itemsCount;
     }

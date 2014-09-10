@@ -38,7 +38,7 @@ import java.util.List;
 
 public class ConnectionStatusNetTest extends InstrumentationTestCase {
     private Connection connection;
-    private HttpConnectionMock httpConnection;
+    private HttpConnectionMock httpConnectionMock;
     private OriginConnectionData connectionData;
     
     public static MbMessage getMessageWithAttachment(Context context) throws Exception {
@@ -62,15 +62,15 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         connection.enrichConnectionData(connectionData);
         connectionData.setHttpConnectionClass(HttpConnectionMock.class);
         connection.setAccountData(connectionData);
-        httpConnection = (HttpConnectionMock) connection.http;
+        httpConnectionMock = (HttpConnectionMock) connection.http;
 
-        httpConnection.data.originUrl = origin.getUrl();
+        httpConnectionMock.data.originUrl = origin.getUrl();
     }
 
     public void testGetPublicTimeline() throws ConnectionException {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.home_timeline);
-        httpConnection.setResponse(jso);
+        httpConnectionMock.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE, 
                 new TimelinePosition("380925803053449216") , 20, connectionData.getAccountUserOid());
@@ -120,7 +120,7 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
     public void testSearch() throws ConnectionException {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
                 org.andstatus.app.tests.R.raw.home_timeline);
-        httpConnection.setResponse(jso);
+        httpConnectionMock.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.search(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT , 20);
         assertNotNull("timeline returned", timeline);
@@ -136,7 +136,7 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
         JSONObject jso = RawResourceUtils.getJSONObject(context, 
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
-        httpConnection.setResponse(jso);
+        httpConnectionMock.setResponse(jso);
         MbMessage msg = connection.getMessage("2215662");
         msg.oid += "_" + TestSuite.TESTRUN_UID;
         assertNotNull("message returned", msg);

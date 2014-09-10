@@ -40,6 +40,7 @@ public enum IntentExtra{
      * Text of the message/"tweet"
      */
     EXTRA_MESSAGE_TEXT("MESSAGE_TEXT"),
+    EXTRA_MEDIA_URI("MEDIA_URI"),
     /**
      * Account name, see {@link MyAccount#getAccountName()}
      */

@@ -164,6 +164,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private MyLoaderManager<Cursor> mLoaderManager = null;
 
     private String mTextToShareViaThisApp = "";
+    private Uri mMediaToShareViaThisApp = null;
     
     private boolean isLoading() {
         return mLoadingLayout.getVisibility() == View.VISIBLE;
@@ -933,7 +934,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
 
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
-            shareViaThisApplication(intentNew.getStringExtra(Intent.EXTRA_SUBJECT), intentNew.getStringExtra(Intent.EXTRA_TEXT));
+            shareViaThisApplication(intentNew.getStringExtra(Intent.EXTRA_SUBJECT), 
+                    intentNew.getStringExtra(Intent.EXTRA_TEXT),
+                    (Uri) intentNew.getParcelableExtra(Intent.EXTRA_STREAM));
         }
 
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
@@ -941,11 +944,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
     }
 
-    private void shareViaThisApplication(String subject, String text) {
-        if (TextUtils.isEmpty(subject) && TextUtils.isEmpty(text)) {
+    private void shareViaThisApplication(String subject, String text, Uri mediaUri) {
+        if (TextUtils.isEmpty(subject) && TextUtils.isEmpty(text) && mediaUri == null) {
             return;
         }
         mTextToShareViaThisApp = "";
+        mMediaToShareViaThisApp = mediaUri;
         if (subjectHasAdditionalContent(subject, text)) {
             mTextToShareViaThisApp += subject;
         }
@@ -955,7 +959,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             }
             mTextToShareViaThisApp += text;
         }
-        MyLog.v(this, "Share via this app '" + mTextToShareViaThisApp +"'");
+        MyLog.v(this, "Share via this app " 
+        + (!TextUtils.isEmpty(mTextToShareViaThisApp) ? "; text:'" + mTextToShareViaThisApp +"'" : "") 
+        + (mMediaToShareViaThisApp != null ? "; media:" + mMediaToShareViaThisApp.toString() : ""));
         AccountSelector.selectAccount(this, 0, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA);
     }
 
@@ -1423,8 +1429,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 if (resultCode == RESULT_OK) {
                     MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
                     if (ma != null) {
-                        mMessageEditor.startEditingMessage(mTextToShareViaThisApp, 0, 0, ma, mTimelineIsCombined 
-						    || mCurrentMyAccountUserId != ma.getUserId());
+                        mMessageEditor.startEditingMessage(mTextToShareViaThisApp, mMediaToShareViaThisApp, 
+                                0, 0, ma, 
+                                mTimelineIsCombined || mCurrentMyAccountUserId != ma.getUserId());
                     }
                 }
                 break;

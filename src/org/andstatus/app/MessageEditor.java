@@ -30,6 +30,7 @@ import org.andstatus.app.service.MyServiceManager;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -43,6 +44,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import org.andstatus.app.context.*;
 import org.andstatus.app.util.*;
 
@@ -58,6 +60,8 @@ class MessageEditor {
      */
     private EditText mEditText;
     private TextView mCharsLeftText;
+    private Uri mMediaUri = null;
+
     /**
      * Information about the message we are editing
      */
@@ -83,7 +87,8 @@ class MessageEditor {
      * Do we hold loaded but not restored state
      */
     private boolean mIsStateLoaded = false;
-    private String statusRestored = "";
+    private String mMessageTextRestored = "";
+    private Uri mMediaUriRestored = null;
     private long replyToIdRestored = 0;
     private long recipientIdRestored = 0;
     private String accountGuidRestored = "";
@@ -114,7 +119,7 @@ class MessageEditor {
                 if ( isVisible() || accountForButton == null) {
                     hide();
                 } else {
-                    startEditingMessage("", 0, 0, accountForButton, mMessageList.isTimelineCombined());
+                    startEditingMessage("", null, 0, 0, accountForButton, mMessageList.isTimelineCombined());
                 }
             }
         });
@@ -278,7 +283,8 @@ class MessageEditor {
      * @param replyToId =0 if not replying
      * @param recipientId =0 if this is Public message
      */
-    public void startEditingMessage(String textInitial, long replyToId, long recipientId, MyAccount myAccount, boolean showAccount) {
+    public void startEditingMessage(String textInitial, Uri mediaUri, long replyToId, long recipientId, 
+            MyAccount myAccount, boolean showAccount) {
         if (myAccount == null) {
             return;
         }
@@ -286,8 +292,9 @@ class MessageEditor {
         if (mAccount != null) {
             accountGuidPrev = mAccount.getAccountName();
         }
-        if (mReplyToId != replyToId || mRecipientId != recipientId 
+        if (mMediaUri != mediaUri || mReplyToId != replyToId || mRecipientId != recipientId 
                 || accountGuidPrev.compareTo(myAccount.getAccountName()) != 0 || mShowAccount != showAccount) {
+            mMediaUri = mediaUri;
             mReplyToId = replyToId;
             mRecipientId = recipientId;
             mAccount = myAccount;
@@ -308,6 +315,9 @@ class MessageEditor {
                 if (!TextUtils.isEmpty(recipientName)) {
                     messageDetails += " " + String.format(MyContextHolder.get().getLocale(), MyContextHolder.get().context().getText(R.string.message_source_to).toString(), recipientName);
                 }
+            }
+            if (mMediaUri != null) {
+                messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")"; 
             }
             mEditText.setText(textInitial2);
             // mEditText.append(textInitial, 0, textInitial.length());
@@ -357,9 +367,12 @@ class MessageEditor {
     public void saveState(Bundle outState) {
         mIsStateLoaded = false;
         if (outState != null && mEditText != null && mAccount != null) {
-            String status = mEditText.getText().toString();
-            if (!TextUtils.isEmpty(status)) {
-                outState.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, status);
+            String messageText = mEditText.getText().toString();
+            if (!TextUtils.isEmpty(messageText) || mMediaUri != null) {
+                outState.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, messageText);
+                if (mMediaUri != null) {
+                    outState.putString(IntentExtra.EXTRA_MEDIA_URI.key, mMediaUri.toString());
+                }
                 outState.putLong(IntentExtra.EXTRA_INREPLYTOID.key, mReplyToId);
                 outState.putLong(IntentExtra.EXTRA_RECIPIENTID.key, mRecipientId);
                 outState.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, mAccount.getAccountName());
@@ -372,9 +385,12 @@ class MessageEditor {
         if (savedInstanceState != null 
                 && savedInstanceState.containsKey(IntentExtra.EXTRA_INREPLYTOID.key) 
                 && savedInstanceState.containsKey(IntentExtra.EXTRA_MESSAGE_TEXT.key)) {
-            String status = savedInstanceState.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key);
-            if (!TextUtils.isEmpty(status)) {
-                statusRestored = status;
+            String messageText = savedInstanceState.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key);
+            String strUri = savedInstanceState.getString(IntentExtra.EXTRA_MEDIA_URI.key);
+            Uri mediaUri = TextUtils.isEmpty(strUri) ? null : Uri.parse(strUri);
+            if (!TextUtils.isEmpty(messageText) || mediaUri != null) {
+                mMessageTextRestored = messageText;
+                mMediaUriRestored = mediaUri;
                 replyToIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
                 recipientIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
                 accountGuidRestored = savedInstanceState.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
@@ -394,8 +410,12 @@ class MessageEditor {
     public void continueEditingLoadedState() {
         if (isStateLoaded()) {
             mIsStateLoaded = false;
-            startEditingMessage(statusRestored, replyToIdRestored, recipientIdRestored, 
+            startEditingMessage(mMessageTextRestored, mMediaUriRestored, replyToIdRestored, recipientIdRestored, 
                     MyContextHolder.get().persistentAccounts().fromAccountName(accountGuidRestored), showAccountRestored);
         }
+    }
+
+    public Uri getMediaUri() {
+        return mMediaUri;
     }
 }

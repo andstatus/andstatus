@@ -132,7 +132,7 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
     protected MbMessage messageFromJson(JSONObject jso) throws ConnectionException {
         final String method = "messageFromJson";
         MbMessage message = super.messageFromJson(jso);
-        if (jso.has(ATTACHMENTS_FIELD_NAME)) {
+        if (jso != null && jso.has(ATTACHMENTS_FIELD_NAME)) {
             try {
                 JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
                 for (int ind = 0; ind < jArr.length(); ind++) {

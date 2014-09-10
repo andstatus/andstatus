@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class HttpConnectionMock extends HttpConnection {
-    private volatile long postedCounter = 0;
-    private volatile JSONObject postedObject = null;
-    private final List<String> pathStringList = new CopyOnWriteArrayList<String>();
+    private volatile long mPostedCounter = 0;
+    private volatile JSONObject mPostedObject = null;
+    private final List<String> mPostedPaths = new CopyOnWriteArrayList<String>();
     private volatile JSONObject responseObject = null;
     private volatile ConnectionException exception = null;
 
@@ -58,7 +58,7 @@ public class HttpConnectionMock extends HttpConnection {
     @Override
     protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
         onRequest("postRequestWithObject", path);
-        postedObject = jso;
+        mPostedObject = jso;
         throwExceptionIfSet();
         return responseObject;
     }
@@ -101,11 +101,11 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     private void onRequest(String method, String path) {
-        postedCounter++;
-        MyLog.v(this, method + " num:" + postedCounter + "; path:'" + path +"', host:'" 
+        mPostedCounter++;
+        MyLog.v(this, method + " num:" + mPostedCounter + "; path:'" + path +"', host:'" 
         + data.originUrl + "', instanceId:" + mInstanceId );
         MyLog.v(this, Arrays.toString(Thread.currentThread().getStackTrace()));
-        pathStringList.add(path);
+        mPostedPaths.add(path);
         networkDelay();
     }
 
@@ -167,21 +167,32 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     public JSONObject getPostedJSONObject() {
-        return postedObject;
+        return mPostedObject;
     }
 
-    public List<String> getPathStringList() {
-        return pathStringList;
+    public List<String> getPostedPaths() {
+        return mPostedPaths;
     }
 
+    public String substring2PostedPath(String substringToSearch) {
+        String found = "";
+        for (String path : mPostedPaths) {
+            if (path.contains(substringToSearch)) {
+                found = path;
+                break;
+            }
+        }
+        return found;
+    }
+    
     public long getPostedCounter() {
-        return postedCounter;
+        return mPostedCounter;
     }
 
     public void clearPostedData() {
-        postedCounter = 0;
-        postedObject = null;
-        pathStringList.clear();
+        mPostedCounter = 0;
+        mPostedObject = null;
+        mPostedPaths.clear();
     }
 
     public long getInstanceId() {
