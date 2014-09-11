@@ -17,6 +17,7 @@
 
 package org.andstatus.app.net;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.account.AccountDataWriter;
@@ -284,13 +285,14 @@ public abstract class Connection {
      * 
      * @param message       Text of the "status"
      * @param inReplyToId   The ID of an existing status that the update is in reply to.
+     * @param mediaUri 
      * @throws ConnectionException 
      *
      * @see <a
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
      *      POST statuses/update</a>
      */
-    public abstract MbMessage updateStatus(String message, String inReplyToId)
+    public abstract MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri)
             throws ConnectionException;
 
     /**

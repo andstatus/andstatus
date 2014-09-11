@@ -1,21 +1,24 @@
 package org.andstatus.app.data;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.util.MyLog;
 
 import java.net.URL;
 
-public enum ContentType {
+public enum MyContentType {
     IMAGE(2),
     TEXT(3),
     UNKNOWN(0);
     
-    private static final String TAG = ContentType.class.getSimpleName();
+    public static final String DEFAULT_MIME_TYPE = "image/jpeg";
+
+    private static final String TAG = MyContentType.class.getSimpleName();
     
     private final long code;
     
-    ContentType(long code) {
+    MyContentType(long code) {
         this.code = code;
     }
     
@@ -40,7 +43,7 @@ public enum ContentType {
     /**
      * Returns the enum or UNKNOWN
      */
-    public static ContentType load(String strCode) {
+    public static MyContentType load(String strCode) {
         try {
             return load(Long.parseLong(strCode));
         } catch (NumberFormatException e) {
@@ -49,8 +52,8 @@ public enum ContentType {
         return UNKNOWN;
     }
     
-    public static ContentType load( long code) {
-        for(ContentType val : values()) {
+    public static MyContentType load( long code) {
+        for(MyContentType val : values()) {
             if (val.code == code) {
                 return val;
             }
@@ -58,10 +61,10 @@ public enum ContentType {
         return UNKNOWN;
     }
     
-    public static ContentType fromUrl(URL url, ContentType defaultValue) {
-        ContentType val = defaultValue == null ? UNKNOWN : defaultValue;
+    public static MyContentType fromUrl(URL url, MyContentType defaultValue) {
+        MyContentType val = defaultValue == null ? UNKNOWN : defaultValue;
         if (url != null) {
-            String extension = ContentType.getExtension(url.getFile());
+            String extension = MyContentType.getExtension(url.getPath());
             if( TextUtils.isEmpty(extension)) {
                 return val;
             } 
@@ -74,15 +77,36 @@ public enum ContentType {
         return val;
     }
 
-    public static ContentType fromUrl(URL url, String defaultValue) {
-        if (TextUtils.isEmpty(defaultValue) || url == null) {
-            return UNKNOWN;
+    public static MyContentType fromUrl(URL url, String defaultValue) {
+        if (TextUtils.isEmpty(defaultValue)) {
+            // Nothing to do
         } else if (defaultValue.startsWith("image")) {
             return IMAGE;
         } else if (defaultValue.startsWith("text")) {
             return TEXT;
-        }
+        } 
         return fromUrl(url, UNKNOWN);
+    }
+
+    public static String uri2MimeType(Uri uri, String defaultValue) {
+        String fileName = uri == null ? null : uri.getPath();
+        return fileName2MimeType(fileName, defaultValue);
+    }
+    
+    public static String fileName2MimeType(String fileName, String defaultValue) {
+        String mimeType = defaultValue == null ? DEFAULT_MIME_TYPE : defaultValue;
+        if (fileName != null) {
+            String extension = MyContentType.getExtension(fileName);
+            if( TextUtils.isEmpty(extension)) {
+                return mimeType;
+            } 
+            if ("jpg.jpeg.png.gif".contains(extension)) {
+                mimeType = "image/" + extension;
+            } else if ("txt.html.htm".contains(extension)) {
+                mimeType = "text/" + extension;
+            }
+        } 
+        return mimeType;
     }
     
 }

@@ -17,9 +17,10 @@ public class AttachedImageDrawable {
         }
         if (imageRowId == null || imageRowId == 0L) {
             return null;
+        } else {
+            return new AttachedImageDrawable(imageRowId, cursor.getString(cursor
+                    .getColumnIndex(MyDatabase.Download.IMAGE_FILE_NAME))).getDrawable();
         }
-        return new AttachedImageDrawable(imageRowId, cursor.getString(cursor
-                .getColumnIndex(MyDatabase.Download.IMAGE_FILE_NAME))).getDrawable();
     }
     
     public AttachedImageDrawable(long downloadRowIdIn, String fileName) {

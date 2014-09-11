@@ -37,7 +37,7 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("image/png");
-        Uri mediaUri = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon.png");
+        Uri mediaUri = TestSuite.LOCAL_IMAGE_TEST_URI;
         assertTrue(mediaUri != null);
         intent.putExtra(Intent.EXTRA_STREAM, mediaUri);
         setActivityIntent(intent);

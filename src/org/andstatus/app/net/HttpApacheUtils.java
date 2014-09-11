@@ -16,9 +16,12 @@
 
 package org.andstatus.app.net;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
@@ -31,6 +34,8 @@ import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
@@ -44,6 +49,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -114,20 +121,58 @@ class HttpApacheUtils {
     /**
      * @return empty {@link JSONObject} in a case of error
      */
-    protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
-        List<NameValuePair> formParams = HttpApacheUtils.jsonToNameValuePair(jso);
+    protected JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
         HttpPost postMethod = new HttpPost(request.pathToUrl(path));
         JSONObject out = new JSONObject();
         try {
-            if (formParams != null) {
-                UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams, HTTP.UTF_8);
-                postMethod.setEntity(formEntity);
+            if (formParams == null || formParams.length() == 0) {
+                // Nothing to do
+            } else if (formParams.has(HttpConnection.KEY_MEDIA_PART_NAME)) {
+                fillMultiPartPost(postMethod, formParams);
+            } else {
+                fillSinglePartPost(postMethod, formParams);
             }
             out = request.postRequest(postMethod);
         } catch (UnsupportedEncodingException e) {
-            MyLog.e(this, e);
+            MyLog.i(this, e);
+        } catch (IOException e) {
+            MyLog.i(this, e);
         }
         return out;
+    }
+
+    private void fillMultiPartPost(HttpPost postMethod, JSONObject formParams) throws IOException, ConnectionException {
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create(); 
+        Uri mediaUri = null;
+        String mediaPartName = "";
+        @SuppressWarnings("unchecked")
+        Iterator<String> iterator =  formParams.keys();
+        while (iterator.hasNext()) {
+            String name = iterator.next();
+            String value = formParams.optString(name);
+            if (HttpConnection.KEY_MEDIA_PART_NAME.equals(name)) {
+                mediaPartName = value;
+            } else if (HttpConnection.KEY_MEDIA_PART_URI.equals(name)) {
+                mediaUri = Uri.parse(value);
+            } else {
+                builder.addTextBody(name, value);
+            }
+        }
+        if (!TextUtils.isEmpty(mediaPartName) && mediaUri != null) {
+            InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
+            ContentType contentType = ContentType.create(MyContentType.uri2MimeType(mediaUri, null)); 
+            builder.addBinaryBody(mediaPartName, ins, contentType, mediaUri.getPath());
+        }
+        postMethod.setEntity(builder.build()); 
+    }
+
+    private void fillSinglePartPost(HttpPost postMethod, JSONObject formParams)
+            throws ConnectionException, UnsupportedEncodingException {
+        List<NameValuePair> nvFormParams = HttpApacheUtils.jsonToNameValuePair(formParams);
+        if (nvFormParams != null) {
+            UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(nvFormParams, HTTP.UTF_8);
+            postMethod.setEntity(formEntity);
+        }
     }
     
     /**

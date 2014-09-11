@@ -375,7 +375,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
         public static final String USER_ID = User.USER_ID;
         /** Attachment is connected to a message */
         public static final String MSG_ID =  Msg.MSG_ID;
-        /** See {@link ContentType} */
+        /** See {@link MyContentType} */
         public static final String CONTENT_TYPE = "content_type";
         /**
          * Date and time of the information. Used to decide which 

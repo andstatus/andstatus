@@ -94,7 +94,7 @@ public class ConversationInserter extends InstrumentationTestCase {
                 .fromUrlAndContentType(
                         new URL(
                                 "http://www.publicdomainpictures.net/pictures/100000/nahled/broadcasting-tower-14081029181fC.jpg"),
-                        ContentType.IMAGE));
+                        MyContentType.IMAGE));
         addMessage(selected);
         addMessage(reply3);
         addMessage(reply1);
@@ -117,7 +117,7 @@ public class ConversationInserter extends InstrumentationTestCase {
                         .fromUrlAndContentType(
                                 new URL(
                                         "http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg"),
-                                ContentType.IMAGE));
+                                MyContentType.IMAGE));
         addMessage(reply9);
         
         MbMessage reply10 = buildMessage(author3, "Reply 10 to Reply 8", reply8, null);

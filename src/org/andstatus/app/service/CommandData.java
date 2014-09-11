@@ -20,6 +20,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -105,6 +106,17 @@ public class CommandData implements Comparable<CommandData> {
 		itemId = itemIdIn;
     }
 	
+    public Uri getMediaUri() {
+        Uri mediaUri = null;
+        if (bundle.containsKey(IntentExtra.EXTRA_MEDIA_URI.key)) {
+            String uriString =  bundle.getString(IntentExtra.EXTRA_MEDIA_URI.key);
+            if (!TextUtils.isEmpty(uriString)) {
+                mediaUri = Uri.parse(uriString);
+            }
+        }
+        return mediaUri;
+    }
+    
     public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn) {
         command = commandIn;
 		String accountName2 = "";
@@ -193,7 +205,7 @@ public class CommandData implements Comparable<CommandData> {
         return commandData;
     }
 
-    public static CommandData updateStatus(String accountName, String status, long replyToId, long recipientId) {
+    public static CommandData updateStatus(String accountName, String status, long replyToId, long recipientId, Uri mediaUri) {
         CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS, accountName);
         commandData.mInForeground = true;
         commandData.bundle.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, status);
@@ -202,6 +214,9 @@ public class CommandData implements Comparable<CommandData> {
         }
         if (recipientId != 0) {
             commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key, recipientId);
+        }
+        if (mediaUri != null) {
+            commandData.bundle.putString(IntentExtra.EXTRA_MEDIA_URI.key, mediaUri.toString());
         }
         return commandData;
     }
@@ -233,6 +248,8 @@ public class CommandData implements Comparable<CommandData> {
                         sp.getLong(IntentExtra.EXTRA_INREPLYTOID.key + si, 0));
                 commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key,
                         sp.getLong(IntentExtra.EXTRA_RECIPIENTID.key + si, 0));
+                commandData.bundle.putString(IntentExtra.EXTRA_MEDIA_URI.key,
+                        sp.getString(IntentExtra.EXTRA_MEDIA_URI.key + si, ""));
                 break;
 			case SEARCH_MESSAGE:
 				commandData.bundle.putString(SearchManager.QUERY,
@@ -317,6 +334,9 @@ public class CommandData implements Comparable<CommandData> {
             switch (command) {
                 case UPDATE_STATUS:
                     text += bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key);
+                    if (getMediaUri() != null) {
+                        text += "-" + getMediaUri().toString();
+                    }
                     break;
                 case SEARCH_MESSAGE:
                     text += bundle.getString(SearchManager.QUERY);
@@ -344,6 +364,11 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append("\"");
                 builder.append(I18n.trimTextAt(bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key), 40));                
                 builder.append("\",");
+                if (getMediaUri() != null) {
+                    builder.append("media=\"");
+                    builder.append(getMediaUri().toString());                
+                    builder.append("\",");
+                }
                 break;
             case SEARCH_MESSAGE:
                 builder.append("\"");
@@ -426,6 +451,7 @@ public class CommandData implements Comparable<CommandData> {
                 ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
                 ed.putLong(IntentExtra.EXTRA_INREPLYTOID.key + si, bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key));
                 ed.putLong(IntentExtra.EXTRA_RECIPIENTID.key + si, bundle.getLong(IntentExtra.EXTRA_RECIPIENTID.key));
+                ed.putString(IntentExtra.EXTRA_MEDIA_URI.key + si, bundle.getString(IntentExtra.EXTRA_MEDIA_URI.key));
                 break;
 			case SEARCH_MESSAGE:
 				ed.putString(SearchManager.QUERY + si, bundle.getString(SearchManager.QUERY));
@@ -486,6 +512,9 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append("\"");
                 builder.append(trimmedTextForSummary(bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key)));                
                 builder.append("\"");
+                if (getMediaUri() != null) {
+                    builder.append(" (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")");
+                }
                 break;
             case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:

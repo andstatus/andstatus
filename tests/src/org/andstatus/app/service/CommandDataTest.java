@@ -36,9 +36,9 @@ public class CommandDataTest extends InstrumentationTestCase {
     public void testQueue() throws InterruptedException {
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         long time0 = System.currentTimeMillis(); 
-        String body = "Some text to send " + time0 + "ms"; 
+        String body = "Some text to send " + time0 + "ms";
         CommandData commandData = CommandData.updateStatus(TestSuite.CONVERSATION_ACCOUNT_NAME, 
-                body, 0, 0);
+                body, 0, 0, TestSuite.LOCAL_IMAGE_TEST_URI);
 
         assertEquals(0, commandData.getResult().getExecutionCount());
         assertEquals(0, commandData.getResult().getLastExecutedDate());

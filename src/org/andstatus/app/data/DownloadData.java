@@ -21,7 +21,7 @@ public class DownloadData {
     private DownloadType downloadType = DownloadType.UNKNOWN;
     public long userId = 0;
     public long msgId = 0;
-    private ContentType contentType = ContentType.UNKNOWN;
+    private MyContentType contentType = MyContentType.UNKNOWN;
     private DownloadStatus status = DownloadStatus.UNKNOWN; 
     private long rowId = 0;
     private DownloadFile fileStored = DownloadFile.getEmpty();
@@ -36,7 +36,7 @@ public class DownloadData {
     protected DownloadData(long userIdIn, String urlString) {
         downloadType = DownloadType.AVATAR;
         userId = userIdIn;
-        contentType = ContentType.IMAGE;
+        contentType = MyContentType.IMAGE;
         url = stringToUrl(urlString);
         loadOtherFields();
         fixFieldsAfterLoad();
@@ -50,11 +50,11 @@ public class DownloadData {
         return dd;
     }
     
-    public static DownloadData newForMessage(long msgIdIn, ContentType contentTypeIn, URL urlIn) {
+    public static DownloadData newForMessage(long msgIdIn, MyContentType contentTypeIn, URL urlIn) {
         return new DownloadData(msgIdIn, contentTypeIn, urlIn);
     }
     
-    private DownloadData(long msgIdIn, ContentType contentTypeIn, URL urlIn) {
+    private DownloadData(long msgIdIn, MyContentType contentTypeIn, URL urlIn) {
         switch (contentTypeIn) {
         case IMAGE:
             downloadType = DownloadType.IMAGE;
@@ -101,7 +101,7 @@ public class DownloadData {
                 + (downloadType == DownloadType.UNKNOWN ? ", " + Download.DOWNLOAD_TYPE : "")
                 + (userId == 0 ? ", " + Download.USER_ID : "")
                 + (msgId == 0 ? ", " + Download.MSG_ID : "")
-                + (contentType == ContentType.UNKNOWN ? ", " + Download.CONTENT_TYPE : "")
+                + (contentType == MyContentType.UNKNOWN ? ", " + Download.CONTENT_TYPE : "")
                 + (rowId == 0 ? ", " + Download._ID : "")
                 + (url == null ? ", " + Download.URL : "")
                 + " FROM " + Download.TABLE_NAME 
@@ -124,8 +124,8 @@ public class DownloadData {
                 if (msgId == 0) {
                     msgId = cursor.getLong(cursor.getColumnIndex(Download.MSG_ID));
                 }
-                if (contentType == ContentType.UNKNOWN) {
-                    contentType = ContentType.load(cursor.getLong(cursor.getColumnIndex(Download.CONTENT_TYPE)));
+                if (contentType == MyContentType.UNKNOWN) {
+                    contentType = MyContentType.load(cursor.getLong(cursor.getColumnIndex(Download.CONTENT_TYPE)));
                 }
                 if (rowId == 0) {
                     rowId = cursor.getLong(cursor.getColumnIndex(Download._ID));
@@ -185,8 +185,8 @@ public class DownloadData {
     }
 
     private String getOptionalExtension() {
-        return TextUtils.isEmpty(ContentType.getExtension(url.toExternalForm())) ? "" : "."
-                + (ContentType.getExtension(url.toExternalForm()));
+        return TextUtils.isEmpty(MyContentType.getExtension(url.toExternalForm())) ? "" : "."
+                + (MyContentType.getExtension(url.toExternalForm()));
     }
     
     public void saveToDatabase() {

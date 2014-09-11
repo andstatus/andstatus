@@ -19,7 +19,7 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import org.andstatus.app.data.ContentType;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -131,7 +131,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
                         if (url == null) {
                             url = UrlUtils.json2Url(attachment, "media_url_http");
                         }
-                        MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, ContentType.IMAGE);
+                        MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, MyContentType.IMAGE);
                         if (mbAttachment.isValid()) {
                             message.attachments.add(mbAttachment);
                         } else {

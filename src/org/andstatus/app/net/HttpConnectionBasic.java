@@ -55,8 +55,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
     }
     
     @Override
-    protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
-        return new HttpApacheUtils(this).postRequest(path, jso);
+    protected JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
+        return new HttpApacheUtils(this).postRequest(path, formParams);
     }
 
     @Override

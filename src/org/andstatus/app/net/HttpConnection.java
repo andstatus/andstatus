@@ -29,6 +29,8 @@ public abstract class HttpConnection {
     protected HttpConnectionData data;
 
     static final String USER_AGENT = "AndStatus";
+    static final String KEY_MEDIA_PART_NAME = "media_part_name";
+    static final String KEY_MEDIA_PART_URI = "media_part_uri";
     /** 
      * The URI is consistent with "scheme" and "host" in AndroidManifest
      * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"

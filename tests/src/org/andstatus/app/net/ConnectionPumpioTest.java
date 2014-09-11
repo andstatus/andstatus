@@ -23,7 +23,7 @@ import android.text.TextUtils;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.ContentType;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.origin.Origin;
@@ -207,7 +207,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         httpConnectionMock.setResponse(new JSONObject());
         connection.data.setAccountUserOid("acct:mytester@" + originUrl.getHost());
-        connection.updateStatus(body, inReplyToId);
+        connection.updateStatus(body, inReplyToId, null);
         JSONObject activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
@@ -220,7 +220,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
 
         body = "Testing the application...";
         inReplyToId = "";
-        connection.updateStatus(body, inReplyToId);
+        connection.updateStatus(body, inReplyToId, null);
         activity = httpConnectionMock.getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
@@ -273,7 +273,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);
         MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
-                "https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg"), ContentType.IMAGE);
+                "https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg"), MyContentType.IMAGE);
         assertEquals("attachment", attachment, msg.attachments.get(0));
     }
     

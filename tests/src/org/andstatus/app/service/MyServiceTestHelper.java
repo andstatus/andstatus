@@ -1,7 +1,5 @@
 package org.andstatus.app.service;
 
-import android.test.InstrumentationTestCase;
-
 import junit.framework.TestCase;
 
 import org.andstatus.app.account.MyAccountTest;

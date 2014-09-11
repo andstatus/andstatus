@@ -21,7 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.ContentType;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -142,7 +142,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);
         MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
-                "https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"), ContentType.IMAGE);
+                "https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"), MyContentType.IMAGE);
         assertEquals("attachment", attachment, msg.attachments.get(0));
         attachment.url = new URL("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg");
         assertNotSame("attachment", attachment, msg.attachments.get(0));

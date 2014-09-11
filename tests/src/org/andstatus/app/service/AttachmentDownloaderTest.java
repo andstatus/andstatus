@@ -21,7 +21,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.ContentType;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MessageInserter;
@@ -53,7 +53,7 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
                         .fromUrlAndContentType(
                                 new URL(
                                         "http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"),
-                                ContentType.IMAGE));
+                                MyContentType.IMAGE));
         long msgId = mi.addMessage(message);
         
         DownloadData dd = DownloadData.newForMessage(msgId, message.attachments.get(0).contentType, null);

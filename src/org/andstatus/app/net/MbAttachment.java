@@ -16,7 +16,7 @@
 
 package org.andstatus.app.net;
 
-import org.andstatus.app.data.ContentType;
+import org.andstatus.app.data.MyContentType;
 
 import java.net.URL;
 
@@ -24,12 +24,12 @@ public class MbAttachment {
     public String oid="";
     public URL url = null;
     public URL thumbUrl = null;
-    public ContentType contentType = ContentType.UNKNOWN;
+    public MyContentType contentType = MyContentType.UNKNOWN;
 
-    public static MbAttachment fromUrlAndContentType(URL urlIn, ContentType contentTypeIn) {
+    public static MbAttachment fromUrlAndContentType(URL urlIn, MyContentType contentTypeIn) {
         MbAttachment attachment = new MbAttachment();
         attachment.url = urlIn;
-        attachment.contentType = ContentType.fromUrl(urlIn, contentTypeIn);
+        attachment.contentType = MyContentType.fromUrl(urlIn, contentTypeIn);
         return attachment;
     }
 
@@ -38,7 +38,7 @@ public class MbAttachment {
     }
     
     public boolean isValid() {
-        return url != null && contentType != ContentType.UNKNOWN;
+        return url != null && contentType != MyContentType.UNKNOWN;
     }
 
     @Override

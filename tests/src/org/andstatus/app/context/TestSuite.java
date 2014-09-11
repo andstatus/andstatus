@@ -23,6 +23,7 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -241,6 +242,8 @@ public class TestSuite extends TestCase {
     public static final String PLAIN_TEXT_MESSAGE_OID = "2167283" + TESTRUN_UID;
     public static final String PUBLIC_MESSAGE_TEXT = "UniqueText" + TESTRUN_UID;
     public static final String GLOBAL_PUBLIC_MESSAGE_TEXT = "Public_in_AndStatus_" + TESTRUN_UID;
+    /** See http://stackoverflow.com/questions/6602417/get-the-uri-of-an-image-stored-in-drawable */
+    public static final Uri LOCAL_IMAGE_TEST_URI = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon.png");
     
     public static String getTestOriginHost(String testOriginName) {
         return TEST_ORIGIN_PARENT_HOST + "." + testOriginName;

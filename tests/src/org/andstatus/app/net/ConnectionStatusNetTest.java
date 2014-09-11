@@ -22,7 +22,7 @@ import android.test.InstrumentationTestCase;
 import org.andstatus.app.account.AccountDataReaderEmpty;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.ContentType;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConnectionData;
@@ -44,7 +44,7 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
     public static MbMessage getMessageWithAttachment(Context context) throws Exception {
         ConnectionStatusNetTest test = new ConnectionStatusNetTest();
         test.setUp();
-        return test.privateGetMessageWithAttachment(context);
+        return test.privateGetMessageWithAttachment(context, true);
     }
     
     @Override
@@ -127,23 +127,35 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());
     }
+
+    public void testPostWithMedia() throws ConnectionException, MalformedURLException {
+        JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
+        httpConnectionMock.setResponse(jso);
+        
+        MbMessage message2 = connection.updateStatus("Test post message with media", "", TestSuite.LOCAL_IMAGE_TEST_URI);
+        message2.setPublic(true); 
+        assertEquals("Message returned", privateGetMessageWithAttachment(this.getInstrumentation().getContext(), false), message2);
+    }
     
     public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
-        privateGetMessageWithAttachment(this.getInstrumentation().getContext());
+        privateGetMessageWithAttachment(this.getInstrumentation().getContext(), true);
     }
 
-    private MbMessage privateGetMessageWithAttachment(Context context) throws ConnectionException, MalformedURLException {
+    private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws ConnectionException, MalformedURLException {
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
         JSONObject jso = RawResourceUtils.getJSONObject(context, 
                 org.andstatus.app.tests.R.raw.quitter_message_with_attachment);
         httpConnectionMock.setResponse(jso);
         MbMessage msg = connection.getMessage("2215662");
-        msg.oid += "_" + TestSuite.TESTRUN_UID;
+        if (uniqueUid) {
+            msg.oid += "_" + TestSuite.TESTRUN_UID;
+        }
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);
         MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
                 "https://quitter.se/file/mcscx-20131110T222250-427wlgn.png")
-                , ContentType.IMAGE);
+                , MyContentType.IMAGE);
         assertEquals("attachment", attachment, msg.attachments.get(0));
         return msg;
     }

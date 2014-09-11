@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net;
 
+import android.net.Uri;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +59,7 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
+    public MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
         return MbMessage.getEmpty();
     }
 

@@ -20,7 +20,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.ContentType;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -80,7 +80,7 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
     }
 
     @Override
-    public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
+    public MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", message);
@@ -90,6 +90,10 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
             
             if ( !TextUtils.isEmpty(inReplyToId)) {
                 formParams.put("in_reply_to_status_id", inReplyToId);
+            }
+            if (mediaUri != null) {
+                formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media");
+                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
             }
         } catch (JSONException e) {
             MyLog.e(this, e);
@@ -141,7 +145,7 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
                     if (url == null) {
                         url = UrlUtils.json2Url(attachment, "thumb_url");
                     }
-                    MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, ContentType.fromUrl(url, attachment.optString("mimetype")));
+                    MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, MyContentType.fromUrl(url, attachment.optString("mimetype")));
                     if (mbAttachment.isValid()) {
                         message.attachments.add(mbAttachment);
                     } else {

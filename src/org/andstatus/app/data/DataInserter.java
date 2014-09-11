@@ -242,7 +242,7 @@ public class DataInserter {
                 for (MbAttachment attachment : message.attachments) {
                     DownloadData dd = DownloadData.newForMessage(rowId, attachment.contentType, attachment.url);
                     dd.saveToDatabase();
-                    if (attachment.contentType == ContentType.IMAGE && MyPreferences.showAttachedImages()) {
+                    if (attachment.contentType == MyContentType.IMAGE && MyPreferences.showAttachedImages()) {
                         dd.requestDownload();
                     }
                 }

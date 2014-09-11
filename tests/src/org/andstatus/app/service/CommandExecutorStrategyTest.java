@@ -73,7 +73,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
                 org.andstatus.app.tests.R.raw.update_status_response_status_net));
        
         CommandData commandData = CommandData.updateStatus(TestSuite.STATUSNET_TEST_ACCOUNT_NAME, 
-                body, 0, 0);
+                body, 0, 0, null);
         assertEquals(0, commandData.getResult().getExecutionCount());
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(1, commandData.getResult().getExecutionCount());

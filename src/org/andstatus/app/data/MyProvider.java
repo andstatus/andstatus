@@ -810,7 +810,7 @@ public class MyProvider extends ContentProvider {
                     + " FROM " + MyDatabase.Download.TABLE_NAME + ") AS " + ATTACHMENT_IMAGE_TABLE_ALIAS 
                     +  " ON "
                     + ATTACHMENT_IMAGE_TABLE_ALIAS + "." + Download.CONTENT_TYPE 
-                    + "=" + ContentType.IMAGE.save() + " AND " 
+                    + "=" + MyContentType.IMAGE.save() + " AND " 
                     + ATTACHMENT_IMAGE_TABLE_ALIAS + "." + MyDatabase.Download.MSG_ID 
                     + "=" + MSG_TABLE_ALIAS + "." + BaseColumns._ID;
         }

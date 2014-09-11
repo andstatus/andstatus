@@ -473,11 +473,10 @@ public abstract class ConnectionTwitter extends Connection {
     }
     
     @Override
-    public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
+    public MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", message);
-            
             if ( !TextUtils.isEmpty(inReplyToId)) {
                 formParams.put("in_reply_to_status_id", inReplyToId);
             }

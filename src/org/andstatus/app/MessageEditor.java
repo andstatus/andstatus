@@ -349,7 +349,7 @@ class MessageEditor {
 			if (MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
 				MyLog.setLogToFile(true);
 			}
-            CommandData commandData = CommandData.updateStatus(mAccount.getAccountName(), status, mReplyToId, mRecipientId);
+            CommandData commandData = CommandData.updateStatus(mAccount.getAccountName(), status, mReplyToId, mRecipientId, mMediaUri);
             MyServiceManager.sendForegroundCommand(commandData);
 
             // Let's assume that everything will be Ok

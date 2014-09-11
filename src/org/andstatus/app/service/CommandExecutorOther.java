@@ -57,7 +57,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 String status = execContext.getCommandData().bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key).trim();
                 long replyToId = execContext.getCommandData().bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
                 long recipientId = execContext.getCommandData().bundle.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
-                updateStatus(status, replyToId, recipientId);
+                String strUri = execContext.getCommandData().bundle.getString(IntentExtra.EXTRA_MEDIA_URI.key);
+                Uri mediaUri = (strUri != null) ? Uri.parse(strUri) : null;
+                updateStatus(status, replyToId, recipientId, mediaUri);
                 break;
             case DESTROY_STATUS:
                 destroyStatus(execContext.getCommandData().itemId);
@@ -322,8 +324,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
      * @param status
      * @param replyToMsgId - Message Id
      * @param recipientUserId !=0 for Direct messages - User Id
+     * @param mediaUri 
      */
-    private void updateStatus(String status, long replyToMsgId, long recipientUserId) {
+    private void updateStatus(String status, long replyToMsgId, long recipientUserId, Uri mediaUri) {
         final String method = "updateStatus";
         boolean ok = false;
         MbMessage message = null;
@@ -334,7 +337,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             if (recipientUserId == 0) {
                 String replyToMsgOid = MyProvider.idToOid(OidEnum.MSG_OID, replyToMsgId, 0);
                 message = execContext.getMyAccount().getConnection()
-                        .updateStatus(status.trim(), replyToMsgOid);
+                        .updateStatus(status.trim(), replyToMsgOid, mediaUri);
             } else {
                 String recipientOid = MyProvider.idToOid(OidEnum.USER_OID, recipientUserId, 0);
                 // Currently we don't use Screen Name, I guess id is enough.

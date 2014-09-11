@@ -20,7 +20,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.ContentType;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.origin.OriginConnectionData;
 import org.andstatus.app.util.MyHtml;
@@ -209,7 +209,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public MbMessage updateStatus(String message, String inReplyToId) throws ConnectionException {
+    public MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
         message = toHtmlIfAllowed(message);
         ActivitySender sender = ActivitySender.fromContent(this, message);
         if (!TextUtils.isEmpty(inReplyToId)) {
@@ -517,7 +517,7 @@ public class ConnectionPumpio extends Connection {
                 if (url == null) {
                     url = getImageUrl(jso, "image");
                 }
-                MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, ContentType.IMAGE);
+                MbAttachment mbAttachment =  MbAttachment.fromUrlAndContentType(url, MyContentType.IMAGE);
                 if (mbAttachment.isValid()) {
                     message.attachments.add(mbAttachment);
                 } else {
