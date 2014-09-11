@@ -357,6 +357,8 @@ public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceL
             case DESTROY_FAVORITE:
             case DESTROY_REBLOG:
             case DESTROY_STATUS:
+            case FETCH_ATTACHMENT:
+            case FETCH_AVATAR:
             case REBLOG:
             case UPDATE_STATUS:
                 if (!commandData.getResult().hasError()) {

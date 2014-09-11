@@ -36,6 +36,33 @@ import java.util.List;
 public class ConnectionTwitter1p1 extends ConnectionTwitter {
 
     @Override
+    public MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri)
+            throws ConnectionException {
+        if (mediaUri == null) {
+            return super.updateStatus(message, inReplyToId, mediaUri);
+        }
+        return updateWithMedia(message, inReplyToId, mediaUri);
+    }
+
+    private MbMessage updateWithMedia(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
+        JSONObject formParams = new JSONObject();
+        try {
+            formParams.put("status", message);
+            if ( !TextUtils.isEmpty(inReplyToId)) {
+                formParams.put("in_reply_to_status_id", inReplyToId);
+            }
+            if (mediaUri != null) {
+                formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media[]");
+                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
+            }
+        } catch (JSONException e) {
+            MyLog.e(this, e);
+        }
+        JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
+        return messageFromJson(jso);
+    }
+
+    @Override
     protected String getApiPath1(ApiRoutineEnum routine) {
         String url;
         switch(routine) {
@@ -52,6 +79,9 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
                 break;
             case DESTROY_FAVORITE:
                 url = "favorites/destroy" + EXTENSION;
+                break;
+            case POST_MESSAGE:
+                url = "statuses/update_with_media" + EXTENSION;
                 break;
             case SEARCH_MESSAGES:
                 // https://dev.twitter.com/docs/api/1.1/get/search/tweets

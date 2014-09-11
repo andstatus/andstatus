@@ -260,6 +260,8 @@ public class ConversationActivity extends Activity implements MyServiceListener,
             case REBLOG:
             case DESTROY_REBLOG:
             case DESTROY_STATUS:
+            case FETCH_ATTACHMENT:
+            case FETCH_AVATAR:
                 if (!commandData.getResult().hasError()) {
                     showConversation();
                 }

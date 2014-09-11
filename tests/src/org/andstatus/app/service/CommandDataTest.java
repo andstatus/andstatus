@@ -20,6 +20,8 @@ import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.MyDatabase.OidEnum;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.Queue;
@@ -30,16 +32,26 @@ public class CommandDataTest extends InstrumentationTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        TestSuite.initialize(this);
+        TestSuite.initializeWithData(this);
     }
     
     public void testQueue() throws InterruptedException {
-        Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         long time0 = System.currentTimeMillis(); 
         String body = "Some text to send " + time0 + "ms";
         CommandData commandData = CommandData.updateStatus(TestSuite.CONVERSATION_ACCOUNT_NAME, 
                 body, 0, 0, TestSuite.LOCAL_IMAGE_TEST_URI);
+        testQueueOneCommandData(commandData, time0);
 
+        long msgId = MyProvider.oidToId(OidEnum.MSG_OID, MyContextHolder.get().persistentOrigins()
+                .fromName(TestSuite.CONVERSATION_ORIGIN_NAME).getId(),
+                TestSuite.CONVERSATION_ENTRY_MESSAGE_OID);
+        long downloadDataRowId = 23;
+        commandData = CommandData.fetchAttachment(msgId, downloadDataRowId);
+        testQueueOneCommandData(commandData, time0);
+    }
+
+    private void testQueueOneCommandData(CommandData commandData, long time0)
+            throws InterruptedException {
         assertEquals(0, commandData.getResult().getExecutionCount());
         assertEquals(0, commandData.getResult().getLastExecutedDate());
         assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES, commandData.getResult().getRetriesLeft());
@@ -54,6 +66,7 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertFalse(commandData.getResult().hasSoftError());
         assertFalse(commandData.getResult().hasHardError());
         
+        Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         queue.add(commandData);
         assertEquals(1, CommandData.saveQueue(MyContextHolder.get().context(), queue, TEST_QUEUE_FILE_NAME));
         queue.clear();

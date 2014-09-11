@@ -77,10 +77,11 @@ public abstract class Connection {
         GET_FRIENDS, // List of users
         GET_FRIENDS_IDS, // List of Users' IDs
         GET_USER,
+        POST_MESSAGE,
         POST_DIRECT_MESSAGE,
         POST_REBLOG,
+        DESTROY_MESSAGE,
         REGISTER_CLIENT,
-        STATUSES_DESTROY,
         /**
          * Get the Home timeline (whatever it is...).
          * This is the equivalent of /home on the Web.
@@ -102,7 +103,6 @@ public abstract class Connection {
         SEARCH_MESSAGES(true),
 
         GET_MESSAGE,
-        STATUSES_UPDATE,
         STOP_FOLLOWING_USER,
         
         /**

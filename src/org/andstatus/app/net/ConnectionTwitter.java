@@ -75,7 +75,7 @@ public abstract class ConnectionTwitter extends Connection {
             case POST_REBLOG:
                 url = "statuses/retweet/";
                 break;
-            case STATUSES_DESTROY:
+            case DESTROY_MESSAGE:
                 url = "statuses/destroy/";
                 break;
             case STATUSES_HOME_TIMELINE:
@@ -90,7 +90,7 @@ public abstract class ConnectionTwitter extends Connection {
             case GET_MESSAGE:
                 url = "statuses/show" + EXTENSION;
                 break;
-            case STATUSES_UPDATE:
+            case POST_MESSAGE:
                 url = "statuses/update" + EXTENSION;
                 break;
             case STOP_FOLLOWING_USER:
@@ -108,7 +108,7 @@ public abstract class ConnectionTwitter extends Connection {
 
     @Override
     public boolean destroyStatus(String statusId) throws ConnectionException {
-        JSONObject jso = http.postRequest(getApiPath(ApiRoutineEnum.STATUSES_DESTROY) + statusId + EXTENSION);
+        JSONObject jso = http.postRequest(getApiPath(ApiRoutineEnum.DESTROY_MESSAGE) + statusId + EXTENSION);
         if (jso != null && MyLog.isLoggable(null, MyLog.VERBOSE)) {
             try {
                 MyLog.v(TAG, "destroyStatus response: " + jso.toString(2));
@@ -483,7 +483,7 @@ public abstract class ConnectionTwitter extends Connection {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.STATUSES_UPDATE, formParams);
+        JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
         return messageFromJson(jso);
     }
 

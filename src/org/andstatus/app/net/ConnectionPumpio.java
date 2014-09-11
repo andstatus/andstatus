@@ -79,8 +79,8 @@ public class ConnectionPumpio extends Connection {
             case FOLLOW_USER:
             case POST_DIRECT_MESSAGE:
             case POST_REBLOG:
-            case STATUSES_DESTROY:
-            case STATUSES_UPDATE:
+            case DESTROY_MESSAGE:
+            case POST_MESSAGE:
             case STATUSES_USER_TIMELINE:
                 url = "user/%nickname%/feed";
                 break;

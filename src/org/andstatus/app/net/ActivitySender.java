@@ -95,7 +95,7 @@ class ActivitySender {
             }
             activity.put("object", obj);
 
-            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.STATUSES_UPDATE, connection.data.getAccountUserOid());
+            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_MESSAGE, connection.data.getAccountUserOid());
             jso = conu.httpConnection.postRequest(conu.url, activity);
             if (jso != null && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
                 MyLog.v(this, "verb '" + verb + "' object id='" + objectId + "' " + jso.toString(2));

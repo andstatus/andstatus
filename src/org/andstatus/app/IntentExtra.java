@@ -16,6 +16,8 @@
 
 package org.andstatus.app;
 
+import android.app.SearchManager;
+
 /**
  * Names of extras are used in the Intent-messaging 
  * (e.g. to notify Widget of new Messages)
@@ -63,6 +65,7 @@ public enum IntentExtra{
      * Recipient of a Direct message
      */
     EXTRA_RECIPIENTID("RECIPIENTID"),
+    EXTRA_SEARCH_QUERY(SearchManager.QUERY),
     /**
      * boolean. "true" means search in Internet, i.e. sending requests to Microblogging systems  
      */

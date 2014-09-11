@@ -107,14 +107,26 @@ public class CommandData implements Comparable<CommandData> {
     }
 	
     public Uri getMediaUri() {
-        Uri mediaUri = null;
-        if (bundle.containsKey(IntentExtra.EXTRA_MEDIA_URI.key)) {
-            String uriString =  bundle.getString(IntentExtra.EXTRA_MEDIA_URI.key);
-            if (!TextUtils.isEmpty(uriString)) {
-                mediaUri = Uri.parse(uriString);
+        String uriString = getExtraText(IntentExtra.EXTRA_MEDIA_URI);
+        if (!TextUtils.isEmpty(uriString)) {
+            return Uri.parse(uriString);
+        }
+        return null;
+    }
+
+    public String getMessageText() {
+        return getExtraText(IntentExtra.EXTRA_MESSAGE_TEXT);
+    }
+
+    private String getExtraText(IntentExtra intentExtra) {
+        String value = "";
+        if (bundle.containsKey(intentExtra.key)) {
+            String value1 =  bundle.getString(intentExtra.key);
+            if (!TextUtils.isEmpty(value1)) {
+                value = value1;
             }
         }
-        return mediaUri;
+        return value;
     }
     
     public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn) {
@@ -241,6 +253,10 @@ public class CommandData implements Comparable<CommandData> {
                 sp.getBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key + si, false));
 
         switch (commandData.command) {
+            case FETCH_ATTACHMENT:
+                commandData.bundle.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key,
+                        sp.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, ""));
+                break;
             case UPDATE_STATUS:
                 commandData.bundle.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key,
                         sp.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, ""));
@@ -331,19 +347,11 @@ public class CommandData implements Comparable<CommandData> {
             if (itemId != 0) {
                 text += Long.toString(itemId);
             }
-            switch (command) {
-                case UPDATE_STATUS:
-                    text += bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key);
-                    if (getMediaUri() != null) {
-                        text += "-" + getMediaUri().toString();
-                    }
-                    break;
-                case SEARCH_MESSAGE:
-                    text += bundle.getString(SearchManager.QUERY);
-                    break;
-                default:
-                    break;
+            text += getExtraText(IntentExtra.EXTRA_MESSAGE_TEXT);
+            if (getMediaUri() != null) {
+                text += "-" + getMediaUri().toString();
             }
+            text += getExtraText(IntentExtra.EXTRA_SEARCH_QUERY);
             hashcode = text.hashCode();
         }
         return hashcode;
@@ -447,6 +455,9 @@ public class CommandData implements Comparable<CommandData> {
         ed.putLong(IntentExtra.EXTRA_ITEMID.key + si, itemId);
         ed.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key + si, mInForeground);
         switch (command) {
+            case FETCH_ATTACHMENT:
+                ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
+                break;
             case UPDATE_STATUS:
                 ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
                 ed.putLong(IntentExtra.EXTRA_INREPLYTOID.key + si, bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key));

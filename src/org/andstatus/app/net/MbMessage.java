@@ -103,6 +103,29 @@ public class MbMessage {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        MbMessage other = (MbMessage) obj;
+        if (hashCode() != other.hashCode()) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
+    @Override
     public String toString() {
         return "MbMessage [isEmpty=" + isEmpty + ", oid=" + oid + ", sentDate=" + sentDate
                 + ", sender=" + sender + ", recipient=" + recipient + ", body=" + body

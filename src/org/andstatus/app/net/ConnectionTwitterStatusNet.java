@@ -98,7 +98,7 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.STATUSES_UPDATE, formParams);
+        JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
         return messageFromJson(jso);
     }
     
