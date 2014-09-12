@@ -58,7 +58,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         } catch (JSONException e) {
             MyLog.e(this, e);
         }
-        JSONObject jso = postRequest(ApiRoutineEnum.POST_MESSAGE, formParams);
+        JSONObject jso = postRequest(ApiRoutineEnum.POST_WITH_MEDIA, formParams);
         return messageFromJson(jso);
     }
 
@@ -80,7 +80,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
             case DESTROY_FAVORITE:
                 url = "favorites/destroy" + EXTENSION;
                 break;
-            case POST_MESSAGE:
+            case POST_WITH_MEDIA:
                 url = "statuses/update_with_media" + EXTENSION;
                 break;
             case SEARCH_MESSAGES:

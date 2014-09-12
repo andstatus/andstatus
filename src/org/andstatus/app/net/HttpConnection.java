@@ -41,7 +41,7 @@ public abstract class HttpConnection {
         // Empty
     }
     
-    protected abstract JSONObject postRequest(String path, JSONObject jso) throws ConnectionException;
+    protected abstract JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException;
 
     protected void setConnectionData(HttpConnectionData data) {
         this.data = data;

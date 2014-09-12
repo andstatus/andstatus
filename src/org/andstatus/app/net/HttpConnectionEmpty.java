@@ -22,7 +22,7 @@ import org.json.JSONObject;
 public class HttpConnectionEmpty extends HttpConnection {
 
     @Override
-    protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
+    protected JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
         // TODO Auto-generated method stub
         return null;
     }

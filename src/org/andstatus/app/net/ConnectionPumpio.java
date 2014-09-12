@@ -74,6 +74,9 @@ public class ConnectionPumpio extends Connection {
             case STATUSES_HOME_TIMELINE:
                 url = "user/%nickname%/inbox";
                 break;
+            case POST_WITH_MEDIA:
+                url = "user/%nickname%/uploads";
+                break;
             case CREATE_FAVORITE:
             case DESTROY_FAVORITE:
             case FOLLOW_USER:
@@ -212,9 +215,8 @@ public class ConnectionPumpio extends Connection {
     public MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri) throws ConnectionException {
         message = toHtmlIfAllowed(message);
         ActivitySender sender = ActivitySender.fromContent(this, message);
-        if (!TextUtils.isEmpty(inReplyToId)) {
-            sender.setInReplyTo(inReplyToId);
-        }
+        sender.setInReplyTo(inReplyToId);
+        sender.setMediaUri(mediaUri);
         return messageFromJson(sender.sendMe("post"));
     }
     

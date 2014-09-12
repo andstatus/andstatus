@@ -81,7 +81,7 @@ class FileDownloader {
         final String method = "downloadFile";
         DownloadFile fileTemp = new DownloadFile("temp_" + data.getFileNameNew());
         try {
-            InputStream is = HttpJavaNetUtils.urlOpenStream(data.getUrl());
+            InputStream in = HttpJavaNetUtils.urlOpenStream(data.getUrl());
             try {
                 byte[] buffer = new byte[1024];
                 int length;
@@ -91,14 +91,14 @@ class FileDownloader {
                     if (mockNetworkError) {
                         throw new IOException(method + ", Mocked IO exception");
                     }
-                    while ((length = is.read(buffer)) > 0) {
+                    while ((length = in.read(buffer)) > 0) {
                         out.write(buffer, 0, length);
                     }
                 } finally {
                     DbUtils.closeSilently(out);
                 }
             } finally {
-                DbUtils.closeSilently(is);
+                DbUtils.closeSilently(in);
             }
         } catch (FileNotFoundException e) {
             data.hardErrorLogged(method + ", File not found", e);

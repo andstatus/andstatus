@@ -127,7 +127,7 @@ class HttpApacheUtils {
         try {
             if (formParams == null || formParams.length() == 0) {
                 // Nothing to do
-            } else if (formParams.has(HttpConnection.KEY_MEDIA_PART_NAME)) {
+            } else if (formParams.has(HttpConnection.KEY_MEDIA_PART_URI)) {
                 fillMultiPartPost(postMethod, formParams);
             } else {
                 fillSinglePartPost(postMethod, formParams);

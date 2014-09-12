@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
@@ -36,6 +37,7 @@ class ActivitySender {
     String inReplyToId = "";
     String recipientId = "";
     String content = "";
+    Uri mMediaUri = null;
     
     static ActivitySender fromId(ConnectionPumpio connection, String objectId) {
         ActivitySender sender = new ActivitySender();
@@ -60,6 +62,11 @@ class ActivitySender {
         this.recipientId = recipientId;
         return this;
     }
+
+    ActivitySender setMediaUri(Uri mediaUri) {
+        mMediaUri = mediaUri;
+        return this;
+    }
     
     MbMessage sendMessage(String verb) throws ConnectionException {
         return connection.messageFromJson(sendMe(verb));
@@ -73,20 +80,7 @@ class ActivitySender {
         JSONObject jso = null;
         try {
             JSONObject activity = newActivityOfThisAccount(verb);
-            
-            JSONObject obj = new JSONObject();
-            if (TextUtils.isEmpty(objectId)) {
-                if (TextUtils.isEmpty(content)) {
-                    throw new IllegalArgumentException("Nothing to send");
-                }
-                obj.put("content", content);
-                PumpioObjectType objectType = TextUtils.isEmpty(inReplyToId) ? PumpioObjectType.NOTE : PumpioObjectType.COMMENT;
-                obj.put("objectType", objectType.id());
-                obj.put("author", activity.getJSONObject("actor"));
-            } else {
-                obj.put("id", objectId);
-                obj.put("objectType", connection.oidToObjectType(objectId));
-            }
+            JSONObject obj = mMediaUri != null ? uploadMedia() : newTextObject(activity);
             if (!TextUtils.isEmpty(inReplyToId)) {
                 JSONObject inReplyToObject = new JSONObject();
                 inReplyToObject.put("id", inReplyToId);
@@ -97,8 +91,14 @@ class ActivitySender {
 
             ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_MESSAGE, connection.data.getAccountUserOid());
             jso = conu.httpConnection.postRequest(conu.url, activity);
-            if (jso != null && MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-                MyLog.v(this, "verb '" + verb + "' object id='" + objectId + "' " + jso.toString(2));
+            if (jso != null) {
+                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                    MyLog.v(this, "verb '" + verb + "' object id='" + objectId + "' " + jso.toString(2));
+                }
+                if (verb.equals("post") && !TextUtils.isEmpty(objectId)) {
+                    activity.put("verb", "update");
+                    jso = conu.httpConnection.postRequest(conu.url, activity);
+                }
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, e, jso, "Error '" + verb + "' object id='" + objectId + "'");
@@ -135,5 +135,46 @@ class ActivitySender {
 
         activity.put("actor", author);
         return activity;
+    }
+
+    /** See as a working example of uploading image here: 
+     *  org.macno.puma.provider.Pumpio.postImage(String, String, boolean, Location, String, byte[])
+     *  We simplified it a bit...
+     */
+    private JSONObject uploadMedia() throws ConnectionException {
+        JSONObject obj1 = null;
+        try {
+            JSONObject formParams = new JSONObject();
+            formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mMediaUri.toString());
+            ConnectionAndUrl conu = connection.getConnectionAndUrl(ApiRoutineEnum.POST_WITH_MEDIA, connection.data.getAccountUserOid());
+            obj1 = conu.httpConnection.postRequest(conu.url, formParams);
+            if (obj1 != null) {
+                if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
+                    MyLog.v(this, "uploaded '" + mMediaUri.toString() + "' " + obj1.toString(2));
+                }
+                objectId = obj1.optString("id");
+                obj1.put("content", content);
+            }
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(this, e, obj1, "Error uploading '" + mMediaUri.toString() + "'");
+        }
+        return obj1;
+    }
+
+    private JSONObject newTextObject(JSONObject activity) throws JSONException {
+        JSONObject obj = new JSONObject();
+        if (TextUtils.isEmpty(objectId)) {
+            if (TextUtils.isEmpty(content)) {
+                throw new IllegalArgumentException("Nothing to send");
+            }
+            obj.put("content", content);
+            PumpioObjectType objectType = TextUtils.isEmpty(inReplyToId) ? PumpioObjectType.NOTE : PumpioObjectType.COMMENT;
+            obj.put("objectType", objectType.id());
+            obj.put("author", activity.getJSONObject("actor"));
+        } else {
+            obj.put("id", objectId);
+            obj.put("objectType", connection.oidToObjectType(objectId));
+        }
+        return obj;
     }
 }

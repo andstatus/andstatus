@@ -78,6 +78,7 @@ public abstract class Connection {
         GET_FRIENDS_IDS, // List of Users' IDs
         GET_USER,
         POST_MESSAGE,
+        POST_WITH_MEDIA,
         POST_DIRECT_MESSAGE,
         POST_REBLOG,
         DESTROY_MESSAGE,

@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import oauth.signpost.OAuthConsumer;
@@ -26,7 +27,9 @@ import oauth.signpost.exception.OAuthCommunicationException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.util.MyLog;
@@ -34,10 +37,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -115,28 +121,25 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
 
     @Override
-    protected JSONObject postRequest(String path, JSONObject jso) throws ConnectionException {
+    protected JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
         String method = "postRequest: ";
         URL url = null;
         JSONObject result = null;
-        OutputStreamWriter writer = null;
         try {
-            MyLog.v(this, method + (jso == null ? "(empty)" : jso.toString(2)));
+            MyLog.v(this, method + (formParams == null ? "(empty)" : formParams.toString(2)));
         
             url = new URL(pathToUrl(path));
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            setAuthorization(conn, getConsumer(), false);
             
-            if (jso != null) {
-                OutputStream os = conn.getOutputStream();
-                writer = new OutputStreamWriter(os, "UTF-8");
-                String toWrite = jso.toString(); 
-                writer.write(toWrite);
-                writer.close();
+            if (formParams == null || formParams.length() == 0) {
+                // Nothing to do
+            } else if (formParams.has(HttpConnection.KEY_MEDIA_PART_URI)) {
+                writeMedia(conn, formParams);
+            } else {
+                writeJson(conn, formParams);
             }
                         
             int responseCode = conn.getResponseCode();
@@ -152,10 +155,48 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             throw ConnectionException.loggedJsonException(this, e, result, method + urlAndDataToString(url));
         } catch(Exception e) {
             throw new ConnectionException(method + urlAndDataToString(url), e);
+        }
+        return result;
+    }
+
+    private void writeMedia(HttpURLConnection conn, JSONObject formParams) throws OAuthMessageSignerException, OAuthExpectationFailedException, OAuthCommunicationException, IOException, JSONException {
+        Uri mediaUri = Uri.parse(formParams.getString(KEY_MEDIA_PART_URI));
+        conn.setChunkedStreamingMode(0);
+        conn.setRequestProperty("Content-Type", MyContentType.uri2MimeType(mediaUri, null));
+        setAuthorization(conn, getConsumer(), false);
+                
+        InputStream in = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
+        try {
+            byte[] buffer = new byte[1024];
+            int length;
+            OutputStream out = new BufferedOutputStream(conn.getOutputStream());
+            try {
+                while ((length = in.read(buffer)) > 0) {
+                    out.write(buffer, 0, length);
+                }
+            } finally {
+                DbUtils.closeSilently(out);
+            }
+        } finally {
+            DbUtils.closeSilently(in);
+        }
+    }
+
+    private void writeJson(HttpURLConnection conn, JSONObject formParams) throws IOException,
+            UnsupportedEncodingException, OAuthMessageSignerException, OAuthExpectationFailedException, OAuthCommunicationException {
+        conn.setRequestProperty("Content-Type", "application/json");
+        setAuthorization(conn, getConsumer(), false);
+        
+        OutputStreamWriter writer = null;
+        try {
+            OutputStream os = conn.getOutputStream();
+            writer = new OutputStreamWriter(os, "UTF-8");
+            String toWrite = formParams.toString(); 
+            writer.write(toWrite);
+            writer.close();
         } finally {
             DbUtils.closeSilently(writer);
         }
-        return result;
     }
 
     private String urlAndDataToString(URL url) {

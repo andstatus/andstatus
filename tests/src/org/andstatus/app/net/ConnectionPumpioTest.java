@@ -264,17 +264,37 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertTrue(thrown);
     }
     
-    public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
+    public void testPostWithMedia() throws ConnectionException, MalformedURLException {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
+                org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
+        httpConnectionMock.setResponse(jso);
+        
+        connection.data.setAccountUserOid("acct:mymediatester@" + originUrl.getHost());
+        MbMessage message2 = connection.updateStatus("Test post message with media", "", TestSuite.LOCAL_IMAGE_TEST_URI);
+        message2.setPublic(true); 
+        assertEquals("Message returned", privateGetMessageWithAttachment(this.getInstrumentation().getContext(), false), message2);
+    }
+    
+    private MbMessage privateGetMessageWithAttachment(Context context, boolean uniqueUid) throws ConnectionException, MalformedURLException {
+        JSONObject jso = RawResourceUtils.getJSONObject(context, 
                 org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
         httpConnectionMock.setResponse(jso);
 
         MbMessage msg = connection.getMessage("w9wME-JVQw2GQe6POK7FSQ");
+        if (uniqueUid) {
+            msg.oid += "_" + TestSuite.TESTRUN_UID;
+        }
         assertNotNull("message returned", msg);
         assertEquals("has attachment", msg.attachments.size(), 1);
         MbAttachment attachment = MbAttachment.fromUrlAndContentType(new URL(
                 "https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg"), MyContentType.IMAGE);
         assertEquals("attachment", attachment, msg.attachments.get(0));
+        assertEquals("Body text", "<p>Hanging out up in the mountains.</p>", msg.getBody());
+        return msg;
+    }
+
+    public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
+        privateGetMessageWithAttachment(this.getInstrumentation().getContext(), true);    
     }
     
 }
