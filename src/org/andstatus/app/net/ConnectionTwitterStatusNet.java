@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -91,7 +92,7 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
             if ( !TextUtils.isEmpty(inReplyToId)) {
                 formParams.put("in_reply_to_status_id", inReplyToId);
             }
-            if (mediaUri != null) {
+            if (!UriUtils.isEmpty(mediaUri)) {
                 formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media");
                 formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
             }

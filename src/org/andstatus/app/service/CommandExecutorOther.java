@@ -37,6 +37,7 @@ import org.andstatus.app.net.ConnectionException.StatusCode;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
     
@@ -57,8 +58,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 String status = execContext.getCommandData().bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key).trim();
                 long replyToId = execContext.getCommandData().bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
                 long recipientId = execContext.getCommandData().bundle.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
-                String strUri = execContext.getCommandData().bundle.getString(IntentExtra.EXTRA_MEDIA_URI.key);
-                Uri mediaUri = (strUri != null) ? Uri.parse(strUri) : null;
+                Uri mediaUri = UriUtils.fromString(execContext.getCommandData().bundle.getString(IntentExtra.EXTRA_MEDIA_URI.key));
                 updateStatus(status, replyToId, recipientId, mediaUri);
                 break;
             case DESTROY_STATUS:
@@ -90,7 +90,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 break;
         }
     }
-    
+
     /**
      * @param create true - create, false - destroy
      */

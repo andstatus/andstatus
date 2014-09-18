@@ -60,7 +60,7 @@ class MessageEditor {
      */
     private EditText mEditText;
     private TextView mCharsLeftText;
-    private Uri mMediaUri = null;
+    private Uri mMediaUri = Uri.EMPTY;
 
     /**
      * Information about the message we are editing
@@ -119,7 +119,7 @@ class MessageEditor {
                 if ( isVisible() || accountForButton == null) {
                     hide();
                 } else {
-                    startEditingMessage("", null, 0, 0, accountForButton, mMessageList.isTimelineCombined());
+                    startEditingMessage("", Uri.EMPTY, 0, 0, accountForButton, mMessageList.isTimelineCombined());
                 }
             }
         });
@@ -292,9 +292,9 @@ class MessageEditor {
         if (mAccount != null) {
             accountGuidPrev = mAccount.getAccountName();
         }
-        if (mMediaUri != mediaUri || mReplyToId != replyToId || mRecipientId != recipientId 
+        if (!mMediaUri.equals(mediaUri) || mReplyToId != replyToId || mRecipientId != recipientId 
                 || accountGuidPrev.compareTo(myAccount.getAccountName()) != 0 || mShowAccount != showAccount) {
-            mMediaUri = mediaUri;
+            mMediaUri = UriUtils.notNull(mediaUri);
             mReplyToId = replyToId;
             mRecipientId = recipientId;
             mAccount = myAccount;
@@ -368,9 +368,9 @@ class MessageEditor {
         mIsStateLoaded = false;
         if (outState != null && mEditText != null && mAccount != null) {
             String messageText = mEditText.getText().toString();
-            if (!TextUtils.isEmpty(messageText) || mMediaUri != null) {
+            if (!TextUtils.isEmpty(messageText) || !UriUtils.isEmpty(mMediaUri)) {
                 outState.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, messageText);
-                if (mMediaUri != null) {
+                if (!UriUtils.isEmpty(mMediaUri)) {
                     outState.putString(IntentExtra.EXTRA_MEDIA_URI.key, mMediaUri.toString());
                 }
                 outState.putLong(IntentExtra.EXTRA_INREPLYTOID.key, mReplyToId);
@@ -386,9 +386,8 @@ class MessageEditor {
                 && savedInstanceState.containsKey(IntentExtra.EXTRA_INREPLYTOID.key) 
                 && savedInstanceState.containsKey(IntentExtra.EXTRA_MESSAGE_TEXT.key)) {
             String messageText = savedInstanceState.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key);
-            String strUri = savedInstanceState.getString(IntentExtra.EXTRA_MEDIA_URI.key);
-            Uri mediaUri = TextUtils.isEmpty(strUri) ? null : Uri.parse(strUri);
-            if (!TextUtils.isEmpty(messageText) || mediaUri != null) {
+            Uri mediaUri = UriUtils.fromString(savedInstanceState.getString(IntentExtra.EXTRA_MEDIA_URI.key));
+            if (!TextUtils.isEmpty(messageText) || !UriUtils.isEmpty(mediaUri)) {
                 mMessageTextRestored = messageText;
                 mMediaUriRestored = mediaUri;
                 replyToIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_INREPLYTOID.key);

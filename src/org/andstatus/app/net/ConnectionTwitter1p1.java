@@ -21,6 +21,7 @@ import android.text.TextUtils;
 
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,7 +39,7 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
     @Override
     public MbMessage updateStatus(String message, String inReplyToId, Uri mediaUri)
             throws ConnectionException {
-        if (mediaUri == null) {
+        if (UriUtils.isEmpty(mediaUri)) {
             return super.updateStatus(message, inReplyToId, mediaUri);
         }
         return updateWithMedia(message, inReplyToId, mediaUri);
@@ -48,10 +49,10 @@ public class ConnectionTwitter1p1 extends ConnectionTwitter {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("status", message);
-            if ( !TextUtils.isEmpty(inReplyToId)) {
+            if (!TextUtils.isEmpty(inReplyToId)) {
                 formParams.put("in_reply_to_status_id", inReplyToId);
             }
-            if (mediaUri != null) {
+            if (!UriUtils.isEmpty(mediaUri)) {
                 formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media[]");
                 formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
             }

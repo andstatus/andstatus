@@ -23,6 +23,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UriUtils;
 import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -49,7 +50,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -135,13 +136,11 @@ class HttpApacheUtils {
             out = request.postRequest(postMethod);
         } catch (UnsupportedEncodingException e) {
             MyLog.i(this, e);
-        } catch (IOException e) {
-            MyLog.i(this, e);
         }
         return out;
     }
 
-    private void fillMultiPartPost(HttpPost postMethod, JSONObject formParams) throws IOException, ConnectionException {
+    private void fillMultiPartPost(HttpPost postMethod, JSONObject formParams) throws ConnectionException {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create(); 
         Uri mediaUri = null;
         String mediaPartName = "";
@@ -153,15 +152,19 @@ class HttpApacheUtils {
             if (HttpConnection.KEY_MEDIA_PART_NAME.equals(name)) {
                 mediaPartName = value;
             } else if (HttpConnection.KEY_MEDIA_PART_URI.equals(name)) {
-                mediaUri = Uri.parse(value);
+                mediaUri = UriUtils.fromString(value);
             } else {
                 builder.addTextBody(name, value);
             }
         }
-        if (!TextUtils.isEmpty(mediaPartName) && mediaUri != null) {
-            InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
-            ContentType contentType = ContentType.create(MyContentType.uri2MimeType(mediaUri, null)); 
-            builder.addBinaryBody(mediaPartName, ins, contentType, mediaUri.getPath());
+        if (!TextUtils.isEmpty(mediaPartName) && !UriUtils.isEmpty(mediaUri)) {
+            try {
+                InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
+                ContentType contentType = ContentType.create(MyContentType.uri2MimeType(mediaUri, null)); 
+                builder.addBinaryBody(mediaPartName, ins, contentType, mediaUri.getPath());
+            } catch (FileNotFoundException e) {
+                throw new ConnectionException("mediaUri='" + mediaUri + "'", e);
+            }
         }
         postMethod.setEntity(builder.build()); 
     }

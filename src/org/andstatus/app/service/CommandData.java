@@ -39,6 +39,7 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.Queue;
 
@@ -227,7 +228,7 @@ public class CommandData implements Comparable<CommandData> {
         if (recipientId != 0) {
             commandData.bundle.putLong(IntentExtra.EXTRA_RECIPIENTID.key, recipientId);
         }
-        if (mediaUri != null) {
+        if (!UriUtils.isEmpty(mediaUri)) {
             commandData.bundle.putString(IntentExtra.EXTRA_MEDIA_URI.key, mediaUri.toString());
         }
         return commandData;

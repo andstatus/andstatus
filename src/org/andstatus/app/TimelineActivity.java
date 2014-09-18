@@ -77,6 +77,7 @@ import org.andstatus.app.support.android.v11.app.MyLoaderManager;
 import org.andstatus.app.support.android.v11.widget.MySimpleCursorAdapter;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -164,7 +165,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private MyLoaderManager<Cursor> mLoaderManager = null;
 
     private String mTextToShareViaThisApp = "";
-    private Uri mMediaToShareViaThisApp = null;
+    private Uri mMediaToShareViaThisApp = Uri.EMPTY;
     
     private boolean isLoading() {
         return mLoadingLayout.getVisibility() == View.VISIBLE;
@@ -945,7 +946,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private void shareViaThisApplication(String subject, String text, Uri mediaUri) {
-        if (TextUtils.isEmpty(subject) && TextUtils.isEmpty(text) && mediaUri == null) {
+        if (TextUtils.isEmpty(subject) && TextUtils.isEmpty(text) && UriUtils.isEmpty(mediaUri)) {
             return;
         }
         mTextToShareViaThisApp = "";
@@ -961,7 +962,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         MyLog.v(this, "Share via this app " 
         + (!TextUtils.isEmpty(mTextToShareViaThisApp) ? "; text:'" + mTextToShareViaThisApp +"'" : "") 
-        + (mMediaToShareViaThisApp != null ? "; media:" + mMediaToShareViaThisApp.toString() : ""));
+        + (!UriUtils.isEmpty(mMediaToShareViaThisApp) ? "; media:" + mMediaToShareViaThisApp.toString() : ""));
         AccountSelector.selectAccount(this, 0, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA);
     }
 
