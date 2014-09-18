@@ -712,6 +712,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         item.setEnabled(enableGlobalSearch);
         item.setVisible(enableGlobalSearch);
 
+        boolean enableAttach = mMessageEditor.isVisible();
+        item = menu.findItem(R.id.attach_menu_id);
+        item.setEnabled(enableAttach);
+        item.setVisible(enableAttach);
+        
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -737,10 +742,24 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             case R.id.global_search_menu_id:
                 onSearchRequested(true);
                 break;
+            case R.id.attach_menu_id:
+                onAttach();
+                break;
             default:
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * See http://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically
+     */
+    private void onAttach() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent,
+                getText(R.string.options_menu_attach)), ActivityRequestCode.ATTACH.id);
     }
 
     /**
@@ -1395,44 +1414,50 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != RESULT_OK || data == null) {
+            return;
+        }
         switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_ACCOUNT:
-                if (resultCode == RESULT_OK) {
-                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
-                    if (ma != null) {
-                        MyLog.v(this, "Restarting the activity for the selected account " + ma.getAccountName());
-                        finish();
-                        TimelineTypeEnum timelineTypeNew = mTimelineType;
-                        if (mTimelineType == TimelineTypeEnum.USER 
-                                &&  (MyContextHolder.get().persistentAccounts().fromUserId(mSelectedUserId) == null)) {
-                            /*  "Other User's timeline" vs "My User's timeline" 
-                             * Actually we saw messages of the user, who is not MyAccount,
-                             * so let's switch to the HOME
-                             * TODO: Open "Other User timeline" in a separate Activity?!
-                             */
-                            timelineTypeNew = TimelineTypeEnum.HOME;
-                        }
-                        MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
-                        mContextMenu.switchTimelineActivity(timelineTypeNew, mTimelineIsCombined, ma.getUserId());
+                MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                if (ma != null) {
+                    MyLog.v(this, "Restarting the activity for the selected account " + ma.getAccountName());
+                    finish();
+                    TimelineTypeEnum timelineTypeNew = mTimelineType;
+                    if (mTimelineType == TimelineTypeEnum.USER 
+                            &&  (MyContextHolder.get().persistentAccounts().fromUserId(mSelectedUserId) == null)) {
+                        /*  "Other User's timeline" vs "My User's timeline" 
+                         * Actually we saw messages of the user, who is not MyAccount,
+                         * so let's switch to the HOME
+                         * TODO: Open "Other User timeline" in a separate Activity?!
+                         */
+                        timelineTypeNew = TimelineTypeEnum.HOME;
                     }
+                    MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
+                    mContextMenu.switchTimelineActivity(timelineTypeNew, mTimelineIsCombined, ma.getUserId());
                 }
                 break;
             case SELECT_ACCOUNT_TO_ACT_AS:
-                if (resultCode == RESULT_OK) {
-                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
-                    if (ma != null) {
-                        mContextMenu.setAccountUserIdToActAs(ma.getUserId());
-                        mContextMenu.showContextMenu();
-                    }
+                ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                if (ma != null) {
+                    mContextMenu.setAccountUserIdToActAs(ma.getUserId());
+                    mContextMenu.showContextMenu();
                 }
                 break;
             case SELECT_ACCOUNT_TO_SHARE_VIA:
-                if (resultCode == RESULT_OK) {
-                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
-                    if (ma != null) {
-                        mMessageEditor.startEditingMessage(mTextToShareViaThisApp, mMediaToShareViaThisApp, 
-                                0, 0, ma, 
-                                mTimelineIsCombined || mCurrentMyAccountUserId != ma.getUserId());
+                ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
+                if (ma != null) {
+                    mMessageEditor.startEditingMessage(mTextToShareViaThisApp, mMediaToShareViaThisApp, 
+                            0, 0, ma, 
+                            mTimelineIsCombined || mCurrentMyAccountUserId != ma.getUserId());
+                }
+                break;
+            case ATTACH:
+                Uri uri = UriUtils.notNull(data.getData());
+                if (resultCode == RESULT_OK && !UriUtils.isEmpty(uri)) {
+                    mMediaToShareViaThisApp = uri;
+                    if (mMessageEditor.isVisible()) {
+                        mMessageEditor.setMedia(mMediaToShareViaThisApp);
                     }
                 }
                 break;

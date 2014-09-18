@@ -292,7 +292,7 @@ class MessageEditor {
         if (mAccount != null) {
             accountGuidPrev = mAccount.getAccountName();
         }
-        if (!mMediaUri.equals(mediaUri) || mReplyToId != replyToId || mRecipientId != recipientId 
+        if (mReplyToId != replyToId || mRecipientId != recipientId 
                 || accountGuidPrev.compareTo(myAccount.getAccountName()) != 0 || mShowAccount != showAccount) {
             mMediaUri = UriUtils.notNull(mediaUri);
             mReplyToId = replyToId;
@@ -300,7 +300,6 @@ class MessageEditor {
             mAccount = myAccount;
             mShowAccount = showAccount;
             String textInitial2 = textInitial;
-            String messageDetails = showAccount ? mAccount.getAccountName() : "";
             if (recipientId == 0) {
                 if (replyToId != 0) {
                     String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, replyToId);
@@ -308,25 +307,11 @@ class MessageEditor {
                         textInitial2 += " ";
                     }
                     textInitial2 = "@" + replyToName + " ";
-                    messageDetails += " " + String.format(MyContextHolder.get().getLocale(), MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), replyToName);
                 }
-            } else {
-                String recipientName = MyProvider.userIdToName(recipientId);
-                if (!TextUtils.isEmpty(recipientName)) {
-                    messageDetails += " " + String.format(MyContextHolder.get().getLocale(), MyContextHolder.get().context().getText(R.string.message_source_to).toString(), recipientName);
-                }
-            }
-            if (mMediaUri != null) {
-                messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")"; 
             }
             mEditText.setText(textInitial2);
             // mEditText.append(textInitial, 0, textInitial.length());
-            mDetails.setText(messageDetails);
-            if (TextUtils.isEmpty(messageDetails)) {
-                mDetails.setVisibility(View.GONE);
-            } else {
-                mDetails.setVisibility(View.VISIBLE);
-            }
+            showMessageDetails();
         }
         
         if (mAccount.getConnection().isApiSupported(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
@@ -335,6 +320,30 @@ class MessageEditor {
         }
         
         show();
+    }
+
+    private void showMessageDetails() {
+        String messageDetails = mShowAccount ? mAccount.getAccountName() : "";
+        if (mRecipientId == 0) {
+            if (mReplyToId != 0) {
+                String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mReplyToId);
+                messageDetails += " " + String.format(MyContextHolder.get().getLocale(), MyContextHolder.get().context().getText(R.string.message_source_in_reply_to).toString(), replyToName);
+            }
+        } else {
+            String recipientName = MyProvider.userIdToName(mRecipientId);
+            if (!TextUtils.isEmpty(recipientName)) {
+                messageDetails += " " + String.format(MyContextHolder.get().getLocale(), MyContextHolder.get().context().getText(R.string.message_source_to).toString(), recipientName);
+            }
+        }
+        if (!UriUtils.isEmpty(mMediaUri)) {
+            messageDetails += " (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")"; 
+        }
+        mDetails.setText(messageDetails);
+        if (TextUtils.isEmpty(messageDetails)) {
+            mDetails.setVisibility(View.GONE);
+        } else {
+            mDetails.setVisibility(View.VISIBLE);
+        }
     }
     
     private void sendMessageAndCloseEditor() {
@@ -359,6 +368,7 @@ class MessageEditor {
             mEditText.setText("");
             mAccount = null;
             mShowAccount = false;
+            mMediaUri = Uri.EMPTY;
 
             hide();
         }
@@ -416,5 +426,10 @@ class MessageEditor {
 
     public Uri getMediaUri() {
         return mMediaUri;
+    }
+
+    public void setMedia(Uri mediaUri) {
+        mMediaUri = UriUtils.notNull(mediaUri);
+        showMessageDetails();
     }
 }

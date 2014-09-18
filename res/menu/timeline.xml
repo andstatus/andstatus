@@ -25,5 +25,7 @@
             android:icon="@drawable/ic_menu_global_search" android:alphabeticShortcut="g" android:visible="false" android:enabled="false"></item>
 		<item android:title="@string/settings_action" android:id="@+id/preferences_menu_id"
 			android:alphabeticShortcut="p" android:icon="@drawable/ic_menu_preferences"></item>
+        <item android:title="@string/options_menu_attach" android:id="@+id/attach_menu_id"
+            android:icon="@drawable/ic_action_new_attachment" android:alphabeticShortcut="a"></item>
 	</group>
 </menu>

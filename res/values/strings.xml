@@ -167,6 +167,7 @@
     <string name="on">on</string>
     <string name="options_menu_about">About AndStatus</string>
 	<string name="options_menu_about_cond">About</string>
+    <string name="options_menu_attach">Attach</string>
 	<string name="options_menu_direct_messages">Direct Messages</string>
 	<string name="options_menu_direct_messages_cond">Messages</string>
 	<string name="options_menu_favorites_timeline">Favorites Timeline</string>

@@ -163,6 +163,7 @@
     <string name="on">вкл</string>
 	<string name="options_menu_about">О программе AndStatus</string>
 	<string name="options_menu_about_cond">Информация</string>
+    <string name="options_menu_attach">Прикрепить</string>
 	<string name="options_menu_direct_messages">Личные сообщения</string>
 	<string name="options_menu_direct_messages_cond">Сообщения</string>
 	<string name="options_menu_favorites_timeline">Линия времени Избранного</string>
