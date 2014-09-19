@@ -712,7 +712,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         item.setEnabled(enableGlobalSearch);
         item.setVisible(enableGlobalSearch);
 
-        boolean enableAttach = mMessageEditor.isVisible();
+        boolean enableAttach = mMessageEditor.isVisible() && MyPreferences.showAttachedImages() ;
         item = menu.findItem(R.id.attach_menu_id);
         item.setEnabled(enableAttach);
         item.setVisible(enableAttach);

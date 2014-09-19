@@ -37,6 +37,17 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="11.2" android:versionCode="109"
+        versionDate="2014-09-19"
+        versionTitle="Share images via AndStatus and attach images to posts">
+        <changes>
+            <change>Now you may share an image via AndStatus, add text and post it.
+                You may also start writing a post as usual and attach an image later 
+                (this way you can attach an image to Reply).
+                See <a href="https://github.com/andstatus/andstatus/issues/93" >Issue #93</a>.</change>
+            <change>AndStatus icon redrawn.</change>
+        </changes>
+    </release>
     <release android:versionName="11.1" android:versionCode="108"
         versionDate="2014-09-09"
         versionTitle="Viewing attached images">

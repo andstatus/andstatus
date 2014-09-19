@@ -45,35 +45,26 @@
                 <ImageView
                     android:id="@+id/splash_logo_image"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
                     android:focusable="false"
                     android:focusableInTouchMode="false"
-                    android:src="@drawable/splash_logo" >
-                </ImageView>
+                    android:src="@drawable/splash_logo" />
 
                 <TextView
                     android:id="@+id/splash_payoff_line"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:focusable="false"
-                    android:focusableInTouchMode="false"
-                    android:gravity="center_horizontal"
-                    android:text="@string/splash_payoff_line"
-                    android:textSize="20sp"
-                    android:typeface="sans" >
-                </TextView>
+                    android:gravity="center"
+                    android:text="@string/splash_payoff_line" />
 
                 <TextView
                     android:id="@+id/splash_application_version"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="(application version)"
-                    android:textSize="20sp" >
+                    android:text="(application version)" />
 
-                </TextView>
             </LinearLayout>
 
             <ScrollView
