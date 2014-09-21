@@ -35,10 +35,13 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ConversationInserter;
+import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.OriginsAndAccountsInserter;
 import org.andstatus.app.data.StatusNetMessagesInserter;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.HttpConnection;
+import org.andstatus.app.net.MbUser;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
@@ -332,5 +335,22 @@ public class TestSuite extends TestCase {
             }
         }
         return false;
+    }
+
+    public static MyAccount getConversationMyAccount() {
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(CONVERSATION_ACCOUNT_NAME); 
+        assertTrue(CONVERSATION_ACCOUNT_NAME + " exists", ma != null);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
+        assertTrue("Origin for " + ma.getAccountName() + " exists", origin != null);
+        return ma;
+    }
+
+    public static MbUser getConversationMbUser() {
+        return new MessageInserter(getConversationMyAccount()).buildUserFromOidAndAvatar(
+                CONVERSATION_ACCOUNT_USER_OID, CONVERSATION_ACCOUNT_AVATAR_URL);
+    }
+
+    public static long getConversationOriginId() {
+        return getConversationMyAccount().getOriginId();
     }
 }

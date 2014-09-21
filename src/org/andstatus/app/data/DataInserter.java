@@ -323,54 +323,50 @@ public class DataInserter {
             MyLog.v(this, "insertUser - mbUser is empty");
             return 0;
         }
-        String userName = mbUser.userName;
+        
         String userOid = mbUser.oid;
         long originId = mbUser.originId;
-        
-        long readerId = 0L;
-        if (mbUser.actor != null) {
-            readerId = insertOrUpdateUser(mbUser.actor, lum);
-        } else {
-            readerId = execContext.getMyAccount().getUserId();
-        }
-        
         long userId = 0L;
         if (!SharedPreferencesUtil.isEmpty(userOid)) {
             // Lookup the System's (AndStatus) id from the Originated system's id
             userId = MyProvider.oidToId(OidEnum.USER_OID, originId, userOid);
         }
-        if (userId == 0) {
-            // Try to Lookup by Username
-            if (SharedPreferencesUtil.isEmpty(userName)) {
-                MyLog.w(TAG, "insertUser - no username: " + mbUser.toString());
-                return userId;
-            } else {
-                userId = MyProvider.userNameToId(originId, userName);
-            }
-        }
-        
         try {
             ContentValues values = new ContentValues();
 
-            if (!TextUtils.isEmpty(mbUser.realName)) {
+            String userName = mbUser.userName;
+            if (userId == 0 && SharedPreferencesUtil.isEmpty(userName)) {
+                userName = "id:" + userOid;
+            }
+            if (!SharedPreferencesUtil.isEmpty(userName)) {
+                values.put(MyDatabase.User.USERNAME, userName);
+            }
+            if (!SharedPreferencesUtil.isEmpty(mbUser.realName)) {
                 values.put(MyDatabase.User.REAL_NAME, mbUser.realName);
             }
-            if (!TextUtils.isEmpty(mbUser.avatarUrl)) {
+            if (!SharedPreferencesUtil.isEmpty(mbUser.avatarUrl)) {
                 values.put(MyDatabase.User.AVATAR_URL, mbUser.avatarUrl);
             }
-            if (!TextUtils.isEmpty(mbUser.description)) {
+            if (!SharedPreferencesUtil.isEmpty(mbUser.description)) {
                 values.put(MyDatabase.User.DESCRIPTION, mbUser.description);
             }
-            if (!TextUtils.isEmpty(mbUser.homepage)) {
+            if (!SharedPreferencesUtil.isEmpty(mbUser.homepage)) {
                 values.put(MyDatabase.User.HOMEPAGE, mbUser.homepage);
             }
-            if (!TextUtils.isEmpty(mbUser.url)) {
+            if (!SharedPreferencesUtil.isEmpty(mbUser.url)) {
                 values.put(MyDatabase.User.URL, mbUser.url);
             }
             if (mbUser.createdDate > 0) {
                 values.put(MyDatabase.User.CREATED_DATE, mbUser.createdDate);
             } else if ( userId == 0 && mbUser.updatedDate > 0) {
                 values.put(MyDatabase.User.CREATED_DATE, mbUser.updatedDate);
+            }
+            
+            long readerId = 0L;
+            if (mbUser.actor != null) {
+                readerId = insertOrUpdateUser(mbUser.actor, lum);
+            } else {
+                readerId = execContext.getMyAccount().getUserId();
             }
             if (mbUser.followedByActor != TriState.UNKNOWN
                     && readerId == execContext.getMyAccount().getUserId()) {
@@ -387,14 +383,8 @@ public class DataInserter {
             if (userId == 0) {
                 // There was no such row so add new one
                 
-                if (!TextUtils.isEmpty(userOid)) {
-                    values.put(MyDatabase.User.USER_OID, userOid);
-                }
+                values.put(MyDatabase.User.USER_OID, userOid);
                 values.put(MyDatabase.User.ORIGIN_ID, originId);
-                if (!SharedPreferencesUtil.isEmpty(userName)) {
-                    values.put(MyDatabase.User.USERNAME, userName);
-                }
-                
                 userUri = execContext.getContext().getContentResolver().insert(userUri, values);
                 userId = MyProvider.uriToUserId(userUri);
             } else if (values.size() > 0) {

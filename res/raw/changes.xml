@@ -37,6 +37,17 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="11.3" android:versionCode="111"
+        versionDate="2014-09-21"
+        versionTitle="Fixed undesirable merge of Users with the same nicknames (StatusNet)">
+        <changes>
+            <change>Fixed undesirable merge of Users with the same nicknames (StatusNet). This is 
+                actual for the cases, <br/>
+                1) When messages by users with the same nickname exist in one instanse 
+                (e.g. when the users' profiles are at different servers).<br/>
+                2) When a User changes their nickname.</change>
+        </changes>
+    </release>
     <release android:versionName="11.2" android:versionCode="110"
         versionDate="2014-09-19"
         versionTitle="Share images via AndStatus and attach images to posts">

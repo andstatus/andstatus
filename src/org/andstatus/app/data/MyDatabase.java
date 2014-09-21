@@ -40,6 +40,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      * This is used to check (and upgrade if necessary) 
      * existing database after application update.
      * 
+     * v.18 2014-09-21 Duplicated User.USERNAME allowed
      * v.17 2014-09-05 Attachment added. Origin "URL" instead of "host"
      * v.16 2014-05-03 Account persistence changed
      * v.15 2014-02-16 Public timeline added
@@ -54,7 +55,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
      *      All messages are in the same table. 
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. ) 
      */
-    public static final int DATABASE_VERSION = 17;
+    public static final int DATABASE_VERSION = 18;
     public static final String DATABASE_NAME = "andstatus.sqlite";
 
     /**
@@ -550,9 +551,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.USER_MSG_DATE + " INTEGER DEFAULT 0 NOT NULL" 
                 + ")");
 
-        execSQL(db, "CREATE UNIQUE INDEX idx_username ON " + User.TABLE_NAME + " (" 
+        execSQL(db, "CREATE UNIQUE INDEX idx_user_origin ON " + User.TABLE_NAME + " (" 
                 + User.ORIGIN_ID + ", "
-                + User.USERNAME  
+                + User.USER_OID  
                 + ")");
 
         execSQL(db, "CREATE TABLE " + FollowingUser.TABLE_NAME + " (" 

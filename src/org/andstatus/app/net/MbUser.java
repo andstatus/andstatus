@@ -58,7 +58,7 @@ public class MbUser {
     }
     
     public boolean isEmpty() {
-        return (TextUtils.isEmpty(userName) && TextUtils.isEmpty(oid)) || originId==0;
+        return TextUtils.isEmpty(oid) || originId==0;
     }
 
     @Override

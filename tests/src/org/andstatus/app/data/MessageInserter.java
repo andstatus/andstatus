@@ -22,6 +22,8 @@ import android.text.TextUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.net.ConnectionPumpio;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
@@ -29,6 +31,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -51,6 +54,12 @@ public class MessageInserter extends InstrumentationTestCase {
             return buildUserFromOid("acct:userOf" + origin.getName() + TestSuite.TESTRUN_UID);
         }
         return buildUserFromOid(TestSuite.TESTRUN_UID);
+    }
+
+    public MbUser buildUserFromOidAndAvatar(String userOid, String avatarUrlString) {
+        MbUser mbUser = buildUserFromOid(userOid);
+        mbUser.avatarUrl = avatarUrlString;
+        return mbUser;
     }
     
     public MbUser buildUserFromOid(String userOid) {
@@ -131,6 +140,19 @@ public class MessageInserter extends InstrumentationTestCase {
         }
         
         return messageId;
+    }
+
+    public static void deleteOldMessage(long originId, String messageOid) {
+        long messageIdOld = MyProvider.oidToId(OidEnum.MSG_OID, originId, messageOid);
+        if (messageIdOld != 0) {
+            SelectionAndArgs sa = new SelectionAndArgs();
+            sa.addSelection(MyDatabase.Msg._ID + " = ?", new String[] {
+                String.valueOf(messageIdOld)
+            });
+            int deleted = TestSuite.getMyContextForTest().context().getContentResolver().delete(MyProvider.MSG_CONTENT_URI, sa.selection,
+                    sa.selectionArgs);
+            assertEquals( "Old message id=" + messageIdOld + " deleted", 1, deleted);
+        }
     }
     
 }

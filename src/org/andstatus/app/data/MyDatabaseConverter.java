@@ -129,6 +129,9 @@ class MyDatabaseConverter {
         if (currentVersion == 16) {
             currentVersion = convert16to17(db, currentVersion);
         }
+        if (currentVersion == 17) {
+            currentVersion = convert17to18(db, currentVersion);
+        }
         if ( currentVersion == newVersion) {
             MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
                     + newVersion + ".");
@@ -226,6 +229,33 @@ class MyDatabaseConverter {
                     " FROM oldorigin";
             MyDatabase.execSQL(db, sql);
             sql = "DROP TABLE oldorigin";
+            MyDatabase.execSQL(db, sql);
+            
+            ok = true;
+        } catch (Exception e) {
+            MyLog.e(this, e);
+        }
+        if (ok) {
+            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
+        } else {
+            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
+                    + " to version " + versionTo
+                    + " SQL='" + sql +"'");
+        }
+        return ok ? versionTo : oldVersion;
+    }
+    
+    private int convert17to18(SQLiteDatabase db, int oldVersion) {
+        final int versionTo = 18;
+        boolean ok = false;
+        String sql = "";
+        try {
+            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+
+            sql = "DROP INDEX idx_username";
+            MyDatabase.execSQL(db, sql);
+
+            sql = "CREATE INDEX idx_user_origin ON user (origin_id, user_oid)";
             MyDatabase.execSQL(db, sql);
             
             ok = true;
