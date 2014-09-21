@@ -45,7 +45,11 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 actual for the cases, <br/>
                 1) When messages by users with the same nickname exist in one instanse 
                 (e.g. when the users' profiles are at different servers).<br/>
-                2) When a User changes their nickname.</change>
+                2) When a User changes their nickname.<br/>
+                See <a href="https://github.com/andstatus/andstatus/issues/125" >Issue #125</a>.</change>
+            <change>Fixed AndStatus launcher icon size based on info from 
+                <a href="http://stackoverflow.com/questions/12768128/android-launcher-icon-size">Android 
+                    Launcher Icon Size</a></change>    
         </changes>
     </release>
     <release android:versionName="11.2" android:versionCode="110"
