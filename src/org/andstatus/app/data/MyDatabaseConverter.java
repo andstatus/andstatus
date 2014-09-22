@@ -252,7 +252,7 @@ class MyDatabaseConverter {
         try {
             MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
 
-            sql = "DROP INDEX idx_username";
+            sql = "DROP INDEX IF EXISTS idx_username";
             MyDatabase.execSQL(db, sql);
 
             sql = "CREATE INDEX idx_user_origin ON user (origin_id, user_oid)";
