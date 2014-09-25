@@ -257,6 +257,11 @@ class MyDatabaseConverter {
 
             sql = "CREATE INDEX idx_user_origin ON user (origin_id, user_oid)";
             MyDatabase.execSQL(db, sql);
+
+            sql = "ALTER TABLE user ADD COLUMN webfinger_id TEXT";
+            MyDatabase.execSQL(db, sql);
+            sql = "UPDATE user SET webfinger_id=username";
+            MyDatabase.execSQL(db, sql);
             
             ok = true;
         } catch (Exception e) {

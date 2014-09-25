@@ -81,7 +81,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
         long accountUserId_existing = MyProvider.oidToId(myContext.getDatabase().getReadableDatabase(), OidEnum.USER_OID, origin.getId(), userOid);
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
-        mbUser.userName = username;
+        mbUser.setUserName(username);
         mbUser.avatarUrl = avatarUrl;
         MyAccount ma = addAccountFromMbUser(mbUser);
         long accountUserId = ma.getUserId();
@@ -98,21 +98,21 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
 
     private MyAccount addAccountFromMbUser(MbUser mbUser) throws ConnectionException {
         Origin origin = myContext.persistentOrigins().fromId(mbUser.originId);
-        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext, mbUser.userName + "/" + origin.getName(), TriState.TRUE);
+        MyAccount.Builder builder = MyAccount.Builder.newOrExistingFromAccountName(myContext, mbUser.getUserName() + "/" + origin.getName(), TriState.TRUE);
         if (builder.getAccount().isOAuth()) {
-            builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.userName, "sampleUserSecretFor" + mbUser.userName);
+            builder.setUserTokenWithSecret("sampleUserTokenFor" + mbUser.getUserName(), "sampleUserSecretFor" + mbUser.getUserName());
         } else {
-            builder.setPassword("samplePasswordFor" + mbUser.userName);
+            builder.setPassword("samplePasswordFor" + mbUser.getUserName());
         }
         assertTrue("Credentials of " + mbUser + " are present (origin name=" + origin.getName() + ")", builder.getAccount().getCredentialsPresent());
         builder.onCredentialsVerified(mbUser, null);
 
         assertTrue("Account is persistent", builder.isPersistent());
         MyAccount ma = builder.getAccount();
-        assertEquals("Credentials of " + mbUser.userName + " successfully verified", 
+        assertEquals("Credentials of " + mbUser.getUserName() + " successfully verified", 
                 CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
         long userId = ma.getUserId();
-        assertTrue("Account " + mbUser.userName + " has UserId", userId != 0);
+        assertTrue("Account " + mbUser.getUserName() + " has UserId", userId != 0);
         assertEquals("Account UserOid", ma.getUserOid(), mbUser.oid);
         String oid = MyProvider.idToOid(myContext.getDatabase().getReadableDatabase(), OidEnum.USER_OID, userId, 0);
         if (TextUtils.isEmpty(oid)) {
@@ -123,7 +123,7 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         assertEquals("User in the database for id=" + userId, 
                 mbUser.oid,
                 MyProvider.idToOid(myContext.getDatabase().getReadableDatabase(), OidEnum.USER_OID, userId, 0));
-        assertEquals("Account name", mbUser.userName + "/" + origin.getName(), ma.getAccountName());
+        assertEquals("Account name", mbUser.getUserName() + "/" + origin.getName(), ma.getAccountName());
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getUserId());
         return ma;
     }

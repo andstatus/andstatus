@@ -62,10 +62,10 @@ public class DataInserterTest extends InstrumentationTestCase {
         String username = "somebody@identi.ca";
         String userOid = "acct:" + username;
         MbUser somebody = MbUser.fromOriginAndUserOid(TestSuite.getConversationOriginId(), userOid);
-        somebody.userName = username;
+        somebody.setUserName(username);
         somebody.actor = TestSuite.getConversationMbUser();
         somebody.followedByActor = TriState.FALSE;
-        somebody.url = "http://identi.ca/somebody";
+        somebody.setUrl("http://identi.ca/somebody");
         di.insertOrUpdateUser(somebody);
 
         long somebodyId = MyProvider.oidToId(OidEnum.USER_OID, TestSuite.getConversationOriginId(), userOid);
@@ -105,7 +105,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         long senderId = MyProvider.msgIdToLongColumnValue(Msg.SENDER_ID, messageId);
         assertEquals("Sender of the message", somebodyId, senderId);
         url = MyProvider.userIdToStringColumnValue(User.URL, senderId);
-        assertEquals("Url of the sender " + somebody.userName, somebody.url, url);
+        assertEquals("Url of the sender " + somebody.getUserName(), somebody.getUrl(), url);
 
         Uri contentUri = MyProvider.getTimelineUri(
                 TestSuite.getConversationMyAccount().getUserId(), TimelineTypeEnum.FOLLOWING_USER,
@@ -146,7 +146,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         String username = "t131t@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(TestSuite.getConversationOriginId(), "acct:"
                 + username);
-        author.userName = username;
+        author.setUserName(username);
         author.actor = TestSuite.getConversationMbUser();
 
         MbMessage message = new MessageInserter(TestSuite.getConversationMyAccount()).buildMessage(
@@ -189,13 +189,13 @@ public class DataInserterTest extends InstrumentationTestCase {
         String username = "anybody@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(TestSuite.getConversationOriginId(), "acct:"
                 + username);
-        author.userName = username;
+        author.setUserName(username);
         author.actor = TestSuite.getConversationMbUser();
 
         username = "firstreader@identi.ca";
         MbUser firstReader = MbUser.fromOriginAndUserOid(TestSuite.getConversationOriginId(),
                 "acct:" + username);
-        firstReader.userName = username;
+        firstReader.setUserName(username);
         firstReader.actor = TestSuite.getConversationMbUser();
 
         MbMessage message = MbMessage.fromOriginAndOid(TestSuite.getConversationOriginId(),
@@ -234,7 +234,7 @@ public class DataInserterTest extends InstrumentationTestCase {
         String username = "example@pumpity.net";
         MbUser author = MbUser.fromOriginAndUserOid(TestSuite.getConversationOriginId(), "acct:"
                 + username);
-        author.userName = username;
+        author.setUserName(username);
         author.actor = TestSuite.getConversationMbUser();
 
         MbMessage message = MbMessage.fromOriginAndOid(TestSuite.getConversationOriginId(),
@@ -292,42 +292,42 @@ public class DataInserterTest extends InstrumentationTestCase {
         MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME); 
         String username = "peter" + TestSuite.TESTRUN_UID;
         MbUser user1 = new MessageInserter(ma).buildUserFromOid("34804" + TestSuite.TESTRUN_UID);
-        user1.userName = username;
+        user1.setUserName(username);
         
         DataInserter di = new DataInserter(ma);
         long userId1 = di.insertOrUpdateUser(user1);
         assertTrue("User added", userId1 != 0);
-        assertEquals("Username stored", user1.userName,
+        assertEquals("Username stored", user1.getUserName(),
                 MyProvider.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
 
         MbUser user1partial = MbUser.fromOriginAndUserOid(user1.originId, user1.oid);
         long userId1partial = di.insertOrUpdateUser(user1partial);
         assertEquals("Same user", userId1, userId1partial);
-        assertEquals("Username didn't change", user1.userName,
+        assertEquals("Username didn't change", user1.getUserName(),
                 MyProvider.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
 
         MbUser user1Renamed = user1;
-        user1Renamed.userName += "renamed";
+        user1Renamed.setUserName(user1Renamed.getUserName() + "renamed");
         long userId1Renamed = di.insertOrUpdateUser(user1Renamed);
         assertEquals("Same user renamed", userId1, userId1Renamed);
-        assertEquals("Same user renamed", user1Renamed.userName,
+        assertEquals("Same user renamed", user1Renamed.getUserName(),
                 MyProvider.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId1));
 
         MbUser user2SameOldUserName = new MessageInserter(ma).buildUserFromOid("34805"
                 + TestSuite.TESTRUN_UID);
-        user2SameOldUserName.userName = username;
+        user2SameOldUserName.setUserName(username);
         long userId2 = di.insertOrUpdateUser(user2SameOldUserName);
         assertTrue("Other user with the same user name as old name of user", userId1 != userId2);
-        assertEquals("Username stored", user2SameOldUserName.userName,
+        assertEquals("Username stored", user2SameOldUserName.getUserName(),
                 MyProvider.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId2));
 
         MbUser user3SameNewUserName = new MessageInserter(ma).buildUserFromOid("34806"
                 + TestSuite.TESTRUN_UID);
-        user3SameNewUserName.userName = user1Renamed.userName;
+        user3SameNewUserName.setUserName(user1Renamed.getUserName());
         long userId3 = di.insertOrUpdateUser(user3SameNewUserName);
         assertTrue("User added " + user3SameNewUserName, userId3 != 0);
         assertTrue("Other user with the same user name as old name of user", userId1 != userId3);
-        assertEquals("Username stored for userId=" + userId3, user3SameNewUserName.userName,
+        assertEquals("Username stored for userId=" + userId3, user3SameNewUserName.getUserName(),
                 MyProvider.userIdToStringColumnValue(MyDatabase.User.USERNAME, userId3));
     }
 }

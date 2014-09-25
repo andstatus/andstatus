@@ -116,7 +116,7 @@ public class ConnectionPumpio extends Connection {
         String oid = jso.optString("id");
         MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
         user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
-        user.userName = userOidToUsername(oid);
+        user.setUserName(userOidToUsername(oid));
         user.oid = oid;
         user.realName = jso.optString("displayName");
         if (jso.has("image")) {
@@ -127,7 +127,7 @@ public class ConnectionPumpio extends Connection {
         }
         user.description = jso.optString("summary");
         user.homepage = jso.optString("url");
-        user.url = jso.optString("url");
+        user.setUrl(jso.optString("url"));
         user.updatedDate = dateFromJson(jso, "updated");
         return user;
     }

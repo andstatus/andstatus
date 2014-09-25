@@ -43,7 +43,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        TestSuite.initialize(this);
+        TestSuite.initializeWithData(this);
 
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.TWITTER_TEST_ORIGIN_NAME);
         
@@ -67,7 +67,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
 
     public void testGetTimeline() throws ConnectionException {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
-                org.andstatus.app.tests.R.raw.home_timeline);
+                org.andstatus.app.tests.R.raw.twitter_home_timeline);
         httpConnection.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.STATUSES_HOME_TIMELINE, 
@@ -82,8 +82,9 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertTrue("Favorited", mbMessage.favoritedByActor.toBoolean(false));
         assertEquals("Actor", connectionData.getAccountUserOid(), mbMessage.actor.oid);
         assertEquals("Author's oid", "221452291", mbMessage.sender.oid);
-        assertEquals("Author's username", "Know", mbMessage.sender.userName);
+        assertEquals("Author's username", "Know", mbMessage.sender.getUserName());
         assertEquals("Author's Display name", "Just so you Know", mbMessage.sender.realName);
+        assertEquals("WebFinger ID", "Know@" + TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME), mbMessage.sender.getWebFingerId());
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;

@@ -96,7 +96,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         builder.onCredentialsVerified(mbUser, null);
         assertTrue("Account is persistent", builder.isPersistent());
         long userId = builder.getAccount().getUserId();
-        assertTrue("Account " + mbUser.userName + " has UserId", userId != 0);
+        assertTrue("Account " + mbUser.getUserName() + " has UserId", userId != 0);
         assertEquals("Account UserOid", builder.getAccount().getUserOid(), mbUser.oid);
         assertEquals("User in the database for id=" + userId, 
                 mbUser.oid,
@@ -116,7 +116,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
             };
         Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection, sa.selectionArgs, sortOrder);
         assertTrue("Cursor returned", cursor != null);
-        assertTrue("Message by " + mbUser.userName + " found", cursor.getCount() > 0);
+        assertTrue("Message by " + mbUser.getUserName() + " found", cursor.getCount() > 0);
         cursor.moveToFirst();
         long messageId = cursor.getLong(0);
         cursor.close();

@@ -66,11 +66,11 @@ public class MessageInserter extends InstrumentationTestCase {
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
         if (origin.getOriginType() == OriginType.PUMPIO) {
             ConnectionPumpio connection = new ConnectionPumpio();
-            mbUser.userName = connection.userOidToUsername(userOid);
-            mbUser.url = "http://" + connection.usernameToHost(mbUser.userName) + "/"
-                    + connection.usernameToNickname(mbUser.userName);
+            mbUser.setUserName(connection.userOidToUsername(userOid));
+            mbUser.setUrl("http://" + connection.usernameToHost(mbUser.getUserName()) + "/"
+                    + connection.usernameToNickname(mbUser.getUserName()));
         } else {
-            mbUser.userName = "userOf" + origin.getName() + userOid;
+            mbUser.setUserName("userOf" + origin.getName() + userOid);
         }
         if (accountMbUser != null) {
             mbUser.actor = accountMbUser;
@@ -82,7 +82,7 @@ public class MessageInserter extends InstrumentationTestCase {
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid)) {
             if (origin.getOriginType() == OriginType.PUMPIO) {
-                messageOid = author.url  + "/" + (inReplyToMessage == null ? "note" : "comment") + "/thisisfakeuri" + System.nanoTime();
+                messageOid = author.getUrl()  + "/" + (inReplyToMessage == null ? "note" : "comment") + "/thisisfakeuri" + System.nanoTime();
             } else {
                 messageOid = String.valueOf(System.nanoTime());
             }

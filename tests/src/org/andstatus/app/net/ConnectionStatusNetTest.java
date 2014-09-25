@@ -32,8 +32,6 @@ import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 public class ConnectionStatusNetTest extends InstrumentationTestCase {
@@ -50,7 +48,7 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        TestSuite.initialize(this);
+        TestSuite.initializeWithData(this);
 
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.STATUSNET_TEST_ORIGIN_NAME);
         
@@ -69,57 +67,46 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
 
     public void testGetPublicTimeline() throws ConnectionException {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
-                org.andstatus.app.tests.R.raw.home_timeline);
+                org.andstatus.app.tests.R.raw.quitter_home);
         httpConnectionMock.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE, 
-                new TimelinePosition("380925803053449216") , 20, connectionData.getAccountUserOid());
+                new TimelinePosition("2656388") , 20, connectionData.getAccountUserOid());
         assertNotNull("timeline returned", timeline);
-        int size = 4;
+        int size = 3;
         assertEquals("Number of items in the Timeline", size, timeline.size());
 
         int ind = 0;
         assertEquals("Posting message", MbTimelineItem.ItemType.MESSAGE, timeline.get(ind).getType());
         MbMessage mbMessage = timeline.get(ind).mbMessage;
-        assertTrue("Message is public", mbMessage.isPublic());
         assertTrue("Favorited", mbMessage.favoritedByActor.toBoolean(false));
-        assertEquals("Actor", connectionData.getAccountUserOid(), mbMessage.actor.oid);
-        assertEquals("Author's oid", "221452291", mbMessage.sender.oid);
-        assertEquals("Author's username", "Know", mbMessage.sender.userName);
-        assertEquals("Author's Display name", "Just so you Know", mbMessage.sender.realName);
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
         assertTrue("Does not have a recipient", mbMessage.recipient == null);
         assertTrue("Is not a reblog", mbMessage.rebloggedMessage == null);
         assertTrue("Is a reply", mbMessage.inReplyToMessage != null);
-        assertEquals("Reply to the message id", "17176774678", mbMessage.inReplyToMessage.oid);
-        assertEquals("Reply to the message by userOid", "144771645", mbMessage.inReplyToMessage.sender.oid);
-        assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
-        String startsWith = "@t131t";
+        assertEquals("Reply to the message id", "2663833", mbMessage.inReplyToMessage.oid);
+        assertEquals("Reply to the message by userOid", "114973", mbMessage.inReplyToMessage.sender.oid);
+        assertFalse("Is not Favorited", mbMessage.favoritedByActor.toBoolean(true));
+        String startsWith = "@<span class=\"vcard\">";
         assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
-
+        
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
-        assertTrue("Does not have a recipient", mbMessage.recipient == null);
-        assertTrue("Is a reblog", mbMessage.rebloggedMessage != null);
-        assertTrue("Is not a reply", mbMessage.inReplyToMessage == null);
-        assertEquals("Reblog of the message id", "315088751183409153", mbMessage.rebloggedMessage.oid);
-        assertEquals("Reblog of the message by userOid", "442756884", mbMessage.rebloggedMessage.sender.oid);
-        assertTrue("Is not Favorited", !mbMessage.favoritedByActor.toBoolean(true));
-        startsWith = "RT @AndStatus1: This AndStatus application";
-        assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
-        startsWith = "This AndStatus application";
-        assertEquals("Body of reblogged message starts with", startsWith, mbMessage.rebloggedMessage.getBody().substring(0, startsWith.length()));
-        Date date = TestSuite.utcTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 05);
-        assertEquals("This message created at Thu Sep 26 18:23:05 +0000 2013 (" + date.toString() + ")", date.getTime(), mbMessage.sentDate);
-        date = TestSuite.utcTime(2013, Calendar.MARCH, 22, 13, 13, 7);
-        assertEquals("Reblogged message created at Fri Mar 22 13:13:07 +0000 2013 (" + date.toString() + ")", date.getTime(), mbMessage.rebloggedMessage.sentDate);
+        assertTrue("Message is public", mbMessage.isPublic());
+        assertFalse("Not Favorited", mbMessage.favoritedByActor.toBoolean(false));
+        assertEquals("Actor", connectionData.getAccountUserOid(), mbMessage.actor.oid);
+        assertEquals("Sender's oid", "114973", mbMessage.sender.oid);
+        assertEquals("Sender's username", "mmn", mbMessage.sender.getUserName());
+        assertEquals("Sender's Display name", "mmn", mbMessage.sender.realName);
+        assertEquals("Sender's URL", "https://social.umeahackerspace.se/mmn", mbMessage.sender.getUrl());
+        assertEquals("Sender's WebFinger ID", "mmn@social.umeahackerspace.se", mbMessage.sender.getWebFingerId());
     }
 
     public void testSearch() throws ConnectionException {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
-                org.andstatus.app.tests.R.raw.home_timeline);
+                org.andstatus.app.tests.R.raw.twitter_home_timeline);
         httpConnectionMock.setResponse(jso);
         
         List<MbTimelineItem> timeline = connection.search(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT , 20);

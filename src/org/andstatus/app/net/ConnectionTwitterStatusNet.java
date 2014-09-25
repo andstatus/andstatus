@@ -159,4 +159,13 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
         }
         return message;
     }
+
+    @Override
+    protected MbUser userFromJson(JSONObject jso) throws ConnectionException {
+        MbUser mbUser = super.userFromJson(jso);
+        if (jso != null) {
+            mbUser.setUrl(jso.optString("statusnet_profile_url"));
+        }
+        return mbUser;
+    }
 }

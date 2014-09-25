@@ -122,14 +122,14 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
     
     private void onePositionOnContentChange(int position0, int iterationId) throws InterruptedException, Exception {
         final String method = "testPositionOnContentChange" + iterationId;
-        TestSuite.waitForListLoaded(this, mActivity, 10);
+        TestSuite.waitForListLoaded(this, mActivity, position0 + 2);
         
         new ListActivityTestHelper<TimelineActivity>(this, mActivity).selectListPosition(method, position0);
         int position1 = getListView().getFirstVisiblePosition();
         long itemId = getListView().getAdapter().getItemId(position1);
         int count1 = getListView().getAdapter().getCount() - 1;
 
-        new ConversationInserter().insertConversation("p1");
+        new ConversationInserter().insertConversation("p" + iterationId);
         CommandData commandData = new CommandData(CommandEnum.CREATE_FAVORITE, TestSuite.CONVERSATION_ACCOUNT_NAME);
         MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)

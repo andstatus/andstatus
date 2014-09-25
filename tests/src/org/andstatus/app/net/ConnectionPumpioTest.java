@@ -52,7 +52,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        context = TestSuite.initialize(this);
+        context = TestSuite.initializeWithData(this);
 
         Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
@@ -156,14 +156,16 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Other User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
         MbUser mbUser = timeline.get(ind).mbUser;
         assertEquals("Other actor", "acct:jpope@io.jpope.org", mbUser.actor.oid);
+        assertEquals("WebFinger ID", "jpope@io.jpope.org", mbUser.actor.getWebFingerId());
         assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
 
         ind++;
         assertEquals("User", MbTimelineItem.ItemType.USER, timeline.get(ind).getType());
         mbUser = timeline.get(ind).mbUser;
-        assertEquals("Url of the actor", "https://identi.ca/t131t", mbUser.actor.url);
+        assertEquals("Url of the actor", "https://identi.ca/t131t", mbUser.actor.getUrl());
+        assertEquals("WebFinger ID", "t131t@identi.ca", mbUser.actor.getWebFingerId());
         assertEquals("Following", TriState.TRUE, mbUser.followedByActor);
-        assertEquals("Url of the user", "https://fmrl.me/grdryn", mbUser.url);
+        assertEquals("Url of the user", "https://fmrl.me/grdryn", mbUser.getUrl());
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
@@ -180,7 +182,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         ind++;
         mbMessage = timeline.get(ind).mbMessage;
         assertTrue("Is a reply", mbMessage.inReplyToMessage != null);
-        assertEquals("Is a reply to this user", mbMessage.inReplyToMessage.sender.userName, "jankusanagi@identi.ca");
+        assertEquals("Is a reply to this user", mbMessage.inReplyToMessage.sender.getUserName(), "jankusanagi@identi.ca");
     }
 
     public void testGetUsersFollowedBy() throws ConnectionException {
@@ -197,7 +199,7 @@ public class ConnectionPumpioTest extends InstrumentationTestCase {
         assertEquals("Response for t131t", size, users.size());
 
         assertEquals("Does the Pope shit in the woods?", users.get(1).description);
-        assertEquals("gitorious@identi.ca", users.get(2).userName);
+        assertEquals("gitorious@identi.ca", users.get(2).getUserName());
         assertEquals("acct:ken@coding.example", users.get(3).oid);
         assertEquals("Yuri Volkov", users.get(4).realName);
     }

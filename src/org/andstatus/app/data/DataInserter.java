@@ -334,12 +334,19 @@ public class DataInserter {
         try {
             ContentValues values = new ContentValues();
 
-            String userName = mbUser.userName;
+            String userName = mbUser.getUserName();
             if (userId == 0 && SharedPreferencesUtil.isEmpty(userName)) {
                 userName = "id:" + userOid;
             }
             if (!SharedPreferencesUtil.isEmpty(userName)) {
                 values.put(MyDatabase.User.USERNAME, userName);
+            }
+            String webFingerId = mbUser.getWebFingerId();
+            if (userId == 0 && SharedPreferencesUtil.isEmpty(webFingerId)) {
+                webFingerId = userName;
+            }
+            if (!SharedPreferencesUtil.isEmpty(webFingerId)) {
+                values.put(MyDatabase.User.WEBFINGER_ID, webFingerId);
             }
             if (!SharedPreferencesUtil.isEmpty(mbUser.realName)) {
                 values.put(MyDatabase.User.REAL_NAME, mbUser.realName);
@@ -353,8 +360,8 @@ public class DataInserter {
             if (!SharedPreferencesUtil.isEmpty(mbUser.homepage)) {
                 values.put(MyDatabase.User.HOMEPAGE, mbUser.homepage);
             }
-            if (!SharedPreferencesUtil.isEmpty(mbUser.url)) {
-                values.put(MyDatabase.User.URL, mbUser.url);
+            if (!SharedPreferencesUtil.isEmpty(mbUser.getUrl())) {
+                values.put(MyDatabase.User.URL, mbUser.getUrl());
             }
             if (mbUser.createdDate > 0) {
                 values.put(MyDatabase.User.CREATED_DATE, mbUser.createdDate);

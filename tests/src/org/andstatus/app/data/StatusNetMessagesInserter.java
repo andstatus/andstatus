@@ -106,7 +106,7 @@ public class StatusNetMessagesInserter extends InstrumentationTestCase {
     private MbUser userFromOid(String userOid) {
         String userName = "user" + userOid;
         MbUser mbUser = MbUser.fromOriginAndUserOid(origin.getId(), userOid);
-        mbUser.userName = userName;
+        mbUser.setUserName(userName);
         if (accountMbUser != null) {
             mbUser.actor = accountMbUser;
         }
@@ -116,7 +116,7 @@ public class StatusNetMessagesInserter extends InstrumentationTestCase {
     private MbMessage buildMessage(MbUser author, String body, MbMessage inReplyToMessage, String messageOidIn) {
         String messageOid = messageOidIn;
         if (TextUtils.isEmpty(messageOid)) {
-            messageOid = author.url  + "/" + (inReplyToMessage == null ? "note" : "comment") + "thisisfakeuri" + System.nanoTime();
+            messageOid = author.getUrl()  + "/" + (inReplyToMessage == null ? "note" : "comment") + "thisisfakeuri" + System.nanoTime();
         }
         MbMessage message = MbMessage.fromOriginAndOid(origin.getId(), messageOid);
         message.setBody(body + (inReplyToMessage != null ? " it" + iteration : "" ));

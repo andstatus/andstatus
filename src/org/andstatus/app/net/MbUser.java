@@ -16,9 +16,13 @@
 
 package org.andstatus.app.net;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
+
+import java.net.URL;
 
 /**
  * 'Mb' stands for "Microblogging system" 
@@ -26,12 +30,13 @@ import org.andstatus.app.util.TriState;
  */
 public class MbUser {
     public String oid="";
-    public String userName="";
+    private String userName="";
+    private String webFingerId="";
     public String realName="";
     public String avatarUrl="";
     public String description="";
     public String homepage="";
-    public String url="";
+    private Uri uri = Uri.EMPTY;
     public long createdDate = 0;
     public long updatedDate = 0;
     public MbMessage latestMessage = null;    
@@ -75,5 +80,40 @@ public class MbUser {
             members += "; latest message present";
         }
         return str + "{" + members + "}";
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+        fixWebFingerId();
+    }
+
+    public String getUrl() {
+        return uri.toString();
+    }
+
+    public void setUrl(String url) {
+        this.uri = UriUtils.fromString(url);
+        fixWebFingerId();
+    }
+
+    public void setUrl(URL url) {
+        uri = UriUtils.fromUrl(url);
+        fixWebFingerId();
+    }
+    
+    private void fixWebFingerId() {
+        if (userName.contains("@") || UriUtils.isEmpty(uri)) {
+            webFingerId = userName;
+        } else {
+            webFingerId = userName + "@" + uri.getHost();
+        }
+    }
+
+    public String getWebFingerId() {
+        return webFingerId;
     }
 }

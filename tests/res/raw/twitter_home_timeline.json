@@ -1,0 +1,435 @@
+{
+	"items":[
+  {
+    "created_at": "Thu Sep 26 18:26:29 +0000 2013",
+    "id": 383296535213002750,
+    "id_str": "383296535213002752",
+    "text": "And this is my tweet from the web site. I'm testing AndStatus application after it's major refactoring for the Pump.io support",
+    "source": "web",
+    "truncated": false,
+    "in_reply_to_status_id": null,
+    "in_reply_to_status_id_str": null,
+    "in_reply_to_user_id": null,
+    "in_reply_to_user_id_str": null,
+    "in_reply_to_screen_name": null,
+    "user": {
+      "id": 144771645,
+      "id_str": "144771645",
+      "name": "Tester the 131",
+      "screen_name": "t131t",
+      "location": "",
+      "description": "",
+      "url": null,
+      "entities": {
+        "description": {
+          "urls": []
+        }
+      },
+      "protected": false,
+      "followers_count": 5,
+      "friends_count": 3,
+      "listed_count": 0,
+      "created_at": "Mon May 17 07:38:22 +0000 2010",
+      "favourites_count": 31,
+      "utc_offset": null,
+      "time_zone": null,
+      "geo_enabled": false,
+      "verified": false,
+      "statuses_count": 67,
+      "lang": "en",
+      "contributors_enabled": false,
+      "is_translator": false,
+      "profile_background_color": "C0DEED",
+      "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+      "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+      "profile_background_tile": false,
+      "profile_image_url": "http://abs.twimg.com/sticky/default_profile_images/default_profile_4_normal.png",
+      "profile_image_url_https": "https://abs.twimg.com/sticky/default_profile_images/default_profile_4_normal.png",
+      "profile_link_color": "0084B4",
+      "profile_sidebar_border_color": "C0DEED",
+      "profile_sidebar_fill_color": "DDEEF6",
+      "profile_text_color": "333333",
+      "profile_use_background_image": true,
+      "default_profile": true,
+      "default_profile_image": true,
+      "following": true,
+      "follow_request_sent": null,
+      "notifications": null
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": null,
+    "contributors": null,
+    "retweet_count": 0,
+    "favorite_count": 0,
+    "entities": {
+      "hashtags": [],
+      "symbols": [],
+      "urls": [],
+      "user_mentions": []
+    },
+    "favorited": false,
+    "retweeted": false,
+    "lang": "en"
+  },
+  {
+    "created_at": "Thu Sep 26 18:23:05 +0000 2013",
+    "id": 383295679507869700,
+    "id_str": "383295679507869696",
+    "text": "RT @AndStatus1: This AndStatus application was successfully built on an Android device using free tools only https://t.co/aktpA1VuMS",
+    "source": "<a href=\"http://andstatus.org/andstatus/\" rel=\"nofollow\">AndStatus</a>",
+    "truncated": false,
+    "in_reply_to_status_id": null,
+    "in_reply_to_status_id_str": null,
+    "in_reply_to_user_id": null,
+    "in_reply_to_user_id_str": null,
+    "in_reply_to_screen_name": null,
+    "user": {
+      "id": 111911542,
+      "id_str": "111911542",
+      "name": "Some tester 121",
+      "screen_name": "t121t",
+      "location": "",
+      "description": "",
+      "url": null,
+      "entities": {
+        "description": {
+          "urls": []
+        }
+      },
+      "protected": true,
+      "followers_count": 2,
+      "friends_count": 2,
+      "listed_count": 0,
+      "created_at": "Sat Feb 06 15:30:10 +0000 2010",
+      "favourites_count": 17,
+      "utc_offset": -18000,
+      "time_zone": "Quito",
+      "geo_enabled": false,
+      "verified": false,
+      "statuses_count": 115,
+      "lang": "en",
+      "contributors_enabled": false,
+      "is_translator": false,
+      "profile_background_color": "C0DEED",
+      "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+      "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+      "profile_background_tile": false,
+      "profile_image_url": "http://a0.twimg.com/profile_images/750625732/errorsml_normal.gif",
+      "profile_image_url_https": "https://si0.twimg.com/profile_images/750625732/errorsml_normal.gif",
+      "profile_link_color": "0084B4",
+      "profile_sidebar_border_color": "C0DEED",
+      "profile_sidebar_fill_color": "DDEEF6",
+      "profile_text_color": "333333",
+      "profile_use_background_image": true,
+      "default_profile": true,
+      "default_profile_image": false,
+      "following": true,
+      "follow_request_sent": null,
+      "notifications": null
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": null,
+    "contributors": null,
+    "retweeted_status": {
+      "created_at": "Fri Mar 22 13:13:07 +0000 2013",
+      "id": 315088751183409150,
+      "id_str": "315088751183409153",
+      "text": "This AndStatus application was successfully built on an Android device using free tools only https://t.co/aktpA1VuMS",
+      "source": "<a href=\"http://andstatus.org/andstatus/\" rel=\"nofollow\">AndStatus</a>",
+      "truncated": false,
+      "in_reply_to_status_id": null,
+      "in_reply_to_status_id_str": null,
+      "in_reply_to_user_id": null,
+      "in_reply_to_user_id_str": null,
+      "in_reply_to_screen_name": null,
+      "user": {
+        "id": 442756884,
+        "id_str": "442756884",
+        "name": "AndStatus project",
+        "screen_name": "AndStatus1",
+        "location": "Virtual world, see Website",
+        "description": "AndStatus Open Source community based project, creating AndStatus application for Android. \r\nAndStatus is successor (one of successors) of AndTweet project.",
+        "url": "http://t.co/NSoZskSFrr",
+        "entities": {
+          "url": {
+            "urls": [
+              {
+                "url": "http://t.co/NSoZskSFrr",
+                "expanded_url": "http://andstatus.org",
+                "display_url": "andstatus.org",
+                "indices": [
+                  0,
+                  22
+                ]
+              }
+            ]
+          },
+          "description": {
+            "urls": []
+          }
+        },
+        "protected": false,
+        "followers_count": 4,
+        "friends_count": 3,
+        "listed_count": 0,
+        "created_at": "Wed Dec 21 12:42:38 +0000 2011",
+        "favourites_count": 2,
+        "utc_offset": null,
+        "time_zone": null,
+        "geo_enabled": false,
+        "verified": false,
+        "statuses_count": 20,
+        "lang": "en",
+        "contributors_enabled": false,
+        "is_translator": false,
+        "profile_background_color": "C0DEED",
+        "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_tile": false,
+        "profile_image_url": "http://a0.twimg.com/profile_images/1705955091/icon_normal.jpg",
+        "profile_image_url_https": "https://si0.twimg.com/profile_images/1705955091/icon_normal.jpg",
+        "profile_link_color": "0084B4",
+        "profile_sidebar_border_color": "C0DEED",
+        "profile_sidebar_fill_color": "DDEEF6",
+        "profile_text_color": "333333",
+        "profile_use_background_image": true,
+        "default_profile": true,
+        "default_profile_image": false,
+        "following": null,
+        "follow_request_sent": null,
+        "notifications": null
+      },
+      "geo": null,
+      "coordinates": null,
+      "place": null,
+      "contributors": null,
+      "retweet_count": 3,
+      "favorite_count": 1,
+      "entities": {
+        "hashtags": [],
+        "symbols": [],
+        "urls": [
+          {
+            "url": "https://t.co/aktpA1VuMS",
+            "expanded_url": "https://github.com/andstatus/andstatus/wiki/Building-the-Android-application-using-Bash-script",
+            "display_url": "github.com/andstatus/ands…",
+            "indices": [
+              93,
+              116
+            ]
+          }
+        ],
+        "user_mentions": []
+      },
+      "favorited": false,
+      "retweeted": false,
+      "possibly_sensitive": false,
+      "lang": "en"
+    },
+    "retweet_count": 3,
+    "favorite_count": 0,
+    "entities": {
+      "hashtags": [],
+      "symbols": [],
+      "urls": [
+        {
+          "url": "https://t.co/aktpA1VuMS",
+          "expanded_url": "https://github.com/andstatus/andstatus/wiki/Building-the-Android-application-using-Bash-script",
+          "display_url": "github.com/andstatus/ands…",
+          "indices": [
+            109,
+            132
+          ]
+        }
+      ],
+      "user_mentions": [
+        {
+          "screen_name": "AndStatus1",
+          "name": "AndStatus project",
+          "id": 442756884,
+          "id_str": "442756884",
+          "indices": [
+            3,
+            14
+          ]
+        }
+      ]
+    },
+    "favorited": false,
+    "retweeted": false,
+    "possibly_sensitive": false,
+    "lang": "en"
+  },
+  {
+    "created_at": "Thu Sep 26 18:22:05 +0000 2013",
+    "id": 383295427141177340,
+    "id_str": "383295427141177344",
+    "text": "@t131t Excuse me for replying so late. This is a test anyway :-)",
+    "source": "<a href=\"http://andstatus.org/andstatus/\" rel=\"nofollow\">AndStatus</a>",
+    "truncated": false,
+    "in_reply_to_status_id": 17176774678,
+    "in_reply_to_status_id_str": "17176774678",
+    "in_reply_to_user_id": 144771645,
+    "in_reply_to_user_id_str": "144771645",
+    "in_reply_to_screen_name": "t131t",
+    "user": {
+      "id": 111911542,
+      "id_str": "111911542",
+      "name": "Some tester 121",
+      "screen_name": "t121t",
+      "location": "",
+      "description": "",
+      "url": null,
+      "entities": {
+        "description": {
+          "urls": []
+        }
+      },
+      "protected": true,
+      "followers_count": 2,
+      "friends_count": 2,
+      "listed_count": 0,
+      "created_at": "Sat Feb 06 15:30:10 +0000 2010",
+      "favourites_count": 17,
+      "utc_offset": -18000,
+      "time_zone": "Quito",
+      "geo_enabled": false,
+      "verified": false,
+      "statuses_count": 115,
+      "lang": "en",
+      "contributors_enabled": false,
+      "is_translator": false,
+      "profile_background_color": "C0DEED",
+      "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+      "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+      "profile_background_tile": false,
+      "profile_image_url": "http://a0.twimg.com/profile_images/750625732/errorsml_normal.gif",
+      "profile_image_url_https": "https://si0.twimg.com/profile_images/750625732/errorsml_normal.gif",
+      "profile_link_color": "0084B4",
+      "profile_sidebar_border_color": "C0DEED",
+      "profile_sidebar_fill_color": "DDEEF6",
+      "profile_text_color": "333333",
+      "profile_use_background_image": true,
+      "default_profile": true,
+      "default_profile_image": false,
+      "following": true,
+      "follow_request_sent": null,
+      "notifications": null
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": null,
+    "contributors": null,
+    "retweet_count": 0,
+    "favorite_count": 0,
+    "entities": {
+      "hashtags": [],
+      "symbols": [],
+      "urls": [],
+      "user_mentions": [
+        {
+          "screen_name": "t131t",
+          "name": "Tester the 131",
+          "id": 144771645,
+          "id_str": "144771645",
+          "indices": [
+            0,
+            6
+          ]
+        }
+      ]
+    },
+    "favorited": false,
+    "retweeted": false,
+    "lang": "en"
+  },
+  {
+	    "created_at": "Fri Sep 20 21:47:25 +0000 2013",
+	    "id": 381172771428257800,
+	    "id_str": "381172771428257792",
+	    "text": "'U' was first used as a substitute for 'you' by William Shakespeare.",
+	    "source": "<a href=\"http://bufferapp.com\" rel=\"nofollow\">Buffer</a>",
+	    "truncated": false,
+	    "in_reply_to_status_id": null,
+	    "in_reply_to_status_id_str": null,
+	    "in_reply_to_user_id": null,
+	    "in_reply_to_user_id_str": null,
+	    "in_reply_to_screen_name": null,
+	    "user": {
+	      "id": 221452291,
+	      "id_str": "221452291",
+	      "name": "Just so you Know",
+	      "screen_name": "Know",
+	      "location": "Library of Congress",
+	      "description": "Unimportant facts you'll never need to know. Legally responsible publisher: @FUN",
+	      "url": "http://t.co/4TzphfU9qt",
+	      "entities": {
+	        "url": {
+	          "urls": [
+	            {
+	              "url": "http://t.co/4TzphfU9qt",
+	              "expanded_url": "http://www.facts.fm",
+	              "display_url": "facts.fm",
+	              "indices": [
+	                0,
+	                22
+	              ]
+	            }
+	          ]
+	        },
+	        "description": {
+	          "urls": []
+	        }
+	      },
+	      "protected": false,
+	      "followers_count": 1878136,
+	      "friends_count": 151,
+	      "listed_count": 5411,
+	      "created_at": "Tue Nov 30 18:17:25 +0000 2010",
+	      "favourites_count": 163,
+	      "utc_offset": -25200,
+	      "time_zone": "Pacific Time (US & Canada)",
+	      "geo_enabled": true,
+	      "verified": false,
+	      "statuses_count": 1592,
+	      "lang": "en",
+	      "contributors_enabled": false,
+	      "is_translator": false,
+	      "profile_background_color": "EEEEEE",
+	      "profile_background_image_url": "http://a0.twimg.com/profile_background_images/880945821/4e5bfa6079778bbd950c77d073cdf340.png",
+	      "profile_background_image_url_https": "https://si0.twimg.com/profile_background_images/880945821/4e5bfa6079778bbd950c77d073cdf340.png",
+	      "profile_background_tile": false,
+	      "profile_image_url": "http://a0.twimg.com/profile_images/378800000411110038/a8b7eced4dc43374e7ae21112ff749b6_normal.jpeg",
+	      "profile_image_url_https": "https://si0.twimg.com/profile_images/378800000411110038/a8b7eced4dc43374e7ae21112ff749b6_normal.jpeg",
+	      "profile_banner_url": "https://pbs.twimg.com/profile_banners/221452291/1377270845",
+	      "profile_link_color": "0084B4",
+	      "profile_sidebar_border_color": "FFFFFF",
+	      "profile_sidebar_fill_color": "C0DFEC",
+	      "profile_text_color": "333333",
+	      "profile_use_background_image": true,
+	      "default_profile": false,
+	      "default_profile_image": false,
+	      "following": true,
+	      "follow_request_sent": null,
+	      "notifications": null
+	    },
+	    "geo": null,
+	    "coordinates": null,
+	    "place": null,
+	    "contributors": null,
+	    "retweet_count": 408,
+	    "favorite_count": 232,
+	    "entities": {
+	      "hashtags": [],
+	      "symbols": [],
+	      "urls": [],
+	      "user_mentions": []
+	    },
+	    "favorited": true,
+	    "retweeted": false,
+	    "lang": "en"
+	  }
+   ]
+}

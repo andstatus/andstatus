@@ -241,6 +241,10 @@ public final class MyDatabase extends SQLiteOpenHelper  {
          */
         public static final String USERNAME = "username";
         /**
+         * It looks like an email address with your nickname then "@" then your server
+         */
+        public static final String WEBFINGER_ID = "webfinger_id";
+        /**
          * This is called "name" in Twitter API
          */
         public static final String REAL_NAME = "real_name";
@@ -524,6 +528,7 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + User.ORIGIN_ID + " INTEGER NOT NULL," 
                 + User.USER_OID + " TEXT," 
                 + User.USERNAME + " TEXT NOT NULL," 
+                + User.WEBFINGER_ID + " TEXT NOT NULL," 
                 + User.REAL_NAME + " TEXT," 
                 + User.AVATAR_URL + " TEXT," 
                 + User.DESCRIPTION + " TEXT," 

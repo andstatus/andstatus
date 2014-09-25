@@ -239,7 +239,7 @@ public abstract class ConnectionTwitter extends Connection {
                 }
                 if (!SharedPreferencesUtil.isEmpty(senderOid)) {
                     message.sender = MbUser.fromOriginAndUserOid(data.getOriginId(), senderOid);
-                    message.sender.userName = senderName;
+                    message.sender.setUserName(senderName);
                 }
             }
             
@@ -314,7 +314,7 @@ public abstract class ConnectionTwitter extends Connection {
         }
     }
     
-    private MbUser userFromJson(JSONObject jso) throws ConnectionException {
+    protected MbUser userFromJson(JSONObject jso) throws ConnectionException {
         if (jso == null) {
             return MbUser.getEmpty();
         }
@@ -336,7 +336,8 @@ public abstract class ConnectionTwitter extends Connection {
         }
         MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
         user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
-        user.userName = userName;
+        user.setUserName(userName);
+        user.setUrl(data.getOriginUrl());
         user.realName = jso.optString("name");
         user.avatarUrl = jso.optString("profile_image_url");
         user.description = jso.optString("description");

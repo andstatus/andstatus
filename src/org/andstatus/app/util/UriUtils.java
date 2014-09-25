@@ -19,6 +19,8 @@ package org.andstatus.app.util;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import java.net.URL;
+
 public class UriUtils {
     
     private UriUtils() {
@@ -36,5 +38,14 @@ public class UriUtils {
 
     public static Uri notNull(Uri uri) {
         return uri == null ? Uri.EMPTY : uri;
+    }
+
+    /** returns not null */
+    public static Uri fromUrl(URL url) {
+        if (url == null) {
+            return Uri.EMPTY;
+        } else {
+            return fromString(url.toExternalForm());
+        }
     }
 }

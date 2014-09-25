@@ -394,7 +394,7 @@ public final class MyAccount {
             String newName = "";
             boolean errorSettingUsername = false;
             if (ok) {
-                newName = user.userName;
+                newName = user.getUserName();
                 Origin origin = myContext.persistentOrigins().fromId(user.originId);
                 ok = origin.isUsernameValid(newName);
                 errorSettingUsername = !ok;
@@ -489,7 +489,7 @@ public final class MyAccount {
                     // Construct "User" from available account info
                     // We need this User in order to be able to link Messages to him
                     MbUser mbUser = MbUser.fromOriginAndUserOid(myAccount.getOriginId(), myAccount.userOid);
-                    mbUser.userName = myAccount.getUsername();
+                    mbUser.setUserName(myAccount.getUsername());
                     LatestUserMessages lum = new LatestUserMessages();
                     myAccount.userId = di.insertOrUpdateUser(mbUser, lum);
                     lum.save();
