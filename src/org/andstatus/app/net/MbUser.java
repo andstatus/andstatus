@@ -88,6 +88,9 @@ public class MbUser {
 
     public void setUserName(String userName) {
         this.userName = userName;
+        if (TextUtils.isEmpty(realName)) {
+            realName = userName;
+        }
         fixWebFingerId();
     }
 

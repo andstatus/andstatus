@@ -781,7 +781,7 @@ public class MyProvider extends ContentProvider {
         if (!authorNameDefined && columns.contains(MyDatabase.User.AUTHOR_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT "
                     + BaseColumns._ID + ", " 
-                    + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.AUTHOR_NAME
+                    + authorNameField() + " AS " + MyDatabase.User.AUTHOR_NAME
                     + " FROM " + User.TABLE_NAME + ") AS author ON "
                     + MSG_TABLE_ALIAS + "." + MyDatabase.Msg.AUTHOR_ID + "=author."
                     + BaseColumns._ID;
@@ -816,21 +816,21 @@ public class MyProvider extends ContentProvider {
         }
         if (columns.contains(MyDatabase.User.SENDER_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.SENDER_NAME
+                    + authorNameField() + " AS " + MyDatabase.User.SENDER_NAME
                     + " FROM " + User.TABLE_NAME + ") AS sender ON "
                     + MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENDER_ID + "=sender."
                     + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.IN_REPLY_TO_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
+                    + authorNameField() + " AS " + MyDatabase.User.IN_REPLY_TO_NAME
                     + " FROM " + User.TABLE_NAME + ") AS prevauthor ON "
                     + MSG_TABLE_ALIAS + "." + MyDatabase.Msg.IN_REPLY_TO_USER_ID
                     + "=prevauthor." + BaseColumns._ID;
         }
         if (columns.contains(MyDatabase.User.RECIPIENT_NAME)) {
             tables = "(" + tables + ") LEFT OUTER JOIN (SELECT " + BaseColumns._ID + ", "
-                    + MyDatabase.User.USERNAME + " AS " + MyDatabase.User.RECIPIENT_NAME
+                    + authorNameField() + " AS " + MyDatabase.User.RECIPIENT_NAME
                     + " FROM " + User.TABLE_NAME + ") AS recipient ON "
                     + MSG_TABLE_ALIAS + "." + MyDatabase.Msg.RECIPIENT_ID + "=recipient."
                     + BaseColumns._ID;
@@ -862,6 +862,21 @@ public class MyProvider extends ContentProvider {
                     + ")";
         }
         return tables;
+    }
+
+    public static String authorNameField() {
+        switch (MyPreferences.userInTimeline()) {
+            case AT_USERNAME:
+                return "('@' || " + MyDatabase.User.USERNAME + ")";
+            case WEBFINGER_ID:
+                return MyDatabase.User.WEBFINGER_ID;
+            case REAL_NAME:
+                return MyDatabase.User.REAL_NAME;
+            case REAL_NAME_AT_USERNAME:
+                return "(" + MyDatabase.User.REAL_NAME + " || ' @' || " + MyDatabase.User.USERNAME + ")";
+            default:
+                return MyDatabase.User.USERNAME;
+        }
     }
     
     private static String[] addBeforeArray(String[] array, String s) {

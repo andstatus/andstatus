@@ -146,31 +146,28 @@ public class SharedPreferencesUtil {
     /**
      * @param pa Preference Activity
      * @param keyPreference android:key - Name of the preference key
-     * @param entryValuesR android:entryValues
-     * @param displayR Almost like android:entries but to show in the summary (may be the same as android:entries) 
+     * @param valuesR android:entryValues
+     * @param entriesR Almost like android:entries but to show in the summary (may be the same as android:entries) 
      * @param summaryR
      */
-    public static void showListPreference(PreferenceActivity pa, String keyPreference, int entryValuesR, int displayR, int summaryR) {
-        String displayParm = "";
+    public static void showListPreference(PreferenceActivity pa, String keyPreference, int valuesR, int entriesR, int summaryR) {
         ListPreference listPref = (ListPreference) pa.findPreference(keyPreference);
         if (listPref != null) {
-            String[] k = pa.getResources().getStringArray(entryValuesR);
-            String[] d = pa.getResources().getStringArray(displayR);
-            displayParm = d[0];
+            String[] values = pa.getResources().getStringArray(valuesR);
+            String[] entries = pa.getResources().getStringArray(entriesR);
+            String summary = entries[0];
             String listValue = listPref.getValue();
-            for (int i = 0; i < k.length; i++) {
-                if (listValue.equals(k[i])) {
-                    displayParm = d[i];
+            for (int i = 0; i < values.length; i++) {
+                if (listValue.equals(values[i])) {
+                    summary = entries[i];
                     break;
                 }
             }
-            MessageFormat sf = new MessageFormat(pa.getText(summaryR)
+            MessageFormat messageFormat = new MessageFormat(pa.getText(summaryR)
                     .toString());
-            listPref.setSummary(sf.format(new Object[] {
-                displayParm
+            listPref.setSummary(messageFormat.format(new Object[] {
+                summary
             }));
-        } else {
-            displayParm = keyPreference + " was not found";
         }
     }
 

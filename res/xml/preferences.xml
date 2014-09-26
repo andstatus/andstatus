@@ -120,7 +120,14 @@
 					android:title="@string/title_preference_theme_size"
 					android:summary="@string/summary_preference_theme_size"
 					android:dialogTitle="@string/dialog_title_preference_theme_size" />
-				<CheckBoxPreference android:key="show_avatars"
+                <ListPreference android:key="user_in_timeline" 
+                    android:entries="@array/user_in_timeline_entries"
+                    android:entryValues="@array/user_in_timeline_values"
+                    android:defaultValue="1"
+                    android:title="@string/title_preference_user_in_timeline"
+                    android:summary="@string/summary_preference_user_in_timeline"
+                    android:dialogTitle="@string/title_preference_user_in_timeline" />
+			    <CheckBoxPreference android:key="show_avatars"
                     android:defaultValue="true"
 					android:title="@string/title_preference_show_avatars"
 					android:summaryOff="@string/summary_preference_show_avatars_off"

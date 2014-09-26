@@ -14,44 +14,49 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.data;
+package org.andstatus.app.context;
 
 import org.andstatus.app.util.MyLog;
 
-public enum DownloadType {
-    AVATAR(1),
-    IMAGE(2),
-    TEXT(3),
-    UNKNOWN(0);
+/** How to show a User in a Timeline */
+public enum UserInTimeline {
+    USERNAME(1),
+    AT_USERNAME(2),
+    WEBFINGER_ID(3),
+    REAL_NAME(4),
+    REAL_NAME_AT_USERNAME(5);
 
-    private static final String TAG = DownloadType.class.getSimpleName();
+    private static final String TAG = UserInTimeline.class.getSimpleName();
     
-    private long code;
-
-    DownloadType(long code) {
+    private final long code;
+    
+    UserInTimeline(long code) {
         this.code = code;
     }
-
+    
     public String save() {
         return Long.toString(code);
     }
-    
-    public static DownloadType load(String strCode) {
+
+    /**
+     * Returns the enum or {@link #USERNAME}
+     */
+    public static UserInTimeline load(String strCode) {
         try {
             return load(Long.parseLong(strCode));
         } catch (NumberFormatException e) {
             MyLog.v(TAG, "Error converting '" + strCode + "'", e);
         }
-        return UNKNOWN;
+        return USERNAME;
     }
     
-    public static DownloadType load( long code) {
-        for(DownloadType val : values()) {
+    public static UserInTimeline load( long code) {
+        for(UserInTimeline val : values()) {
             if (val.code == code) {
                 return val;
             }
         }
-        return UNKNOWN;
+        return USERNAME;
     }
     
 }

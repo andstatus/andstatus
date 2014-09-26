@@ -43,32 +43,32 @@
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
-	<string-array name="fetch_frequency_entries">
-		<item>3 minutes</item>
-		<item>5 minutes</item>
-		<item>10 minutes</item>
-		<item>15 minutes</item>
-		<item>30 minutes</item>
-		<item>1 hour</item>
-		<item>2 hours</item>
-		<item>4 hours</item>
-		<item>8 hours</item>
-		<item>12 hours</item>
-		<item>1 day</item>
-	</string-array>
-	<string-array name="fetch_frequency_values">
-		<item>180</item>
-		<item>300</item>
-		<item>600</item>
-		<item>900</item>
-		<item>1800</item>
-		<item>3600</item>
-		<item>7200</item>
-		<item>14400</item>
-		<item>28800</item>
-		<item>43200</item>
-		<item>86400</item>
-	</string-array>
+    <string-array name="fetch_frequency_entries">
+        <item>3 minutes</item>
+        <item>5 minutes</item>
+        <item>10 minutes</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>2 hours</item>
+        <item>4 hours</item>
+        <item>8 hours</item>
+        <item>12 hours</item>
+        <item>1 day</item>
+    </string-array>
+    <string-array name="fetch_frequency_values">
+        <item>180</item>
+        <item>300</item>
+        <item>600</item>
+        <item>900</item>
+        <item>1800</item>
+        <item>3600</item>
+        <item>7200</item>
+        <item>14400</item>
+        <item>28800</item>
+        <item>43200</item>
+        <item>86400</item>
+    </string-array>
 	<string-array name="fetch_frequency_display">
 		<item>3 minutes</item>
 		<item>5 minutes</item>
@@ -267,4 +267,18 @@
 		<item>"1"</item>
 		<item>".*"</item>
 	</string-array>
+    <string-array name="user_in_timeline_entries">
+        <item>"username"</item>
+        <item>"@username"</item>
+        <item>"webFingerId"</item>
+        <item>Real name</item>
+        <item>Real name @username</item>
+    </string-array>
+    <string-array name="user_in_timeline_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
 </resources>

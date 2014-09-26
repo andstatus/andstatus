@@ -325,7 +325,8 @@
     <string name="summary_preference_sync_while_using_application_on">Background sync is always on. Timeline may freeze sometimes.</string>
     <string name="summary_preference_syncing">When to sync timeline and how to indicate this</string>
     <string name="summary_preference_theme_size">Select text size</string>
-	<string name="summary_preference_username">Your username in the Microblogging system</string>
+    <string name="summary_preference_user_in_timeline">User will be shown as \"{0}\"</string>
+    <string name="summary_preference_username">Your username in the Microblogging system</string>
 	<string name="summary_preference_username_pumpio">Enter your ID on your pump.io site. It looks like an email address, with your username then \"@\" then your server; e.g.: andstatus@identi.ca</string>
 	<string name="summary_preference_verify_credentials">This Account is verified and enabled. Tap Back (&lt;) to continue or tap here to verify the user\'s credentials again.</string>
     <string name="summary_preference_verify_credentials_failed">Verification failed. Tap here to verify credentials and enable this User Account</string>
@@ -350,7 +351,7 @@
 	<string name="title_preference_about_application">About AndStatus</string>
     <string name="title_preference_add_account">Add this account</string>
     <string name="title_preference_appearance">Appearance</string>
-	<string name="title_preference_change_log">Change Log</string>
+    <string name="title_preference_change_log">Change Log</string>
     <string name="title_preference_connection_timeout">Connection timeout</string>
 	<string name="title_preference_contact_developer">Contact Developer</string>
     <string name="title_preference_debugging">Logging and debugging</string>
@@ -389,7 +390,8 @@
     <string name="title_sending_messages_log_enabled">Log Sending messages to file</string>
 	<string name="title_preference_show_avatars">Display Avatars</string>
     <string name="title_preference_show_attached_images">Display attached images</string>
-	<string name="title_preference_verify_credentials">Reverify credentials</string>
+    <string name="title_preference_user_in_timeline">How to show a User in a Timeline</string>
+    <string name="title_preference_verify_credentials">Reverify credentials</string>
 	<string name="title_preference_verify_credentials_failed">Verify credentials</string>
 	<string name="title_preference_vibration">Vibration</string>
 	<string name="message_source_from">from %1$s</string>

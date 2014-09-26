@@ -325,6 +325,7 @@
     <string name="summary_preference_syncing">Когда синхронизировать Линии времени и как это показывать Пользователю</string>
 	<string name="summary_preference_theme_color">Выберите цветовую тему</string>
 	<string name="summary_preference_theme_size">Выберите размер текста</string>
+    <string name="summary_preference_user_in_timeline">Пользователь будет показан как \"{0}\"</string>
 	<string name="summary_preference_username">Ваше имя пользователя в Системе микроблогов</string>
 	<string name="summary_preference_username_pumpio">Введите Ваш ID на Вашем pump.io сайте. Он выглядит как email: пользователя \"@\" имя сервера; например: andstatus@identi.ca</string>
 	<string name="summary_preference_verify_credentials">Данный аккаунт успешно аутентифицирован. Щёлкните Назад (&lt;) для продолжения или щёлкните здесь для повторной проверки</string>
@@ -386,6 +387,7 @@
     <string name="title_preference_syncing">Синхронизация</string>
     <string name="title_preference_theme_color">Цветовая тема</string>
 	<string name="title_preference_theme_size">Размер</string>
+    <string name="title_preference_user_in_timeline">Как показать Пользователя на Ленте времени</string>
 	<string name="title_preference_username">Имя пользователя</string>
 	<string name="title_preference_username_pumpio">Webfinger ID</string>
 	<string name="title_preference_verify_credentials">Перепроверить учётную запись</string>

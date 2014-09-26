@@ -210,6 +210,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         showMinLogLevel();
         showUseExternalStorage();
         showBackupRestore();
+        showAuthorInTimeline();
         
         Preference myPref = findPreference(KEY_MANAGE_EXISTING_ACCOUNTS);
         CharSequence summary;
@@ -282,6 +283,10 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         }
         mBackupRestore.setTitle(title);
     }
+
+    private void showAuthorInTimeline() {
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_USER_IN_TIMELINE, R.array.user_in_timeline_values, R.array.user_in_timeline_entries, R.string.summary_preference_user_in_timeline);
+    }
     
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -316,6 +321,9 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             if (MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW.equals(key)) {
                 dialogIsOpened = true;
                 showDialog(DLG_MOVE_DATA_BETWEEN_STORAGES);
+            }
+            if (MyPreferences.KEY_USER_IN_TIMELINE.equals(key)) {
+                showAuthorInTimeline();
             }
         } finally {
             onSharedPreferenceChangedIsBusy = false;

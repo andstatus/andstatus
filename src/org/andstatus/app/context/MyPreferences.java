@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ import java.io.File;
  */
 public class MyPreferences {
     private static final String TAG = MyPreferences.class.getSimpleName();
+
+    public static final String KEY_USER_IN_TIMELINE = "user_in_timeline";
     
     /**
      * This is sort of button to start verification of credentials
@@ -75,7 +77,7 @@ public class MyPreferences {
     public static final String KEY_THEME_COLOR = "theme_color";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ATTACHED_IMAGES = "show_attached_images";
-
+    
     /**
      * Use this dir: http://developer.android.com/reference/android/content/Context.html#getExternalFilesDir(java.lang.String)
      * (for API 8)
@@ -352,7 +354,7 @@ public class MyPreferences {
      * @return
      */
     public static File getDatabasePath(String name, Boolean forcedUseExternalStorage) {
-        File dbDir = getDataFilesDir(MyPreferences.DIRECTORY_DATABASES, forcedUseExternalStorage);
+        File dbDir = getDataFilesDir(DIRECTORY_DATABASES, forcedUseExternalStorage);
         File dbAbsolutePath = null;
         if (dbDir != null) {
             dbAbsolutePath = new File(dbDir.getPath() + "/" + name);
@@ -426,10 +428,14 @@ public class MyPreferences {
     }
 
     public static boolean showAvatars() {
-        return getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_SHOW_AVATARS, true);
+        return getDefaultSharedPreferences().getBoolean(KEY_SHOW_AVATARS, true);
     }
 
     public static boolean showAttachedImages() {
-        return getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_SHOW_ATTACHED_IMAGES, true);
+        return getDefaultSharedPreferences().getBoolean(KEY_SHOW_ATTACHED_IMAGES, true);
+    }
+
+    public static UserInTimeline userInTimeline() {
+        return UserInTimeline.load(getDefaultSharedPreferences().getString(KEY_USER_IN_TIMELINE, ""));
     }
 }
