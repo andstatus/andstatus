@@ -341,6 +341,7 @@ public class DataInserter {
             if (!SharedPreferencesUtil.isEmpty(userName)) {
                 values.put(MyDatabase.User.USERNAME, userName);
             }
+
             String webFingerId = mbUser.getWebFingerId();
             if (userId == 0 && SharedPreferencesUtil.isEmpty(webFingerId)) {
                 webFingerId = userName;
@@ -348,9 +349,15 @@ public class DataInserter {
             if (!SharedPreferencesUtil.isEmpty(webFingerId)) {
                 values.put(MyDatabase.User.WEBFINGER_ID, webFingerId);
             }
-            if (!SharedPreferencesUtil.isEmpty(mbUser.realName)) {
-                values.put(MyDatabase.User.REAL_NAME, mbUser.realName);
+            
+            String realName = mbUser.realName;
+            if (userId == 0 && SharedPreferencesUtil.isEmpty(realName)) {
+                realName = userName;
             }
+            if (!SharedPreferencesUtil.isEmpty(realName)) {
+                values.put(MyDatabase.User.REAL_NAME, realName);
+            }
+            
             if (!SharedPreferencesUtil.isEmpty(mbUser.avatarUrl)) {
                 values.put(MyDatabase.User.AVATAR_URL, mbUser.avatarUrl);
             }

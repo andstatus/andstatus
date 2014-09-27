@@ -77,6 +77,7 @@ public class MyPreferences {
     public static final String KEY_THEME_COLOR = "theme_color";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ATTACHED_IMAGES = "show_attached_images";
+    public static final String KEY_SHOW_ORIGIN = "show_origin";
     
     /**
      * Use this dir: http://developer.android.com/reference/android/content/Context.html#getExternalFilesDir(java.lang.String)
@@ -433,6 +434,10 @@ public class MyPreferences {
 
     public static boolean showAttachedImages() {
         return getDefaultSharedPreferences().getBoolean(KEY_SHOW_ATTACHED_IMAGES, true);
+    }
+
+    public static boolean showOrigin() {
+        return getDefaultSharedPreferences().getBoolean(KEY_SHOW_ORIGIN, false);
     }
 
     public static UserInTimeline userInTimeline() {

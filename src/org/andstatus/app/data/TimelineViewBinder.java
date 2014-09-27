@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2008 Torgny Bjers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,13 +28,13 @@ import android.widget.SimpleCursorAdapter.ViewBinder;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.RelativeTime;
 
 /**
  * Construct/format values of the rows for a Message item in a Timeline list
- * @author torgny.bjers
  */
 public class TimelineViewBinder implements ViewBinder {
     /**
@@ -48,6 +48,11 @@ public class TimelineViewBinder implements ViewBinder {
     public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
         boolean processed = true;
         switch (view.getId()) {
+            case R.id.message_author:
+                if ( view instanceof TextView) {
+                    setMessageAuthor(cursor, columnIndex, (TextView) view);
+                }
+                break;
             case R.id.message_body:
                 if ( view instanceof TextView) {
                     setMessageBody(cursor, columnIndex, (TextView) view);
@@ -85,8 +90,12 @@ public class TimelineViewBinder implements ViewBinder {
         return processed;
     }
 
+    private void setMessageAuthor(Cursor cursor, int columnIndex, TextView view) {
+        view.setText(TimelineSql.userColumnIndexToNameAtTimeline(cursor, columnIndex, MyPreferences.showOrigin()));
+    }
+
     private void setMessageId(Cursor cursor, int columnIndex, TextView view) {
-        if (columnIndex > -1) {
+        if (columnIndex >= 0) {
             String id = cursor.getString(columnIndex);
             if (id != null) {
                 view.setText(id);
@@ -95,7 +104,7 @@ public class TimelineViewBinder implements ViewBinder {
     }
 
     private void setMessageBody(Cursor cursor, int columnIndex, TextView view) {
-        if (columnIndex > -1) {
+        if (columnIndex >= 0) {
             String body = cursor.getString(columnIndex);
             if (body != null) {
                 view.setText(Html.fromHtml(body));
@@ -106,12 +115,12 @@ public class TimelineViewBinder implements ViewBinder {
     private void setMessageDetails(Cursor cursor, int columnIndex, TextView view) {
         String messageDetails = RelativeTime.getDifference(view.getContext(), cursor.getLong(columnIndex));
         int columnIndex2 = cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID);
-        if (columnIndex2 > -1) {
+        if (columnIndex2 >= 0) {
             long replyToMsgId = cursor.getLong(columnIndex2);
             if (replyToMsgId != 0) {
                 String replyToName = "";
                 columnIndex2 = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
-                if (columnIndex2 > -1) {
+                if (columnIndex2 >= 0) {
                     replyToName = cursor.getString(columnIndex2);
                 }
                 if (TextUtils.isEmpty(replyToName)) {
@@ -121,7 +130,7 @@ public class TimelineViewBinder implements ViewBinder {
             }
         }
         columnIndex2 = cursor.getColumnIndex(User.RECIPIENT_NAME);
-        if (columnIndex2 > -1) {
+        if (columnIndex2 >= 0) {
             String recipientName = cursor.getString(columnIndex2);
             if (!TextUtils.isEmpty(recipientName)) {
                 messageDetails += " " + String.format(MyContextHolder.get().getLocale(), view.getContext().getText(R.string.message_source_to).toString(), recipientName);
@@ -133,11 +142,11 @@ public class TimelineViewBinder implements ViewBinder {
     private void setAvatar(Cursor cursor, int columnIndex, ImageView view) {
         int authorIdColumnIndex = cursor.getColumnIndex(Msg.AUTHOR_ID);
         long authorId = 0;
-        if (authorIdColumnIndex > -1) {
+        if (authorIdColumnIndex >= 0) {
             authorId = cursor.getLong(authorIdColumnIndex);
         }
         String fileName = null;
-        if (columnIndex > -1) {
+        if (columnIndex >= 0) {
             fileName = cursor.getString(columnIndex);
         }
         AvatarDrawable avatarDrawable = new AvatarDrawable(authorId, fileName);
@@ -156,7 +165,7 @@ public class TimelineViewBinder implements ViewBinder {
     
     private void setFavorited(Cursor cursor, ImageView view) {
         int columnIndex = cursor.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED);
-        if (columnIndex > -1) {
+        if (columnIndex >= 0) {
             if (cursor.getInt(columnIndex) == 1) {
                 view.setImageResource(android.R.drawable.star_on);
             } else {

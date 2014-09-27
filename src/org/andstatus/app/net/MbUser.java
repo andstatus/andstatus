@@ -88,9 +88,6 @@ public class MbUser {
 
     public void setUserName(String userName) {
         this.userName = userName;
-        if (TextUtils.isEmpty(realName)) {
-            realName = userName;
-        }
         fixWebFingerId();
     }
 
@@ -109,10 +106,18 @@ public class MbUser {
     }
     
     private void fixWebFingerId() {
-        if (userName.contains("@") || UriUtils.isEmpty(uri)) {
+        if (TextUtils.isEmpty(userName)) {
+            // Do nothing
+        } else if (userName.contains("@")) {
             webFingerId = userName;
+        } else if (UriUtils.isEmpty(uri)){
+            // Do nothing
         } else {
-            webFingerId = userName + "@" + uri.getHost();
+            String host = uri.getHost();
+            if (host.endsWith(".twitter.com")) {
+                host = "twitter.com";
+            }
+            webFingerId = userName + "@" + host;
         }
     }
 

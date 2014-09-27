@@ -37,18 +37,24 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
-    <release android:versionName="11.3" android:versionCode="111"
-        versionDate="2014-09-26"
-        versionTitle="Fixed undesirable merge of Users with the same nicknames [StatusNet]">
+    <release android:versionName="12.0" android:versionCode="111"
+        versionDate="2014-09-27"
+        versionTitle="Don't merge Users with the same nicknames [StatusNet]">
         <changes>
-            <change>Fixed undesirable merge of Users with the same nicknames (StatusNet). This is 
+            <change>Fixed undesirable merge of Users with the same nicknames [StatusNet]. This is 
                 actual for the cases, <br/>
                 1) When messages by users with the same nickname exist in one instanse 
                 (e.g. when the users' profiles are at different servers).<br/>
                 2) When a User changes their nickname.<br/>
+                This feature is implemented by comparing not Nicknames, as before, but WebFinger IDs
+                of users. 
                 See <a href="https://github.com/andstatus/andstatus/issues/125" >Issue #125</a>.</change>
-            <change>Added "How to show a User in a Timeline" option, allowing to select between: 
-                username, @username, WebFinger ID, Real Name and Real Name @username</change>    
+            <change>Added "How to show a User in a Timeline" option, allowing to choose, how you would like
+                to see referenes to users in a Timeline. Available options are: 
+                username, @username, WebFingerID, Real Name and Real Name @username</change>    
+            <change>Added "Display Microblogging system in a Timeline" option, 
+                suitable in a case you have in your timeline the same messages, received
+                from different Microblogging systems.</change>    
             <change>Fixed AndStatus launcher icon size based on info from 
                 <a href="http://stackoverflow.com/questions/12768128/android-launcher-icon-size">Android 
                     Launcher Icon Size</a></change>    

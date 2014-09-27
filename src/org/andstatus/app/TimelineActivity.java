@@ -58,12 +58,10 @@ import org.andstatus.app.context.MyPreferenceActivity;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AccountUserIds;
 import org.andstatus.app.data.MyDatabase;
-import org.andstatus.app.data.MyDatabase.Download;
-import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
+import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.TimelineViewBinder;
 import org.andstatus.app.service.CommandData;
@@ -229,7 +227,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         mLoadingLayout = (LinearLayout) inflater.inflate(R.layout.item_loading, null);
         getListView().addFooterView(mLoadingLayout);
         
-        createListAdapter(new MatrixCursor(getProjection()));
+        createListAdapter(new MatrixCursor(TimelineSql.getTimelineProjection()));
 
         // Attach listeners to the message list
         getListView().setOnScrollListener(this);
@@ -682,6 +680,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         });
         return builder.create();                
     }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        mContextMenu.onContextItemSelected(item);
+        return super.onContextItemSelected(item);
+    }
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -718,12 +722,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         item.setVisible(enableAttach);
         
         return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        mContextMenu.onContextItemSelected(item);
-        return super.onContextItemSelected(item);
     }
 
     @Override
@@ -1139,7 +1137,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         params.timelineCombined = isTimelineCombined();
         params.myAccountUserId = getCurrentMyAccountUserId();
         params.selectedUserId = getSelectedUserId();
-        params.projection = getProjection();
+        params.projection = TimelineSql.getTimelineProjection();
         params.searchQuery = this.mSearchQuery;
 
         boolean loadOneMorePage = false;
@@ -1253,35 +1251,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
     }
    
-    /** 
-     * Table columns to use for the messages content
-     */
-    protected String[] getProjection() {
-        List<String> columnNames = new ArrayList<String>();
-        columnNames.add(Msg._ID);
-        columnNames.add(User.AUTHOR_NAME);
-        columnNames.add(Msg.BODY);
-        columnNames.add(Msg.IN_REPLY_TO_MSG_ID);
-        columnNames.add(User.IN_REPLY_TO_NAME);
-        columnNames.add(User.RECIPIENT_NAME);
-        columnNames.add(MsgOfUser.FAVORITED);
-        columnNames.add(Msg.CREATED_DATE);
-        columnNames.add(User.LINKED_USER_ID);
-        if (MyPreferences.showAvatars()) {
-            columnNames.add(Msg.AUTHOR_ID);
-            columnNames.add(MyDatabase.Download.AVATAR_FILE_NAME);
-        }
-        if (MyPreferences.showAttachedImages()) {
-            columnNames.add(Download.IMAGE_ID);
-            columnNames.add(MyDatabase.Download.IMAGE_FILE_NAME);
-        }
-        if (MyPreferences.getBoolean(
-                MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false)) {
-            columnNames.add(Msg.IN_REPLY_TO_USER_ID);
-        }
-        return columnNames.toArray(new String[]{});
-    }
-
     @Override
     public void onLoaderReset(MyLoader<Cursor> loader) {
         MyLog.v(this, "onLoaderReset; " + loader);

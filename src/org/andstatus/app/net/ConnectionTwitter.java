@@ -337,8 +337,10 @@ public abstract class ConnectionTwitter extends Connection {
         MbUser user = MbUser.fromOriginAndUserOid(data.getOriginId(), oid);
         user.actor = MbUser.fromOriginAndUserOid(data.getOriginId(), data.getAccountUserOid());
         user.setUserName(userName);
-        user.setUrl(data.getOriginUrl());
         user.realName = jso.optString("name");
+        if (!SharedPreferencesUtil.isEmpty(user.realName)) {
+            user.setUrl(data.getOriginUrl());
+        }
         user.avatarUrl = jso.optString("profile_image_url");
         user.description = jso.optString("description");
         user.homepage = jso.optString("url");

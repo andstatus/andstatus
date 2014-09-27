@@ -135,7 +135,10 @@
                 <CheckBoxPreference android:key="show_attached_images"
                     android:defaultValue="true"
                     android:title="@string/title_preference_show_attached_images" />
-				<CheckBoxPreference android:key="enter_sends_message"
+                <CheckBoxPreference android:key="show_origin"
+                    android:defaultValue="false"
+                    android:title="@string/title_preference_show_origin" />
+                <CheckBoxPreference android:key="enter_sends_message"
 					android:title="@string/title_preference_enter_sends_message"
 					android:defaultValue="true" />
                 <CheckBoxPreference android:key="old_messages_first_in_conversation"

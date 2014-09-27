@@ -387,13 +387,14 @@
 	<string name="title_preference_theme_size">Size</string>
 	<string name="title_preference_username">Username</string>
 	<string name="title_preference_username_pumpio">Webfinger ID</string>
-    <string name="title_sending_messages_log_enabled">Log Sending messages to file</string>
 	<string name="title_preference_show_avatars">Display Avatars</string>
     <string name="title_preference_show_attached_images">Display attached images</string>
+    <string name="title_preference_show_origin">Display Microblogging system in a Timeline</string>
     <string name="title_preference_user_in_timeline">How to show a User in a Timeline</string>
     <string name="title_preference_verify_credentials">Reverify credentials</string>
 	<string name="title_preference_verify_credentials_failed">Verify credentials</string>
 	<string name="title_preference_vibration">Vibration</string>
+    <string name="title_sending_messages_log_enabled">Log Sending messages to file</string>
 	<string name="message_source_from">from %1$s</string>
 	<string name="message_source_in_reply_to">in reply to %1$s</string>
 	<string name="message_source_to">to %1$s</string>

@@ -40,12 +40,12 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -150,7 +150,7 @@ public class ConversationViewLoader {
         Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.ALL, true, oMsg.msgId);
         Cursor cursor = null;
         try {
-            cursor = context.getContentResolver().query(uri, getProjection(), null, null, null);
+            cursor = context.getContentResolver().query(uri, TimelineSql.getConversationProjection(), null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 loadMessageFromCursor(oMsg, cursor);
             }
@@ -159,35 +159,6 @@ public class ConversationViewLoader {
         }
     }
 
-    private String[] getProjection() {
-        List<String> columnNames = new ArrayList<String>();
-        columnNames.add(Msg._ID);
-        columnNames.add(Msg.AUTHOR_ID);
-        columnNames.add(User.AUTHOR_NAME);
-        columnNames.add(Msg.SENDER_ID);
-        columnNames.add(Msg.BODY);
-        columnNames.add(Msg.VIA);
-        columnNames.add(Msg.IN_REPLY_TO_MSG_ID);
-        columnNames.add(User.IN_REPLY_TO_NAME);
-        columnNames.add(User.RECIPIENT_NAME);
-        columnNames.add(MsgOfUser.FAVORITED);
-        columnNames.add(MsgOfUser.REBLOGGED);
-        columnNames.add(Msg.CREATED_DATE);
-        columnNames.add(User.LINKED_USER_ID);
-        if (MyPreferences.showAvatars()) {
-            columnNames.add(MyDatabase.Download.AVATAR_FILE_NAME);
-        }
-        if (MyPreferences.showAttachedImages()) {
-            columnNames.add(Download.IMAGE_ID);
-            columnNames.add(MyDatabase.Download.IMAGE_FILE_NAME);
-        }
-        if (MyPreferences.getBoolean(
-                MyPreferences.KEY_MARK_REPLIES_IN_TIMELINE, false)) {
-            columnNames.add(Msg.IN_REPLY_TO_USER_ID);
-        }
-        return columnNames.toArray(new String[]{});
-    }
-    
     private void loadMessageFromCursor(ConversationOneMessage oMsg, Cursor cursor) {
         /**
          * IDs of all known senders of this message except for the Author
@@ -204,7 +175,7 @@ public class ConversationViewLoader {
                 // This is the same for all retrieved rows
                 oMsg.inReplyToMsgId = cursor.getLong(cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
                 oMsg.createdDate = cursor.getLong(cursor.getColumnIndex(Msg.CREATED_DATE));
-                oMsg.author = cursor.getString(cursor.getColumnIndex(User.AUTHOR_NAME));
+                oMsg.author = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.AUTHOR_NAME, false);
                 oMsg.body = cursor.getString(cursor.getColumnIndex(Msg.BODY));
                 String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));
                 if (!TextUtils.isEmpty(via)) {
@@ -216,20 +187,8 @@ public class ConversationViewLoader {
                 if (MyPreferences.showAttachedImages()) {
                     oMsg.imageDrawable = AttachedImageDrawable.drawableFromCursor(cursor);
                 }
-                int colIndex = cursor.getColumnIndex(User.IN_REPLY_TO_NAME);
-                if (colIndex > -1) {
-                    oMsg.inReplyToName = cursor.getString(colIndex);
-                    if (TextUtils.isEmpty(oMsg.inReplyToName)) {
-                        oMsg.inReplyToName = "";
-                    }
-                }
-                colIndex = cursor.getColumnIndex(User.RECIPIENT_NAME);
-                if (colIndex > -1) {
-                    oMsg.recipientName = cursor.getString(colIndex);
-                    if (TextUtils.isEmpty(oMsg.recipientName)) {
-                        oMsg.recipientName = "";
-                    }
-                }
+                oMsg.inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.IN_REPLY_TO_NAME, false);
+                oMsg.recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.RECIPIENT_NAME, false);
             }
 
             if (senderId != authorId) {

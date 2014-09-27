@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2012-2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2012-2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
@@ -170,7 +171,9 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     private void recreateTheConversationView(ConversationViewLoader loader) {
         List<ConversationOneMessage> oMsgs = loader.getMsgs();
         TextView titleText = (TextView) findViewById(R.id.titleText);
-        titleText.setText( oMsgs.size() > 1 ? R.string.label_conversation : R.string.message);
+        CharSequence title = getText(oMsgs.size() > 1 ? R.string.label_conversation : R.string.message) 
+                + ( MyPreferences.showOrigin() ? " / " + ma.getOriginName() : "");
+        titleText.setText(title);
         ViewGroup list = (ViewGroup) findViewById(android.R.id.list);
         ScrollView scroll = (ScrollView) list.getParent();
         View currentView = null;
