@@ -43,14 +43,14 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <changes>
             <change>Fixed undesirable merge of Users with the same nicknames [StatusNet]. This is 
                 actual for the cases, <br/>
-                1) When messages by users with the same nickname exist in one instanse 
+                1) When messages by users with the same nickname exist in one instance 
                 (e.g. when the users' profiles are at different servers).<br/>
                 2) When a User changes their nickname.<br/>
                 This feature is implemented by comparing not Nicknames, as before, but WebFinger IDs
                 of users. 
                 See <a href="https://github.com/andstatus/andstatus/issues/125" >Issue #125</a>.</change>
             <change>Added "How to show a User in a Timeline" option, allowing to choose, how you would like
-                to see referenes to users in a Timeline. Available options are: 
+                to see references to users in a Timeline. Available options are: 
                 username, @username, WebFingerID, Real Name and Real Name @username</change>    
             <change>Added "Display Microblogging system in a Timeline" option, 
                 suitable in a case you have in your timeline the same messages, received
