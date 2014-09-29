@@ -53,8 +53,7 @@ class CommandExecutorLoadAllTimelines extends CommandExecutorStrategy {
         if (execContext.getCommandData().getTimelineType() == TimelineTypeEnum.ALL) {
             timelineTypes = new TimelineTypeEnum[] {
                     TimelineTypeEnum.HOME, TimelineTypeEnum.MENTIONS,
-                    TimelineTypeEnum.DIRECT,
-                    TimelineTypeEnum.FOLLOWING_USER
+                    TimelineTypeEnum.DIRECT
             };
         } else {
             timelineTypes = new TimelineTypeEnum[] {

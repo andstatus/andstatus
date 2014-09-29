@@ -37,6 +37,19 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="12.1" android:versionCode="111"
+        versionDate="2014-09-29"
+        versionTitle="Don't sync 'Following' timeline automatically">
+        <changes>
+            <change>The &quot;Following&quot; timeline excluded from the list 
+                of automatically synced timelines as this is actually a waste of time and traffic:
+                the list of users &quot;I'm following&quot; changes far less often than
+                new posts appear.  
+                See <a href="https://github.com/andstatus/andstatus/issues/128" >Issue #128</a>.<br />
+                Currently these timelines are synced automatically: Home, Mentions and Direct.
+                </change>
+        </changes>
+    </release>
     <release android:versionName="12.0" android:versionCode="111"
         versionDate="2014-09-27"
         versionTitle="Don't merge Users with the same nicknames [StatusNet]">
