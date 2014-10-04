@@ -112,14 +112,14 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             }
         }
         actorUserIdForCurrentMessage = 0;
-        MessageDataForContextMenu md = new MessageDataForContextMenu(messageList.getActivity(), userIdForThisMessage, messageList.getCurrentMyAccountUserId(), messageList.getTimelineType(), mCurrentMsgId
+        MessageDataForContextMenu md = new MessageDataForContextMenu(messageList.getActivity(), userIdForThisMessage, getCurrentMyAccountUserId(), messageList.getTimelineType(), mCurrentMsgId
                 );
         if (md.ma == null) {
             return;
         }
         if (accountUserIdToActAs==0 && md.canUseSecondAccountInsteadOfFirst) {
             // Yes, use current Account!
-            md = new MessageDataForContextMenu(getContext(), messageList.getCurrentMyAccountUserId(), 0, messageList.getTimelineType(), mCurrentMsgId);
+            md = new MessageDataForContextMenu(getContext(), getCurrentMyAccountUserId(), 0, messageList.getTimelineType(), mCurrentMsgId);
         }
         actorUserIdForCurrentMessage = md.ma.getUserId();
         accountUserIdToActAs = 0;
@@ -239,7 +239,11 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         }
     }
 
-    private Context getContext() {
+    protected long getCurrentMyAccountUserId() {
+        return messageList.getCurrentMyAccountUserId();
+    }
+
+    protected Context getContext() {
         return messageList.getActivity();
     }
     

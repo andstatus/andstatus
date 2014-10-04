@@ -17,7 +17,6 @@
 package org.andstatus.app;
 
 import android.graphics.drawable.Drawable;
-import android.view.View;
 
 import org.andstatus.app.data.AvatarDrawable;
 
@@ -56,7 +55,6 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
     
     AvatarDrawable avatarDrawable = null;
     Drawable imageDrawable = null;
-    View view = null;
     
     public ConversationOneMessage(long msgId, int replyLevel) {
         this.msgId = msgId;

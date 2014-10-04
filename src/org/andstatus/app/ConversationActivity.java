@@ -25,11 +25,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ScrollView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import net.jcip.annotations.GuardedBy;
@@ -72,8 +69,6 @@ public class ConversationActivity extends Activity implements MyServiceListener,
      */
     private MessageEditor messageEditor;
 
-    private boolean listPositionOnEnterSet = false;
-    
     private Object messagesLock = new Object(); 
     @GuardedBy("messagesLock")
     private List<ConversationOneMessage> messages = new ArrayList<ConversationOneMessage>();
@@ -153,9 +148,6 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         protected void onPostExecute(ConversationViewLoader loader) {
             try {
                 if (!isPaused) {
-                    loader.createViews();
-                }
-                if (!isPaused) {
                     recreateTheConversationView(loader);
                 }
             } catch (Exception e) {
@@ -174,49 +166,25 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         CharSequence title = getText(oMsgs.size() > 1 ? R.string.label_conversation : R.string.message) 
                 + ( MyPreferences.showOrigin() ? " / " + ma.getOriginName() : "");
         titleText.setText(title);
-        ViewGroup list = (ViewGroup) findViewById(android.R.id.list);
-        ScrollView scroll = (ScrollView) list.getParent();
-        View currentView = null;
-        if (listPositionOnEnterSet) {
-            int yOld = scroll.getScrollY();
-            for (int ind = 0; ind < list.getChildCount(); ind++) {
-                View view = list.getChildAt(ind);
-                if (view.getTop() >= yOld) {
-                    currentView = view;
-                    break;
-                }
-            }
+        ListView list = (ListView) findViewById(android.R.id.list);
+
+        long itemIdOfListPosition = selectedMessageId;
+        if (list.getChildCount() > 1) {
+            itemIdOfListPosition = list.getAdapter().getItemId(list.getFirstVisiblePosition());
         }
-        list.removeAllViews();
-        int indOfCurrentMessage = 0;
+        int firstListPosition = -1;
         for (int ind = 0; ind < oMsgs.size(); ind++) {
-            list.addView(oMsgs.get(ind).view);
-            if (oMsgs.get(ind).msgId == selectedMessageId) {
-                indOfCurrentMessage = ind;
+            if (oMsgs.get(ind).msgId == itemIdOfListPosition) {
+                firstListPosition = ind;
             }
         }
         synchronized(messagesLock) {
             messages = oMsgs;
         }
-        if (!listPositionOnEnterSet) {
-            listPositionOnEnterSet = true;
-            if (indOfCurrentMessage > 0) {
-                currentView = list.getChildAt(indOfCurrentMessage);
-            }
+        list.setAdapter(new ConversationViewAdapter(contextMenu, selectedMessageId, oMsgs));
+        if (firstListPosition >= 0) {
+            list.setSelectionFromTop(firstListPosition, 0);
         }
-        scrollToView(scroll, currentView);
-    }
-
-    private void scrollToView(final ScrollView scroll, final View currentView) {
-        if (currentView == null) {
-            return;
-        }
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                scroll.scrollTo(0, currentView.getTop()); 
-            }
-        });
     }
 
     @Override

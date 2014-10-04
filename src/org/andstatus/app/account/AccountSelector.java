@@ -63,44 +63,17 @@ public class AccountSelector extends ListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.accountlist);
-        
-        long originId = getIntent().getLongExtra(IntentExtra.ORIGIN_ID.key, 0);
-        SortedMap<String, MyAccount> accounts = new TreeMap<String, MyAccount>();  
-        for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
-            if (originId==0 || ma.getOriginId() == originId) {
-                accounts.put(ma.getAccountName(), ma);
-            }
-        }
-        if (accounts.isEmpty()) {
+        Map<String, MyAccount> listData = newListData();
+        if (listData.isEmpty()) {
             returnSelectedAccount(null);
             return;
-        } else if (accounts.size() == 1) {
-            returnSelectedAccount(accounts.entrySet().iterator().next().getValue());
+        } else if (listData.size() == 1) {
+            returnSelectedAccount(listData.entrySet().iterator().next().getValue());
             return;
         }
-        List<Map<String, String>> data = new ArrayList<Map<String, String>>();
-        for (MyAccount ma : accounts.values()) {
-            Map<String, String> map = new HashMap<String, String>();
-            String visibleName = ma.getAccountName();
-            map.put(KEY_VISIBLE_NAME, visibleName);
-            map.put(KEY_CREDENTIALS_VERIFIED,
-                    ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ? ""
-                            : ma.getCredentialsVerified().name().substring(0, 1));
-            map.put(KEY_SYNC_AUTO, ma.getSyncAutomatically() ? "" : getText(R.string.off).toString());
-            map.put(BaseColumns._ID, Long.toString(ma.getUserId()));
-            map.put(KEY_TYPE, TYPE_ACCOUNT);
-            data.add(map);
-        }
         
-        ListAdapter adapter = new MySimpleAdapter(this, 
-                data, 
-                R.layout.accountlist_item, 
-                new String[] {KEY_VISIBLE_NAME, KEY_CREDENTIALS_VERIFIED, KEY_SYNC_AUTO, BaseColumns._ID, KEY_TYPE}, 
-                new int[] {R.id.visible_name, R.id.credentials_verified, R.id.sync_auto, R.id.id, R.id.type});
-        
-        // Bind to our new adapter.
-        setListAdapter(adapter);
+        setContentView(R.layout.accountlist);
+        setListAdapter(newListAdapter(listData));
 
         getListView().setOnItemClickListener(new OnItemClickListener() {
             @Override
@@ -110,6 +83,40 @@ public class AccountSelector extends ListActivity {
                 returnSelectedAccount(ma);
             }
         });
+    }
+
+    private Map<String, MyAccount> newListData() {
+        long originId = getIntent().getLongExtra(IntentExtra.ORIGIN_ID.key, 0);
+        SortedMap<String, MyAccount> listData = new TreeMap<String, MyAccount>();  
+        for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
+            if (originId==0 || ma.getOriginId() == originId) {
+                listData.put(ma.getAccountName(), ma);
+            }
+        }
+        return listData;
+    }
+
+    private ListAdapter newListAdapter(Map<String, MyAccount> listData) {
+        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+        for (MyAccount ma : listData.values()) {
+            Map<String, String> map = new HashMap<String, String>();
+            String visibleName = ma.getAccountName();
+            map.put(KEY_VISIBLE_NAME, visibleName);
+            map.put(KEY_CREDENTIALS_VERIFIED,
+                    ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ? ""
+                            : ma.getCredentialsVerified().name().substring(0, 1));
+            map.put(KEY_SYNC_AUTO, ma.getSyncAutomatically() ? "" : getText(R.string.off).toString());
+            map.put(BaseColumns._ID, Long.toString(ma.getUserId()));
+            map.put(KEY_TYPE, TYPE_ACCOUNT);
+            list.add(map);
+        }
+        
+        ListAdapter adapter = new MySimpleAdapter(this, 
+                list, 
+                R.layout.accountlist_item, 
+                new String[] {KEY_VISIBLE_NAME, KEY_CREDENTIALS_VERIFIED, KEY_SYNC_AUTO, BaseColumns._ID, KEY_TYPE}, 
+                new int[] {R.id.visible_name, R.id.credentials_verified, R.id.sync_auto, R.id.id, R.id.type});
+        return adapter;
     }
 
     private void returnSelectedAccount(MyAccount ma) {

@@ -37,7 +37,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
-    <release android:versionName="12.1" android:versionCode="111"
+    <release android:versionName="12.1" android:versionCode="112"
         versionDate="2014-09-29"
         versionTitle="Don't sync 'Following' timeline automatically">
         <changes>

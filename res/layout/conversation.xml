@@ -19,15 +19,11 @@
 	android:orientation="vertical" 
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
-	<ScrollView
-		android:orientation="vertical"
-		android:layout_width="match_parent" 
-	    android:layout_height="0dip"
-	    android:layout_weight="1">
-		<LinearLayout android:orientation="vertical" 
-	        android:id="@+android:id/list"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content">
-	    </LinearLayout>	    
-	</ScrollView>
+    
+    <ListView
+        android:id="@+android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:scrollbars="vertical" />
 </LinearLayout>
