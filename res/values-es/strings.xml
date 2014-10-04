@@ -122,7 +122,7 @@
     <string name="label_manage_origin_systems">Administrar las redes sociales</string>
     <string name="label_origin_list">Redes sociales</string>
     <string name="label_origin_name">Nombre de la red social (único y no se puede cambiar)</string>
-    <string name="label_origin_system">Red social/string>
+    <string name="label_origin_system">Red social</string>
     <string name="label_origin_type">Tipo de red social</string>
     <string name="label_restore">Restaurar información desde una copia de seguridad</string>
     <string name="label_upgrading">Actualización en curso. Por favor, espere.</string>
@@ -134,7 +134,7 @@
 	<string name="message_characters_left">Caracteres sobrantes:</string>
     <string name="message_is_too_long">El mensaje es demasiado largo.</string>
 	<string name="menu_item_act_as">Actuar como…</string>
-    <string name="menu_item_act_as_user">Actuar como "%1s"</string>
+    <string name="menu_item_act_as_user">Actuar como \"%1s\"</string>
     <string name="menu_item_block">Boquea</string>
 	<string name="menu_item_destroy_favorite">Deshacer favorito</string>
     <string name="menu_item_destroy_reblog">Deshacer compartición</string>
@@ -142,14 +142,14 @@
     <string name="menu_item_destroy_status">Borra el mensaje</string>
     <string name="menu_item_direct_message">Mensaje directo</string>
 	<string name="menu_item_favorite">Favorito</string>
-	<string name="menu_item_follow_user">Seguir a "%1s"</string>
+	<string name="menu_item_follow_user">Seguir a \"%1s\"</string>
 	<string name="menu_item_open_message_permalink">Ver en navegador</string>	
     <string name="menu_item_reply">Responder</string>
 	<string name="menu_item_reblog">Compartir</string>
 	<string name="menu_item_reblog_twitter">Retweet</string>
 	<string name="menu_item_share">Cuota</string>
-	<string name="menu_item_stop_following_user">Dejar de seguir a "%1s"</string>
-    <string name="menu_item_user_messages">Mensajes de "%1s"</string>
+	<string name="menu_item_stop_following_user">Dejar de seguir a \"%1s\"</string>
+    <string name="menu_item_user_messages">Mensajes de \"%1s\"</string>
     <string name="menu_item_view_profile">Ver Perfil</string>
 	<string name="message_sent">Tu mensaje ha sido enviado.</string>
 	<string name="messages_activity">Mensajes directos</string>
@@ -337,7 +337,7 @@
     <string name="timeline_title_replies">Respuestas</string>
     <string name="timeline_title_user">Usuario</string>
 
-    <string name="title_command_fetch_attachment">Añadir adjunto<string>
+    <string name="title_command_fetch_attachment">Añadir adjunto</string>
     <string name="title_command_fetch_avatar">Avatar</string>
     <string name="title_command_get_status">Añadir mensaje</string>
     

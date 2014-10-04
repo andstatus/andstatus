@@ -56,19 +56,6 @@
 		<item>12 horas</item>
 		<item>1 día</item>
 	</string-array>
-	<string-array name="fetch_frequency_values">
-		<item>180</item>
-		<item>300</item>
-		<item>600</item>
-		<item>900</item>
-		<item>1800</item>
-		<item>3600</item>
-		<item>7200</item>
-		<item>14400</item>
-		<item>28800</item>
-		<item>43200</item>
-		<item>86400</item>
-	</string-array>
 	<string-array name="fetch_frequency_display">
 		<item>3 minutos</item>
 		<item>5 minutos</item>
@@ -87,11 +74,6 @@
         <item>DEBUG</item>
         <item>VERBOSE</item>
     </string-array>
-    <string-array name="log_level_value">
-        <item>4</item>
-        <item>3</item>
-        <item>2</item>
-    </string-array>
     <string-array name="log_level_display">
         <item>INFO</item>
         <item>DEBUG</item>
@@ -107,19 +89,9 @@
 		<item>Claro</item>
 		<item>Oscuro</item>
 	</string-array>
-	<string-array name="theme_color_values">
-		<item>Predeterminado</item>
-		<item>Claro</item>
-		<item>Oscuro</item>
-	</string-array>
     <string-array name="theme_size_entries">
 		<item>Pequeño</item>
 		<item>Normal</item>
-		<item>Grande</item>
-	</string-array>
-	<string-array name="theme_size_values">
-		<item>Normal</item>
-		<item>Tamaño estándar</item>
 		<item>Grande</item>
 	</string-array>
 	<string-array name="history_size_entries">
@@ -132,17 +104,6 @@
 		<item>50000 mensajes</item>
 		<item>100000 mensajes</item>
         <item>1 mln mensajes</item>
-    </string-array>
-	<string-array name="history_size_values">
-		<item>500</item>
-		<item>1000</item>
-		<item>2000</item>
-		<item>5000</item>
-		<item>10000</item>
-		<item>20000</item>
-		<item>50000</item>
-		<item>100000</item>
-        <item>1000000</item>
     </string-array>
 	<string-array name="history_size_display">
 		<item>500 mensajes</item>
@@ -167,18 +128,6 @@
 		<item>1 año</item>
         <item>10 años</item>
     </string-array>
-	<string-array name="history_time_values">
-		<item>1</item>
-		<item>2</item>
-		<item>3</item>
-		<item>4</item>
-		<item>5</item>
-		<item>6</item>
-		<item>7</item>
-		<item>31</item>
-		<item>365</item>
-        <item>3653</item>
-	</string-array>
 	<string-array name="history_time_display">
 		<item>1 día</item>
 		<item>2 días</item>
@@ -266,6 +215,7 @@
 	<string-array name="reltime_seconds_ago_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
+    </string-array>
 	<string-array name="user_in_timeline_entries">
         <item>"usuario"</item>
         <item>"@usuario"</item>
@@ -273,12 +223,4 @@
         <item>Nombre real</item>
         <item>Nombre real @username</item>
     </string-array>
-    <string-array name="user_in_timeline_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-    </string-array>
-	</string-array>
 </resources>
