@@ -48,9 +48,6 @@ import net.jcip.annotations.GuardedBy;
  */
 public class MyService extends Service {
     private static final String TAG = MyService.class.getSimpleName();
-    static final String COMMANDS_QUEUE_FILENAME = TAG + "-commands-queue";
-    static final String RETRY_QUEUE_FILENAME = TAG + "-retry-queue";
-    static final String ERROR_QUEUE_FILENAME = TAG + "-error-queue";
     
     public static final long MAX_COMMAND_EXECUTION_SECONDS = 10 * 60;
     
@@ -274,9 +271,9 @@ public class MyService extends Service {
 
     private void restoreState() {
         int count = 0;
-        count += CommandData.loadQueue(this, mMainCommandQueue, COMMANDS_QUEUE_FILENAME);
-        count += CommandData.loadQueue(this, mRetryCommandQueue, RETRY_QUEUE_FILENAME);
-        int countError = CommandData.loadQueue(this, mErrorCommandQueue, ERROR_QUEUE_FILENAME);
+        count += CommandData.loadQueue(this, mMainCommandQueue, QueueType.CURRENT);
+        count += CommandData.loadQueue(this, mRetryCommandQueue, QueueType.RETRY);
+        int countError = CommandData.loadQueue(this, mErrorCommandQueue, QueueType.ERROR);
         MyLog.d(this, "State restored, " + (count > 0 ? Integer.toString(count) : "no ")
                 + " msg in the Queues, "
                 + (countError > 0 ? Integer.toString(countError) + " in Error queue" : "")
@@ -530,9 +527,9 @@ public class MyService extends Service {
 
     private void saveState() {
         int count = 0;
-        count += CommandData.saveQueue(this, mMainCommandQueue, COMMANDS_QUEUE_FILENAME);
-        count += CommandData.saveQueue(this, mRetryCommandQueue, RETRY_QUEUE_FILENAME);
-        int countError = CommandData.saveQueue(this, mErrorCommandQueue, ERROR_QUEUE_FILENAME);
+        count += CommandData.saveQueue(this, mMainCommandQueue, QueueType.CURRENT);
+        count += CommandData.saveQueue(this, mRetryCommandQueue, QueueType.RETRY);
+        int countError = CommandData.saveQueue(this, mErrorCommandQueue, QueueType.ERROR);
         MyLog.d(this, "State saved, " + (count > 0 ? Integer.toString(count) : "no ")
                 + " msg in the Queues, "
                 + (countError > 0 ? Integer.toString(countError) + " in Error queue" : "")

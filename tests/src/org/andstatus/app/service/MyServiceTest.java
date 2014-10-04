@@ -160,7 +160,7 @@ public class MyServiceTest extends InstrumentationTestCase {
 
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         CommandData.loadQueue(MyContextHolder.get().context(), queue,
-                MyService.COMMANDS_QUEUE_FILENAME);
+                QueueType.CURRENT);
         assertFalse("Main queue is not empty", queue.isEmpty());
         assertTrue("The command stayed in the main queue", queue.contains(cd1));
         assertTrue("The command stayed in the main queue", queue.contains(cd2));
@@ -181,7 +181,7 @@ public class MyServiceTest extends InstrumentationTestCase {
 
         queue = new PriorityBlockingQueue<CommandData>(100);
         CommandData.loadQueue(MyContextHolder.get().context(), queue,
-                MyService.COMMANDS_QUEUE_FILENAME);
+                QueueType.CURRENT);
         assertFalse("Main queue is not empty", queue.isEmpty());
         assertFalse("First duplicated command was found in retry queue", queue.contains(cd1));
         assertTrue("The command stayed in the main queue", queue.contains(cd2));

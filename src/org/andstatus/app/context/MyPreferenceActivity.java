@@ -47,6 +47,7 @@ import org.andstatus.app.backup.BackupActivity;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.origin.OriginList;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -157,6 +158,16 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             public boolean onPreferenceClick(Preference preference) {
                 Intent intent = new Intent(MyPreferenceActivity.this, HelpActivity.class);
                 intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_INDEX_CHANGELOG);
+                startActivity(intent);
+                return false;
+            }
+        });
+
+        myPref = findPreference(MyPreferences.KEY_COMMANDS_QUEUE);
+        myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(MyPreferenceActivity.this, QueueViewer.class);
                 startActivity(intent);
                 return false;
             }

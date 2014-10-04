@@ -19,9 +19,11 @@ package org.andstatus.app.service;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Intent;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -67,11 +69,10 @@ public class CommandsQueueNotifier {
             notification.tickerText = aMessage;
 
             /**
-             * Kick the commands queue by sending empty command This Intent will
-             * be sent upon a User tapping the notification
+             * This Intent will be sent upon a User tapping the notification
              */
-            PendingIntent pi = PendingIntent.getBroadcast(myContext.context(), 0, CommandData
-                    .getEmpty().toIntent(MyService.intentForThisInitialized()), 0);
+            PendingIntent pi = PendingIntent.getActivity(myContext.context(), 0,
+                    new Intent(MyContextHolder.get().context(), QueueViewer.class), 0);
             notification.setLatestEventInfo(myContext.context(),
                     myContext.context().getText(messageTitle), aMessage, pi);
 

@@ -224,5 +224,9 @@
         <activity android:name=".backup.RestoreActivity"
             android:label="@string/label_restore">
         </activity>
+        
+        <activity android:name=".service.QueueViewer"
+            android:label="@string/title_preference_notifications_queue">
+        </activity>
     </application>
 </manifest>

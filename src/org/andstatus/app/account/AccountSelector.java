@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,11 +40,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-/**
- * The purpose of this activity is to select Current account only, see {@link MyAccount#setCurrentMyAccount()}
- * @author yvolk@yurivolkov.com
- *
- */
 public class AccountSelector extends ListActivity {
     private static final String KEY_VISIBLE_NAME = "visible_name";
     private static final String KEY_CREDENTIALS_VERIFIED = "credentials_verified";

@@ -16,6 +16,7 @@
 
 package org.andstatus.app.context;
 
+import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 
@@ -61,6 +62,7 @@ public class MyPreferences {
     public static final String KEY_REPORT_BUG = "report_bug";
     public static final String KEY_CHANGE_LOG = "change_log";
     public static final String KEY_ABOUT_APPLICATION = "about_application";
+    public static final String KEY_COMMANDS_QUEUE = "commands_queue";
 
     /**
      * System time when shared preferences were changed
@@ -389,6 +391,9 @@ public class MyPreferences {
             } else {
                 MyLog.v(tag, text);
             }
+        }
+        if (themeId == 0) {
+            themeId = R.style.Theme_DeviceDefault_AndStatus_StandardSize;
         }
         context.setTheme(themeId);
     }

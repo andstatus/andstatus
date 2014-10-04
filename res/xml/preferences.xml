@@ -220,6 +220,11 @@
 	            android:defaultValue="4" />
             <CheckBoxPreference android:key="sending_messages_log_enabled"
                 android:title="@string/title_sending_messages_log_enabled" />
+            <Preference
+	            android:key="commands_queue"
+	            android:persistent="false"
+	            android:title="@string/title_preference_notifications_queue" >
+	        </Preference>
 	        <Preference android:key="report_bug" android:title="@string/title_preference_report_bug">
 	            <intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/issues" />
 	        </Preference>

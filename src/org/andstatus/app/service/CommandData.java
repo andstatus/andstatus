@@ -282,10 +282,10 @@ public class CommandData implements Comparable<CommandData> {
     /**
      * @return Number of items persisted
      */
-    static int saveQueue(Context context, Queue<CommandData> queue, String prefsFileName) {
+    static int saveQueue(Context context, Queue<CommandData> queue, QueueType queueType) {
         String method = "saveQueue: ";
         int count = 0;
-		SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
+		SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFileName());
 		sp.edit().clear().commit();
         if (!queue.isEmpty()) {
             while (!queue.isEmpty()) {
@@ -294,10 +294,10 @@ public class CommandData implements Comparable<CommandData> {
                 MyLog.v(context, method + "Command saved: " + cd.toString());
                 count += 1;
             }
-            MyLog.d(context, method + "to '" + prefsFileName  + "', " + count + " msgs");
+            MyLog.d(context, method + "to '" + queueType  + "', " + count + " msgs");
         }
 		// TODO: How to clear all old shared preferences in this file?
-		// Edding Empty command to mark the end.
+		// Adding Empty command to mark the end.
 		(new CommandData(CommandEnum.EMPTY, "")).saveToSharedPreferences(sp, count);
         return count;
     }
@@ -305,11 +305,11 @@ public class CommandData implements Comparable<CommandData> {
     /**
      * @return Number of items loaded
      */
-    static int loadQueue(Context context, Queue<CommandData> q, String prefsFileName) {
+    static int loadQueue(Context context, Queue<CommandData> q, QueueType queueType) {
         String method = "loadQueue: ";
 		int count = 0;
-        if (SharedPreferencesUtil.exists(context, prefsFileName)) {
-            SharedPreferences sp = MyPreferences.getSharedPreferences(prefsFileName);
+        if (SharedPreferencesUtil.exists(context, queueType.getFileName())) {
+            SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFileName());
 			for (int index=0; index < 100000; index++) {
                 CommandData cd = fromSharedPreferences(sp, index);
                 if (CommandEnum.EMPTY.equals(cd.getCommand())) {
@@ -326,7 +326,7 @@ public class CommandData implements Comparable<CommandData> {
                     }
                 }				
 			}
-            MyLog.d(context, method + "loaded " + count + " msgs from '" + prefsFileName  + "'");
+            MyLog.d(context, method + "loaded " + count + " msgs from '" + queueType  + "'");
         }
         return count;
     }
@@ -533,7 +533,11 @@ public class CommandData implements Comparable<CommandData> {
                 if (!TextUtils.isEmpty(accountName)) {
                     builder.append(timelineType.getPrepositionForNotCombinedTimeline(myContext.context()) + " ");
                     MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
-                    builder.append(TimelineActivity.buildAccountButtonText(ma, false, timelineType));
+                    if (ma == null) {
+                        builder.append("('" + accountName + "' ?)");
+                    } else {
+                        builder.append(TimelineActivity.buildAccountButtonText(ma, false, timelineType));
+                    }
                 }
                 break;
 			case SEARCH_MESSAGE:

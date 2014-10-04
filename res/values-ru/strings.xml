@@ -335,6 +335,7 @@
     <string name="system_is_busy_try_later">Система сейчас занята. Пожалуйста, попробуйте попозже.</string>
     <string name="timeline_reloaded">Лента времени обновлена.</string>
     
+    <string name="timeline_title_all">Все</string>
     <string name="timeline_title_direct_messages">Личные сообщения</string>
     <string name="timeline_title_favorites">Избранное</string>
     <string name="timeline_title_following_user">Следуем за</string>
@@ -342,6 +343,7 @@
     <string name="timeline_title_mentions">Упоминания</string>
     <string name="timeline_title_public">Публичные</string>
     <string name="timeline_title_replies">Ответы</string>
+    <string name="timeline_title_unknown">(Неизвестная Линия времени)</string>
     <string name="timeline_title_user">Пользователь</string>
 
     <string name="title_command_fetch_attachment">Загрузить вложение</string>

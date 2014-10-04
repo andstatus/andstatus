@@ -181,35 +181,42 @@ public final class CommandResult implements Parcelable {
     
     @Override
     public String toString() {
+        return MyLog.formatKeyValue("CommandResult", toSummaryBuilder());
+    }
+
+    public String toSummary() {
+        return toSummaryBuilder().toString();
+    }
+    
+    private StringBuilder toSummaryBuilder() {
         StringBuilder message = new StringBuilder();
-        message.append("created:" + RelativeTime.getDifference(MyContextHolder.get().context(), createdDate) + ",");
+        message.append("created:" + RelativeTime.getDifference(MyContextHolder.get().context(), createdDate) + ", ");
         if (executionCount > 0) {
-            message.append("executed:" + executionCount + ",");
-            message.append("last:" + RelativeTime.getDifference(MyContextHolder.get().context(), lastExecutedDate) + ",");
+            message.append("executed:" + executionCount + ", ");
+            message.append("last:" + RelativeTime.getDifference(MyContextHolder.get().context(), lastExecutedDate) + ", ");
             if (retriesLeft > 0) {
-                message.append("retriesLeft:" + retriesLeft + ",");
+                message.append("retriesLeft:" + retriesLeft + ", ");
             }
             if (!hasError()) {
-                message.append("error:None,");
+                message.append("error:None, ");
             }
         }
         if (hasError()) {
-            message.append("error:" + (hasHardError() ? "Hard" : "Soft") + ",");
+            message.append("error:" + (hasHardError() ? "Hard" : "Soft") + ", ");
         }
         if (downloadedCount > 0) {
-            message.append("downloaded:" + downloadedCount + ",");
+            message.append("downloaded:" + downloadedCount + ", ");
         }
         if (messagesAdded > 0) {
-            message.append("messages:" + messagesAdded + ",");
+            message.append("messages:" + messagesAdded + ", ");
         }
         if (mentionsAdded > 0) {
-            message.append("mentions:" + mentionsAdded + ",");
+            message.append("mentions:" + mentionsAdded + ", ");
         }
         if (directedAdded > 0) {
-            message.append("directed:" + directedAdded + ",");
+            message.append("directed:" + directedAdded + ", ");
         }
-        
-        return MyLog.formatKeyValue("CommandResult", message);
+        return message;
     }
     
     public long getNumAuthExceptions() {

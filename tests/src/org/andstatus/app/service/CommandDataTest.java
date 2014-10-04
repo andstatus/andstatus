@@ -28,7 +28,6 @@ import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class CommandDataTest extends InstrumentationTestCase {
-    private static final String TEST_QUEUE_FILE_NAME = "test_queue_file_name";
 
     @Override
     protected void setUp() throws Exception {
@@ -68,9 +67,9 @@ public class CommandDataTest extends InstrumentationTestCase {
         
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         queue.add(commandData);
-        assertEquals(1, CommandData.saveQueue(MyContextHolder.get().context(), queue, TEST_QUEUE_FILE_NAME));
+        assertEquals(1, CommandData.saveQueue(MyContextHolder.get().context(), queue, QueueType.TEST));
         queue.clear();
-        assertEquals(1, CommandData.loadQueue(MyContextHolder.get().context(), queue, TEST_QUEUE_FILE_NAME));
+        assertEquals(1, CommandData.loadQueue(MyContextHolder.get().context(), queue, QueueType.TEST));
 
         CommandData commandData2 = queue.poll();
         assertEquals(commandData, commandData2);
@@ -82,7 +81,7 @@ public class CommandDataTest extends InstrumentationTestCase {
 
     @Override
     protected void tearDown() throws Exception {
-        SharedPreferencesUtil.delete(MyContextHolder.get().context(), TEST_QUEUE_FILE_NAME);
+        SharedPreferencesUtil.delete(MyContextHolder.get().context(), QueueType.TEST.getFileName());
         super.tearDown();
     }
 

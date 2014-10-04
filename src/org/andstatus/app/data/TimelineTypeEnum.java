@@ -31,7 +31,7 @@ public enum TimelineTypeEnum {
     /**
      * The Timeline type is unknown
      */
-    UNKNOWN("unknown", R.string.unimplemented, 
+    UNKNOWN("unknown", R.string.timeline_title_unknown, 
             User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY),
     /**
      * The Home timeline and other information (replies...).
@@ -86,7 +86,7 @@ public enum TimelineTypeEnum {
      * All timelines (e.g. for download of all timelines. 
      * This is generally done after addition of the new MyAccount).
      */
-    ALL("all", R.string.unimplemented, 
+    ALL("all", R.string.timeline_title_all, 
             User.HOME_TIMELINE_POSITION, User.HOME_TIMELINE_ITEM_DATE, User.HOME_TIMELINE_DATE, Connection.ApiRoutineEnum.DUMMY);
     
     /**
