@@ -266,5 +266,19 @@
 	<string-array name="reltime_seconds_ago_patterns">
 		<item>"1"</item>
 		<item>".*"</item>
+	<string-array name="user_in_timeline_entries">
+        <item>"usuario"</item>
+        <item>"@usuario"</item>
+        <item>"webFingerId"</item>
+        <item>Nombre real</item>
+        <item>Nombre real @username</item>
+    </string-array>
+    <string-array name="user_in_timeline_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
 	</string-array>
 </resources>
