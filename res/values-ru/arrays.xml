@@ -18,8 +18,8 @@
  -->
 <resources>
 	<string-array name="appwidget_message_formats">
-		<item>"{0} сообщение"</item>
-		<item>"{0} сообщения"</item>
+        <item>@string/appwidget_message_formats_1</item>
+        <item>@string/appwidget_message_formats_2</item>
 		<item>"{0} сообщений"</item>
 	</string-array>
 	<string-array name="appwidget_message_patterns">
@@ -28,8 +28,8 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="appwidget_mention_formats">
-		<item>"{0} упоминание"</item>
-		<item>"{0} упоминания"</item>
+        <item>@string/appwidget_mention_formats_1</item>
+        <item>@string/appwidget_mention_formats_2</item>
 		<item>"{0} упоминаний"</item>
 	</string-array>
 	<string-array name="appwidget_mention_patterns">
@@ -37,147 +37,19 @@
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>
 	</string-array>
-	<string-array name="appwidget_directmessage_formats">
-		<item>"{0} личное"</item>
-		<item>"{0} личных"</item>
-		<item>"{0} личных"</item>
-	</string-array>
-	<string-array name="appwidget_directmessage_patterns">
-		<item>".*[^1]1|1"</item>
-		<item>".*[^1][234]|2|3|4"</item>
-		<item>".*"</item>
-	</string-array>
-	<string-array name="fetch_frequency_entries">
-		<item>"3 минуты"</item>
-		<item>"5 минут"</item>
-		<item>"10 минут"</item>
-		<item>"15 минут"</item>
-		<item>"30 минут"</item>
-		<item>"1 час"</item>
-		<item>"2 часа"</item>
-		<item>"4 часа"</item>
-		<item>"8 часов"</item>
-		<item>"12 часов"</item>
-		<item>"1 сутки"</item>
-	</string-array>
-	<string-array name="fetch_frequency_values">
-		<item>180</item>
-		<item>300</item>
-		<item>600</item>
-		<item>900</item>
-		<item>1800</item>
-		<item>3600</item>
-		<item>7200</item>
-		<item>14400</item>
-		<item>28800</item>
-		<item>43200</item>
-		<item>86400</item>
-	</string-array>
-	<string-array name="fetch_frequency_display">
-		<item>"каждые 3 минуты"</item>
-		<item>"каждые 5 минут"</item>
-		<item>"каждые 10 минут"</item>
-		<item>"каждые 15 минут"</item>
-		<item>"каждые 30 минут"</item>
-		<item>"каждый час"</item>
-		<item>"каждые 2 часа"</item>
-		<item>"каждые 4 часа"</item>
-		<item>"каждые 8 часов"</item>
-		<item>"каждые 12 часов"</item>
-		<item>"раз в сутки"</item>
-	</string-array>
-    <string-array name="theme_color_entries">
-		<item>По умолчанию в устройстве</item>
-		<item>Светлая</item>
-		<item>Тёмная</item>
-	</string-array>
-	<string-array name="theme_size_entries">
-		<item>"Большой"</item>
-		<item>"Средний"</item>
-		<item>"Малый"</item>
-	</string-array>
-	<string-array name="history_size_entries">
-		<item>"500 сообщений"</item>
-		<item>"1000 сообщений"</item>
-		<item>"2000 сообщений"</item>
-		<item>"5000 сообщений"</item>
-		<item>"10000 сообщений"</item>
-		<item>"20000 сообщений"</item>
-		<item>"50000 сообщений"</item>
-		<item>"100000 сообщений"</item>
-		<item>"1 млн. сообщений"</item>
-	</string-array>
-	<string-array name="history_size_values">
-		<item>500</item>
-		<item>1000</item>
-		<item>2000</item>
-		<item>5000</item>
-		<item>10000</item>
-		<item>20000</item>
-		<item>50000</item>
-		<item>100000</item>
-        <item>1000000</item>
-    </string-array>
-	<string-array name="history_size_display">
-		<item>"500 сообщений"</item>
-		<item>"1000 сообщений"</item>
-		<item>"2000 сообщений"</item>
-		<item>"5000 сообщений"</item>
-		<item>"10000 сообщений"</item>
-		<item>"20000 сообщений"</item>
-		<item>"50000 сообщений"</item>
-		<item>"100000 сообщений"</item>
-		<item>"1 млн. сообщений"</item>
-	</string-array>
-	<string-array name="history_time_entries">
-		<item>"1 день"</item>
-		<item>"2 дня"</item>
-		<item>"3 дня"</item>
-		<item>"4 дня"</item>
-		<item>"5 дней"</item>
-		<item>"6 дней"</item>
-		<item>"1 неделя"</item>
-		<item>"1 месяц"</item>
-		<item>"1 год"</item>
-		<item>"10 лет"</item>
-	</string-array>
-	<string-array name="history_time_values">
-		<item>1</item>
-		<item>2</item>
-		<item>3</item>
-		<item>4</item>
-		<item>5</item>
-		<item>6</item>
-		<item>7</item>
-		<item>31</item>
-		<item>365</item>
-        <item>3653</item>
-	</string-array>
-	<string-array name="history_time_display">
-		<item>"1 день"</item>
-		<item>"2 дня"</item>
-		<item>"3 дня"</item>
-		<item>"4 дня"</item>
-		<item>"5 дней"</item>
-		<item>"6 дней"</item>
-		<item>"1 неделя"</item>
-		<item>"1 месяц"</item>
-		<item>"1 год"</item>
-		<item>"10 лет"</item>
-	</string-array>
-	<string-array name="notification_tweet_formats">
-		<item>"{0} сообщение"</item>
-		<item>"{0} сообщения"</item>
+	<string-array name="notification_message_formats">
+		<item>@string/notification_message_formats_1</item>
+        <item>@string/notification_message_formats_2</item>
 		<item>"{0} сообщений"</item>
 	</string-array>
-	<string-array name="notification_tweet_patterns">
+	<string-array name="notification_message_patterns">
 		<item>".*[^1]1|1"</item>
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>
 	</string-array>
 	<string-array name="notification_mention_formats">
-		<item>"{0} упоминание"</item>
-		<item>"{0} упоминания"</item>
+        <item>@string/notification_mention_formats_1</item>
+        <item>@string/notification_mention_formats_2</item>
 		<item>"{0} упоминаний"</item>
 	</string-array>
 	<string-array name="notification_mention_patterns">
@@ -185,19 +57,19 @@
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>
 	</string-array>
-	<string-array name="notification_message_formats">
-		<item>"{0} личное сообщение"</item>
-		<item>"{0} личных сообщения"</item>
+	<string-array name="notification_direct_message_formats">
+        <item>@string/notification_direct_message_formats_1</item>
+        <item>@string/notification_direct_message_formats_2</item>
 		<item>"{0} личных сообщений"</item>
 	</string-array>
-	<string-array name="notification_message_patterns">
+	<string-array name="notification_direct_message_patterns">
 		<item>".*[^1]1|1"</item>
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>
 	</string-array>
 	<string-array name="notification_queue_formats">
-		<item>"{0} неотправленное cообщение ожидает"</item>
-		<item>"{0} неотправленных сообщения ожидают"</item>
+        <item>@string/notification_queue_formats_1</item>
+        <item>@string/notification_queue_formats_2</item>
 		<item>"{0} неотправленных сообщений ожидают"</item>
 	</string-array>
 	<string-array name="notification_queue_patterns">
@@ -206,8 +78,8 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="reltime_days_ago_formats">
-		<item>"вчера"</item>
-		<item>"{0} день назад"</item>
+		<item>@string/reltime_days_ago_formats_1</item>
+        <item>@string/reltime_days_ago_formats_2</item>
 		<item>"{0} дня назад"</item>
 		<item>"{0} дней назад"</item>
 	</string-array>
@@ -218,9 +90,9 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="reltime_hours_ago_formats">
-		<item>"час назад"</item>
-		<item>"два часа назад"</item>
-		<item>"{0} час назад"</item>
+        <item>@string/reltime_hours_ago_formats_1</item>
+        <item>@string/reltime_hours_ago_formats_2</item>
+        <item>@string/reltime_hours_ago_formats_3</item>
 		<item>"{0} часа назад"</item>
 		<item>"{0} часов назад"</item>
 	</string-array>
@@ -232,9 +104,9 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="reltime_minutes_ago_formats">
-		<item>"минуту назад"</item>
-		<item>"две минуты назад"</item>
-		<item>"{0} минуту назад"</item>
+        <item>@string/reltime_minutes_ago_formats_1</item>
+        <item>@string/reltime_minutes_ago_formats_2</item>
+        <item>@string/reltime_minutes_ago_formats_3</item>
 		<item>"{0} минуты назад"</item>
 		<item>"{0} минут назад"</item>
 	</string-array>
@@ -246,8 +118,8 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="reltime_months_ago_formats">
-		<item>"месяц назад"</item>
-		<item>"{0} месяц назад"</item>
+        <item>@string/reltime_months_ago_formats_1</item>
+	    <item>@string/reltime_months_ago_formats_2</item>
 		<item>"{0} месяца назад"</item>
 		<item>"{0} месяцев назад"</item>
 	</string-array>
@@ -258,8 +130,8 @@
 		<item>".*"</item>
 	</string-array>
 	<string-array name="reltime_seconds_ago_formats">
-		<item>"секунду назад"</item>
-		<item>"{0} секунду назад"</item>
+        <item>@string/reltime_seconds_ago_formats_1</item>
+	    <item>@string/reltime_seconds_ago_formats_2</item>
 		<item>"{0} секунды назад"</item>
 		<item>"{0} секунд назад"</item>
 	</string-array>
@@ -269,11 +141,4 @@
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>
 	</string-array>
-    <string-array name="user_in_timeline_entries">
-        <item>"имяпользователя"</item>
-        <item>"@имяпользователя"</item>
-        <item>"webFingerId"</item>
-        <item>Настоящее имя</item>
-        <item>Настоящее имя @имяпользователя</item>
-    </string-array>
 </resources>

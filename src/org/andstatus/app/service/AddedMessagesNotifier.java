@@ -114,8 +114,8 @@ public class AddedMessagesNotifier {
             case NOTIFY_DIRECT_MESSAGE:
                 aMessage = I18n.formatQuantityMessage(myContext.context(),
                         R.string.notification_new_message_format, numMessages,
-                        R.array.notification_message_patterns,
-                        R.array.notification_message_formats);
+                        R.array.notification_direct_message_patterns,
+                        R.array.notification_direct_message_formats);
                 messageTitle = R.string.notification_title_messages;
                 intent = new Intent(myContext.context(), TimelineActivity.class);
                 intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,
@@ -129,8 +129,8 @@ public class AddedMessagesNotifier {
                 aMessage = I18n
                         .formatQuantityMessage(myContext.context(),
                                 R.string.notification_new_tweet_format, numMessages,
-                                R.array.notification_tweet_patterns,
-                                R.array.notification_tweet_formats);
+                                R.array.notification_message_patterns,
+                                R.array.notification_message_formats);
                 messageTitle = R.string.notification_title;
                 intent = new Intent(myContext.context(), TimelineActivity.class);
                 intent.putExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key,

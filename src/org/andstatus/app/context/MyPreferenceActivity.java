@@ -234,7 +234,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     }
 
     protected void showFrequency() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, R.array.fetch_frequency_values, R.array.fetch_frequency_display, R.string.summary_preference_frequency);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, R.array.fetch_frequency_values, R.array.fetch_frequency_entries, R.string.summary_preference_frequency);
     }
 
     private void showConnectionTimeout() {
@@ -242,15 +242,15 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     }
 
     protected void showHistorySize() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_SIZE, R.array.history_size_values, R.array.history_size_display, R.string.summary_preference_history_size);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_SIZE, R.array.history_size_values, R.array.history_size_entries, R.string.summary_preference_history_size);
     }
 
     protected void showHistoryTime() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_TIME, R.array.history_time_values, R.array.history_time_display, R.string.summary_preference_history_time);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_HISTORY_TIME, R.array.history_time_values, R.array.history_time_entries, R.string.summary_preference_history_time);
     }
     
     protected void showMinLogLevel() {
-        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_MIN_LOG_LEVEL, R.array.log_level_value, R.array.log_level_display, R.string.summary_preference_min_log_level);
+        SharedPreferencesUtil.showListPreference(this, MyPreferences.KEY_MIN_LOG_LEVEL, R.array.log_level_values, R.array.log_level_entries, R.string.summary_preference_min_log_level);
     }
     
     protected void showRingtone() {

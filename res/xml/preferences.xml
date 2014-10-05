@@ -213,7 +213,7 @@
 		</Preference>
         <PreferenceScreen android:key="preference_screen_debugging"
             android:title="@string/title_preference_debugging">
-	        <ListPreference android:entryValues="@array/log_level_value"
+	        <ListPreference android:entryValues="@array/log_level_values"
 	            android:entries="@array/log_level_entries" android:summary="@string/summary_preference_min_log_level"
 	            android:dialogTitle="@string/dialog_title_preference_min_log_level"
 	            android:title="@string/title_preference_min_log_level" android:key="min_log_level"

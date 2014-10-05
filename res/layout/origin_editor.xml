@@ -15,7 +15,7 @@
         android:id="@+id/origin_type"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:entries="@array/origin_system_entries"
+        android:entries="@array/origin_system_types_entries"
         android:prompt="@string/label_origin_type" />
 
     <TextView

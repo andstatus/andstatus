@@ -18,6 +18,17 @@
  	See http://developer.android.com/guide/topics/ui/themes.html
  -->
 <resources>
+    <string-array name="theme_color_values">
+        <item>DeviceDefault</item>
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="theme_size_values">
+        <item>Small</item>
+        <item>StandardSize</item>
+        <item>Large</item>
+    </string-array>
+    
     <!-- ThemeSelector resolves to different themes depending on configuration (see styles.xml files)
     Groups of the Themes below SHOULD be the same in everything but parent Theme -->
 	<style name="Theme.Dark.AndStatus.StandardSize" parent="@style/DarkThemeSelector">

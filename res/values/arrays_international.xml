@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2012-2014 Yuri Volkov, yvolk@yurivolkov.com
+	Copyright (C) 2008 Torgny Bjers
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	     http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+ -->
+<resources>
+    <string-array name="appwidget_directmessage_formats">
+        <item>@string/appwidget_directmessage_formats_1</item>
+        <item>@string/appwidget_directmessage_formats_2</item>
+    </string-array>
+    <string-array name="appwidget_directmessage_patterns">
+        <item>"1"</item>
+        <item>".*"</item>
+    </string-array>
+    <string-array name="fetch_frequency_entries">
+        <item>@string/fetch_frequency_entries_3_minutes</item>
+        <item>@string/fetch_frequency_entries_5_minutes</item>
+        <item>@string/fetch_frequency_entries_10_minutes</item>
+        <item>@string/fetch_frequency_entries_15_minutes</item>
+        <item>@string/fetch_frequency_entries_30_minutes</item>
+        <item>@string/fetch_frequency_entries_1_hour</item>
+        <item>@string/fetch_frequency_entries_2_hours</item>
+        <item>@string/fetch_frequency_entries_4_hours</item>
+        <item>@string/fetch_frequency_entries_8_hours</item>
+        <item>@string/fetch_frequency_entries_12_hours</item>
+        <item>@string/fetch_frequency_entries_1_day</item>
+    </string-array>
+    <string-array name="fetch_frequency_values">
+        <item>180</item>
+        <item>300</item>
+        <item>600</item>
+        <item>900</item>
+        <item>1800</item>
+        <item>3600</item>
+        <item>7200</item>
+        <item>14400</item>
+        <item>28800</item>
+        <item>43200</item>
+        <item>86400</item>
+    </string-array>
+    <string-array name="history_size_entries">
+        <item>@string/history_size_entries_500</item>
+        <item>@string/history_size_entries_1000</item>
+        <item>@string/history_size_entries_2000</item>
+        <item>@string/history_size_entries_5000</item>
+        <item>@string/history_size_entries_10000</item>
+        <item>@string/history_size_entries_20000</item>
+        <item>@string/history_size_entries_50000</item>
+        <item>@string/history_size_entries_100000</item>
+        <item>@string/history_size_entries_1mln</item>
+    </string-array>
+    <string-array name="history_time_entries">
+        <item>@string/history_time_entries_1day</item>
+        <item>@string/history_time_entries_2days</item>
+        <item>@string/history_time_entries_3days</item>
+        <item>@string/history_time_entries_4days</item>
+        <item>@string/history_time_entries_5days</item>
+        <item>@string/history_time_entries_6days</item>
+        <item>@string/history_time_entries_1week</item>
+        <item>@string/history_time_entries_1month</item>
+        <item>@string/history_time_entries_1year</item>
+        <item>@string/history_time_entries_10years</item>
+    </string-array>
+    <string-array name="history_size_values">
+        <item>500</item>
+        <item>1000</item>
+        <item>2000</item>
+        <item>5000</item>
+        <item>10000</item>
+        <item>20000</item>
+        <item>50000</item>
+        <item>100000</item>
+        <item>1000000</item>
+    </string-array>
+    <string-array name="history_time_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>31</item>
+        <item>365</item>
+        <item>3653</item>
+    </string-array>
+    <string-array name="log_level_entries">
+        <item>INFO</item>
+        <item>DEBUG</item>
+        <item>VERBOSE</item>
+    </string-array>
+    <string-array name="log_level_values">
+        <item>4</item>
+        <item>3</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="origin_system_types_entries">
+        <item>Twitter</item>
+        <item>Pump.io</item>
+        <item>StatusNet</item>
+    </string-array>
+    <string-array name="theme_color_entries">
+        <item>@string/theme_color_entries_defautl</item>
+        <item>@string/theme_color_entries_light</item>
+        <item>@string/theme_color_entries_dark</item>
+    </string-array>
+    <string-array name="theme_size_entries">
+        <item>@string/theme_size_entries_small</item>
+        <item>@string/theme_size_entries_standard</item>
+        <item>@string/theme_size_entries_large</item>
+    </string-array>
+    <string-array name="user_in_timeline_entries">
+        <item>@string/user_in_timeline_entries_username</item>
+        <item>@string/user_in_timeline_entries_at_username</item>
+        <item>@string/user_in_timeline_entries_webfingerid</item>
+        <item>@string/user_in_timeline_entries_real_name</item>
+        <item>@string/user_in_timeline_entries_real_name_at_username</item>
+    </string-array>
+    <string-array name="user_in_timeline_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+</resources>

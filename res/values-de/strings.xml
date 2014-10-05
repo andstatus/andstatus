@@ -35,6 +35,12 @@
     
     <string name="appwidget_configure_instructions">Passe die Mitteilung an, die im AndStatus
     Widget gezeigt wird, falls sich nichts geändert hat:</string>
+    <string name="appwidget_message_formats_1">{0} message"</string>
+    <string name="appwidget_message_formats_2">{0} messages"</string>
+    <string name="appwidget_mention_formats_1">{0} Erwähnung"</string>
+    <string name="appwidget_mention_formats_2">{0} Erwähnungen"</string>
+    <string name="appwidget_directmessage_formats_1">{0} direct"</string>
+    <string name="appwidget_directmessage_formats_2">{0} direct"</string>
     <string name="appwidget_nothingnew_default">Nichts Neues seit:</string>
 	<string name="appwidget_new_tweet_format">{0}</string>
 	<string name="appwidget_new_message_format">{0}</string>
@@ -110,7 +116,18 @@
 	<string name="error_credentials_of_other_user">Dieser Name ist bereits vergeben</string>
 	<string name="favorite_created">Favorit erstellt</string>
 	<string name="favorite_destroyed">Nachricht nicht mehr favorisiert.</string>
-    <string name="header_accounts">Accounts</string>    
+    <string name="fetch_frequency_entries_3_minutes">3 Minuten</string>
+    <string name="fetch_frequency_entries_5_minutes">5 Minuten</string>
+    <string name="fetch_frequency_entries_10_minutes">10 Minuten</string>
+    <string name="fetch_frequency_entries_15_minutes">15 Minuten</string>
+    <string name="fetch_frequency_entries_30_minutes">30 Minuten</string>
+    <string name="fetch_frequency_entries_1_hour">1 Stunde</string>
+    <string name="fetch_frequency_entries_2_hours">2 Stunden</string>
+    <string name="fetch_frequency_entries_4_hours">4 Stunden</string>
+    <string name="fetch_frequency_entries_8_hours">8 Stunden</string>
+    <string name="fetch_frequency_entries_12_hours">12 Stunden</string>
+    <string name="fetch_frequency_entries_1_day">1 Tag</string>
+	<string name="header_accounts">Accounts</string>    
 	<string name="header_add_new_account">Neuen Account hinzufügen</string>    
     <string name="header_manage_existing_accounts">Bestehende Accounts verwalten</string>    
     <string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
@@ -155,7 +172,15 @@
 	<string name="message_sent">Deine Nachricht wurde verschickt.</string>
 	<string name="messages_activity">Direktnachrichten</string>
     <string name="not_set">nicht festgelegt</string>
-	<string name="notification_title">AndStatus</string>
+    <string name="notification_message_formats_1">{0} neuen Message</string>
+    <string name="notification_message_formats_2">{0} neue Messages</string>
+    <string name="notification_mention_formats_1">{0} neue Erwähnung</string>
+    <string name="notification_mention_formats_2">{0} neue Erwähnungen</string>
+    <string name="notification_direct_message_formats_1">{0} neue Direct"</string>
+    <string name="notification_direct_message_formats_2">{0} neue Direct"</string>
+    <string name="notification_queue_formats_1">{0} message is"</string>
+    <string name="notification_queue_formats_2">{0} messages are"</string>
+    <string name="notification_title">AndStatus</string>
 	<string name="notification_new_tweet_format">Du hast {0}.</string>
 	<string name="notification_new_message_format">Du hast {0}.</string>
 	<string name="notification_title_messages">Neue Direktnachrichten</string>
@@ -180,6 +205,18 @@
 	<string name="options_menu_mentions">Erwähnungen</string>
 	<string name="options_menu_search">Suche</string>
 	<string name="origin_settings_action">Microblogging System</string>
+    <string name="reltime_days_ago_formats_1">Gestern</string>
+    <string name="reltime_days_ago_formats_2">vor {0} Tagen</string>
+    <string name="reltime_hours_ago_formats_1">vor einer Stunde</string>
+    <string name="reltime_hours_ago_formats_2">vor zwei Stunden</string>
+    <string name="reltime_hours_ago_formats_3">vor {0} Stunden</string>
+    <string name="reltime_minutes_ago_formats_1">vor einer Minute</string>
+    <string name="reltime_minutes_ago_formats_2">vor {0} Minuten</string>
+    <string name="reltime_minutes_ago_formats_3">{0} minutes ago</string>
+    <string name="reltime_months_ago_formats_1">vor einem Monat</string>
+    <string name="reltime_months_ago_formats_2">vor {0} Monaten</string>
+    <string name="reltime_seconds_ago_formats_1">vor {0} Sekunden</string>
+    <string name="reltime_seconds_ago_formats_2">vor {0} Sekunden</string>
 	<string name="reltime_just_now">gerade eben</string>
 	<string name="reltime_years_ago">vor über einem Jahr</string>
 	<string name="resolve_view">Nachricht anzeigen</string>
@@ -326,8 +363,10 @@
 	<string name="summary_preference_vibration_off">Vibration ist abgeschaltet</string>
 	<string name="summary_preference_vibration_on">Vibrieren bei eingehender Nachricht</string>
     <string name="system_is_busy_try_later">Das System ist beschäftigt. Bitte versuche es später erneut.</string>
+    <string name="theme_size_entries_small">Klein</string>
+    <string name="theme_size_entries_standard">Normal</string>
+    <string name="theme_size_entries_large">Groß</string>
     <string name="timeline_reloaded">Timeline wurde neu geladen.</string>
-    
     <string name="timeline_title_direct_messages">Direktnachrichten</string>
     <string name="timeline_title_favorites">Favoriten</string>
     <string name="timeline_title_following_user">Folgend</string>
