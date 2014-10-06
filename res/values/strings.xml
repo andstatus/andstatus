@@ -3,6 +3,11 @@
     Copyright (C) 2010-2014 Yuri Volkov, yvolk@yurivolkov.com
 	Copyright (C) 2008 Torgny Bjers
 	
+	Translations are copyrighted by corresponding Translators, including:
+	  German: Vinzenz Vietzke, vinz@vinzv.de, Parts of the German translation by Benjamin Schirmer (codename.matrix@gmail.com)
+	  French: Kevin CORNILLEAU
+	  and others.
+		
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
@@ -31,12 +36,12 @@
     <string name="action_menu_overflow_description">More actions…</string>
     
     <string name="appwidget_configure_instructions">Customize AndStatus Widget message, shown in a case there is nothing new:</string>
-    <string name="appwidget_message_formats_1">{0} message"</string>
-    <string name="appwidget_message_formats_2">{0} messages"</string>
-    <string name="appwidget_mention_formats_1">{0} mention"</string>
-    <string name="appwidget_mention_formats_2">{0} mentions"</string>
-    <string name="appwidget_directmessage_formats_1">{0} direct"</string>
-    <string name="appwidget_directmessage_formats_2">{0} direct"</string>
+    <string name="appwidget_message_formats_1">{0} message</string>
+    <string name="appwidget_message_formats_2">{0} messages</string>
+    <string name="appwidget_mention_formats_1">{0} mention</string>
+    <string name="appwidget_mention_formats_2">{0} mentions</string>
+    <string name="appwidget_directmessage_formats_1">{0} direct</string>
+    <string name="appwidget_directmessage_formats_2">{0} direct</string>
     <string name="appwidget_nothingnew_default">Nothing new since:</string>
     <string name="appwidget_nodata">No data yet.</string>
 
@@ -191,11 +196,10 @@
     <string name="notification_mention_formats_2">{0} mentions</string>
     <string name="notification_direct_message_formats_1">{0} direct message</string>
     <string name="notification_direct_message_formats_2">{0} direct messages</string>
-    <string name="notification_queue_formats_1">{0} неотправленное cообщение ожидает</string>
-    <string name="notification_queue_formats_2">{0} неотправленных сообщения ожидают</string>
+    <string name="notification_queue_formats_1">{0} message is</string>
+    <string name="notification_queue_formats_2">{0} messages are</string>
 	<string name="notification_new_tweet_format">You have {0}.</string>
 	<string name="notification_new_message_format">You have {0}.</string>
-    <string name="notification_title">AndStatus</string>
 	<string name="notification_title_messages">New Direct Messages</string>
 	<string name="notification_new_mention_format">You have {0}.</string>
 	<string name="notification_title_mentions">New Mentions</string>

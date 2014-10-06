@@ -19,4 +19,5 @@
     <string name="appwidget_new_tweet_format">{0}</string>
     <string name="appwidget_new_message_format">{0}</string>
     <string name="appwidget_new_mention_format">{0}</string>
+    <string name="notification_title">AndStatus</string>
 </resources>
