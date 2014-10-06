@@ -37,9 +37,6 @@
     <string name="appwidget_directmessage_formats_1">{0} личное"</string>
     <string name="appwidget_directmessage_formats_2">{0} личных"</string>
     <string name="appwidget_nothingnew_default">Ничего нового после:</string>
-	<string name="appwidget_new_tweet_format">{0}</string>
-	<string name="appwidget_new_message_format">{0}</string>
-	<string name="appwidget_new_mention_format">{0}</string>
     <string name="appwidget_nodata">Пока нет данных.</string>
 
 	<string name="authentication_never">Пока не аутентифицирован</string>
@@ -143,7 +140,6 @@
     <string name="history_time_entries_1month">1 месяц</string>
     <string name="history_time_entries_1year">1 год</string>
     <string name="history_time_entries_10years">10 лет</string>
-    <string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
     <string name="id_of_this_message_was_not_specified">Идентификатор этого сообщения не был указан</string>
 	<string name="label_accountselector">Выберите аккаунт</string>
     <string name="label_allow_html_content">Разрешить HTML форматирование</string>
@@ -462,7 +458,6 @@
 	<string name="message_source_to">для %1$s</string>
 	<string name="reblogged_by">пересказано %1$s</string>
 	<string name="reblogged_by_twitter">пересказано %1$s</string>
-	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Не реализовано.</string>
     <string name="user_in_timeline_entries_username">имяпользователя</string>
     <string name="user_in_timeline_entries_at_username">"@имяпользователя"</string>

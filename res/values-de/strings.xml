@@ -42,9 +42,6 @@
     <string name="appwidget_directmessage_formats_1">{0} direct"</string>
     <string name="appwidget_directmessage_formats_2">{0} direct"</string>
     <string name="appwidget_nothingnew_default">Nichts Neues seit:</string>
-	<string name="appwidget_new_tweet_format">{0}</string>
-	<string name="appwidget_new_message_format">{0}</string>
-	<string name="appwidget_new_mention_format">{0}</string>
     <string name="appwidget_nodata">Noch keine Daten.</string>
 
 	<string name="authentication_never">Bisher nicht angemeldet</string>
@@ -130,7 +127,6 @@
 	<string name="header_accounts">Accounts</string>    
 	<string name="header_add_new_account">Neuen Account hinzufügen</string>    
     <string name="header_manage_existing_accounts">Bestehende Accounts verwalten</string>    
-    <string name="http_dateformat">EEE, dd MMM yyyy HH:mm:ss zzz</string>
     <string name="id_of_this_message_was_not_specified">Id dieser Nachricht wurde nicht festgelegt</string>
 	<string name="label_accountselector">Wähle einen Account</string>
     <string name="label_allow_html_content">HTML-Inhalte erlauben</string>
@@ -422,6 +418,5 @@
 	<string name="message_source_to">an %1$s</string>
 	<string name="reblogged_by">reblogged von %1$s</string>
 	<string name="reblogged_by_twitter">retweeted von %1$s</string>
-	<string name="twitter_dateformat">EEE MMM dd HH:mm:ss Z yyyy</string>
 	<string name="unimplemented">Nicht implementiert.</string>
 </resources>
