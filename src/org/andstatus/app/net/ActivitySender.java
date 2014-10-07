@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import org.andstatus.app.net.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.ConnectionPumpio.ConnectionAndUrl;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -80,7 +81,7 @@ class ActivitySender {
         JSONObject jso = null;
         try {
             JSONObject activity = newActivityOfThisAccount(verb);
-            JSONObject obj = mMediaUri != null ? uploadMedia() : newTextObject(activity);
+            JSONObject obj = UriUtils.isEmpty(mMediaUri) ? newTextObject(activity) : uploadMedia();
             if (!TextUtils.isEmpty(inReplyToId)) {
                 JSONObject inReplyToObject = new JSONObject();
                 inReplyToObject.put("id", inReplyToId);
