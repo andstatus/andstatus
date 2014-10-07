@@ -27,6 +27,8 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.MyHtml;
 
 
 /**
@@ -93,7 +95,9 @@ class MessageDataForContextMenu {
                 isSender = (ma.getUserId() == senderId);
                 isAuthor = (ma.getUserId() == authorId);
 
-                body = cursor.getString(cursor.getColumnIndex(MyDatabase.Msg.BODY));
+                body = I18n.trimTextAt(
+                                MyHtml.fromHtml(cursor.getString(cursor
+                                        .getColumnIndex(MyDatabase.Msg.BODY))), 40).toString();
 
                 if ( timelineType != TimelineTypeEnum.FOLLOWING_USER 
                         && !isDirect && !favorited && !reblogged && !isSender && !senderFollowed && !authorFollowed

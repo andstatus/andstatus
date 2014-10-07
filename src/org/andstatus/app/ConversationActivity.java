@@ -25,6 +25,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -43,6 +45,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.UriUtils;
 
 /**
  * One selected message and, optionally, the whole conversation
@@ -67,7 +70,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     /** 
      * Controls of the TweetEditor
      */
-    private MessageEditor messageEditor;
+    private MessageEditor mMessageEditor;
 
     private Object messagesLock = new Object(); 
     @GuardedBy("messagesLock")
@@ -100,8 +103,8 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         setContentView(R.layout.conversation);
         actionBar.attach();
         
-        messageEditor = new MessageEditor(this);
-        messageEditor.hide();
+        mMessageEditor = new MessageEditor(this);
+        mMessageEditor.hide();
         contextMenu = new MessageContextMenu(this);
         
         showConversation();
@@ -199,6 +202,14 @@ public class ConversationActivity extends Activity implements MyServiceListener,
                     }
                 }
                 break;
+            case ATTACH:
+                Uri uri = UriUtils.notNull(data.getData());
+                if (resultCode == RESULT_OK && !UriUtils.isEmpty(uri)) {
+                    if (mMessageEditor.isVisible()) {
+                        mMessageEditor.setMedia(uri);
+                    }
+                }
+                break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
@@ -223,24 +234,25 @@ public class ConversationActivity extends Activity implements MyServiceListener,
 
     @Override
     public void onReceive(CommandData commandData, MyServiceEvent event) {
-        switch(commandData.getCommand()) {
-            case GET_STATUS:
-            case UPDATE_STATUS:
-            case CREATE_FAVORITE:
-            case DESTROY_FAVORITE:
-            case REBLOG:
-            case DESTROY_REBLOG:
-            case DESTROY_STATUS:
-            case FETCH_ATTACHMENT:
-            case FETCH_AVATAR:
-                if (!commandData.getResult().hasError()) {
-                    showConversation();
-                }
-                break;
-            default:
-                break;
+        if (event == MyServiceEvent.AFTER_EXECUTING_COMMAND) {
+            switch(commandData.getCommand()) {
+                case GET_STATUS:
+                case UPDATE_STATUS:
+                case CREATE_FAVORITE:
+                case DESTROY_FAVORITE:
+                case REBLOG:
+                case DESTROY_REBLOG:
+                case DESTROY_STATUS:
+                case FETCH_ATTACHMENT:
+                case FETCH_AVATAR:
+                    if (!commandData.getResult().hasError()) {
+                        showConversation();
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
-        
     }
 
     @Override
@@ -250,13 +262,48 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.conversation, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        boolean enableAttach = mMessageEditor.isVisible() && MyPreferences.showAttachedImages() ;
+        MenuItem item = menu.findItem(R.id.attach_menu_id);
+        item.setEnabled(enableAttach);
+        item.setVisible(enableAttach);
+        
+        return super.onPrepareOptionsMenu(menu);
+    }
+    
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.reload_menu_item:
+                showConversation();
+                break;
+            case R.id.attach_menu_id:
+                mMessageEditor.onAttach();
+                break;
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    
+    @Override
     public Activity getActivity() {
         return this;
     }
 
     @Override
     public MessageEditor getMessageEditor() {
-        return messageEditor;
+        return mMessageEditor;
     }
 
     @Override
@@ -301,6 +348,6 @@ public class ConversationActivity extends Activity implements MyServiceListener,
 
     @Override
     public boolean hasOptionsMenu() {
-        return false;
+        return true;
     }
 }

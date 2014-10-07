@@ -29,6 +29,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
@@ -424,6 +425,18 @@ class MessageEditor {
         }
     }
 
+
+    /**
+     * See http://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically
+     */
+    public void onAttach() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        mMessageList.getActivity().startActivityForResult(Intent.createChooser(intent,
+                mMessageList.getActivity().getText(R.string.options_menu_attach)), ActivityRequestCode.ATTACH.id);
+    }
+    
     public Uri getMediaUri() {
         return mMediaUri;
     }

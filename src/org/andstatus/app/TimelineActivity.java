@@ -698,14 +698,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        Intent intent = new Intent(null, getIntent().getData());
-        intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
-        menu.addIntentOptions(Menu.CATEGORY_ALTERNATIVE, 0, 0, new ComponentName(this,
-                TimelineActivity.class), null, intent, 0, null);
         MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
-        
-        boolean enableReload = ma != null
-                && ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED;
+        boolean enableReload = isTimelineCombined() || ( ma != null
+                && ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
         MenuItem item = menu.findItem(R.id.reload_menu_item);
         item.setEnabled(enableReload);
         item.setVisible(enableReload);
@@ -741,23 +736,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 onSearchRequested(true);
                 break;
             case R.id.attach_menu_id:
-                onAttach();
+                mMessageEditor.onAttach();
                 break;
             default:
                 break;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * See http://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically
-     */
-    private void onAttach() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent,
-                getText(R.string.options_menu_attach)), ActivityRequestCode.ATTACH.id);
     }
 
     /**
