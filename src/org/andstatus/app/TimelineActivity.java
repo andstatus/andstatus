@@ -21,11 +21,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.app.NotificationManager;
 import android.app.SearchManager;
-import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -70,12 +71,10 @@ import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
-import org.andstatus.app.support.android.v11.app.MyLoader;
-import org.andstatus.app.support.android.v11.app.MyLoaderManager;
-import org.andstatus.app.support.android.v11.widget.MySimpleCursorAdapter;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
+import org.andstatus.app.widget.MySimpleCursorAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,7 +82,7 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com, torgny.bjers
  */
-public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener, ActionableMessageList, MyLoaderManager.LoaderCallbacks<Cursor>, MyActionBarContainer {
+public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener, ActionableMessageList, MyActionBarContainer, LoaderCallbacks<Cursor> {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
 
     private static final String KEY_LAST_POSITION = "last_position_";
@@ -159,9 +158,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private MessageContextMenu mContextMenu;
     private MessageEditor mMessageEditor;
 
-    private static final int LOADER_ID = 1;
-    private MyLoaderManager<Cursor> mLoaderManager = null;
-
     private String mTextToShareViaThisApp = "";
     private Uri mMediaToShareViaThisApp = Uri.EMPTY;
     
@@ -219,8 +215,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         mMessageEditor = new MessageEditor(this);
 
         boolean isInstanceStateRestored = restoreInstanceState(savedInstanceState);
-        
-        mLoaderManager = new MyLoaderManager<Cursor>();
         
         LayoutInflater inflater = LayoutInflater.from(this);
         // Create list footer to show the progress of message loading
@@ -335,7 +329,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (!mFinishing) {
             MyContextHolder.get().setInForeground(true);
             mServiceConnector.registerReceiver(this);
-            mLoaderManager.onResumeActivity(LOADER_ID);
         }
     }
 
@@ -590,7 +583,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             MyLog.v(this, "onPause, instanceId=" + mInstanceId);
         }
         mServiceConnector.unregisterReceiver(this);
-        mLoaderManager.onPauseActivity(LOADER_ID);
         hideSyncIndicator();
 
         if (mPositionRestored) {
@@ -642,9 +634,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             public void run() {
                 if (mPositionRestored) {
                     saveListPosition();
-                }
-                if (mLoaderManager != null) {
-                    mLoaderManager.destroyLoader(LOADER_ID);
                 }
             }
         });
@@ -1091,7 +1080,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         Bundle args = new Bundle();
         args.putBoolean(IntentExtra.EXTRA_LOAD_ONE_MORE_PAGE.key, loadOneMorePage);
         args.putInt(IntentExtra.EXTRA_ROWS_LIMIT.key, calcRowsLimit(loadOneMorePage));
-        mLoaderManager.restartLoader(LOADER_ID, args, this);
+        getLoaderManager().restartLoader(0, args, this);
         setLoading(true);
     }
 
@@ -1112,7 +1101,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     @Override
-    public MyLoader<Cursor> onCreateLoader(int id, Bundle args) {
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         final String method = "onCreateLoader";
         MyLog.v(this, method + " #" + id);
         TimelineListParameters params = new TimelineListParameters();
@@ -1236,13 +1225,13 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
    
     @Override
-    public void onLoaderReset(MyLoader<Cursor> loader) {
+    public void onLoaderReset(Loader<Cursor> loader) {
         MyLog.v(this, "onLoaderReset; " + loader);
         setLoading(false);
     }
     
     @Override
-    public void onLoadFinished(MyLoader<Cursor> loader, Cursor cursor) {
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         final String method = "onLoadFinished"; 
         MyLog.v(this, method);
         TimelineTypeEnum timelineToReload = TimelineTypeEnum.UNKNOWN;

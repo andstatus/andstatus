@@ -76,7 +76,7 @@ public class MessageShare {
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, subject.toString());
         intent.putExtra(Intent.EXTRA_TEXT, buildBody(origin, msgBodyPlainText, false));
-        if (android.os.Build.VERSION.SDK_INT >= 16 && origin.isHtmlContentAllowed() && MyHtml.hasHtmlMarkup(msgBody) ) {
+        if (origin.isHtmlContentAllowed() && MyHtml.hasHtmlMarkup(msgBody) ) {
             intent.putExtra(Intent.EXTRA_HTML_TEXT, buildBody(origin, msgBody, true));
         }
         return intent;

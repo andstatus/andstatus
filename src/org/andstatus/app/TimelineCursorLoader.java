@@ -16,7 +16,9 @@
 
 package org.andstatus.app;
 
+import android.content.Loader;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.text.TextUtils;
 
@@ -33,8 +35,6 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceReceiver;
-import org.andstatus.app.support.android.v11.app.MyLoader;
-import org.andstatus.app.support.android.v11.os.AsyncTask;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
@@ -44,7 +44,7 @@ import org.andstatus.app.util.MyLog;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class TimelineCursorLoader extends MyLoader<Cursor> implements MyServiceListener {
+public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceListener {
     private final TimelineListParameters mParams;
     private Cursor mCursor = null;
 

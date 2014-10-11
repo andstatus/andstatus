@@ -16,18 +16,18 @@
 
 package org.andstatus.app;
 
+import android.app.LoaderManager;
 import android.database.Cursor;
 import android.net.Uri;
 
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineTypeEnum;
-import org.andstatus.app.support.android.v11.app.MyLoaderManager;
 import org.andstatus.app.util.SelectionAndArgs;
 
 import java.util.Arrays;
 
 class TimelineListParameters {
-    MyLoaderManager.LoaderCallbacks<Cursor> loaderCallbacks = null;
+    LoaderManager.LoaderCallbacks<Cursor> loaderCallbacks = null;
     
     boolean loadOneMorePage = false;
     boolean reQuery = false;

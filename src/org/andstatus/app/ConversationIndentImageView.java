@@ -18,16 +18,16 @@ package org.andstatus.app;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import org.andstatus.app.support.android.v11.widget.MyImageView;
 import org.andstatus.app.util.MyLog;
 
 /**
  * This custom ImageView allows dynamically crop its image according to the height of the other view
  * @author yvolk@yurivolkov.com
  */
-public class ConversationIndentImageView extends MyImageView {
+public class ConversationIndentImageView extends ImageView {
     private View referencedView;
     private int widthPixels;
     private static final int MIN_HEIGH = 80;
@@ -57,15 +57,8 @@ public class ConversationIndentImageView extends MyImageView {
         } else {
             getLayoutParams().height = height;
         }
-        int measuredWidth;
-        int measuredHeight;
-        if (android.os.Build.VERSION.SDK_INT > 14) {
-            measuredWidth = MeasureSpec.makeMeasureSpec(widthPixels,  MeasureSpec.EXACTLY);
-            measuredHeight = MeasureSpec.makeMeasureSpec(height, mode);
-        } else {
-            measuredWidth = myResolveSizeAndState(widthPixels, widthMeasureSpec, 0);
-            measuredHeight = myResolveSizeAndState(height, heightMeasureSpec, 0);
-        }
+        int measuredWidth = MeasureSpec.makeMeasureSpec(widthPixels,  MeasureSpec.EXACTLY);
+        int measuredHeight = MeasureSpec.makeMeasureSpec(height, mode);
         setMeasuredDimension(measuredWidth, measuredHeight);
     }
 }

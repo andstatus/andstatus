@@ -659,15 +659,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      */
     public static void startManageExistingAccounts(android.content.Context context) {
         Intent intent;
-        // before Jelly Bean
-        if (android.os.Build.VERSION.SDK_INT < 16 ) {  
-            intent = new Intent(android.provider.Settings.ACTION_SYNC_SETTINGS);
-            // This gives some unstable results on v.4.0.x so I got rid of it:
-            // intent.putExtra(android.provider.Settings.EXTRA_AUTHORITIES, new String[] {MyProvider.AUTHORITY}); NOSONAR
-        } else {
-            intent = new Intent(context, AccountSettingsActivity.class);
-            // Was this: intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
-        }
+        // TODO: Figure out more concrete Intent to the list of AndStatus accounts
+        intent = new Intent(context, AccountSettingsActivity.class);
         context.startActivity(intent);
     }
     

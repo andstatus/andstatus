@@ -44,9 +44,7 @@ public class MyActionBar {
     public MyActionBar(MyActionBarContainer container, int actionBarResourceId) {
         this.container = container;
         this.actionBarResourceId = actionBarResourceId;
-        if (android.os.Build.VERSION.SDK_INT >= 16 ) {
-            container.getActivity().requestWindowFeature(Window.FEATURE_NO_TITLE);
-        }
+        container.getActivity().requestWindowFeature(Window.FEATURE_NO_TITLE);
         MyPreferences.loadTheme(container.getActivity(), container.getActivity());
     }
 
@@ -112,9 +110,6 @@ public class MyActionBar {
     }
     
     private boolean attachToListView(ViewGroup actionsView) {
-        if (android.os.Build.VERSION.SDK_INT < 16) {
-            return false;
-        }
         ViewGroup viewGroup = findChildViewGroupOfTheClass(ListView.class, (ViewGroup) container.getActivity().findViewById(android.R.id.content), 2);
         if (ListView.class.isAssignableFrom(viewGroup.getClass())) {
             if (PreferenceActivity.class.isAssignableFrom(container.getActivity().getClass())) {

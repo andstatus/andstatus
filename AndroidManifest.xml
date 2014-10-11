@@ -20,10 +20,10 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="12.1" android:versionCode="112"
+	android:versionName="13.0" android:versionCode="113"
 	android:installLocation="internalOnly">
 
-	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="19" />
+	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="19" />
     
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.VIBRATE"/>

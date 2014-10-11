@@ -307,9 +307,6 @@ public class TestSuite extends TestCase {
         Thread.sleep(200);
         instrumentationTestCase.getInstrumentation().waitForIdleSync();
         Thread.sleep(2000);
-        if (android.os.Build.VERSION.SDK_INT < 10 ) {
-            Thread.sleep(2000);
-        }
     }
     
     public static boolean isScreenLocked(Context context) {

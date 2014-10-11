@@ -21,6 +21,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.widget.Toast;
 
 import net.jcip.annotations.GuardedBy;
@@ -31,7 +32,6 @@ import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
-import org.andstatus.app.support.android.v11.os.AsyncTask;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 

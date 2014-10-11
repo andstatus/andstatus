@@ -42,9 +42,7 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
         
         PersistentAccounts accountsBefore = PersistentAccounts.getEmpty();
         accountsBefore.initialize();
-        if (android.os.Build.VERSION.SDK_INT > 10 ) {
-            assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
-        }
+        assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().persistentAccounts(), accountsBefore);
         compareOneAccount(MyContextHolder.get().persistentAccounts(), accountsBefore, TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
         
         File outputFolder = MyContextHolder.get().context().getCacheDir();
@@ -57,9 +55,7 @@ public class MyBackupAgentTest extends InstrumentationTestCase {
 
         assertEquals("Number of persistent accounts", accountsBefore.size(), MyContextHolder.get().persistentAccounts().size());
         
-        if (android.os.Build.VERSION.SDK_INT > 10 ) {
-            assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
-        }
+        assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().persistentAccounts());
         compareOneAccount(accountsBefore, MyContextHolder.get().persistentAccounts(), TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
 
         deleteBackup(dataFolder);

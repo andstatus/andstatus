@@ -22,7 +22,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.origin.Origin;
@@ -43,16 +42,6 @@ class StateOfAccountChangeProcess {
      * It's static so it generally stays intact between the {@link AccountSettingsActivity}'s instantiations 
      * */
     private static final Bundle STORED_STATE = new Bundle();
-
-    /** Intent extras for launch directly from system account manager
-     * NOTE: This string must match the one in res/xml/account_preferences.xml
-     */
-    private static final String ACTION_ACCOUNT_MANAGER_ENTRY = ClassInApplicationPackage.PACKAGE_NAME
-            + ".ACCOUNT_MANAGER_ENTRY";
-    /** 
-     * NOTE: This constant should eventually be defined in android.accounts.Constants
-     */
-    private static final String EXTRA_ACCOUNT_MANAGER_ACCOUNT = "account";
     
     private static final String ACCOUNT_ACTION_KEY = "account_action";
     private static final String ACCOUNT_AUTHENTICATOR_RESPONSE_KEY = "account_authenticator_response";
@@ -112,50 +101,31 @@ class StateOfAccountChangeProcess {
                 state.useThisState = true;
             }
             
-            android.accounts.Account androidAccount = null;
-            if (android.os.Build.VERSION.SDK_INT < 16 ) {  // before Jelly Bean
-                // Starting with Jelly Bean (16) there is only one link for the the setting of all AndStatus accounts
-                // So we must select account in our code
-                androidAccount = (android.accounts.Account) intent
-                        .getParcelableExtra(EXTRA_ACCOUNT_MANAGER_ACCOUNT);
-            }
-            if (androidAccount != null) {
-                // We have persistent account in the intent
-                state.builder = MyAccount.Builder.fromAndroidAccount(MyContextHolder.get(), androidAccount);
-                state.useThisState = true;
-            } else {
-                // Maybe we received MyAccount name as a parameter?!
-                String accountName = extras.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
-                if (!TextUtils.isEmpty(accountName)) {
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                            MyContextHolder.get(),
-                            accountName, 
-                            TriState.UNKNOWN);
-                    state.useThisState = state.builder.isPersistent();
-                }
+            // Maybe we received MyAccount name as a parameter?!
+            String accountName = extras.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
+            if (!TextUtils.isEmpty(accountName)) {
+                state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                        MyContextHolder.get(),
+                        accountName, 
+                        TriState.UNKNOWN);
+                state.useThisState = state.builder.isPersistent();
             }
         }
 
         if (state.builder == null && !state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-            // This case occurs if we're changing account settings from Settings->Accounts
-            if (state.getAccountAction().equals(ACTION_ACCOUNT_MANAGER_ENTRY)
-                    && android.os.Build.VERSION.SDK_INT < 16) {
-                state.setAccountAction(Intent.ACTION_INSERT);
-            } else {
-                switch (MyContextHolder.get().persistentAccounts().size()) {
-                    case 0:
-                        state.setAccountAction(Intent.ACTION_INSERT);
-                        break;
-                    case 1:
-                        state.builder = MyAccount.Builder.fromMyAccount(
-                                MyContextHolder.get(),
-                                MyContextHolder.get()
-                                .persistentAccounts().getCurrentAccount(), "fromIntent");
-                        break;
-                    default:
-                        state.accountShouldBeSelected = true;
-                        break;
-                }
+            switch (MyContextHolder.get().persistentAccounts().size()) {
+                case 0:
+                    state.setAccountAction(Intent.ACTION_INSERT);
+                    break;
+                case 1:
+                    state.builder = MyAccount.Builder.fromMyAccount(
+                            MyContextHolder.get(),
+                            MyContextHolder.get()
+                            .persistentAccounts().getCurrentAccount(), "fromIntent");
+                    break;
+                default:
+                    state.accountShouldBeSelected = true;
+                    break;
             }
         }
         
@@ -164,10 +134,7 @@ class StateOfAccountChangeProcess {
                 Origin origin = MyContextHolder
                         .get()
                         .persistentOrigins()
-                        .firstOfType(
-                                android.os.Build.VERSION.SDK_INT >= OriginType.TWITTER_ACCOUNT_ADDING_MIN
-                                        ? OriginType.ORIGIN_TYPE_DEFAULT
-                                        : OriginType.ORIGIN_TYPE_DEFAULT_BEFORE_TWITTER);
+                        .firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(),
                         AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);

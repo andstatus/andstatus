@@ -37,11 +37,11 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarDrawable;
-import org.andstatus.app.support.android.v11.widget.MySimpleCursorAdapter;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.widget.MySimpleCursorAdapter;
 
 import java.util.List;
 

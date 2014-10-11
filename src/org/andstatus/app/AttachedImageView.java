@@ -17,17 +17,20 @@
 package org.andstatus.app;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.util.AttributeSet;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.ImageView;
 
-import org.andstatus.app.support.android.v11.widget.MyImageView;
 import org.andstatus.app.util.MyLog;
 
 /**
  * The ImageView auto resizes to the width of the referenced view  
  * @author yvolk@yurivolkov.com
  */
-public class AttachedImageView extends MyImageView {
+public class AttachedImageView extends ImageView {
     private View referencedView = null;
     private static final int MAX_HEIGH = 2500;
 
@@ -71,14 +74,19 @@ public class AttachedImageView extends MyImageView {
         getLayoutParams().height = height;
         int measuredWidth;
         int measuredHeight;
-        if (android.os.Build.VERSION.SDK_INT > 14) {
-            measuredWidth = MeasureSpec.makeMeasureSpec(refWidthPixels,  MeasureSpec.EXACTLY);
-            measuredHeight = MeasureSpec.makeMeasureSpec(height, mode);
-        } else {
-            measuredWidth = myResolveSizeAndState(refWidthPixels, widthMeasureSpec, 0);
-            measuredHeight = myResolveSizeAndState(height, heightMeasureSpec, 0);
-        }
+        measuredWidth = MeasureSpec.makeMeasureSpec(refWidthPixels,  MeasureSpec.EXACTLY);
+        measuredHeight = MeasureSpec.makeMeasureSpec(height, mode);
         setMeasuredDimension(measuredWidth, measuredHeight);
+    }
+    
+    /**
+     * See http://stackoverflow.com/questions/1016896/how-to-get-screen-dimensions
+     */
+    public int getDisplayHeight() {
+        Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return size.y;        
     }
     
     private float getDrawableHeightToWidthRation() {
