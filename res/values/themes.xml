@@ -45,10 +45,11 @@
         <item name="messageDetailsStyle">italic</item>
 
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.ActionButton.Overflow</item>
-        <item name="android:windowNoTitle">true</item>
 
+        <item name="attachIcon">@drawable/ic_action_new_attachment</item>
+        <item name="postMessageIcon">@drawable/ic_action_new</item>
         <item name="replyBackground">@drawable/reply_timeline_background</item>
-	</style>
+   	</style>
 	<style name="Theme.Light.AndStatus.StandardSize" parent="@style/LightThemeSelector">
 		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageUsernameColor">?android:attr/textColorSecondary</item>
@@ -63,8 +64,9 @@
 		<item name="messageDetailsStyle">italic</item>
 				
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.Light.ActionButton.Overflow</item>
-		<item name="android:windowNoTitle">true</item>
 
+        <item name="attachIcon">@drawable/ic_action_new_attachment_light</item>
+        <item name="postMessageIcon">@drawable/ic_action_new_light</item>
         <item name="replyBackground">@drawable/reply_timeline_background_light</item>
 	</style>
 	<style name="Theme.DeviceDefault.AndStatus.StandardSize" parent="@style/DeviceDefaultThemeSelector">
@@ -79,7 +81,6 @@
 		<item name="messageDetailsAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageDetailsColor">?android:attr/textColorTertiary</item>
 		<item name="messageDetailsStyle">italic</item>
-				
 
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.ActionButton.Overflow</item>
         
@@ -89,8 +90,9 @@
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.ActionButton.Overflow</item>
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.Light.ActionButton.Overflow</item>
         -->
-		<item name="android:windowNoTitle">true</item>
 
+        <item name="attachIcon">@drawable/ic_action_new_attachment</item>
+        <item name="postMessageIcon">@drawable/ic_action_new</item>
         <item name="replyBackground">@drawable/reply_timeline_background</item>
 	</style>
 				

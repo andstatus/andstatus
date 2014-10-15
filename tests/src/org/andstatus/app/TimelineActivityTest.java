@@ -18,6 +18,7 @@ package org.andstatus.app;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -80,16 +81,16 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         final String method = "testBlogButton";
         TestSuite.waitForListLoaded(this, mActivity, 2);
         
-        final Button createMessageButton = (Button) mActivity.findViewById(R.id.createMessageButton);
+        MenuItem createMessageButton = mActivity.getOptionsMenu().findItem(R.id.createMessageButton);
         assertTrue(createMessageButton != null);
-        assertTrue("Blog button is visible", createMessageButton.getVisibility() == android.view.View.VISIBLE);
+        assertTrue("Blog button is visible", createMessageButton.isVisible());
         View editorView = mActivity.findViewById(R.id.message_editor);
         assertTrue(editorView != null);
         assertFalse(editorView.getVisibility() == android.view.View.VISIBLE);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, mActivity);
-        helper.clickButton(method + " clicker 1", createMessageButton);
+        helper.clickMenuItem(method + " clicker 1", R.id.createMessageButton);
         assertTrue("Editor appeared", editorView.getVisibility() == android.view.View.VISIBLE);
-        helper.clickButton(method + " clicker 2", createMessageButton);
+        helper.clickMenuItem(method + " clicker 2", R.id.createMessageButton);
         assertFalse("Editor hidden again", editorView.getVisibility() == android.view.View.VISIBLE);
     }
     
@@ -173,7 +174,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         final String method = "testOpeningAccountSelector";
         TestSuite.waitForListLoaded(this, mActivity, 10);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
-        helper.clickButton(method, R.id.selectAccountButton);
+        helper.clickMenuItem(method, R.id.selectAccountButton);
         Activity nextActivity = helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(this, nextActivity, 3);
         Thread.sleep(500);

@@ -15,17 +15,47 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
  -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-	<group android:id="@+id/MAIN_MENU">
-		<item android:title="@string/options_menu_reload" android:id="@+id/reload_menu_item"
-			android:alphabeticShortcut="r" android:icon="@drawable/ic_menu_reload"></item>
-		<item android:title="@string/options_menu_search" android:id="@+id/search_menu_id"
-			android:icon="@drawable/ic_menu_search" android:alphabeticShortcut="s"></item>
-        <item android:title="@string/options_menu_global_search" android:id="@+id/global_search_menu_id"
-            android:icon="@drawable/ic_menu_global_search" android:alphabeticShortcut="g" android:visible="false" android:enabled="false"></item>
-		<item android:title="@string/settings_action" android:id="@+id/preferences_menu_id"
-			android:alphabeticShortcut="p" android:icon="@drawable/ic_menu_preferences"></item>
-        <item android:title="@string/options_menu_attach" android:id="@+id/attach_menu_id"
-            android:icon="@drawable/ic_action_new_attachment" android:alphabeticShortcut="a"></item>
-	</group>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item android:id="@+id/createMessageButton" android:showAsAction="always" android:title="@string/button_create_message" android:icon="?attr/postMessageIcon">
+    </item><item android:id="@+id/attach_menu_id" android:alphabeticShortcut="a" android:icon="?attr/attachIcon" android:showAsAction="ifRoom" android:title="@string/options_menu_attach" android:visible="false">
+    </item><item android:id="@+id/global_search_menu_id" android:alphabeticShortcut="g" android:icon="@drawable/ic_menu_global_search" android:showAsAction="ifRoom" android:title="@string/options_menu_global_search">
+    </item><item android:id="@+id/search_menu_id" android:alphabeticShortcut="s" android:icon="@drawable/ic_menu_search" android:showAsAction="ifRoom" android:title="@string/options_menu_search">
+    </item><item
+        android:id="@+id/timelineTypeButton"
+        android:onClick="onTimelineTypeButtonClick"
+        android:showAsAction="ifRoom"
+        android:title="@string/timeline_title_home">
+    </item>
+    <item
+        android:id="@+id/combinedTimelineToggle"
+        android:onClick="onCombinedTimelineToggleClick"
+        android:showAsAction="ifRoom"
+        android:title="@string/title_preference_username" android:checked="false" android:checkable="true">
+    </item>
+    <item
+        android:id="@+id/selectAccountButton"
+        android:onClick="onSelectAccountButtonClick"
+        android:showAsAction="ifRoom"
+        android:title="@string/combined_timeline_off_account">
+    </item>
+    
+    <item
+        android:id="@+id/reload_menu_item"
+        android:alphabeticShortcut="r"
+        android:icon="@drawable/ic_menu_reload"
+        android:showAsAction="ifRoom"
+        android:title="@string/options_menu_reload">
+    </item>
+    
+    
+    <item
+        android:id="@+id/preferences_menu_id"
+        android:alphabeticShortcut="p"
+        android:icon="@drawable/ic_menu_preferences"
+        android:showAsAction="ifRoom"
+        android:title="@string/settings_action">
+    </item>
+    
+
 </menu>

@@ -44,12 +44,10 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
@@ -157,6 +155,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     private MessageContextMenu mContextMenu;
     private MessageEditor mMessageEditor;
+    private Menu mOptionsMenu = null;
+
+    protected Menu getOptionsMenu() {
+        return mOptionsMenu;
+    }
 
     private String mTextToShareViaThisApp = "";
     private Uri mMediaToShareViaThisApp = Uri.EMPTY;
@@ -183,7 +186,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyActionBar actionBar = new MyActionBar(this, R.layout.timeline_actions);
+        //getActionBar().setDisplayShowTitleEnabled(false);
+        MyActionBar actionBar = new MyActionBar(this, 0);
         super.onCreate(savedInstanceState);
         if (mInstanceId == 0) {
             mInstanceId = InstanceId.next();
@@ -227,16 +231,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         getListView().setOnScrollListener(this);
         getListView().setOnCreateContextMenuListener(mContextMenu);
         getListView().setOnItemClickListener(this);
-
-        Button accountButton = (Button) findViewById(R.id.selectAccountButton);
-        accountButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (MyContextHolder.get().persistentAccounts().size() > 1) {
-                    AccountSelector.selectAccount(TimelineActivity.this, 0, ActivityRequestCode.SELECT_ACCOUNT);
-                }
-            }
-        });
         
         if (!isInstanceStateRestored) {
             mTimelineIsCombined = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, false);
@@ -274,16 +268,23 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * Switch combined timeline on/off
      * @param view combinedTimelineToggle
      */
-    public void onCombinedTimelineToggle(View view) {
-        if (view instanceof android.widget.ToggleButton) {
-            boolean on = ((android.widget.ToggleButton) view).isChecked();
-            MyPreferences.getDefaultSharedPreferences().edit().putBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, on).commit();
-            mContextMenu.switchTimelineActivity(mTimelineType, on, mCurrentMyAccountUserId);
-        }
+    public boolean onCombinedTimelineToggleClick(MenuItem item) {
+        boolean on = !mTimelineIsCombined; //TODO: Doesn't work?! item.isChecked();
+        MyPreferences.getDefaultSharedPreferences().edit().putBoolean(MyPreferences.KEY_TIMELINE_IS_COMBINED, on).commit();
+        mContextMenu.switchTimelineActivity(mTimelineType, on, mCurrentMyAccountUserId);
+        return true;
+    }
+
+    public boolean onTimelineTypeButtonClick(MenuItem item) {
+        showDialog(DIALOG_ID_TIMELINE_TYPE);
+        return true;
     }
     
-    public void onTimelineTypeButtonClick(View view) {
-        showDialog(DIALOG_ID_TIMELINE_TYPE);
+    public boolean onSelectAccountButtonClick(MenuItem item) {
+        if (MyContextHolder.get().persistentAccounts().size() > 1) {
+            AccountSelector.selectAccount(TimelineActivity.this, 0, ActivityRequestCode.SELECT_ACCOUNT);
+        }
+        return true;
     }
     
     /**
@@ -679,7 +680,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.timeline, menu);
         return true;
@@ -687,6 +687,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        mOptionsMenu = menu;
         MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
         boolean enableReload = isTimelineCombined() || ( ma != null
                 && ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
@@ -694,6 +695,35 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         item.setEnabled(enableReload);
         item.setVisible(enableReload);
 
+        item = menu.findItem(R.id.timelineTypeButton);
+        item.setTitle(timelineTypeButtonText());
+        
+        CharSequence title = "";
+        MenuItem combinedTimelineToggle = menu.findItem(R.id.combinedTimelineToggle);
+        if (mTimelineIsCombined) {
+            combinedTimelineToggle.setTitle(R.string.combined_timeline_on);
+        } else {
+            combinedTimelineToggle.setTitle(mTimelineType.getPrepositionForNotCombinedTimeline(this));
+        }
+        combinedTimelineToggle.setChecked(mTimelineIsCombined);
+        if (mSelectedUserId != 0 && mSelectedUserId != mCurrentMyAccountUserId) {
+            combinedTimelineToggle.setVisible(false);
+            title = MyProvider.userIdToName(mSelectedUserId);
+        } else {
+            // Show the "Combined" toggle even for one account to see messages, 
+            // which are not on the timeline.
+            // E.g. messages by users, downloaded on demand.
+            combinedTimelineToggle.setVisible(true);
+        }
+        getActionBar().setTitle(title);
+        
+        mContextMenu.setAccountUserIdToActAs(0);
+        // TODO: updateTimelineTypeButtonText();
+        updateAccountButtonText(menu);
+        // TODO: updateRightText("");
+        
+        mMessageEditor.onPrepareOptionsMenu(menu);
+        
         boolean enableGlobalSearch = MyContextHolder.get().persistentAccounts()
                 .isGlobalSearchSupported(ma, isTimelineCombined());
         item = menu.findItem(R.id.global_search_menu_id);
@@ -841,23 +871,16 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
     }
 
-    private void updateActionBarText() {
-        updateTimelineTypeButtonText();
-        updateAccountButtonText();
-        updateRightText("");
-    }
-
-    private void updateTimelineTypeButtonText() {
+    private String timelineTypeButtonText() {
         CharSequence timelinename = mTimelineType.getTitle(this);
-        Button timelineTypeButton = (Button) findViewById(R.id.timelineTypeButton);
-        timelineTypeButton.setText(timelinename + (TextUtils.isEmpty(mSearchQuery) ? "" : " *"));
+        return timelinename + (TextUtils.isEmpty(mSearchQuery) ? "" : " *");
     }
 
-    private void updateAccountButtonText() {
-        Button selectAccountButton = (Button) findViewById(R.id.selectAccountButton);
+    private void updateAccountButtonText(Menu menu) {
+        MenuItem selectAccountButton = menu.findItem(R.id.selectAccountButton);
         MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
         String accountButtonText = buildAccountButtonText(ma, isTimelineCombined(), getTimelineType());
-        selectAccountButton.setText(accountButtonText);
+        selectAccountButton.setTitle(accountButtonText);
     }
 
     public static String buildAccountButtonText(MyAccount ma, boolean timelineIsCombined, TimelineTypeEnum timelineType) {
@@ -1035,31 +1058,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     private void updateScreen() {
         MyServiceManager.setServiceAvailable();
-        TextView selectedUserText = (TextView) findViewById(R.id.selectedUserText);
-        ToggleButton combinedTimelineToggle = (ToggleButton) findViewById(R.id.combinedTimelineToggle);
-        combinedTimelineToggle.setTextOff(mTimelineType.getPrepositionForNotCombinedTimeline(this));
-        combinedTimelineToggle.setChecked(mTimelineIsCombined);
-        if (mSelectedUserId != 0 && mSelectedUserId != mCurrentMyAccountUserId) {
-            combinedTimelineToggle.setVisibility(View.GONE);
-            selectedUserText.setText(MyProvider.userIdToName(mSelectedUserId));
-            selectedUserText.setVisibility(View.VISIBLE);
-        } else {
-            selectedUserText.setVisibility(View.GONE);
-            // Show the "Combined" toggle even for one account to see messages, 
-            // which are not on the timeline.
-            // E.g. messages by users, downloaded on demand.
-            combinedTimelineToggle.setVisibility(View.VISIBLE);
-        }
-        mContextMenu.setAccountUserIdToActAs(0);
-
-        updateActionBarText();
+        invalidateOptionsMenu();
         if (mMessageEditor.isStateLoaded()) {
             mMessageEditor.continueEditingLoadedState();
         } else if (mMessageEditor.isVisible()) {
             // This is done to request focus (if we need this...)
             mMessageEditor.show();
-        } else {
-            mMessageEditor.updateCreateMessageButton();
         }
     }
     
@@ -1265,7 +1269,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             mNoMoreItems = params.incrementallyLoadingPages &&
                     cursor.getCount() <= getListAdapter().getCount();
             saveListPosition();
-            ((CursorAdapter) getListAdapter()).changeCursor(cursor);
+            ((CursorAdapter) getListAdapter()).swapCursor(cursor);
             mListParameters = params;
             restoreListPosition();
         }

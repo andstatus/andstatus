@@ -20,6 +20,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 
+import android.app.Activity;
 import android.app.backup.BackupManager;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -40,6 +41,8 @@ import java.io.File;
 public class MyPreferences {
     private static final String TAG = MyPreferences.class.getSimpleName();
 
+    public static Class<? extends Activity> HOME_ACTIVITY = TimelineActivity.class; 
+    
     public static final String KEY_USER_IN_TIMELINE = "user_in_timeline";
     
     /**

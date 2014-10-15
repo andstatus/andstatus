@@ -18,6 +18,7 @@ package org.andstatus.app;
 
 import android.content.Intent;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -88,17 +89,29 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
 
     private void waitForButtonClickedEvidence(String caption) throws InterruptedException {
         boolean found = false;
-        Button view = (Button) activity.getWindow().getDecorView().findViewById(R.id.timelineTypeButton);
+        final StringBuilder sb = new StringBuilder();
         for (int attempt = 0; attempt < 6; attempt++) {
             TestSuite.waitForIdleSync(this);
-            if (String.valueOf(view.getText()).contains(" *")) {
+            
+            Runnable clicker = new Runnable() {
+                @Override
+                public void run() {
+                    MenuItem item = activity.getOptionsMenu().findItem(R.id.timelineTypeButton);
+                    sb.setLength(0);
+                    sb.append(item.getTitle());
+                }
+            };
+            activity.runOnUiThread(clicker);
+            
+            
+            if (sb.toString().contains(" *")) {
                 found = true;
                 break;
             } else {
                 Thread.sleep(2000 * (attempt + 1));
             }
         }
-        assertTrue(caption + " '" + view.getText() + "'", found);
+        assertTrue(caption + " '" + (sb.toString()) + "'", found);
     }
     
     public void testSearch() throws InterruptedException {

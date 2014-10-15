@@ -20,6 +20,7 @@ import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.app.Activity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
@@ -37,11 +38,12 @@ public class BackupActivity extends Activity implements MyActionBarContainer {
     File backupFolder = new File(SimpleFileDialog.getRootFolder());
     BackupTask asyncTask = null;
     private int progressCounter = 0;
+    MyActionBar actionBar = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyActionBar actionBar = new MyActionBar(this);
         MyLog.v(this, "onCreate");
+        actionBar = new MyActionBar(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.backup);
         setBackupFolder(MyBackupManager.getDefaultBackupDirectory(this));
@@ -143,6 +145,12 @@ public class BackupActivity extends Activity implements MyActionBarContainer {
     @Override
     public boolean hasOptionsMenu() {
         return false;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return actionBar.onOptionsItemSelected(item) ? true :
+                super.onOptionsItemSelected(item);
     }
 
     @Override

@@ -18,20 +18,79 @@ package org.andstatus.app.widget;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.StaleDataException;
 import android.graphics.drawable.Drawable;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.SimpleCursorAdapter;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.util.MyLog;
 
 public class MySimpleCursorAdapter extends SimpleCursorAdapter {
+    private Context context;
+    private int layout;
+    private volatile View mEmptyView = null;
+    private Cursor mCursor;
     
+    @Override
+    public long getItemId(int position) {
+        if (mCursor == null) {
+            return 0;
+        } if (mCursor.isClosed()) {
+            MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getItemId, pos=" + position + " Closed cursor")));
+            return 0;
+        }
+        try {
+            return super.getItemId(position);
+        } catch (IllegalStateException e) {
+            MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getItemId, pos=" + position + " Caused java.lang.IllegalStateException")));
+            return 0;
+        } catch (StaleDataException e) {
+            MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getItemId, pos=" + position + " Caused StaleDataException")));
+            return 0;
+        }
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        View view = null;
+        if (mCursor == null) {
+            // Do nothing
+        } else if (mCursor.isClosed()) {
+            MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position + " Closed cursor")));
+        } else {
+            try {
+                view = super.getView(position, convertView, parent);
+            } catch (IllegalStateException e) {
+                MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position + " Caused java.lang.IllegalStateException")));
+            } catch (StaleDataException e) {
+                MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getView, pos=" + position + " Caused StaleDataException")));
+            }
+        }
+        if (view == null) {
+            view = getEmptyView(position, convertView, parent);
+        }
+        return view;
+    }
+
+    private View getEmptyView(int position, View convertView, ViewGroup parent) {
+        if (mEmptyView != null) {
+            return mEmptyView;
+        }
+        mEmptyView = View.inflate(context, layout, null); 
+        return mEmptyView;
+    }
+
     public MySimpleCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to,
             int flags) {
         super(context, layout, c, from, to, flags);
+        this.context = context;
+        this.layout = layout;
+        mCursor = c;
     }
 
     private boolean markReplies = MyPreferences.getBoolean(

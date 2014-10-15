@@ -51,6 +51,8 @@
 		<!-- Reference to a styled drawable, see  
  http://stackoverflow.com/questions/8041537/how-to-reference-style-attributes-from-a-drawable/13471695
 		-->
-		<attr name="replyBackground" format="reference" />
-	</declare-styleable>
+        <attr name="attachIcon" format="reference" />
+        <attr name="postMessageIcon" format="reference" />
+        <attr name="replyBackground" format="reference" />
+    </declare-styleable>
 </resources>

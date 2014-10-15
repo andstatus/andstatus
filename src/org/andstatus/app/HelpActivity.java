@@ -91,8 +91,6 @@ public class HelpActivity extends Activity implements SwipeInterface, MyActionBa
             }
         }
         
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-
         setContentView(R.layout.help);
         actionBar.attach();
 

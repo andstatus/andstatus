@@ -165,10 +165,9 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     
     private void recreateTheConversationView(ConversationViewLoader loader) {
         List<ConversationOneMessage> oMsgs = loader.getMsgs();
-        TextView titleText = (TextView) findViewById(R.id.titleText);
         CharSequence title = getText(oMsgs.size() > 1 ? R.string.label_conversation : R.string.message) 
                 + ( MyPreferences.showOrigin() ? " / " + ma.getOriginName() : "");
-        titleText.setText(title);
+        this.getActionBar().setTitle(title);
         ListView list = (ListView) findViewById(android.R.id.list);
 
         long itemIdOfListPosition = selectedMessageId;

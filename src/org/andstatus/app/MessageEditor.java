@@ -38,6 +38,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -112,19 +114,6 @@ class MessageEditor {
     }
 
     private void setupButtons() {
-        Button createMessageButton = (Button) mMessageList.getActivity().findViewById(R.id.createMessageButton);
-        createMessageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MyAccount accountForButton = accountforCreateMessageButton();
-                if ( isVisible() || accountForButton == null) {
-                    hide();
-                } else {
-                    startEditingMessage("", Uri.EMPTY, 0, 0, accountForButton, mMessageList.isTimelineCombined());
-                }
-            }
-        });
-        
         Button sendButton = (Button) mEditorView.findViewById(R.id.messageEditSendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,6 +123,23 @@ class MessageEditor {
         });
     }
 
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem createMessageButton = menu.findItem(R.id.createMessageButton);
+        createMessageButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                MyAccount accountForButton = accountforCreateMessageButton();
+                if ( isVisible() || accountForButton == null) {
+                    hide();
+                } else {
+                    startEditingMessage("", Uri.EMPTY, 0, 0, accountForButton, mMessageList.isTimelineCombined());
+                }
+                return false;
+            }
+        });
+        updateCreateMessageButton(menu);
+    }
+    
     private void setupEditText() {
         mEditText = (EditText) mEditorView.findViewById(R.id.messageBodyEditText);
         mEditText.addTextChangedListener(new TextWatcher() {
@@ -219,12 +225,12 @@ class MessageEditor {
                 .charactersLeftForMessage(mEditText.getText().toString())));
         
         mEditorView.setVisibility(View.VISIBLE);
-        updateCreateMessageButton();
         
         mEditText.requestFocus();
         if (!isHardwareKeyboardAttached()) {
             openSoftKeyboard();
         }
+        mMessageList.getActivity().invalidateOptionsMenu();
     }
     
     private boolean isHardwareKeyboardAttached() {
@@ -243,7 +249,11 @@ class MessageEditor {
         inputMethodManager.toggleSoftInputFromWindow(mEditText.getWindowToken(), InputMethodManager.SHOW_FORCED, 0);        
     }
     
-    public void updateCreateMessageButton() {
+    public void updateCreateMessageButton(Menu menu) {
+        MenuItem createMessageButton = menu.findItem(R.id.createMessageButton);
+        if (createMessageButton == null) {
+            return;
+        }
         MyAccount accountForButton = accountforCreateMessageButton();
         boolean isButtonVisible = isVisible();
         int resId = R.string.button_hide;
@@ -255,15 +265,14 @@ class MessageEditor {
             isButtonVisible = true;
             resId = accountForButton.alternativeTermForResourceId(R.string.button_create_message);
         }
-        Button createMessageButton = (Button) mMessageList.getActivity().findViewById(R.id.createMessageButton);
-        createMessageButton.setText(resId);
-        createMessageButton.setVisibility(isButtonVisible ? View.VISIBLE : View.GONE);
+        createMessageButton.setTitle(resId);
+        createMessageButton.setVisible(isButtonVisible);
     }
     
     public void hide() {
         mEditorView.setVisibility(View.GONE);
         closeSoftKeyboard();
-        updateCreateMessageButton();
+        mMessageList.getActivity().invalidateOptionsMenu();
     }
 
     private void closeSoftKeyboard() {

@@ -22,9 +22,9 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.preference.PreferenceActivity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -43,19 +43,27 @@ public class MyActionBar {
 
     public MyActionBar(MyActionBarContainer container, int actionBarResourceId) {
         this.container = container;
-        this.actionBarResourceId = actionBarResourceId;
-        container.getActivity().requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.actionBarResourceId = 0; //TODO: now we don't use this, but maybe... actionBarResourceId;
         MyPreferences.loadTheme(container.getActivity(), container.getActivity());
+        if (MyPreferences.HOME_ACTIVITY != container.getActivity().getClass()) {
+            // http://stackoverflow.com/questions/15686555/display-back-button-on-action-bar-android
+            container.getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     public void attach() {
         attachToView();
         setDefaultTitle();
-        attachUpNavigationListener();
+        if (MyPreferences.HOME_ACTIVITY != container.getActivity().getClass()) {
+            attachUpNavigationListener();
+        }
         setupOverflowButton();
     }
 
     private void attachToView() {
+        if (actionBarResourceId == 0) {
+            return;
+        }
         LayoutInflater inflater = LayoutInflater.from(container.getActivity());
         ViewGroup actionsView = (ViewGroup) inflater.inflate(actionBarResourceId, null);
         if (!attachToKnownView(actionsView) && !attachToLinearLayout(actionsView)
@@ -143,6 +151,7 @@ public class MyActionBar {
             }
         };
         attachListenerToView(listener, R.id.upNavigation);
+        attachListenerToView(listener, android.R.id.home);
     }
     
     private void attachListenerToView(OnClickListener listener, int viewResourceId) {
@@ -185,5 +194,16 @@ public class MyActionBar {
             String appName = container.getActivity().getText(R.string.app_name).toString();
             container.getActivity().setTitle(appName + ": " + titleText);
         }
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                container.closeAndGoBack();
+                return true;
+            default:
+                break;
+        }
+        return false;
     }
 }
