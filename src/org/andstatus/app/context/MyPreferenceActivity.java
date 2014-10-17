@@ -17,7 +17,6 @@
 
 package org.andstatus.app.context;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
@@ -36,10 +35,9 @@ import android.preference.RingtonePreference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 
 import org.andstatus.app.HelpActivity;
-import org.andstatus.app.MyActionBar;
-import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.AccountSettingsActivity;
@@ -54,7 +52,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 
 /** Application settings */
 public class MyPreferenceActivity extends PreferenceActivity implements
-        OnSharedPreferenceChangeListener, OnPreferenceChangeListener, MyActionBarContainer {
+        OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
 
     private static final String KEY_ADD_NEW_ACCOUNT = "add_new_account";
     private static final String KEY_BACKUP_RESTORE = "backup_restore";
@@ -89,7 +87,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyActionBar actionBar = new MyActionBar(this);
+        MyPreferences.loadTheme(this);
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
@@ -172,9 +170,6 @@ public class MyPreferenceActivity extends PreferenceActivity implements
                 return false;
             }
         });
-        
-        actionBar.attach();
-        actionBar.setTitle(R.string.settings_activity_title);
     }
 
     @Override
@@ -204,6 +199,17 @@ public class MyPreferenceActivity extends PreferenceActivity implements
             startActivity(i);
         }
         MyContextHolder.get().setInForeground(false);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                closeAndGoBack();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
@@ -406,20 +412,9 @@ public class MyPreferenceActivity extends PreferenceActivity implements
         return super.onKeyDown(keyCode, event);
     }
 
-    @Override
-    public Activity getActivity() {
-        return this;
-    }
-
-    @Override
-    public void closeAndGoBack() {
+    private void closeAndGoBack() {
         MyLog.v(this, "Going back to the Timeline");
         finish();
         startTimelineActivity = true;
-    }
-
-    @Override
-    public boolean hasOptionsMenu() {
-        return false;
     }
 }

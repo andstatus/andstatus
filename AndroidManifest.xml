@@ -97,7 +97,8 @@
 		</activity>
 
 		<activity android:name=".ConversationActivity"
-			android:label="@string/label_conversation">
+			android:label="@string/label_conversation"
+            android:parentActivityName=".TimelineActivity">
 			<intent-filter android:label="@string/resolve_view">
 				<action android:name="android.intent.action.VIEW"/>
 				<category android:name="android.intent.category.DEFAULT"/>
@@ -107,14 +108,16 @@
 
         <activity android:name=".context.MyPreferenceActivity"
             android:label="@string/settings_activity_title"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:parentActivityName=".TimelineActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
         </activity>
 
 		<activity android:name=".HelpActivity"
-			android:launchMode="singleTop">
+			android:launchMode="singleTop"
+            android:parentActivityName=".context.MyPreferenceActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
 				<category android:name="android.intent.category.DEFAULT"/>
@@ -176,7 +179,7 @@
             android:label="@string/account_settings_activity_title"
             android:alwaysRetainTaskState="True"
             android:launchMode="singleTask"
-            >
+            android:parentActivityName=".context.MyPreferenceActivity">
             <intent-filter>
                 <action
                     android:name="org.andstatus.app.ACCOUNT_MANAGER_ENTRY" />
@@ -210,23 +213,28 @@
 
         <activity android:name=".origin.OriginList"
             android:theme="@style/DialogThemeSelector"
-            android:label="@string/label_origin_list">
+            android:label="@string/label_origin_list"
+            android:parentActivityName=".context.MyPreferenceActivity">
         </activity>
 
         <activity android:name=".origin.OriginEditor"
-            android:label="@string/label_origin_system">
+            android:label="@string/label_origin_system"
+            android:parentActivityName=".origin.OriginList">
         </activity>
 
         <activity android:name=".backup.BackupActivity"
-            android:label="@string/label_backup">
+            android:label="@string/label_backup"
+            android:parentActivityName=".context.MyPreferenceActivity">
         </activity>
 
         <activity android:name=".backup.RestoreActivity"
-            android:label="@string/label_restore">
+            android:label="@string/label_restore"
+            android:parentActivityName=".context.MyPreferenceActivity">
         </activity>
         
         <activity android:name=".service.QueueViewer"
-            android:label="@string/title_preference_notifications_queue">
+            android:label="@string/title_preference_notifications_queue"
+            android:parentActivityName=".context.MyPreferenceActivity">
         </activity>
     </application>
 </manifest>

@@ -35,7 +35,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.AnimationUtils;
@@ -47,7 +46,7 @@ import android.widget.ViewFlipper;
  * @author yvolk@yurivolkov.com
  * @author Torgny 
  */
-public class HelpActivity extends Activity implements SwipeInterface, MyActionBarContainer {
+public class HelpActivity extends Activity implements SwipeInterface {
 
     // Constants
     public static final String TAG = "HelpActivity";
@@ -76,7 +75,7 @@ public class HelpActivity extends Activity implements SwipeInterface, MyActionBa
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyActionBar actionBar = new MyActionBar(this);
+        MyPreferences.loadTheme(this);
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
@@ -92,7 +91,6 @@ public class HelpActivity extends Activity implements SwipeInterface, MyActionBa
         }
         
         setContentView(R.layout.help);
-        actionBar.attach();
 
         if (savedInstanceState != null) {
             mIsFirstActivity = savedInstanceState.getBoolean(EXTRA_IS_FIRST_ACTIVITY, false);
@@ -272,20 +270,5 @@ public class HelpActivity extends Activity implements SwipeInterface, MyActionBa
             context.startActivity(intent);
         }
         return doFinish;
-    }
-
-    @Override
-    public Activity getActivity() {
-        return this;
-    }
-
-    @Override
-    public void closeAndGoBack() {
-        finish();
-    }
-
-    @Override
-    public boolean hasOptionsMenu() {
-        return false;
     }
 }

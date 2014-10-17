@@ -29,7 +29,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import net.jcip.annotations.GuardedBy;
 
@@ -52,7 +51,7 @@ import org.andstatus.app.util.UriUtils;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class ConversationActivity extends Activity implements MyServiceListener, ActionableMessageList, MyActionBarContainer {
+public class ConversationActivity extends Activity implements MyServiceListener, ActionableMessageList {
 
     /**
      * Id of current Message, which is sort of a "center" of the conversation view
@@ -83,7 +82,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyActionBar actionBar = new MyActionBar(this, R.layout.conversation_actions);
+        MyPreferences.loadTheme(this);
         super.onCreate(savedInstanceState);
 
         if (instanceId == 0) {
@@ -101,7 +100,6 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         selectedMessageId = MyProvider.uriToMessageId(uri);
 
         setContentView(R.layout.conversation);
-        actionBar.attach();
         
         mMessageEditor = new MessageEditor(this);
         mMessageEditor.hide();
@@ -337,16 +335,6 @@ public class ConversationActivity extends Activity implements MyServiceListener,
 
     @Override
     public boolean isTimelineCombined() {
-        return true;
-    }
-
-    @Override
-    public void closeAndGoBack() {
-        finish();
-    }
-
-    @Override
-    public boolean hasOptionsMenu() {
         return true;
     }
 }

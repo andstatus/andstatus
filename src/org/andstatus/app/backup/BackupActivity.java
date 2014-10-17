@@ -20,30 +20,27 @@ import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.app.Activity;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
 
-import org.andstatus.app.MyActionBar;
-import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SimpleFileDialog;
 
 import java.io.File;
 
-public class BackupActivity extends Activity implements MyActionBarContainer {
+public class BackupActivity extends Activity {
     File backupFolder = new File(SimpleFileDialog.getRootFolder());
     BackupTask asyncTask = null;
     private int progressCounter = 0;
-    MyActionBar actionBar = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         MyLog.v(this, "onCreate");
-        actionBar = new MyActionBar(this);
+        MyPreferences.loadTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.backup);
         setBackupFolder(MyBackupManager.getDefaultBackupDirectory(this));
@@ -72,7 +69,6 @@ public class BackupActivity extends Activity implements MyActionBarContainer {
                         }).chooseFileOrDir(backupFolder.getAbsolutePath());
             }
         });
-        actionBar.attach();
     }
 
     void setBackupFolder(File backupFolder) {
@@ -130,27 +126,6 @@ public class BackupActivity extends Activity implements MyActionBarContainer {
         TextView progressLog = (TextView) findViewById(R.id.progress_log);
         String log = Integer.toString(progressCounter) + ". " + message + "\n" + progressLog.getText();
         progressLog.setText(log);
-    }
-    
-    @Override
-    public Activity getActivity() {
-        return this;
-    }
-
-    @Override
-    public void closeAndGoBack() {
-        finish();
-    }
-
-    @Override
-    public boolean hasOptionsMenu() {
-        return false;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return actionBar.onOptionsItemSelected(item) ? true :
-                super.onOptionsItemSelected(item);
     }
 
     @Override

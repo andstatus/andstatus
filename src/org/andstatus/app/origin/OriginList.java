@@ -32,6 +32,7 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ public class OriginList extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MyPreferences.loadTheme(this);
         setContentView(R.layout.origin_list);
 
         ListAdapter adapter = new SimpleAdapter(this, 

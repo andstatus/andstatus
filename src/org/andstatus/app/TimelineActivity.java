@@ -80,7 +80,7 @@ import java.util.List;
 /**
  * @author yvolk@yurivolkov.com, torgny.bjers
  */
-public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener, ActionableMessageList, MyActionBarContainer, LoaderCallbacks<Cursor> {
+public class TimelineActivity extends ListActivity implements MyServiceListener, OnScrollListener, OnItemClickListener, ActionableMessageList, LoaderCallbacks<Cursor> {
     private static final int DIALOG_ID_TIMELINE_TYPE = 9;
 
     private static final String KEY_LAST_POSITION = "last_position_";
@@ -186,8 +186,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //getActionBar().setDisplayShowTitleEnabled(false);
-        MyActionBar actionBar = new MyActionBar(this, 0);
         super.onCreate(savedInstanceState);
         if (mInstanceId == 0) {
             mInstanceId = InstanceId.next();
@@ -209,11 +207,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             return;
         }
 
+        MyPreferences.loadTheme(this);
         mCurrentMyAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         mServiceConnector = new MyServiceReceiver(this);
 
         setContentView(R.layout.timeline);
-        actionBar.attach();
         mSyncIndicator = findViewById(R.id.sync_indicator);
         mContextMenu = new MessageContextMenu(this);
         mMessageEditor = new MessageEditor(this);
@@ -899,8 +897,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private void updateRightText(String rightText) {
-        TextView rightTitle = (TextView) findViewById(R.id.custom_title_right_text);
-        rightTitle.setText(rightText);
+        // TODO
     }
 
     @Override
@@ -1567,15 +1564,5 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     @Override
     public long getSelectedUserId() {
         return mSelectedUserId;
-    }
-
-    @Override
-    public void closeAndGoBack() {
-        finish();
-    }
-
-    @Override
-    public boolean hasOptionsMenu() {
-        return true;
     }
 }

@@ -24,25 +24,24 @@ import android.view.View;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
 
-import org.andstatus.app.MyActionBar;
-import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SimpleFileDialog;
 
 import java.io.File;
 
-public class RestoreActivity extends Activity implements MyActionBarContainer {
+public class RestoreActivity extends Activity {
     File backupFile = null;
     RestoreTask asyncTask = null;
     private int progressCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyActionBar actionBar = new MyActionBar(this);
         MyLog.v(this, "onCreate");
         super.onCreate(savedInstanceState);
+        MyPreferences.loadTheme(this);
         setContentView(R.layout.restore);
 
         findViewById(R.id.button_restore).setOnClickListener(new OnClickListener() {
@@ -70,7 +69,6 @@ public class RestoreActivity extends Activity implements MyActionBarContainer {
                         .chooseFileOrDir(getBackupFolder().getAbsolutePath());
             }
         });
-        actionBar.attach();
     }
 
     private File getBackupFolder() {
@@ -142,21 +140,6 @@ public class RestoreActivity extends Activity implements MyActionBarContainer {
         TextView progressLog = (TextView) findViewById(R.id.progress_log);
         String log = Integer.toString(progressCounter) + ". " + message + "\n" + progressLog.getText();
         progressLog.setText(log);
-    }
-    
-    @Override
-    public Activity getActivity() {
-        return this;
-    }
-
-    @Override
-    public void closeAndGoBack() {
-        finish();
-    }
-
-    @Override
-    public boolean hasOptionsMenu() {
-        return false;
     }
 
     @Override

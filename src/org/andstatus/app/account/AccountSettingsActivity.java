@@ -45,11 +45,9 @@ import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 
-import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyActionBar;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
@@ -78,7 +76,7 @@ import android.view.*;
  * @author yvolk@yurivolkov.com
  */
 public class AccountSettingsActivity extends PreferenceActivity implements
-        OnSharedPreferenceChangeListener, OnPreferenceChangeListener, MyActionBarContainer {
+        OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
     private static final String TAG = AccountSettingsActivity.class.getSimpleName();
 
     /**
@@ -111,11 +109,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     private Preference addAccountOrVerifyCredentials;
     private CheckBoxPreference defaultAccountCheckBox;
     private boolean onSharedPreferenceChangedIsBusy = false;
-    private MyActionBar actionBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        actionBar = new MyActionBar(this);
+        MyPreferences.loadTheme(this);
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
@@ -140,8 +137,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         passwordText = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
         defaultAccountCheckBox = (CheckBoxPreference) findPreference(MyAccount.KEY_IS_DEFAULT_ACCOUNT);
 
-        actionBar.attach();
-        
         restoreState(getIntent(), "onCreate");
     }
     
@@ -386,7 +381,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         if (ma.isValid()) {
             title += " - " + ma.getAccountName();
         }
-        actionBar.setTitle(title);
+        getActionBar().setTitle(title);
     }
 
     @Override
@@ -610,8 +605,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
      * 
      * @return
      */
-    @Override
-    public void closeAndGoBack() {
+    private void closeAndGoBack() {
         // Explicitly save MyAccount only on "Back key" 
         state.builder.save();
         String message = "";
@@ -1146,15 +1140,5 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             }
             showUserPreferences();
         }
-    }
-
-    @Override
-    public Activity getActivity() {
-        return this;
-    }
-
-    @Override
-    public boolean hasOptionsMenu() {
-        return true;
     }
 }

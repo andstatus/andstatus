@@ -378,7 +378,7 @@ public class MyPreferences {
     /**
      * Load the theme according to the preferences.
      */
-    public static void loadTheme(Object tag, Context context) {
+    public static void loadTheme(Context context) {
         String themeColor = getDefaultSharedPreferences().getString(KEY_THEME_COLOR, "DeviceDefault");
         StringBuilder themeName = new StringBuilder("Theme.");
         themeName.append(themeColor);
@@ -387,12 +387,12 @@ public class MyPreferences {
         themeName.append(themeSize);
         int themeId = context.getResources().getIdentifier(themeName.toString(), "style",
                 "org.andstatus.app");
-        if (themeId == 0 || MyLog.isLoggable(tag, MyLog.VERBOSE)) {
+        if (themeId == 0 || MyLog.isLoggable(context, MyLog.VERBOSE)) {
             String text = "loadTheme; theme=\"" + themeName.toString() + "\"; id=" + Integer.toHexString(themeId);
             if (themeId == 0) {
-                MyLog.e(tag, text);
+                MyLog.e(context, text);
             } else {
-                MyLog.v(tag, text);
+                MyLog.v(context, text);
             }
         }
         if (themeId == 0) {

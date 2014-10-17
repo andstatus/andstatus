@@ -31,10 +31,9 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyActionBar;
-import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UrlUtils;
 
@@ -42,7 +41,7 @@ import org.andstatus.app.util.UrlUtils;
  * Add/Update Microblogging system
  * @author yvolk@yurivolkov.com
  */
-public class OriginEditor extends Activity implements MyActionBarContainer {
+public class OriginEditor extends Activity {
     private Origin.Builder builder;
 
     private Button buttonSave;
@@ -53,12 +52,10 @@ public class OriginEditor extends Activity implements MyActionBarContainer {
     private CheckBox checkBoxIsSsl;
     private CheckBox checkBoxAllowHtml;
 
-    private MyActionBar actionBar;
-    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        actionBar = new MyActionBar(this);
         super.onCreate(savedInstanceState);
+        MyPreferences.loadTheme(this);
         setContentView(R.layout.origin_editor);
 
         buttonSave = (Button) findViewById(R.id.button_save);
@@ -87,7 +84,6 @@ public class OriginEditor extends Activity implements MyActionBarContainer {
         checkBoxIsSsl = (CheckBox) findViewById(R.id.is_ssl);
         checkBoxAllowHtml = (CheckBox) findViewById(R.id.allow_html);
 
-        actionBar.attach();
         processNewIntent(getIntent());
     }
 
@@ -128,7 +124,7 @@ public class OriginEditor extends Activity implements MyActionBarContainer {
         if (origin.isPersistent()) {
             title = origin.getName() + " - " + title;
         }
-        actionBar.setTitle(title);
+        getActionBar().setTitle(title);
     }
     
     @Override
@@ -179,20 +175,5 @@ public class OriginEditor extends Activity implements MyActionBarContainer {
         } catch (Exception e) {
             MyLog.e("beep", e);
         }        
-    }
-
-    @Override
-    public Activity getActivity() {
-        return this;
-    }
-
-    @Override
-    public void closeAndGoBack() {
-        finish();
-    }
-
-    @Override
-    public boolean hasOptionsMenu() {
-        return false;
     }
 }

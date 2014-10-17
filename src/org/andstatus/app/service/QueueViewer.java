@@ -16,17 +16,15 @@
 
 package org.andstatus.app.service;
 
-import android.app.Activity;
 import android.app.ListActivity;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.widget.ListAdapter;
 
-import org.andstatus.app.MyActionBar;
-import org.andstatus.app.MyActionBarContainer;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +33,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
-public class QueueViewer extends ListActivity implements MyActionBarContainer {
+public class QueueViewer extends ListActivity {
     private static final String KEY_QUEUE_TYPE = "queue_type";
     private static final String KEY_COMMAND_SUMMARY = "command_summary";
     private static final String KEY_RESULT_SUMMARY = "result_summary";
@@ -55,33 +53,17 @@ public class QueueViewer extends ListActivity implements MyActionBarContainer {
             return commandData.hashCode();
         }
     }
-    
-    @Override
-    public Activity getActivity() {
-        return this;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyActionBar actionBar = new MyActionBar(this);
         super.onCreate(savedInstanceState);
+        MyPreferences.loadTheme(this);
         setContentView(R.layout.queue);
         showList();
-        actionBar.attach();
     }
 
     private void showList() {
         setListAdapter(newListAdapter(newListData()));
-    }
-
-    @Override
-    public void closeAndGoBack() {
-        finish();
-    }
-
-    @Override
-    public boolean hasOptionsMenu() {
-        return false;
     }
 
     private List<QueueData> newListData() {
