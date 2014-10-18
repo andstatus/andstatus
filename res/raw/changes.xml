@@ -37,6 +37,14 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="13.0" android:versionCode="113"
+        versionDate="2014-10-18"
+        versionTitle="Migration to Android v.4.1">
+        <changes>
+            <change>Dropped compatibility with Android before v.4.1. This 
+                made application look modern and familiar to Android users.</change>
+        </changes>
+    </release>
     <release android:versionName="12.1" android:versionCode="112"
         versionDate="2014-10-10"
         versionTitle="Don't sync 'Following' timeline automatically">

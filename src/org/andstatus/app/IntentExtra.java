@@ -49,10 +49,6 @@ public enum IntentExtra{
     EXTRA_ACCOUNT_NAME("ACCOUNT_NAME"),
     EXTRA_ORIGIN_NAME("ORIGIN_NAME"),
     /**
-     * Do we need to show the account?
-     */
-    EXTRA_SHOW_ACCOUNT("SHOW_ACCOUNT"),
-    /**
      * Name of the preference to set
      */
     EXTRA_PREFERENCE_KEY("PREFERENCE_KEY"),

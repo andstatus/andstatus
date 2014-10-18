@@ -84,7 +84,6 @@ class MessageEditor {
      * {@link MyAccount} to use with this message (send/reply As ...)
      */
     private MyAccount mAccount = null;
-    private boolean mShowAccount = false;
 
     /**
      * Do we hold loaded but not restored state
@@ -95,7 +94,6 @@ class MessageEditor {
     private long replyToIdRestored = 0;
     private long recipientIdRestored = 0;
     private String accountGuidRestored = "";
-    private boolean showAccountRestored = false;
     
     public MessageEditor(ActionableMessageList actionableMessageList) {
         mMessageList = actionableMessageList;
@@ -132,7 +130,7 @@ class MessageEditor {
                 if ( isVisible() || accountForButton == null) {
                     hide();
                 } else {
-                    startEditingMessage("", Uri.EMPTY, 0, 0, accountForButton, mMessageList.isTimelineCombined());
+                    startEditingMessage("", Uri.EMPTY, 0, 0, accountForButton);
                 }
                 return false;
             }
@@ -294,7 +292,7 @@ class MessageEditor {
      * @param recipientId =0 if this is Public message
      */
     public void startEditingMessage(String textInitial, Uri mediaUri, long replyToId, long recipientId, 
-            MyAccount myAccount, boolean showAccount) {
+            MyAccount myAccount) {
         if (myAccount == null) {
             return;
         }
@@ -303,12 +301,11 @@ class MessageEditor {
             accountGuidPrev = mAccount.getAccountName();
         }
         if (mReplyToId != replyToId || mRecipientId != recipientId 
-                || accountGuidPrev.compareTo(myAccount.getAccountName()) != 0 || mShowAccount != showAccount) {
+                || accountGuidPrev.compareTo(myAccount.getAccountName()) != 0) {
             mMediaUri = UriUtils.notNull(mediaUri);
             mReplyToId = replyToId;
             mRecipientId = recipientId;
             mAccount = myAccount;
-            mShowAccount = showAccount;
             String textInitial2 = textInitial;
             if (recipientId == 0) {
                 if (replyToId != 0) {
@@ -333,7 +330,7 @@ class MessageEditor {
     }
 
     private void showMessageDetails() {
-        String messageDetails = mShowAccount ? mAccount.getAccountName() : "";
+        String messageDetails = showAccountName() ? mAccount.getAccountName() : "";
         if (mRecipientId == 0) {
             if (mReplyToId != 0) {
                 String replyToName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, mReplyToId);
@@ -354,6 +351,15 @@ class MessageEditor {
         } else {
             mDetails.setVisibility(View.VISIBLE);
         }
+    }
+    
+    private boolean showAccountName() {
+        boolean show = mMessageList.isTimelineCombined() 
+                || mMessageList.getTimelineType() == TimelineTypeEnum.USER;
+        if (!show && mAccount != null) {
+            show = mAccount.getUserId() != mMessageList.getCurrentMyAccountUserId();
+        }
+        return show;
     }
     
     private void sendMessageAndCloseEditor() {
@@ -377,7 +383,6 @@ class MessageEditor {
             mRecipientId = 0;
             mEditText.setText("");
             mAccount = null;
-            mShowAccount = false;
             mMediaUri = Uri.EMPTY;
 
             hide();
@@ -396,7 +401,6 @@ class MessageEditor {
                 outState.putLong(IntentExtra.EXTRA_INREPLYTOID.key, mReplyToId);
                 outState.putLong(IntentExtra.EXTRA_RECIPIENTID.key, mRecipientId);
                 outState.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, mAccount.getAccountName());
-                outState.putBoolean(IntentExtra.EXTRA_SHOW_ACCOUNT.key, mShowAccount);
             }
         }
     }
@@ -413,7 +417,6 @@ class MessageEditor {
                 replyToIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_INREPLYTOID.key);
                 recipientIdRestored = savedInstanceState.getLong(IntentExtra.EXTRA_RECIPIENTID.key);
                 accountGuidRestored = savedInstanceState.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
-                showAccountRestored = savedInstanceState.getBoolean(IntentExtra.EXTRA_SHOW_ACCOUNT.key);
                 mIsStateLoaded = true;
             }
         }
@@ -430,7 +433,7 @@ class MessageEditor {
         if (isStateLoaded()) {
             mIsStateLoaded = false;
             startEditingMessage(mMessageTextRestored, mMediaUriRestored, replyToIdRestored, recipientIdRestored, 
-                    MyContextHolder.get().persistentAccounts().fromAccountName(accountGuidRestored), showAccountRestored);
+                    MyContextHolder.get().persistentAccounts().fromAccountName(accountGuidRestored));
         }
     }
 

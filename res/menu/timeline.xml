@@ -19,8 +19,8 @@
 
     <item android:id="@+id/createMessageButton" android:showAsAction="always" android:title="@string/button_create_message" android:icon="?attr/postMessageIcon">
     </item><item android:id="@+id/attach_menu_id" android:alphabeticShortcut="a" android:icon="?attr/attachIcon" android:showAsAction="ifRoom" android:title="@string/options_menu_attach" android:visible="false">
-    </item><item android:id="@+id/global_search_menu_id" android:alphabeticShortcut="g" android:icon="@drawable/ic_menu_global_search" android:showAsAction="ifRoom" android:title="@string/options_menu_global_search">
-    </item><item android:id="@+id/search_menu_id" android:alphabeticShortcut="s" android:icon="@drawable/ic_menu_search" android:showAsAction="ifRoom" android:title="@string/options_menu_search">
+    </item><item android:id="@+id/global_search_menu_id" android:alphabeticShortcut="g" android:icon="?attr/globalSearchIcon" android:showAsAction="ifRoom" android:title="@string/options_menu_global_search">
+    </item><item android:id="@+id/search_menu_id" android:alphabeticShortcut="s" android:icon="?attr/searchIcon" android:showAsAction="ifRoom" android:title="@string/options_menu_search">
     </item><item
         android:id="@+id/timelineTypeButton"
         android:onClick="onTimelineTypeButtonClick"

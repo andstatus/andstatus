@@ -63,9 +63,10 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginStart="10dp"
+            android:background="?attr/sendIcon"
+            android:contentDescription="@string/button_send"
             android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:text="@string/button_send" />
+            android:paddingRight="5dp" />
 
     </LinearLayout>
 </LinearLayout>

@@ -536,7 +536,7 @@ public class CommandData implements Comparable<CommandData> {
                     if (ma == null) {
                         builder.append("('" + accountName + "' ?)");
                     } else {
-                        builder.append(TimelineActivity.buildAccountButtonText(ma, false, timelineType));
+                        builder.append(TimelineActivity.buildAccountButtonText(ma.getUserId(), false, timelineType));
                     }
                 }
                 break;

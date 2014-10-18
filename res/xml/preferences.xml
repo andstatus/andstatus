@@ -123,7 +123,7 @@
                 <ListPreference android:key="user_in_timeline" 
                     android:entries="@array/user_in_timeline_entries"
                     android:entryValues="@array/user_in_timeline_values"
-                    android:defaultValue="1"
+                    android:defaultValue="3"
                     android:title="@string/title_preference_user_in_timeline"
                     android:summary="@string/summary_preference_user_in_timeline"
                     android:dialogTitle="@string/title_preference_user_in_timeline" />
@@ -136,7 +136,7 @@
                     android:defaultValue="true"
                     android:title="@string/title_preference_show_attached_images" />
                 <CheckBoxPreference android:key="show_origin"
-                    android:defaultValue="false"
+                    android:defaultValue="true"
                     android:title="@string/title_preference_show_origin" />
                 <CheckBoxPreference android:key="enter_sends_message"
 					android:title="@string/title_preference_enter_sends_message"

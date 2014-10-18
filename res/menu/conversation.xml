@@ -15,10 +15,8 @@
 	limitations under the License.
  -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-	<group android:id="@+id/MAIN_MENU">
-		<item android:title="@string/options_menu_reload" android:id="@+id/reload_menu_item"
-			android:alphabeticShortcut="r" android:icon="@drawable/ic_menu_reload"></item>
-        <item android:title="@string/options_menu_attach" android:id="@+id/attach_menu_id"
-            android:icon="@drawable/ic_action_new_attachment" android:alphabeticShortcut="a"></item>
-	</group>
+    <item android:title="@string/options_menu_attach" android:id="@+id/attach_menu_id"
+           android:icon="@drawable/ic_action_new_attachment" android:alphabeticShortcut="a" android:showAsAction="ifRoom" android:visible="false"></item>
+    <item android:title="@string/options_menu_reload" android:id="@+id/reload_menu_item"
+		android:alphabeticShortcut="r" android:icon="@drawable/ic_menu_reload" android:showAsAction="ifRoom"></item>
 </menu>

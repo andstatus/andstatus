@@ -49,7 +49,10 @@
         <item name="attachIcon">@drawable/ic_action_new_attachment</item>
         <item name="postMessageIcon">@drawable/ic_action_new</item>
         <item name="replyBackground">@drawable/reply_timeline_background</item>
-   	</style>
+        <item name="globalSearchIcon">@drawable/ic_action_global_search</item>
+        <item name="searchIcon">@drawable/ic_action_search</item>
+        <item name="sendIcon">@drawable/ic_action_send_now</item>
+    </style>
 	<style name="Theme.Light.AndStatus.StandardSize" parent="@style/LightThemeSelector">
 		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageUsernameColor">?android:attr/textColorSecondary</item>
@@ -68,7 +71,10 @@
         <item name="attachIcon">@drawable/ic_action_new_attachment_light</item>
         <item name="postMessageIcon">@drawable/ic_action_new_light</item>
         <item name="replyBackground">@drawable/reply_timeline_background_light</item>
-	</style>
+        <item name="globalSearchIcon">@drawable/ic_action_global_search_light</item>
+        <item name="searchIcon">@drawable/ic_action_search_light</item>
+        <item name="sendIcon">@drawable/ic_action_send_now_light</item>
+    </style>
 	<style name="Theme.DeviceDefault.AndStatus.StandardSize" parent="@style/DeviceDefaultThemeSelector">
 		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageUsernameColor">?android:attr/textColorSecondary</item>
@@ -94,8 +100,11 @@
         <item name="attachIcon">@drawable/ic_action_new_attachment</item>
         <item name="postMessageIcon">@drawable/ic_action_new</item>
         <item name="replyBackground">@drawable/reply_timeline_background</item>
-	</style>
-				
+        <item name="globalSearchIcon">@drawable/ic_action_global_search</item>
+        <item name="searchIcon">@drawable/ic_action_search</item>
+        <item name="sendIcon">@drawable/ic_action_send_now</item>
+    </style>
+    
 	<style name="Theme.Dark.AndStatus.Small" parent="@style/Theme.Dark.AndStatus.StandardSize">
 		<item name="messageUsernameAppearance">?android:attr/textAppearanceSmall</item>
 		<item name="messageBodyAppearance">?android:attr/textAppearanceSmall</item>

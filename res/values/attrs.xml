@@ -54,5 +54,8 @@
         <attr name="attachIcon" format="reference" />
         <attr name="postMessageIcon" format="reference" />
         <attr name="replyBackground" format="reference" />
+        <attr name="searchIcon" format="reference" />
+        <attr name="globalSearchIcon" format="reference" />
+        <attr name="sendIcon" format="reference" />
     </declare-styleable>
 </resources>

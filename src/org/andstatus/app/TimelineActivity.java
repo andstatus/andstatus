@@ -17,6 +17,7 @@
 
 package org.andstatus.app;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -163,6 +164,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     private String mTextToShareViaThisApp = "";
     private Uri mMediaToShareViaThisApp = Uri.EMPTY;
+
+    private String mRateLimitText = "";
     
     private boolean isLoading() {
         return mLoadingLayout.getVisibility() == View.VISIBLE;
@@ -696,24 +699,21 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         item = menu.findItem(R.id.timelineTypeButton);
         item.setTitle(timelineTypeButtonText());
         
-        CharSequence title = "";
         MenuItem combinedTimelineToggle = menu.findItem(R.id.combinedTimelineToggle);
-        if (mTimelineIsCombined) {
+        if (isTimelineCombined()) {
             combinedTimelineToggle.setTitle(R.string.combined_timeline_on);
         } else {
             combinedTimelineToggle.setTitle(mTimelineType.getPrepositionForNotCombinedTimeline(this));
         }
-        combinedTimelineToggle.setChecked(mTimelineIsCombined);
+        combinedTimelineToggle.setChecked(isTimelineCombined());
         if (mSelectedUserId != 0 && mSelectedUserId != mCurrentMyAccountUserId) {
             combinedTimelineToggle.setVisible(false);
-            title = MyProvider.userIdToName(mSelectedUserId);
         } else {
             // Show the "Combined" toggle even for one account to see messages, 
             // which are not on the timeline.
             // E.g. messages by users, downloaded on demand.
             combinedTimelineToggle.setVisible(true);
         }
-        getActionBar().setTitle(title);
         
         mContextMenu.setAccountUserIdToActAs(0);
         // TODO: updateTimelineTypeButtonText();
@@ -876,12 +876,13 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     private void updateAccountButtonText(Menu menu) {
         MenuItem selectAccountButton = menu.findItem(R.id.selectAccountButton);
-        MyAccount ma = MyContextHolder.get().persistentAccounts().getCurrentAccount();
-        String accountButtonText = buildAccountButtonText(ma, isTimelineCombined(), getTimelineType());
+        String accountButtonText = buildAccountButtonText(mCurrentMyAccountUserId, isTimelineCombined(), getTimelineType());
         selectAccountButton.setTitle(accountButtonText);
     }
 
-    public static String buildAccountButtonText(MyAccount ma, boolean timelineIsCombined, TimelineTypeEnum timelineType) {
+    public static String buildAccountButtonText(long maccountUserId, boolean timelineIsCombined, TimelineTypeEnum timelineType) {
+        MyAccount ma = MyContextHolder.get().persistentAccounts()
+                .fromUserId(maccountUserId);
         String accountButtonText;
         if (ma == null) {
             accountButtonText = "?";
@@ -894,10 +895,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             accountButtonText = ma.getOriginName();
         }
         return accountButtonText;
-    }
-
-    private void updateRightText(String rightText) {
-        // TODO
     }
 
     @Override
@@ -919,29 +916,24 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private void parseNewIntent(Intent intentNew) {
-        TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(intentNew
-                .getStringExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key));
-        long newMyAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
-        if ( mCurrentMyAccountUserId != newMyAccountUserId) {
-            mCurrentMyAccountUserId = newMyAccountUserId;
-            mSelectedUserId = 0;
-        }
-        if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
-            mTimelineType = timelineTypeNew;
-            mTimelineIsCombined = intentNew.getBooleanExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mTimelineIsCombined);
-            mSearchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
-            mSelectedUserId = intentNew.getLongExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
-        } else {
+        mRateLimitText = "";
+        mCurrentMyAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
+        mSelectedUserId = 0;
+        parseIntentData(intentNew);
+        if (mTimelineType == TimelineTypeEnum.UNKNOWN) {
             parseAppSearchData(intentNew);
         }
         if (mTimelineType == TimelineTypeEnum.UNKNOWN) {
             /* Set default values */
             mTimelineType = TimelineTypeEnum.HOME;
             mSearchQuery = "";
-            mSelectedUserId = 0;
         }
-        if (mSelectedUserId == 0 && mTimelineType == TimelineTypeEnum.USER) {
-            mSelectedUserId = mCurrentMyAccountUserId;
+        if (mTimelineType == TimelineTypeEnum.USER) {
+            if (mSelectedUserId == 0) {
+                mSelectedUserId = mCurrentMyAccountUserId;
+            }
+        } else {
+            mSelectedUserId = 0;
         }
 
         if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
@@ -949,12 +941,45 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     intentNew.getStringExtra(Intent.EXTRA_TEXT),
                     (Uri) intentNew.getParcelableExtra(Intent.EXTRA_STREAM));
         }
+    }
 
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "processNewIntent; " + mTimelineType + "; accountId=" + mCurrentMyAccountUserId);
+    private void parseIntentData(Intent intentNew) {
+        mTimelineType = TimelineTypeEnum.load(intentNew
+                .getStringExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+        if (mTimelineType != TimelineTypeEnum.UNKNOWN) {
+            mTimelineIsCombined = intentNew.getBooleanExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mTimelineIsCombined);
+            mSearchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
+            mSelectedUserId = intentNew.getLongExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
         }
     }
 
+    private void parseAppSearchData(Intent intentNew) {
+        Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
+        if (appSearchData != null) {
+            // We use other packaging of the same parameters in onSearchRequested
+            mTimelineType = TimelineTypeEnum.load(appSearchData
+                    .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+            if (mTimelineType != TimelineTypeEnum.UNKNOWN) {
+                mTimelineIsCombined = appSearchData.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mTimelineIsCombined);
+                /* The query itself is still from the Intent */
+                mSearchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
+                mSelectedUserId = appSearchData.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
+                if (!TextUtils.isEmpty(mSearchQuery)
+                        && appSearchData.getBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, false)) {
+                    MyLog.v(this, "Global search: " + mSearchQuery);
+                    setLoading(true);
+                    MyServiceManager.sendForegroundCommand(
+                            CommandData.searchCommand(
+                                    isTimelineCombined()
+                                            ? ""
+                                            : MyContextHolder.get().persistentAccounts()
+                                                    .getCurrentAccountName(),
+                                    mSearchQuery));
+                }
+            }
+        }
+    }
+    
     private void shareViaThisApplication(String subject, String text, Uri mediaUri) {
         if (TextUtils.isEmpty(subject) && TextUtils.isEmpty(text) && UriUtils.isEmpty(mediaUri)) {
             return;
@@ -1025,34 +1050,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         return textIn.substring(0, ind+1);
     }
 
-    private void parseAppSearchData(Intent intentNew) {
-        Bundle appSearchData = intentNew.getBundleExtra(SearchManager.APP_DATA);
-        if (appSearchData != null) {
-            // We use other packaging of the same parameters in onSearchRequested
-            TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(appSearchData
-                    .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
-            if (timelineTypeNew != TimelineTypeEnum.UNKNOWN) {
-                mTimelineType = timelineTypeNew;
-                mTimelineIsCombined = appSearchData.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mTimelineIsCombined);
-                /* The query itself is still from the Intent */
-                mSearchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
-                mSelectedUserId = appSearchData.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
-                if (!TextUtils.isEmpty(mSearchQuery)
-                        && appSearchData.getBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, false)) {
-                    MyLog.v(this, "Global search: " + mSearchQuery);
-                    setLoading(true);
-                    MyServiceManager.sendForegroundCommand(
-                            CommandData.searchCommand(
-                                    isTimelineCombined()
-                                            ? ""
-                                            : MyContextHolder.get().persistentAccounts()
-                                                    .getCurrentAccountName(),
-                                    mSearchQuery));
-                }
-            }
-        }
-    }
-
     private void updateScreen() {
         MyServiceManager.setServiceAvailable();
         invalidateOptionsMenu();
@@ -1061,6 +1058,57 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         } else if (mMessageEditor.isVisible()) {
             // This is done to request focus (if we need this...)
             mMessageEditor.show();
+        }
+        updateTitle();
+    }
+
+    private void updateTitle() {
+        TimelineTitle title = new TimelineTitle(this);
+        title.updateTitle();
+        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+            MyLog.v(this, "Title: " + title);
+        }
+    }
+    
+    private static class TimelineTitle {
+        private TimelineActivity ta;
+        String title;
+        String subTitle;
+        
+        public TimelineTitle(TimelineActivity ta) {
+            this.ta = ta;
+            title = "" + ta.getTimelineType().getTitle(ta) + " ";
+            subTitle = "";
+            
+            if (ta.getSelectedUserId() != 0 && ta.getSelectedUserId() != ta.getCurrentMyAccountUserId()) {
+                title += ta.getTimelineType().getPrepositionForNotCombinedTimeline(ta);
+                subTitle = MyProvider.userIdToName(ta.getSelectedUserId());
+            } else {
+                if (ta.isTimelineCombined()) {
+                    title += ta.getText(R.string.combined_timeline_on);
+                } else {
+                    title += ta.getTimelineType().getPrepositionForNotCombinedTimeline(ta);
+                }
+                subTitle = " " + buildAccountButtonText(ta.getCurrentMyAccountUserId(), 
+                                ta.isTimelineCombined(),
+                                ta.getTimelineType());
+            }
+            if (!TextUtils.isEmpty(ta.mRateLimitText)) {
+                subTitle += " " + ta.mRateLimitText;
+            }
+        }
+
+        private void updateTitle() {
+            ActionBar actionBar = ta.getActionBar();
+            if (actionBar != null) {
+                actionBar.setTitle(title);
+                actionBar.setSubtitle(subTitle);
+            }
+        }
+        
+        @Override
+        public String toString() {
+            return title + "; " + subTitle;
         }
     }
     
@@ -1391,8 +1439,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 ma = MyContextHolder.get().persistentAccounts().fromAccountName(data.getStringExtra(IntentExtra.EXTRA_ACCOUNT_NAME.key));
                 if (ma != null) {
                     mMessageEditor.startEditingMessage(mTextToShareViaThisApp, mMediaToShareViaThisApp, 
-                            0, 0, ma, 
-                            mTimelineIsCombined || mCurrentMyAccountUserId != ma.getUserId());
+                            0, 0, ma);
                 }
                 break;
             case ATTACH:
@@ -1517,8 +1564,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 break;
             case RATE_LIMIT_STATUS:
                 if (commandData.getResult().getHourlyLimit() > 0) {
-                    updateRightText(commandData.getResult().getRemainingHits() + "/"
-                            + commandData.getResult().getHourlyLimit());
+                    mRateLimitText  = commandData.getResult().getRemainingHits() + "/"
+                            + commandData.getResult().getHourlyLimit();
+                    updateTitle();
                 }
                 break;
             default:
