@@ -43,6 +43,10 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <changes>
             <change>Dropped compatibility with Android before v.4.1. This 
                 made application look modern and familiar to Android users.</change>
+            <change>GNUsocial.de, Quitter.no, Quitter.is and GNUsocial.no added to the list
+                of the preconfigured &quot;Microblogging systems&quot; 
+                See <a href="https://github.com/andstatus/andstatus/issues/121" >Issue #121</a>.
+            </change>
         </changes>
     </release>
     <release android:versionName="12.1" android:versionCode="112"

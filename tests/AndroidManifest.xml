@@ -16,9 +16,9 @@
 
 <!-- package name must be unique so suffix with "tests" so package loader doesn't ignore us -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.andstatus.app.tests" android:versionName="10.1" android:versionCode="7">
+    package="org.andstatus.app.tests" android:versionName="13.0" android:versionCode="8">
 
-	<uses-sdk android:minSdkVersion="8"/>
+	<uses-sdk android:minSdkVersion="16"/>
 
     <application android:label="AndStatus tests" android:icon="@drawable/icon">
         <uses-library android:name="android.test.runner" />
