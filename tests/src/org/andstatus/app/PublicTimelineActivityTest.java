@@ -18,6 +18,7 @@ package org.andstatus.app;
 
 import android.content.Intent;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +37,7 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 public class PublicTimelineActivityTest extends android.test.ActivityInstrumentationTestCase2<TimelineActivity> {
-    private TimelineActivity activity;
+    private TimelineActivity mActivity;
     
     @Override
     protected void setUp() throws Exception {
@@ -56,10 +57,10 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         intent.putExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, false);
         setActivityIntent(intent);
         
-        activity = getActivity();
-        TestSuite.waitForListLoaded(this, activity, 2);
+        mActivity = getActivity();
+        TestSuite.waitForListLoaded(this, mActivity, 2);
         
-        assertEquals(ma.getUserId(), activity.getCurrentMyAccountUserId());
+        assertEquals(ma.getUserId(), mActivity.getCurrentMyAccountUserId());
         
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
         MyLog.i(this, "setUp ended");
@@ -75,10 +76,10 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     }
     
     public void testGlobalSearchInOptionsMenu() throws InterruptedException {
-        assertFalse("Screen is locked", TestSuite.isScreenLocked(activity));
+        assertFalse("Screen is locked", TestSuite.isScreenLocked(mActivity));
         
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
-        getInstrumentation().invokeMenuActionSync(activity, R.id.global_search_menu_id, 0);
+        getInstrumentation().invokeMenuActionSync(mActivity, R.id.global_search_menu_id, 0);
         TestSuite.waitForIdleSync(this);
         getInstrumentation().sendStringSync(TestSuite.GLOBAL_PUBLIC_MESSAGE_TEXT);
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
@@ -95,12 +96,17 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
             Runnable clicker = new Runnable() {
                 @Override
                 public void run() {
-                    MenuItem item = activity.getOptionsMenu().findItem(R.id.timelineTypeButton);
                     sb.setLength(0);
-                    sb.append(item.getTitle());
+                    if (mActivity != null) {
+                        Menu menu = mActivity.getOptionsMenu();
+                        if (menu != null) {
+                            MenuItem item = menu.findItem(R.id.timelineTypeButton);
+                            sb.append(item.getTitle());
+                        }
+                    }
                 }
             };
-            activity.runOnUiThread(clicker);
+            mActivity.runOnUiThread(clicker);
             
             
             if (sb.toString().contains(" *")) {
@@ -114,10 +120,10 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     }
     
     public void testSearch() throws InterruptedException {
-        assertFalse("Screen is locked", TestSuite.isScreenLocked(activity));
+        assertFalse("Screen is locked", TestSuite.isScreenLocked(mActivity));
 
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
-        getInstrumentation().invokeMenuActionSync(activity, R.id.search_menu_id, 0);
+        getInstrumentation().invokeMenuActionSync(mActivity, R.id.search_menu_id, 0);
         TestSuite.waitForIdleSync(this);
         getInstrumentation().sendStringSync(TestSuite.PUBLIC_MESSAGE_TEXT);
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
@@ -138,7 +144,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
     }
 
     private int oneAttempt(String publicMessageText) {
-        final ViewGroup list = (ViewGroup) activity.findViewById(android.R.id.list);
+        final ViewGroup list = (ViewGroup) mActivity.findViewById(android.R.id.list);
         int msgCount = 0;
         for (int index = 0; index < list.getChildCount(); index++) {
             View messageView = list.getChildAt(index);

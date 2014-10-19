@@ -17,54 +17,219 @@
 package org.andstatus.app;
 
 import android.app.LoaderManager;
+import android.app.SearchManager;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 
+import org.andstatus.app.data.AccountUserIds;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.SelectionAndArgs;
 
 import java.util.Arrays;
 
 class TimelineListParameters {
-    LoaderManager.LoaderCallbacks<Cursor> loaderCallbacks = null;
+    final Context mContext;
     
-    boolean loadOneMorePage = false;
-    boolean reQuery = false;
-    TimelineTypeEnum timelineType = TimelineTypeEnum.UNKNOWN;
-    boolean timelineCombined = false;
+    LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks = null;
+    
+    /**
+     * Msg are being loaded into the list starting from one page. More Msg
+     * are being loaded in a case User scrolls down to the end of list.
+     */
+    static final int PAGE_SIZE = 100;
+    
+    TimelineTypeEnum mTimelineType = TimelineTypeEnum.UNKNOWN;
+    /** Combined Timeline shows messages from all accounts */
+    boolean mTimelineCombined = false;
     long myAccountUserId = 0;
-    long selectedUserId = 0;
-    
-    String[] projection;
-    String searchQuery = "";
-    Uri contentUri = null;
-    boolean incrementallyLoadingPages = false;
-    int rowsLimit = 0;
-    long lastItemId = 0;
-    volatile SelectionAndArgs sa = new SelectionAndArgs();
-    String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
+    /**
+     * Selected User for the {@link TimelineTypeEnum#USER} timeline.
+     * This is either User Id of current account OR user id of any other selected user.
+     * So it's never == 0 for the {@link TimelineTypeEnum#USER} timeline
+     */
+    long mSelectedUserId = 0;
+    /**
+     * The string is not empty if this timeline is filtered using query string
+     * ("Mentions" are not counted here because they have separate TimelineType)
+     */
+    String mSearchQuery = "";
 
+    boolean mLoadOneMorePage = false;
+    boolean mReQuery = false;
+    String[] mProjection;
+
+    Uri mContentUri = null;
+    boolean mIncrementallyLoadingPages = false;
+    int mRowsLimit = 0;
+    long mLastItemId = 0;
+    volatile SelectionAndArgs mSa = new SelectionAndArgs();
+    String mSortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
+    
     // Execution state / data:
     volatile long startTime = 0;
     volatile boolean cancelled = false;
     volatile TimelineTypeEnum timelineToReload = TimelineTypeEnum.UNKNOWN;
     
+
+    public static TimelineListParameters clone(TimelineListParameters prev, Bundle args) {
+        TimelineListParameters params = new TimelineListParameters(prev.mContext);
+        params.mLoaderCallbacks = prev.mLoaderCallbacks;
+        params.mTimelineType = prev.getTimelineType();
+        params.mTimelineCombined = prev.isTimelineCombined();
+        params.myAccountUserId = prev.getCurrentMyAccountUserId();
+        params.mSelectedUserId = prev.getSelectedUserId();
+        params.mSearchQuery = prev.mSearchQuery;
+
+        boolean positionRestored = false;
+        boolean loadOneMorePage = false;
+        boolean reQuery = false;
+        if (args != null) {
+            loadOneMorePage = args.getBoolean(IntentExtra.EXTRA_LOAD_ONE_MORE_PAGE.key);
+            positionRestored = args.getBoolean(IntentExtra.EXTRA_POSITION_RESTORED.key);
+            reQuery = args.getBoolean(IntentExtra.EXTRA_REQUERY.key);
+            params.mRowsLimit = args.getInt(IntentExtra.EXTRA_ROWS_LIMIT.key);
+        }
+        params.mLoadOneMorePage = loadOneMorePage;
+        params.mIncrementallyLoadingPages = positionRestored && loadOneMorePage;
+        params.mReQuery = reQuery;
+        params.mProjection = TimelineSql.getTimelineProjection();
+        
+        params.prepareQueryForeground(positionRestored);
+        
+        return params;
+    }
+    
+    private void prepareQueryForeground(boolean positionRestored) {
+        mContentUri = MyProvider.getTimelineSearchUri(myAccountUserId, mTimelineType,
+                mTimelineCombined, mSearchQuery);
+
+        if (mSa.nArgs == 0) {
+            // In fact this is needed every time you want to load
+            // next page of messages
+
+            /* TODO: Other conditions... */
+            mSa.clear();
+
+            // TODO: Move these selections to the {@link MyProvider} ?!
+            switch (getTimelineType()) {
+                case HOME:
+                    // In the Home of the combined timeline we see ALL loaded
+                    // messages, even those that we downloaded
+                    // not as Home timeline of any Account
+                    if (!isTimelineCombined()) {
+                        mSa.addSelection(MyDatabase.MsgOfUser.SUBSCRIBED + " = ?", new String[] {
+                                "1"
+                        });
+                    }
+                    break;
+                case MENTIONS:
+                    mSa.addSelection(MyDatabase.MsgOfUser.MENTIONED + " = ?", new String[] {
+                            "1"
+                    });
+                    /*
+                     * We already figured this out and set {@link MyDatabase.MsgOfUser.MENTIONED}:
+                     * sa.addSelection(MyDatabase.Msg.BODY + " LIKE ?" ...
+                     */
+                    break;
+                case FAVORITES:
+                    mSa.addSelection(MyDatabase.MsgOfUser.FAVORITED + " = ?", new String[] {
+                            "1"
+                    });
+                    break;
+                case DIRECT:
+                    mSa.addSelection(MyDatabase.MsgOfUser.DIRECTED + " = ?", new String[] {
+                            "1"
+                    });
+                    break;
+                case USER:
+                    AccountUserIds userIds = new AccountUserIds(isTimelineCombined(), getSelectedUserId());
+                    // Reblogs are included also
+                    mSa.addSelection(MyDatabase.Msg.AUTHOR_ID + " " + userIds.getSqlUserIds() 
+                            + " OR "
+                            + MyDatabase.Msg.SENDER_ID + " " + userIds.getSqlUserIds() 
+                            + " OR " 
+                            + "("
+                            + User.LINKED_USER_ID + " " + userIds.getSqlUserIds() 
+                            + " AND "
+                            + MyDatabase.MsgOfUser.REBLOGGED + " = 1"
+                            + ")",
+                            null);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (!positionRestored) {
+            // We have to ensure that saved position will be
+            // loaded from database into the list
+            mLastItemId = new TimelineListPositionStorage(null, this).getLastRetrievedSentDate();
+        }
+
+        if (mLastItemId <= 0) {
+            int rowsLimit2 = this.mRowsLimit;
+            if (rowsLimit2 < TimelineListParameters.PAGE_SIZE) {
+                rowsLimit2 = TimelineListParameters.PAGE_SIZE;
+            }
+            mSortOrder += " LIMIT 0," + rowsLimit2;
+        }
+    }
+    
+    public TimelineListParameters(Context context) {
+        this.mContext = context;
+    }
+
     public boolean isEmpty() {
-        return timelineType == TimelineTypeEnum.UNKNOWN;
+        return mTimelineType == TimelineTypeEnum.UNKNOWN;
     }
     
     @Override
     public String toString() {
-        return "TimelineListParameters [loaderCallbacks=" + loaderCallbacks + ", loadOneMorePage="
-                + loadOneMorePage + ", reQuery=" + reQuery + ", timelineType=" + timelineType
-                + ", timelineCombined=" + timelineCombined + ", myAccountUserId=" + myAccountUserId
-                + ", selectedUserId=" + selectedUserId + ", projection="
-                + Arrays.toString(projection) + ", searchQuery=" + searchQuery + ", contentUri="
-                + contentUri + ", incrementallyLoadingPages=" + incrementallyLoadingPages
-                + ", rowsLimit=" + rowsLimit + ", lastItemId=" + lastItemId + ", sa=" + sa
-                + ", sortOrder=" + sortOrder + ", startTime=" + startTime + ", cancelled="
+        return "TimelineListParameters [loaderCallbacks=" + mLoaderCallbacks + ", loadOneMorePage="
+                + mLoadOneMorePage + ", reQuery=" + mReQuery + ", timelineType=" + mTimelineType
+                + ", timelineCombined=" + mTimelineCombined + ", myAccountUserId=" + myAccountUserId
+                + ", selectedUserId=" + mSelectedUserId + ", projection="
+                + Arrays.toString(mProjection) + ", searchQuery=" + mSearchQuery + ", contentUri="
+                + mContentUri + ", incrementallyLoadingPages=" + mIncrementallyLoadingPages
+                + ", rowsLimit=" + mRowsLimit + ", lastItemId=" + mLastItemId + ", sa=" + mSa
+                + ", sortOrder=" + mSortOrder + ", startTime=" + startTime + ", cancelled="
                 + cancelled + ", timelineToReload=" + timelineToReload + "]";
     }
+
+    public TimelineTypeEnum getTimelineType() {
+        return mTimelineType;
+    }
+
+    public void setTimelineType(TimelineTypeEnum timelineType) {
+        mTimelineType = timelineType;
+    }
     
+    public long getSelectedUserId() {
+        return mSelectedUserId;
+    }
+
+    public boolean isTimelineCombined() {
+        return mTimelineCombined;
+    }
+
+    public void setTimelineCombined(boolean isTimelineCombined) {
+        mTimelineCombined = isTimelineCombined;
+    }
+
+    public long getCurrentMyAccountUserId() {
+        return myAccountUserId;
+    }
+
+    public void SaveState(Bundle outState) {
+        outState.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, getTimelineType().save());
+        outState.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, isTimelineCombined());
+        outState.putString(SearchManager.QUERY, mSearchQuery);
+        outState.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
+    }
 }

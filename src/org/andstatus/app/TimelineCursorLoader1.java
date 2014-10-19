@@ -39,12 +39,9 @@ import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
 /**
- * Simplified implementation inspired by {@link android.content.Loader}
- * available in API >= 11
- * 
  * @author yvolk@yurivolkov.com
  */
-public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceListener {
+public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceListener {
     private final TimelineListParameters mParams;
     private Cursor mCursor = null;
 
@@ -55,7 +52,7 @@ public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceLis
     @GuardedBy("asyncLoaderLock")
     private AsyncLoader asyncLoader = null;
 
-    public TimelineCursorLoader(TimelineListParameters params) {
+    public TimelineCursorLoader1(TimelineListParameters params) {
         super(MyContextHolder.get().context());
         this.mParams = params;
         serviceConnector = new MyServiceReceiver(this);
@@ -69,7 +66,7 @@ public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceLis
         if (mayReuseResult()) {
             logV(method, "reusing result");
             deliverResultsAndClean(mCursor);
-        } else if (getParams().reQuery || taskIsNotRunning()) {
+        } else if (getParams().mReQuery || taskIsNotRunning()) {
             restartLoader();
         }
     }
@@ -93,7 +90,7 @@ public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceLis
 
     private boolean mayReuseResult() {
         boolean ok = false;
-        if (!getParams().reQuery && !takeContentChanged() && mCursor != null && !mCursor.isClosed()) {
+        if (!getParams().mReQuery && !takeContentChanged() && mCursor != null && !mCursor.isClosed()) {
             synchronized (asyncLoaderLock) {
                 if (asyncLoader == null) {
                     ok = true;
@@ -198,7 +195,7 @@ public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceLis
         if (isStarted()
                 && System.currentTimeMillis() - previousRequeryTime > MIN_LIST_REQUERY_MILLISECONDS) {
             previousRequeryTime = System.currentTimeMillis();
-            getParams().reQuery = true;
+            getParams().mReQuery = true;
             onStartLoading();
         }
     }
@@ -235,20 +232,20 @@ public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceLis
             getParams().timelineToReload = TimelineTypeEnum.UNKNOWN;
             
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                logV("markStart", (TextUtils.isEmpty(getParams().searchQuery) ? ""
-                        : "queryString=\"" + getParams().searchQuery + "\"; ")
-                        + getParams().timelineType
-                        + "; isCombined=" + (getParams().timelineCombined ? "yes" : "no"));
+                logV("markStart", (TextUtils.isEmpty(getParams().mSearchQuery) ? ""
+                        : "queryString=\"" + getParams().mSearchQuery + "\"; ")
+                        + getParams().mTimelineType
+                        + "; isCombined=" + (getParams().mTimelineCombined ? "yes" : "no"));
             }
         }
         
         private void prepareQueryInBackground() {
-            if (getParams().lastItemId > 0) {
-                getParams().sa.addSelection(MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
+            if (getParams().mLastItemId > 0) {
+                getParams().mSa.addSelection(MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
                         + " >= ?",
                         new String[] {
                             String.valueOf(MyProvider.msgIdToLongColumnValue(
-                                    MyDatabase.Msg.SENT_DATE, getParams().lastItemId))
+                                    MyDatabase.Msg.SENT_DATE, getParams().mLastItemId))
                         });
             }
         }
@@ -259,8 +256,8 @@ public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceLis
             for (int attempt = 0; attempt < 3 && !isCancelled(); attempt++) {
                 try {
                     cursor = MyContextHolder.get().context().getContentResolver()
-                            .query(getParams().contentUri, getParams().projection, getParams().sa.selection,
-                                    getParams().sa.selectionArgs, getParams().sortOrder);
+                            .query(getParams().mContentUri, getParams().mProjection, getParams().mSa.selection,
+                                    getParams().mSa.selectionArgs, getParams().mSortOrder);
                     break;
                 } catch (IllegalStateException e) {
                     logD(method, "Attempt " + attempt + " to prepare cursor", e);
@@ -278,14 +275,14 @@ public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceLis
         }
         
         private void checkIfReloadIsNeeded(Cursor cursor) {
-            if (!getParams().loadOneMorePage && cursor != null && !cursor.isClosed() && cursor.getCount() == 0) {
-                switch (getParams().timelineType) {
+            if (!getParams().mLoadOneMorePage && cursor != null && !cursor.isClosed() && cursor.getCount() == 0) {
+                switch (getParams().mTimelineType) {
                     case USER:
                     case FOLLOWING_USER:
                         // This timeline doesn't update automatically so let's do it now if necessary
-                        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().timelineType, getParams().selectedUserId);
+                        LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().mTimelineType, getParams().mSelectedUserId);
                         if (latestTimelineItem.isTimeToAutoUpdate()) {
-                            getParams().timelineToReload = getParams().timelineType;
+                            getParams().timelineToReload = getParams().mTimelineType;
                         }
                         break;
                     default:
@@ -311,7 +308,7 @@ public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceLis
 
         private void singleEnd(Cursor result) {
             logExecutionStats(result);
-            TimelineCursorLoader.this.deliverResultsAndClean(result);
+            TimelineCursorLoader1.this.deliverResultsAndClean(result);
         }
         
         private void logExecutionStats(Cursor cursor) {
@@ -340,15 +337,17 @@ public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceLis
             return;
         }
         final String method = "onReceive";
-        logV(method, commandData.toString());
         switch (commandData.getCommand()) {
             case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
+                if (mParams.mTimelineType != commandData.getTimelineType()) {
+                    break;
+                }
             case GET_STATUS:
             case SEARCH_MESSAGE:
                 if (commandData.getResult().getDownloadedCount() > 0) {
                     if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                        logV(method, "Content changed, downloaded " + commandData.getResult().getDownloadedCount());
+                        logV(method, "Content changed, " + commandData.toString());
                     }
                     onContentChanged();
                 }
@@ -363,7 +362,7 @@ public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceLis
             case UPDATE_STATUS:
                 if (!commandData.getResult().hasError()) {
                     if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                        logV(method, "Content changed, command " + commandData.getCommand());
+                        logV(method, "Content changed, " + commandData.toString());
                     }
                     onContentChanged();
                 }
@@ -381,7 +380,7 @@ public class TimelineCursorLoader extends Loader<Cursor> implements MyServiceLis
         return MyLog.formatKeyValue(this, sb.toString());
     }
 
-    TimelineListParameters getParams() {
+    public TimelineListParameters getParams() {
         return mParams;
     }
 }

@@ -160,7 +160,9 @@ public enum TimelineTypeEnum {
     }
     
     public CharSequence getPrepositionForNotCombinedTimeline(Context context) {
-        if (TimelineTypeEnum.PUBLIC.equals(this)) {
+        if (context == null) {
+            return "";
+        } else if (TimelineTypeEnum.PUBLIC.equals(this)) {
             return context.getText(R.string.combined_timeline_off_origin);
         } else {
             return context.getText(R.string.combined_timeline_off_account);

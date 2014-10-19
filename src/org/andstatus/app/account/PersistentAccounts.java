@@ -50,7 +50,6 @@ public class PersistentAccounts {
      * for the purpose of using these "accounts" elsewhere. Value of
      * {@link #getCredentialsVerified()} is the main differentiator.
      * 
-     * @param context
      * @return not null 
      */
     public Collection<MyAccount> collection() {
