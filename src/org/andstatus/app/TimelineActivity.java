@@ -453,12 +453,14 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             combinedTimelineToggle.setVisible(true);
         }
         
-        mContextMenu.setAccountUserIdToActAs(0);
-        // TODO: updateTimelineTypeButtonText();
+        if (mContextMenu != null) {
+            mContextMenu.setAccountUserIdToActAs(0);
+        }
         updateAccountButtonText(menu);
-        // TODO: updateRightText("");
-        
-        mMessageEditor.onPrepareOptionsMenu(menu);
+
+        if (mMessageEditor != null) {
+            mMessageEditor.onPrepareOptionsMenu(menu);
+        }
         
         boolean enableGlobalSearch = MyContextHolder.get().persistentAccounts()
                 .isGlobalSearchSupported(ma, isTimelineCombined());
