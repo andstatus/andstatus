@@ -1112,7 +1112,8 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                             showDialog(what);
                             break;
                         case MSG_CONNECTION_EXCEPTION:
-                            Toast.makeText(AccountSettingsActivity.this, R.string.error_connection_error + " " + message, Toast.LENGTH_LONG).show();
+                            Toast.makeText(AccountSettingsActivity.this, getText(R.string.error_connection_error) + " \n" + message, Toast.LENGTH_LONG).show();
+							MyLog.i(this, message);
                             break;
                         default:
                             break;

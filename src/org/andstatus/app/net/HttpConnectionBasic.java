@@ -65,6 +65,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         String result = "?";
         JSONObject jObj = null;
         int statusCode = 0;
+		String logmsg = method + "; URI='" + postMethod.getURI().toString() + "'";
         try {
             HttpClient client = HttpApacheUtils.getHttpClient();
             postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
@@ -80,16 +81,16 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
             if (jObj != null) {
                 String error = jObj.optString("error");
                 if ("Could not authenticate you.".equals(error)) {
-                    throw new ConnectionException(error);
+                    throw new ConnectionException(logmsg + "; " + error);
                 }
             }
         } catch (UnsupportedEncodingException e) {
-            MyLog.e(this, e);
+            MyLog.e(this, logmsg, e);
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, e, result, method);
+            throw ConnectionException.loggedJsonException(this, e, result, logmsg);
         } catch (Exception e) {
-            MyLog.e(this, method, e);
-            throw new ConnectionException(e);
+            MyLog.e(this, logmsg, e);
+            throw new ConnectionException(logmsg, e);
         } finally {
             postMethod.abort();
         }
@@ -122,6 +123,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         String response = null;
         boolean ok = false;
         int statusCode = 0;
+		String logmsg = "getRequest; URI='" + getMethod.getURI().toString() + "'";
         HttpClient client = HttpApacheUtils.getHttpClient();
         try {
             getMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
@@ -134,8 +136,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
             jso = new JSONTokener(response);
             ok = true;
         } catch (Exception e) {
-            MyLog.e(this, "getRequest", e);
-            throw new ConnectionException(e);
+            MyLog.i(this, logmsg, e);
+            throw new ConnectionException(logmsg, e);
         } finally {
             getMethod.abort();
         }

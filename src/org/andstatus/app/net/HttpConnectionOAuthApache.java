@@ -35,7 +35,6 @@ import org.json.JSONTokener;
 
 public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements HttpApacheRequest {
     private static final String NULL_JSON = "(null)";
-    private static final String TAG = HttpConnectionOAuth.class.getSimpleName();
     private HttpClient mClient;
 
     @Override
@@ -80,8 +79,9 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
             jso = new JSONTokener(response);
             ok = true;
         } catch (Exception e) {
-            MyLog.e(this, "Exception was caught, URL='" + get.getURI().toString() + "'", e);
-            throw new ConnectionException(e);
+			String logmsg = "getRequest; URI='" + get.getURI().toString() + "'";
+            MyLog.i(this, logmsg, e);
+            throw new ConnectionException(logmsg, e);
         }
         if (!ok) {
             jso = null;
@@ -114,6 +114,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
         JSONObject jso = null;
         String response = null;
         boolean ok = false;
+		String logmsg = "postRequest; URI='" + post.getURI().toString() + "'";
         try {
             if (data.oauthClientKeys.areKeysPresent()) {
                 // sign the request to authenticate
@@ -123,16 +124,17 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
             jso = new JSONObject(response);
             ok = true;
         } catch (HttpResponseException e) {
-            ConnectionException e2 = ConnectionException.fromStatusCodeHttp(e.getStatusCode(), "postRequest", e);
-            MyLog.i(TAG, e2);
+            ConnectionException e2 = ConnectionException.fromStatusCodeHttp(e.getStatusCode(), logmsg, e);
+            MyLog.i(this, logmsg, e2);
             throw e2;
         } catch (JSONException e) {
-            MyLog.i(TAG, "postRequest, response=" + (response == null ? NULL_JSON : response), e);
-            throw new ConnectionException(e);
+			logmsg += "; response=" + (response == null ? NULL_JSON : response);
+            MyLog.i(this, logmsg, e);
+            throw new ConnectionException(logmsg, e);
         } catch (Exception e) {
             // We don't catch other exceptions because in fact it's vary difficult to tell
             // what was a real cause of it. So let's make code clearer.
-            throw new ConnectionException(e);
+            throw new ConnectionException(logmsg, e);
         }
         if (!ok) {
             jso = null;
