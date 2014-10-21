@@ -803,7 +803,9 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
 
     private void updateTitle() {
-        new TimelineTitle(mListParameters, mRateLimitText).updateTitle(this);
+        new TimelineTitle(mListParameters.getTimelineType() != TimelineTypeEnum.UNKNOWN ?
+                mListParameters : mListParametersNew
+                , mRateLimitText).updateTitle(this);
     }
     
     static class TimelineTitle {

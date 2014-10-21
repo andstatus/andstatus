@@ -33,7 +33,6 @@ import org.andstatus.app.util.MyLog;
 public class MySimpleCursorAdapter extends SimpleCursorAdapter {
     private Context context;
     private int layout;
-    private volatile View mEmptyView = null;
     private Cursor mCursor;
     
     @Override
@@ -78,11 +77,7 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
     }
 
     private View getEmptyView(int position, View convertView, ViewGroup parent) {
-        if (mEmptyView != null) {
-            return mEmptyView;
-        }
-        mEmptyView = View.inflate(context, layout, null); 
-        return mEmptyView;
+        return View.inflate(context, layout, null); 
     }
 
     public MySimpleCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to,
