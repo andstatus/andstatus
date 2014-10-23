@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-class HttpApacheUtils {
+public class HttpApacheUtils {
     private HttpApacheRequest request;
     
     HttpApacheUtils(HttpApacheRequest request) {
@@ -209,7 +209,7 @@ class HttpApacheUtils {
                 .build();
     }
     
-    static HttpClient getHttpClient() {
+    public static HttpClient getHttpClient() {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(SOCKET_FACTORY_REGISTRY);
         connectionManager.setMaxTotal(3);               // max.  3 connections in total
         connectionManager.setDefaultMaxPerRoute(2);     // max.  2 connections per host

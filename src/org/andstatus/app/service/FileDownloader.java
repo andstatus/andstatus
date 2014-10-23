@@ -21,8 +21,11 @@ import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.net.HttpJavaNetUtils;
+import org.andstatus.app.net.HttpApacheUtils;
 import org.andstatus.app.util.MyLog;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 
 import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
@@ -81,25 +84,35 @@ class FileDownloader {
         final String method = "downloadFile";
         DownloadFile fileTemp = new DownloadFile("temp_" + data.getFileNameNew());
         try {
-            InputStream in = HttpJavaNetUtils.urlOpenStream(data.getUrl());
+            // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
+            HttpGet httpget = new HttpGet(data.getUrl().toExternalForm());
+            HttpResponse response = HttpApacheUtils.getHttpClient().execute(httpget);
             try {
-                byte[] buffer = new byte[1024];
-                int length;
-                OutputStream out = null;
-                out = new BufferedOutputStream(new FileOutputStream(fileTemp.getFile()));
-                try {
-                    if (mockNetworkError) {
-                        throw new IOException(method + ", Mocked IO exception");
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    InputStream in = entity.getContent();
+                    try {
+                        byte[] buffer = new byte[1024];
+                        int length;
+                        OutputStream out = null;
+                        out = new BufferedOutputStream(new FileOutputStream(fileTemp.getFile()));
+                        try {
+                            if (mockNetworkError) {
+                                throw new IOException(method + ", Mocked IO exception");
+                            }
+                            while ((length = in.read(buffer)) > 0) {
+                                out.write(buffer, 0, length);
+                            }
+                        } finally {
+                            DbUtils.closeSilently(out);
+                        }
+                    } finally {
+                        DbUtils.closeSilently(in);
                     }
-                    while ((length = in.read(buffer)) > 0) {
-                        out.write(buffer, 0, length);
-                    }
-                } finally {
-                    DbUtils.closeSilently(out);
                 }
             } finally {
-                DbUtils.closeSilently(in);
-            }
+                DbUtils.closeSilently(response);
+            }            
         } catch (FileNotFoundException e) {
             data.hardErrorLogged(method + ", File not found", e);
         } catch (IOException e) {
