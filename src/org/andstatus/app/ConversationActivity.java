@@ -200,7 +200,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
                 }
                 break;
             case ATTACH:
-                Uri uri = UriUtils.notNull(data.getData());
+                Uri uri = data != null ? UriUtils.notNull(data.getData()) : null;
                 if (resultCode == RESULT_OK && !UriUtils.isEmpty(uri)) {
                     if (mMessageEditor.isVisible()) {
                         mMessageEditor.setMedia(uri);
@@ -269,11 +269,12 @@ public class ConversationActivity extends Activity implements MyServiceListener,
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        boolean enableAttach = mMessageEditor.isVisible() && MyPreferences.showAttachedImages() ;
-        MenuItem item = menu.findItem(R.id.attach_menu_id);
-        item.setEnabled(enableAttach);
-        item.setVisible(enableAttach);
-        
+        if (mMessageEditor != null) {
+            boolean enableAttach = mMessageEditor.isVisible() && MyPreferences.showAttachedImages() ;
+            MenuItem item = menu.findItem(R.id.attach_menu_id);
+            item.setEnabled(enableAttach);
+            item.setVisible(enableAttach);
+        }
         return super.onPrepareOptionsMenu(menu);
     }
     

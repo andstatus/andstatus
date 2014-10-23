@@ -460,6 +460,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         if (mMessageEditor != null) {
             mMessageEditor.onPrepareOptionsMenu(menu);
+
+            boolean enableAttach = mMessageEditor.isVisible() && MyPreferences.showAttachedImages() ;
+            item = menu.findItem(R.id.attach_menu_id);
+            item.setEnabled(enableAttach);
+            item.setVisible(enableAttach);
         }
         
         boolean enableGlobalSearch = MyContextHolder.get().persistentAccounts()
@@ -467,11 +472,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         item = menu.findItem(R.id.global_search_menu_id);
         item.setEnabled(enableGlobalSearch);
         item.setVisible(enableGlobalSearch);
-
-        boolean enableAttach = mMessageEditor.isVisible() && MyPreferences.showAttachedImages() ;
-        item = menu.findItem(R.id.attach_menu_id);
-        item.setEnabled(enableAttach);
-        item.setVisible(enableAttach);
         
         return super.onPrepareOptionsMenu(menu);
     }

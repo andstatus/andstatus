@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,26 +24,22 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
-import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -194,32 +190,42 @@ class HttpApacheUtils {
         }
         return formParams;
     }
+
+    /** Based on: https://github.com/rfc2822/davdroid/blob/master/src/at/bitfire/davdroid/webdav/DavHttpClient.java */
+    private final static RequestConfig REQUEST_CONFIG;
+    private final static Registry<ConnectionSocketFactory> SOCKET_FACTORY_REGISTRY;
+
+    static {
+        SOCKET_FACTORY_REGISTRY = RegistryBuilder.<ConnectionSocketFactory> create()
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", TlsSniSocketFactory.INSTANCE)
+                .build();
+        
+        // use request defaults from AndroidHttpClient
+        REQUEST_CONFIG = RequestConfig.copy(RequestConfig.DEFAULT)
+                .setConnectTimeout(MyPreferences.getConnectionTimeoutMs())
+                .setSocketTimeout(2*MyPreferences.getConnectionTimeoutMs())
+                .setStaleConnectionCheckEnabled(false)
+                .build();
+    }
     
     static HttpClient getHttpClient() {
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(SOCKET_FACTORY_REGISTRY);
+        connectionManager.setMaxTotal(3);               // max.  3 connections in total
+        connectionManager.setDefaultMaxPerRoute(2);     // max.  2 connections per host
         
-        SSLSocketFactory socketFactory = SSLSocketFactory.getSocketFactory();
-        // This is done to get rid of the "javax.net.ssl.SSLException: hostname in certificate didn't match" error
-        // See e.g. http://stackoverflow.com/questions/8839541/hostname-in-certificate-didnt-match
-        socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);        
-        schemeRegistry.register(new Scheme("https", socketFactory, 443));
+        HttpClientBuilder builder = HttpClients.custom()
+                .useSystemProperties()
+                .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(REQUEST_CONFIG)
+                /* TODO maybe:  
+                .setRetryHandler(DavHttpRequestRetryHandler.INSTANCE)
+                .setRedirectStrategy(DavRedirectStrategy.INSTANCE)  
+                */
+                .setUserAgent(HttpConnection.USER_AGENT)
+                .disableCookieManagement();
 
-        HttpParams params = getHttpParams();        
-        ClientConnectionManager clientConnectionManager = new ThreadSafeClientConnManager(params, schemeRegistry);
-        return new DefaultHttpClient(clientConnectionManager, params);
-    }
-
-    private static HttpParams getHttpParams() {
-        HttpParams params = new BasicHttpParams();
-        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-        HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
-        HttpConnectionParams.setStaleCheckingEnabled(params, true);
-
-        HttpProtocolParams.setUseExpectContinue(params, false);
-        HttpConnectionParams.setSoTimeout(params, MyPreferences.getConnectionTimeoutMs());
-        HttpConnectionParams.setSocketBufferSize(params, 2*8192);
-        return params;
+        return builder.build();
     }
     
 }
