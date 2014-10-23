@@ -69,9 +69,14 @@ public class MyBackupAgent extends BackupAgent {
     public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data,
             ParcelFileDescriptor newState) throws IOException {
         if (MyContextHolder.get().isTestRun()) {
-            String message = "onBackup; skipped due to test run";
-            MyLog.i(this, message);
-            throw new FileNotFoundException(message);
+            String logmsg = "onBackup; skipped due to test run";
+            MyLog.i(this, logmsg);
+            throw new IOException(logmsg);
+        }
+        if (!MyPreferences.getBoolean(MyPreferences.KEY_ENABLE_ANDROID_BACKUP, false)) {
+            String logmsg = "onBackup; skipped: disabled in Settings";
+            MyLog.i(this, logmsg);
+            throw new IOException(logmsg);
         }
         onBackup(
                 MyBackupDescriptor.fromOldParcelFileDescriptor(oldState, ProgressLogger.getEmpty()),
