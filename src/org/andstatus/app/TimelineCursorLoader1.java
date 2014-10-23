@@ -275,12 +275,20 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
         }
         
         private void checkIfReloadIsNeeded(Cursor cursor) {
-            if (!getParams().mLoadOneMorePage && cursor != null && !cursor.isClosed() && cursor.getCount() == 0) {
+            if (!getParams().mLoadOneMorePage 
+                    && TextUtils.isEmpty(getParams().mSearchQuery) 
+                    && cursor != null && !cursor.isClosed() && cursor.getCount() == 0) {
                 switch (getParams().mTimelineType) {
                     case USER:
-                    case FOLLOWING_USER:
                         // This timeline doesn't update automatically so let's do it now if necessary
                         LatestTimelineItem latestTimelineItem = new LatestTimelineItem(getParams().mTimelineType, getParams().mSelectedUserId);
+                        if (latestTimelineItem.isTimeToAutoUpdate()) {
+                            getParams().timelineToReload = getParams().mTimelineType;
+                        }
+                        break;
+                    case FOLLOWING_USER:
+                        // This timeline doesn't update automatically so let's do it now if necessary
+                        latestTimelineItem = new LatestTimelineItem(getParams().mTimelineType, getParams().myAccountUserId);
                         if (latestTimelineItem.isTimeToAutoUpdate()) {
                             getParams().timelineToReload = getParams().mTimelineType;
                         }
