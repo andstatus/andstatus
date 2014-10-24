@@ -38,17 +38,17 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="13.0" android:versionCode="113"
-        versionDate="2014-10-23"
-        versionTitle="Migration to Android v.4.1 and TLS 1.2">
+        versionDate="2014-10-24"
+        versionTitle="Migration to Android v.4.1 and the latest secure communication protocols">
         <changes>
             <change>Dropped compatibility with Android before v.4.1. This 
                 made application look modern and familiar to Android users.</change>
             <change>GNUsocial.de, Quitter.no, Quitter.is and GNUsocial.no added to the list
-                of the preconfigured &quot;Microblogging systems&quot; 
+                of the preconfigured &quot;Microblogging systems&quot;. 
                 See <a href="https://github.com/andstatus/andstatus/issues/121">Issue #121</a>.
             </change>
             <change>Added support for TLS 1.1 and TLS 1.2 secure protocols in order to support
-                recently tightened security at some servers,
+                recently strengthened security at some servers,
                 see <a href="https://github.com/andstatus/andstatus/issues/136">Issue #136</a>.
             </change>
         </changes>
