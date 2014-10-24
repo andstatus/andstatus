@@ -28,7 +28,7 @@ import org.json.JSONObject;
 public abstract class HttpConnection {
     protected HttpConnectionData data;
 
-    static final String USER_AGENT = "AndStatus";
+    public static final String USER_AGENT = "AndStatus";
     static final String KEY_MEDIA_PART_NAME = "media_part_name";
     static final String KEY_MEDIA_PART_URI = "media_part_uri";
     /** 

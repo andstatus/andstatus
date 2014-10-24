@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,8 @@ public class AccountSettingsWebActivity extends Activity {
             MyLog.d(TAG, "Loading the URL: " + url);
             WebView webView = (WebView) findViewById(R.id.accountSettingsWebView);
             webView.getSettings().setBuiltInZoomControls(true); 
-            webView.getSettings().setJavaScriptEnabled(true);             
+            webView.getSettings().setJavaScriptEnabled(true);
+            webView.getSettings().setUserAgentString(HttpConnection.USER_AGENT);
             // see http://stackoverflow.com/questions/5561709/opening-webview-not-in-new-browser
             webView.setWebViewClient(new WebViewListener()); 
             
