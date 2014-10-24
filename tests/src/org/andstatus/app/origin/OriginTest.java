@@ -41,19 +41,21 @@ public class OriginTest  extends InstrumentationTestCase {
             
             origin = MyContextHolder.get().persistentOrigins().firstOfType(OriginType.STATUSNET);
             textLimit = 200;
-            MbConfig config = MbConfig.fromTextLimit(textLimit);
+            int uploadLimit = 0;
+            MbConfig config = MbConfig.fromTextLimit(textLimit, uploadLimit);
             origin = new Origin.Builder(origin).save(config).build();
             assertEquals("Textlimit", textLimit, origin.getTextLimit());
             
 			textLimit = 140;
-            config = MbConfig.fromTextLimit(textLimit);
+            config = MbConfig.fromTextLimit(textLimit, uploadLimit);
             origin = new Origin.Builder(origin).save(config).build();
             assertEquals("Textlimit", textLimit, origin.getTextLimit());
             assertEquals("Short URL length", 0, origin.shortUrlLength);
             assertEquals("Characters left", textLimit - message.length(), origin.charactersLeftForMessage(message));
 			
             textLimit = 0;
-            config = MbConfig.fromTextLimit(textLimit);
+            config = MbConfig.fromTextLimit(textLimit, uploadLimit);
+            assertFalse(config.isEmpty());
 			config.shortUrlLength = 24;
             origin = new Origin.Builder(origin).save(config).build();
             assertEquals("Textlimit", OriginType.TEXT_LIMIT_MAXIMUM, origin.getTextLimit());

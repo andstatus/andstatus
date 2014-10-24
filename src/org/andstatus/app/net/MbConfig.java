@@ -25,15 +25,17 @@ public class MbConfig {
     
     public int shortUrlLength = 0;
     public int textLimit = 0;
+    public int uploadLimit = 0;
     
     public static MbConfig getEmpty() {
         return new MbConfig();
     }
 
-    public static MbConfig fromTextLimit(int textLimit) {
+    public static MbConfig fromTextLimit(int textLimit, int uploadLimit) {
         MbConfig config = new MbConfig();
         config.textLimit = textLimit;
-        config.isEmpty = (textLimit == 0);
+        config.uploadLimit = uploadLimit;
+        config.isEmpty = false;
         return config;
     }
     

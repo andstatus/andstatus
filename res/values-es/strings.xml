@@ -70,7 +70,7 @@
   <string name="dialog_summary_checking_credentials">Por favor espere, su cuenta está siendo verificada.</string>
   <string name="dialog_summary_connection_timeout">Tiempo de espera de conexión agotado. Por favor, inténtelo de nuevo más tarde.</string>
   <string name="dialog_summary_executing_command">Por favor, espere mientras que el comando se ejecuta en el servidor.</string>
-  <string name="dialog_summary_external_storage">Se ha detectado el almacenamiento externo. ¿Quiere que AndStatus almacene los datos allí? Los datos antiguos no se puedrán mover, pero permanecerán en su memoria interna.</string>
+  <string name="dialog_summary_external_storage">Se ha detectado el almacenamiento externo. ¿Quiere que AndStatus almacene los datos allí? Los datos antiguos no se podrán mover, pero permanecerán en su memoria interna.</string>
   <string name="dialog_summary_external_storage_missing">El almacenamiento externo no está presente o está sin montar. ¿Desea utilizar la memoria interna? Los datos almacenados en el almacenamiento externo seguirán estando disponibles.</string>
   <string name="dialog_summary_registering_client">Por favor espere mientras AndStatus se registra como cliente</string>
   <string name="dialog_summary_sending_message">Por favor, espere mientras se envía el mensaje.</string>
@@ -175,7 +175,7 @@
   <string name="menu_item_reply">Responder</string>
   <string name="menu_item_reblog">Compartir</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
-  <string name="menu_item_share">Cuota</string>
+  <string name="menu_item_share">Citar</string>
   <string name="menu_item_stop_following_user">Dejar de seguir a \"%1s\"</string>
   <string name="menu_item_user_messages">Mensajes de \"%1s\"</string>
   <string name="menu_item_view_profile">Ver Perfil</string>
@@ -239,7 +239,7 @@
   <string name="syncing">Sincronizando&#8230;</string>
   <string name="syncing_timeline_for_somebody">Sincronizando %1$s para %2$s</string>
   <string name="user_manual_page_1"><h1><b>Manual de usuario de AndStatus</b></h1>\n\n
-        <h2><b>1. Primeros pasos</b></h2>\n\n
+        <h2><b>1. PRIMEROS PASOS</b></h2>\n\n
         Pulsa debajo del botón \"Comenzar\": se abrirá la pantalla para agregar una nueva cuenta.\n
         Puedes cambiar por defecto del sistema de microblogging (\"Twitter\") a alguna otra 
         (pump.io y StatusNet, además de Twitter, están preconfigurados).\n
@@ -255,14 +255,14 @@
         ¡Felicidades! Lea a continuación que más puede hacer.\n\n
         Y no te olvides de añadir tus credenciales AndStatus en la pantalla de inicio:: 
         el widget te informará sobre nuevos mensajes y puede ser utilizado para lanzar AndStatus.\n\n
-        <h2><b>2. AndStatus BÁSICO</b></h2>\n\n
+        <h2><b>2. LO BÁSICO EN AndStatus</b></h2>\n\n
         La primera vista de AndStatus contiene tu línea de tiempo.\n
         Con el fin de realizar una acción sobre un mensaje en la lista <b>mantén pulsado el mensaje</b>
         para que aparezca el menú contextual.\n
         Puedes hacer <b>clic</b> en un mensaje para obtener más detalles sobre el mismo o para ver
         el árbol de la conversación a la que pertenece el mensaje.\n
         Pulsa la tecla <b>Home</b> en la \ \"barra de acción \" para cambiar a otros puntos de vista.\n\n
-        <h2><b>3. ENVÏO Y RESPUESTA</b></h2>\n\n
+        <h2><b>3. ENVÍO Y RESPUESTA</b></h2>\n\n
         Con el fin de actualizar su estado, pulsa el botón \"Blog\" (\"Tweet\" para Twitter),
         escribe un texto en el área de texto en la parte inferior de la pantalla y pulsa <b>Enviar</b>.\n
         Para responder, <b>mantén pulsado</b> un mensaje, selecciona <b>Responder</b>,,
@@ -327,7 +327,7 @@
   <string name="summary_preference_accounts_present">Número de cuentas en AndStatus</string>
   <string name="summary_preference_add_account_oauth">Pulse aquí para abrir la página web de la red social en un navegador.</string>
   <string name="summary_preference_add_account_basic">Pulse aquí para verificar las credenciales y agregar la cuenta.</string>
-  <string name="summary_preference_appearance">Cambiar el aspecto de AnStatus</string>
+  <string name="summary_preference_appearance">Cambiar el aspecto de AndStatus</string>
   <string name="summary_preference_enable_android_backup_off">No se pedirá confirmación para las copias de seguridad</string>
   <string name="summary_preference_enable_android_backup_on">AndStatus notificará sobre los cambios para las copias de seguridad (experimental)</string>
   <string name="summary_preference_frequency">Buscar actualizaciones cada {0}.</string>

@@ -71,7 +71,7 @@ class TimelineListPositionStorage {
                 sp = ma.getAccountPreferences();
                 accountGuid = ma.getAccountName();
             } else {
-                MyLog.e(this, "No accoount for IserId=" + listParameters.myAccountUserId);
+                MyLog.e(this, "No account for IserId=" + listParameters.myAccountUserId);
             }
         }
         if (sp == null) {

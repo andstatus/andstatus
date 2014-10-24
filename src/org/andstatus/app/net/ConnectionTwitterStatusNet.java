@@ -111,7 +111,12 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
             JSONObject site = result.optJSONObject("site");
             if (site != null) {
                 int textLimit = site.optInt("textlimit");
-                config = MbConfig.fromTextLimit(textLimit);
+                int uploadLimit = 0;
+                JSONObject attachments = site.optJSONObject("attachments");
+                if (attachments != null && site.optBoolean("uploads")) {
+                    uploadLimit = site.optInt("file_quota");
+                }
+                config = MbConfig.fromTextLimit(textLimit, uploadLimit);
                 // "shorturllength" is not used
             }
         }
