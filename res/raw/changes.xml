@@ -48,8 +48,8 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 See <a href="https://github.com/andstatus/andstatus/issues/121">Issue #121</a>.
             </change>
             <change>Added support for TLS 1.1 and TLS 1.2 secure protocols in order to support
-                recently strengthened security at some servers,
-                see <a href="https://github.com/andstatus/andstatus/issues/136">Issue #136</a>.
+                recently strengthened security at some servers.
+                See <a href="https://github.com/andstatus/andstatus/issues/136">Issue #136</a>.
             </change>
         </changes>
     </release>
