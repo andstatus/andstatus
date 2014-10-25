@@ -31,8 +31,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Handles connection to the API of the Microblogging System (i.e. to the "Origin")
@@ -430,17 +434,35 @@ public abstract class Connection {
     }
     
     /**
-     * Currently seems like most universal solution
      * @return Unix time. Returns 0 in a case of an error
      */
     public long parseDate(String stringDate) {
+        if(TextUtils.isEmpty(stringDate)) {
+            return 0;
+        }
         long unixDate = 0;
-        if(stringDate != null) {
-            try {
-                unixDate = Date.parse(stringDate);
-            } catch (IllegalArgumentException e) {
-                MyLog.e(this, "Failed to parse the date: '" + stringDate +"'", e);
+        String formats[] = {"", "E MMM d HH:mm:ss Z yyyy", "E, d MMM yyyy HH:mm:ss Z"};
+        for (String format : formats) {
+            if (TextUtils.isEmpty(format)) {
+                try {
+                    unixDate = Date.parse(stringDate);
+                } catch (IllegalArgumentException e) {
+                    MyLog.ignored(this, e);
+                }
+            } else {
+                DateFormat dateFormat1 = new SimpleDateFormat(format, Locale.ENGLISH);
+                try {
+                    unixDate = dateFormat1.parse(stringDate).getTime();
+                } catch (ParseException e) {
+                    MyLog.ignored(this, e);
+                }
             }
+            if (unixDate != 0) {
+                break;
+            }
+        }
+        if (unixDate == 0) {
+            MyLog.d(this, "Failed to parse the date: '" + stringDate +"'");
         }
         return unixDate;
     }

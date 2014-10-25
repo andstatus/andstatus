@@ -124,15 +124,6 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         startsWith = "And this is";
         assertEquals("Body of this message starts with", startsWith, mbMessage.getBody().substring(0, startsWith.length()));
     }
-    
-    public void testParseDate() {
-        String stringDate = "Wed Nov 27 09:27:01 -0300 2013";
-        assertEquals("Bad date shouldn't throw (" + stringDate + ")", 0, connection.parseDate(stringDate) );
-        Date date = TestSuite.utcTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 05);
-        stringDate = "Thu Sep 26 22:23:05 GMT+04:00 2013";   // date.toString gives wrong value!!!
-        long parsed = connection.parseDate(stringDate);
-        assertEquals("Testing the date: Thu Sep 26 18:23:05 +0000 2013 (" + stringDate + " vs " + new Date(parsed).toString() + ")", date.getTime(), parsed);
-    }
 
     public void testGetMessageWithAttachment() throws ConnectionException, MalformedURLException {
         JSONObject jso = RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
