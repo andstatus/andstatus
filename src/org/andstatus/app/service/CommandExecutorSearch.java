@@ -15,7 +15,7 @@ public class CommandExecutorSearch extends CommandExecutorStrategy {
     @Override
     public void execute() {
         DataInserter di = new DataInserter(execContext);
-        String searchQuery = execContext.getCommandData().bundle.getString(SearchManager.QUERY);
+        String searchQuery = execContext.getCommandData().getSearchQuery();
         if (TextUtils.isEmpty(searchQuery)) {
             MyLog.e(this,  "Search query is empty");
             execContext.getResult().incrementParseExceptions();

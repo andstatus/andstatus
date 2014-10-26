@@ -79,6 +79,22 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertEquals(commandData.getResult().getRetriesLeft(), commandData2.getResult().getRetriesLeft());
     }
 
+    public void testEquals() {
+        CommandData data1 = CommandData.searchCommand("", "andstatus");
+        CommandData data2 = CommandData.searchCommand("", "mustard");
+        assertTrue("Hashcodes: " + data1.hashCode() + " and " + data2.hashCode(), data1.hashCode() != data2.hashCode());
+        assertFalse(data1.equals(data2));
+        
+        data1.getResult().prepareForLaunch();
+        data1.getResult().incrementNumIoExceptions();
+        data1.getResult().afterExecutionEnded();
+        assertFalse(data1.getResult().shouldWeRetry());
+        CommandData data3 = CommandData.searchCommand("", "andstatus");
+        assertTrue(data1.equals(data3));
+        assertTrue(data1.hashCode() == data3.hashCode());
+        assertEquals(data1, data3);
+    }
+    
     @Override
     protected void tearDown() throws Exception {
         SharedPreferencesUtil.delete(MyContextHolder.get().context(), QueueType.TEST.getFileName());

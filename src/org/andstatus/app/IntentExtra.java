@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 
 package org.andstatus.app;
-
-import android.app.SearchManager;
 
 /**
  * Names of extras are used in the Intent-messaging 
@@ -61,7 +59,7 @@ public enum IntentExtra{
      * Recipient of a Direct message
      */
     EXTRA_RECIPIENTID("RECIPIENTID"),
-    EXTRA_SEARCH_QUERY(SearchManager.QUERY),
+    EXTRA_SEARCH_QUERY("SEARCH_QUERY"),
     /**
      * boolean. "true" means search in Internet, i.e. sending requests to Microblogging systems  
      */

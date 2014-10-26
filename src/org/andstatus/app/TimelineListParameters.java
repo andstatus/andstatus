@@ -19,6 +19,7 @@ package org.andstatus.app;
 import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -169,7 +170,7 @@ class TimelineListParameters {
         if (!positionRestored) {
             // We have to ensure that saved position will be
             // loaded from database into the list
-            mLastItemId = new TimelineListPositionStorage(null, this).getLastRetrievedSentDate();
+            mLastItemId = new TimelineListPositionStorage(null, null, this).getLastRetrievedSentDate();
         }
 
         if (mLastItemId <= 0) {
@@ -226,10 +227,44 @@ class TimelineListParameters {
         return myAccountUserId;
     }
 
-    public void SaveState(Bundle outState) {
+    public void saveState(Bundle outState) {
         outState.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, getTimelineType().save());
         outState.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, isTimelineCombined());
-        outState.putString(SearchManager.QUERY, mSearchQuery);
+        outState.putString(IntentExtra.EXTRA_SEARCH_QUERY.key, mSearchQuery);
         outState.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
     }
+    
+    boolean restoreState(Bundle savedInstanceState) {
+        TimelineTypeEnum timelineTypeNew = TimelineTypeEnum.load(savedInstanceState
+                .getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+        if (timelineTypeNew == TimelineTypeEnum.UNKNOWN) {
+            return false;
+        }
+        setTimelineType(timelineTypeNew);
+        if (savedInstanceState.containsKey(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key)) {
+            setTimelineCombined(savedInstanceState.getBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key));
+        }
+        if (savedInstanceState.containsKey(IntentExtra.EXTRA_SEARCH_QUERY.key)) {
+            mSearchQuery = notNullString(savedInstanceState.getString(IntentExtra.EXTRA_SEARCH_QUERY.key));
+        }
+        if (savedInstanceState.containsKey(IntentExtra.EXTRA_SELECTEDUSERID.key)) {
+            mSelectedUserId = savedInstanceState.getLong(IntentExtra.EXTRA_SELECTEDUSERID.key);
+        }
+        return true;
+    }
+    
+    void parseIntentData(Intent intentNew) {
+        setTimelineType(TimelineTypeEnum.load(intentNew
+                .getStringExtra(IntentExtra.EXTRA_TIMELINE_TYPE.key)));
+        if (getTimelineType() != TimelineTypeEnum.UNKNOWN) {
+            setTimelineCombined(intentNew.getBooleanExtra(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, isTimelineCombined()));
+            mSearchQuery = notNullString(intentNew.getStringExtra(SearchManager.QUERY));
+            mSelectedUserId = intentNew.getLongExtra(IntentExtra.EXTRA_SELECTEDUSERID.key, mSelectedUserId);
+        }
+    }
+    
+    public static String notNullString(String string) {
+        return string == null ? "" : string;
+    }
+    
 }

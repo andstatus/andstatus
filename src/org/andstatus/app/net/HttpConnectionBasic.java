@@ -21,7 +21,6 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.MyLog;
 import org.apache.http.HttpEntity;
@@ -29,7 +28,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;

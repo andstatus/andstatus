@@ -18,6 +18,8 @@ package org.andstatus.app;
 
 import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.widget.CursorAdapter;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.andstatus.app.TimelineActivity.TimelineTitle;
@@ -38,6 +40,7 @@ import org.andstatus.app.util.MyLog;
 class TimelineListPositionStorage {
     private static final String KEY_PREFIX = "last_position_";
 
+    private CursorAdapter mAdapter;
     private ListView mListView;
     private TimelineListParameters mListParameters;    
     
@@ -60,7 +63,8 @@ class TimelineListPositionStorage {
     private String keyQueryString = "";
     private String queryString;
     
-    TimelineListPositionStorage(ListView listView, TimelineListParameters listParameters) {
+    TimelineListPositionStorage(ListAdapter listAdapter, ListView listView, TimelineListParameters listParameters) {
+        this.mAdapter = (CursorAdapter) listAdapter;
         this.mListView = listView;
         this.mListParameters = listParameters;
         
@@ -92,13 +96,21 @@ class TimelineListPositionStorage {
             return false;
         }
         final String method = "saveListPosition";
-        android.widget.ListAdapter la = mListView.getAdapter();
+        CursorAdapter la = mAdapter;
         if (la == null) {
             MyLog.v(this, method + " skipped: no ListAdapter");
             return false;
         }
         if (mListParameters.isEmpty()) {
             MyLog.v(this, method + " skipped: no listParameters");
+            return false;
+        }
+        if (la.getCursor() == null) {
+            MyLog.v(this, method + " skipped: cursor is null");
+            return false;
+        }
+        if (la.getCursor() == null || la.getCursor().isClosed()) {
+            MyLog.v(this, method + " skipped: cursor is closed");
             return false;
         }
 

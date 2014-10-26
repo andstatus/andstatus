@@ -87,6 +87,7 @@ class FileDownloader {
             // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
             HttpGet httpget = new HttpGet(data.getUrl().toExternalForm());
             HttpResponse response = HttpApacheUtils.getHttpClient().execute(httpget);
+            parseStatusCode(response.getStatusLine().getStatusCode());
             try {
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
@@ -128,6 +129,26 @@ class FileDownloader {
         }
     }
 
+    private void parseStatusCode(int code) throws IOException {
+        switch (code) {
+        case 200:
+        case 304:
+            break;
+        case 401:
+            throw new IOException(String.valueOf(code));
+        case 400:
+        case 403:
+        case 404:
+            throw new FileNotFoundException(String.valueOf(code));
+        case 500:
+        case 502:
+        case 503:
+            throw new IOException(String.valueOf(code));
+        default:
+            break;
+        }
+    }
+    
     public DownloadStatus getStatus() {
         return data.getStatus();
     }

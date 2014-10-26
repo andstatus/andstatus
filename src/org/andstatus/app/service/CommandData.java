@@ -16,7 +16,6 @@
 
 package org.andstatus.app.service;
 
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -78,7 +77,7 @@ public class CommandData implements Comparable<CommandData> {
      */
     Bundle bundle = new Bundle();
 
-    private int hashcode = 0;
+    private volatile int result = 0;
 
     private CommandResult commandResult = new CommandResult();
 
@@ -117,6 +116,10 @@ public class CommandData implements Comparable<CommandData> {
 
     public String getMessageText() {
         return getExtraText(IntentExtra.EXTRA_MESSAGE_TEXT);
+    }
+
+    public String getSearchQuery() {
+        return getExtraText(IntentExtra.EXTRA_SEARCH_QUERY);
     }
 
     private String getExtraText(IntentExtra intentExtra) {
@@ -214,7 +217,7 @@ public class CommandData implements Comparable<CommandData> {
     public static CommandData searchCommand(String accountName, String queryString) {
         CommandData commandData = new CommandData(CommandEnum.SEARCH_MESSAGE, accountName, TimelineTypeEnum.PUBLIC);
         commandData.mInForeground = true;
-        commandData.bundle.putString(SearchManager.QUERY, queryString);
+        commandData.bundle.putString(IntentExtra.EXTRA_SEARCH_QUERY.key, queryString);
         return commandData;
     }
 
@@ -269,8 +272,8 @@ public class CommandData implements Comparable<CommandData> {
                         sp.getString(IntentExtra.EXTRA_MEDIA_URI.key + si, ""));
                 break;
 			case SEARCH_MESSAGE:
-				commandData.bundle.putString(SearchManager.QUERY,
-						sp.getString(SearchManager.QUERY + si, ""));
+				commandData.bundle.putString(IntentExtra.EXTRA_SEARCH_QUERY.key,
+						sp.getString(IntentExtra.EXTRA_SEARCH_QUERY.key + si, ""));
 				break;			
             default:
                 break;
@@ -337,25 +340,30 @@ public class CommandData implements Comparable<CommandData> {
      */
     @Override
     public int hashCode() {
-        if (hashcode == 0) {
-            String text = command.save();
+        if (result == 0) {
+            final int prime = 31;
+            result = 1;
+            result += command.save().hashCode();
             if (!TextUtils.isEmpty(getAccountName())) {
-                text += getAccountName();
+                result += prime * getAccountName().hashCode();
             }
             if (timelineType != TimelineTypeEnum.UNKNOWN) {
-                text += timelineType.save();
+                result += prime * timelineType.save().hashCode();
             }
             if (itemId != 0) {
-                text += Long.toString(itemId);
+                result += prime * itemId;
             }
-            text += getExtraText(IntentExtra.EXTRA_MESSAGE_TEXT);
+            if (!TextUtils.isEmpty(getMessageText())) {
+                result += prime * getMessageText().hashCode();
+            }
+            if (!TextUtils.isEmpty(getSearchQuery())) {
+                result += prime * getSearchQuery().hashCode();
+            }
             if (getMediaUri() != null) {
-                text += "-" + getMediaUri().toString();
+                result += prime * getMediaUri().toString().hashCode();
             }
-            text += getExtraText(IntentExtra.EXTRA_SEARCH_QUERY);
-            hashcode = text.hashCode();
         }
-        return hashcode;
+        return result;
     }
 
     /**
@@ -381,7 +389,7 @@ public class CommandData implements Comparable<CommandData> {
                 break;
             case SEARCH_MESSAGE:
                 builder.append("\"");
-                builder.append(I18n.trimTextAt(bundle.getString(SearchManager.QUERY), 40));                
+                builder.append(I18n.trimTextAt(getSearchQuery(), 40));                
                 builder.append("\",");
                 break;
             default:
@@ -434,7 +442,19 @@ public class CommandData implements Comparable<CommandData> {
             return false;
         }
         CommandData other = (CommandData) o;
-        return hashCode() == other.hashCode();
+        if (hashCode() != other.hashCode()) {
+            return false;
+        }
+        if (!getAccountName().contentEquals(other.getAccountName())) {
+            return false;
+        }
+        if (!getMessageText().contentEquals(other.getMessageText())) {
+            return false;
+        }
+        if (!getSearchQuery().contentEquals(other.getSearchQuery())) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -466,7 +486,7 @@ public class CommandData implements Comparable<CommandData> {
                 ed.putString(IntentExtra.EXTRA_MEDIA_URI.key + si, bundle.getString(IntentExtra.EXTRA_MEDIA_URI.key));
                 break;
 			case SEARCH_MESSAGE:
-				ed.putString(SearchManager.QUERY + si, bundle.getString(SearchManager.QUERY));
+				ed.putString(IntentExtra.EXTRA_SEARCH_QUERY.key + si, getSearchQuery());
 				break;
             default:
                 break;
@@ -542,7 +562,7 @@ public class CommandData implements Comparable<CommandData> {
                 break;
 			case SEARCH_MESSAGE:
 				builder.append("\"");
-                builder.append(I18n.trimTextAt(bundle.getString(SearchManager.QUERY), 40));                
+                builder.append(I18n.trimTextAt(getSearchQuery(), 40));                
                 builder.append("\" ");
 				if (!TextUtils.isEmpty(accountName)) {
                     builder.append(myContext.context().getText(R.string.combined_timeline_off_origin) + " ");

@@ -61,7 +61,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         assertEquals("Not loaded yet", DownloadStatus.ABSENT, loader.getStatus());
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         
-        String urlString = "http://andstatus.org/nonexistent_avatar.png";
+        String urlString = "http://andstatus.org/nonexistent_avatar_" + System.currentTimeMillis() +  ".png";
         changeMaAvatarUrl(urlString);
         // Non-existent file is a hard error
         loadAndAssertStatusForMa(DownloadStatus.HARD_ERROR, false);

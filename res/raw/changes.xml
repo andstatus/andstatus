@@ -37,8 +37,8 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
-    <release android:versionName="13.0" android:versionCode="113"
-        versionDate="2014-10-24"
+    <release android:versionName="13.1" android:versionCode="114"
+        versionDate="2014-10-26"
         versionTitle="Migration to Android v.4.1 and the latest secure communication protocols">
         <changes>
             <change>Dropped compatibility with Android before v.4.1. This 
