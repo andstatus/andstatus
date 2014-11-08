@@ -43,17 +43,17 @@ public enum CommandEnum {
     /**
      * The action to fetch all usual timelines in the background.
      */
-    AUTOMATIC_UPDATE("automatic-update", 0, -12, ConnectionRequired.ONLINE),
+    AUTOMATIC_UPDATE("automatic-update", 0, 12, ConnectionRequired.ONLINE),
     /**
      * Fetch timeline(s) of the specified type for the specified MyAccount. 
      */
-    FETCH_TIMELINE("fetch-timeline", 0, -4, ConnectionRequired.ONLINE),
+    FETCH_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.ONLINE),
 
     /**
      * Fetch avatar for the specified user 
      */
-    FETCH_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, -9, ConnectionRequired.ONLINE),
-    FETCH_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, -11, ConnectionRequired.WIFI),
+    FETCH_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, 9, ConnectionRequired.ONLINE),
+    FETCH_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, 11, ConnectionRequired.WIFI),
     
     CREATE_FAVORITE("create-favorite", R.string.menu_item_favorite, 0, ConnectionRequired.ONLINE), 
     DESTROY_FAVORITE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, ConnectionRequired.ONLINE),
@@ -64,14 +64,14 @@ public enum CommandEnum {
     /**
      * This command is for sending both public and direct messages
      */
-    UPDATE_STATUS("update-status", R.string.button_create_message, 10, ConnectionRequired.ONLINE), 
-    DESTROY_STATUS("destroy-status", R.string.menu_item_destroy_status, 3, ConnectionRequired.ONLINE),
-    GET_STATUS("get-status", R.string.title_command_get_status, 5, ConnectionRequired.ONLINE),
+    UPDATE_STATUS("update-status", R.string.button_create_message, -10, ConnectionRequired.ONLINE), 
+    DESTROY_STATUS("destroy-status", R.string.menu_item_destroy_status, -3, ConnectionRequired.ONLINE),
+    GET_STATUS("get-status", R.string.title_command_get_status, -5, ConnectionRequired.ONLINE),
 
-    SEARCH_MESSAGE("search-message", R.string.options_menu_search, -4, ConnectionRequired.ONLINE),
+    SEARCH_MESSAGE("search-message", R.string.options_menu_search, 4, ConnectionRequired.ONLINE),
     
-    REBLOG("reblog", R.string.menu_item_reblog, 9, ConnectionRequired.ONLINE),
-    DESTROY_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, 3, ConnectionRequired.ONLINE),
+    REBLOG("reblog", R.string.menu_item_reblog, -9, ConnectionRequired.ONLINE),
+    DESTROY_REBLOG("destroy-reblog", R.string.menu_item_destroy_reblog, -3, ConnectionRequired.ONLINE),
 
     RATE_LIMIT_STATUS("rate-limit-status", 0, 0, ConnectionRequired.ONLINE),
 
@@ -97,7 +97,7 @@ public enum CommandEnum {
     /**
      * Clear previous notifications (because e.g. user opened a Timeline)
      */
-    NOTIFY_CLEAR("notify-clear", 0, 20),
+    NOTIFY_CLEAR("notify-clear", 0, -20),
 
     /**
      * Stop the service after finishing all asynchronous treads (i.e. not immediately!)
@@ -117,6 +117,7 @@ public enum CommandEnum {
      * The id of the string resource with the localized name of this enum to use in UI
      */
     private final int titleResId;
+    /** less value of the  priority means higher priority */
     private final int priority;
     private final ConnectionRequired connectionRequired;
 

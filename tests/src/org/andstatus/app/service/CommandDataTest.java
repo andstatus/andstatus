@@ -95,6 +95,21 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertEquals(data1, data3);
     }
     
+    public void testPriority() {
+        Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
+        queue.add(CommandData.searchCommand(TestSuite.STATUSNET_TEST_ACCOUNT_NAME, "q1"));
+        queue.add(CommandData.updateStatus("", "Test 1", 0, 0, null));
+        queue.add(new CommandData(CommandEnum.AUTOMATIC_UPDATE, ""));
+        queue.add(CommandData.updateStatus("", "Test 2", 0, 0, null));
+        queue.add(new CommandData(CommandEnum.GET_STATUS, ""));
+        
+        assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());
+        assertEquals(CommandEnum.UPDATE_STATUS, queue.poll().getCommand());
+        assertEquals(CommandEnum.GET_STATUS, queue.poll().getCommand());
+        assertEquals(CommandEnum.SEARCH_MESSAGE, queue.poll().getCommand());
+        assertEquals(CommandEnum.AUTOMATIC_UPDATE, queue.poll().getCommand());
+    }
+    
     @Override
     protected void tearDown() throws Exception {
         SharedPreferencesUtil.delete(MyContextHolder.get().context(), QueueType.TEST.getFileName());
