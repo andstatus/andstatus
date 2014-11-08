@@ -122,20 +122,64 @@ class MessageEditor {
     }
 
     public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem createMessageButton = menu.findItem(R.id.createMessageButton);
-        createMessageButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                MyAccount accountForButton = accountforCreateMessageButton();
-                if ( isVisible() || accountForButton == null) {
-                    hide();
-                } else {
-                    startEditingMessage("", Uri.EMPTY, 0, 0, accountForButton);
-                }
-                return false;
-            }
-        });
         updateCreateMessageButton(menu);
+        updateHideMessageButton(menu);
+    }
+    
+    private void updateCreateMessageButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.createMessageButton);
+        if (item == null) {
+            return;
+        }
+        item.setOnMenuItemClickListener(
+                new MenuItem.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        MyAccount accountForButton = accountforCreateMessageButton();
+                        if (isVisible() || accountForButton == null) {
+                            hide();
+                        } else {
+                            startEditingMessage("", Uri.EMPTY, 0, 0, accountForButton);
+                        }
+                        return false;
+                    }
+                });
+        MyAccount accountForButton = accountforCreateMessageButton();
+        item.setVisible(!isVisible()
+                && accountForButton != null 
+                && mMessageList.getTimelineType() != TimelineTypeEnum.DIRECT
+                && mMessageList.getTimelineType() != TimelineTypeEnum.MESSAGESTOACT
+                && accountForButton.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED);
+    }
+
+    private MyAccount accountforCreateMessageButton() {
+        MyAccount accountForButton = null;
+        if (isVisible()) {
+            accountForButton = mAccount;
+        } else {
+            accountForButton = MyContextHolder.get().persistentAccounts().getCurrentAccount();
+            if (accountForButton != null 
+                    && accountForButton.getCredentialsVerified() != MyAccount.CredentialsVerificationStatus.SUCCEEDED ) {
+                accountForButton = null;
+            }
+        }
+        return accountForButton;
+    }
+    
+    private void updateHideMessageButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.hideMessageButton);
+        if (item == null) {
+            return;
+        }
+        item.setOnMenuItemClickListener(
+                new MenuItem.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        hide();
+                        return false;
+                    }
+                });
+        item.setVisible(isVisible());
     }
     
     private void setupEditText() {
@@ -190,20 +234,6 @@ class MessageEditor {
         });
     }
     
-    private MyAccount accountforCreateMessageButton() {
-        MyAccount accountForButton = null;
-        if (isVisible()) {
-            accountForButton = mAccount;
-        } else {
-            accountForButton = MyContextHolder.get().persistentAccounts().getCurrentAccount();
-            if (accountForButton != null 
-                    && accountForButton.getCredentialsVerified() != MyAccount.CredentialsVerificationStatus.SUCCEEDED ) {
-                accountForButton = null;
-            }
-        }
-        return accountForButton;
-    }
-    
     /**
      * Continue message editing
      * @return new state of visibility
@@ -245,26 +275,6 @@ class MessageEditor {
     private void openSoftKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager) mMessageList.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.toggleSoftInputFromWindow(mEditText.getWindowToken(), InputMethodManager.SHOW_FORCED, 0);        
-    }
-    
-    public void updateCreateMessageButton(Menu menu) {
-        MenuItem createMessageButton = menu.findItem(R.id.createMessageButton);
-        if (createMessageButton == null) {
-            return;
-        }
-        MyAccount accountForButton = accountforCreateMessageButton();
-        boolean isButtonVisible = isVisible();
-        int resId = R.string.button_hide;
-        if (!isButtonVisible
-                && accountForButton != null 
-                && mMessageList.getTimelineType() != TimelineTypeEnum.DIRECT
-                && mMessageList.getTimelineType() != TimelineTypeEnum.MESSAGESTOACT
-                && accountForButton.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED ) {
-            isButtonVisible = true;
-            resId = accountForButton.alternativeTermForResourceId(R.string.button_create_message);
-        }
-        createMessageButton.setTitle(resId);
-        createMessageButton.setVisible(isButtonVisible);
     }
     
     public void hide() {

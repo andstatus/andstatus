@@ -47,7 +47,8 @@
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.ActionButton.Overflow</item>
 
         <item name="attachIcon">@drawable/ic_action_new_attachment</item>
-        <item name="postMessageIcon">@drawable/ic_action_new</item>
+        <item name="postMessageIcon">@drawable/ic_action_new_message</item>
+        <item name="hideMessageIcon">@drawable/ic_action_hide_message</item>
         <item name="replyBackground">@drawable/reply_timeline_background</item>
         <item name="globalSearchIcon">@drawable/ic_action_global_search</item>
         <item name="searchIcon">@drawable/ic_action_search</item>
@@ -69,7 +70,8 @@
         <item name="myActionOverflowButtonStyle">@android:style/Widget.Holo.Light.ActionButton.Overflow</item>
 
         <item name="attachIcon">@drawable/ic_action_new_attachment_light</item>
-        <item name="postMessageIcon">@drawable/ic_action_new_light</item>
+        <item name="postMessageIcon">@drawable/ic_action_new_message_light</item>
+        <item name="hideMessageIcon">@drawable/ic_action_hide_message_light</item>
         <item name="replyBackground">@drawable/reply_timeline_background_light</item>
         <item name="globalSearchIcon">@drawable/ic_action_global_search_light</item>
         <item name="searchIcon">@drawable/ic_action_search_light</item>
@@ -98,7 +100,8 @@
         -->
 
         <item name="attachIcon">@drawable/ic_action_new_attachment</item>
-        <item name="postMessageIcon">@drawable/ic_action_new</item>
+        <item name="postMessageIcon">@drawable/ic_action_new_message</item>
+        <item name="hideMessageIcon">@drawable/ic_action_hide_message</item>
         <item name="replyBackground">@drawable/reply_timeline_background</item>
         <item name="globalSearchIcon">@drawable/ic_action_global_search</item>
         <item name="searchIcon">@drawable/ic_action_search</item>
