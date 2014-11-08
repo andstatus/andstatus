@@ -482,7 +482,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 onSearchRequested();
                 break;
             case R.id.reload_menu_item:
-                manualReload(false);
+                manualReload(false, true);
                 break;
             case R.id.global_search_menu_id:
                 onSearchRequested(true);
@@ -962,12 +962,12 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private void launchReloadIfNeeded(TimelineTypeEnum timelineToReload) {
         switch (timelineToReload) {
             case ALL:
-                manualReload(true);
+                manualReload(true, false);
                 break;
             case UNKNOWN:
                 break;
             default:
-                manualReload(false);
+                manualReload(false, false);
                 break;
         }
     }
@@ -977,7 +977,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      * Only newer messages (newer than last loaded) are being loaded from the
      * Internet, older ones are not being reloaded.
      */
-    protected void manualReload(boolean allTimelineTypes) {
+    protected void manualReload(boolean allTimelineTypes, boolean manuallyLauched) {
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mListParametersNew.myAccountUserId);
         TimelineTypeEnum timelineTypeForReload = TimelineTypeEnum.HOME;
         long userId = 0;
@@ -1016,8 +1016,8 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         setLoading(true);
         MyServiceManager.sendForegroundCommand(
-                new CommandData(CommandEnum.FETCH_TIMELINE,
-                        allAccounts ? "" : ma.getAccountName(), timelineTypeForReload, userId)
+                (new CommandData(CommandEnum.FETCH_TIMELINE,
+                        allAccounts ? "" : ma.getAccountName(), timelineTypeForReload, userId)).setManuallyLaunched(manuallyLauched)
                 );
 
         if (allTimelineTypes && ma != null) {

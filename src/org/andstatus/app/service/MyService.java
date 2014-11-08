@@ -642,6 +642,9 @@ public class MyService extends Service {
                                     : "disabled")
                             : "background")
                     + " " + commandData);
+            if (commandData != null) {
+                commandData.setManuallyLaunched(false);
+            }
             return commandData;
         }
 
@@ -663,7 +666,7 @@ public class MyService extends Service {
                 for (CommandData cd : mRetryCommandQueue) {
                     if (cd.equals(cdIn)) {
                         cd.getResult().resetRetries(cd.getCommand());
-                        if (cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
+                        if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
                             cdOut = cd;
                             mRetryCommandQueue.remove(cd);
                             MyLog.v(this, "Returned from Retry queue: " + cd);
@@ -685,7 +688,7 @@ public class MyService extends Service {
                 for (CommandData cd : mErrorCommandQueue) {
                     if (cd.equals(cdIn)) {
                         cd.getResult().resetRetries(cd.getCommand());
-                        if (cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
+                        if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
                             cdOut = cd;
                             mErrorCommandQueue.remove(cd);
                             MyLog.v(this, "Returned from Error queue: " + cd);

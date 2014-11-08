@@ -68,8 +68,13 @@ public class MyServiceTest extends InstrumentationTestCase {
         assertTrue("Data was posted " + mService.httpConnectionMock.getPostedCounter() + " times",
                 mService.httpConnectionMock.getPostedCounter() == 0);
         mService.sendListenedToCommand();
-        assertFalse("Duplicated commands started executing",
+        assertFalse("Duplicated command didn't start executing",
                 mService.waitForCommandExecutionStarted(startCount + 1));
+        mService.listentedToCommand.setManuallyLaunched(true);
+        mService.sendListenedToCommand();
+        assertTrue("Manually launched duplicated command started executing",
+                mService.waitForCommandExecutionStarted(startCount + 1));
+        assertTrue("The third command ended executing", mService.waitForCommandExecutionEnded(endCount+1));
         assertTrue("Service stopped", mService.waitForServiceStopped());
         MyLog.v(this, method + " ended");
     }

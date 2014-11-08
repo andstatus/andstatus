@@ -99,6 +99,10 @@ public class MyServiceManager extends BroadcastReceiver {
         sendCommandEvenForUnavailable(commandData);
     }
 
+    public static void sendManualForegroundCommand(CommandData commandData) {
+        sendForegroundCommand(commandData.setManuallyLaunched(true));
+    }
+    
     public static void sendForegroundCommand(CommandData commandData) {
         sendCommand(commandData.setInForeground(true));
     }

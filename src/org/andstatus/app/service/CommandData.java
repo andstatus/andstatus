@@ -63,7 +63,8 @@ public class CommandData implements Comparable<CommandData> {
     private final TimelineTypeEnum timelineType;
 
     private volatile boolean mInForeground = false;
-    
+    private volatile boolean mManuallyLaunched = false;
+
     /**
      * This is: 
      * 1. Generally: Message ID ({@link MyDatabase.Msg#MSG_ID} of the {@link MyDatabase.Msg}).
@@ -203,6 +204,7 @@ public class CommandData implements Comparable<CommandData> {
 					commandData.bundle = bundle;
                     commandData.itemId = commandData.bundle.getLong(IntentExtra.EXTRA_ITEMID.key);
                     commandData.mInForeground = commandData.bundle.getBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key);
+                    commandData.mManuallyLaunched = commandData.bundle.getBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key);
                     commandData.commandResult = commandData.bundle.getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
                     break;
             }
@@ -217,6 +219,7 @@ public class CommandData implements Comparable<CommandData> {
     public static CommandData searchCommand(String accountName, String queryString) {
         CommandData commandData = new CommandData(CommandEnum.SEARCH_MESSAGE, accountName, TimelineTypeEnum.PUBLIC);
         commandData.mInForeground = true;
+        commandData.mManuallyLaunched = true;
         commandData.bundle.putString(IntentExtra.EXTRA_SEARCH_QUERY.key, queryString);
         return commandData;
     }
@@ -224,6 +227,7 @@ public class CommandData implements Comparable<CommandData> {
     public static CommandData updateStatus(String accountName, String status, long replyToId, long recipientId, Uri mediaUri) {
         CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS, accountName);
         commandData.mInForeground = true;
+        commandData.mManuallyLaunched = true;
         commandData.bundle.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key, status);
         if (replyToId != 0) {
             commandData.bundle.putLong(IntentExtra.EXTRA_INREPLYTOID.key, replyToId);
@@ -376,6 +380,9 @@ public class CommandData implements Comparable<CommandData> {
         if (mInForeground) {
             builder.append("foreground,");
         }
+        if (mManuallyLaunched) {
+            builder.append("manual,");
+        }
         switch (command) {
             case UPDATE_STATUS:
                 builder.append("\"");
@@ -431,6 +438,7 @@ public class CommandData implements Comparable<CommandData> {
             bundle.putLong(IntentExtra.EXTRA_ITEMID.key, itemId);
         }
         bundle.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key, mInForeground);
+        bundle.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key, mManuallyLaunched);
         bundle.putParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key, commandResult);        
         intent.putExtras(bundle);
         return intent;
@@ -475,6 +483,7 @@ public class CommandData implements Comparable<CommandData> {
         ed.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, timelineType.save());
         ed.putLong(IntentExtra.EXTRA_ITEMID.key + si, itemId);
         ed.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key + si, mInForeground);
+        ed.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key + si, mManuallyLaunched);
         switch (command) {
             case FETCH_ATTACHMENT:
                 ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
@@ -523,6 +532,15 @@ public class CommandData implements Comparable<CommandData> {
         return timelineType;
     }
 
+    public boolean isManuallyLaunched() {
+        return mManuallyLaunched;
+    }
+
+    public CommandData setManuallyLaunched(boolean manuallyLaunched) {
+        this.mManuallyLaunched = manuallyLaunched;
+        return this;
+    }
+    
     public CommandResult getResult() {
         return commandResult;
     }
