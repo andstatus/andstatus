@@ -26,19 +26,11 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
@@ -191,41 +183,10 @@ public class HttpApacheUtils {
         return formParams;
     }
 
-    /** Based on: https://github.com/rfc2822/davdroid/blob/master/src/at/bitfire/davdroid/webdav/DavHttpClient.java */
-    private final static RequestConfig REQUEST_CONFIG;
-    private final static Registry<ConnectionSocketFactory> SOCKET_FACTORY_REGISTRY;
-
-    static {
-        SOCKET_FACTORY_REGISTRY = RegistryBuilder.<ConnectionSocketFactory> create()
-                .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", TlsSniSocketFactory.INSTANCE)
-                .build();
-        
-        // use request defaults from AndroidHttpClient
-        REQUEST_CONFIG = RequestConfig.copy(RequestConfig.DEFAULT)
-                .setConnectTimeout(MyPreferences.getConnectionTimeoutMs())
-                .setSocketTimeout(2*MyPreferences.getConnectionTimeoutMs())
-                .setStaleConnectionCheckEnabled(false)
-                .build();
-    }
-    
     public static HttpClient getHttpClient() {
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(SOCKET_FACTORY_REGISTRY);
-        connectionManager.setMaxTotal(3);               // max.  3 connections in total
-        connectionManager.setDefaultMaxPerRoute(2);     // max.  2 connections per host
-        
-        HttpClientBuilder builder = HttpClients.custom()
-                .useSystemProperties()
-                .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(REQUEST_CONFIG)
-                /* TODO maybe:  
-                .setRetryHandler(DavHttpRequestRetryHandler.INSTANCE)
-                .setRedirectStrategy(DavRedirectStrategy.INSTANCE)  
-                */
-                .setUserAgent(HttpConnection.USER_AGENT)
-                .disableCookieManagement();
-
-        return builder.build();
+        return MyPreferences.getBoolean(MyPreferences.KEY_ALLOW_MISCONFIGURED_SSL, false) ?
+            MisconfiguredSslHttpClientFactory.getHttpClient() :
+            MyHttpClientFactory.getHttpClient() ;
     }
     
 }

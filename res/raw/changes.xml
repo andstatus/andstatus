@@ -37,6 +37,19 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="13.2" android:versionCode="115"
+        versionDate="2014-11-08"
+        versionTitle="Debugging option allowing misconfigured SSL">
+        <changes>
+            <change>Added an option to &quot;Allow misconfigured SSL&quot; connections 
+                (inside &quot;Logging and Debugging&quot;) to support those users, who cannot afford
+                changing their providers or install a proper certificate to their site but still need
+                SSL connection. Setting this option should be considered only as as a temporary
+                measure. TLS and SNI protocols are not supported while this option is turned on.
+                See <a href="https://loadaverage.org/conversation/6236284">this discussion</a>.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="13.1" android:versionCode="114"
         versionDate="2014-10-26"
         versionTitle="Migration to Android v.4.1 and the latest secure communication protocols">

@@ -99,6 +99,7 @@
   <string name="dialog_title_sending_message">Sending a message&#8230;</string>
   <string name="dialog_title_service_unavailable">Service Unavailable</string>
   <string name="dialog_title_timeline_loading">Updating a Timeline&#8230;</string>
+  <string name="empty_in_parenthesis">(empty)</string>
   <string name="error">Error</string>
   <string name="error_twitter_404">The page cannot be found. Please report this error!</string>
   <string name="error_connection_error">A connection error has occurred. Please report this error!</string>
@@ -215,7 +216,9 @@
   <string name="options_menu_mentions">Mentions</string>
   <string name="options_menu_search">Search</string>
   <string name="origin_settings_action">Microblogging system</string>
-  <string name="empty_in_parenthesis">(empty)</string>
+  <string name="preference_allow_misconfigured_ssl_title">Allow misconfigured SSL</string>
+  <string name="preference_allow_misconfigured_ssl_summary_off">You are safe: only properly configured SSL connections allowed</string>
+  <string name="preference_allow_misconfigured_ssl_summary_on">Warning: Your connections are not secure, because security certificates, issued for any host, are accepted. TLS and SNI protocols are not available. Please tell your server administrator to fix this and then turn off this option</string>
   <string name="reltime_days_ago_formats_1">yesterday</string>
   <string name="reltime_days_ago_formats_2">{0} days ago</string>
   <string name="reltime_hours_ago_formats_1">an hour ago</string>

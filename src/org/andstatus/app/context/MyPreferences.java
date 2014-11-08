@@ -67,6 +67,8 @@ public class MyPreferences {
     public static final String KEY_ABOUT_APPLICATION = "about_application";
     public static final String KEY_COMMANDS_QUEUE = "commands_queue";
 
+    public static final String KEY_ALLOW_MISCONFIGURED_SSL = "allow_misconfigured_ssl";
+    
     /**
      * System time when shared preferences were changed
      */
