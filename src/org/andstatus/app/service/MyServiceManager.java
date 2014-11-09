@@ -92,6 +92,7 @@ public class MyServiceManager extends BroadcastReceiver {
         if (!isServiceAvailable()) {
             // Imitate a soft service error
             commandData.getResult().incrementNumIoExceptions();
+            commandData.getResult().setMessage("Service is not available");
             MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.STOPPED)
             .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
             return;

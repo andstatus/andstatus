@@ -19,6 +19,7 @@ package org.andstatus.app.service;
 import android.content.SharedPreferences;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
@@ -43,6 +44,7 @@ public final class CommandResult implements Parcelable {
     private long numAuthExceptions = 0;
     private long numIoExceptions = 0;
     private long numParseExceptions = 0;
+    private String mMessage = "";
 
     private long itemId = 0;
     
@@ -72,6 +74,13 @@ public final class CommandResult implements Parcelable {
         numAuthExceptions += oneStepResult.numAuthExceptions;
         numIoExceptions += oneStepResult.numIoExceptions;
         numParseExceptions += oneStepResult.numParseExceptions;
+        if (!TextUtils.isEmpty(oneStepResult.mMessage)) {
+            if (TextUtils.isEmpty(mMessage)) {
+                mMessage = oneStepResult.mMessage;
+            } else {
+                mMessage += "; " + oneStepResult.mMessage;
+            }
+        }
         if (itemId == 0) {
             itemId = oneStepResult.itemId;
         }
@@ -104,6 +113,7 @@ public final class CommandResult implements Parcelable {
         dest.writeLong(numAuthExceptions);
         dest.writeLong(numIoExceptions);
         dest.writeLong(numParseExceptions);
+        dest.writeString(mMessage);
         dest.writeLong(itemId);
         dest.writeInt(hourlyLimit);
         dest.writeInt(remainingHits);
@@ -118,6 +128,7 @@ public final class CommandResult implements Parcelable {
         numAuthExceptions = parcel.readLong();
         numIoExceptions = parcel.readLong();
         numParseExceptions = parcel.readLong();
+        mMessage = parcel.readString();
         itemId = parcel.readLong();
         hourlyLimit = parcel.readInt();
         remainingHits = parcel.readInt();
@@ -133,6 +144,7 @@ public final class CommandResult implements Parcelable {
         ed.putLong(IntentExtra.EXTRA_NUM_AUTH_EXCEPTIONS.key + si, numAuthExceptions);
         ed.putLong(IntentExtra.EXTRA_NUM_IO_EXCEPTIONS.key + si, numIoExceptions);
         ed.putLong(IntentExtra.EXTRA_NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
+        ed.putString(IntentExtra.EXTRA_ERROR_MESSAGE.key + si, mMessage);
         ed.putInt(IntentExtra.EXTRA_DOWNLOADED_COUNT.key + si, downloadedCount);
     }
 
@@ -145,6 +157,7 @@ public final class CommandResult implements Parcelable {
         numAuthExceptions = sp.getLong(IntentExtra.EXTRA_NUM_AUTH_EXCEPTIONS.key + si, numAuthExceptions);
         numIoExceptions = sp.getLong(IntentExtra.EXTRA_NUM_IO_EXCEPTIONS.key + si, numIoExceptions);
         numParseExceptions = sp.getLong(IntentExtra.EXTRA_NUM_PARSE_EXCEPTIONS.key + si, numParseExceptions);
+        mMessage = sp.getString(IntentExtra.EXTRA_ERROR_MESSAGE.key + si, mMessage);
         downloadedCount = sp.getInt(IntentExtra.EXTRA_DOWNLOADED_COUNT.key + si, downloadedCount);
     }
 
@@ -202,7 +215,11 @@ public final class CommandResult implements Parcelable {
             }
         }
         if (hasError()) {
-            message.append("error:" + (hasHardError() ? "Hard" : "Soft") + ", ");
+            message.append("error:" + (hasHardError() ? "Hard" : "Soft"));
+            if (!TextUtils.isEmpty(mMessage)) {
+                message.append(" '" + mMessage + "'");
+            }
+            message.append(", ");
         }
         if (downloadedCount > 0) {
             message.append("downloaded:" + downloadedCount + ", ");
@@ -359,5 +376,13 @@ public final class CommandResult implements Parcelable {
 
     public long getLastExecutedDate() {
         return lastExecutedDate;
+    }
+
+    public String getMessage() {
+        return mMessage;
+    }
+
+    public void setMessage(String message) {
+        this.mMessage = message;
     }
 }

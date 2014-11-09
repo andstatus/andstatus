@@ -163,6 +163,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         } else {
             execContext.getResult().incrementNumIoExceptions();
         }
+        execContext.getResult().setMessage(e.toString() + ", " + detailedMessage);
         MyLog.e(this, detailedMessage + ": " + e.toString());
     }
 

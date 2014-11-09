@@ -59,6 +59,9 @@ class FileDownloader {
                 loadUrl();
                 break;
         }
+        if (data.isError()) {
+            commandData.getResult().setMessage(data.getMessage());
+        }
         if (data.isHardError()) {
             commandData.getResult().incrementParseExceptions();
         }

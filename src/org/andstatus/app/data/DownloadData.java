@@ -16,6 +16,7 @@ import org.andstatus.app.util.MyLog;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.ErrorManager;
 
 public class DownloadData {
     private DownloadType downloadType = DownloadType.UNKNOWN;
@@ -29,6 +30,7 @@ public class DownloadData {
 
     private boolean hardError = false;
     private boolean softError = false;
+    private String errorMessage = "";
 
     private long loadTimeNew = 0;
     private DownloadFile fileNew = DownloadFile.getEmpty();
@@ -283,11 +285,16 @@ public class DownloadData {
     
     public void hardErrorLogged(String message, Exception e) {
         hardError = true;
-        MyLog.i(this, message + "; " + userMsgUrlToString(), e);
+        logError(message, e);
     }
     
     public void softErrorLogged(String message, Exception e) {
         softError = true;
+        logError(message, e);
+    }
+
+    private void logError(String message, Exception e) {
+        errorMessage = e.toString() + ", " + message + "; " + userMsgUrlToString();
         MyLog.v(this, message + "; " + userMsgUrlToString(), e);
     }
     
@@ -380,6 +387,14 @@ public class DownloadData {
                     userId != 0 ? new CommandData(CommandEnum.FETCH_AVATAR, null, userId)
                             : CommandData.fetchAttachment(msgId, rowId));
         }
+    }
+
+    public String getMessage() {
+        return errorMessage;
+    }
+
+    public void setMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
 }

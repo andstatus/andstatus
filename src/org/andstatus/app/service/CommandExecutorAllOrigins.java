@@ -17,12 +17,18 @@ class CommandExecutorAllOrigins extends CommandExecutorStrategy {
             MyAccount acc = MyContextHolder.get().persistentAccounts().findFirstMyAccountByOriginId(origin.getId());
             if ( acc==null || acc.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
                 execContext.getResult().incrementNumAuthExceptions();
+                if (acc != null) {
+                    execContext.getResult().setMessage(acc.getAccountName() + " account verification failed");
+                }
             } else {
                 execContext.setMyAccount(acc);
                 CommandExecutorStrategy.executeStep(execContext, this);
             }
             if (isStopping()) {
-                execContext.getResult().setSoftErrorIfNotOk(false);
+                if ( !execContext.getResult().hasError()) {
+                    execContext.getResult().setSoftErrorIfNotOk(false);
+                    execContext.getResult().setMessage("Service is stopping");
+                }
                 break;
             }
         }

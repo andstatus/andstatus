@@ -591,6 +591,7 @@ public class MyService extends Service {
                     CommandExecutorStrategy.executeCommand(commandData, this);
                 } else {
                     commandData.getResult().incrementNumIoExceptions();
+                    commandData.getResult().setMessage("No '" + commandData.getCommand().getConnetionRequired() + "' connection");
                 }
                 if (commandData.getResult().shouldWeRetry()) {
                     addToRetryQueue(commandData);        

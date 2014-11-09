@@ -83,13 +83,16 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         long msgId = commandData.getResult().getItemId();
         assertTrue(msgId != 0);
 
-        httpConnectionMock.setException(new ConnectionException(StatusCode.UNKNOWN, "Request was bad"));
+        String errorMessage = "Request was bad";
+        httpConnectionMock.setException(new ConnectionException(StatusCode.UNKNOWN, errorMessage));
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(2, commandData.getResult().getExecutionCount());
         assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 2, commandData.getResult().getRetriesLeft());
         assertTrue(commandData.getResult().hasSoftError());
         assertFalse(commandData.getResult().hasHardError());
         assertTrue(commandData.getResult().shouldWeRetry());
+        assertTrue("Error message: '" + commandData.getResult().getMessage() + "' should contain '"
+                + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage));
         
         httpConnectionMock.setException(null);
         CommandExecutorStrategy.executeCommand(commandData, null);
@@ -99,13 +102,16 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         assertFalse(commandData.getResult().hasHardError());
         assertFalse(commandData.getResult().shouldWeRetry());
         
-        httpConnectionMock.setException(new ConnectionException(StatusCode.AUTHENTICATION_ERROR, "some text"));
+        errorMessage = "some text";
+        httpConnectionMock.setException(new ConnectionException(StatusCode.AUTHENTICATION_ERROR, errorMessage));
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertEquals(4, commandData.getResult().getExecutionCount());
         assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 4, commandData.getResult().getRetriesLeft());
         assertFalse(commandData.getResult().hasSoftError());
         assertTrue(commandData.getResult().hasHardError());
         assertFalse(commandData.getResult().shouldWeRetry());
+        assertTrue("Error message: '" + commandData.getResult().getMessage() + "' should contain '"
+                + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage));
 
         httpConnectionMock.setException(null);
         commandData = new CommandData(CommandEnum.DESTROY_STATUS, TestSuite.STATUSNET_TEST_ACCOUNT_NAME, msgId);

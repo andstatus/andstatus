@@ -55,6 +55,9 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertEquals(0, commandData.getResult().getLastExecutedDate());
         assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES, commandData.getResult().getRetriesLeft());
         commandData.getResult().prepareForLaunch();
+        boolean hasSoftError = true;
+        commandData.getResult().incrementNumIoExceptions();
+        commandData.getResult().setMessage("Error in " + commandData.hashCode());
         commandData.getResult().afterExecutionEnded();
         Thread.sleep(50);
         long time1 = System.currentTimeMillis();
@@ -62,8 +65,10 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertTrue(commandData.getResult().getLastExecutedDate() < time1);
         assertEquals(1, commandData.getResult().getExecutionCount());
         assertEquals(CommandResult.INITIAL_NUMBER_OF_RETRIES - 1, commandData.getResult().getRetriesLeft());
-        assertFalse(commandData.getResult().hasSoftError());
+        assertEquals(hasSoftError, commandData.getResult().hasSoftError());
         assertFalse(commandData.getResult().hasHardError());
+        
+        
         
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         queue.add(commandData);
@@ -77,6 +82,9 @@ public class CommandDataTest extends InstrumentationTestCase {
         assertEquals(commandData.getResult().getLastExecutedDate(), commandData2.getResult().getLastExecutedDate());
         assertEquals(commandData.getResult().getExecutionCount(), commandData2.getResult().getExecutionCount());
         assertEquals(commandData.getResult().getRetriesLeft(), commandData2.getResult().getRetriesLeft());
+        assertEquals(commandData.getResult().hasError(), commandData2.getResult().hasError());
+        assertEquals(commandData.getResult().hasSoftError(), commandData2.getResult().hasSoftError());
+        assertEquals(commandData.getResult().getMessage(), commandData2.getResult().getMessage());
     }
 
     public void testEquals() {
