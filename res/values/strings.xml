@@ -176,6 +176,7 @@
   <string name="menu_item_reply">Reply</string>
   <string name="menu_item_reblog">Repost</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
+  <string name="menu_item_resend">Resend</string>
   <string name="menu_item_share">Share</string>
   <string name="menu_item_stop_following_user">Stop following \"%1s\"</string>
   <string name="menu_item_user_messages">Messages by \"%1s\"</string>

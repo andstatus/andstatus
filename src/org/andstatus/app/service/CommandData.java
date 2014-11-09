@@ -152,7 +152,7 @@ public class CommandData implements Comparable<CommandData> {
 		}
 		accountName = accountName2;
 		timelineType = timelineType2;
-        getResult().resetRetries(command);
+        resetRetries();
     }
 
     public static CommandData forOneExecStep(CommandExecutionContext execContext) {
@@ -635,6 +635,10 @@ public class CommandData implements Comparable<CommandData> {
     public boolean executedMoreSecondsAgoThan(long predefinedPeriodSeconds) {
         return RelativeTime.moreSecondsAgoThan(getResult().getLastExecutedDate(),
                 predefinedPeriodSeconds);
+    }
+
+    public final void resetRetries() {
+        getResult().resetRetries(getCommand());
     }
     
 }

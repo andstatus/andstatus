@@ -78,7 +78,7 @@ public final class CommandResult implements Parcelable {
             if (TextUtils.isEmpty(mMessage)) {
                 mMessage = oneStepResult.mMessage;
             } else {
-                mMessage += "; " + oneStepResult.mMessage;
+                mMessage += "; \n" + oneStepResult.mMessage;
             }
         }
         if (itemId == 0) {
@@ -215,11 +215,7 @@ public final class CommandResult implements Parcelable {
             }
         }
         if (hasError()) {
-            message.append("error:" + (hasHardError() ? "Hard" : "Soft"));
-            if (!TextUtils.isEmpty(mMessage)) {
-                message.append(" '" + mMessage + "'");
-            }
-            message.append(", ");
+            message.append("error:" + (hasHardError() ? "Hard" : "Soft") + ", ");
         }
         if (downloadedCount > 0) {
             message.append("downloaded:" + downloadedCount + ", ");
@@ -232,6 +228,9 @@ public final class CommandResult implements Parcelable {
         }
         if (directedAdded > 0) {
             message.append("directed:" + directedAdded + ", ");
+        }
+        if (!TextUtils.isEmpty(mMessage)) {
+            message.append(" \n" + mMessage);
         }
         return message;
     }
@@ -329,6 +328,7 @@ public final class CommandResult implements Parcelable {
             default:
                 break;
         }
+        prepareForLaunch();
     }
 
     void prepareForLaunch() {
@@ -337,6 +337,7 @@ public final class CommandResult implements Parcelable {
         numAuthExceptions = 0;
         numIoExceptions = 0;
         numParseExceptions = 0;
+        mMessage = "";
         
         itemId = 0;
         

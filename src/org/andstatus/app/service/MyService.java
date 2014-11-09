@@ -666,7 +666,7 @@ public class MyService extends Service {
             if (mRetryCommandQueue.contains(cdIn)) {
                 for (CommandData cd : mRetryCommandQueue) {
                     if (cd.equals(cdIn)) {
-                        cd.getResult().resetRetries(cd.getCommand());
+                        cd.resetRetries();
                         if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
                             cdOut = cd;
                             mRetryCommandQueue.remove(cd);
@@ -688,7 +688,7 @@ public class MyService extends Service {
             if (mErrorCommandQueue.contains(cdIn)) {
                 for (CommandData cd : mErrorCommandQueue) {
                     if (cd.equals(cdIn)) {
-                        cd.getResult().resetRetries(cd.getCommand());
+                        cd.resetRetries();
                         if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
                             cdOut = cd;
                             mErrorCommandQueue.remove(cd);

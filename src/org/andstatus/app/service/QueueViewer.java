@@ -17,8 +17,15 @@
 package org.andstatus.app.service;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListAdapter;
 
 import org.andstatus.app.R;
@@ -37,6 +44,7 @@ public class QueueViewer extends ListActivity {
     private static final String KEY_QUEUE_TYPE = "queue_type";
     private static final String KEY_COMMAND_SUMMARY = "command_summary";
     private static final String KEY_RESULT_SUMMARY = "result_summary";
+    private List<QueueData> mListData = null;
 
     private static class QueueData {
         QueueType queueType;
@@ -52,18 +60,91 @@ public class QueueViewer extends ListActivity {
         public long getId() {
             return commandData.hashCode();
         }
+
+        @Override
+        public String toString() {
+            return toSubject()
+                    + " \n" + commandData.getResult().toSummary();
+        }
+
+        public String toSubject() {
+            return queueType.getAcronym() + "; "
+                    + commandData.toCommandSummary(MyContextHolder.get());
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        MyServiceManager.setServiceUnavailable();
+        MyServiceManager.stopService();
         super.onCreate(savedInstanceState);
         MyPreferences.loadTheme(this);
         setContentView(R.layout.queue);
         showList();
+        registerForContextMenu(getListView());
     }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.queue_context_menu, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+        if (info == null) {
+            return super.onContextItemSelected(item);
+        }
+        QueueData queueData = queueDataFromId(info.id);
+        if (queueData == null) {
+            return super.onContextItemSelected(item);
+        }
+        switch (item.getItemId()) {
+            case R.id.menuItemShare:
+                share(queueData);
+                return true;
+            case R.id.menuItemResend:
+                if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
+                    queueData.commandData.resetRetries();
+                    queueData.commandData.setManuallyLaunched(true);
+                    Queue<CommandData> mainCommandQueue = new PriorityBlockingQueue<CommandData>(100);
+                    CommandData.loadQueue(this, mainCommandQueue, QueueType.CURRENT);
+                    if (mainCommandQueue.offer(queueData.commandData)) {
+                        CommandData.saveQueue(this, mainCommandQueue, QueueType.CURRENT);
+                        showList();
+                    }
+                }
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
+    private void share(QueueData queueData) {
+        Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, queueData.toSubject());
+        intent.putExtra(Intent.EXTRA_TEXT, queueData.toString());
+        startActivity(Intent.createChooser(intent, getText(R.string.menu_item_share)));        
+    }
+
+    private QueueData queueDataFromId(long id) {
+        if (mListData == null) {
+            return null;
+        }
+        for (QueueData queueData : mListData) {
+            if (queueData.getId() == id) {
+                return queueData;
+            }
+        }
+        return null;
+    }
+    
     private void showList() {
-        setListAdapter(newListAdapter(newListData()));
+        mListData = newListData();
+        setListAdapter(newListAdapter(mListData));
     }
 
     private List<QueueData> newListData() {

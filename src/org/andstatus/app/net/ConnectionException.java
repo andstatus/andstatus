@@ -150,8 +150,8 @@ public class ConnectionException extends Exception {
     public String toString() {
         return "Status code=" + this.statusCode + "; " + (isHardError ? "hard" : "soft") 
 			+ (host == null ? "" : "; host=" + host) 
-			+ "; " + super.getMessage()
-		    + (super.getCause() != null ? "; Caused by " + super.getCause().toString() : "");
+			+ "; \n" + super.getMessage()
+		    + (super.getCause() != null ? "; \nCaused by " + super.getCause().toString() : "");
     }
 
     public void setHardError(boolean isHardError) {
