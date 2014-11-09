@@ -165,7 +165,7 @@
   <string name="menu_item_act_as_user">Actuar como \"%1s\"</string>
   <string name="menu_item_block">Boquea</string>
   <string name="menu_item_destroy_favorite">Deshacer favorito</string>
-  <string name="menu_item_destroy_reblog">Deshacer compartición</string>
+  <string name="menu_item_destroy_reblog">Deshacer repetición</string>
   <string name="menu_item_destroy_reblog_twitter">Deshacer retweet</string>
   <string name="menu_item_destroy_status">Borra el mensaje</string>
   <string name="menu_item_direct_message">Mensaje directo</string>
@@ -173,9 +173,9 @@
   <string name="menu_item_follow_user">Seguir a \"%1s\"</string>
   <string name="menu_item_open_message_permalink">Ver en navegador</string>
   <string name="menu_item_reply">Responder</string>
-  <string name="menu_item_reblog">Compartir</string>
+  <string name="menu_item_reblog">Repetir</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
-  <string name="menu_item_share">Citar</string>
+  <string name="menu_item_share">Compartir</string>
   <string name="menu_item_stop_following_user">Dejar de seguir a \"%1s\"</string>
   <string name="menu_item_user_messages">Mensajes de \"%1s\"</string>
   <string name="menu_item_view_profile">Ver Perfil</string>
