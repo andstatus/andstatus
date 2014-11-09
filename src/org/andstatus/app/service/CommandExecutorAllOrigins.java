@@ -26,7 +26,7 @@ class CommandExecutorAllOrigins extends CommandExecutorStrategy {
             }
             if (isStopping()) {
                 if ( !execContext.getResult().hasError()) {
-                    execContext.getResult().setSoftErrorIfNotOk(false);
+                    execContext.getResult().incrementNumIoExceptions();
                     execContext.getResult().setMessage("Service is stopping");
                 }
                 break;
