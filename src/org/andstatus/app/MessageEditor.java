@@ -20,6 +20,7 @@ package org.andstatus.app;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
@@ -122,11 +123,12 @@ class MessageEditor {
     }
 
     public void onPrepareOptionsMenu(Menu menu) {
-        updateCreateMessageButton(menu);
-        updateHideMessageButton(menu);
+        prepareCreateMessageButton(menu);
+        prepareHideMessageButton(menu);
+        prepareAttachButton(menu);
     }
     
-    private void updateCreateMessageButton(Menu menu) {
+    private void prepareCreateMessageButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.createMessageButton);
         if (item == null) {
             return;
@@ -166,7 +168,7 @@ class MessageEditor {
         return accountForButton;
     }
     
-    private void updateHideMessageButton(Menu menu) {
+    private void prepareHideMessageButton(Menu menu) {
         MenuItem item = menu.findItem(R.id.hideMessageButton);
         if (item == null) {
             return;
@@ -180,6 +182,24 @@ class MessageEditor {
                     }
                 });
         item.setVisible(isVisible());
+    }
+
+    private void prepareAttachButton(Menu menu) {
+        MenuItem item = menu.findItem(R.id.attach_menu_id);
+        if (item == null) {
+            return;
+        }
+        item.setOnMenuItemClickListener(
+                new MenuItem.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        onAttach();
+                        return false;
+                    }
+                });
+        boolean enableAttach = isVisible() && MyPreferences.showAttachedImages() ;
+        item.setEnabled(enableAttach);
+        item.setVisible(enableAttach);
     }
     
     private void setupEditText() {

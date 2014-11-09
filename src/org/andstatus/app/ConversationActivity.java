@@ -270,10 +270,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (mMessageEditor != null) {
-            boolean enableAttach = mMessageEditor.isVisible() && MyPreferences.showAttachedImages() ;
-            MenuItem item = menu.findItem(R.id.attach_menu_id);
-            item.setEnabled(enableAttach);
-            item.setVisible(enableAttach);
+            mMessageEditor.onPrepareOptionsMenu(menu);
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -284,9 +281,6 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         switch (item.getItemId()) {
             case R.id.reload_menu_item:
                 showConversation();
-                break;
-            case R.id.attach_menu_id:
-                mMessageEditor.onAttach();
                 break;
             default:
                 break;

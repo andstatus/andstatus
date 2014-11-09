@@ -54,6 +54,7 @@
         <attr name="attachIcon" format="reference" />
         <attr name="postMessageIcon" format="reference" />
         <attr name="hideMessageIcon" format="reference" />
+        <attr name="reloadIcon" format="reference" />
         <attr name="replyBackground" format="reference" />
         <attr name="searchIcon" format="reference" />
         <attr name="globalSearchIcon" format="reference" />

@@ -16,13 +16,42 @@
 	limitations under the License.
  -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <item android:id="@+id/createMessageButton" android:showAsAction="always" android:title="@string/button_create_message" android:icon="?attr/postMessageIcon">
-    </item><item android:id="@+id/hideMessageButton" android:showAsAction="always" android:title="@string/button_hide" android:icon="?attr/hideMessageIcon" android:visible="false">
-    </item><item android:id="@+id/attach_menu_id" android:alphabeticShortcut="a" android:icon="?attr/attachIcon" android:showAsAction="ifRoom" android:title="@string/options_menu_attach" android:visible="false">
-    </item><item android:id="@+id/global_search_menu_id" android:alphabeticShortcut="g" android:icon="?attr/globalSearchIcon" android:showAsAction="ifRoom" android:title="@string/options_menu_global_search">
-    </item><item android:id="@+id/search_menu_id" android:alphabeticShortcut="s" android:icon="?attr/searchIcon" android:showAsAction="ifRoom" android:title="@string/options_menu_search">
-    </item><item
+    <item
+        android:id="@+id/createMessageButton"
+        android:icon="?attr/postMessageIcon"
+        android:showAsAction="always"
+        android:title="@string/button_create_message">
+    </item>
+    <item
+        android:id="@+id/hideMessageButton"
+        android:icon="?attr/hideMessageIcon"
+        android:showAsAction="always"
+        android:title="@string/button_hide"
+        android:visible="false">
+    </item>
+    <item
+        android:id="@+id/attach_menu_id"
+        android:alphabeticShortcut="a"
+        android:icon="?attr/attachIcon"
+        android:showAsAction="ifRoom"
+        android:title="@string/options_menu_attach"
+        android:visible="false">
+    </item>
+    <item
+        android:id="@+id/global_search_menu_id"
+        android:alphabeticShortcut="g"
+        android:icon="?attr/globalSearchIcon"
+        android:showAsAction="ifRoom"
+        android:title="@string/options_menu_global_search">
+    </item>
+    <item
+        android:id="@+id/search_menu_id"
+        android:alphabeticShortcut="s"
+        android:icon="?attr/searchIcon"
+        android:showAsAction="ifRoom"
+        android:title="@string/options_menu_search">
+    </item>
+    <item
         android:id="@+id/timelineTypeButton"
         android:onClick="onTimelineTypeButtonClick"
         android:showAsAction="ifRoom"
@@ -30,9 +59,11 @@
     </item>
     <item
         android:id="@+id/combinedTimelineToggle"
+        android:checkable="true"
+        android:checked="false"
         android:onClick="onCombinedTimelineToggleClick"
         android:showAsAction="ifRoom"
-        android:title="@string/title_preference_username" android:checked="false" android:checkable="true">
+        android:title="@string/title_preference_username">
     </item>
     <item
         android:id="@+id/selectAccountButton"
@@ -40,16 +71,13 @@
         android:showAsAction="ifRoom"
         android:title="@string/combined_timeline_off_account">
     </item>
-    
     <item
         android:id="@+id/reload_menu_item"
         android:alphabeticShortcut="r"
-        android:icon="@drawable/ic_menu_reload"
+        android:icon="?attr/reloadIcon"
         android:showAsAction="ifRoom"
         android:title="@string/options_menu_reload">
     </item>
-    
-    
     <item
         android:id="@+id/preferences_menu_id"
         android:alphabeticShortcut="p"
@@ -57,6 +85,4 @@
         android:showAsAction="ifRoom"
         android:title="@string/settings_action">
     </item>
-    
-
 </menu>
