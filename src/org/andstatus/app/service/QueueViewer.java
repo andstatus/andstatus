@@ -32,6 +32,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,10 +41,11 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
-public class QueueViewer extends ListActivity {
+public class QueueViewer extends ListActivity implements MyServiceListener {
     private static final String KEY_QUEUE_TYPE = "queue_type";
     private static final String KEY_COMMAND_SUMMARY = "command_summary";
     private static final String KEY_RESULT_SUMMARY = "result_summary";
+    MyServiceReceiver mServiceConnector;
     private List<QueueData> mListData = null;
 
     private static class QueueData {
@@ -75,13 +77,33 @@ public class QueueViewer extends ListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyServiceManager.setServiceUnavailable();
-        MyServiceManager.stopService();
         super.onCreate(savedInstanceState);
         MyPreferences.loadTheme(this);
+        mServiceConnector = new MyServiceReceiver(this);
         setContentView(R.layout.queue);
         showList();
         registerForContextMenu(getListView());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MyServiceManager.setServiceAvailable();
+        mServiceConnector.registerReceiver(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mServiceConnector.unregisterReceiver(this);
+    }
+    
+    @Override
+    protected void onDestroy() {
+        if (mServiceConnector != null) {
+            mServiceConnector.unregisterReceiver(this);
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -106,14 +128,15 @@ public class QueueViewer extends ListActivity {
                 share(queueData);
                 return true;
             case R.id.menuItemResend:
-                if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
-                    queueData.commandData.resetRetries();
-                    queueData.commandData.setManuallyLaunched(true);
+                queueData.commandData.resetRetries();
+                queueData.commandData.setManuallyLaunched(true);
+                if (MyServiceManager.isServiceAvailable()) {
+                    MyServiceManager.sendForegroundCommand(queueData.commandData);
+                } else {
                     Queue<CommandData> mainCommandQueue = new PriorityBlockingQueue<CommandData>(100);
                     CommandData.loadQueue(this, mainCommandQueue, QueueType.CURRENT);
                     if (mainCommandQueue.offer(queueData.commandData)) {
                         CommandData.saveQueue(this, mainCommandQueue, QueueType.CURRENT);
-                        showList();
                     }
                 }
                 return true;
@@ -188,6 +211,14 @@ public class QueueViewer extends ListActivity {
                 new String[] {KEY_QUEUE_TYPE, KEY_COMMAND_SUMMARY, KEY_RESULT_SUMMARY, BaseColumns._ID}, 
                 new int[] {R.id.queue_type, R.id.command_summary, R.id.result_summary, R.id.id});
         return adapter;
+    }
+
+    @Override
+    public void onReceive(CommandData commandData, MyServiceEvent myServiceEvent) {
+        if (MyServiceEvent.ON_STOP == myServiceEvent) {
+            MyLog.v(this, "On service stop");
+            showList();
+        }
     }
     
 }

@@ -7,6 +7,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
+
 import java.util.LinkedList;
 
 public class CommandExecutionContext {
@@ -96,5 +97,19 @@ public class CommandExecutionContext {
                                 .toString() + ",")
                         + (timelineUserId == 0 ? "" : "userId:" + timelineUserId + ",")
                         + commandData.toString());
+    }
+
+    public String toExceptionContext() {
+        StringBuilder builder = new StringBuilder(100);
+        if (ma != null) {
+            builder.append(ma.getAccountName() + ", ");
+        }
+        if (!TimelineTypeEnum.UNKNOWN.equals(timelineType)) {
+            builder.append(timelineType.toString() + ", ");
+        }
+        if (timelineUserId != 0) {
+            builder.append("userId:" + timelineUserId + ", ");
+        }
+        return builder.toString();
     }
 }

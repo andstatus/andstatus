@@ -16,6 +16,8 @@
 
 package org.andstatus.app.service;
 
+import android.text.TextUtils;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
@@ -163,8 +165,23 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         } else {
             execContext.getResult().incrementNumIoExceptions();
         }
-        execContext.getResult().setMessage(e.toString() + ", " + detailedMessage);
-        MyLog.e(this, detailedMessage + ": " + e.toString());
+        StringBuilder builder = new StringBuilder(100);
+        appendAtNewLine(builder, detailedMessage);
+        if (e != null) {
+            appendAtNewLine(builder, e.toString());
+        }
+        appendAtNewLine(builder, execContext.toExceptionContext());
+        execContext.getResult().setMessage(builder.toString());
+        MyLog.e(this, builder.toString());
+    }
+
+    public static void appendAtNewLine(StringBuilder builder, String string) {
+        if (!TextUtils.isEmpty(string)) {
+            if (builder.length() > 0) {
+                builder.append(", \n");
+            }
+            builder.append(string);
+        }
     }
 
     void execute() {

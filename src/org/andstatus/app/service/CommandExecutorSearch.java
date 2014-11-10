@@ -1,6 +1,5 @@
 package org.andstatus.app.service;
 
-import android.app.SearchManager;
 import android.text.TextUtils;
 
 import org.andstatus.app.data.DataInserter;
@@ -37,7 +36,7 @@ public class CommandExecutorSearch extends CommandExecutorStrategy {
                     }
                 }
             } catch (ConnectionException e) {
-                logConnectionException(e, execContext.getTimelineType().toString());
+                logConnectionException(e, "Search '" + searchQuery + "'");
             }
         }
     }

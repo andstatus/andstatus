@@ -109,7 +109,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 ok = !message.isEmpty();
             } catch (ConnectionException e) {
                 errorLogged = true;
-                logConnectionException(e, (create ? "create" : "destroy") + "Favorite Connection Exception");
+                logConnectionException(e, (create ? "Create" : "Destroy") + " Favorite " + oid);
             }
         } else {
             MyLog.e(this,
@@ -176,7 +176,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 ok = !user.isEmpty();
             } catch (ConnectionException e) {
                 errorLogged = true;
-                logConnectionException(e, (follow ? "Follow" : "Stop following") + " Exception");
+                logConnectionException(e, (follow ? "Follow" : "Stop following " + oid));
             }
         } else {
             MyLog.e(this,
@@ -231,7 +231,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 // assume that it's Ok!
                 ok = true;
             } else {
-                logConnectionException(e, "destroyStatus Exception");
+                logConnectionException(e, "Destroy Status " + oid);
             }
         }
 
@@ -265,7 +265,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 // assume that it's Ok!
                 ok = true;
             } else {
-                logConnectionException(e, "destroyReblog Exception");
+                logConnectionException(e, "Destroy Reblog " + oid);
             }
         }
 
@@ -304,7 +304,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 // This means that there is no such "Status"
                 // TODO: so we don't need to retry this command
             }
-            logConnectionException(e, "getStatus Exception");
+            logConnectionException(e, "getStatus " + oid);
         }
         MyLog.d(this, "getStatus " + (ok ? "succeded" : "failed") + ", id=" + execContext.getCommandData().itemId);
     }
@@ -369,7 +369,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             ok = !result.isEmpty();
             logOk(ok);
         } catch (ConnectionException e) {
-            logConnectionException(e, "Reblog Exception");
+            logConnectionException(e, "Reblog " + oid);
         }
         if (ok) {
             // The tweet was sent successfully
@@ -390,7 +390,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
              }
             logOk(ok);
         } catch (ConnectionException e) {
-            logConnectionException(e, "rateLimitStatus Exception");
+            logConnectionException(e, "rateLimitStatus");
         }
     }
 }

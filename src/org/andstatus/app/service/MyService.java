@@ -395,7 +395,8 @@ public class MyService extends Service {
     }
 
     private boolean isAnythingToExecuteNow() {
-        return isAnythingToExecuteInMainQueueNow() || isAnythingToRetryNow();
+        return isAnythingToExecuteInMainQueueNow() || isAnythingToRetryNow()
+                || isExecutorReallyWorkingNow();
     }
     
     private boolean isAnythingToExecuteInMainQueueNow() {
@@ -420,6 +421,12 @@ public class MyService extends Service {
             return hasQueueForegroundTasks(mRetryCommandQueue);
         }
         return true;
+    }
+    
+    private boolean isExecutorReallyWorkingNow() {
+        synchronized(executorLock) {
+          return mExecutor != null && mExecutorStartedAt != 0 && mExecutor.isReallyWorking();
+        }        
     }
     
     private boolean hasQueueForegroundTasks(Queue<CommandData> queue) {
