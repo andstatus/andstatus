@@ -920,7 +920,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 TimelineCursorLoader1 myLoader = (TimelineCursorLoader1) loader;
                 changeListContent(myLoader.getParams(), cursor);
                 timelineToReload = myLoader.getParams().timelineToReload;
-                if (!myLoader.getParams().mLoadOneMorePage && myLoader.getParams().mLastItemId != 0
+                if (!myLoader.getParams().mLoadOneMorePage && myLoader.getParams().mLastItemSentDate > 0
                         && cursor != null && cursor.getCount() < TimelineListParameters.PAGE_SIZE) {
                     MyLog.v(this, method + "; Requesting next page...");
                     requestNextPage = true;

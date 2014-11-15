@@ -33,6 +33,7 @@ import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.util.SelectionAndArgs;
 
 import java.util.Arrays;
+import java.util.Date;
 
 class TimelineListParameters {
     final Context mContext;
@@ -68,7 +69,7 @@ class TimelineListParameters {
     Uri mContentUri = null;
     boolean mIncrementallyLoadingPages = false;
     int mRowsLimit = 0;
-    long mLastItemId = 0;
+    long mLastItemSentDate = 0;
     volatile SelectionAndArgs mSa = new SelectionAndArgs();
     String mSortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
     
@@ -170,10 +171,10 @@ class TimelineListParameters {
         if (!positionRestored) {
             // We have to ensure that saved position will be
             // loaded from database into the list
-            mLastItemId = new TimelineListPositionStorage(null, null, this).getLastRetrievedSentDate();
+            mLastItemSentDate = new TimelineListPositionStorage(null, null, this).getLastRetrievedSentDate();
         }
 
-        if (mLastItemId <= 0) {
+        if (mLastItemSentDate <= 0) {
             int rowsLimit2 = this.mRowsLimit;
             if (rowsLimit2 < TimelineListParameters.PAGE_SIZE) {
                 rowsLimit2 = TimelineListParameters.PAGE_SIZE;
@@ -198,7 +199,7 @@ class TimelineListParameters {
                 + ", selectedUserId=" + mSelectedUserId + ", projection="
                 + Arrays.toString(mProjection) + ", searchQuery=" + mSearchQuery + ", contentUri="
                 + mContentUri + ", incrementallyLoadingPages=" + mIncrementallyLoadingPages
-                + ", rowsLimit=" + mRowsLimit + ", lastItemId=" + mLastItemId + ", sa=" + mSa
+                + ", rowsLimit=" + mRowsLimit + ", lastSentDate=" + new Date(mLastItemSentDate).toString() + ", sa=" + mSa
                 + ", sortOrder=" + mSortOrder + ", startTime=" + startTime + ", cancelled="
                 + cancelled + ", timelineToReload=" + timelineToReload + "]";
     }

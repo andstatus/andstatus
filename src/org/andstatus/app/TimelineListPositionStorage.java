@@ -17,49 +17,41 @@
 package org.andstatus.app;
 
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.text.TextUtils;
 import android.widget.CursorAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.andstatus.app.TimelineActivity.TimelineTitle;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 
+import java.util.Date;
+
 /**
  * Determines where to save / retrieve position in the list
- * Two rows are always stored for each position hence two keys. 
+ * Information on two rows is stored for each "position" hence two keys. 
  * Plus Query string is being stored for the search results.
- * 2014-10-19 We are storing {@link MyDatabase.Msg#SENT_DATE} for the last retrieved item, not its ID as before
+ * 2014-11-15 We are storing {@link MyDatabase.Msg#SENT_DATE} for the last item to retrieve, not its ID as before
  * @author yvolk@yurivolkov.com
  */
 class TimelineListPositionStorage {
-    private static final String KEY_PREFIX = "last_position_";
+    private static final String KEY_PREFIX = "timeline_position_";
 
     private CursorAdapter mAdapter;
     private ListView mListView;
     private TimelineListParameters mListParameters;    
     
-    /**
-     * MyAccount for SharedPreferences ( =="" for DefaultSharedPreferences) 
-     */
-    String accountGuid = "";
+    private long mUserId = 0;
     /**
      * SharePreferences to use for storage 
      */
-    private SharedPreferences sp = null;
-    /**
-     * Key name for the first visible item
-     */
-    private String keyFirst = "";
-    /**
-     * Key for the last item we should retrieve before restoring position
-     */
-    private String keyLast = "";
+    private SharedPreferences sp = MyPreferences.getDefaultSharedPreferences();
+    private String keyFirstVisibleItemId = "";
+    private String keyLastRetrievedItemSentDate = "";
     private String keyQueryString = "";
     private String queryString;
     
@@ -69,25 +61,17 @@ class TimelineListPositionStorage {
         this.mListParameters = listParameters;
         
         queryString = listParameters.mSearchQuery; 
-        if ((listParameters.mTimelineType != TimelineTypeEnum.USER) && !listParameters.mTimelineCombined) {
-            MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(listParameters.myAccountUserId);
-            if (ma != null) {
-                sp = ma.getAccountPreferences();
-                accountGuid = ma.getAccountName();
-            } else {
-                MyLog.e(this, "No account for IserId=" + listParameters.myAccountUserId);
-            }
+        if ((listParameters.mTimelineType == TimelineTypeEnum.USER)) {
+            mUserId = listParameters.mSelectedUserId;
+        } else if (!listParameters.mTimelineCombined) {
+            mUserId = listParameters.myAccountUserId;
         }
-        if (sp == null) {
-            sp = MyPreferences.getDefaultSharedPreferences();
-        }
-        
-        keyFirst = KEY_PREFIX
+        keyFirstVisibleItemId = KEY_PREFIX
                 + listParameters.mTimelineType.save()
-                + (listParameters.mTimelineType == TimelineTypeEnum.USER ? "_user"
-                        + Long.toString(listParameters.mSelectedUserId) : "") + (TextUtils.isEmpty(queryString) ? "" : "_search");
-        keyLast = keyFirst + "_last";
-        keyQueryString = KEY_PREFIX + listParameters.mTimelineType.save() + "_querystring";
+                + "_user" + Long.toString(mUserId)
+                + (TextUtils.isEmpty(queryString) ? "" : "_search");
+        keyLastRetrievedItemSentDate = keyFirstVisibleItemId + "_last";
+        keyQueryString = keyFirstVisibleItemId + "_querystring";
     }
 
     /**  @return true for success */
@@ -105,6 +89,7 @@ class TimelineListPositionStorage {
             MyLog.v(this, method + " skipped: no listParameters");
             return false;
         }
+        Cursor cursor = la.getCursor(); 
         if (la.getCursor() == null) {
             MyLog.v(this, method + " skipped: cursor is null");
             return false;
@@ -122,7 +107,7 @@ class TimelineListPositionStorage {
         }
         long firstVisibleItemId = 0;
         int lastPosition = -1;
-        long lastItemId = 0;
+        long lastItemSentDate = System.currentTimeMillis();
         if (firstVisiblePosition >= 0) {
             firstVisibleItemId = la.getItemId(firstVisiblePosition);
             MyLog.v(this, method + " firstVisiblePos:" + firstVisiblePosition + " of " + itemCount
@@ -132,8 +117,8 @@ class TimelineListPositionStorage {
             if (lastPosition >= itemCount) {
                 lastPosition = itemCount - 1;
             }
-            if (lastPosition >= TimelineListParameters.PAGE_SIZE) {
-                lastItemId = la.getItemId(lastPosition);
+            if (cursor.moveToPosition(lastPosition)) {
+                lastItemSentDate = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.SENT_DATE));
             }
         }
 
@@ -141,30 +126,30 @@ class TimelineListPositionStorage {
             MyLog.v(this, method + " failed: no visible items for " + new TimelineTitle(mListParameters, "").toString());
             return false;
         } else {
-            put(firstVisibleItemId, lastItemId);
+            put(firstVisibleItemId, lastItemSentDate);
 
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                MyLog.v(this, method + " succeeded \"" + accountGuid + "\"; " + keyFirst + "="
-                        + firstVisibleItemId + ", pos=" + firstVisiblePosition + "; lastId="
-                        + lastItemId + ", pos=" + lastPosition);
+                MyLog.v(this, method + " succeeded key=" + keyFirstVisibleItemId + ", id="
+                        + firstVisibleItemId + ", pos=" + firstVisiblePosition + ", lastdate="
+                        + new Date(lastItemSentDate).toString() + ", lastpos=" + lastPosition);
             }
         }
         return true;
     }
     
     void put(long firstVisibleItemId, long lastRetrievedSentDate) {
-        sp.edit().putLong(keyFirst, firstVisibleItemId)
-        .putLong(keyLast, lastRetrievedSentDate)
+        sp.edit().putLong(keyFirstVisibleItemId, firstVisibleItemId)
+        .putLong(keyLastRetrievedItemSentDate, lastRetrievedSentDate)
         .putString(keyQueryString, queryString).commit();
     }
 
     private static final long NOT_FOUND_IN_LIST_POSITION_STORAGE = -4;
     private static final long NOT_FOUND_IN_SHARED_PREFERENCES = -1;
     /** Valid data position value is > 0 */
-    long getFirstVisibleSentDate() {
+    long getFirstVisibleItemId() {
         long savedItemId = NOT_FOUND_IN_LIST_POSITION_STORAGE;
         if (isThisPositionStored()) {
-            savedItemId = sp.getLong(keyFirst, NOT_FOUND_IN_SHARED_PREFERENCES);
+            savedItemId = sp.getLong(keyFirstVisibleItemId, NOT_FOUND_IN_SHARED_PREFERENCES);
         }
         return savedItemId;
     }
@@ -178,16 +163,16 @@ class TimelineListPositionStorage {
     long getLastRetrievedSentDate() {
         long savedItemId = NOT_FOUND_IN_LIST_POSITION_STORAGE;
         if (isThisPositionStored()) {
-            savedItemId = sp.getLong(keyLast, NOT_FOUND_IN_SHARED_PREFERENCES);
+            savedItemId = sp.getLong(keyLastRetrievedItemSentDate, NOT_FOUND_IN_SHARED_PREFERENCES);
         }
         return savedItemId;
     }
     
     void clear() {
-        sp.edit().remove(keyFirst).remove(keyLast)
+        sp.edit().remove(keyFirstVisibleItemId).remove(keyLastRetrievedItemSentDate)
                 .remove(keyQueryString).commit();
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-            MyLog.v(this, "Position forgot   \"" + accountGuid + "\"; " + keyFirst);
+            MyLog.v(this, "Position forgot key=" + keyFirstVisibleItemId);
         }
     }
     
@@ -203,7 +188,7 @@ class TimelineListPositionStorage {
         int scrollPos = -1;
         long firstItemId = -3;
         try {
-            firstItemId = getFirstVisibleSentDate();
+            firstItemId = getFirstVisibleItemId();
             if (firstItemId > 0) {
                 scrollPos = listPosForId(firstItemId);
             }
@@ -227,12 +212,12 @@ class TimelineListPositionStorage {
         }
         if (loaded) {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                MyLog.v(this, method + " succeeded \"" + accountGuid + "\"; " + keyFirst + "="
+                MyLog.v(this, method + " succeeded key=" + keyFirstVisibleItemId + ", id="
                         + firstItemId +"; index=" + scrollPos);
             }
         } else {
             if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
-                MyLog.v(this, method + " failed \"" + accountGuid + "\"; " + keyFirst + "="
+                MyLog.v(this, method + " failed key=" + keyFirstVisibleItemId + ", id="
                         + firstItemId);
             }
             clear();

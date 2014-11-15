@@ -240,12 +240,11 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
         }
         
         private void prepareQueryInBackground() {
-            if (getParams().mLastItemId > 0) {
+            if (getParams().mLastItemSentDate > 0) {
                 getParams().mSa.addSelection(MyProvider.MSG_TABLE_ALIAS + "." + MyDatabase.Msg.SENT_DATE
                         + " >= ?",
                         new String[] {
-                            String.valueOf(MyProvider.msgIdToLongColumnValue(
-                                    MyDatabase.Msg.SENT_DATE, getParams().mLastItemId))
+                            String.valueOf(getParams().mLastItemSentDate)
                         });
             }
         }
