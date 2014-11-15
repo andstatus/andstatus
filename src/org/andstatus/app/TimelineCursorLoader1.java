@@ -378,6 +378,15 @@ public class TimelineCursorLoader1 extends Loader<Cursor> implements MyServiceLi
                 break;
         }
     }
+    
+    @Override
+    public void onContentChanged() {
+        if (taskIsNotRunning()) {
+            super.onContentChanged();
+        } else {
+            logV("onContentChanged", "ignoring because task is running");
+        }
+    }
 
     @Override
     public String toString() {
