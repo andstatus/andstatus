@@ -287,12 +287,6 @@ class MyDatabaseConverter {
         try {
             MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
 
-            sql = "DROP INDEX IF EXISTS idx_msg_origin";
-            MyDatabase.execSQL(db, sql);
-
-            sql = "CREATE INDEX idx_msg_origin ON msg (origin_id, msg_sent_date)";
-            MyDatabase.execSQL(db, sql);
-            
             sql = "CREATE INDEX idx_msg_sent_date ON msg (msg_sent_date)";
             MyDatabase.execSQL(db, sql);
             

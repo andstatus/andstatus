@@ -506,9 +506,9 @@ public final class MyDatabase extends SQLiteOpenHelper  {
                 + Msg.PUBLIC + " BOOLEAN DEFAULT 0 NOT NULL" 
                 + ")");
 
-        execSQL(db, "CREATE INDEX idx_msg_origin ON " + Msg.TABLE_NAME + " (" 
+        execSQL(db, "CREATE UNIQUE INDEX idx_msg_origin ON " + Msg.TABLE_NAME + " (" 
                 + Msg.ORIGIN_ID + ", "
-                + Msg.SENT_DATE
+                + Msg.MSG_OID
                 + ")");
 
         execSQL(db, "CREATE INDEX idx_msg_sent_date ON " + Msg.TABLE_NAME + " (" 
