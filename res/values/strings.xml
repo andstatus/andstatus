@@ -268,14 +268,14 @@
         Congratulations! Read below what you can do further.\n\n
         And don\'t forget to add AndStatus widget to the Home screen: 
         the widget will inform you about new messages and may be used to launch AndStatus.\n\n
-        <h2><b>2. AndStatus BASICS</b></h2>\n\n
+        <h2><b>2. AndStatus basics</b></h2>\n\n
         The first view of AndStatus (after at least one account has been added) contains the Home timeline.\n
         In order to perform an action on a message in the list you should <b>hold down</b>
         on it to get a context menu.\n
         You may <b>click</b> on a message to get more details on it or to see
         a conversation tree to which the message belongs.\n
         Tap the <b>Home</b> button on the \"Action bar\" to switch to the other views.\n\n
-        <h2><b>3. SENDING AND REPLYING</b></h2>\n\n
+        <h2><b>3. Sending and replying</b></h2>\n\n
         In order to update your status, tap the \"Post\" button (\"Tweet\" for Twitter),
         type in a text into the text area at the bottom of the screen and tap <b>Send</b>.\n
         In order to reply, <b>hold down</b> a message and select <b>Reply</b>,
@@ -283,7 +283,7 @@
         To abort a reply, simply tap the \"Hide\" button to hide the text area.
 	</string>
   <string name="user_manual_page_2">
-        <h2><b>4. DIRECT MESSAGES</b></h2>\n\n
+        <h2><b>4. Direct (private) messages</b></h2>\n\n
         Tap the <b>Home</b> (Timeline type) button 
         and select <b>Direct Messages</b> from the list.\n
         In order to <b>delete</b> your direct message (or your public message), 
@@ -292,11 +292,11 @@
         in Android Account and Sync settings for this Account. 
         In any case you may always get updates from the Internet
         manually using \"Reload\" command in the Options Menu.\n\n
-        <h2><b>5. MENTIONS</b></h2>\n\n
+        <h2><b>5. Mentions</b></h2>\n\n
         Tap <b>Home</b> and then select <b>Mentions</b>.\n
         Mentions will list every message that mentions your <b>@username</b>
         (or even mentions of all your AndStatus accounts for a \"combined\" timeline).\n\n
-        <h2><b>6. (LOCAL) SEARCH</b></h2>\n\n
+        <h2><b>6. Search (local search)</b></h2>\n\n
         Local search searches among messages already loaded from the Internet.
         Hence it is available even offline.\n
         1.  In order to find any word or phrase in a text of messages,
@@ -309,7 +309,7 @@
         (an Author or a Sender of a selected message), select 
         \"Messages by UserName\" from the context menu of the message. This is actually
         a sort of Global Search (see below).\n\n
-        <h2><b>7. GLOBAL SEARCH</b></h2>\n\n
+        <h2><b>7. Global search</b></h2>\n\n
         Global search function requests search results directly 
         from Microblogging System\'s servers. 
         This is why live Internet connection to the systems is required.
