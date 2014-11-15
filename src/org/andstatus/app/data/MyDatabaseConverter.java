@@ -132,6 +132,9 @@ class MyDatabaseConverter {
         if (currentVersion == 17) {
             currentVersion = convert17to18(db, currentVersion);
         }
+        if (currentVersion == 18) {
+            currentVersion = convert18to19(db, currentVersion);
+        }
         if ( currentVersion == newVersion) {
             MyLog.i(this, "Successfully upgraded database from version " + oldVersion + " to version "
                     + newVersion + ".");
@@ -261,6 +264,36 @@ class MyDatabaseConverter {
             sql = "ALTER TABLE user ADD COLUMN webfinger_id TEXT";
             MyDatabase.execSQL(db, sql);
             sql = "UPDATE user SET webfinger_id=username";
+            MyDatabase.execSQL(db, sql);
+            
+            ok = true;
+        } catch (Exception e) {
+            MyLog.e(this, e);
+        }
+        if (ok) {
+            MyLog.i(this, "Database upgrading step successfully upgraded database from " + oldVersion + " to version " + versionTo);
+        } else {
+            MyLog.e(this, "Database upgrading step failed to upgrade database from " + oldVersion 
+                    + " to version " + versionTo
+                    + " SQL='" + sql +"'");
+        }
+        return ok ? versionTo : oldVersion;
+    }
+
+    private int convert18to19(SQLiteDatabase db, int oldVersion) {
+        final int versionTo = 19;
+        boolean ok = false;
+        String sql = "";
+        try {
+            MyLog.i(this, "Database upgrading step from version " + oldVersion + " to version " + versionTo );
+
+            sql = "DROP INDEX IF EXISTS idx_msg_origin";
+            MyDatabase.execSQL(db, sql);
+
+            sql = "CREATE INDEX idx_msg_origin ON msg (origin_id, msg_sent_date)";
+            MyDatabase.execSQL(db, sql);
+            
+            sql = "CREATE INDEX idx_msg_sent_date ON msg (msg_sent_date)";
             MyDatabase.execSQL(db, sql);
             
             ok = true;

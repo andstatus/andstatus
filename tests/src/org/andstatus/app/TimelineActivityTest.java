@@ -130,10 +130,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         int count1 = getListView().getAdapter().getCount() - 1;
 
         new ConversationInserter().insertConversation("p" + iterationId);
-        CommandData commandData = new CommandData(CommandEnum.CREATE_FAVORITE, TestSuite.CONVERSATION_ACCOUNT_NAME);
-        MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
-                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
-                .broadcast();
+        broadcastCommandExecuted();
         int count2 = 0;
         int position2 = 0;
         int position2Any = -1;
@@ -154,6 +151,10 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
                     }
                 }
             } else {
+                if (attempt == 3) {
+                    MyLog.v(this, "New messages were not loaded, repeating broadcast command executed");
+                    broadcastCommandExecuted();
+                }
                 Thread.sleep(2000 * (attempt + 1));
             }
             if (found) {
@@ -167,6 +168,13 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         MyLog.v(this, logText);
         assertTrue(logText, found);
         assertTrue("More items loaded; " + logText, count2 > count1);
+    }
+
+    private void broadcastCommandExecuted() {
+        CommandData commandData = new CommandData(CommandEnum.CREATE_FAVORITE, TestSuite.CONVERSATION_ACCOUNT_NAME);
+        MyServiceBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
+                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
+                .broadcast();
     }
     
     public void testOpeningAccountSelector() throws InterruptedException {

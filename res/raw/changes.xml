@@ -38,7 +38,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="13.2" android:versionCode="115"
-        versionDate="2014-11-10"
+        versionDate="2014-11-15"
         versionTitle="Debugging option allowing misconfigured SSL">
         <changes>
             <change>Added an option to &quot;Allow misconfigured SSL&quot; connections 
@@ -51,6 +51,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
             <change>Error logging expanded in &quot;Settings-Logging and debugging-Commands 
                 in the queue&quot; view. 
                 Context menu added to Share and Resend command from the Queue.</change>
+            <change>Timeline loading time improved.</change>
         </changes>
     </release>
     <release android:versionName="13.1" android:versionCode="114"
