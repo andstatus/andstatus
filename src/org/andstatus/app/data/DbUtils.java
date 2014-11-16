@@ -138,8 +138,7 @@ public final class DbUtils {
             String detailMessage = "Couldn't close silently an object of the class: "
                     + closeable.getClass().getCanonicalName() 
                     + (TextUtils.isEmpty(message) ? "" : "; " + message) ;
-            MyLog.d(TAG, detailMessage);
-            throw new IllegalArgumentException(detailMessage);
+            MyLog.w(TAG, MyLog.getStackTrace(new IllegalArgumentException(detailMessage)));
         }
     }
 }
