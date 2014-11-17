@@ -99,6 +99,7 @@
   <string name="dialog_title_sending_message">Enviando un mensaje&#8230;</string>
   <string name="dialog_title_service_unavailable">Servicio no disponible</string>
   <string name="dialog_title_timeline_loading">Actualizando la línea de tiempo&#8230;</string>
+  <string name="empty_in_parenthesis">(vacío)</string>
   <string name="error">Error</string>
   <string name="error_twitter_404">La página no se puede encontrar. Por favor, informa de este error!</string>
   <string name="error_connection_error">Se ha producido un error de conexión. Por favor, informa de este error!</string>
@@ -165,7 +166,7 @@
   <string name="menu_item_act_as_user">Actuar como \"%1s\"</string>
   <string name="menu_item_block">Boquea</string>
   <string name="menu_item_destroy_favorite">Deshacer favorito</string>
-  <string name="menu_item_destroy_reblog">Deshacer compartición</string>
+  <string name="menu_item_destroy_reblog">Deshacer repetición</string>
   <string name="menu_item_destroy_reblog_twitter">Deshacer retweet</string>
   <string name="menu_item_destroy_status">Borra el mensaje</string>
   <string name="menu_item_direct_message">Mensaje directo</string>
@@ -173,9 +174,10 @@
   <string name="menu_item_follow_user">Seguir a \"%1s\"</string>
   <string name="menu_item_open_message_permalink">Ver en navegador</string>
   <string name="menu_item_reply">Responder</string>
-  <string name="menu_item_reblog">Compartir</string>
+  <string name="menu_item_reblog">Repetir</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
-  <string name="menu_item_share">Citar</string>
+  <string name="menu_item_resend">Reenviar</string>
+  <string name="menu_item_share">Compartir</string>
   <string name="menu_item_stop_following_user">Dejar de seguir a \"%1s\"</string>
   <string name="menu_item_user_messages">Mensajes de \"%1s\"</string>
   <string name="menu_item_view_profile">Ver Perfil</string>
@@ -215,7 +217,9 @@
   <string name="options_menu_mentions">Menciones</string>
   <string name="options_menu_search">Buscar</string>
   <string name="origin_settings_action">Red social</string>
-  <string name="empty_in_parenthesis">(vacío)</string>
+  <string name="preference_allow_misconfigured_ssl_title">Permitir SSL desconfigurada</string>
+  <string name="preference_allow_misconfigured_ssl_summary_off">Estás seguro: tan sólo las conexiones SSL bien configuradas son permitidas</string>
+  <string name="preference_allow_misconfigured_ssl_summary_on">Atención: Tus conexiones no son seguras, gracias a los certificados de seguridad, las incidencias de cualquier servidor son aceptadas. Los protocolos TLS y SNI no están disponibles. Por favor, contacta con el administrador de tu servidor para arreglarlo y entonces desactivar esta opción.</string>
   <string name="reltime_days_ago_formats_1">hoy</string>
   <string name="reltime_days_ago_formats_2">hace {0} días</string>
   <string name="reltime_hours_ago_formats_1">hace una hora</string>
@@ -238,36 +242,42 @@
 	    Licencia Open Source (de código abierto).</string>
   <string name="syncing">Sincronizando&#8230;</string>
   <string name="syncing_timeline_for_somebody">Sincronizando %1$s para %2$s</string>
-  <string name="user_manual_page_1"><h1><b>Manual de usuario de AndStatus</b></h1>\n\n
+  <string name="user_manual_page_1"><h1><b>Manual de uso de AndStatus</b></h1>\n\n
+        Andstatus es un ligero cliente para redes sociales basadas en conversaciones ramificadas. 
+        Soporta múltiples protocolos, incluyendo GNU social (StatusNet), Twitter y Pump.io.
+        AndStatus combina las cuentas de todas tus redes sociales en una Línea temporal y permite leer y publicar incluso estando desconectado.\n 
+        Licencia de Código Abierto.\n   	    
+        * Hay un enlace a este manual en el menú&gt;Configuración&gt;Acerca de AndStatus&gt;Más información.\n
+        * Cambios en la versión , en la siguiente página, te permitirá ver descripciones y enlaces a discusiones sobre todas las características de AndStatus.\n\n  
         <h2><b>1. PRIMEROS PASOS</b></h2>\n\n
-        Pulsa debajo del botón \"Comenzar\": se abrirá la pantalla para agregar una nueva cuenta.\n
-        Puedes cambiar por defecto del sistema de microblogging (\"Twitter\") a alguna otra 
-        (pump.io y StatusNet, además de Twitter, están preconfigurados).\n
-	En caso de que su sistema (tipo StatusNet) no aparezca, abra Opciones de menú, seleccione  \"Configuración -
-        Administrar los sistemas de microblogging\" y \"Añadir nuevo sistema\" antes de añadir una nueva cuenta.\n
-        Para Twitter es inmediato al presionar \"Añadir esta cuenta\". 
-        Para otros sistemas, se le pedirá que escriba su nombre de usuario y contraseña antes de
-        habilitar el \"Añadir esta cuenta\".\n
-        Después de la creación exitosa de la cuenta, por favor pulse la \"flecha de la izquierda\" o 
-        \"Barra de acción\" o \"Atrás\" de tu dispositivo. 
-        Ahora la línea de tienmo de inicio se abrirá
-        y se iniciará la descarga desde internet de los mensajes de esta cuenta.\n 
-        ¡Felicidades! Lea a continuación que más puede hacer.\n\n
-        Y no te olvides de añadir tus credenciales AndStatus en la pantalla de inicio:: 
-        el widget te informará sobre nuevos mensajes y puede ser utilizado para lanzar AndStatus.\n\n
-        <h2><b>2. LO BÁSICO EN AndStatus</b></h2>\n\n
-        La primera vista de AndStatus contiene tu línea de tiempo.\n
-        Con el fin de realizar una acción sobre un mensaje en la lista <b>mantén pulsado el mensaje</b>
-        para que aparezca el menú contextual.\n
-        Puedes hacer <b>clic</b> en un mensaje para obtener más detalles sobre el mismo o para ver
-        el árbol de la conversación a la que pertenece el mensaje.\n
-        Pulsa la tecla <b>Home</b> en la \ \"barra de acción \" para cambiar a otros puntos de vista.\n\n
-        <h2><b>3. ENVÍO Y RESPUESTA</b></h2>\n\n
-        Con el fin de actualizar su estado, pulsa el botón \"Blog\" (\"Tweet\" para Twitter),
-        escribe un texto en el área de texto en la parte inferior de la pantalla y pulsa <b>Enviar</b>.\n
-        Para responder, <b>mantén pulsado</b> un mensaje, selecciona <b>Responder</b>,,
-        y escribe tu respuesta en la parte inferior.\n
-        Para abortar una respuesta, basta con pinchar en el botón \"Ocultar\" en el área de texto.
+        Al el botón de abajo \"Comenzar\": se mostrará la pantalla para añadir una cuenta nueva.\n
+        Seguramente quieras cambiar el sistema de microblogging predeterminado (\"Twitter\") a alguna otra red social
+        (Twitter, Pump.io y sistemas basados en StatusNet (GNU social) como estos tres ejemplos: Quitter, LoadAverage y Vinilox, que están preconfigurados).\n
+        En el caso de que tu servidor ( basado en StatusNet) no esté listado, abre el menú, selecciona \"Configuración - 
+        Administra las redes sociales\" y \"Añadir nueva red social\" después, añade una cuenta nueva.\n
+        Para Twitter puedes pulsar directamente \"Añadir esta cuenta\" sin más complicación. 
+        Para otras redes sociales se te pedirá que introduzcas tu Usuario y Contraseña antes de que se active \"Añadir esta cuenta\".\n
+        Después de la introducción exitosa de la cuenta, pulsa  la \"flecha de atrás\" de la
+        \"Barra de Acción\" o pulsa el botón de \"Atrás\" de tu dispositivo.
+        Ahora se abrirá la línea temporal Inicio y se descargarán de internet todos los  
+        mensajes para esta cuenta.\n 
+        ¡Felicidades! Lee abajo para saber qué hacer después.\n\n
+        Y no te olvides de añadir el widget de AndStatus a la pantalla principal de tu dispositivo: 
+        el widget te informará sobre los nuevos mensajes y podrás usarlo para abrir AndStatus.\n\n
+        <h2><b>2. Lo básico de AndStatus</b></h2>\n\n
+        Lo primero que ves en AndStatus (después de añadir al menos una cuenta) es la línea temporal Inicio.\n
+        Para interaccionar con algún mensaje deberás <b>pulsarlo</b>
+        hasta que se abra un menú contextual.\n
+        Deberás <b>pulsar</b> sobre un mensaje para ver más detalles o leer la conversación ramificada entera a la que pertenece.\n
+
+---- CAMBIAR ----
+        Pulsa el botón <b>Home</b> button on the \"Action bar\" to switch to the other views.\n\n
+        <h2><b>3. Sending and replying</b></h2>\n\n
+        In order to update your status, tap the \"Post\" button (\"Tweet\" for Twitter),
+        type in a text into the text area at the bottom of the screen and tap <b>Send</b>.\n
+        In order to reply, <b>hold down</b> a message and select <b>Reply</b>,
+        type in your reply at the bottom.\n
+        To abort a reply, simply tap the \"Hide\" button to hide the text area.
 	</string>
   <string name="user_manual_page_2">
         <h2><b>4. MENSAJES DIRECTOS</b></h2>\n\n
@@ -443,7 +453,7 @@
   <string name="message_source_from">desde %1$s</string>
   <string name="message_source_in_reply_to">en respuesta a %1$s</string>
   <string name="message_source_to">para %1$s</string>
-  <string name="reblogged_by">compartido por %1$s</string>
+  <string name="reblogged_by">repetido por %1$s</string>
   <string name="reblogged_by_twitter">retweeteado por %1$s</string>
   <string name="unimplemented">No implementado.</string>
   <string name="user_in_timeline_entries_username">usuario</string>

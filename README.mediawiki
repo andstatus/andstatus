@@ -4,7 +4,7 @@ AndStatus is a low traffic social networking client with tree-like threaded conv
 It supports multiple protocols, including [http://gnu.io/social/ GNU social] ([http://status.net/ StatusNet], e.g. [https://quitter.se/ Quitter], [https://loadaverage.org/ LoadAverage], [https://status.vinilox.eu/ Vinilox], etc.), [https://twitter.com Twitter] and [http://pump.io Pump.io].
 AndStatus combines your accounts from all networks into one Timeline and allows you reading and posting even while you are offline. 
 
-For Android OS version 4.1 or more.
+For Android OS version 4.1 or higher.
 Under Free/Libre and Open Source License.
 
 For more information please read the [https://github.com/andstatus/andstatus/wiki AndStatus Wiki]. 
