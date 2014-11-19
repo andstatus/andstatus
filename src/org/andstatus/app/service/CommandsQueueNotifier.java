@@ -19,11 +19,11 @@ package org.andstatus.app.service;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Intent;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -34,7 +34,7 @@ public class CommandsQueueNotifier {
 
     private CommandsQueueNotifier(MyContext myContext) {
         this.myContext = myContext;
-        mNotificationsEnabled = MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_enabled", false);
+        mNotificationsEnabled = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false);
     }
 
     static CommandsQueueNotifier newInstance(MyContext myContext) {
@@ -52,33 +52,43 @@ public class CommandsQueueNotifier {
             if (retryQueueSize != 0) {
                 MyLog.d(this, retryQueueSize + " commands in Retry Queue.");
             }
-
-            // Set up the notification to display to the user
-            Notification notification = new Notification(R.drawable.notification_icon,
-                    myContext.context().getText(R.string.notification_title), System.currentTimeMillis());
-
-            int messageTitle;
-            String aMessage = "";
-
-            aMessage = I18n.formatQuantityMessage(myContext.context(),
-                    R.string.notification_queue_format, count, R.array.notification_queue_patterns,
-                    R.array.notification_queue_formats);
-            messageTitle = R.string.notification_title_queue;
-
-            // Set up the scrolling message of the notification
-            notification.tickerText = aMessage;
-
-            /**
-             * This Intent will be sent upon a User tapping the notification
-             */
-            PendingIntent pi = PendingIntent.getActivity(myContext.context(), 0,
-                    new Intent(MyContextHolder.get().context(), QueueViewer.class), 0);
-            notification.setLatestEventInfo(myContext.context(),
-                    myContext.context().getText(messageTitle), aMessage, pi);
-
-            NotificationManager nM = (NotificationManager) myContext.context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
-            nM.notify(CommandEnum.NOTIFY_QUEUE.ordinal(), notification);
+            createNotification(count);
         }
+    }
+
+    /** Based on code from http://developer.android.com/guide/topics/ui/notifiers/notifications.html */
+    private void createNotification(int count) {
+        CharSequence messageTitle = myContext.context().getText(R.string.notification_title_queue);
+        String messageText = I18n.formatQuantityMessage(myContext.context(),
+                R.string.notification_queue_format, count, R.array.notification_queue_patterns,
+                R.array.notification_queue_formats);
+
+        Notification.Builder mBuilder =
+                new Notification.Builder(myContext.context())
+                .setSmallIcon(R.drawable.notification_icon)
+                .setContentTitle(messageTitle)
+                .setContentText(messageText);
+        // Creates an explicit intent for an Activity in your app
+        Intent resultIntent = new Intent(myContext.context(), QueueViewer.class);
+
+        // The stack builder object will contain an artificial back stack for the
+        // started Activity.
+        // This ensures that navigating backward from the Activity leads out of
+        // your application to the Home screen.
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(myContext.context());
+        // Adds the back stack for the Intent (but not the Intent itself)
+        stackBuilder.addParentStack(QueueViewer.class);
+        // Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                    0,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(resultPendingIntent);
+        
+        NotificationManager nM = (NotificationManager) myContext.context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+        nM.notify(CommandEnum.NOTIFY_QUEUE.ordinal(), mBuilder.build());
     }
 
     private void clearNotifications() {

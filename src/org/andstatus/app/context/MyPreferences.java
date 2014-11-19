@@ -105,6 +105,7 @@ public class MyPreferences {
      */
     public static final String KEY_VERSION_CODE_LAST = "version_code_last";
 
+    public static final String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
     public static final String KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE = "notifications_queue";
 	public static final String KEY_ENTER_SENDS_MESSAGE = "enter_sends_message";
     public static final String KEY_OLD_MESSAGES_FIRST_IN_CONVERSATION = "old_messages_first_in_conversation";
@@ -226,6 +227,13 @@ public class MyPreferences {
         SharedPreferences sp = getDefaultSharedPreferences();
         if (sp != null) {
             sp.edit().putLong(key, value).commit();
+        }
+    }
+
+    public static void putBoolean(String key, boolean value) {
+        SharedPreferences sp = getDefaultSharedPreferences();
+        if (sp != null) {
+            sp.edit().putBoolean(key, value).commit();
         }
     }
 	

@@ -46,7 +46,7 @@ public class AddedMessagesNotifier {
     }
 
     public void update(CommandResult result) {
-        if (!MyPreferences.getDefaultSharedPreferences().getBoolean("notifications_enabled", false)) {
+        if (!MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false)) {
             return;
         }
         notifyForOneType(result.getMessagesAdded(), CommandEnum.NOTIFY_HOME_TIMELINE);
