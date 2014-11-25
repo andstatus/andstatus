@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+	Copyright (C) 2008 Torgny Bjers
+	
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	     http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+ -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/createMessageButton"
+        android:icon="?attr/postMessageIcon"
+        android:showAsAction="always"
+        android:title="@string/button_create_message">
+    </item>
+    <item
+        android:id="@+id/hideMessageButton"
+        android:icon="?attr/hideMessageIcon"
+        android:showAsAction="always"
+        android:title="@string/button_hide"
+        android:visible="false">
+    </item>
+    <item
+        android:id="@+id/attach_menu_id"
+        android:alphabeticShortcut="a"
+        android:icon="?attr/attachIcon"
+        android:showAsAction="ifRoom"
+        android:title="@string/options_menu_attach"
+        android:visible="false">
+    </item>
+    <item
+        android:id="@+id/global_search_menu_id"
+        android:alphabeticShortcut="g"
+        android:icon="?attr/globalSearchIcon"
+        android:showAsAction="ifRoom"
+        android:title="@string/options_menu_global_search">
+    </item>
+    <item
+        android:id="@+id/search_menu_id"
+        android:alphabeticShortcut="s"
+        android:icon="?attr/mySearchIcon"
+        android:showAsAction="ifRoom"
+        android:title="@string/options_menu_search">
+    </item>
+    <item
+        android:id="@+id/timelineTypeButton"
+        android:onClick="onTimelineTypeButtonClick"
+        android:showAsAction="ifRoom"
+        android:title="@string/timeline_title_home">
+    </item>
+    <item
+        android:id="@+id/combinedTimelineToggle"
+        android:checkable="true"
+        android:checked="false"
+        android:onClick="onCombinedTimelineToggleClick"
+        android:showAsAction="ifRoom"
+        android:title="@string/title_preference_username">
+    </item>
+    <item
+        android:id="@+id/selectAccountButton"
+        android:onClick="onSelectAccountButtonClick"
+        android:showAsAction="ifRoom"
+        android:title="@string/combined_timeline_off_account">
+    </item>
+    <item
+        android:id="@+id/reload_menu_item"
+        android:alphabeticShortcut="r"
+        android:icon="?attr/reloadIcon"
+        android:showAsAction="ifRoom"
+        android:title="@string/options_menu_reload">
+    </item>
+    <item
+        android:id="@+id/preferences_menu_id"
+        android:alphabeticShortcut="p"
+        android:icon="@drawable/ic_menu_preferences"
+        android:showAsAction="ifRoom"
+        android:title="@string/settings_action">
+    </item>
+</menu>

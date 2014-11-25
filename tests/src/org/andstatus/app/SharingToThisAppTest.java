@@ -7,7 +7,7 @@ public class SharingToThisAppTest extends InstrumentationTestCase {
         String part1 = "This is a long a long post";
         String text = part1 + " that doesn't fit into subject";
         String prefix = "Message - ";
-        String ellipsis = "…";
+        String ellipsis = "â€¦";
         oneInputSharedContent(prefix, part1, text, ellipsis, false);
         oneInputSharedContent(prefix, "Another text for a subject", text, ellipsis, true);
         oneInputSharedContent("", "This is a long but not exact subject", text, "", true);

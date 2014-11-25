@@ -25,9 +25,9 @@ public class I18nTest extends InstrumentationTestCase {
         assertEquals(text1, I18n.trimTextAt(text1, 20));
         assertEquals(text1, I18n.trimTextAt(text1, 21));
         assertEquals(text1.substring(0, 19), I18n.trimTextAt(text1, 19));
-        assertEquals(text1.substring(0, 11) + "…", I18n.trimTextAt(text1, 18));
-        assertEquals(text1.substring(0, 8) + "…", I18n.trimTextAt(text1, 11));
-        assertEquals(text1.substring(0, 1) + "…", I18n.trimTextAt(text1, 2));
+        assertEquals(text1.substring(0, 11) + "â€¦", I18n.trimTextAt(text1, 18));
+        assertEquals(text1.substring(0, 8) + "â€¦", I18n.trimTextAt(text1, 11));
+        assertEquals(text1.substring(0, 1) + "â€¦", I18n.trimTextAt(text1, 2));
         assertEquals(text1.substring(0, 1), I18n.trimTextAt(text1, 1));
         assertEquals("", I18n.trimTextAt(text1, 0));
         assertEquals("", I18n.trimTextAt(text1, -1));
