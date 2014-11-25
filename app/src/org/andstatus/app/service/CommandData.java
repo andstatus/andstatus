@@ -569,12 +569,15 @@ public class CommandData implements Comparable<CommandData> {
             case AUTOMATIC_UPDATE:
             case FETCH_TIMELINE:
                 if (!TextUtils.isEmpty(accountName)) {
-                    builder.append(timelineType.getPrepositionForNotCombinedTimeline(myContext.context()) + " ");
+                    if (timelineType == TimelineTypeEnum.USER) {
+                        builder.append(MyProvider.userIdToName(itemId) + " ");
+                    }
+                    builder.append(timelineType.getPrepositionForNotCombinedTimeline(myContext.context()));
                     MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
                     if (ma == null) {
-                        builder.append("('" + accountName + "' ?)");
+                        builder.append(" ('" + accountName + "' ?)");
                     } else {
-                        builder.append(TimelineActivity.buildAccountButtonText(ma.getUserId(), false, timelineType));
+                        builder.append(" " + TimelineActivity.buildAccountButtonText(ma.getUserId(), false, timelineType));
                     }
                 }
                 break;

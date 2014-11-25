@@ -1185,10 +1185,22 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (mSyncIndicator.getVisibility() != View.VISIBLE) {
             mSyncIndicator.setVisibility(View.VISIBLE);
         }
-        String syncMessage = getText(R.string.title_preference_syncing) + ": "
-                + commandData.toCommandSummary(MyContextHolder.get());
-        ((TextView) findViewById(R.id.sync_text)).setText(syncMessage);
-        MyLog.v(this, syncMessage);
+        new AsyncTask<CommandData, Void, String>() {
+
+			@Override
+			protected String doInBackground(CommandData... commandData) {
+				return commandData[0].toCommandSummary(MyContextHolder.get());
+			}
+
+			@Override
+			protected void onPostExecute(String result) {
+		        String syncMessage = getText(R.string.title_preference_syncing) + ": "
+		                + result;
+		        ((TextView) findViewById(R.id.sync_text)).setText(syncMessage);
+		        MyLog.v(this, syncMessage);
+			}
+        	
+        }.execute(commandData);
     }
 
     private void onReceiveAfterExecutingCommand(CommandData commandData) {
