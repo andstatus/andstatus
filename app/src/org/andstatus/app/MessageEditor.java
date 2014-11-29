@@ -29,6 +29,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -98,8 +99,8 @@ class MessageEditor {
     public MessageEditor(ActionableMessageList actionableMessageList) {
         mMessageList = actionableMessageList;
 
-        ViewGroup layoutParent = (ViewGroup) mMessageList.getActivity().findViewById(R.id.myLayoutParent);
-        LayoutInflater inflater = LayoutInflater.from(mMessageList.getActivity());
+        ViewGroup layoutParent = (ViewGroup) getActivity().findViewById(R.id.myLayoutParent);
+        LayoutInflater inflater = LayoutInflater.from(getActivity());
         mEditorView = (ViewGroup) inflater.inflate(R.layout.message_editor, null);
         layoutParent.addView(mEditorView);
         
@@ -277,11 +278,11 @@ class MessageEditor {
         if (!isHardwareKeyboardAttached()) {
             openSoftKeyboard();
         }
-        mMessageList.getActivity().invalidateOptionsMenu();
+        getActivity().invalidateOptionsMenu();
     }
     
     private boolean isHardwareKeyboardAttached() {
-        Configuration c = mMessageList.getActivity().getResources().getConfiguration();
+        Configuration c = getActivity().getResources().getConfiguration();
         switch (c.keyboard) {
             case Configuration.KEYBOARD_12KEY:
             case Configuration.KEYBOARD_QWERTY:
@@ -292,18 +293,18 @@ class MessageEditor {
     }
 
     private void openSoftKeyboard() {
-        InputMethodManager inputMethodManager = (InputMethodManager) mMessageList.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.toggleSoftInputFromWindow(mEditText.getWindowToken(), InputMethodManager.SHOW_FORCED, 0);        
     }
     
     public void hide() {
         mEditorView.setVisibility(View.GONE);
         closeSoftKeyboard();
-        mMessageList.getActivity().invalidateOptionsMenu();
+        getActivity().invalidateOptionsMenu();
     }
 
     private void closeSoftKeyboard() {
-        InputMethodManager inputMethodManager = (InputMethodManager) mMessageList.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
     }
     
@@ -393,11 +394,13 @@ class MessageEditor {
     
     private void sendMessageAndCloseEditor() {
         String status = mEditText.getText().toString();
-        if (TextUtils.isEmpty(status.trim())) {
-            Toast.makeText(mMessageList.getActivity(), R.string.cannot_send_empty_message,
+        if (mAccount == null) {
+        	closeEditor();
+        } else if (TextUtils.isEmpty(status.trim())) {
+            Toast.makeText(getActivity(), R.string.cannot_send_empty_message,
                     Toast.LENGTH_SHORT).show();
         } else if (mAccount.charactersLeftForMessage(status) < 0) {
-            Toast.makeText(mMessageList.getActivity(), R.string.message_is_too_long,
+            Toast.makeText(getActivity(), R.string.message_is_too_long,
                     Toast.LENGTH_SHORT).show();
         } else {
 			if (MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
@@ -405,18 +408,25 @@ class MessageEditor {
 			}
             CommandData commandData = CommandData.updateStatus(mAccount.getAccountName(), status, mReplyToId, mRecipientId, mMediaUri);
             MyServiceManager.sendForegroundCommand(commandData);
-
-            // Let's assume that everything will be Ok
-            // so we may clear the text box with the sent message text...
-            mReplyToId = 0;
-            mRecipientId = 0;
-            mEditText.setText("");
-            mAccount = null;
-            mMediaUri = Uri.EMPTY;
-
-            hide();
+            closeEditor();
         }
     }
+
+	private void closeEditor() {
+		// Let's assume that everything will be Ok
+		// so we may clear the text box with the sent message text...
+		mReplyToId = 0;
+		mRecipientId = 0;
+		mEditText.setText("");
+		mAccount = null;
+		mMediaUri = Uri.EMPTY;
+
+		hide();
+	}
+
+	private Activity getActivity() {
+		return mMessageList.getActivity();
+	}
     
     public void saveState(Bundle outState) {
         mIsStateLoaded = false;
@@ -466,18 +476,33 @@ class MessageEditor {
         }
     }
 
+    public void onAttach() {
+		Intent intent = MyPreferences.getBoolean(MyPreferences.KEY_USE_KITKAT_MEDIA_CHOOSER, true) ?
+            getIntentForKitKatMediaChooser() :
+            getIntentToPickImages();
+        getActivity().startActivityForResult(intent, ActivityRequestCode.ATTACH.id);
+    }
 
     /**
      * See http://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically
      */
-    public void onAttach() {
-        Intent intent = new Intent();
+	private Intent getIntentForKitKatMediaChooser() {
+		Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        mMessageList.getActivity().startActivityForResult(Intent.createChooser(intent,
-                mMessageList.getActivity().getText(R.string.options_menu_attach)), ActivityRequestCode.ATTACH.id);
-    }
-    
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        return Intent.createChooser(intent,
+                getActivity().getText(R.string.options_menu_attach));
+	}
+
+    /**
+     * See http://stackoverflow.com/questions/19837358/android-kitkat-securityexception-when-trying-to-read-from-mediastore
+     */
+	private Intent getIntentToPickImages() {
+		return new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+	}
+	
     public Uri getMediaUri() {
         return mMediaUri;
     }

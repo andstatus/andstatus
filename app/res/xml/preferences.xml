@@ -213,18 +213,18 @@
 		</Preference>
         <PreferenceScreen android:key="preference_screen_debugging"
             android:title="@string/title_preference_debugging">
-	        <ListPreference android:entryValues="@array/log_level_values"
+            <Preference
+	            android:key="commands_queue"
+	            android:persistent="false"
+	            android:title="@string/title_preference_notifications_queue" >
+	        </Preference>
+            <ListPreference android:entryValues="@array/log_level_values"
 	            android:entries="@array/log_level_entries" android:summary="@string/summary_preference_min_log_level"
 	            android:dialogTitle="@string/dialog_title_preference_min_log_level"
 	            android:title="@string/title_preference_min_log_level" android:key="min_log_level"
 	            android:defaultValue="4" />
             <CheckBoxPreference android:key="sending_messages_log_enabled"
                 android:title="@string/title_sending_messages_log_enabled" />
-            <Preference
-	            android:key="commands_queue"
-	            android:persistent="false"
-	            android:title="@string/title_preference_notifications_queue" >
-	        </Preference>
 	        <Preference android:key="report_bug" android:title="@string/title_preference_report_bug">
 	            <intent android:action="android.intent.action.VIEW" android:data="https://github.com/andstatus/andstatus/issues" />
 	        </Preference>
@@ -233,7 +233,10 @@
                 android:summaryOff="@string/preference_allow_misconfigured_ssl_summary_off"
                 android:summaryOn="@string/preference_allow_misconfigured_ssl_summary_on"
                 android:defaultValue="false" />
-	    </PreferenceScreen>
+            <CheckBoxPreference android:key="use_kitkat_media_chooser"
+                android:title="@string/preference_use_kitkat_media_chooser_title"
+                android:defaultValue="true" />
+        </PreferenceScreen>
 	</PreferenceCategory>
 
 </PreferenceScreen>

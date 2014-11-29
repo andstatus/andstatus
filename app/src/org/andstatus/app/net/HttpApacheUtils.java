@@ -132,6 +132,7 @@ public class HttpApacheUtils {
         Uri mediaUri = null;
         String mediaPartName = "";
         Iterator<String> iterator =  formParams.keys();
+        ContentType contentType = ContentType.create(HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8);
         while (iterator.hasNext()) {
             String name = iterator.next();
             String value = formParams.optString(name);
@@ -140,14 +141,17 @@ public class HttpApacheUtils {
             } else if (HttpConnection.KEY_MEDIA_PART_URI.equals(name)) {
                 mediaUri = UriUtils.fromString(value);
             } else {
-                builder.addTextBody(name, value);
+            	// see http://stackoverflow.com/questions/19292169/multipartentitybuilder-and-charset
+                builder.addTextBody(name, value, contentType);
             }
         }
         if (!TextUtils.isEmpty(mediaPartName) && !UriUtils.isEmpty(mediaUri)) {
             try {
                 InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(mediaUri);
-                ContentType contentType = ContentType.create(MyContentType.uri2MimeType(mediaUri, null)); 
-                builder.addBinaryBody(mediaPartName, ins, contentType, mediaUri.getPath());
+                ContentType contentType2 = ContentType.create(MyContentType.uri2MimeType(mediaUri, null)); 
+                builder.addBinaryBody(mediaPartName, ins, contentType2, mediaUri.getPath());
+            } catch (SecurityException e) {
+                throw new ConnectionException("mediaUri='" + mediaUri + "'", e);
             } catch (FileNotFoundException e) {
                 throw new ConnectionException("mediaUri='" + mediaUri + "'", e);
             }

@@ -77,8 +77,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
             HttpResponse httpResponse = client.execute(postMethod);
             statusLine = httpResponse.getStatusLine();
             result = retrieveInputStream(httpResponse.getEntity());
-            jObj = new JSONObject(result);
-            if (jObj != null) {
+            if (!TextUtils.isEmpty(result)) {
+                jObj = new JSONObject(result);
                 String error = jObj.optString("error");
                 if ("Could not authenticate you.".equals(error)) {
                     throw new ConnectionException(logmsg + "; " + error);

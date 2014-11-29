@@ -225,7 +225,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
         // Set the adapter for the list view
         mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-                R.layout.drawer_list_item, timelineTitles));
+                R.layout.drawer_list_item, R.id.listItemText, timelineTitles));
 	}
 
     private Cursor getEmptyCursor() {
