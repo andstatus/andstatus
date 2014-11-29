@@ -640,14 +640,7 @@ public class MyProvider extends ContentProvider {
             boolean logQuery = MyLog.isLoggable(TAG, MyLog.VERBOSE);
             try {
                 if (sql.length() == 0) {
-                    /* We don't use selectionArgs here, they will be actually used (substitute ?-s in selection)
-                     * when the query is executed. 
-                     * See <a href="http://stackoverflow.com/questions/2481322/sqlitequerybuilder-buildquery-not-using-selectargs">SQLiteQueryBuilder.buildQuery not using selectArgs?</a> 
-                     * and here: <a href="http://code.google.com/p/android/issues/detail?id=4467">SQLiteQueryBuilder.buildQuery ignores selectionArgs</a>
-                     */
-                    sql = qb.buildQuery(projection, selection, selectionArgs, null, null, orderBy, null);
-                    // TODO: We cannot use this method in API 10...
-                    // sql = qb.buildQuery(projection, selection, null, null, orderBy, null);
+                    sql = qb.buildQuery(projection, selection, null, null, orderBy, null);
                     built = true;
                 }
                 // Here we substitute ?-s in selection with values from selectionArgs

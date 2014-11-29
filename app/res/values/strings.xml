@@ -192,6 +192,7 @@
   <string name="notification_direct_message_formats_2">{0} direct messages</string>
   <string name="notification_queue_formats_1">{0} message is</string>
   <string name="notification_queue_formats_2">{0} messages are</string>
+  <string name="notification_new_home_title">New Home Messages</string>
   <string name="notification_new_tweet_format">You have {0}.</string>
   <string name="notification_new_message_format">You have {0}.</string>
   <string name="notification_title_messages">New Direct Messages</string>

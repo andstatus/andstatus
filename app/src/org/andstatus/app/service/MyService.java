@@ -25,6 +25,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.notification.CommandsQueueNotifier;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
@@ -39,7 +40,6 @@ import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.IBinder;
 import android.os.PowerManager;
-
 import net.jcip.annotations.GuardedBy;
 
 /**

@@ -54,7 +54,7 @@ class MyRemoteViewData {
                 isFound = true;
                 widgetText += (widgetText.length() > 0 ? "\n" : "")
                         + I18n.formatQuantityMessage(context,
-                                R.string.appwidget_new_message_format,
+                                R.string.appwidget_new_directmessage_format,
                                 widgetData.numDirectMessages,
                                 R.array.appwidget_directmessage_patterns,
                                 R.array.appwidget_directmessage_formats);
@@ -63,9 +63,9 @@ class MyRemoteViewData {
                 isFound = true;
                 widgetText += (widgetText.length() > 0 ? "\n" : "")
                         + I18n.formatQuantityMessage(context,
-                                R.string.appwidget_new_tweet_format,
-                                widgetData.numHomeTimeline, R.array.appwidget_message_patterns,
-                                R.array.appwidget_message_formats);
+                                R.string.appwidget_new_home_format,
+                                widgetData.numHomeTimeline, R.array.appwidget_home_patterns,
+                                R.array.appwidget_home_formats);
             }
             if (!isFound) {
                 widgetComment = widgetData.nothingPref;

@@ -17,6 +17,7 @@
 package org.andstatus.app.data;
 
 import android.test.InstrumentationTestCase;
+import android.text.TextUtils;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
@@ -80,15 +81,22 @@ public class HtmlContentInserter extends InstrumentationTestCase {
     }
     
     private void assertHtmlMessage(MbUser author, String bodyString, String messageOid) {
-        setHtmlContentAllowed(true);
+        assertHtmlMessageContentAllowed(author, bodyString, messageOid, true);
+        assertHtmlMessageContentAllowed(author, bodyString + " no HTML", 
+        		TextUtils.isEmpty(messageOid) ? null : messageOid + "-noHtml", false);
+    }
+
+	private MessageInserter assertHtmlMessageContentAllowed(MbUser author,
+			String bodyString, String messageOid, boolean htmlContentAllowed) {
+		setHtmlContentAllowed(htmlContentAllowed);
         MessageInserter mi = new MessageInserter(ma);
         long msgId1 = mi.addMessage(mi.buildMessage(author, bodyString, null, messageOid));
         String body1 = MyProvider.msgIdToStringColumnValue(Msg.BODY, msgId1);
-        assertEquals("HTML preserved", bodyString, body1);
-        
-        setHtmlContentAllowed(false);
-        long msgId2 = mi.addMessage(mi.buildMessage(author, bodyString, null, null));
-        String body2 = MyProvider.msgIdToStringColumnValue(Msg.BODY, msgId2);
-        assertEquals("HTML removed", MyHtml.fromHtml(bodyString), body2);
-    }
+        if (htmlContentAllowed) {
+            assertEquals("HTML preserved", bodyString, body1);
+        } else {
+            assertEquals("HTML removed", MyHtml.fromHtml(bodyString), body1);
+        }
+		return mi;
+	}
 }

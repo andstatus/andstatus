@@ -16,6 +16,7 @@
 
 package org.andstatus.app.context;
 
+import android.app.Notification;
 import android.content.Context;
 
 import org.andstatus.app.account.PersistentAccounts;
@@ -23,12 +24,15 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionRequired;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
@@ -40,6 +44,7 @@ public class MyContextForTest implements MyContext {
     private Set<AssersionData> dataSet = new CopyOnWriteArraySet<AssersionData>();
     private HttpConnection httpConnection;
     private ConnectionRequired mOnline = ConnectionRequired.ANY; 
+    private Map<TimelineTypeEnum, Notification> notifications = new ConcurrentHashMap<TimelineTypeEnum, Notification>();
 
     public MyContextForTest setContext(MyContext myContextIn) {
         myContext = myContextIn;
@@ -202,4 +207,20 @@ public class MyContextForTest implements MyContext {
     public void setInForeground(boolean inForeground) {
         myContext.setInForeground(inForeground);
     }
+
+	@Override
+	public void notify(TimelineTypeEnum id, Notification notification) {
+		myContext.notify(id, notification);
+		notifications.put(id, notification);
+	}
+
+	@Override
+	public void clearNotification(TimelineTypeEnum id) {
+		myContext.clearNotification(id);
+		notifications.remove(id);
+	}
+	
+	public Map<TimelineTypeEnum, Notification> getNotifications() {
+		return notifications;
+	}
 }

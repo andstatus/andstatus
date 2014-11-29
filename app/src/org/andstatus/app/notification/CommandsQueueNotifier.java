@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package org.andstatus.app.service;
+package org.andstatus.app.notification;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Intent;
@@ -25,6 +24,8 @@ import android.content.Intent;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 
@@ -37,14 +38,14 @@ public class CommandsQueueNotifier {
         mNotificationsEnabled = MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFICATIONS_ENABLED, false);
     }
 
-    static CommandsQueueNotifier newInstance(MyContext myContext) {
+    public static CommandsQueueNotifier newInstance(MyContext myContext) {
         return new CommandsQueueNotifier(myContext);
     }
 
     public void update(int mainQueueSize, int retryQueueSize) {
         int count = mainQueueSize + retryQueueSize;
         if (count == 0 ) {
-            clearNotifications();
+        	myContext.clearNotification(TimelineTypeEnum.ALL);
         } else if (mNotificationsEnabled && MyPreferences.getDefaultSharedPreferences().getBoolean(MyPreferences.KEY_NOTIFY_OF_COMMANDS_IN_THE_QUEUE, false)) {
             if (mainQueueSize != 0) {
                 MyLog.d(this, mainQueueSize + " commands in Main Queue.");
@@ -63,7 +64,7 @@ public class CommandsQueueNotifier {
                 R.string.notification_queue_format, count, R.array.notification_queue_patterns,
                 R.array.notification_queue_formats);
 
-        Notification.Builder mBuilder =
+        Notification.Builder builder =
                 new Notification.Builder(myContext.context())
                 .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle(messageTitle)
@@ -80,21 +81,12 @@ public class CommandsQueueNotifier {
         stackBuilder.addParentStack(QueueViewer.class);
         // Adds the Intent that starts the Activity to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
+        PendingIntent pendingIntent =
                 stackBuilder.getPendingIntent(
                     0,
                     PendingIntent.FLAG_UPDATE_CURRENT
                 );
-        mBuilder.setContentIntent(resultPendingIntent);
-        
-        NotificationManager nM = (NotificationManager) myContext.context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
-        nM.notify(CommandEnum.NOTIFY_QUEUE.ordinal(), mBuilder.build());
-    }
-
-    private void clearNotifications() {
-        NotificationManager nM = (NotificationManager) myContext.context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
-        if (nM != null) {
-            nM.cancel(CommandEnum.NOTIFY_QUEUE.ordinal());
-        }
+        builder.setContentIntent(pendingIntent);
+        myContext.notify(TimelineTypeEnum.ALL, builder.build());
     }
 }

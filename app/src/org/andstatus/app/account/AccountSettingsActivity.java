@@ -812,7 +812,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                 // from the Browser to the same activity.
                 state.actionCompleted = false;
                 
-                android.webkit.CookieSyncManager.createInstance(AccountSettingsActivity.this);
                 android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
                 cookieManager.removeAllCookie();                
 

@@ -20,6 +20,7 @@ import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.notification.AddedMessagesNotifier;
 import org.andstatus.app.util.MyLog;
 
 class CommandExecutorLoadAllTimelines extends CommandExecutorStrategy {

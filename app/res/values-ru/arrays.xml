@@ -17,12 +17,12 @@
 	Note: Test RegEx at http://www.regexplanet.com/simple/index.html
  -->
 <resources>
-	<string-array name="appwidget_message_formats">
+	<string-array name="appwidget_home_formats">
         <item>@string/appwidget_message_formats_1</item>
         <item>@string/appwidget_message_formats_2</item>
 		<item>"{0} сообщений"</item>
 	</string-array>
-	<string-array name="appwidget_message_patterns">
+	<string-array name="appwidget_home_patterns">
 		<item>".*[^1]1|1"</item> <!--  ..except 11 at the end of line... -->
 		<item>".*[^1][234]|2|3|4"</item> <!--  ..except 12,13 and 14 at the end of line... -->
 		<item>".*"</item>
@@ -37,12 +37,12 @@
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>
 	</string-array>
-	<string-array name="notification_message_formats">
+	<string-array name="notification_home_formats">
 		<item>@string/notification_message_formats_1</item>
         <item>@string/notification_message_formats_2</item>
 		<item>"{0} сообщений"</item>
 	</string-array>
-	<string-array name="notification_message_patterns">
+	<string-array name="notification_home_patterns">
 		<item>".*[^1]1|1"</item>
 		<item>".*[^1][234]|2|3|4"</item>
 		<item>".*"</item>

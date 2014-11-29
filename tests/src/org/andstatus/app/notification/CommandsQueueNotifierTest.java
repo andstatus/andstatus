@@ -1,10 +1,12 @@
-package org.andstatus.app.service;
+package org.andstatus.app.notification;
 
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.TimelineTypeEnum;
+import org.andstatus.app.notification.CommandsQueueNotifier;
 
 public class CommandsQueueNotifierTest extends InstrumentationTestCase {
     
@@ -16,6 +18,8 @@ public class CommandsQueueNotifierTest extends InstrumentationTestCase {
     }
 
     public void testCreateNotification() {
+    	TestSuite.getMyContextForTest().getNotifications().clear();
         CommandsQueueNotifier.newInstance(MyContextHolder.get()).update(3, 7);
+        assertTrue(TestSuite.getMyContextForTest().getNotifications().get(TimelineTypeEnum.ALL) != null);
     }
 }

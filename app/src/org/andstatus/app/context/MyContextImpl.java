@@ -16,11 +16,12 @@
 
 package org.andstatus.app.context;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.database.sqlite.SQLiteException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-
 import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.ClassInApplicationPackage;
@@ -28,6 +29,7 @@ import org.andstatus.app.account.PersistentAccounts;
 import org.andstatus.app.data.AssersionData;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabaseConverterController;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.PersistentOrigins;
 import org.andstatus.app.service.ConnectionRequired;
@@ -303,4 +305,16 @@ public final class MyContextImpl implements MyContext {
         }
         mInForeground = inForeground;
     }
+
+	@Override
+	public void notify(TimelineTypeEnum id, Notification notification) {
+        NotificationManager nM = (NotificationManager) context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+        nM.notify(MyLog.APPTAG, id.ordinal(), notification);
+	}
+
+	@Override
+	public void clearNotification(TimelineTypeEnum id) {
+        NotificationManager nM = (NotificationManager) context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+        nM.cancel(MyLog.APPTAG, id.ordinal());
+	}
 }

@@ -34,8 +34,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -130,29 +128,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     private MessageEditor mMessageEditor;
     private Menu mOptionsMenu = null;
 
-    protected Menu getOptionsMenu() {
-        return mOptionsMenu;
-    }
-
     private String mTextToShareViaThisApp = "";
     private Uri mMediaToShareViaThisApp = Uri.EMPTY;
 
     private String mRateLimitText = "";
-
-    private boolean isLoading() {
-        return mLoadingLayout.getVisibility() == View.VISIBLE;
-    }
-    
-    private void setLoading(boolean loading) {
-        if (isLoading() != loading && !isFinishing()) {
-            MyLog.v(this, "isLoading set to " + loading + ", instanceId=" + mInstanceId );
-            if (loading) {
-                mLoadingLayout.setVisibility(View.VISIBLE);
-            } else {
-                mLoadingLayout.setVisibility(View.INVISIBLE);
-            }
-        }
-    }
     
     /**
      * This method is the first of the whole application to be called 
@@ -1232,6 +1211,25 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             mSyncIndicator.setVisibility(View.GONE);
         }
     }
+
+    private boolean isLoading() {
+        return mLoadingLayout.getVisibility() == View.VISIBLE;
+    }
+    
+    private void setLoading(boolean loading) {
+        if (isLoading() != loading && !isFinishing()) {
+            MyLog.v(this, "isLoading set to " + loading + ", instanceId=" + mInstanceId );
+            if (loading) {
+                mLoadingLayout.setVisibility(View.VISIBLE);
+            } else {
+                mLoadingLayout.setVisibility(View.INVISIBLE);
+            }
+        }
+    }
+
+    protected Menu getOptionsMenu() {
+        return mOptionsMenu;
+    }
     
     @Override
     public Activity getActivity() {
@@ -1247,7 +1245,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public long getCurrentMyAccountUserId() {
         return mListParametersNew.myAccountUserId;
     }
-
+    
     @Override
     public TimelineTypeEnum getTimelineType() {
         return mListParametersNew.getTimelineType();
