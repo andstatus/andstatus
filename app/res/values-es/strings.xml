@@ -249,7 +249,7 @@
         Licencia de Código Abierto.\n   	    
         * Hay un enlace a este manual en el menú&gt;Configuración&gt;Acerca de AndStatus&gt;Más información.\n
         * Cambios en la versión , en la siguiente página, te permitirá ver descripciones y enlaces a discusiones sobre todas las características de AndStatus.\n\n  
-        <h2><b>1. PRIMEROS PASOS</b></h2>\n\n
+        <h2><b>1. Primeros pasos</b></h2>\n\n
         Al el botón de abajo \"Comenzar\": se mostrará la pantalla para añadir una cuenta nueva.\n
         Seguramente quieras cambiar el sistema de microblogging predeterminado (\"Twitter\") a alguna otra red social
         (Twitter, Pump.io y sistemas basados en StatusNet (GNU social) como estos tres ejemplos: Quitter, LoadAverage y Vinilox, que están preconfigurados).\n
@@ -269,65 +269,61 @@
         Para interaccionar con algún mensaje deberás <b>pulsarlo</b>
         hasta que se abra un menú contextual.\n
         Deberás <b>pulsar</b> sobre un mensaje para ver más detalles o leer la conversación ramificada entera a la que pertenece.\n
-
----- CAMBIAR ----
-        Pulsa el botón <b>Home</b> button on the \"Action bar\" to switch to the other views.\n\n
-        <h2><b>3. Sending and replying</b></h2>\n\n
-        In order to update your status, tap the \"Post\" button (\"Tweet\" for Twitter),
-        type in a text into the text area at the bottom of the screen and tap <b>Send</b>.\n
-        In order to reply, <b>hold down</b> a message and select <b>Reply</b>,
-        type in your reply at the bottom.\n
-        To abort a reply, simply tap the \"Hide\" button to hide the text area.
-	</string>
-  <string name="user_manual_page_2">
-        <h2><b>4. MENSAJES DIRECTOS</b></h2>\n\n
-        Pulsa el botón <b>Inicio</b> (en la Línea de tiempo) 
-        y seleccion <b>Mensajes Directos</b> en la lista.\n
-        Con el fin de <b>eliminar</b> tu mensaje directo (o tu mensaje público), 
-        <b>mantén pulsado</b> en él y selecciona <b>Eliminar</b>.\n\n
-        Los nuevos mensajes se recuperán con los plazos estipulados si has activado 
-        <b>Sincronización automática</b>
-        en los ajustes de Cuenta y Sincronización de Android. 
-        En cualquier caso, siempre se puede obtener actualizaciones desde Internet
-        utilizando manualmente el comando \"Actualizar\" en el Menú de Opciones.\n\n
-        <h2><b>5. MENCIONES</b></h2>\n\n
-        Presiona <b>Inicio</b> y luego selecciona <b>Menciones</b>.\n
-        Aquí enumerará cada mensaje que menciona su <b>@nombre de usuario</b>
-        (o incluso las menciones de en todas tus cuentas AndStatus para una línea 
-        de tiempo \"combinada\").\n\n
-        <h2><b>6. BÚSQUEDA (LOCAL) </b></h2>\n\n
-        Esta búsqueda se hace entre los mensajes ya cargados desde Internet.
-        Por lo tanto, está disponible incluso sin conexión\n
-        1. Con el fin de encontrar cualquier palabra o frase en el texto de los mensajes,
-        haga clic en \"Menú\" para abrir el menú de opciones y luego <b>Buscar</b>
-        o puede hacer clic en el botón <b>Buscar</b> de su dispositivo.\n
-        Si desea que se muestren los mensajes de un usuario específico,
-        por favor, busque en \"nombre de usuario\".\n
-        Para ver las menciones de un usuario específico, buscar \"@nombre de usuario\".\n\n
-        2. Para buscar rápidamente los mensajes de un usuario
-        (de un autor o de un remitente de un mensaje seleccionado), seleccione
-        \"Mensajes por nombre de usuario\" en el menú de contexto del mensaje. Esto es en realidad
-        una especie de búsqueda global (véase más adelante).\n\n
-        <h2><b>7. BÚSQUEDA GLOBAL</b></h2>\n\n
-        La función de búsqueda global solicita directamente los resultados de búsqueda
-        a los servidores del sistema de Microblogging.
-        Por eso se necesita conexión a Internet directa a los sistemas.
-        En primer lugar, se le presentará los resultados de la búsqueda local. En paralelo,
-        AndStatus hará peticiones de resultados al sistema de microblogging de la cuenta seleccionada
-        (o a todos los sistemas de microblogging, si la línea de tiempo es \"combinada\").
-        Los resultados de la búsqueda se actualizan sobre la recepción de las respuestas de los servidores.
-        En un caso de no haber conexión
-        (es decir, sin respuesta de un servidor de un sistema de microblogging)
-        verá los resultados de la búsqueda local solamente.\n
-        Tenga en cuenta que el sistema pump.io no soporta todavía la búsqueda global.\n
-        1. La búsqueda global con una palabra o una frase se puede iniciar
-        solo desde la línea temporal \"Pública\".
-        Después del cambio a esta línea de tiempo,
-        haga clic en \"Menú\" para abrir el menú de opciones y luego pulse <b>Búsqueda global</b>.\n
-        2. Otra forma de buscar globalmente los mensajes de un autor o de un remitente
-        del mensaje seleccionado es seleccionar
-        \"Mensajes por nombre de usuario\" en el menú contextual de este mensaje.
-    </string>
+        Abre el menú y después <b>Inicio</b> para cambiarlo a otras líneas temporales.\n\n
+        <h2><b>3. Publicando y respondiendo</b></h2>\n\n
+        Para actualizar tu estado, pulsa el icono de arriba del mensaje con el más \"+\",
+        escribe en la parte de abajo de la pantalla y pulsa el botón de envío con forma de punta de flecha.\n
+        Para responder, <b>deja pulsado</b> un mensaje y selecciona <b>Responder</b>,
+        finalmente, escribe la respuesta abajo.\n
+        Para cancelar una publicación o una contestación, simplemente pulsa en el icono del mensaje con un signo menos \"-\".
+	 </string>
+  <string name="user_manual_page_2"><h2><b>4. Mensajes directos (privados)</b></h2>\n\n
+Abre el menú y pulsa <b>Inicio</b>
+y selecciona <b>Mensajes Directos</b> en la lista.\n
+Para <b>eliminar</b> tu mensaje directo (o tu mensaje público),
+<b>mantén pulsado</b> en él y selecciona <b>Eliminar</b>.\n\n
+Los nuevos mensajes se recuperán con los plazos estipulados si has activado
+<b>Sincronización automática</b>
+en los ajustes de Cuenta y Sincronización de Android.
+En cualquier caso, siempre se puede obtener actualizaciones desde Internet
+utilizando manualmente el comando \"Actualizar\" en el Menú de Opciones.\n\n
+<h2><b>5. Menciones</b></h2>\n\n
+Abre el menú, presiona <b>Inicio</b> y luego selecciona <b>Menciones</b>.\n
+Aquí enumerará cada mensaje que menciona su <b>@nombre de usuario</b>
+(o incluso las menciones de en todas tus cuentas AndStatus para una línea
+de tiempo \"combinada\").\n\n
+<h2><b>6. Búsqueda local </b></h2>\n\n
+Esta búsqueda se hace entre los mensajes ya cargados desde Internet.
+Por lo tanto, está disponible incluso sin conexión\n
+1. Con el fin de encontrar cualquier palabra o frase en el texto de los mensajes,
+haga clic en \"Menú\" para abrir el menú de opciones y luego <b>Buscar</b>
+o puede hacer clic en el botón <b>Buscar</b> de su dispositivo.\n
+Si desea que se muestren los mensajes de un usuario específico,
+por favor, busque en \"nombre de usuario\".\n
+Para ver las menciones de un usuario específico, buscar \"@nombre de usuario\".\n\n
+2. Para buscar rápidamente los mensajes de un usuario
+(de un autor o de un remitente de un mensaje seleccionado), seleccione
+\"Mensajes por nombre de usuario\" en el menú de contexto del mensaje. Esto es en realidad
+una especie de búsqueda global (véase más adelante).\n\n
+<h2><b>7. Búsqueda global</b></h2>\n\n
+La función de búsqueda global solicita directamente los resultados de búsqueda
+a los servidores del sistema de Microblogging.
+Por eso se necesita conexión a Internet directa a los sistemas.
+En primer lugar, se le presentará los resultados de la búsqueda local. En paralelo,
+AndStatus hará peticiones de resultados al sistema de microblogging de la cuenta seleccionada
+(o a todos los sistemas de microblogging, si la línea de tiempo es \"combinada\").
+Los resultados de la búsqueda se actualizan sobre la recepción de las respuestas de los servidores.
+En un caso de no haber conexión
+(es decir, sin respuesta de un servidor de un sistema de microblogging)
+verá los resultados de la búsqueda local solamente.\n
+Tenga en cuenta que el sistema pump.io no soporta todavía la búsqueda global.\n
+<b>1.</b> La búsqueda global con una palabra o una frase se puede iniciar
+sólo desde la línea temporal \"Pública\".
+Después del cambio a esta línea de tiempo,
+pulse el icono de la barra de acción (barra superior) con forma de lupa.\n
+<b>2.</b> Otra forma de buscar globalmente los mensajes de un autor o de un remitente
+del mensaje seleccionado es seleccionar
+\"Mensajes por nombre de usuario\" en el menú contextual de este mensaje.</string>
   <string name="search_timeline_label">Búsqueda de mensajes, usuarios y hashtags</string>
   <string name="search_timeline_hint">Introduzca un nombre de usuario/frase</string>
   <string name="search_direct_messages_label">Buscar mensajes directos</string>

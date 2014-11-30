@@ -23,11 +23,9 @@
  -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <string name="account_settings_action">AndStatus paramétrages de compte</string>
-  <string name="account_settings_activity_title">Account</string>
   <string name="account_settings_summary">Fréquence de synchronisation, notifications, etc.</string>
   <string name="settings_action">Paramétrages</string>
   <string name="settings_activity_title">Paramétrages</string>
-  <string name="action_menu_overflow_description">More actions&#8230;</string>
   <string name="appwidget_configure_instructions">Personnaliser le message du widget AndStatus affiché s\'il n\'y a pas rien de nouveau :</string>
   <string name="appwidget_message_formats_1">{0} message</string>
   <string name="appwidget_message_formats_2">{0} messages</string>
@@ -39,27 +37,12 @@
   <string name="appwidget_nodata">Aucune donnée.</string>
   <string name="authentication_never">Pas de dernière authentification</string>
   <string name="authentication_successful">Authentification réussie !</string>
-  <string name="button_add">Add</string>
-  <string name="button_add_origin">Add new system</string>
-  <string name="button_backup">Backup</string>
-  <string name="button_cancel">Cancel</string>
-  <string name="button_change_folder">Change folder</string>
-  <string name="button_select_backup_file">Select backup file</string>
   <string name="button_create_message">Poster</string>
   <string name="button_create_message_twitter">Tweeter</string>
-  <string name="button_delete">Delete</string>
-  <string name="button_discard">Discard</string>
-  <string name="button_hide">Hide</string>
-  <string name="button_overflow">Overflow</string>
-  <string name="button_restore">Restore</string>
-  <string name="button_save">Save</string>
   <string name="button_send">Envoyer</string>
   <string name="cannot_send_empty_message">Envoi d\'un message vide impossible.</string>
   <string name="category_title_preference_appearance">Apparence</string>
   <string name="category_title_preference_credentials">Identifiants</string>
-  <string name="category_title_preference_information">Information</string>
-  <string name="category_title_preference_notifications">Notifications</string>
-  <string name="category_title_preference_origin">Microblogging system</string>
   <string name="category_title_preference_settings">Réglages</string>
   <string name="combined_timeline_on">combinée</string>
   <string name="combined_timeline_off_account">pour</string>
@@ -72,7 +55,6 @@
   <string name="dialog_summary_executing_command">Merci de patienter pendant que l\'opération est exécutée sur le serveur.</string>
   <string name="dialog_summary_external_storage">Un support externe a été détecté. Souhaitez-vous qu\'AndStatus l\'utilise pour enregistrer les informations ? Les anciennes données peuvent être supprimées, mais resteront sur la mémoire interne.</string>
   <string name="dialog_summary_external_storage_missing">Support externe non présent ou démonté. Souhaitez-vous utiliser la mémoire interne ? Toute donnée enregistrée sur le support externe restera disponible.</string>
-  <string name="dialog_summary_registering_client">Please wait while AndStatus is registering itself as a client application</string>
   <string name="dialog_summary_sending_message">Merci de patienter pendant l\'envoi du message.</string>
   <string name="dialog_summary_service_unavailable">Twitter est actuellement indisponible. Merci de réessayer ultérieurement.</string>
   <string name="dialog_summary_timeline_loading">Merci de patientier pendant le rafraîchissement de la timeline. Cela pourra prendre plusieurs minutes selon votre connexion.</string>
@@ -84,17 +66,13 @@
   <string name="dialog_title_executing_command">Exécution de l\'opération&#8230;</string>
   <string name="dialog_title_external_storage">Support externe disponible</string>
   <string name="dialog_title_external_storage_missing">Support externe manquant</string>
-  <string name="dialog_title_preference_connection_timeout">Connection timeout in seconds</string>
   <string name="dialog_title_preference_frequency">Fréquence de rafraîchissement</string>
   <string name="dialog_title_preference_history_size">Taille de l\'historique</string>
   <string name="dialog_title_preference_history_time">Durée de l\'historique</string>
   <string name="dialog_title_preference_min_log_level">Niveau de journalisation</string>
   <string name="dialog_title_preference_password">Mot de passe</string>
   <string name="dialog_title_preference_theme_color">Choisir un thème</string>
-  <string name="dialog_title_preference_theme_size">Select a Size</string>
   <string name="dialog_title_preference_username">Identifiant</string>
-  <string name="dialog_title_preference_username_pumpio">Webfinger ID</string>
-  <string name="dialog_title_registering_client">Registering AndStatus</string>
   <string name="dialog_title_select_timeline">Choisir une timeline</string>
   <string name="dialog_title_sending_message">Envoi du message&#8230;</string>
   <string name="dialog_title_service_unavailable">Service non disponible</string>
@@ -106,11 +84,6 @@
   <string name="error_credentials_of_other_user">Ce sont les identifiants d\'un autre utilisateur</string>
   <string name="favorite_created">Marqué comme favori.</string>
   <string name="favorite_destroyed">Supprimé des favoris.</string>
-  <string name="fetch_frequency_entries_3_minutes">3 minutes</string>
-  <string name="fetch_frequency_entries_5_minutes">5 minutes</string>
-  <string name="fetch_frequency_entries_10_minutes">10 minutes</string>
-  <string name="fetch_frequency_entries_15_minutes">15 minutes</string>
-  <string name="fetch_frequency_entries_30_minutes">30 minutes</string>
   <string name="fetch_frequency_entries_1_hour">heure</string>
   <string name="fetch_frequency_entries_2_hours">2 heures</string>
   <string name="fetch_frequency_entries_4_hours">4 heures</string>
@@ -118,17 +91,6 @@
   <string name="fetch_frequency_entries_12_hours">12 heures</string>
   <string name="fetch_frequency_entries_1_day">jour</string>
   <string name="header_accounts">Gestion des comptes</string>
-  <string name="header_add_new_account">Add new account</string>
-  <string name="header_manage_existing_accounts">Manage existing accounts</string>
-  <string name="history_size_entries_500">500 messages</string>
-  <string name="history_size_entries_1000">1000 messages</string>
-  <string name="history_size_entries_2000">2000 messages</string>
-  <string name="history_size_entries_5000">5000 messages</string>
-  <string name="history_size_entries_10000">10000 messages</string>
-  <string name="history_size_entries_20000">20000 messages</string>
-  <string name="history_size_entries_50000">50000 messages</string>
-  <string name="history_size_entries_100000">100000 messages</string>
-  <string name="history_size_entries_1mln">1 mln messages</string>
   <string name="history_time_entries_1day">1 jour</string>
   <string name="history_time_entries_2days">2 jours</string>
   <string name="history_time_entries_3days">3 jours</string>
@@ -138,54 +100,28 @@
   <string name="history_time_entries_1week">1 semaine</string>
   <string name="history_time_entries_1month">1 mois</string>
   <string name="history_time_entries_1year">1 an</string>
-  <string name="history_time_entries_10years">10 years</string>
   <string name="id_of_this_message_was_not_specified">Id du message non spécifié</string>
   <string name="label_accountselector">Choisir un compte</string>
-  <string name="label_allow_html_content">Allow HTML content</string>
-  <string name="label_backup">Backup application data to SD card</string>
-  <string name="label_backup_file">Backup file</string>
-  <string name="label_backup_folder">Backup folder</string>
-  <string name="label_conversation">Conversation</string>
-  <string name="label_host">Host</string>
-  <string name="label_manage_origin_systems">Manage microblogging systems</string>
-  <string name="label_origin_list">Microblogging systems</string>
-  <string name="label_origin_name">Name of Microblogging system (unique and not changeable)</string>
   <string name="label_origin_system">Système de microblogage</string>
-  <string name="label_origin_type">Type of Microblogging system</string>
-  <string name="label_restore">Restore application data from Backup</string>
-  <string name="label_upgrading">Upgrade is in progress. Please wait.</string>
-  <string name="label_with_media">with media</string>
   <string name="loading">Chargement&#8230;</string>
-  <string name="message">Message</string>
-  <string name="message_twitter">Tweet</string>
   <string name="message_edit_hint">Saisissez votre message ici !</string>
   <string name="message_characters_left">Caractères restant :</string>
   <string name="message_is_too_long">Le message est trop long.</string>
-  <string name="menu_item_act_as">Act as&#8230;</string>
-  <string name="menu_item_act_as_user">Act as \"%1s\"</string>
   <string name="menu_item_block">Bloquer</string>
   <string name="menu_item_destroy_favorite">Supprimer des favoris</string>
-  <string name="menu_item_destroy_reblog">Undo repost</string>
-  <string name="menu_item_destroy_reblog_twitter">Undo retweet</string>
   <string name="menu_item_destroy_status">Supprimer ce message</string>
   <string name="menu_item_direct_message">Message privé</string>
   <string name="menu_item_favorite">Mettre en favori</string>
   <string name="menu_item_follow_user">S\'abonner \"%1s\"</string>
-  <string name="menu_item_open_message_permalink">Open on Internet</string>
   <string name="menu_item_reply">Répondre</string>
   <string name="menu_item_reblog">Reposter</string>
   <string name="menu_item_reblog_twitter">Retweeter</string>
   <string name="menu_item_share">Partager</string>
   <string name="menu_item_stop_following_user">Se désabonner \"%1s\"</string>
-  <string name="menu_item_user_messages">Messages by \"%1s\"</string>
   <string name="menu_item_view_profile">Voir le profile</string>
   <string name="message_sent">Le message a été envoyé.</string>
   <string name="messages_activity">Messages privés</string>
   <string name="not_set">non renseigné</string>
-  <string name="notification_message_formats_1">{0} message</string>
-  <string name="notification_message_formats_2">{0} messages</string>
-  <string name="notification_mention_formats_1">{0} mention</string>
-  <string name="notification_mention_formats_2">{0} mentions</string>
   <string name="notification_direct_message_formats_1">{0} message privé</string>
   <string name="notification_direct_message_formats_2">{0} messages privés</string>
   <string name="notification_queue_formats_1">{0} message est</string>
@@ -197,25 +133,16 @@
   <string name="notification_title_mentions">Nouvelles mentions</string>
   <string name="notification_queue_format">{0} en attente d\'envoi.</string>
   <string name="notification_title_queue">Tous les messages n\'ont pas été envoyés</string>
-  <string name="oauth_activity_label">OAuth</string>
-  <string name="off">off</string>
-  <string name="on">on</string>
   <string name="options_menu_about">À propos d\'AndStatus</string>
   <string name="options_menu_about_cond">À propos</string>
-  <string name="options_menu_attach">Attach</string>
   <string name="options_menu_direct_messages">Messages privés</string>
-  <string name="options_menu_direct_messages_cond">Messages</string>
   <string name="options_menu_favorites_timeline">Timeline des favoris</string>
   <string name="options_menu_favorites_timeline_cond">Favoris</string>
   <string name="options_menu_home_timeline">Timeline principale</string>
   <string name="options_menu_home_timeline_cond">Accueil</string>
-  <string name="options_menu_global_search">Global search</string>
   <string name="options_menu_help">Aide</string>
   <string name="options_menu_reload">Rafraîchir</string>
-  <string name="options_menu_mentions">Mentions</string>
   <string name="options_menu_search">Rechercher</string>
-  <string name="origin_settings_action">Microblogging system</string>
-  <string name="empty_in_parenthesis">(empty)</string>
   <string name="reltime_days_ago_formats_1">hier</string>
   <string name="reltime_days_ago_formats_2">il y a {0} jours</string>
   <string name="reltime_hours_ago_formats_1">il y a une heure</string>
@@ -235,47 +162,17 @@
   <string name="splash_button_get_started">Commencer</string>
   <string name="splash_payoff_line">Client de microblogage Light-Weight Twitter, pump.io 
 	    et StatusNet (GNU social) léger pour Android™</string>
-  <string name="syncing">Syncing&#8230;</string>
-  <string name="syncing_timeline_for_somebody">Syncing %1$s for %2$s</string>
-  <string name="user_manual_page_1">(The French transtalion is outdated, 
-	    please switch to English for the up-to-date information.\n
-	    Please help to update the translation!)</string>
-  <string name="user_manual_page_2"><h1><b>1. Les BASES d\'AndStatus</b></h1>\n\n
-        Le premier écran d\'AndStatus affiche votre timeline.\n
-        Pour effectuer une action sur un message de la liste, effectuez un <b>appui long</b> sur celui-ci pour faire apparaître un menu.\n
-        Vous pouvez <b>cliquer</b> sur un message pour afficher plus de détails.\n
-        Appuyez sur le bouton <b>Menu</b> pour changer d\'écran.\n\n
-        <h1><b>2. POSTER ET RÉPONDRE</b></h1>\n\n
-        Pour mettre à jour votre statut, saisissez simplement votre message dans la zone de texte, et cliquez sur <b>Envoyer</b>.\n
-        Pour répondre, effectuez un <b>appui long</b> et choisissez <b>Répondre</b> puis tapez votre réponse.\n
-        Pour annuler une réponse, supprimez le texte dans la zone de saisie.\n\n
-        <h1><b>3. MESSAGES PRIVÉS</b></h1>\n\n
-        Cliquez sur <b>Menu</b> puis <b>Messages</b>.\n
-        Pour <b>supprimer</b> un message privé, effectuez un <b>appui long</b> dessus et choisissez <b>Supprimer</b>.\n
-        Les nouveaux messages sont récupérés si vous avez activé le <b>Rafraîchissement automatique</b>.\n\n
-        <h1><b>4. LISTER LES MENTIONS</b></h1>\n\n
-        Cliquez sur <b>Menu</b> puis <b>Mentions</b>.\n
-        L\'écran Mentions liste tous les messages mentionnant votre <b>@identifiant</b>.\n\n
-        <h1><b>5. RECHERCHER</b></h1>\n\n
-        Cliquez sur <b>Menu</b> puis <b>Rechercher</b> ou sur le bouton <b>Rechercher</b> de votre téléphone.\n
-        La recherche se fait dans le texte du message. Si vous souhaitez afficher les messages d\'un utilisateur spécifique, rechercher \"<b>identifiant</b>\".\n
-        Pour afficher les mentions d\'un utilisateur spécifique, recherchez \"<b>@identifiant</b>\".</string>
   <string name="search_timeline_label">Rechercher des messages, utilisateurs, ou hashtags</string>
   <string name="search_timeline_hint">Saisir un(e) identifiant/expression</string>
   <string name="search_direct_messages_label">Rechercher un message privé</string>
   <string name="search_direct_messages_hint">Saisir une expression ou un identifiant</string>
   <string name="status_destroyed">Ce message a été supprimé.</string>
-  <string name="summary_preference_accounts_absent">No AndStatus accounts yet</string>
-  <string name="summary_preference_accounts_present">Number of AndStatus Accounts</string>
   <string name="summary_preference_add_account_oauth">Appuyez ici pour ouvrir le site du système de microblogage dans votre navigateur.</string>
   <string name="summary_preference_add_account_basic">Appuyez pour vérifier les identifiants et ajouter le compte.</string>
   <string name="summary_preference_appearance">Changer l\'apparence d\'AndStatus</string>
-  <string name="summary_preference_enable_android_backup_off">Android backups will not be requested</string>
-  <string name="summary_preference_enable_android_backup_on">AndStatus notifies Android on data changes to be backed up (experimental)</string>
   <string name="summary_preference_frequency">Rafraîchissement toutes les {0}.</string>
   <string name="summary_preference_history_size">Conserver {0}.</string>
   <string name="summary_preference_history_time">Conserver les messages pendant {0}.</string>
-  <string name="summary_preference_host">Host name of the system, e.g. quitter.se</string>
   <string name="summary_preference_theme_color">Le thème standard/clair sera utilisé.</string>
   <string name="summary_preference_min_log_level">Niveau sélectionné : {0}.</string>
   <string name="summary_preference_no_ringtone">Silencieux</string>
@@ -286,111 +183,54 @@
   <string name="summary_preference_notifications_messages_on">Vous serez averti des nouveaux MP</string>
   <string name="summary_preference_notifications_mentions_off">Pas de notification pour les mentions</string>
   <string name="summary_preference_notifications_mentions_on">Vous serez averti des nouvelles mentions</string>
-  <string name="summary_preference_notifications_queue_off">No notification of commands in the queue</string>
-  <string name="summary_preference_notifications_queue_on">You will be notified of commands in the queue to be sent</string>
   <string name="summary_preference_notifications_timeline_off">Pas de notification pour les messages</string>
   <string name="summary_preference_notifications_timeline_on">Vous serez averti des nouveaux messages</string>
   <string name="summary_preference_oauth_off">Authentification basique</string>
   <string name="summary_preference_oauth_on">OAuth (authentification sécurisée) est activé</string>
-  <string name="summary_preference_origin_system">Tap here to select a Microblogging system</string>
   <string name="summary_preference_password">Votre mot de passe Twitter</string>
   <string name="summary_preference_show_avatars_off">Les avatars ne seront pas affichés</string>
   <string name="summary_preference_show_avatars_on">Les avatars seront affichés</string>
-  <string name="summary_preference_ssl_off">No SSL</string>
-  <string name="summary_preference_ssl_on">SSL is on</string>
   <string name="summary_preference_storage">Quelles informations et où les enregistrer</string>
   <string name="summary_preference_storage_external_off">Enregistre les données sur la mémoire interne</string>
   <string name="summary_preference_storage_external_on">Enregistre les données sur la mémoire externe</string>
-  <string name="summary_preference_sync_indicator_on_timeline_off">No sync indicator</string>
-  <string name="summary_preference_sync_indicator_on_timeline_on">You will see timeline sync progress in a separate bar above timeline</string>
-  <string name="summary_preference_sync_while_using_application_off">No background sync while browsing timeline and conversations in order to preserve smoothness of scrolling</string>
-  <string name="summary_preference_sync_while_using_application_on">Background sync is always on. Timeline may freeze sometimes.</string>
-  <string name="summary_preference_syncing">When to sync timeline and how to indicate this</string>
-  <string name="summary_preference_theme_size">Select text size</string>
-  <string name="summary_preference_user_in_timeline">User will be shown as \"{0}\"</string>
   <string name="summary_preference_username">Votre identifiant Twitter</string>
-  <string name="summary_preference_username_pumpio">Enter your ID on your pump.io site. It looks like an email address, with your username then \"@\" then your server; e.g.: andstatus@identi.ca</string>
   <string name="summary_preference_verify_credentials">Ce compte utilisateur est vérifié et activé. Appuyez isi pour vérifier à nouveau les identifiants.</string>
   <string name="summary_preference_verify_credentials_failed">Vérification échouée. Appuyez ici pour vérifier les identifiants et activer ce compte.</string>
   <string name="summary_preference_vibration_off">Vibration désactivée</string>
   <string name="summary_preference_vibration_on">Vibration activée</string>
-  <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
-  <string name="theme_color_entries_defautl">Device Default</string>
-  <string name="theme_color_entries_light">Light</string>
-  <string name="theme_color_entries_dark">Dark</string>
   <string name="theme_size_entries_small">Petit</string>
-  <string name="theme_size_entries_standard">Standard</string>
   <string name="theme_size_entries_large">Grand</string>
   <string name="timeline_reloaded">La timeline a été rafraîchie.</string>
-  <string name="timeline_title_all">All</string>
   <string name="timeline_title_direct_messages">Messages privés</string>
   <string name="timeline_title_favorites">Favoris</string>
-  <string name="timeline_title_following_user">Following</string>
   <string name="timeline_title_home">Principale</string>
-  <string name="timeline_title_mentions">Mentions</string>
-  <string name="timeline_title_public">Public</string>
-  <string name="timeline_title_replies">Replies</string>
-  <string name="timeline_title_unknown">(Unknown timeline)</string>
-  <string name="timeline_title_user">User</string>
-  <string name="title_command_fetch_attachment">Fetch attachment</string>
-  <string name="title_command_fetch_avatar">Avatar</string>
-  <string name="title_command_get_status">Fetch message</string>
   <string name="title_preference_about_application">À propos d\'AndStatus</string>
   <string name="title_preference_add_account">Ajouter un compte</string>
   <string name="title_preference_appearance">Apparence</string>
   <string name="title_preference_change_log">Journal des changements</string>
-  <string name="title_preference_connection_timeout">Connection timeout</string>
   <string name="title_preference_contact_developer">Contacter le développeur</string>
-  <string name="title_preference_debugging">Logging and debugging</string>
-  <string name="title_preference_download_attachments_over_wifi_only">Download attachments over Wi-Fi only</string>
-  <string name="title_preference_enable_android_backup">Enable automatic Android backup</string>
-  <string name="title_preference_enter_sends_message">ENTER key sends message</string>
   <string name="title_preference_frequency">Fréquence des rafraîchissements</string>
   <string name="title_preference_history_size">Taille de l\'historique</string>
   <string name="title_preference_history_time">Durée de l\'historique</string>
-  <string name="title_preference_is_default_account">This is default account</string>
   <string name="title_preference_min_log_level">Niveau de journalisation</string>
   <string name="title_preference_notification_sound">Sonnerie de notification</string>
-  <string name="title_preference_notifications">Notifications</string>
   <string name="title_preference_notifications_enabled">Activer les notifications</string>
   <string name="title_preference_notifications_messages">Notifier les nouveau MP</string>
   <string name="title_preference_notifications_mentions">Notifier les nouvelles mentions</string>
-  <string name="title_preference_notifications_queue">Commands in the queue</string>
   <string name="title_preference_notifications_timeline">Notifier les nouveaux message</string>
-  <string name="title_preference_oauth">OAuth</string>
-  <string name="title_preference_old_messages_first_in_conversation">Old messages first in Conversation view</string>
-  <string name="title_preference_origin_system">{0}, type: {1}</string>
   <string name="title_preference_password">Mot de passe</string>
-  <string name="title_preference_mark_replies_in_timeline">Mark replies to myself in Timeline</string>
   <string name="title_preference_report_bug">Rapporter un bogue</string>
   <string name="title_preference_storage">Sauvegarde</string>
-  <string name="title_preference_ssl">SSL</string>
   <string name="title_preference_storage_external">Utiliser un support externe</string>
-  <string name="title_preference_sync_after_message_was_sent">Sync after message was sent</string>
-  <string name="title_preference_sync_indicator_on_timeline">Syncing indicator on timeline</string>
-  <string name="title_preference_sync_while_using_application">Sync while using application</string>
-  <string name="title_preference_syncing">Syncing</string>
   <string name="title_preference_theme_color">Thème</string>
-  <string name="title_preference_theme_size">Size</string>
   <string name="title_preference_username">Identifiant</string>
-  <string name="title_preference_username_pumpio">Webfinger ID</string>
   <string name="title_preference_show_avatars">Afficher les avatars</string>
-  <string name="title_preference_show_attached_images">Display attached images</string>
-  <string name="title_preference_show_origin">Display Microblogging system in a Timeline</string>
-  <string name="title_preference_user_in_timeline">How to show a User in a Timeline</string>
   <string name="title_preference_verify_credentials">Revérifier les identifiants</string>
   <string name="title_preference_verify_credentials_failed">Vérifier les identifiants</string>
-  <string name="title_preference_vibration">Vibration</string>
-  <string name="title_sending_messages_log_enabled">Log Sending messages to file</string>
   <string name="message_source_from">de %1$s</string>
   <string name="message_source_in_reply_to">en réponse à %1$s</string>
   <string name="message_source_to">à %1$s</string>
   <string name="reblogged_by">reposté par %1$s</string>
   <string name="reblogged_by_twitter">retweeté par %1$s</string>
   <string name="unimplemented">Non implémenté.</string>
-  <string name="user_in_timeline_entries_username">username</string>
-  <string name="user_in_timeline_entries_at_username">"@username"</string>
-  <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
-  <string name="user_in_timeline_entries_real_name">Real name</string>
-  <string name="user_in_timeline_entries_real_name_at_username">Real name @username</string>
 </resources>

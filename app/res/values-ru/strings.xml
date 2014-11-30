@@ -99,6 +99,8 @@
   <string name="dialog_title_sending_message">Отправка сообщения&#8230;</string>
   <string name="dialog_title_service_unavailable">Сервис недоступен</string>
   <string name="dialog_title_timeline_loading">Обновление ленты времени&#8230;</string>
+  <string name="drawer_close">Закрыть панель навигации</string>
+  <string name="drawer_open">Открыть панель навигации</string>
   <string name="empty_in_parenthesis">(пусто)</string>
   <string name="error">Ошибка</string>
   <string name="error_twitter_404">Страница не найдена! Пожалуйста, сообщите об этой ошибке!</string>
@@ -167,7 +169,7 @@
   <string name="menu_item_block">Блокировать</string>
   <string name="menu_item_destroy_favorite">Удалить из избранного</string>
   <string name="menu_item_destroy_reblog">Удалить пересказ</string>
-  <string name="menu_item_destroy_reblog_twitter">Удалить пересказ</string>
+  <string name="menu_item_destroy_reblog_twitter">Удалить ретвит</string>
   <string name="menu_item_destroy_status">Удалить сообщение</string>
   <string name="menu_item_direct_message">Личное сообщение</string>
   <string name="menu_item_favorite">Добавить в избранное</string>
@@ -175,7 +177,7 @@
   <string name="menu_item_open_message_permalink">Открыть в Интернете</string>
   <string name="menu_item_reply">Ответить</string>
   <string name="menu_item_reblog">Пересказать</string>
-  <string name="menu_item_reblog_twitter">Пересказать</string>
+  <string name="menu_item_reblog_twitter">Ретвитнуть</string>
   <string name="menu_item_resend">Отправить повторно</string>
   <string name="menu_item_share">Поделиться</string>
   <string name="menu_item_stop_following_user">Не следить за \"%1s\"</string>
@@ -192,6 +194,7 @@
   <string name="notification_direct_message_formats_2">{0} личных сообщения</string>
   <string name="notification_queue_formats_1">{0} неотправленное cообщение ожидает</string>
   <string name="notification_queue_formats_2">{0} неотправленных сообщения ожидают</string>
+  <string name="notification_new_home_title">Новые сообщения Домашней линии времени</string>
   <string name="notification_new_tweet_format">У вас {0}.</string>
   <string name="notification_new_message_format">У вас {0}.</string>
   <string name="notification_title_messages">Новые личные сообщения</string>
@@ -220,6 +223,7 @@
   <string name="preference_allow_misconfigured_ssl_title">Разрешить некорректные SSL соединения</string>
   <string name="preference_allow_misconfigured_ssl_summary_off">Вы в безопасности: разрешены только правильно настроенные SSL соединения</string>
   <string name="preference_allow_misconfigured_ssl_summary_on">Предупреждение: Безопасность ваших соединений не обеспечена, потому что разрешено использование сертификатов, выпущенных для любых хостов. Протоколы TLS и SNI не используются. Пожалуйста, попросите Вашего Администратора исправить данную ситуацию на сервере, а потом выключите эту опцию</string>
+  <string name="preference_use_kitkat_media_chooser_title">Используйте средства выбора изображений KitKat</string>
   <string name="reltime_days_ago_formats_1">вчера</string>
   <string name="reltime_days_ago_formats_2">{0} день назад</string>
   <string name="reltime_hours_ago_formats_1">час назад</string>
@@ -406,6 +410,7 @@
   <string name="timeline_title_replies">Ответы</string>
   <string name="timeline_title_unknown">(Неизвестная Линия времени)</string>
   <string name="timeline_title_user">Пользователь</string>
+  <string name="title_account">Аккаунт</string>
   <string name="title_command_fetch_attachment">Загрузить вложение</string>
   <string name="title_command_fetch_avatar">Аватар</string>
   <string name="title_command_get_status">Загрузить сообщение</string>
@@ -456,11 +461,12 @@
   <string name="title_preference_verify_credentials_failed">Проверить учётную запись</string>
   <string name="title_preference_vibration">Виброзвонок</string>
   <string name="title_sending_messages_log_enabled">Записывать в файл журнала попытки отправки сообщений</string>
+  <string name="title_timeline">Линия времени</string>
   <string name="message_source_from">из %1$s</string>
   <string name="message_source_in_reply_to">в ответ на %1$s</string>
   <string name="message_source_to">для %1$s</string>
   <string name="reblogged_by">пересказано %1$s</string>
-  <string name="reblogged_by_twitter">пересказано %1$s</string>
+  <string name="reblogged_by_twitter">ретвитнуто %1$s</string>
   <string name="unimplemented">Не реализовано.</string>
   <string name="user_in_timeline_entries_username">имяпользователя</string>
   <string name="user_in_timeline_entries_at_username">"@имяпользователя"</string>
