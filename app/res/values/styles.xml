@@ -1,13 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+	<style name="DarkThemeSelector" parent="android:Theme.Holo" />
+    <style name="LightThemeSelector" parent="android:Theme.Holo.Light" />
+    <style name="DeviceDefaultThemeSelector" parent="android:Theme.DeviceDefault" />
+	<style name="DialogThemeSelector" parent="android:Theme.DeviceDefault.Dialog" />
+    
     <style name="WidgetStyle">
          <item name="android:background">@drawable/widget_bg</item>
     </style>
     <style name="EmptyStyle">
          <item name="android:background">#00000000</item>
     </style>
-	<style name="DarkThemeSelector" parent="android:Theme.Holo" />
-    <style name="LightThemeSelector" parent="android:Theme.Holo.Light" />
-    <style name="DeviceDefaultThemeSelector" parent="android:Theme.DeviceDefault" />
-	<style name="DialogThemeSelector" parent="android:Theme.DeviceDefault.Dialog" />
+	
+	<!-- http://stackoverflow.com/questions/10020466/android-4-0-sub-title-section-label-styling -->
+	<style name="sectionHeader" parent="android:Widget.Holo.TextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+	    <item name="android:drawableBottom">@drawable/drawer_section_header</item>
+        <item name="android:drawablePadding">4dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:gravity">start</item>
+        <item name="android:paddingLeft">4dp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">?attr/messageDetailsColor</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+    </style>
+	<style name="sectionHeaderLight" parent="android:Widget.Holo.Light.TextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+	    <item name="android:drawableBottom">@drawable/drawer_section_header_light</item>
+        <item name="android:drawablePadding">4dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:gravity">start</item>
+        <item name="android:paddingLeft">4dp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">?attr/messageDetailsColor</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+    </style>
+    
+	<style name="drawerListItem">
+	    <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+	    <item name="android:background">?android:attr/activatedBackgroundIndicator</item>
+        <item name="android:clickable">true</item>
+        <item name="android:gravity">start</item>
+        <item name="android:minHeight">?android:attr/listPreferredItemHeightSmall</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+	</style>
+		
 </resources>

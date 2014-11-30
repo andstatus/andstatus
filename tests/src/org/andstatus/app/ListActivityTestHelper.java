@@ -6,7 +6,7 @@ import android.app.Instrumentation.ActivityMonitor;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.ActivityTestCase;
 import android.test.InstrumentationTestCase;
-import android.widget.Button;
+import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -113,18 +113,18 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
         return nextActivity;
     }
     
-    public void clickButton(final String method, int resourceId) throws InterruptedException {
-        clickButton(method, (Button) mActivity.findViewById(resourceId));
+    public void clickView(final String method, int resourceId) throws InterruptedException {
+        clickView(method, mActivity.findViewById(resourceId));
     }
     
-    public void clickButton(final String method, final Button button) throws InterruptedException {
-        assertTrue(button != null);
+    public void clickView(final String method, final View view) throws InterruptedException {
+        assertTrue(view != null);
         
         Runnable clicker = new Runnable() {
             @Override
             public void run() {
                 MyLog.v(this, method + "-Log before click");
-                button.performClick();
+                view.performClick();
             }
           };
     
@@ -142,4 +142,5 @@ public class ListActivityTestHelper<T extends ListActivity> extends Instrumentat
         mTestCase.getInstrumentation().waitForIdleSync();
         Thread.sleep(500);
     }
+    
 }

@@ -47,17 +47,19 @@
 		<attr name="textEditColor" format="reference|color" />
 		
 		<attr name="myActionOverflowButtonStyle" format="reference" />
-
+		<attr name="sectionHeaderStyle" format="reference" />
+		
 		<!-- Reference to a styled drawable, see  
  http://stackoverflow.com/questions/8041537/how-to-reference-style-attributes-from-a-drawable/13471695
 		-->
         <attr name="attachIcon" format="reference" />
-        <attr name="postMessageIcon" format="reference" />
+        <attr name="globalSearchIcon" format="reference" />
+        <attr name="helpIcon" format="reference" />
         <attr name="hideMessageIcon" format="reference" />
+        <attr name="mySearchIcon" format="reference" />
+        <attr name="postMessageIcon" format="reference" />
         <attr name="reloadIcon" format="reference" />
         <attr name="replyBackground" format="reference" />
-        <attr name="mySearchIcon" format="reference" />
-        <attr name="globalSearchIcon" format="reference" />
         <attr name="sendIcon" format="reference" />
     </declare-styleable>
 </resources>

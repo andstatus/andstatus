@@ -99,6 +99,8 @@
   <string name="dialog_title_sending_message">Sending a message&#8230;</string>
   <string name="dialog_title_service_unavailable">Service Unavailable</string>
   <string name="dialog_title_timeline_loading">Updating a Timeline&#8230;</string>
+  <string name="drawer_close">Close navigation drawer</string>
+  <string name="drawer_open">Open navigation drawer</string>
   <string name="empty_in_parenthesis">(empty)</string>
   <string name="error">Error</string>
   <string name="error_twitter_404">The page cannot be found. Please report this error!</string>
@@ -403,6 +405,7 @@
   <string name="timeline_title_replies">Replies</string>
   <string name="timeline_title_unknown">(Unknown timeline)</string>
   <string name="timeline_title_user">User</string>
+  <string name="title_account">Account</string>
   <string name="title_command_fetch_attachment">Fetch attachment</string>
   <string name="title_command_fetch_avatar">Avatar</string>
   <string name="title_command_get_status">Fetch message</string>
@@ -453,6 +456,7 @@
   <string name="title_preference_verify_credentials_failed">Verify credentials</string>
   <string name="title_preference_vibration">Vibration</string>
   <string name="title_sending_messages_log_enabled">Log Sending messages to file</string>
+  <string name="title_timeline">Timeline</string>
   <string name="message_source_from">from %1$s</string>
   <string name="message_source_in_reply_to">in reply to %1$s</string>
   <string name="message_source_to">to %1$s</string>

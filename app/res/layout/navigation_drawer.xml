@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/navigation_drawer"
+    android:layout_width="240dp"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:background="?android:attr/colorBackground"
+    android:choiceMode="singleChoice"
+    android:orientation="vertical" >
+
+    <CheckBox
+        android:id="@+id/combinedTimelineToggle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?android:attr/listPreferredItemHeightSmall"
+        android:textAppearance="?android:attr/textAppearanceMedium"        
+        android:onClick="onCombinedTimelineToggleClick"
+        android:text="@string/combined_timeline_on" />
+    
+    <TextView
+        android:id="@+id/timelineTypeHeader"
+        style="?attr/sectionHeaderStyle"
+        android:text="@string/title_timeline" />
+    
+    <TextView
+        android:id="@+id/timelineTypeButton"
+        style="@style/drawerListItem"
+        android:onClick="onTimelineTypeButtonClick"
+        android:text="@string/timeline_title_home" />
+
+    <TextView
+        android:id="@+id/accountHeader"
+        style="?attr/sectionHeaderStyle"
+        android:text="@string/title_account" />
+    
+    <TextView
+        android:id="@+id/selectAccountButton"
+        style="@style/drawerListItem"
+        android:onClick="onSelectAccountButtonClick"
+        android:text="@string/title_preference_username" />
+    
+</LinearLayout>

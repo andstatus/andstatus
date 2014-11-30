@@ -52,26 +52,6 @@
         android:title="@string/options_menu_search">
     </item>
     <item
-        android:id="@+id/timelineTypeButton"
-        android:onClick="onTimelineTypeButtonClick"
-        android:showAsAction="ifRoom"
-        android:title="@string/timeline_title_home">
-    </item>
-    <item
-        android:id="@+id/combinedTimelineToggle"
-        android:checkable="true"
-        android:checked="false"
-        android:onClick="onCombinedTimelineToggleClick"
-        android:showAsAction="ifRoom"
-        android:title="@string/title_preference_username">
-    </item>
-    <item
-        android:id="@+id/selectAccountButton"
-        android:onClick="onSelectAccountButtonClick"
-        android:showAsAction="ifRoom"
-        android:title="@string/combined_timeline_off_account">
-    </item>
-    <item
         android:id="@+id/reload_menu_item"
         android:alphabeticShortcut="r"
         android:icon="?attr/reloadIcon"
@@ -84,5 +64,12 @@
         android:icon="@drawable/ic_menu_preferences"
         android:showAsAction="ifRoom"
         android:title="@string/settings_action">
+    </item>
+    <item
+        android:id="@+id/help_menu_id"
+        android:alphabeticShortcut="p"
+        android:icon="?attr/helpIcon"
+        android:showAsAction="ifRoom"
+        android:title="@string/options_menu_help">
     </item>
 </menu>

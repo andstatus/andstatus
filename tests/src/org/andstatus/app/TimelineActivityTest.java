@@ -181,7 +181,7 @@ public class TimelineActivityTest extends android.test.ActivityInstrumentationTe
         final String method = "testOpeningAccountSelector";
         TestSuite.waitForListLoaded(this, mActivity, 10);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<TimelineActivity>(this, AccountSelector.class);
-        helper.clickMenuItem(method, R.id.selectAccountButton);
+        helper.clickView(method, R.id.selectAccountButton);
         Activity nextActivity = helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(this, nextActivity, 3);
         Thread.sleep(500);

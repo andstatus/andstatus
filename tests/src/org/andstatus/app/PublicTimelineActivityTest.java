@@ -98,10 +98,9 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
                 public void run() {
                     sb.setLength(0);
                     if (mActivity != null) {
-                        Menu menu = mActivity.getOptionsMenu();
-                        if (menu != null) {
-                            MenuItem item = menu.findItem(R.id.timelineTypeButton);
-                            sb.append(item.getTitle());
+                        TextView item = (TextView) mActivity.findViewById(R.id.timelineTypeButton);
+                        if (item != null) {
+                            sb.append(item.getText());
                         }
                     }
                 }

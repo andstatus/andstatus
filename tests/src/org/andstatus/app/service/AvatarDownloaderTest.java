@@ -66,7 +66,7 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         // Non-existent file is a hard error
         loadAndAssertStatusForMa(DownloadStatus.HARD_ERROR, false);
         
-        urlString = "https://raw.github.com/andstatus/andstatus/master/res/drawable-mdpi/notification_icon.png";
+        urlString = "https://raw.github.com/andstatus/andstatus/master/app/res/drawable-mdpi/notification_icon.png";
         assertEquals("Changed 1 row ", 1, changeMaAvatarUrl(urlString));
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
 

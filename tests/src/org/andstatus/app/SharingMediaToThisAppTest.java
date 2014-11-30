@@ -65,7 +65,7 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
         editText.requestFocus();
         TestSuite.waitForIdleSync(this);
         getInstrumentation().sendStringSync("Test message with an attached image");
-        helperTimelineActivity.clickButton(method, R.id.messageEditSendButton);
+        helperTimelineActivity.clickView(method, R.id.messageEditSendButton);
 
         mService.waitForServiceStopped();
         

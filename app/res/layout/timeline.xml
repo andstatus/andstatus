@@ -60,11 +60,5 @@
 	        android:scrollbars="vertical" />
 	
     </LinearLayout>
-    <!-- The navigation drawer -->
-    <ListView android:id="@+id/left_drawer"
-        android:layout_width="240dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:choiceMode="singleChoice" 
-        android:background="?android:attr/colorBackground"/>
+    <include layout="@layout/navigation_drawer" />
 </android.support.v4.widget.DrawerLayout>
