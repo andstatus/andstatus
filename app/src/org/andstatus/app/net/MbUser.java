@@ -19,6 +19,9 @@ package org.andstatus.app.net;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
@@ -113,11 +116,13 @@ public class MbUser {
         } else if (UriUtils.isEmpty(uri)){
             // Do nothing
         } else {
-            String host = uri.getHost();
-            if (host.endsWith(".twitter.com")) {
-                host = "twitter.com";
+            MyContext myConect = MyContextHolder.get();
+            if(myConect.isReady()) {
+                Origin origin = myConect.persistentOrigins().fromId(originId);
+                webFingerId = userName + "@" + origin.fixUriforPermalink(uri).getHost();
+            } else {
+                webFingerId = userName + "@" + uri.getHost();
             }
-            webFingerId = userName + "@" + host;
         }
     }
 

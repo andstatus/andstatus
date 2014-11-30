@@ -84,7 +84,7 @@ public class ConnectionTwitterTest extends InstrumentationTestCase {
         assertEquals("Author's oid", "221452291", mbMessage.sender.oid);
         assertEquals("Author's username", "Know", mbMessage.sender.getUserName());
         assertEquals("Author's Display name", "Just so you Know", mbMessage.sender.realName);
-        assertEquals("WebFinger ID", "Know@" + TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME), mbMessage.sender.getWebFingerId());
+        assertEquals("WebFinger ID", "Know@" + TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME).replace("api.", ""), mbMessage.sender.getWebFingerId());
 
         ind++;
         mbMessage = timeline.get(ind).mbMessage;

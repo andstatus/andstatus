@@ -16,14 +16,14 @@
 
 package org.andstatus.app.origin;
 
+import android.net.Uri;
+
 import org.andstatus.app.R;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyDatabase.Msg;
 import org.andstatus.app.util.MyLog;
-
-import java.net.MalformedURLException;
-import java.net.URL;
+import org.andstatus.app.util.UriUtils;
 
 class OriginTwitter extends Origin {
 
@@ -61,14 +61,27 @@ class OriginTwitter extends Origin {
 
     @Override
     public String messagePermalink(long messageId) {
-        String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId);
-        try {
-            return  new URL(url, userName
-                    + "/status/"
-                    + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId)).toExternalForm();
-        } catch (MalformedURLException e) {
-            MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e);
+        if (url == null) {
+            return "";
         }
-        return "";
+        String userName = MyProvider.msgIdToUsername(MyDatabase.Msg.AUTHOR_ID, messageId);
+        return Uri.withAppendedPath(fixUriforPermalink(UriUtils.fromUrl(url)), userName
+                + "/status/"
+                + MyProvider.msgIdToStringColumnValue(Msg.MSG_OID, messageId)).toString();
+    }
+
+    @Override
+    public Uri fixUriforPermalink(Uri uri1) {
+        Uri uri2 = uri1;
+        if( uri2 != null) {
+            try {
+                if (uri2.getHost().startsWith("api.")) {
+                    uri2 = Uri.parse(uri1.toString().replace("//api.", "//"));
+                }
+            } catch (NullPointerException e) {
+                MyLog.d(this, "Malformed Uri from '" + uri2.toString() + "'", e);
+            }
+        }
+        return uri2;
     }
 }

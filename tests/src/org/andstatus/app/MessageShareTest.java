@@ -19,7 +19,6 @@ package org.andstatus.app;
 import android.content.Intent;
 import android.test.InstrumentationTestCase;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.HtmlContentInserter;
@@ -59,11 +58,8 @@ public class MessageShareTest extends InstrumentationTestCase {
     }
     
     public void testSharePlainText() {
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.TWITTER_TEST_ACCOUNT_NAME); 
-        assertTrue(TestSuite.TWITTER_TEST_ACCOUNT_NAME + " exists", ma != null);
-        String body = "Posting as a plain Text";
-        MessageInserter mi = new MessageInserter(ma);
-        long msgId = mi.addMessage(mi.buildMessage(mi.buildUser(), body, null, TestSuite.PLAIN_TEXT_MESSAGE_OID));
+        String body = "Posting as a plain Text " + TestSuite.TESTRUN_UID;
+        long msgId = MessageInserter.addMessageForAccount(TestSuite.TWITTER_TEST_ACCOUNT_NAME, body, TestSuite.PLAIN_TEXT_MESSAGE_OID);
         MessageShare messageShare = new MessageShare(MyContextHolder.get().context(), msgId);
         Intent intent = messageShare.intentForShare();
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));

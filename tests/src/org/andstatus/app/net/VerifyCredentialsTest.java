@@ -37,6 +37,7 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONObject;
 
@@ -121,8 +122,10 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
         long messageId = cursor.getLong(0);
         cursor.close();
 
-        assertEquals("Message permalink at twitter", "https://" + origin.getUrl().getHost() + "/"
-                + builder.getAccount().getUsername() + "/status/" + msgOid,
+        assertEquals("Message permalink at twitter",
+                "https://" + origin.fixUriforPermalink(UriUtils.fromUrl(origin.getUrl())).getHost()
+                        + "/"
+                        + builder.getAccount().getUsername() + "/status/" + msgOid,
                 origin.messagePermalink(messageId));
     }
 }

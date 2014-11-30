@@ -18,6 +18,7 @@ package org.andstatus.app.origin;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -196,6 +197,10 @@ public class Origin {
         return url;
     }
 
+    public Uri fixUriforPermalink(Uri uri1) {
+        return uri1;
+    }
+    
     public boolean urlIsValid() {
         if (originType.canSetUrlOfOrigin()) {
             return url != null;

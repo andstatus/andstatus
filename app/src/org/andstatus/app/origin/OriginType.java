@@ -16,12 +16,12 @@ import java.net.URL;
 
 public enum OriginType {
     /**
-     * Predefined Origin for Twitter system 
+     * Origin type for Twitter system 
      * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
      */
     TWITTER(1, "Twitter", ApiEnum.TWITTER1P1),
     /**
-     * Predefined Origin for the pump.io system 
+     * Origin type for the pump.io system 
      * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
      * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
      * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>

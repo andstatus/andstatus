@@ -47,7 +47,8 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         assertEquals("Data path", "ok", TestSuite.checkDataPath(this));
 
         OriginTest.createOneOrigin(OriginType.TWITTER, TestSuite.TWITTER_TEST_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME), true, false);
+                TestSuite.getTestOriginHost(TestSuite.TWITTER_TEST_ORIGIN_NAME), true,
+                false);
         OriginTest.createOneOrigin(TestSuite.CONVERSATION_ORIGIN_TYPE,
                 TestSuite.CONVERSATION_ORIGIN_NAME,
                 TestSuite.getTestOriginHost(TestSuite.CONVERSATION_ORIGIN_NAME), true, true);

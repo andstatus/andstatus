@@ -249,7 +249,11 @@ public class TestSuite extends TestCase {
     public static final Uri LOCAL_IMAGE_TEST_URI = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon.png");
     
     public static String getTestOriginHost(String testOriginName) {
-        return TEST_ORIGIN_PARENT_HOST + "." + testOriginName;
+        String host = testOriginName.toLowerCase() + "." + TEST_ORIGIN_PARENT_HOST;
+        if (testOriginName.equalsIgnoreCase(TWITTER_TEST_ORIGIN_NAME)) {
+            host = "api." + host;
+        }
+        return host;
     }
     
     private static void setSuccessfulAccountAsCurrent() {

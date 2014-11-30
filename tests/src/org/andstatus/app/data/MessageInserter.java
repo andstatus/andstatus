@@ -115,7 +115,7 @@ public class MessageInserter extends InstrumentationTestCase {
         String permalink = origin.messagePermalink(messageId);
         URL urlPermalink = UrlUtils.string2Url(permalink); 
         assertTrue("Message permalink is a valid URL '" + permalink + "', " + message.toString(),  urlPermalink != null);
-        if (origin.getUrl() != null) {
+        if (origin.getUrl() != null && origin.getOriginType() != OriginType.TWITTER) {
             assertEquals("Message permalink has the same host as origin, " + message.toString(), origin.getUrl().getHost(), urlPermalink.getHost());
         }
         if (!TextUtils.isEmpty(message.url)) {
@@ -154,4 +154,10 @@ public class MessageInserter extends InstrumentationTestCase {
         }
     }
     
+    public static long addMessageForAccount(String accountName, String body, String messageOid) {
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(accountName);
+        assertTrue(accountName + " exists", ma != null);
+        MessageInserter mi = new MessageInserter(ma);
+        return mi.addMessage(mi.buildMessage(mi.buildUser(), body, null, messageOid));
+    }
 }
