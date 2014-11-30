@@ -40,18 +40,20 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     <release android:versionName="13.3" android:versionCode="116"
         versionDate="2014-11-30"
         versionTitle="Navigation drawer added">
-        <change>Navigation drawer introduced to a Timeline view. Timeline type, 
-            &quot;combined&quot; and Account selections moved to it.</change>
-        <change>Fixed error posting with attachments for messages,
-            which have non-latin characters. 
-            <a href="https://github.com/andstatus/andstatus/issues/176">Issue #176</a>.
-        </change>
-        <change>Fixed security exception on Android 4.4 while sending attached image. 
-            In a case of such exception it is logged and may be seen in the 
-            &quot;Commands in the Queue&quot; list.
-            <a href="https://github.com/andstatus/andstatus/issues/127">Issue #127</a>.
-            For debugging purposes &quot;Use KitKat media chooser&quot; option added (on by default).
-        </change>
+        <changes>
+	        <change>Navigation drawer introduced to a Timeline view. Timeline type, 
+	            &quot;combined&quot; and Account selections moved to it.</change>
+	        <change>Fixed error posting with attachments for messages,
+	            which have non-latin characters. 
+	            <a href="https://github.com/andstatus/andstatus/issues/176">Issue #176</a>.
+	        </change>
+	        <change>Fixed security exception on Android 4.4 while sending attached image. 
+	            In a case of such exception it is logged and may be seen in the 
+	            &quot;Commands in the Queue&quot; list.
+	            <a href="https://github.com/andstatus/andstatus/issues/127">Issue #127</a>.
+	            For debugging purposes &quot;Use KitKat media chooser&quot; option added (on by default).
+	        </change>
+        </changes>
     </release>
     <release android:versionName="13.2" android:versionCode="115"
         versionDate="2014-11-15"
