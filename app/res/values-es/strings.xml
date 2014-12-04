@@ -99,6 +99,8 @@
   <string name="dialog_title_sending_message">Enviando un mensaje&#8230;</string>
   <string name="dialog_title_service_unavailable">Servicio no disponible</string>
   <string name="dialog_title_timeline_loading">Actualizando la línea de tiempo&#8230;</string>
+  <string name="drawer_close">Cerrar panel de navegación</string>
+  <string name="drawer_open">Abrir panel de navegación</string>
   <string name="empty_in_parenthesis">(vacío)</string>
   <string name="error">Error</string>
   <string name="error_twitter_404">La página no se puede encontrar. Por favor, informa de este error!</string>
@@ -192,6 +194,7 @@
   <string name="notification_direct_message_formats_2">{0} mensajes directos</string>
   <string name="notification_queue_formats_1">{0} mensaje</string>
   <string name="notification_queue_formats_2">{0} son mensajes</string>
+  <string name="notification_new_home_title">Nuevos mensajes en Inicio</string>
   <string name="notification_new_tweet_format">Tienes {0}.</string>
   <string name="notification_new_message_format">Tienes {0}.</string>
   <string name="notification_title_messages">Mensajes directos nuevos</string>
@@ -220,6 +223,7 @@
   <string name="preference_allow_misconfigured_ssl_title">Permitir SSL desconfigurada</string>
   <string name="preference_allow_misconfigured_ssl_summary_off">Estás seguro: tan sólo las conexiones SSL bien configuradas son permitidas</string>
   <string name="preference_allow_misconfigured_ssl_summary_on">Atención: Tus conexiones no son seguras, gracias a los certificados de seguridad, las incidencias de cualquier servidor son aceptadas. Los protocolos TLS y SNI no están disponibles. Por favor, contacta con el administrador de tu servidor para arreglarlo y entonces desactivar esta opción.</string>
+  <string name="preference_use_kitkat_media_chooser_title">Usar la interfaz moderna para añadir multimedia</string>
   <string name="reltime_days_ago_formats_1">hoy</string>
   <string name="reltime_days_ago_formats_2">hace {0} días</string>
   <string name="reltime_hours_ago_formats_1">hace una hora</string>
@@ -396,6 +400,7 @@ del mensaje seleccionado es seleccionar
   <string name="timeline_title_replies">Respuestas</string>
   <string name="timeline_title_unknown">(Línea temporal desconocida)</string>
   <string name="timeline_title_user">Usuario</string>
+  <string name="title_account">Cuenta</string>
   <string name="title_command_fetch_attachment">Añadir adjunto</string>
   <string name="title_command_fetch_avatar">Avatar</string>
   <string name="title_command_get_status">Añadir mensaje</string>
@@ -446,6 +451,7 @@ del mensaje seleccionado es seleccionar
   <string name="title_preference_verify_credentials_failed">Verificar las credenciales</string>
   <string name="title_preference_vibration">Vibración</string>
   <string name="title_sending_messages_log_enabled">Registrar los mensajes enviados en un archivo</string>
+  <string name="title_timeline">Línea temporal</string>
   <string name="message_source_from">desde %1$s</string>
   <string name="message_source_in_reply_to">en respuesta a %1$s</string>
   <string name="message_source_to">para %1$s</string>

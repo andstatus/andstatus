@@ -100,6 +100,8 @@
   <string name="dialog_title_sending_message">Sende eine Nachricht&#8230;</string>
   <string name="dialog_title_service_unavailable">Service nicht erreichbar</string>
   <string name="dialog_title_timeline_loading">Aktualisiere eine Timeline&#8230;</string>
+  <string name="drawer_close">Navigationsfeld schließen</string>
+  <string name="drawer_open">Navigationsleiste öffnen</string>
   <string name="empty_in_parenthesis">(leer)</string>
   <string name="error">Fehler</string>
   <string name="error_twitter_404">Seite konnte nicht gefunden werden. Bitte melde diesen Fehler!</string>
@@ -177,6 +179,7 @@
   <string name="menu_item_reply">Antworten</string>
   <string name="menu_item_reblog">Reblog</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
+  <string name="menu_item_resend">Erneut senden</string>
   <string name="menu_item_share">Teilen</string>
   <string name="menu_item_stop_following_user">\"%1s\" nicht mehr folgen</string>
   <string name="menu_item_user_messages">Nachrichten von \"%1s\"</string>
@@ -192,6 +195,7 @@
   <string name="notification_direct_message_formats_2">{0} neue Direct</string>
   <string name="notification_queue_formats_1">{0} message is\"</string>
   <string name="notification_queue_formats_2">{0} messages are\"</string>
+  <string name="notification_new_home_title">Neue Nachricht in Home</string>
   <string name="notification_new_tweet_format">Du hast {0}.</string>
   <string name="notification_new_message_format">Du hast {0}.</string>
   <string name="notification_title_messages">Neue Direktnachrichten</string>
@@ -217,6 +221,10 @@
   <string name="options_menu_mentions">Erwähnungen</string>
   <string name="options_menu_search">Suche</string>
   <string name="origin_settings_action">Microblogging System</string>
+  <string name="preference_allow_misconfigured_ssl_title">Falsch konfiguriertes SSL zulassen</string>
+  <string name="preference_allow_misconfigured_ssl_summary_off">Du bist sicher: nur korrekt konfigurierte SSL-Verbindungen sind erlaubt</string>
+  <string name="preference_allow_misconfigured_ssl_summary_on">Warnung: Deine Verbindungen sind nicht sicher, weil Sicherheitszertifikate für jeden beliebigen Host angenommen werden. TLS- und SNI-Protokolle sind nicht verfügbar. Bitte melde dich bei deinem Server-Administrator, damit er dieses Problem behebt und diese Option deaktiviert</string>
+  <string name="preference_use_kitkat_media_chooser_title">KitKat Medienauswahl verwenden</string>
   <string name="reltime_days_ago_formats_1">Gestern</string>
   <string name="reltime_days_ago_formats_2">vor {0} Tagen</string>
   <string name="reltime_hours_ago_formats_1">vor einer Stunde</string>
@@ -310,6 +318,7 @@
   <string name="timeline_title_replies">Antworten</string>
   <string name="timeline_title_unknown">(Unbekannte Timeline)</string>
   <string name="timeline_title_user">Benutzer</string>
+  <string name="title_account">Account</string>
   <string name="title_command_fetch_attachment">Anhang holen</string>
   <string name="title_command_fetch_avatar">Avatar</string>
   <string name="title_command_get_status">Nachricht holen</string>
@@ -360,6 +369,7 @@
   <string name="title_preference_verify_credentials_failed">Zugangsdaten verifizieren</string>
   <string name="title_preference_vibration">Vibration</string>
   <string name="title_sending_messages_log_enabled">Gesendete Mitteilungen in eine Datei loggen</string>
+  <string name="title_timeline">Timeline</string>
   <string name="message_source_from">von %1$s</string>
   <string name="message_source_in_reply_to">als Antwort auf %1$s</string>
   <string name="message_source_to">an %1$s</string>

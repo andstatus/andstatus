@@ -130,10 +130,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
             menu.setHeaderTitle((MyContextHolder.get().persistentAccounts().size() > 1 ? md.ma.shortestUniqueAccountName() + ": " : "")
                     + md.body);
 
-            // Add menu items
-            if (!md.isDirect) {
-                REPLY.addTo(menu, menuItemId++, R.string.menu_item_reply);
-            }
+            REPLY.addTo(menu, menuItemId++, R.string.menu_item_reply);
             SHARE.addTo(menu, menuItemId++, R.string.menu_item_share);
 
             // TODO: Only if he follows me?

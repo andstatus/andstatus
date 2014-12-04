@@ -32,6 +32,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MySimpleAdapter;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
@@ -168,6 +169,7 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
     private void showList() {
         mListData = newListData();
         setListAdapter(newListAdapter(mListData));
+        MyContextHolder.get().clearNotification(TimelineTypeEnum.ALL);
     }
 
     private List<QueueData> newListData() {

@@ -23,7 +23,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.LoaderManager.LoaderCallbacks;
-import android.app.NotificationManager;
 import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -363,11 +362,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
      *  Cancel notifications of loading timeline, which were set during Timeline downloading 
      */
     private void clearNotifications() {
-        NotificationManager mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        
-        mNM.cancel(CommandEnum.NOTIFY_HOME_TIMELINE.ordinal());
-        mNM.cancel(CommandEnum.NOTIFY_MENTIONS.ordinal());
-        mNM.cancel(CommandEnum.NOTIFY_DIRECT_MESSAGE.ordinal());
+        MyContextHolder.get().clearNotification(getTimelineType());
 
         MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(mListParametersNew.myAccountUserId);
         if (ma != null) {
