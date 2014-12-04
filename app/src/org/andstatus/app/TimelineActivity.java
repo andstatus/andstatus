@@ -349,7 +349,6 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         if (mPositionRestored) {
             // Get rid of the "fast scroll thumb"
             ((ListView) findViewById(android.R.id.list)).setFastScrollEnabled(false);
-            clearNotifications();
             if (!isLoading()) {
                 saveListPosition();
             }
@@ -970,6 +969,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         }
         setLoading(false);
         updateScreen();
+        clearNotifications();
         if (requestNextPage) {
             queryListData(true);
         } else {
