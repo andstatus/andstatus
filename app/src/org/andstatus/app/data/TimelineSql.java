@@ -33,7 +33,6 @@ import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,6 +112,21 @@ public class TimelineSql {
                 }
                 tables = "(SELECT * FROM " + Msg.TABLE_NAME + " WHERE (" + where + ")) AS " + MyProvider.MSG_TABLE_ALIAS;
                 break;
+            case EVERYTHING:
+                where = "";
+                if (!isCombined) {
+                    MyAccount ma = MyContextHolder.get().persistentAccounts().fromUserId(MyProvider.uriToAccountUserId(uri));
+                    if (ma != null) {
+                        where = Msg.ORIGIN_ID + "=" + ma.getOriginId();
+                    }
+                }
+                tables = "(SELECT *"
+                     //   + (columns.contains(MyDatabase.User.LINKED_USER_ID) ? ", 0 AS "
+                     //           + MyDatabase.User.LINKED_USER_ID : "")
+                        + " FROM " + Msg.TABLE_NAME
+                        + (isCombined ? "" : " WHERE (" + where + ")")
+                        + ") AS " + MyProvider.MSG_TABLE_ALIAS;
+                // linkedUserDefined = columns.contains(MyDatabase.User.LINKED_USER_ID);
             default:
                 break;
         }
@@ -135,7 +149,7 @@ public class TimelineSql {
                     break;
                 default:
                     tbl += " AND " + MyDatabase.User.LINKED_USER_ID + userIds.getSqlUserIds();
-                    if (isCombined || tt == TimelineTypeEnum.PUBLIC) {
+                    if (tt.atOrigin()) {
                         tables += " LEFT OUTER JOIN " + tbl;
                     } else {
                         tables += " INNER JOIN " + tbl;

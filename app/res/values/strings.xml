@@ -398,6 +398,7 @@
   <string name="timeline_reloaded">Timeline has been reloaded.</string>
   <string name="timeline_title_all">All</string>
   <string name="timeline_title_direct_messages">Direct messages</string>
+  <string name="timeline_title_everything">Everything</string>
   <string name="timeline_title_favorites">Favorites</string>
   <string name="timeline_title_following_user">Following</string>
   <string name="timeline_title_home">Home</string>

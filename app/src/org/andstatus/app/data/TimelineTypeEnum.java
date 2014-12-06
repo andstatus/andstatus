@@ -81,7 +81,11 @@ public enum TimelineTypeEnum {
     REPLIES("replies", R.string.timeline_title_replies, 
             "", "", "", Connection.ApiRoutineEnum.DUMMY),
     PUBLIC("public", R.string.timeline_title_public, 
-            "", "", "", Connection.ApiRoutineEnum.PUBLIC_TIMELINE),
+            "", "", "", Connection.ApiRoutineEnum.PUBLIC_TIMELINE,
+            true),
+    EVERYTHING("everything", R.string.timeline_title_everything, 
+            "", "", "", Connection.ApiRoutineEnum.DUMMY,
+            true),
     /**
      * All timelines (e.g. for download of all timelines. 
      * This is generally done after addition of the new MyAccount).
@@ -113,6 +117,7 @@ public enum TimelineTypeEnum {
      * Api routine to download this timeline
      */
     private Connection.ApiRoutineEnum connectionApiRoutine;
+    private boolean mAtOrigin;
     
     public String columnNameLatestTimelinePosition() {
         return columnNameLatestTimelinePosition;
@@ -125,19 +130,31 @@ public enum TimelineTypeEnum {
     public String columnNameTimelineDownloadedDate() {
         return columnNameTimelineDownloadedDate;
     }
-    
+
     private TimelineTypeEnum(String code, int resId, 
             String columnNameLatestTimelinePosition, String columnNameLatestTimelineItemDate, 
             String columnNameTimelineDownloadedDate, 
             Connection.ApiRoutineEnum connectionApiRoutine) {
+        this(code, resId, 
+                columnNameLatestTimelinePosition, columnNameLatestTimelineItemDate, 
+                columnNameTimelineDownloadedDate, 
+                connectionApiRoutine, false);
+    }
+    
+    private TimelineTypeEnum(String code, int resId, 
+            String columnNameLatestTimelinePosition, String columnNameLatestTimelineItemDate, 
+            String columnNameTimelineDownloadedDate, 
+            Connection.ApiRoutineEnum connectionApiRoutine,
+            boolean atOrigin) {
         this.code = code;
         this.titleResId = resId;
         this.columnNameLatestTimelinePosition = columnNameLatestTimelinePosition;
         this.columnNameLatestTimelineItemDate = columnNameLatestTimelineItemDate;
         this.columnNameTimelineDownloadedDate = columnNameTimelineDownloadedDate;
         this.connectionApiRoutine = connectionApiRoutine;
+        this.mAtOrigin = atOrigin;
     }
-
+    
     /**
      * String to be used for persistence
      */
@@ -162,11 +179,15 @@ public enum TimelineTypeEnum {
     public CharSequence getPrepositionForNotCombinedTimeline(Context context) {
         if (context == null) {
             return "";
-        } else if (TimelineTypeEnum.PUBLIC.equals(this)) {
+        } else if (atOrigin()) {
             return context.getText(R.string.combined_timeline_off_origin);
         } else {
             return context.getText(R.string.combined_timeline_off_account);
         }
+    }
+    
+    public boolean atOrigin() {
+        return mAtOrigin;
     }
     
     public Connection.ApiRoutineEnum getConnectionApiRoutine() {

@@ -12,7 +12,8 @@ public class TimelineTypeSelector {
             TimelineTypeEnum.DIRECT,
             TimelineTypeEnum.USER,
             TimelineTypeEnum.FOLLOWING_USER,
-            TimelineTypeEnum.PUBLIC
+            TimelineTypeEnum.PUBLIC,
+            TimelineTypeEnum.EVERYTHING
     };
     
     private Context context;

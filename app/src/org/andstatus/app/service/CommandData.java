@@ -596,7 +596,7 @@ public class CommandData implements Comparable<CommandData> {
                     builder.append(timelineType.getPrepositionForNotCombinedTimeline(myContext
                             .context())
                             + " ");
-                    if (TimelineTypeEnum.PUBLIC.equals(timelineType)) {
+                    if (timelineType.atOrigin()) {
                         MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
                         builder.append(ma != null ? ma.getOriginName() : "?");
                     } else {

@@ -292,7 +292,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         final String method = "onSearchRequested";
         Bundle appSearchData = new Bundle();
         appSearchData.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key,
-                appGlobalSearch ? TimelineTypeEnum.PUBLIC.save() : mListParametersNew.getTimelineType().save());
+                appGlobalSearch ? TimelineTypeEnum.EVERYTHING.save() : mListParametersNew.getTimelineType().save());
         appSearchData.putBoolean(IntentExtra.EXTRA_TIMELINE_IS_COMBINED.key, mListParametersNew.isTimelineCombined());
         appSearchData.putLong(IntentExtra.EXTRA_SELECTEDUSERID.key, mListParametersNew.mSelectedUserId);
         appSearchData.putBoolean(IntentExtra.EXTRA_GLOBAL_SEARCH.key, appGlobalSearch);
@@ -651,7 +651,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
         String accountButtonText;
         if (ma == null) {
             accountButtonText = "?";
-        } else if (timelineIsCombined || timelineType != TimelineTypeEnum.PUBLIC) {
+        } else if (timelineIsCombined || !timelineType.atOrigin()) {
             accountButtonText = ma.shortestUniqueAccountName();
             if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
                 accountButtonText = "(" + accountButtonText + ")";
@@ -1034,6 +1034,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             case DIRECT:
             case MENTIONS:
             case PUBLIC:
+            case EVERYTHING:
                 timelineTypeForReload = mListParametersNew.getTimelineType();
                 break;
             case USER:

@@ -93,10 +93,14 @@ class CommandExecutorStrategy implements CommandExecutorParent {
                     switch (execContext.getCommandData().getCommand()) {
                         case AUTOMATIC_UPDATE:
                         case FETCH_TIMELINE:
-                            if (execContext.getTimelineType() == TimelineTypeEnum.ALL) {
-                                strategy = new CommandExecutorLoadAllTimelines();
-                            } else {
-                                strategy = new CommandExecutorLoadTimeline();
+                            switch (execContext.getTimelineType()) {
+                                case ALL:
+                                case EVERYTHING:
+                                    strategy = new CommandExecutorLoadAllTimelines();
+                                    break;
+                                default:
+                                    strategy = new CommandExecutorLoadTimeline();
+                                    break;
                             }
                             break;
                         case SEARCH_MESSAGE:

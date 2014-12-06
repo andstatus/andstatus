@@ -37,6 +37,19 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="XX.X" android:versionCode="117"
+        versionDate="2014-12-06"
+        versionTitle="&quot;Everything&quot; timeline">
+        <changes>
+	        <change>&quot;Everything&quot; timeline added. 
+	            <a href="https://github.com/andstatus/andstatus/issues/114">Issue #114</a>.
+	        </change>
+	        <change>Multiline titles for checkbox settings. Now a User can see full titles
+	            of all settings even in a portrait mode. 
+	            <a href="https://github.com/andstatus/andstatus/issues/187">Issue #187</a>.
+	        </change>
+	    </changes>
+    </release>
     <release android:versionName="13.3" android:versionCode="116"
         versionDate="2014-11-30"
         versionTitle="Navigation drawer added">
