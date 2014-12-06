@@ -35,12 +35,23 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
     private int layout;
     private Cursor mCursor;
     
+    private static ThreadLocal<Boolean> ignoreGetItemId = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
+    
     @Override
     public long getItemId(int position) {
         if (mCursor == null) {
             return 0;
         } if (mCursor.isClosed()) {
             MyLog.w(this, MyLog.getStackTrace(new IllegalStateException("getItemId, pos=" + position + " Closed cursor")));
+            return 0;
+        }
+        if (ignoreGetItemId.get()) {
+            MyLog.i(this, "Ignoring getItemId");
             return 0;
         }
         try {
@@ -126,6 +137,14 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
             }
         }
         return backgroundSet;
+    }
+
+    public static void beforeSwapCursor() {
+        ignoreGetItemId.set(true);
+    }
+
+    public static void afterSwapCursor() {
+        ignoreGetItemId.set(false);
     }
 
 }

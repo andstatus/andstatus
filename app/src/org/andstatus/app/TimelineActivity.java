@@ -951,43 +951,61 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         final String method = "onLoadFinished"; 
         MyLog.v(this, method);
-        TimelineTypeEnum timelineToReload = TimelineTypeEnum.UNKNOWN;
-        boolean requestNextPage = false;
-        if (loader.isStarted()) {
-            if (loader instanceof TimelineCursorLoader1) {
-                TimelineCursorLoader1 myLoader = (TimelineCursorLoader1) loader;
-                changeListContent(myLoader.getParams(), cursor);
-                timelineToReload = myLoader.getParams().timelineToReload;
-                if (!myLoader.getParams().mLoadOneMorePage && myLoader.getParams().mLastItemSentDate > 0
-                        && cursor != null && cursor.getCount() < TimelineListParameters.PAGE_SIZE) {
-                    MyLog.v(this, method + "; Requesting next page...");
-                    requestNextPage = true;
-                }
-            } else {
+        boolean doChangeListContent = loader.isStarted() && cursor != null && !mFinishing;
+        if (doChangeListContent) {
+            if (!(loader instanceof TimelineCursorLoader1)) {
                 MyLog.e(this, method + "; Wrong type of loader: " + MyLog.objTagToString(loader));
+                doChangeListContent = false;
             }
+        }
+        TimelineCursorLoader1 myLoader = null;
+        if (doChangeListContent) {
+            myLoader = (TimelineCursorLoader1) loader;
+            doChangeListContent = !myLoader.getParams().cancelled;
+        }
+        if (doChangeListContent) {
+            changeListContent(myLoader, cursor);
+        } else {
+            setLoading(false);
+            updateScreen();
+            clearNotifications();
+        }
+    }
+
+    // Parameters are not null
+    private void changeListContent(final TimelineCursorLoader1 myLoader, final Cursor cursor) {
+        final String method = "changeListContent1"; 
+        
+        // This check will prevent continuous loading...
+        mNoMoreItems = myLoader.getParams().mIncrementallyLoadingPages &&
+                cursor.getCount() <= getListAdapter().getCount();
+        saveListPosition();
+
+        
+        // This is possible from main thread only, otherwise we are getting an exception
+        // The hack is to avoid the Main thread freeze: https://github.com/andstatus/andstatus/issues/183
+        MySimpleCursorAdapter.beforeSwapCursor();
+        ((CursorAdapter) getListAdapter()).swapCursor(cursor);
+                MyLog.v(this, method + "; After changing Cursor");
+        MySimpleCursorAdapter.afterSwapCursor();
+
+        mListParameters = myLoader.getParams();
+        mPositionRestored = new TimelineListPositionStorage(getListAdapter(), getListView(), mListParameters).restoreListPosition();
+        
+        boolean requestNextPage = false;
+        if (!myLoader.getParams().mLoadOneMorePage && myLoader.getParams().mLastItemSentDate > 0
+                && cursor != null && cursor.getCount() < TimelineListParameters.PAGE_SIZE) {
+            MyLog.v(this, method + "; Requesting next page...");
+            requestNextPage = true;
+        }
+        if (requestNextPage) {
+            queryListData(true);
+        } else {
+            launchReloadIfNeeded(myLoader.getParams().timelineToReload);
         }
         setLoading(false);
         updateScreen();
         clearNotifications();
-        if (requestNextPage) {
-            queryListData(true);
-        } else {
-            launchReloadIfNeeded(timelineToReload);
-        }
-    }
-    
-    private void changeListContent(TimelineListParameters params, Cursor cursor) {
-        if (!params.cancelled && cursor != null && !mFinishing) {
-            MyLog.v(this, "On changing Cursor");
-            // This check will prevent continuous loading...
-            mNoMoreItems = params.mIncrementallyLoadingPages &&
-                    cursor.getCount() <= getListAdapter().getCount();
-            saveListPosition();
-            ((CursorAdapter) getListAdapter()).swapCursor(cursor);
-            mListParameters = params;
-            mPositionRestored = new TimelineListPositionStorage(getListAdapter(), getListView(), mListParameters).restoreListPosition();
-        }
     }
     
     private void launchReloadIfNeeded(TimelineTypeEnum timelineToReload) {
