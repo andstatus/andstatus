@@ -56,7 +56,7 @@ import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferenceActivity;
+import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyDatabase.User;
@@ -1058,7 +1058,7 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     
     protected void startMyPreferenceActivity() {
         finish();
-        startActivity(new Intent(this, MyPreferenceActivity.class));
+        startActivity(new Intent(this, MySettingsActivity.class));
     }
 
     @Override

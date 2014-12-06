@@ -346,8 +346,8 @@
   <string name="summary_preference_enable_android_backup_off">Android backups will not be requested</string>
   <string name="summary_preference_enable_android_backup_on">AndStatus notifies Android on data changes to be backed up (experimental)</string>
   <string name="summary_preference_frequency">Updates are fetched every {0}.</string>
-  <string name="summary_preference_history_size">Remember message history up to {0}.</string>
-  <string name="summary_preference_history_time">Remember message history up to {0}.</string>
+  <string name="summary_preference_history_size">Message history is up to {0}.</string>
+  <string name="summary_preference_history_time">Message history is up to {0}.</string>
   <string name="summary_preference_host">Host name of the system, e.g. quitter.se</string>
   <string name="summary_preference_theme_color">Color and style</string>
   <string name="summary_preference_min_log_level">The level is {0}.</string>
@@ -372,8 +372,8 @@
   <string name="summary_preference_ssl_off">No SSL</string>
   <string name="summary_preference_ssl_on">SSL is on</string>
   <string name="summary_preference_storage">Where and what information to store</string>
-  <string name="summary_preference_storage_external_off">Store data in Internal Memory</string>
-  <string name="summary_preference_storage_external_on">Store data on External Memory</string>
+  <string name="summary_preference_storage_external_off">Data is stored in Internal Memory</string>
+  <string name="summary_preference_storage_external_on">Data is stored in External Memory</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">No sync indicator</string>
   <string name="summary_preference_sync_indicator_on_timeline_on">You will see timeline sync progress in a separate bar above timeline</string>
   <string name="summary_preference_sync_while_using_application_off">No background sync while browsing timeline and conversations in order to preserve smoothness of scrolling</string>
@@ -439,7 +439,7 @@
   <string name="title_preference_report_bug">Report a bug</string>
   <string name="title_preference_storage">Storage</string>
   <string name="title_preference_ssl">SSL</string>
-  <string name="title_preference_storage_external">Use External Storage</string>
+  <string name="title_preference_storage_external">External Storage</string>
   <string name="title_preference_sync_after_message_was_sent">Sync after message was sent</string>
   <string name="title_preference_sync_indicator_on_timeline">Syncing indicator on timeline</string>
   <string name="title_preference_sync_while_using_application">Sync while using application</string>

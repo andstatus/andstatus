@@ -21,7 +21,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Environment;
 import android.preference.ListPreference;
-import android.preference.PreferenceActivity;
+import android.preference.PreferenceFragment;
 import android.text.TextUtils;
 
 import java.io.IOException;
@@ -144,17 +144,17 @@ public class SharedPreferencesUtil {
     }
 
     /**
-     * @param pa Preference Activity
-     * @param keyPreference android:key - Name of the preference key
+     * @param fragment Preference Activity
+     * @param preferenceKey android:key - Name of the preference key
      * @param valuesR android:entryValues
      * @param entriesR Almost like android:entries but to show in the summary (may be the same as android:entries) 
      * @param summaryR
      */
-    public static void showListPreference(PreferenceActivity pa, String keyPreference, int valuesR, int entriesR, int summaryR) {
-        ListPreference listPref = (ListPreference) pa.findPreference(keyPreference);
+    public static void showListPreference(PreferenceFragment fragment, String preferenceKey, int valuesR, int entriesR, int summaryR) {
+        ListPreference listPref = (ListPreference) fragment.findPreference(preferenceKey);
         if (listPref != null) {
-            String[] values = pa.getResources().getStringArray(valuesR);
-            String[] entries = pa.getResources().getStringArray(entriesR);
+            String[] values = fragment.getResources().getStringArray(valuesR);
+            String[] entries = fragment.getResources().getStringArray(entriesR);
             String summary = entries[0];
             String listValue = listPref.getValue();
             for (int i = 0; i < values.length; i++) {
@@ -163,7 +163,7 @@ public class SharedPreferencesUtil {
                     break;
                 }
             }
-            MessageFormat messageFormat = new MessageFormat(pa.getText(summaryR)
+            MessageFormat messageFormat = new MessageFormat(fragment.getText(summaryR)
                     .toString());
             listPref.setSummary(messageFormat.format(new Object[] {
                 summary

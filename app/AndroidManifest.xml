@@ -20,7 +20,7 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.andstatus.app" 
-	android:versionName="13.3" android:versionCode="116"
+	android:versionName="13.4" android:versionCode="117"
 	android:installLocation="internalOnly">
 
 	<uses-sdk android:minSdkVersion="16" android:targetSdkVersion="21" />
@@ -108,7 +108,7 @@
 			</intent-filter>
 		</activity>
 
-        <activity android:name=".context.MyPreferenceActivity"
+        <activity android:name=".context.MySettingsActivity"
             android:label="@string/settings_activity_title"
             android:launchMode="singleTask"
             android:parentActivityName=".TimelineActivity">
@@ -119,7 +119,7 @@
 
 		<activity android:name=".HelpActivity"
 			android:launchMode="singleTop"
-            android:parentActivityName=".context.MyPreferenceActivity">
+            android:parentActivityName=".context.MySettingsActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
 				<category android:name="android.intent.category.DEFAULT"/>
@@ -181,7 +181,7 @@
             android:label="@string/account_settings_activity_title"
             android:alwaysRetainTaskState="True"
             android:launchMode="singleTask"
-            android:parentActivityName=".context.MyPreferenceActivity">
+            android:parentActivityName=".context.MySettingsActivity">
             <intent-filter>
                 <action
                     android:name="org.andstatus.app.ACCOUNT_MANAGER_ENTRY" />
@@ -216,7 +216,7 @@
         <activity android:name=".origin.OriginList"
             android:theme="@style/DialogThemeSelector"
             android:label="@string/label_origin_list"
-            android:parentActivityName=".context.MyPreferenceActivity">
+            android:parentActivityName=".context.MySettingsActivity">
         </activity>
 
         <activity android:name=".origin.OriginEditor"
@@ -226,18 +226,18 @@
 
         <activity android:name=".backup.BackupActivity"
             android:label="@string/label_backup"
-            android:parentActivityName=".context.MyPreferenceActivity">
+            android:parentActivityName=".context.MySettingsActivity">
         </activity>
 
         <activity android:name=".backup.RestoreActivity"
             android:label="@string/label_restore"
-            android:parentActivityName=".context.MyPreferenceActivity">
+            android:parentActivityName=".context.MySettingsActivity">
         </activity>
         
         <activity android:name=".service.QueueViewer"
             android:label="@string/title_preference_notifications_queue"
             android:exported="true"
-            android:parentActivityName=".context.MyPreferenceActivity">
+            android:parentActivityName=".context.MySettingsActivity">
         </activity>
     </application>
 </manifest>

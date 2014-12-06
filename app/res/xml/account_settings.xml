@@ -34,7 +34,7 @@
 	        android:summary="@string/summary_preference_origin_system"
 	        android:title="@string/title_preference_origin_system"  />
 	
-	    <CheckBoxPreference
+	    <org.andstatus.app.context.MultilineCheckBoxPreference
 	        android:defaultValue="true"
 	        android:key="oauth"
 	        android:persistent="true"
@@ -62,7 +62,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/category_title_preference_settings" >
-        <CheckBoxPreference
+        <org.andstatus.app.context.MultilineCheckBoxPreference
             android:defaultValue="false"
             android:key="is_default_account"
             android:persistent="false"

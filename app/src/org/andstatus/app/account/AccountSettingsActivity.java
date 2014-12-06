@@ -53,7 +53,7 @@ import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferenceActivity;
+import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
@@ -266,7 +266,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
 
     private void startMyPreferenceActivity() {
         finish();
-        startActivity(new Intent(this, MyPreferenceActivity.class));
+        startActivity(new Intent(this, MySettingsActivity.class));
     }
     
     /**
@@ -471,7 +471,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         Class<? extends Activity> ourActivity;
         MyContextHolder.initialize(this, this);
         if (MyContextHolder.get().persistentAccounts().size() > 1) {
-            ourActivity = MyPreferenceActivity.class;
+            ourActivity = MySettingsActivity.class;
         } else {
             ourActivity = TimelineActivity.class;
         }

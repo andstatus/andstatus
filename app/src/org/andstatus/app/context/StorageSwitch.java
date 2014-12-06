@@ -16,16 +16,14 @@
 
 package org.andstatus.app.context;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
 import net.jcip.annotations.GuardedBy;
 
+import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.R;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyDatabase;
@@ -48,55 +46,33 @@ public class StorageSwitch {
     @GuardedBy("moveLock")
     private static volatile boolean mDataBeingMoved = false;
 
-    private final MyPreferenceActivity parentActivity;
+    private final MySettingsFragment parentActivity;
     private final Context mContext;
+    private boolean mUseExternalStorageNew = false;
 
-    public StorageSwitch(MyPreferenceActivity parentActivity) {
-        this.parentActivity = parentActivity;
-        this.mContext = parentActivity;
+    public StorageSwitch(MySettingsFragment myPreferenceFragment) {
+        this.parentActivity = myPreferenceFragment;
+        this.mContext = myPreferenceFragment.getActivity();
     }
 
-    public Dialog newSwichStorageDialog() {
-        Dialog dlg;
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setTitle(mContext.getText(R.string.dialog_title_external_storage))
-                .setMessage("")
-                .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        parentActivity.showUseExternalStorage();
-                        parentActivity.dialogIsOpened = false;
-                    }
-                })
-                .setPositiveButton(mContext.getText(android.R.string.yes),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-                                MyServiceManager.setServiceUnavailable();
-                                if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
-                                    move();
-                                } else {
-                                    MyServiceManager.stopService();
-                                    dialog.cancel();
-                                    Toast.makeText(mContext,
-                                            mContext.getText(R.string.system_is_busy_try_later),
-                                            Toast.LENGTH_LONG).show();
-                                }
-                                parentActivity.dialogIsOpened = false;
-                            }
-                        })
-                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-        dlg = builder.create();
-        return dlg;
+    public void showSwitchStorageDialog(final ActivityRequestCode requestCode, boolean useExternalStorageNew) {
+        this.mUseExternalStorageNew = useExternalStorageNew;
+        DialogFactory.showYesCancelDialog(parentActivity, R.string.dialog_title_external_storage, 
+                useExternalStorageNew ? R.string.summary_preference_storage_external_on
+                        : R.string.summary_preference_storage_external_off, 
+                        requestCode);
     }
-
+    
     void move() {
-       new MoveDataBetweenStoragesTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        MyServiceManager.setServiceUnavailable();
+        if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
+            new MoveDataBetweenStoragesTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } else {
+            MyServiceManager.stopService();
+            Toast.makeText(parentActivity.getActivity(),
+                    mContext.getText(R.string.system_is_busy_try_later),
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     private boolean checkAndSetDataBeingMoved() {
@@ -163,31 +139,30 @@ public class StorageSwitch {
 
         private void moveAll(TaskResult result) {
             boolean useExternalStorageOld = MyPreferences.isStorageExternal(null);
-            boolean useExternalStorageNew = parentActivity.mUseExternalStorage.isChecked();
-            if (useExternalStorageNew
+            if (mUseExternalStorageNew
                     && !MyPreferences.isWritableExternalStorageAvailable(result.messageBuilder)) {
-                useExternalStorageNew = false;
+                mUseExternalStorageNew = false;
             }
 
             MyLog.d(this, "About to move data from " + useExternalStorageOld + " to "
-                    + useExternalStorageNew);
+                    + mUseExternalStorageNew);
 
-            if (useExternalStorageNew == useExternalStorageOld) {
+            if (mUseExternalStorageNew == useExternalStorageOld) {
                 result.messageBuilder.append(" Nothing to do.");
                 result.success = true;
                 return;
             }
             try {
-                result.success = moveDatabase(useExternalStorageNew, result.messageBuilder, MyDatabase.DATABASE_NAME);
+                result.success = moveDatabase(mUseExternalStorageNew, result.messageBuilder, MyDatabase.DATABASE_NAME);
                 if (result.success) {
                     result.moved = true;
-                    moveDatabase(useExternalStorageNew, result.messageBuilder, 
+                    moveDatabase(mUseExternalStorageNew, result.messageBuilder, 
                             TimelineSearchSuggestionsProvider.DATABASE_NAME);
-                    moveDownloads(useExternalStorageNew, result.messageBuilder);
+                    moveDownloads(mUseExternalStorageNew, result.messageBuilder);
                 }
             } finally {
                 if (result.success) {
-                    saveNewSettings(useExternalStorageNew, result.messageBuilder);
+                    saveNewSettings(mUseExternalStorageNew, result.messageBuilder);
                 }
             }
         }
@@ -210,24 +185,24 @@ public class StorageSwitch {
                     dbFileNew = MyPreferences.getDatabasePath(
                             databaseName, useExternalStorageNew);
                     if (dbFileOld == null) {
-                        messageToAppend.append("No old database " + databaseName);
+                        messageToAppend.append(" No old database " + databaseName);
                         done = true;
                     }
                 }
                 if (!done) {
                     if (dbFileNew == null) {
-                        messageToAppend.append("No new database " + databaseName);
+                        messageToAppend.append(" No new database " + databaseName);
                         done = true;
                     } else {
                         if (!dbFileOld.exists()) {
-                            messageToAppend.append("No old database " + databaseName);
+                            messageToAppend.append(" No old database " + databaseName);
                             done = true;
                             succeeded = true;
                         } else if (dbFileNew.exists()) {
-                            messageToAppend.insert(0, "Database already exists " + databaseName);
+                            messageToAppend.insert(0, " Database already exists " + databaseName);
                             if (!dbFileNew.delete()) {
                                 messageToAppend
-                                        .insert(0, "Couldn't delete already existed files. ");
+                                        .insert(0, " Couldn't delete already existed files. ");
                                 done = true;
                             }
                         }
@@ -245,7 +220,7 @@ public class StorageSwitch {
                         }
                     } catch (Exception e) {
                         MyLog.v(this, "Copy database " + databaseName, e);
-                        messageToAppend.insert(0, "Couldn't copy database " 
+                        messageToAppend.insert(0, " Couldn't copy database " 
                                 + databaseName + ": " + e.getMessage()  + ". ");
                     }
                     done = true;
@@ -334,12 +309,12 @@ public class StorageSwitch {
                     dirNew = MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS,
                             useExternalStorageNew);
                     if (dirOld == null || !dirOld.exists()) {
-                        messageToAppend.append("No old avatars. ");
+                        messageToAppend.append(" No old avatars. ");
                         done = true;
                         succeeded = true;
                     }
                     if (dirNew == null) {
-                        messageToAppend.append("No directory for new avatars?! ");
+                        messageToAppend.append(" No directory for new avatars?! ");
                         done = true;
                     }
                 }
@@ -363,7 +338,7 @@ public class StorageSwitch {
                     } catch (Exception e) {
                         String logMsg = method + " couldn't copy'" + fileName + "'";
                         MyLog.v(this, logMsg, e);
-                        messageToAppend.insert(0, logMsg + ": " + e.getMessage());
+                        messageToAppend.insert(0, " " + logMsg + ": " + e.getMessage());
                     }
                     done = true;
                 }
