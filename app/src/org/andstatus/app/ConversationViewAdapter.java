@@ -213,7 +213,7 @@ public class ConversationViewAdapter extends BaseAdapter {
                     + String.format(MyContextHolder.get().getLocale(), context.getText(R.string.message_source_to)
                             .toString(), oMsg.recipientName);
         }
-        if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
+        if (MyPreferences.getBoolean(MyPreferences.KEY_DEBUGGING_INFO_IN_UI, false)) {
             messageDetails = messageDetails + " (i" + oMsg.indentLevel + ",r" + oMsg.replyLevel + ")";
         }
         details.setText(messageDetails);

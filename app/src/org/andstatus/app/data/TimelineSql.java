@@ -296,7 +296,7 @@ public class TimelineSql {
                 Origin origin = MyContextHolder.get().persistentOrigins().fromId(cursor.getLong(originIdColumn));
                 if (origin != null) {
                     userName += " / " + origin.getName();
-                    if (origin.getOriginType() == OriginType.STATUSNET && MyLog.isLoggable(null, MyLog.VERBOSE)) {
+                    if (origin.getOriginType() == OriginType.STATUSNET && MyPreferences.getBoolean(MyPreferences.KEY_DEBUGGING_INFO_IN_UI, false)) {
                         int authorIdColumn = cursor.getColumnIndex(Msg.AUTHOR_ID);
                         if (authorIdColumn >= 0) {
                             userName += " id:" + MyProvider.idToOid(OidEnum.USER_OID, cursor.getLong(authorIdColumn), 0);

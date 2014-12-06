@@ -23,7 +23,7 @@ public class MySettingsActivityTest extends ActivityInstrumentationTestCase2<MyS
     }
     
     public void test() throws InterruptedException {
-        PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentManager().findFragmentByTag("tag");
+        PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentManager().findFragmentByTag(MySettingsFragment.class.getSimpleName());
         CheckBoxPreference mUseExternalStorage = (CheckBoxPreference) fragment.findPreference(
                 MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW);
         assertTrue(mUseExternalStorage != null);

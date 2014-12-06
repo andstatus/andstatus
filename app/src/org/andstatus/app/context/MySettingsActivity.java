@@ -39,7 +39,7 @@ public class MySettingsActivity extends Activity {
         MyContextHolder.initialize(this, this);
         
         getFragmentManager().beginTransaction()
-        .replace(android.R.id.content, new MySettingsFragment())
+        .replace(android.R.id.content, new MySettingsFragment(), MySettingsFragment.class.getSimpleName())
         .commit();
     }
 
