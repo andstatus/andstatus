@@ -38,6 +38,7 @@ abstract class TimelineDownloader {
                 td = new TimelineDownloaderFollowing();
                 break;
             case ALL:
+            case EVERYTHING:
                 throw new IllegalArgumentException(TAG + ": Invalid TimelineType for loadTimeline: " + execContext.getTimelineType());
             default:
                 td = new TimelineDownloaderOther();

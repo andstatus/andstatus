@@ -65,6 +65,7 @@ import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.TimelineViewBinder;
+import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
@@ -836,18 +837,27 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                 title += " '" + ta.mSearchQuery + "'";
             }
             if (ta.getSelectedUserId() != 0 && ta.getSelectedUserId() != ta.getCurrentMyAccountUserId()) {
+                title += " " + MyProvider.userIdToName(ta.getSelectedUserId());
                 title += " " + ta.getTimelineType().getPrepositionForNotCombinedTimeline(ta.mContext);
-                subTitle = MyProvider.userIdToName(ta.getSelectedUserId());
+                if (ta.getTimelineType().atOrigin()) {
+                    MyAccount ma  = MyContextHolder.get().persistentAccounts().fromUserId(ta.getCurrentMyAccountUserId());
+                    if (ma !=null) {
+                        Origin origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
+                        if (origin != null) {
+                            title += " " + origin.getName();
+                        }
+                    }
+                }
             } else {
                 if (ta.isTimelineCombined()) {
                     title += " " + ta.mContext.getText(R.string.combined_timeline_on);
                 } else {
                     title += " " + ta.getTimelineType().getPrepositionForNotCombinedTimeline(ta.mContext);
                 }
-                subTitle = " " + buildAccountButtonText(ta.getCurrentMyAccountUserId(), 
-                                ta.isTimelineCombined(),
-                                ta.getTimelineType());
             }
+            subTitle = " " + buildAccountButtonText(ta.getCurrentMyAccountUserId(), 
+                    ta.isTimelineCombined(),
+                    ta.getTimelineType());
             if (!TextUtils.isEmpty(additionalTitleText)) {
                 subTitle += " " + additionalTitleText;
             }

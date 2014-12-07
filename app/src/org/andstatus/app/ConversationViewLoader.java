@@ -130,7 +130,7 @@ public class ConversationViewLoader {
     }
     
     private void loadMessageFromDatabase(ConversationOneMessage oMsg) {
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.ALL, true, oMsg.msgId);
+        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.EVERYTHING, true, oMsg.msgId);
         Cursor cursor = null;
         try {
             cursor = context.getContentResolver().query(uri, TimelineSql.getConversationProjection(), null, null, null);

@@ -104,7 +104,7 @@ public class VerifyCredentialsTest extends InstrumentationTestCase {
                 MyProvider.idToOid(OidEnum.USER_OID, userId, 0));
 
         String msgOid = "383296535213002752";
-        Uri contentUri = MyProvider.getTimelineUri(userId, TimelineTypeEnum.ALL, false);
+        Uri contentUri = MyProvider.getTimelineUri(userId, TimelineTypeEnum.EVERYTHING, false);
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = MyDatabase.Msg.DEFAULT_SORT_ORDER;
         sa.addSelection(MyDatabase.Msg.SENDER_ID + " = ? AND " 
