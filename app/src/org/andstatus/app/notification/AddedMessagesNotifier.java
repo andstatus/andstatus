@@ -116,10 +116,14 @@ public class AddedMessagesNotifier {
         
         Notification.Builder builder =
                 new Notification.Builder(myContext.context())
-                .setSmallIcon(R.drawable.notification_icon)
-                .setContentTitle(myContext.context().getText(messageTitleResId))
-                .setContentText(messageText)
-                .setSound(sound);
+                        .setSmallIcon(
+                                MyPreferences.getBoolean(
+                                        MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false) 
+                                        ? R.drawable.notification_icon_circle
+                                        : R.drawable.notification_icon)
+                        .setContentTitle(myContext.context().getText(messageTitleResId))
+                        .setContentText(messageText)
+                        .setSound(sound);
 
         if (mNotificationsVibrate) {
         	builder.setVibrate( new long[] {

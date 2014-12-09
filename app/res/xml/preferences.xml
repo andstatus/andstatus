@@ -148,6 +148,11 @@
                 <org.andstatus.app.context.MultilineCheckBoxPreference android:key="mark_replies_in_timeline"
                     android:title="@string/title_preference_mark_replies_in_timeline"
                     android:defaultValue="false" />
+                <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notification_icon_alternative"
+                    android:title="@string/preference_notification_icon_alternative_title"
+                    android:defaultValue="false" 
+					android:summaryOff="@string/preference_notification_icon_alternative_off"
+					android:summaryOn="@string/preference_notification_icon_alternative_on" />
             </PreferenceCategory>
 		</PreferenceScreen>
 

@@ -66,9 +66,13 @@ public class CommandsQueueNotifier {
 
         Notification.Builder builder =
                 new Notification.Builder(myContext.context())
-                .setSmallIcon(R.drawable.notification_icon)
-                .setContentTitle(messageTitle)
-                .setContentText(messageText);
+                        .setSmallIcon(
+                                MyPreferences.getBoolean(
+                                        MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
+                                        ? R.drawable.notification_icon_circle
+                                        : R.drawable.notification_icon)
+                        .setContentTitle(messageTitle)
+                        .setContentText(messageText);
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(myContext.context(), QueueViewer.class);
 
