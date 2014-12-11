@@ -118,6 +118,19 @@ class ActivitySender {
         generator.put("objectType", "application");
         activity.put("generator", generator);
 
+        if (TextUtils.isEmpty(inReplyToId)) {
+            addRecipient(activity);
+        }
+        
+        JSONObject author = new JSONObject();
+        author.put("id", connection.data.getAccountUserOid());
+        author.put("objectType", "person");
+
+        activity.put("actor", author);
+        return activity;
+    }
+
+    private void addRecipient(JSONObject activity) throws JSONException {
         JSONObject recipient = new JSONObject();
         if (TextUtils.isEmpty(recipientId)) {
             recipient.put("id", "http://activityschema.org/collection/public");
@@ -129,13 +142,6 @@ class ActivitySender {
         JSONArray to = new JSONArray();
         to.put(recipient);
         activity.put("to", to);
-        
-        JSONObject author = new JSONObject();
-        author.put("id", connection.data.getAccountUserOid());
-        author.put("objectType", "person");
-
-        activity.put("actor", author);
-        return activity;
     }
 
     /** See as a working example of uploading image here: 
