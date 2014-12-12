@@ -65,13 +65,13 @@ import org.andstatus.app.data.TimelineSearchSuggestionsProvider;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.data.TimelineViewBinder;
-import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceEvent;
 import org.andstatus.app.service.MyServiceListener;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceReceiver;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
@@ -642,23 +642,21 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
 
     private void updateAccountButtonText(ViewGroup mDrawerList) {
         TextView selectAccountButton = (TextView) mDrawerList.findViewById(R.id.selectAccountButton);
-        String accountButtonText = buildAccountButtonText(mListParametersNew.myAccountUserId, isTimelineCombined(), getTimelineType());
+        String accountButtonText = buildAccountButtonText(mListParametersNew.myAccountUserId);
         selectAccountButton.setText(accountButtonText);
     }
 
-    public static String buildAccountButtonText(long maccountUserId, boolean timelineIsCombined, TimelineTypeEnum timelineType) {
+    public static String buildAccountButtonText(long myAccountUserId) {
         MyAccount ma = MyContextHolder.get().persistentAccounts()
-                .fromUserId(maccountUserId);
+                .fromUserId(myAccountUserId);
         String accountButtonText;
         if (ma == null) {
             accountButtonText = "?";
-        } else if (timelineIsCombined || !timelineType.atOrigin()) {
+        } else {
             accountButtonText = ma.shortestUniqueAccountName();
             if (ma.getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
                 accountButtonText = "(" + accountButtonText + ")";
             }
-        } else {
-            accountButtonText = ma.getOriginName();
         }
         return accountButtonText;
     }
@@ -826,43 +824,41 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
     }
     
     static class TimelineTitle {
-        String title;
-        String subTitle;
+        StringBuilder title = new StringBuilder();
+        StringBuilder subTitle = new StringBuilder();
         
         public TimelineTitle(TimelineListParameters ta, String additionalTitleText) {
-            title = "" + ta.getTimelineType().getTitle(ta.mContext);
-            subTitle = "";
-            
+            buildTitle(ta); 
+            buildSubtitle(ta, additionalTitleText);
+        }
+
+        private void buildTitle(TimelineListParameters ta) {
+            I18n.appendWithSpace(title, ta.getTimelineType().getTitle(ta.mContext));
             if (!TextUtils.isEmpty(ta.mSearchQuery)) {
-                title += " '" + ta.mSearchQuery + "'";
+                I18n.appendWithSpace(title, "'" + ta.mSearchQuery + "'");
             }
-            if (ta.getSelectedUserId() != 0 && ta.getSelectedUserId() != ta.getCurrentMyAccountUserId()) {
-                title += " " + MyProvider.userIdToName(ta.getSelectedUserId());
-                title += " " + ta.getTimelineType().getPrepositionForNotCombinedTimeline(ta.mContext);
-                if (ta.getTimelineType().atOrigin()) {
-                    MyAccount ma  = MyContextHolder.get().persistentAccounts().fromUserId(ta.getCurrentMyAccountUserId());
-                    if (ma !=null) {
-                        Origin origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
-                        if (origin != null) {
-                            title += " " + origin.getName();
-                        }
-                    }
-                }
-            } else {
-                if (ta.isTimelineCombined()) {
-                    title += " " + ta.mContext.getText(R.string.combined_timeline_on);
-                } else {
-                    title += " " + ta.getTimelineType().getPrepositionForNotCombinedTimeline(ta.mContext);
-                }
+            if (ta.getSelectedUserId() != 0) {
+                I18n.appendWithSpace(title, MyProvider.userIdToName(ta.getSelectedUserId()));
             }
-            subTitle = " " + buildAccountButtonText(ta.getCurrentMyAccountUserId(), 
-                    ta.isTimelineCombined(),
-                    ta.getTimelineType());
-            if (!TextUtils.isEmpty(additionalTitleText)) {
-                subTitle += " " + additionalTitleText;
+            if (ta.isTimelineCombined()) {
+                I18n.appendWithSpace(title, ta.mContext.getText(R.string.combined_timeline_on));
             }
         }
 
+        private void buildSubtitle(TimelineListParameters ta, String additionalTitleText) {
+            if (!ta.isTimelineCombined()) {
+                I18n.appendWithSpace(subTitle, ta.getTimelineType().getPrepositionForNotCombinedTimeline(ta.mContext));
+                if (ta.getTimelineType().atOrigin()) {
+                    MyAccount ma  = MyContextHolder.get().persistentAccounts().fromUserId(ta.getMyAccountUserId());
+                    if (ma !=null) {
+                        I18n.appendWithSpace(subTitle, ma.getOriginName() + ";");
+                    }
+                }
+            }
+            I18n.appendWithSpace(subTitle, buildAccountButtonText(ta.getMyAccountUserId()));
+            I18n.appendWithSpace(subTitle, additionalTitleText);
+        }
+        
         private void updateTitle(Activity activity) {
             ActionBar actionBar = activity.getActionBar();
             if (actionBar != null) {

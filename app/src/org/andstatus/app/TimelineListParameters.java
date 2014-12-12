@@ -84,7 +84,7 @@ class TimelineListParameters {
         params.mLoaderCallbacks = prev.mLoaderCallbacks;
         params.mTimelineType = prev.getTimelineType();
         params.mTimelineCombined = prev.isTimelineCombined();
-        params.myAccountUserId = prev.getCurrentMyAccountUserId();
+        params.myAccountUserId = prev.getMyAccountUserId();
         params.mSelectedUserId = prev.getSelectedUserId();
         params.mSearchQuery = prev.mSearchQuery;
 
@@ -224,7 +224,7 @@ class TimelineListParameters {
         mTimelineCombined = isTimelineCombined;
     }
 
-    public long getCurrentMyAccountUserId() {
+    public long getMyAccountUserId() {
         return myAccountUserId;
     }
 

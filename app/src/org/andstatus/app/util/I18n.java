@@ -102,4 +102,14 @@ public class I18n {
     private static boolean isSpace(char charAt) {
         return " ,.;:()[]{}-_=+\"'".indexOf(charAt) >=0;
     }
+    
+    public static void appendWithSpace(StringBuilder builder, CharSequence cs) {
+        if (builder == null || TextUtils.isEmpty(cs)) {
+            return;
+        }
+        if (builder.length() > 0) {
+            builder.append(" ");
+        }
+        builder.append(cs);
+    }
 }
