@@ -19,20 +19,12 @@ package org.andstatus.app;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.text.Html;
-import android.text.TextUtils;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AttachedImageDrawable;
-import org.andstatus.app.data.AvatarDrawable;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyDatabase.Download;
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.MyDatabase.Msg;
-import org.andstatus.app.data.MyDatabase.MsgOfUser;
-import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.data.TimelineSql;
 import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.service.CommandData;
@@ -45,9 +37,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ConversationViewLoader {
     private static final int MAX_INDENT_LEVEL = 19;
@@ -135,69 +125,10 @@ public class ConversationViewLoader {
         try {
             cursor = context.getContentResolver().query(uri, TimelineSql.getConversationProjection(), null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
-                loadMessageFromCursor(oMsg, cursor);
+                oMsg.load(cursor);
             }
         } finally {
             DbUtils.closeSilently(cursor);
-        }
-    }
-
-    private void loadMessageFromCursor(ConversationOneMessage oMsg, Cursor cursor) {
-        /**
-         * IDs of all known senders of this message except for the Author
-         * These "senders" reblogged the message
-         */
-        Set<Long> rebloggers = new HashSet<Long>();
-        int ind=0;
-        do {
-            long senderId = cursor.getLong(cursor.getColumnIndex(Msg.SENDER_ID));
-            long authorId = cursor.getLong(cursor.getColumnIndex(Msg.AUTHOR_ID));
-            long linkedUserId = cursor.getLong(cursor.getColumnIndex(User.LINKED_USER_ID));
-
-            if (ind == 0) {
-                // This is the same for all retrieved rows
-                oMsg.inReplyToMsgId = cursor.getLong(cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
-                oMsg.createdDate = cursor.getLong(cursor.getColumnIndex(Msg.CREATED_DATE));
-                oMsg.author = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.AUTHOR_NAME, false);
-                oMsg.body = cursor.getString(cursor.getColumnIndex(Msg.BODY));
-                String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));
-                if (!TextUtils.isEmpty(via)) {
-                    oMsg.via = Html.fromHtml(via).toString().trim();
-                }
-                if (MyPreferences.showAvatars()) {
-                    oMsg.avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Download.AVATAR_FILE_NAME)));
-                }
-                if (MyPreferences.showAttachedImages()) {
-                    oMsg.imageDrawable = AttachedImageDrawable.drawableFromCursor(cursor);
-                }
-                oMsg.inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.IN_REPLY_TO_NAME, false);
-                oMsg.recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.RECIPIENT_NAME, false);
-            }
-
-            if (senderId != authorId) {
-                rebloggers.add(senderId);
-            }
-            if (linkedUserId != 0) {
-                if (oMsg.linkedUserId == 0) {
-                    oMsg.linkedUserId = linkedUserId;
-                }
-                if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.REBLOGGED)) == 1
-                        && linkedUserId != authorId) {
-                    rebloggers.add(linkedUserId);
-                }
-                if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.FAVORITED)) == 1) {
-                    oMsg.favorited = true;
-                }
-            }
-            
-            ind++;
-        } while (cursor.moveToNext());
-
-        for (long rebloggerId : rebloggers) {
-            if (!TextUtils.isEmpty(oMsg.rebloggersString)) {
-                oMsg.rebloggersString += ", ";
-            }
-            oMsg.rebloggersString += MyProvider.userIdToName(rebloggerId);
         }
     }
 

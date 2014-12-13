@@ -85,7 +85,7 @@ class FileDownloader {
 
     private void downloadFile() {
         final String method = "downloadFile";
-        DownloadFile fileTemp = new DownloadFile("temp_" + data.getFileNameNew());
+        DownloadFile fileTemp = new DownloadFile("temp_" + data.getFilenameNew());
         try {
             // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
             HttpGet httpget = new HttpGet(data.getUrl().toExternalForm());
@@ -125,7 +125,7 @@ class FileDownloader {
         if (data.isError()) {
             fileTemp.delete();
         }
-        DownloadFile fileNew = new DownloadFile(data.getFileNameNew());
+        DownloadFile fileNew = new DownloadFile(data.getFilenameNew());
         fileNew.delete();
         if (!data.isError() && !fileTemp.getFile().renameTo(fileNew.getFile())) {
             data.softErrorLogged(method + ", Couldn't rename file " + fileTemp + " to " + fileNew, null);
@@ -156,7 +156,7 @@ class FileDownloader {
         return data.getStatus();
     }
     
-    public String getFileName() {
-        return data.getFileName();
+    public String getFilename() {
+        return data.getFilename();
     }
 }

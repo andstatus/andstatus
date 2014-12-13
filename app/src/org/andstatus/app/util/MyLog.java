@@ -343,13 +343,13 @@ public class MyLog {
         return sw.getBuffer().toString();
     }
 
-    public static boolean writeStringToFile(String string, String fileName) {
-        return writeStringToFile(string, fileName, false, true);
+    public static boolean writeStringToFile(String string, String filename) {
+        return writeStringToFile(string, filename, false, true);
     }
     
-    static boolean writeStringToFile(String string, String fileName, boolean append, boolean logged) {
+    static boolean writeStringToFile(String string, String filename, boolean append, boolean logged) {
         boolean ok = false;
-        File file = getLogFile(fileName, logged);
+        File file = getLogFile(filename, logged);
         Writer out = null;
         try {
             out = new BufferedWriter(new OutputStreamWriter(
@@ -358,20 +358,20 @@ public class MyLog {
             ok = true;
         } catch (Exception e) {
             if (logged) {
-                MyLog.d(TAG, fileName, e);
+                MyLog.d(TAG, filename, e);
             }
         } finally {
-            DbUtils.closeSilently(out, fileName);
+            DbUtils.closeSilently(out, filename);
         }        
         return ok;
     }
 
-    public static File getLogFile(String fileName, boolean logged) {
+    public static File getLogFile(String filename, boolean logged) {
         File dir1 = getLogDir(logged);
         if (dir1 == null) { 
             return null; 
         }
-        return new File(dir1, fileName);
+        return new File(dir1, filename);
     }
 
     public static File getLogDir(boolean logged) {
@@ -403,11 +403,11 @@ public class MyLog {
     }
 
     public static void setLogToFile(boolean logEnabled) {
-        String fileName = currentDateTimeFormatted() + "_log.txt";
+        String filename = currentDateTimeFormatted() + "_log.txt";
         synchronized (logFileLock) {
             if (logEnabled) {
                 if (logFileName == null) {
-                    logFileName = fileName; 
+                    logFileName = filename; 
                 }
             } else { 
                 logFileName = null;
@@ -423,8 +423,8 @@ public class MyLog {
     
     private static Object logFileWriterLock = new Object();
     static void logToFile(int logLevel, String tag, String msg, Throwable tr) {
-        String fileName = getLogFileName();
-        if (fileName == null) {
+        String filename = getLogFilename();
+        if (filename == null) {
             return;
         }
         StringBuilder builder = new StringBuilder();
@@ -446,11 +446,11 @@ public class MyLog {
         }
         builder.append("\n");
         synchronized (logFileWriterLock) {
-            writeStringToFile(builder.toString(), fileName, true, false);
+            writeStringToFile(builder.toString(), filename, true, false);
         }
     }
     
-    public static String getLogFileName() {
+    public static String getLogFilename() {
         synchronized (logFileLock) {
             return logFileName;
         }

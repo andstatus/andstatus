@@ -26,8 +26,8 @@ public class DataPrunerTest extends InstrumentationTestCase  {
         final String method = "testPrune";
         MyLog.v(this, method + "; Started");
         MyLog.setLogToFile(true);
-        String fileName = MyLog.getLogFileName();
-        File logFile1 = MyLog.getLogFile(fileName, true);
+        String filename = MyLog.getLogFilename();
+        File logFile1 = MyLog.getLogFile(filename, true);
         MyLog.v(this, method);
         MyLog.setLogToFile(false);
         assertTrue(logFile1.exists());
@@ -52,7 +52,7 @@ public class DataPrunerTest extends InstrumentationTestCase  {
                 - MyLog.daysToMillis(DataPruner.MAX_DAYS_LOGS_TO_KEEP + 1)) / 1000 * 1000;
         if (logFile1.setLastModified(lastModifiedNew)) {
             clearPrunedDate();
-            File logFile2 = MyLog.getLogFile(fileName, true);
+            File logFile2 = MyLog.getLogFile(filename, true);
             assertEquals(lastModifiedNew, logFile2.lastModified());
             assertTrue("Pruned", dp.prune());
             assertFalse("File " + logFile2.getName() + " was old: " + millisToDateString(lastModifiedNew), 

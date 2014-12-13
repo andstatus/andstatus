@@ -27,6 +27,7 @@ import static org.andstatus.app.ContextMenuItem.FAVORITE;
 import static org.andstatus.app.ContextMenuItem.FOLLOW_AUTHOR;
 import static org.andstatus.app.ContextMenuItem.FOLLOW_SENDER;
 import static org.andstatus.app.ContextMenuItem.OPEN_MESSAGE_PERMALINK;
+import static org.andstatus.app.ContextMenuItem.VIEW_IMAGE;
 import static org.andstatus.app.ContextMenuItem.REBLOG;
 import static org.andstatus.app.ContextMenuItem.REPLY;
 import static org.andstatus.app.ContextMenuItem.SENDER_MESSAGES;
@@ -38,6 +39,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -49,6 +51,7 @@ import android.widget.TextView;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyDatabase;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.TimelineTypeEnum;
@@ -76,6 +79,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
      *  oh whose behalf we are going to execute an action on this line in the list (message...) 
      */
     private long actorUserIdForCurrentMessage = 0;
+    private String imageFilename = null;
 
     public void setAccountUserIdToActAs(long accountUserIdToActAs) {
         this.accountUserIdToActAs = accountUserIdToActAs;
@@ -134,6 +138,10 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                 REPLY.addTo(menu, menuItemId++, R.string.menu_item_reply);
             }
             SHARE.addTo(menu, menuItemId++, R.string.menu_item_share);
+            if (!TextUtils.isEmpty(md.imageFilename)) {
+                imageFilename = md.imageFilename;
+                VIEW_IMAGE.addTo(menu, menuItemId++, R.string.menu_item_view_image);
+            }
 
             // TODO: Only if he follows me?
             DIRECT_MESSAGE.addTo(menu, menuItemId++,
@@ -296,6 +304,9 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
                     return true;
                 case SHARE:
                     return new MessageShare(messageList.getActivity(), mCurrentMsgId).share();
+                case VIEW_IMAGE:
+                    FileProvider.viewImage(messageList.getActivity(), imageFilename);
+                    return true;
                 case OPEN_MESSAGE_PERMALINK:
                     return new MessageShare(messageList.getActivity(), mCurrentMsgId).openPermalink();
                 case SENDER_MESSAGES:

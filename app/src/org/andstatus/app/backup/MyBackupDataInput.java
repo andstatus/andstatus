@@ -131,9 +131,9 @@ public class MyBackupDataInput {
 
     MyBackupDataInput(File dataFolder) throws IOException {
         this.dataFolder = dataFolder;
-        for (String fileName : this.dataFolder.list()) {
-            if (fileName.endsWith(MyBackupDataOutput.HEADER_FILE_SUFFIX)) {
-                File headerFile = new File(dataFolder, fileName);
+        for (String filename : this.dataFolder.list()) {
+            if (filename.endsWith(MyBackupDataOutput.HEADER_FILE_SUFFIX)) {
+                File headerFile = new File(dataFolder, filename);
                 headers.add(BackupHeader.fromJson(FileUtils.getJSONObject(headerFile)));
             }
         }

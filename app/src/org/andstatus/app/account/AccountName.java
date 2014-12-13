@@ -144,7 +144,7 @@ class AccountName {
      * Name of preferences file for this MyAccount
      * @return Name without path and extension
      */
-    String prefsFileName() {
+    String prefsFilename() {
         return FILE_PREFIX + toString().replace("@", "-").replace(ORIGIN_SEPARATOR, "-");
     }
 }

@@ -42,16 +42,16 @@ public class MyLogTest  extends InstrumentationTestCase {
        assertEquals("(null)", MyLog.objTagToString(tag));
     }
     
-    public void testLogFileName() {
-        final String method = "testLogFileName";
+    public void testLogFilename() {
+        final String method = "testLogFilename";
         MyLog.setLogToFile(true);
-        assertFalse(TextUtils.isEmpty(MyLog.getLogFileName()));
-        File file = MyLog.getLogFile(MyLog.getLogFileName(), true);
+        assertFalse(TextUtils.isEmpty(MyLog.getLogFilename()));
+        File file = MyLog.getLogFile(MyLog.getLogFilename(), true);
         MyLog.v(this, method);
         assertTrue(file.exists());
         
         MyLog.setLogToFile(false);
-        assertTrue(TextUtils.isEmpty(MyLog.getLogFileName()));
+        assertTrue(TextUtils.isEmpty(MyLog.getLogFilename()));
         file.delete();
         MyLog.v(this, method);
         assertFalse(file.exists());

@@ -323,12 +323,12 @@ public class StorageSwitch {
                         MyLog.v(this, method + " from: " + dirOld.getPath());
                         MyLog.v(this, method + " to: " + dirNew.getPath());
                     }
-                    String fileName = "";
+                    String filename = "";
                     try {
                         for (File fileOld : dirOld.listFiles()) {
                             if (fileOld.isFile()) {
-                                fileName = fileOld.getName();
-                                File fileNew = new File(dirNew, fileName);
+                                filename = fileOld.getName();
+                                File fileNew = new File(dirNew, filename);
                                 if (copyFile(fileOld, fileNew)) {
                                     didWeCopyAnything = true;
                                 }
@@ -336,7 +336,7 @@ public class StorageSwitch {
                         }
                         succeeded = true;
                     } catch (Exception e) {
-                        String logMsg = method + " couldn't copy'" + fileName + "'";
+                        String logMsg = method + " couldn't copy'" + filename + "'";
                         MyLog.v(this, logMsg, e);
                         messageToAppend.insert(0, " " + logMsg + ": " + e.getMessage());
                     }

@@ -32,9 +32,9 @@ public class AvatarDrawable {
     private static final Drawable DEFAULT_AVATAR = loadDefaultAvatar(false);
     private static final Drawable DEFAULT_AVATAR_LIGHT = loadDefaultAvatar(true);
     
-    public AvatarDrawable(long userIdIn, String fileName) {
+    public AvatarDrawable(long userIdIn, String filename) {
         userId = userIdIn;
-        downloadFile = new DownloadFile(fileName);
+        downloadFile = new DownloadFile(filename);
     }
     
     private static Drawable loadDefaultAvatar(boolean lightTheme) {

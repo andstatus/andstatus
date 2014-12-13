@@ -16,9 +16,23 @@
 
 package org.andstatus.app;
 
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.text.Html;
+import android.text.TextUtils;
 
+import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.AttachedImageDrawable;
 import org.andstatus.app.data.AvatarDrawable;
+import org.andstatus.app.data.MyDatabase.Download;
+import org.andstatus.app.data.MyDatabase.Msg;
+import org.andstatus.app.data.MyDatabase.MsgOfUser;
+import org.andstatus.app.data.MyDatabase.User;
+import org.andstatus.app.data.MyProvider;
+import org.andstatus.app.data.TimelineSql;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * One message row
@@ -100,5 +114,64 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
             }
         }
         return compared;
+    }
+
+    void load(Cursor cursor) {
+        /**
+         * IDs of all known senders of this message except for the Author
+         * These "senders" reblogged the message
+         */
+        Set<Long> rebloggers = new HashSet<Long>();
+        int ind=0;
+        do {
+            long senderId = cursor.getLong(cursor.getColumnIndex(Msg.SENDER_ID));
+            long authorId = cursor.getLong(cursor.getColumnIndex(Msg.AUTHOR_ID));
+            long linkedUserId = cursor.getLong(cursor.getColumnIndex(User.LINKED_USER_ID));
+    
+            if (ind == 0) {
+                // This is the same for all retrieved rows
+                inReplyToMsgId = cursor.getLong(cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
+                createdDate = cursor.getLong(cursor.getColumnIndex(Msg.CREATED_DATE));
+                author = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.AUTHOR_NAME, false);
+                body = cursor.getString(cursor.getColumnIndex(Msg.BODY));
+                String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));
+                if (!TextUtils.isEmpty(via)) {
+                    via = Html.fromHtml(via).toString().trim();
+                }
+                if (MyPreferences.showAvatars()) {
+                    avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Download.AVATAR_FILE_NAME)));
+                }
+                if (MyPreferences.showAttachedImages()) {
+                    imageDrawable = AttachedImageDrawable.drawableFromCursor(cursor);
+                }
+                inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.IN_REPLY_TO_NAME, false);
+                recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.RECIPIENT_NAME, false);
+            }
+    
+            if (senderId != authorId) {
+                rebloggers.add(senderId);
+            }
+            if (linkedUserId != 0) {
+                if (this.linkedUserId == 0) {
+                    this.linkedUserId = linkedUserId;
+                }
+                if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.REBLOGGED)) == 1
+                        && linkedUserId != authorId) {
+                    rebloggers.add(linkedUserId);
+                }
+                if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.FAVORITED)) == 1) {
+                    favorited = true;
+                }
+            }
+            
+            ind++;
+        } while (cursor.moveToNext());
+    
+        for (long rebloggerId : rebloggers) {
+            if (!TextUtils.isEmpty(rebloggersString)) {
+                rebloggersString += ", ";
+            }
+            rebloggersString += MyProvider.userIdToName(rebloggerId);
+        }
     }
 }

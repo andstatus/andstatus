@@ -39,6 +39,7 @@ public enum ContextMenuItem {
     ACT_AS_USER(17),
     ACT_AS(18),
 	OPEN_MESSAGE_PERMALINK(19),
+	VIEW_IMAGE(20),
     UNKNOWN(100);
 
     private final int id;

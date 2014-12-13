@@ -105,14 +105,14 @@ public enum MyContentType {
     }
 
     public static String uri2MimeType(Uri uri, String defaultValue) {
-        String fileName = uri == null ? null : uri.getPath();
-        return fileName2MimeType(fileName, defaultValue);
+        String filename = uri == null ? null : uri.getPath();
+        return filename2MimeType(filename, defaultValue);
     }
     
-    public static String fileName2MimeType(String fileName, String defaultValue) {
+    public static String filename2MimeType(String filename, String defaultValue) {
         String mimeType = defaultValue == null ? DEFAULT_MIME_TYPE : defaultValue;
-        if (fileName != null) {
-            String extension = MyContentType.getExtension(fileName);
+        if (filename != null) {
+            String extension = MyContentType.getExtension(filename);
             if( TextUtils.isEmpty(extension)) {
                 return mimeType;
             } 

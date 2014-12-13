@@ -245,7 +245,7 @@ public final class MyAccount {
             boolean ok = true;
 
             // Old preferences file may be deleted, if it exists...
-            ok = SharedPreferencesUtil.delete(myContext.context(), myAccount.oAccountName.prefsFileName());
+            ok = SharedPreferencesUtil.delete(myContext.context(), myAccount.oAccountName.prefsFilename());
 
             if (isPersistent() && myAccount.userId != 0) {
                 // TODO: Delete databases for this User
@@ -765,7 +765,7 @@ public final class MyAccount {
      */
     public SharedPreferences getAccountPreferences() {
         SharedPreferences sp = null;
-        String prefsFileName = oAccountName.prefsFileName();
+        String prefsFileName = oAccountName.prefsFilename();
         
         if (prefsFileName.length() > 0) {
             try {

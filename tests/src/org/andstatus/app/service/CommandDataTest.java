@@ -120,7 +120,7 @@ public class CommandDataTest extends InstrumentationTestCase {
     
     @Override
     protected void tearDown() throws Exception {
-        SharedPreferencesUtil.delete(MyContextHolder.get().context(), QueueType.TEST.getFileName());
+        SharedPreferencesUtil.delete(MyContextHolder.get().context(), QueueType.TEST.getFilename());
         super.tearDown();
     }
 

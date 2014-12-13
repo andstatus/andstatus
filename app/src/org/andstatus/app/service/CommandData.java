@@ -292,7 +292,7 @@ public class CommandData implements Comparable<CommandData> {
     static int saveQueue(Context context, Queue<CommandData> queue, QueueType queueType) {
         String method = "saveQueue: ";
         int count = 0;
-		SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFileName());
+		SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
 		sp.edit().clear().commit();
         if (!queue.isEmpty()) {
             while (!queue.isEmpty()) {
@@ -315,8 +315,8 @@ public class CommandData implements Comparable<CommandData> {
     static int loadQueue(Context context, Queue<CommandData> q, QueueType queueType) {
         String method = "loadQueue: ";
 		int count = 0;
-        if (SharedPreferencesUtil.exists(context, queueType.getFileName())) {
-            SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFileName());
+        if (SharedPreferencesUtil.exists(context, queueType.getFilename())) {
+            SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
 			for (int index=0; index < 100000; index++) {
                 CommandData cd = fromSharedPreferences(sp, index);
                 if (CommandEnum.EMPTY.equals(cd.getCommand())) {

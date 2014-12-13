@@ -175,7 +175,7 @@ class MyBackupManager {
         return newDescriptor;
     }
     
-    static String newBackupFileNamePrefix() {
+    static String newBackupFilenamePrefix() {
         return MyLog.currentDateTimeFormatted() + "-AndStatusBackup";
     }
 

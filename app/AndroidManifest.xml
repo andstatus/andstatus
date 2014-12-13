@@ -62,6 +62,10 @@
 			android:authorities="org.andstatus.app.data.TimelineSuggestionProvider"
 			android:permission="android.permission.INTERNET"/>
 
+		<provider android:name="org.andstatus.app.data.FileProvider"
+			android:authorities="org.andstatus.app.data.FileProvider" 
+			android:exported="true" />
+				
 		<service android:name="org.andstatus.app.service.MyService"
 		    android:exported="false" />
 

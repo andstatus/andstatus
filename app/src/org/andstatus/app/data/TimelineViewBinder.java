@@ -145,11 +145,11 @@ public class TimelineViewBinder implements ViewBinder {
         if (authorIdColumnIndex >= 0) {
             authorId = cursor.getLong(authorIdColumnIndex);
         }
-        String fileName = null;
+        String filename = null;
         if (columnIndex >= 0) {
-            fileName = cursor.getString(columnIndex);
+            filename = cursor.getString(columnIndex);
         }
-        AvatarDrawable avatarDrawable = new AvatarDrawable(authorId, fileName);
+        AvatarDrawable avatarDrawable = new AvatarDrawable(authorId, filename);
         view.setImageDrawable(avatarDrawable.getDrawable());
     }
 

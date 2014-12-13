@@ -16,11 +16,13 @@
 
 package org.andstatus.app.service;
 
+import android.net.Uri;
 import android.test.InstrumentationTestCase;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
@@ -30,6 +32,7 @@ import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.util.MyLog;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 public class AttachmentDownloaderTest extends InstrumentationTestCase {
@@ -62,8 +65,22 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
         loadAndAssertStatusForRow(dd.getRowId(), DownloadStatus.ABSENT, true);
 
         loadAndAssertStatusForRow(dd.getRowId(), DownloadStatus.LOADED, false);
+        
+        testFileProvider(dd.getRowId());
     }
     
+    private void testFileProvider(long downloadRowId) throws IOException {
+        DownloadData data = DownloadData.fromRowId(downloadRowId);
+        assertTrue(data.getFilename(), data.getFile().exists());
+
+        Uri uri = FileProvider.downloadFilenameToUri(data.getFile().getFilename());
+        InputStream in = MyContextHolder.get().context().getContentResolver().openInputStream(uri);
+        byte[] buffer = new byte[100];
+        int bytesRead = in.read(buffer);
+        assertEquals(buffer.length, bytesRead);
+        in.close();
+    }
+
     private long loadAndAssertStatusForRow(long downloadRowId, DownloadStatus status, boolean mockNetworkError) throws IOException {
         FileDownloader loader = FileDownloader.newForDownloadRow(downloadRowId);
         loader.mockNetworkError = mockNetworkError;

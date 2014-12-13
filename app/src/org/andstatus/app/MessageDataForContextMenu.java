@@ -54,6 +54,8 @@ class MessageDataForContextMenu {
      */
     boolean isSender = false;
     boolean isAuthor = false;
+    
+    String imageFilename = null;
 
     /**
      * Sometimes current message already tied to the first user (favorited by him...)
@@ -77,7 +79,8 @@ class MessageDataForContextMenu {
                     MyDatabase.Msg.RECIPIENT_ID,
                     MyDatabase.MsgOfUser.REBLOGGED,
                     MyDatabase.FollowingUser.SENDER_FOLLOWED,
-                    MyDatabase.FollowingUser.AUTHOR_FOLLOWED
+                    MyDatabase.FollowingUser.AUTHOR_FOLLOWED,
+                    MyDatabase.Download.IMAGE_FILE_NAME
             }, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 isDirect = !cursor.isNull(cursor.getColumnIndex(MyDatabase.Msg.RECIPIENT_ID));
@@ -95,6 +98,11 @@ class MessageDataForContextMenu {
                 isSender = (ma.getUserId() == senderId);
                 isAuthor = (ma.getUserId() == authorId);
 
+                int columnIndex = cursor.getColumnIndex(MyDatabase.Download.IMAGE_FILE_NAME);
+                if (columnIndex >= 0) {
+                    imageFilename = cursor.getString(columnIndex);
+                }
+                        
                 body = I18n.trimTextAt(
                                 MyHtml.fromHtml(cursor.getString(cursor
                                         .getColumnIndex(MyDatabase.Msg.BODY))), 40).toString();

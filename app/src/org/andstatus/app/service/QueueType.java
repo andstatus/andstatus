@@ -6,16 +6,16 @@ public enum QueueType {
     ERROR("error-queue", "E"),
     TEST("test-queue", "T");
     
-    private String fileNameSuffix;
+    private String filenameSuffix;
     private String acronym;
     
-    private QueueType(String fileNameSuffix, String acronym) {
-        this.fileNameSuffix = fileNameSuffix;
+    private QueueType(String filenameSuffix, String acronym) {
+        this.filenameSuffix = filenameSuffix;
         this.acronym = acronym;
     }
     
-    public String getFileName() {
-        return "MyService" + "-" + fileNameSuffix;
+    public String getFilename() {
+        return "MyService" + "-" + filenameSuffix;
     }
     
     public String getAcronym() {

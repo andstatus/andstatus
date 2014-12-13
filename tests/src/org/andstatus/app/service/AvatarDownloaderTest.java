@@ -103,8 +103,8 @@ public class AvatarDownloaderTest extends InstrumentationTestCase {
         
         loadAndAssertStatusForMa(DownloadStatus.LOADED, false);
         DownloadData data = AvatarData.newForUser(ma.getUserId());
-        assertTrue("Existence of " + data.getFileName(), data.getFile().exists());
-        assertTrue("Is File" + data.getFileName(), data.getFile().getFile().isFile());
+        assertTrue("Existence of " + data.getFilename(), data.getFile().exists());
+        assertTrue("Is File" + data.getFilename(), data.getFile().getFile().isFile());
 
         DownloadFile avatarFile = data.getFile();
         AvatarData.deleteAllOfThisUser(ma.getUserId());

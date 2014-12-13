@@ -228,7 +228,7 @@ public class DownloadData {
        values.put(Download.URL, url.toExternalForm());
        values.put(Download.LOADED_DATE, loadTimeNew);
        values.put(Download.DOWNLOAD_STATUS, status.save());
-       values.put(Download.FILE_NAME, fileNew.getFileName());
+       values.put(Download.FILE_NAME, fileNew.getFilename());
 
        rowId = DbUtils.addRowWithRetry(Download.TABLE_NAME, values, 3);
        if (rowId == -1) {
@@ -255,7 +255,7 @@ public class DownloadData {
         values.put(Download.DOWNLOAD_STATUS, status.save());
         boolean changeFile = !isError() && fileNew.exists() && fileStored != fileNew;
         if (changeFile) {
-            values.put(Download.FILE_NAME, fileNew.getFileName());
+            values.put(Download.FILE_NAME, fileNew.getFilename());
             values.put(Download.VALID_FROM, loadTimeNew);
         }
         values.put(Download.LOADED_DATE, loadTimeNew);
@@ -357,8 +357,8 @@ public class DownloadData {
         return fileStored;
     }
     
-    public String getFileName() {
-        return fileStored.getFileName();
+    public String getFilename() {
+        return fileStored.getFilename();
     }
     
     public long getRowId() {
@@ -369,8 +369,8 @@ public class DownloadData {
         return status;
     }
 
-    public String getFileNameNew() {
-        return fileNew.getFileName();
+    public String getFilenameNew() {
+        return fileNew.getFilename();
     }
 
     public URL getUrl() {

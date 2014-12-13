@@ -24,14 +24,14 @@ import org.andstatus.app.util.MyLog;
 import java.io.File;
 
 public class DownloadFile {
-    private final String fileName;
+    private final String filename;
     private final File file;
     private static final DownloadFile EMPTY_DOWNLOAD_FILE = new DownloadFile(null);
 
-    public DownloadFile(String fileName) {
-        this.fileName = fileName;
-        if (!TextUtils.isEmpty(fileName)) {
-            file = new File(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, null), fileName);
+    public DownloadFile(String filename) {
+        this.filename = filename;
+        if (!TextUtils.isEmpty(filename)) {
+            file = new File(MyPreferences.getDataFilesDir(MyPreferences.DIRECTORY_DOWNLOADS, null), filename);
         } else {
             file = null;
         }
@@ -45,8 +45,8 @@ public class DownloadFile {
         return file;
     }
 
-    public String getFileName() {
-        return fileName;
+    public String getFilename() {
+        return filename;
     }
 
     public static DownloadFile getEmpty() {
@@ -73,14 +73,14 @@ public class DownloadFile {
 
     @Override
     public String toString() {
-        return MyLog.objTagToString(this) + " [fileName=" + fileName + "]";
+        return MyLog.objTagToString(this) + " [filename=" + filename + "]";
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
+        result = prime * result + ((filename == null) ? 0 : filename.hashCode());
         return result;
     }
 
@@ -96,11 +96,11 @@ public class DownloadFile {
             return false;
         }
         DownloadFile other = (DownloadFile) obj;
-        if (fileName == null) {
-            if (other.fileName != null) {
+        if (filename == null) {
+            if (other.filename != null) {
                 return false;
             }
-        } else if (!fileName.equals(other.fileName)) {
+        } else if (!filename.equals(other.filename)) {
             return false;
         }
         return true;

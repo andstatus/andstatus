@@ -285,11 +285,11 @@ public class MyBackupAgent extends BackupAgent {
         MyLog.i(this, "On restoring Shared preferences");
         MyPreferences.setDefaultValues(R.xml.preferences, false);
         assertNextHeader(data, SHARED_PREFERENCES_KEY);
-        final String fileName = "preferences";
+        final String filename = "preferences";
         File tempFile = new File(SharedPreferencesUtil.prefsDirectory(MyContextHolder.get()
-                .context()), fileName + ".xml");
+                .context()), filename + ".xml");
         sharedPreferencesRestored += restoreFile(data, tempFile);
-        SharedPreferencesUtil.copyAll(MyPreferences.getSharedPreferences(fileName),
+        SharedPreferencesUtil.copyAll(MyPreferences.getSharedPreferences(filename),
                 MyPreferences.getDefaultSharedPreferences());
         if (!tempFile.delete()) {
             MyLog.v(this, "Couldn't delete " + tempFile.getAbsolutePath());

@@ -17,6 +17,6 @@ public class ContentTypeTest extends InstrumentationTestCase {
 
     public void testMyContentType() {
         assertEquals("image/png", MyContentType.uri2MimeType(TestSuite.LOCAL_IMAGE_TEST_URI, null));
-        assertEquals("image/jpg", MyContentType.fileName2MimeType("http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg", null));
+        assertEquals("image/jpg", MyContentType.filename2MimeType("http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg", null));
     }
 }
