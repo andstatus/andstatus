@@ -75,23 +75,23 @@ public class ConversationViewLoader {
     }
 
     private void findPreviousMessagesRecursively(ConversationOneMessage oMsg) {
-        if (!addMessageIdToFind(oMsg.msgId)) {
+        if (!addMessageIdToFind(oMsg.mMsgId)) {
             return;
         }
         findRepliesRecursively(oMsg);
-        MyLog.v(this, "findPreviousMessages id=" + oMsg.msgId);
+        MyLog.v(this, "findPreviousMessages id=" + oMsg.mMsgId);
         loadMessageFromDatabase(oMsg);
         if (oMsg.isLoaded()) {
             if (addMessageToList(oMsg)) {
-                if (oMsg.inReplyToMsgId != 0) {
-                    findPreviousMessagesRecursively(new ConversationOneMessage(oMsg.inReplyToMsgId,
-                            oMsg.replyLevel - 1));
+                if (oMsg.mInReplyToMsgId != 0) {
+                    findPreviousMessagesRecursively(new ConversationOneMessage(oMsg.mInReplyToMsgId,
+                            oMsg.mReplyLevel - 1));
                 } else {
                     checkInReplyToNameOf(oMsg);                    
                 }
             }
         } else {
-            retrieveFromInternet(oMsg.msgId);
+            retrieveFromInternet(oMsg.mMsgId);
         }
     }
     
@@ -110,17 +110,17 @@ public class ConversationViewLoader {
     }
 
     public void findRepliesRecursively(ConversationOneMessage oMsg) {
-        MyLog.v(this, "findReplies for id=" + oMsg.msgId);
-        List<Long> replies = MyProvider.getReplyIds(oMsg.msgId);
-        oMsg.nReplies = replies.size();
+        MyLog.v(this, "findReplies for id=" + oMsg.mMsgId);
+        List<Long> replies = MyProvider.getReplyIds(oMsg.mMsgId);
+        oMsg.mNReplies = replies.size();
         for (long replyId : replies) {
-            ConversationOneMessage oMsgReply = new ConversationOneMessage(replyId, oMsg.replyLevel + 1);
+            ConversationOneMessage oMsgReply = new ConversationOneMessage(replyId, oMsg.mReplyLevel + 1);
             findPreviousMessagesRecursively(oMsgReply);
         }
     }
     
     private void loadMessageFromDatabase(ConversationOneMessage oMsg) {
-        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.EVERYTHING, true, oMsg.msgId);
+        Uri uri = MyProvider.getTimelineMsgUri(ma.getUserId(), TimelineTypeEnum.EVERYTHING, true, oMsg.mMsgId);
         Cursor cursor = null;
         try {
             cursor = context.getContentResolver().query(uri, TimelineSql.getConversationProjection(), null, null, null);
@@ -135,7 +135,7 @@ public class ConversationViewLoader {
     private boolean addMessageToList(ConversationOneMessage oMsg) {
         boolean added = false;
         if (oMsgs.contains(oMsg)) {
-            MyLog.v(this, "Message id=" + oMsg.msgId + " is in the list already");
+            MyLog.v(this, "Message id=" + oMsg.mMsgId + " is in the list already");
         } else {
             oMsgs.add(oMsg);
             added = true;
@@ -144,17 +144,17 @@ public class ConversationViewLoader {
     }
     
     private void checkInReplyToNameOf(ConversationOneMessage oMsg) {
-        if (!SharedPreferencesUtil.isEmpty(oMsg.inReplyToName)) {
-            MyLog.v(this, "Message id=" + oMsg.msgId + " has reply to name ("
-                    + oMsg.inReplyToName
+        if (!SharedPreferencesUtil.isEmpty(oMsg.mInReplyToName)) {
+            MyLog.v(this, "Message id=" + oMsg.mMsgId + " has reply to name ("
+                    + oMsg.mInReplyToName
                     + ") but no reply to message id");
             // Don't try to retrieve this message again. 
             // It looks like such messages really exist.
-            ConversationOneMessage oMsg2 = new ConversationOneMessage(0, oMsg.replyLevel-1);
+            ConversationOneMessage oMsg2 = new ConversationOneMessage(0, oMsg.mReplyLevel-1);
             // This allows to place the message on the timeline correctly
-            oMsg2.createdDate = oMsg.createdDate - 60000;
-            oMsg2.author = oMsg.inReplyToName;
-            oMsg2.body = "("
+            oMsg2.mCreatedDate = oMsg.mCreatedDate - 60000;
+            oMsg2.mAuthor = oMsg.mInReplyToName;
+            oMsg2.mBody = "("
                     + context.getText(R.string.id_of_this_message_was_not_specified)
                     + ")";
             addMessageToList(oMsg2);
@@ -172,16 +172,16 @@ public class ConversationViewLoader {
 
         @Override
         public int compare(ConversationOneMessage lhs, ConversationOneMessage rhs) {
-            int compared = rhs.replyLevel - lhs.replyLevel;
+            int compared = rhs.mReplyLevel - lhs.mReplyLevel;
             if (compared == 0) {
-                if (lhs.createdDate == rhs.createdDate) {
-                    if ( lhs.msgId == rhs.msgId) {
+                if (lhs.mCreatedDate == rhs.mCreatedDate) {
+                    if ( lhs.mMsgId == rhs.mMsgId) {
                         compared = 0;
                     } else {
-                        compared = (rhs.msgId - lhs.msgId > 0 ? 1 : -1);
+                        compared = (rhs.mMsgId - lhs.mMsgId > 0 ? 1 : -1);
                     }
                 } else {
-                    compared = (rhs.createdDate - lhs.createdDate > 0 ? 1 : -1);
+                    compared = (rhs.mCreatedDate - lhs.mCreatedDate > 0 ? 1 : -1);
                 }
             }
             return compared;
@@ -196,13 +196,13 @@ public class ConversationViewLoader {
     private void enumerateMessages() {
         idsOfTheMessagesToFind.clear();
         for (ConversationOneMessage oMsg : oMsgs) {
-            oMsg.listOrder = 0;
-            oMsg.historyOrder = 0;
+            oMsg.mListOrder = 0;
+            oMsg.mHistoryOrder = 0;
         }
         OrderCounters order = new OrderCounters();
         for (int ind = oMsgs.size()-1; ind >= 0; ind--) {
             ConversationOneMessage oMsg = oMsgs.get(ind);
-            if (oMsg.listOrder < 0 ) {
+            if (oMsg.mListOrder < 0 ) {
                 continue;
             }
             enumerateBranch(oMsg, order, 0);
@@ -210,21 +210,21 @@ public class ConversationViewLoader {
     }
 
     private void enumerateBranch(ConversationOneMessage oMsg, OrderCounters order, int indent) {
-        if (!addMessageIdToFind(oMsg.msgId)) {
+        if (!addMessageIdToFind(oMsg.mMsgId)) {
             return;
         }
         int indentNext = indent;
-        oMsg.historyOrder = order.history++;
-        oMsg.listOrder = order.list--;
-        oMsg.indentLevel = indent;
-        if ((oMsg.nReplies > 1 || oMsg.nParentReplies > 1)
+        oMsg.mHistoryOrder = order.history++;
+        oMsg.mListOrder = order.list--;
+        oMsg.mIndentLevel = indent;
+        if ((oMsg.mNReplies > 1 || oMsg.mNParentReplies > 1)
                 && indentNext < MAX_INDENT_LEVEL) {
             indentNext++;
         }
         for (int ind = oMsgs.size() - 1; ind >= 0; ind--) {
            ConversationOneMessage reply = oMsgs.get(ind);
-           if (reply.inReplyToMsgId == oMsg.msgId) {
-               reply.nParentReplies = oMsg.nReplies;
+           if (reply.mInReplyToMsgId == oMsg.mMsgId) {
+               reply.mNParentReplies = oMsg.mNReplies;
                enumerateBranch(reply, order, indentNext);
            }
         }
@@ -232,7 +232,7 @@ public class ConversationViewLoader {
 
     private void reverseListOrder() {
         for (ConversationOneMessage oMsg : oMsgs) {
-            oMsg.listOrder = oMsgs.size() - oMsg.listOrder - 1; 
+            oMsg.mListOrder = oMsgs.size() - oMsg.mListOrder - 1; 
         }
     }
     

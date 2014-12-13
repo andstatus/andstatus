@@ -174,7 +174,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
         }
         int firstListPosition = -1;
         for (int ind = 0; ind < oMsgs.size(); ind++) {
-            if (oMsgs.get(ind).msgId == itemIdOfListPosition) {
+            if (oMsgs.get(ind).mMsgId == itemIdOfListPosition) {
                 firstListPosition = ind;
             }
         }
@@ -304,7 +304,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
             if (position < 0 || position >= messages.size() ) {
                 return 0;
             } else {
-                return messages.get(position).linkedUserId;
+                return messages.get(position).mLinkedUserId;
             }
         }
     }

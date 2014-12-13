@@ -74,7 +74,7 @@ public class ConversationViewAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return oMsgs.get(position).msgId;
+        return oMsgs.get(position).mMsgId;
     }
 
     @Override
@@ -86,9 +86,9 @@ public class ConversationViewAdapter extends BaseAdapter {
         final String method = "oneMessageToView";
         if (MyLog.isLoggable(this, MyLog.VERBOSE)) {
             MyLog.v(this, method
-                    + ": msgId=" + oMsg.msgId
-                    + (oMsg.avatarDrawable != null ? ", avatar="
-                            + oMsg.avatarDrawable : ""));
+                    + ": msgId=" + oMsg.mMsgId
+                    + (oMsg.mAvatarDrawable != null ? ", avatar="
+                            + oMsg.mAvatarDrawable : ""));
         }
         LayoutInflater inflater = LayoutInflater.from(context);
         int layoutResource = R.layout.message_conversation;
@@ -101,23 +101,23 @@ public class ConversationViewAdapter extends BaseAdapter {
         float displayDensity = context.getResources().getDisplayMetrics().density;
         // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
         int indent0 = (int)( 10 * displayDensity);
-        int indentPixels = indent0 * oMsg.indentLevel;
+        int indentPixels = indent0 * oMsg.mIndentLevel;
 
         LinearLayout messageIndented = (LinearLayout) messageView.findViewById(R.id.message_indented);
-        if (oMsg.msgId == selectedMessageId  && oMsgs.size() > 1) {
+        if (oMsg.mMsgId == selectedMessageId  && oMsgs.size() > 1) {
             MySimpleCursorAdapter.setBackgroundCompat(messageIndented, context.getResources().getDrawable(R.drawable.message_current_background));
         }
 
         AttachedImageView imageView = (AttachedImageView) messageView.findViewById(R.id.attached_image);
-        if (oMsg.imageDrawable != null) {
-            imageView.setImageDrawable(oMsg.imageDrawable);
+        if (oMsg.mImageDrawable != null) {
+            imageView.setImageDrawable(oMsg.mImageDrawable);
             imageView.setVisibility(View.VISIBLE);
         } else {
             imageView.setVisibility(View.GONE);
         }
         
         int viewToTheLeftId = 0;
-        if (oMsg.indentLevel > 0) {
+        if (oMsg.mIndentLevel > 0) {
             View divider = messageView.findViewById(R.id.divider);
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1);
             layoutParams.leftMargin = indentPixels - 4;
@@ -138,7 +138,7 @@ public class ConversationViewAdapter extends BaseAdapter {
             avatarView.setScaleType(ScaleType.FIT_CENTER);
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(size, size);
             layoutParams.topMargin = 3;
-            if (oMsg.indentLevel > 0) {
+            if (oMsg.mIndentLevel > 0) {
                 layoutParams.leftMargin = 1;
             }
             if (viewToTheLeftId == 0) {
@@ -147,32 +147,32 @@ public class ConversationViewAdapter extends BaseAdapter {
                 layoutParams.addRule(RelativeLayout.RIGHT_OF, viewToTheLeftId);
             }
             avatarView.setLayoutParams(layoutParams);
-            avatarView.setImageDrawable(oMsg.avatarDrawable.getDrawable());
+            avatarView.setImageDrawable(oMsg.mAvatarDrawable.getDrawable());
             indentPixels += size;
             ((ViewGroup) messageIndented.getParent()).addView(avatarView);
         }
         messageIndented.setPadding(indentPixels + 6, 2, 6, 2);
         
         TextView id = (TextView) messageView.findViewById(R.id.id);
-        id.setText(Long.toString(oMsg.msgId));
+        id.setText(Long.toString(oMsg.mMsgId));
         TextView linkedUserId = (TextView) messageView.findViewById(R.id.linked_user_id);
-        linkedUserId.setText(Long.toString(oMsg.linkedUserId));
+        linkedUserId.setText(Long.toString(oMsg.mLinkedUserId));
 
         TextView author = (TextView) messageView.findViewById(R.id.message_author);
         TextView body = (TextView) messageView.findViewById(R.id.message_body);
         TextView details = (TextView) messageView.findViewById(R.id.message_details);
 
-        author.setText(oMsg.author);
+        author.setText(oMsg.mAuthor);
 
         TextView number = (TextView) messageView.findViewById(R.id.message_number);
-        number.setText(Integer.toString(oMsg.historyOrder));
+        number.setText(Integer.toString(oMsg.mHistoryOrder));
         
-        if (!TextUtils.isEmpty(oMsg.body)) {
+        if (!TextUtils.isEmpty(oMsg.mBody)) {
             body.setLinksClickable(true);
             body.setMovementMethod(LinkMovementMethod.getInstance());                
             body.setFocusable(true);
             body.setFocusableInTouchMode(true);
-            Spanned spanned = Html.fromHtml(oMsg.body);
+            Spanned spanned = Html.fromHtml(oMsg.mBody);
             body.setText(spanned);
             if (!MyHtml.hasUrlSpans(spanned)) {
                 Linkify.addLinks(body, Linkify.ALL);
@@ -180,52 +180,52 @@ public class ConversationViewAdapter extends BaseAdapter {
         }
 
         // Everything else goes to messageDetails
-        String messageDetails = RelativeTime.getDifference(context, oMsg.createdDate);
-        if (!SharedPreferencesUtil.isEmpty(oMsg.via)) {
+        String messageDetails = RelativeTime.getDifference(context, oMsg.mCreatedDate);
+        if (!SharedPreferencesUtil.isEmpty(oMsg.mVia)) {
             messageDetails += " " + String.format(
                     MyContextHolder.get().getLocale(),
                     context.getText(R.string.message_source_from).toString(),
-                    oMsg.via);
+                    oMsg.mVia);
         }
-        if (oMsg.inReplyToMsgId !=0) {
-            String inReplyToName = oMsg.inReplyToName;
+        if (oMsg.mInReplyToMsgId !=0) {
+            String inReplyToName = oMsg.mInReplyToName;
             if (SharedPreferencesUtil.isEmpty(inReplyToName)) {
                 inReplyToName = "...";
             }
             messageDetails += " "
                     + String.format(MyContextHolder.get().getLocale(),
                             context.getText(R.string.message_source_in_reply_to).toString(),
-                            oMsg.inReplyToName)
-                    + " (" + msgIdToHistoryOrder(oMsg.inReplyToMsgId) + ")";
+                            oMsg.mInReplyToName)
+                    + " (" + msgIdToHistoryOrder(oMsg.mInReplyToMsgId) + ")";
         }
-        if (!SharedPreferencesUtil.isEmpty(oMsg.rebloggersString)
-                && !oMsg.rebloggersString.equals(oMsg.author)) {
-            if (!SharedPreferencesUtil.isEmpty(oMsg.inReplyToName)) {
+        if (!SharedPreferencesUtil.isEmpty(oMsg.mRebloggersString)
+                && !oMsg.mRebloggersString.equals(oMsg.mAuthor)) {
+            if (!SharedPreferencesUtil.isEmpty(oMsg.mInReplyToName)) {
                 messageDetails += ";";
             }
             messageDetails += " "
                     + String.format(MyContextHolder.get().getLocale(),
                             context.getText(ma.alternativeTermForResourceId(R.string.reblogged_by))
-                                    .toString(), oMsg.rebloggersString);
+                                    .toString(), oMsg.mRebloggersString);
         }
-        if (!SharedPreferencesUtil.isEmpty(oMsg.recipientName)) {
+        if (!SharedPreferencesUtil.isEmpty(oMsg.mRecipientName)) {
             messageDetails += " "
                     + String.format(MyContextHolder.get().getLocale(), context.getText(R.string.message_source_to)
-                            .toString(), oMsg.recipientName);
+                            .toString(), oMsg.mRecipientName);
         }
         if (MyPreferences.getBoolean(MyPreferences.KEY_DEBUGGING_INFO_IN_UI, false)) {
-            messageDetails = messageDetails + " (i" + oMsg.indentLevel + ",r" + oMsg.replyLevel + ")";
+            messageDetails = messageDetails + " (i" + oMsg.mIndentLevel + ",r" + oMsg.mReplyLevel + ")";
         }
         details.setText(messageDetails);
         ImageView favorited = (ImageView) messageView.findViewById(R.id.message_favorited);
-        favorited.setImageResource(oMsg.favorited ? android.R.drawable.star_on : android.R.drawable.star_off);
+        favorited.setImageResource(oMsg.mFavorited ? android.R.drawable.star_on : android.R.drawable.star_off);
         return messageView;
     }
 
     private int msgIdToHistoryOrder(long msgId) {
         for (ConversationOneMessage oMsg : oMsgs) {
-            if (oMsg.msgId == msgId ) {
-                return oMsg.historyOrder;
+            if (oMsg.mMsgId == msgId ) {
+                return oMsg.mHistoryOrder;
             }
         }
         return 0;

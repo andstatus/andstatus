@@ -38,45 +38,45 @@ import java.util.Set;
  * One message row
  */
 class ConversationOneMessage implements Comparable<ConversationOneMessage> {
-    long msgId;
-    long inReplyToMsgId = 0;
-    long createdDate = 0;
-    long linkedUserId = 0;
-    boolean favorited = false;
-    String author = "";
+    long mMsgId;
+    long mInReplyToMsgId = 0;
+    long mCreatedDate = 0;
+    long mLinkedUserId = 0;
+    boolean mFavorited = false;
+    String mAuthor = "";
     
     /**
      * Comma separated list of the names of all known rebloggers of the message
      */
-    String rebloggersString = "";
-    String body = "";
-    String via = "";
-    String inReplyToName = "";
-    String recipientName = "";
+    String mRebloggersString = "";
+    String mBody = "";
+    String mVia = "";
+    String mInReplyToName = "";
+    String mRecipientName = "";
 
     /** Numeration starts from 0 **/
-    int listOrder = 0;
+    int mListOrder = 0;
     /**
-     * This order is reverse to the {@link #listOrder}. 
+     * This order is reverse to the {@link #mListOrder}. 
      * First message in the conversation has it == 1.
      * The number is visible to the user.
      */
-    int historyOrder = 0;
-    int nReplies = 0;
-    int nParentReplies = 0;
-    int indentLevel = 0;
-    int replyLevel = 0;
+    int mHistoryOrder = 0;
+    int mNReplies = 0;
+    int mNParentReplies = 0;
+    int mIndentLevel = 0;
+    int mReplyLevel = 0;
     
-    AvatarDrawable avatarDrawable = null;
-    Drawable imageDrawable = null;
+    AvatarDrawable mAvatarDrawable = null;
+    Drawable mImageDrawable = null;
     
     public ConversationOneMessage(long msgId, int replyLevel) {
-        this.msgId = msgId;
-        this.replyLevel = replyLevel;
+        mMsgId = msgId;
+        mReplyLevel = replyLevel;
     }
 
     public boolean isLoaded() {
-        return createdDate > 0;
+        return mCreatedDate > 0;
     }
     
     @Override
@@ -88,12 +88,12 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
             return false;
         }
         final ConversationOneMessage other = (ConversationOneMessage) o;
-        return msgId == other.msgId;
+        return mMsgId == other.mMsgId;
     }
 
     @Override
     public int hashCode() {
-        return Long.valueOf(msgId).hashCode();
+        return Long.valueOf(mMsgId).hashCode();
     }
 
     /**
@@ -101,16 +101,16 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
      */
     @Override
     public int compareTo(ConversationOneMessage another) {
-        int compared = listOrder - another.listOrder;
+        int compared = mListOrder - another.mListOrder;
         if (compared == 0) {
-            if (createdDate == another.createdDate) {
-                if ( msgId == another.msgId) {
+            if (mCreatedDate == another.mCreatedDate) {
+                if ( mMsgId == another.mMsgId) {
                     compared = 0;
                 } else {
-                    compared = (another.msgId - msgId > 0 ? 1 : -1);
+                    compared = (another.mMsgId - mMsgId > 0 ? 1 : -1);
                 }
             } else {
-                compared = (another.createdDate - createdDate > 0 ? 1 : -1);
+                compared = (another.mCreatedDate - mCreatedDate > 0 ? 1 : -1);
             }
         }
         return compared;
@@ -130,37 +130,37 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
     
             if (ind == 0) {
                 // This is the same for all retrieved rows
-                inReplyToMsgId = cursor.getLong(cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
-                createdDate = cursor.getLong(cursor.getColumnIndex(Msg.CREATED_DATE));
-                author = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.AUTHOR_NAME, false);
-                body = cursor.getString(cursor.getColumnIndex(Msg.BODY));
+                mInReplyToMsgId = cursor.getLong(cursor.getColumnIndex(Msg.IN_REPLY_TO_MSG_ID));
+                mCreatedDate = cursor.getLong(cursor.getColumnIndex(Msg.CREATED_DATE));
+                mAuthor = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.AUTHOR_NAME, false);
+                mBody = cursor.getString(cursor.getColumnIndex(Msg.BODY));
                 String via = cursor.getString(cursor.getColumnIndex(Msg.VIA));
                 if (!TextUtils.isEmpty(via)) {
-                    via = Html.fromHtml(via).toString().trim();
+                    mVia = Html.fromHtml(via).toString().trim();
                 }
                 if (MyPreferences.showAvatars()) {
-                    avatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Download.AVATAR_FILE_NAME)));
+                    mAvatarDrawable = new AvatarDrawable(authorId, cursor.getString(cursor.getColumnIndex(Download.AVATAR_FILE_NAME)));
                 }
                 if (MyPreferences.showAttachedImages()) {
-                    imageDrawable = AttachedImageDrawable.drawableFromCursor(cursor);
+                    mImageDrawable = AttachedImageDrawable.drawableFromCursor(cursor);
                 }
-                inReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.IN_REPLY_TO_NAME, false);
-                recipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.RECIPIENT_NAME, false);
+                mInReplyToName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.IN_REPLY_TO_NAME, false);
+                mRecipientName = TimelineSql.userColumnNameToNameAtTimeline(cursor, User.RECIPIENT_NAME, false);
             }
     
             if (senderId != authorId) {
                 rebloggers.add(senderId);
             }
             if (linkedUserId != 0) {
-                if (this.linkedUserId == 0) {
-                    this.linkedUserId = linkedUserId;
+                if (mLinkedUserId == 0) {
+                    mLinkedUserId = linkedUserId;
                 }
                 if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.REBLOGGED)) == 1
                         && linkedUserId != authorId) {
                     rebloggers.add(linkedUserId);
                 }
                 if (cursor.getInt(cursor.getColumnIndex(MsgOfUser.FAVORITED)) == 1) {
-                    favorited = true;
+                    mFavorited = true;
                 }
             }
             
@@ -168,10 +168,10 @@ class ConversationOneMessage implements Comparable<ConversationOneMessage> {
         } while (cursor.moveToNext());
     
         for (long rebloggerId : rebloggers) {
-            if (!TextUtils.isEmpty(rebloggersString)) {
-                rebloggersString += ", ";
+            if (!TextUtils.isEmpty(mRebloggersString)) {
+                mRebloggersString += ", ";
             }
-            rebloggersString += MyProvider.userIdToName(rebloggerId);
+            mRebloggersString += MyProvider.userIdToName(rebloggerId);
         }
     }
 }
