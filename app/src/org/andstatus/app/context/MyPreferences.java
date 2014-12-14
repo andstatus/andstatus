@@ -27,9 +27,11 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Color;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.view.View;
 
 import java.io.File;
 
@@ -84,6 +86,7 @@ public class MyPreferences {
     
     public static final String KEY_THEME_SIZE = "theme_size";
     public static final String KEY_THEME_COLOR = "theme_color";
+    public static final String KEY_TRUE_BLACK = "true_black";
     public static final String KEY_SHOW_AVATARS = "show_avatars";
     public static final String KEY_SHOW_ATTACHED_IMAGES = "show_attached_images";
     public static final String KEY_SHOW_ORIGIN = "show_origin";
@@ -119,6 +122,10 @@ public class MyPreferences {
     public static final String KEY_SYNC_AFTER_MESSAGE_WAS_SENT = "sync_after_message_was_sent";
     public static final String KEY_MARK_REPLIES_IN_TIMELINE = "mark_replies_in_timeline";
 
+
+    private static final String THEME_COLOR_DEVICE_DEFAULT = "DeviceDefault";
+    private static final String THEME_COLOR_LIGHT = "Light";
+    
     private MyPreferences(){
         throw new AssertionError();
     }
@@ -392,11 +399,28 @@ public class MyPreferences {
         return getDataFilesDir(null, null) != null;
     }
 
+    public static void setThemedContentView(Activity activity, int layoutId) {
+        loadTheme(activity);
+        activity.setContentView(layoutId);
+        if (getBoolean(MyPreferences.KEY_TRUE_BLACK, false) && !isThemeLight()) {
+            setVeiwToTrueBlack(activity, R.id.myLayoutParent);
+            setVeiwToTrueBlack(activity, android.R.id.list);
+        }
+    }
+
+    private static void setVeiwToTrueBlack(Activity activity, int id) {
+        View view = activity.findViewById(id);
+        if (view != null) {
+            view.setBackground(null);
+            view.setBackgroundColor(Color.BLACK);
+        }
+    }
+    
     /**
      * Load the theme according to the preferences.
      */
     public static void loadTheme(Context context) {
-        String themeColor = getDefaultSharedPreferences().getString(KEY_THEME_COLOR, "DeviceDefault");
+        String themeColor = getDefaultSharedPreferences().getString(KEY_THEME_COLOR, THEME_COLOR_DEVICE_DEFAULT);
         StringBuilder themeName = new StringBuilder("Theme.");
         themeName.append(themeColor);
         themeName.append(".AndStatus.");
@@ -419,7 +443,7 @@ public class MyPreferences {
     }
     
     public static boolean isThemeLight() {
-       return getDefaultSharedPreferences().getString(KEY_THEME_COLOR, "DeviceDefault").contains("Light");
+       return getDefaultSharedPreferences().getString(KEY_THEME_COLOR, THEME_COLOR_DEVICE_DEFAULT).contains(THEME_COLOR_LIGHT);
     }
 
     /**

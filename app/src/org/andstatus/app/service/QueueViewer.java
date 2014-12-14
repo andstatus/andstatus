@@ -79,9 +79,8 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MyPreferences.loadTheme(this);
         mServiceConnector = new MyServiceReceiver(this);
-        setContentView(R.layout.queue);
+        MyPreferences.setThemedContentView(this, R.layout.queue);
         showList();
         registerForContextMenu(getListView());
     }

@@ -41,8 +41,7 @@ public class RestoreActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         MyLog.v(this, "onCreate");
         super.onCreate(savedInstanceState);
-        MyPreferences.loadTheme(this);
-        setContentView(R.layout.restore);
+        MyPreferences.setThemedContentView(this, R.layout.restore);
 
         findViewById(R.id.button_restore).setOnClickListener(new OnClickListener() {
             @Override

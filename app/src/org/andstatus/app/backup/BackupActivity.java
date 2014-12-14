@@ -40,9 +40,8 @@ public class BackupActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         MyLog.v(this, "onCreate");
-        MyPreferences.loadTheme(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.backup);
+        MyPreferences.setThemedContentView(this, R.layout.backup);
         setBackupFolder(MyBackupManager.getDefaultBackupDirectory(this));
 
         findViewById(R.id.button_backup).setOnClickListener(new OnClickListener() {

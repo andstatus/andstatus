@@ -42,24 +42,28 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
         versionTitle="&quot;Everything&quot; timeline">
         <changes>
 	        <change>&quot;Everything&quot; timeline added:
-	            all cached messages are shown in one timeline.  
-	            <a href="https://github.com/andstatus/andstatus/issues/114">#114</a>.
+	            all cached messages are shown in one timeline.   
+	            <a href="https://github.com/andstatus/andstatus/issues/114">#114</a>
 	        </change>
 	        <change>Multiline titles for checkbox settings. Now a User can see full titles
 	            of all settings even in a portrait mode. 
-	            <a href="https://github.com/andstatus/andstatus/issues/187">#187</a>.
+	            <a href="https://github.com/andstatus/andstatus/issues/187">#187</a>
 	        </change>
 	        <change>New AndStatus icons created. 
 	            Thanks to <a href="https://status.vinilox.eu/moshpirit">status.vinilox.eu/moshpirit</a>
 	            for the contribution. 
-	            <a href="https://github.com/andstatus/andstatus/issues/182">#182</a>.
+	            <a href="https://github.com/andstatus/andstatus/issues/182">#182</a>
 	        </change>
 	        <change>Fixed [pump.io] Don't make a Reply ("Comment") public. Now reply fully relies
 	            on Pump.io serve to determine correct recipients of a Reply.
-	            <a href="https://github.com/andstatus/andstatus/issues/190">#190</a></change>
+	            <a href="https://github.com/andstatus/andstatus/issues/190">#190</a>
+            </change>
 	        <change>Added &quot;View Image&quot; context menu item, allowing to view attachment
 	            with Your selected image Viewer. 
-	            <a href="https://github.com/andstatus/andstatus/issues/191">#191</a>.
+	            <a href="https://github.com/andstatus/andstatus/issues/191">#191</a>
+	        </change>
+	        <change>&quot;True color background&quot; option added.
+	            <a href="https://github.com/andstatus/andstatus/issues/195">#195</a>
 	        </change>
 	    </changes>
     </release>

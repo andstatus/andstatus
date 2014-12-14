@@ -228,6 +228,7 @@
   <string name="preference_notification_icon_alternative_title">Alternative Notification icon</string>
   <string name="preference_notification_icon_alternative_off">Icon as \"As\" letters</string>
   <string name="preference_notification_icon_alternative_on">Icon as a circle</string>
+  <string name="preference_true_black_title">True black background</string>
   <string name="preference_use_kitkat_media_chooser_title">Modern interface to select an attachment</string>
   <string name="reltime_days_ago_formats_1">yesterday</string>
   <string name="reltime_days_ago_formats_2">{0} days ago</string>

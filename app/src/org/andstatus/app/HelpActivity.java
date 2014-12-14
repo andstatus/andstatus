@@ -75,7 +75,6 @@ public class HelpActivity extends Activity implements SwipeInterface {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyPreferences.loadTheme(this);
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
@@ -90,7 +89,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
             }
         }
         
-        setContentView(R.layout.help);
+        MyPreferences.setThemedContentView(this, R.layout.help);
 
         if (savedInstanceState != null) {
             mIsFirstActivity = savedInstanceState.getBoolean(EXTRA_IS_FIRST_ACTIVITY, false);

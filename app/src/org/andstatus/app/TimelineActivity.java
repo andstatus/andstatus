@@ -29,6 +29,7 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.database.MatrixCursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -169,11 +170,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             return;
         }
 
-        MyPreferences.loadTheme(this);
         mListParametersNew.myAccountUserId = MyContextHolder.get().persistentAccounts().getCurrentAccountUserId();
         mServiceConnector = new MyServiceReceiver(this);
 
-        setContentView(R.layout.timeline);
+        MyPreferences.setThemedContentView(this, R.layout.timeline);
+        
         mSyncIndicator = findViewById(R.id.sync_indicator);
         mContextMenu = new MessageContextMenu(this);
         mMessageEditor = new MessageEditor(this);

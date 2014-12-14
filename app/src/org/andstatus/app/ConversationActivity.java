@@ -82,7 +82,6 @@ public class ConversationActivity extends Activity implements MyServiceListener,
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyPreferences.loadTheme(this);
         super.onCreate(savedInstanceState);
 
         if (instanceId == 0) {
@@ -99,7 +98,7 @@ public class ConversationActivity extends Activity implements MyServiceListener,
 
         selectedMessageId = MyProvider.uriToMessageId(uri);
 
-        setContentView(R.layout.conversation);
+        MyPreferences.setThemedContentView(this, R.layout.conversation);
         
         mMessageEditor = new MessageEditor(this);
         mMessageEditor.hide();

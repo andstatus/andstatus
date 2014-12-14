@@ -55,8 +55,7 @@ public class OriginEditor extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MyPreferences.loadTheme(this);
-        setContentView(R.layout.origin_editor);
+        MyPreferences.setThemedContentView(this, R.layout.origin_editor);
 
         buttonSave = (Button) findViewById(R.id.button_save);
         Button buttonDiscard = (Button) findViewById(R.id.button_discard);

@@ -53,8 +53,7 @@ public class OriginList extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MyPreferences.loadTheme(this);
-        setContentView(R.layout.origin_list);
+        MyPreferences.setThemedContentView(this, R.layout.origin_list);
 
         ListAdapter adapter = new SimpleAdapter(this, 
                 data, 
