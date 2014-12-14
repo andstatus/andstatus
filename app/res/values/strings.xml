@@ -226,7 +226,7 @@
   <string name="preference_allow_misconfigured_ssl_summary_on">Warning: Your connections are not secure, because security certificates, issued for any host, are accepted. TLS and SNI protocols are not available. Please tell your server administrator to fix this and then turn off this option</string>
   <string name="preference_debugging_info_in_ui_title">Debugging information in a User Interface</string>
   <string name="preference_notification_icon_alternative_title">Alternative Notification icon</string>
-  <string name="preference_notification_icon_alternative_off">Icon as \"As\" letters</string>
+  <string name="preference_notification_icon_alternative_off">Icon as \"&amp;s\" letters</string>
   <string name="preference_notification_icon_alternative_on">Icon as a circle</string>
   <string name="preference_true_black_title">True black background</string>
   <string name="preference_use_kitkat_media_chooser_title">Modern interface to select an attachment</string>

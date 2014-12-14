@@ -45,7 +45,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
 	            all cached messages are shown in one timeline.   
 	            <a href="https://github.com/andstatus/andstatus/issues/114">#114</a>
 	        </change>
-	        <change>Multiline titles for checkbox settings. Now a User can see full titles
+	        <change>Multiline titles for checkbox and list settings. Now a User can see full titles
 	            of all settings even in a portrait mode. 
 	            <a href="https://github.com/andstatus/andstatus/issues/187">#187</a>
 	        </change>
