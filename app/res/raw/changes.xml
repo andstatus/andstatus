@@ -38,7 +38,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="14.0" android:versionCode="117"
-        versionDate="2014-12-13"
+        versionDate="2014-12-14"
         versionTitle="&quot;Everything&quot; timeline">
         <changes>
 	        <change>&quot;Everything&quot; timeline added:
@@ -54,15 +54,15 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
 	            for the contribution. 
 	            <a href="https://github.com/andstatus/andstatus/issues/182">#182</a>
 	        </change>
-	        <change>Fixed [pump.io] Don't make a Reply ("Comment") public. Now reply fully relies
-	            on Pump.io serve to determine correct recipients of a Reply.
-	            <a href="https://github.com/andstatus/andstatus/issues/190">#190</a>
+	        <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/190">#190</a> 
+                [pump.io] Don't make a Reply ("Comment") public. Now a Reply fully relies
+	            on Pump.io server to determine correct recipients of the Reply.
             </change>
 	        <change>Added &quot;View Image&quot; context menu item, allowing to view attachment
 	            with Your selected image Viewer. 
 	            <a href="https://github.com/andstatus/andstatus/issues/191">#191</a>
 	        </change>
-	        <change>&quot;True color background&quot; option added.
+	        <change>&quot;True black background&quot; option added.
 	            <a href="https://github.com/andstatus/andstatus/issues/195">#195</a>
 	        </change>
 	    </changes>
