@@ -229,6 +229,9 @@ public class PersistentAccounts {
         return 0;
     }
 
+    public boolean isAccountUseId(long userId) {
+        return fromUserId(userId) != null;
+    }
 
     /**
      * Get MyAccount by the UserId. Valid User may not have an Account (in AndStatus)
@@ -237,10 +240,12 @@ public class PersistentAccounts {
      */
     public MyAccount fromUserId(long userId) {
         MyAccount ma = null;
-        for (MyAccount persistentAccount : persistentAccounts.values()) {
-            if (persistentAccount.getUserId() == userId) {
-                ma = persistentAccount;
-                break;
+        if (userId != 0) {
+            for (MyAccount persistentAccount : persistentAccounts.values()) {
+                if (persistentAccount.getUserId() == userId) {
+                    ma = persistentAccount;
+                    break;
+                }
             }
         }
         return ma;

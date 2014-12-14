@@ -126,8 +126,7 @@ public class MySimpleCursorAdapter extends SimpleCursorAdapter {
         int columnIndex2 = cursor.getColumnIndex(Msg.IN_REPLY_TO_USER_ID);
         if (columnIndex2 >= 0) {
             long replyToUserId = cursor.getLong(columnIndex2);
-            if (replyToUserId != 0
-                    && MyContextHolder.get().persistentAccounts().fromUserId(replyToUserId) != null) {
+            if (MyContextHolder.get().persistentAccounts().isAccountUseId(replyToUserId)) {
                 // For some reason, referring to the style drawable doesn't work
                 // (to "?attr:replyBackground" )
                 setBackgroundCompat(view, context.getResources().getDrawable(

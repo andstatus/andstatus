@@ -53,7 +53,7 @@ public class TimelineSql {
     static String tablesForTimeline(Uri uri, String[] projection) {
         TimelineTypeEnum tt = MyProvider.uriToTimelineType(uri);
         boolean isCombined = MyProvider.uriToIsCombined(uri) || tt == TimelineTypeEnum.USER;
-        AccountUserIds userIds = new AccountUserIds(isCombined, MyProvider.uriToAccountUserId(uri));
+        AccountUserIds accountUserIds = new AccountUserIds(isCombined, MyProvider.uriToAccountUserId(uri));
     
         Collection<String> columns = new java.util.HashSet<String>(Arrays.asList(projection));
     
@@ -67,7 +67,7 @@ public class TimelineSql {
                         + MyDatabase.FollowingUser.USER_FOLLOWED + ", "
                         + FollowingUser.USER_ID + " AS " + User.LINKED_USER_ID
                         + " FROM " + FollowingUser.TABLE_NAME
-                        + " WHERE (" + MyDatabase.User.LINKED_USER_ID + userIds.getSqlUserIds()
+                        + " WHERE (" + MyDatabase.User.LINKED_USER_ID + accountUserIds.getSqlUserIds()
                         + " AND " + MyDatabase.FollowingUser.USER_FOLLOWED + "=1 )"
                         + ") as fuser";
                 String userTable = User.TABLE_NAME;
@@ -96,8 +96,8 @@ public class TimelineSql {
                         + ")";
                 break;
             case MESSAGESTOACT:
-                if (userIds.getnIds() == 1) {
-                    tables = "(SELECT " + userIds.getAccountUserId() + " AS " + MyDatabase.User.LINKED_USER_ID
+                if (accountUserIds.size() == 1) {
+                    tables = "(SELECT " + accountUserIds.getAccountUserId() + " AS " + MyDatabase.User.LINKED_USER_ID
                             + ", * FROM " + Msg.TABLE_NAME + ") AS " + MyProvider.MSG_TABLE_ALIAS;
                     linkedUserDefined = true;
                 }
@@ -148,7 +148,7 @@ public class TimelineSql {
                     tables += " LEFT JOIN " + tbl;
                     break;
                 default:
-                    tbl += " AND " + MyDatabase.User.LINKED_USER_ID + userIds.getSqlUserIds();
+                    tbl += " AND " + MyDatabase.User.LINKED_USER_ID + accountUserIds.getSqlUserIds();
                     if (tt.atOrigin()) {
                         tables += " LEFT OUTER JOIN " + tbl;
                     } else {

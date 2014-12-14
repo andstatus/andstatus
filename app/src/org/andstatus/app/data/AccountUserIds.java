@@ -24,7 +24,7 @@ import org.andstatus.app.context.MyContextHolder;
  * @author yvolk@yurivolkov.com
  */
 public class AccountUserIds {
-    private int nIds = 1;
+    private int mSize = 1;
     private String sqlUserIds = "";
     private long accountUserId = 0;
 
@@ -48,7 +48,7 @@ public class AccountUserIds {
             for (MyAccount ma : MyContextHolder.get().persistentAccounts().collection()) {
                 if (sb.length() > 0) {
                     sb.append(", ");
-                    nIds += 1;
+                    mSize += 1;
                 }
                 sb.append(Long.toString(ma.getUserId()));
                 if (accountUserId == 0) {
@@ -59,15 +59,15 @@ public class AccountUserIds {
         } else {
             sqlUserIds = Long.toString(selectedUserId);
         }
-        if (nIds == 1) {
+        if (mSize == 1) {
             sqlUserIds = "=" + sqlUserIds;
         } else {
             sqlUserIds = " IN (" + sqlUserIds + ")";
         }
     }
 
-    public int getnIds() {
-        return nIds;
+    public int size() {
+        return mSize;
     }
 
     public String getSqlUserIds() {

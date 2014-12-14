@@ -837,7 +837,10 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
             if (!TextUtils.isEmpty(ta.mSearchQuery)) {
                 I18n.appendWithSpace(title, "'" + ta.mSearchQuery + "'");
             }
-            if (ta.getSelectedUserId() != 0) {
+            if (ta.getTimelineType() == TimelineTypeEnum.USER
+                    && !(ta.isTimelineCombined()
+                    && MyContextHolder.get().persistentAccounts()
+                            .isAccountUseId(ta.getSelectedUserId()))) {
                 I18n.appendWithSpace(title, MyProvider.userIdToName(ta.getSelectedUserId()));
             }
             if (ta.isTimelineCombined()) {
@@ -1107,11 +1110,11 @@ public class TimelineActivity extends ListActivity implements MyServiceListener,
                     finish();
                     TimelineTypeEnum timelineTypeNew = mListParametersNew.getTimelineType();
                     if (mListParametersNew.getTimelineType() == TimelineTypeEnum.USER 
-                            &&  (MyContextHolder.get().persistentAccounts().fromUserId(mListParametersNew.mSelectedUserId) == null)) {
+                            &&  !MyContextHolder.get().persistentAccounts().isAccountUseId(mListParametersNew.mSelectedUserId)) {
                         /*  "Other User's timeline" vs "My User's timeline" 
                          * Actually we saw messages of the user, who is not MyAccount,
                          * so let's switch to the HOME
-                         * TODO: Open "Other User timeline" in a separate Activity?!
+                         * TODO: Open "Other User's timeline" in a separate Activity?!
                          */
                         timelineTypeNew = TimelineTypeEnum.HOME;
                     }
