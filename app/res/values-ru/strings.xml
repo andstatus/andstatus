@@ -174,6 +174,7 @@
   <string name="menu_item_direct_message">Личное сообщение</string>
   <string name="menu_item_favorite">Добавить в избранное</string>
   <string name="menu_item_follow_user">Следить за \"%1s\"</string>
+  <string name="menu_item_view_image">Посмотреть картинку</string>
   <string name="menu_item_open_message_permalink">Открыть в Интернете</string>
   <string name="menu_item_reply">Ответить</string>
   <string name="menu_item_reblog">Пересказать</string>
@@ -223,6 +224,11 @@
   <string name="preference_allow_misconfigured_ssl_title">Разрешить некорректные SSL соединения</string>
   <string name="preference_allow_misconfigured_ssl_summary_off">Вы в безопасности: разрешены только правильно настроенные SSL соединения</string>
   <string name="preference_allow_misconfigured_ssl_summary_on">Предупреждение: Безопасность ваших соединений не обеспечена, потому что разрешено использование сертификатов, выпущенных для любых хостов. Протоколы TLS и SNI не используются. Пожалуйста, попросите Вашего Администратора исправить данную ситуацию на сервере, а потом выключите эту опцию</string>
+  <string name="preference_debugging_info_in_ui_title">Отладочная информация в пользовательском интерфейсе</string>
+  <string name="preference_notification_icon_alternative_title">Альтернативный значок уведомления</string>
+  <string name="preference_notification_icon_alternative_off">Иконка в виде букв \"&amp;s\"</string>
+  <string name="preference_notification_icon_alternative_on">Иконка в виде круга</string>
+  <string name="preference_true_black_title">Черный фон</string>
   <string name="preference_use_kitkat_media_chooser_title">Используйте средства выбора изображений KitKat</string>
   <string name="reltime_days_ago_formats_1">вчера</string>
   <string name="reltime_days_ago_formats_2">{0} день назад</string>
@@ -402,6 +408,7 @@
   <string name="timeline_reloaded">Лента времени обновлена.</string>
   <string name="timeline_title_all">Все</string>
   <string name="timeline_title_direct_messages">Личные сообщения</string>
+  <string name="timeline_title_everything">Всё</string>
   <string name="timeline_title_favorites">Избранное</string>
   <string name="timeline_title_following_user">Следуем за</string>
   <string name="timeline_title_home">Дом</string>

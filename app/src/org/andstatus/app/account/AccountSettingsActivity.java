@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2010-2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
  * Copyright (C) 2010 Brion N. Emde, "BLOA" example, http://github.com/brione/Brion-Learns-OAuth 
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,23 +19,22 @@ package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceActivity;
-import android.preference.PreferenceScreen;
-import android.preference.Preference.OnPreferenceChangeListener;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import oauth.signpost.OAuth;
@@ -51,15 +50,14 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.TimelineActivity;
 import org.andstatus.app.account.MyAccount.CredentialsVerificationStatus;
-import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.net.Connection;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginList;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.DialogFactory;
@@ -75,23 +73,17 @@ import android.view.*;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class AccountSettingsActivity extends PreferenceActivity implements
-        OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
+public class AccountSettingsActivity extends Activity {
     private static final String TAG = AccountSettingsActivity.class.getSimpleName();
 
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs
      */
-    public static final int MSG_NONE = 1;
-
-    public static final int MSG_ACCOUNT_VALID = 2;
-
-    public static final int MSG_ACCOUNT_INVALID = 3;
-
-    public static final int MSG_CONNECTION_EXCEPTION = 5;
-
-    public static final int MSG_CREDENTIALS_OF_OTHER_USER = 7;
-
+    static final int MSG_NONE = 1;
+    static final int MSG_ACCOUNT_VALID = 2;
+    static final int MSG_ACCOUNT_INVALID = 3;
+    static final int MSG_CONNECTION_EXCEPTION = 5;
+    static final int MSG_CREDENTIALS_OF_OTHER_USER = 7;
     // End Of the list ----------------------------------------
 
     /**
@@ -101,18 +93,13 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     private boolean overrideBackActivity = false;
     
     private StateOfAccountChangeProcess state = null;
-    private Preference originPreference;
     private Origin originOfUser;
-    private CheckBoxPreference oAuthCheckBox;
-    private EditTextPreference usernameText;
-    private EditTextPreference passwordText;
-    private Preference addAccountOrVerifyCredentials;
-    private CheckBoxPreference defaultAccountCheckBox;
-    private boolean onSharedPreferenceChangedIsBusy = false;
+    private EditText usernameEditable;
+    private EditText passwordEditable;
+    private StringBuilder mLatestErrorMessage = new StringBuilder();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        MyPreferences.loadTheme(this);
         super.onCreate(savedInstanceState);
 
         MyContextHolder.initialize(this, this);
@@ -120,29 +107,18 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         if (HelpActivity.startFromActivity(this)) {
             return;
         }
+
+        MyPreferences.setThemedContentView(this, R.layout.account_settings);
         
-        addPreferencesFromResource(R.xml.account_settings);
-        
-        originPreference = findPreference(Origin.KEY_ORIGIN_NAME);
-        originPreference.setOnPreferenceClickListener( new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                return onOriginClick();
-            }
-        });
-        
-        addAccountOrVerifyCredentials = findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
-        oAuthCheckBox = (CheckBoxPreference) findPreference(MyAccount.KEY_OAUTH);
-        usernameText = (EditTextPreference) findPreference(MyAccount.KEY_USERNAME_NEW);
-        passwordText = (EditTextPreference) findPreference(Connection.KEY_PASSWORD);
-        defaultAccountCheckBox = (CheckBoxPreference) findPreference(MyAccount.KEY_IS_DEFAULT_ACCOUNT);
+        usernameEditable = (EditText) findViewById(R.id.username);
+        passwordEditable = (EditText) findViewById(R.id.password);
 
         restoreState(getIntent(), "onCreate");
     }
     
-    protected boolean onOriginClick() {
+    protected boolean selectOrigin() {
         Intent i = new Intent(AccountSettingsActivity.this, OriginList.class);
-        i.setAction(Intent.ACTION_PICK);
+        i.setAction(Intent.ACTION_INSERT);
         startActivityForResult(i, ActivityRequestCode.SELECT_ORIGIN.id);
         return true;
     }
@@ -173,13 +149,15 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         if (state.actionCompleted || newState.useThisState) {
             message += "New state; ";
             state = newState;
-            if (state.accountShouldBeSelected) {
+            if (state.originShouldBeSelected) {
+                selectOrigin();
+            } else if (state.accountShouldBeSelected) {
                 AccountSelector.selectAccount(this, 0, ActivityRequestCode.SELECT_ACCOUNT);
                 message += "Select account; ";
             }
             message += "action=" + state.getAccountAction() + "; ";
 
-            showUserPreferences();
+            updateScreen();
         }
         if (state.authenticatiorResponse != null) {
             message += "authenticatiorResponse; ";
@@ -215,7 +193,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             MyLog.v(this, "Switching to the selected account");
             MyContextHolder.get().persistentAccounts().setCurrentAccount(state.builder.getAccount());
             state.setAccountAction(Intent.ACTION_EDIT);
-            showUserPreferences();
+            updateScreen();
         } else {
             MyLog.v(this, "No account supplied, finishing");
             finish();
@@ -223,8 +201,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     }
 
     private void onOriginSelected(int resultCode, Intent data) {
+        Origin origin = Origin.getEmpty(OriginType.ORIGIN_TYPE_DEFAULT);
         if (resultCode == RESULT_OK) {
-            Origin origin = MyContextHolder.get().persistentOrigins()
+            origin = MyContextHolder.get().persistentOrigins()
                     .fromName(data.getStringExtra(IntentExtra.EXTRA_ORIGIN_NAME.key));
             if (origin.isPersistent()
                     && state.getAccount().getOriginId() != origin.getId()) {
@@ -237,8 +216,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                                 originOfUser.getName(),
                                 state.getAccount().getUsername()).toString(),
                         TriState.fromBoolean(state.getAccount().isOAuth()));
-                showUserPreferences();
+                updateScreen();
             }
+        }
+        if (!origin.isPersistent()) {
+            closeAndGoBack();
         }
     }
     
@@ -269,119 +251,212 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         startActivity(new Intent(this, MySettingsActivity.class));
     }
     
-    /**
-     * Show values of all preferences in the "summaries".
-     * @see <a href="http://stackoverflow.com/questions/531427/how-do-i-display-the-current-value-of-an-android-preference-in-the-preference-sum"> 
-       How do I display the current value of an Android Preference 
-       in the Preference summary?</a>
-       
-     * Some "preferences" may be changed in MyAccount object
-     */
-    private void showUserPreferences() {
+    private void updateScreen() {
+        showTitle();
+        showErrors();
+        showOrigin();
+        showUsername();
+        showPassword();
+        showAccountState();
+        showAddAccountButton();
+        showVerifyCredentialsButton();
+        showDefaultAccountCheckbox();
+    }
+
+    private void showTitle() {
         MyAccount ma = state.getAccount();
-        
-        originOfUser = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
-        originPreference.setTitle(this.getText(R.string.title_preference_origin_system)
-                                  .toString().replace("{0}",originOfUser.getName())
-                                  .replace("{1}", originOfUser.getOriginType().getTitle()));
-
-        originPreference.setEnabled(!state.builder.isPersistent() && TextUtils.isEmpty(ma.getUsername()));
-        
-        if (usernameText.getText() == null
-                || ma.getUsername().compareTo(usernameText.getText()) != 0) {
-            usernameText.setText(ma.getUsername());
-        }
-        StringBuilder summary;
-        if (ma.getUsername().length() > 0) {
-            summary = new StringBuilder(ma.getUsername());
-        } else {
-            summary = new StringBuilder(this.getText(ma.alternativeTermForResourceId(R.string.summary_preference_username)));
-        }
-        usernameText.setDialogTitle(this.getText(ma.alternativeTermForResourceId(R.string.dialog_title_preference_username)));
-        usernameText.setTitle(this.getText(ma.alternativeTermForResourceId(R.string.title_preference_username)));
-        usernameText.setSummary(summary);
-        usernameText.setEnabled(!state.builder.isPersistent() && !ma.isUsernameValidToStartAddingNewAccount());
-
-        // TODO: isOAuth should be a parameter of an Origin, not of an account
-        // Changing this parameter should trigger clearing of all the origin users' credentials.
-        boolean isNeeded = ma.canChangeOAuth();
-        if (ma.isOAuth() != oAuthCheckBox.isChecked()) {
-            oAuthCheckBox.setChecked(ma.isOAuth());
-        }
-        // In fact, we should hide it if not enabled, but I couldn't find an easy way for this...
-        oAuthCheckBox.setEnabled(isNeeded);
-        if (isNeeded) {
-            oAuthCheckBox.setTitle(R.string.title_preference_oauth);
-            oAuthCheckBox.setSummary(ma.isOAuth() ? R.string.summary_preference_oauth_on : R.string.summary_preference_oauth_off);
-        } else {
-            oAuthCheckBox.setTitle("");
-            oAuthCheckBox.setSummary("");
-        }
-
-        isNeeded = ma.getConnection().isPasswordNeeded();
-        if (passwordText.getText() == null
-                || ma.getPassword().compareTo(passwordText.getText()) != 0) {
-            passwordText.setText(ma.getPassword());
-        }
-        if (isNeeded) {
-            passwordText.setTitle(R.string.title_preference_password);
-            summary = new StringBuilder(this.getText(R.string.summary_preference_password));
-            if (TextUtils.isEmpty(ma.getPassword())) {
-                summary.append(": (" + this.getText(R.string.not_set) + ")");
-            }
-        } else {
-            summary = null;
-            passwordText.setTitle("");
-        }
-        passwordText.setSummary(summary);
-        passwordText.setEnabled(isNeeded 
-                && (ma.getCredentialsVerified()!=CredentialsVerificationStatus.SUCCEEDED));
-
-        Origin origin = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
-        boolean originParametersPresent = origin.isPersistent();
-        
-        int titleResId;
-        boolean addAccountOrVerifyCredentialsEnabled = (ma.isOAuth() || ma.getCredentialsPresent()) 
-                && originParametersPresent;
-        switch (ma.getCredentialsVerified()) {
-            case SUCCEEDED:
-                titleResId = R.string.title_preference_verify_credentials;
-                summary = new StringBuilder(
-                        this.getText(R.string.summary_preference_verify_credentials));
-                break;
-            default:
-                if (state.builder.isPersistent()) {
-                    titleResId = R.string.title_preference_verify_credentials_failed;
-                    summary = new StringBuilder(
-                            this.getText(R.string.summary_preference_verify_credentials_failed));
-                } else {
-                    if (!ma.isUsernameValidToStartAddingNewAccount()) {
-                        addAccountOrVerifyCredentialsEnabled = false;
-                    }
-                    titleResId = R.string.title_preference_add_account;
-                    if (ma.isOAuth()) {
-                        summary = new StringBuilder(
-                                this.getText(R.string.summary_preference_add_account_oauth));
-                    } else {
-                        summary = new StringBuilder(
-                                this.getText(R.string.summary_preference_add_account_basic));
-                    }
-                }
-                break;
-        }
-        addAccountOrVerifyCredentials.setTitle(titleResId);
-        addAccountOrVerifyCredentials.setSummary(summary);
-        addAccountOrVerifyCredentials.setEnabled(addAccountOrVerifyCredentialsEnabled);
-
-        boolean isDefaultAccount = ma.getAccountName().equals(MyContextHolder.get().persistentAccounts().getDefaultAccountName());
-        defaultAccountCheckBox.setEnabled(state.builder.isPersistent() && !isDefaultAccount);
-        defaultAccountCheckBox.setChecked(isDefaultAccount);
-        
         String title = getText(R.string.account_settings_activity_title).toString();
         if (ma.isValid()) {
             title += " - " + ma.getAccountName();
         }
         getActionBar().setTitle(title);
+    }
+
+    private void showErrors() {
+        showTextView(R.id.latest_error_label, R.string.latest_error_label, 
+                mLatestErrorMessage.length() > 0);
+        showTextView(R.id.latest_error, mLatestErrorMessage, 
+                mLatestErrorMessage.length() > 0);
+    }
+
+    private void showOrigin() {
+        MyAccount ma = state.getAccount();
+        originOfUser = MyContextHolder.get().persistentOrigins().fromId(ma.getOriginId());
+        
+        TextView view = (TextView) findViewById(R.id.origin_name);
+        view.setText(this.getText(R.string.title_preference_origin_system)
+                                  .toString().replace("{0}",originOfUser.getName())
+                                  .replace("{1}", originOfUser.getOriginType().getTitle()));
+    }
+
+    private void showUsername() {
+        MyAccount ma = state.getAccount();
+        showTextView(R.id.username_label,
+                ma.alternativeTermForResourceId(R.string.title_preference_username),
+                state.builder.isPersistent() || ma.isUsernameNeededToStartAddingNewAccount());
+        if (state.builder.isPersistent() || !ma.isUsernameNeededToStartAddingNewAccount()) {
+            usernameEditable.setVisibility(View.GONE);
+        } else {
+            usernameEditable.setVisibility(View.VISIBLE);
+            usernameEditable.setHint(ma.alternativeTermForResourceId(R.string.summary_preference_username));
+            usernameEditable.addTextChangedListener(textWatcher);
+        }
+        if (ma.getUsername().compareTo(usernameEditable.getText().toString()) != 0) {
+            usernameEditable.setText(ma.getUsername());
+        }
+        showTextView(R.id.username_readonly, ma.getUsername(), state.builder.isPersistent());
+    }
+
+    private TextWatcher textWatcher = new TextWatcher() {
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            // Empty
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            // Empty
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            clearError();
+        }
+    };
+    
+    private void showPassword() {
+        MyAccount ma = state.getAccount();
+        boolean isNeeded = ma.getConnection().isPasswordNeeded();
+        StringBuilder labelBuilder = new StringBuilder();
+        if (isNeeded) {
+            labelBuilder.append(this.getText(R.string.summary_preference_password));
+            if (TextUtils.isEmpty(ma.getPassword())) {
+                labelBuilder.append(": (" + this.getText(R.string.not_set) + ")");
+            }
+        }
+        showTextView(R.id.password_label, labelBuilder.toString(), isNeeded);
+        if (ma.getPassword().compareTo(passwordEditable.getText().toString()) != 0) {
+            passwordEditable.setText(ma.getPassword());
+        }
+        passwordEditable.setVisibility(isNeeded ? View.VISIBLE : View.GONE);
+        passwordEditable.setEnabled(ma.getCredentialsVerified()!=CredentialsVerificationStatus.SUCCEEDED);
+        passwordEditable.addTextChangedListener(textWatcher);
+    }
+
+    private void showAccountState() {
+        MyAccount ma = state.getAccount();
+        StringBuilder summary = null;
+        if (state.builder.isPersistent()) {
+            switch (ma.getCredentialsVerified()) {
+                case SUCCEEDED:
+                    summary = new StringBuilder(
+                            this.getText(R.string.summary_preference_verify_credentials));
+                    break;
+                default:
+                    if (state.builder.isPersistent()) {
+                        summary = new StringBuilder(
+                                this.getText(R.string.summary_preference_verify_credentials_failed));
+                    } else {
+                        if (ma.isOAuth()) {
+                            summary = new StringBuilder(
+                                    this.getText(R.string.summary_preference_add_account_oauth));
+                        } else {
+                            summary = new StringBuilder(
+                                    this.getText(R.string.summary_preference_add_account_basic));
+                        }
+                    }
+                    break;
+            }
+        }
+        ((TextView) findViewById(R.id.account_state)).setText(summary);
+    }
+    
+    private void showAddAccountButton() {
+        TextView textView = showTextView(R.id.add_account, null, !state.builder.isPersistent());
+        textView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearError();
+                updateChangedFields();
+                updateScreen();
+                MyAccount ma = state.getAccount();
+                CharSequence error = "";
+                boolean addAccountEnabled =  !ma.isUsernameNeededToStartAddingNewAccount()
+                        || ma.isUsernameValid();
+                if (addAccountEnabled) {
+                    if (!ma.isOAuth() && !ma.getCredentialsPresent()) {
+                        addAccountEnabled =  false;
+                        error = getText(R.string.title_preference_password);
+                    }
+                } else {
+                    error = getText(ma.alternativeTermForResourceId(R.string.title_preference_username));
+                }
+                if (addAccountEnabled) {
+                    verifyCredentials(true);
+                } else {
+                    appendError(getText(R.string.error_invalid_value) + ": " + error);
+                }
+            }
+        });
+    }
+
+    private void clearError() {
+        if (mLatestErrorMessage.length() > 0) {
+            mLatestErrorMessage.setLength(0);
+            showErrors();
+        }
+    }
+    
+    private void showVerifyCredentialsButton() {
+        TextView textView = showTextView(
+                R.id.verify_credentials,
+                state.getAccount().getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED
+                        ? R.string.title_preference_verify_credentials
+                        : R.string.title_preference_verify_credentials_failed,
+                state.builder.isPersistent());
+        textView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearError();
+                updateChangedFields();
+                updateScreen();
+                verifyCredentials(true);
+            }
+        });
+    }
+    
+    private void showDefaultAccountCheckbox() {
+        MyAccount ma = state.getAccount();
+        boolean isDefaultAccount = ma.getAccountName().equals(MyContextHolder.get().persistentAccounts().getDefaultAccountName());
+        CheckBox checkBox= (CheckBox) findViewById(R.id.is_default_account);
+        checkBox.setVisibility(state.builder.isPersistent() ? View.VISIBLE : View.GONE);
+        checkBox.setEnabled(!isDefaultAccount);
+        checkBox.setChecked(isDefaultAccount);
+        checkBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    MyContextHolder.get().persistentAccounts().setDefaultAccount(state.getAccount());
+                    updateScreen();
+                }
+            }
+        });
+    }
+
+    private TextView showTextView(int textViewId, int textResourceId, boolean isVisible) {
+        return showTextView(textViewId, textResourceId == 0 ? null : getText(textResourceId),
+                isVisible);
+    }
+    
+    private TextView showTextView(int textViewId, CharSequence text, boolean isVisible) {
+        TextView textView = (TextView) findViewById(textViewId);
+        if (!TextUtils.isEmpty(text)) {
+            textView.setText(text);
+        }
+        textView.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        return textView;
     }
 
     @Override
@@ -393,8 +468,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
         
-        showUserPreferences();
-        MyPreferences.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+        updateScreen();
         
         Uri uri = getIntent().getData();
         if (uri != null) {
@@ -426,8 +500,7 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             if (state2 != MyServiceState.STOPPED) {
                 MyServiceManager.stopService();
                 if (state2 != MyServiceState.UNKNOWN) {
-                    Toast.makeText(this, getText(R.string.system_is_busy_try_later) + " (" + state2 + ")", 
-                            Toast.LENGTH_LONG).show();
+                    appendError(getText(R.string.system_is_busy_try_later) + " (" + state2 + ")");
                     return;
                 }
             }
@@ -452,12 +525,39 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         }
     }
 
+    private void updateChangedFields() {
+        if (!state.builder.isPersistent()) {
+            String username = usernameEditable.getText().toString();
+            if (username.compareTo(state.getAccount().getUsername()) != 0) {
+                boolean isOAuth = state.getAccount().isOAuth();
+                String originName = state.getAccount().getOriginName();
+                state.builder = MyAccount.Builder.newOrExistingFromAccountName(
+                        MyContextHolder.get(), 
+                        AccountName.fromOriginAndUserNames(MyContextHolder.get(), 
+                                originName, username).toString(),
+                        TriState.fromBoolean(isOAuth));
+            }
+        }
+        if (state.getAccount().getPassword().compareTo(passwordEditable.getText().toString()) != 0) {
+            state.builder.setPassword(passwordEditable.getText().toString());
+        }
+    }
+
+    private void appendError(CharSequence errorMessage) {
+        if (TextUtils.isEmpty(errorMessage)) {
+            return;
+        }
+        if (mLatestErrorMessage.length()>0) {
+            mLatestErrorMessage.append("/n");
+        }
+        mLatestErrorMessage.append(errorMessage);
+        showErrors();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
         state.save();
-        MyPreferences.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(
-                this);
         if (mIsFinishing) {
             MyContextHolder.release();
             if (overrideBackActivity) {
@@ -483,111 +583,10 @@ public class AccountSettingsActivity extends PreferenceActivity implements
     }
 
     /**
-     * Only preferences with android:persistent="true" trigger this event!
-     */
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (somethingIsBeingProcessed) {
-            return;
-        }
-        MyContext myContext = MyContextHolder.get();
-        if (onSharedPreferenceChangedIsBusy || !myContext.initialized()) {
-            return;
-        }
-        onSharedPreferenceChangedIsBusy = true;
-
-        try {
-            MyLog.logSharedPreferencesValue(this, sharedPreferences, key);
-
-            // Here and below:
-            // Check if there are changes to avoid "ripples": don't set new
-            // value if no changes
-
-            if (key.equals(MyAccount.KEY_OAUTH)
-                && state.getAccount().isOAuth() != oAuthCheckBox.isChecked()) {
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                            MyContextHolder.get(), 
-                            AccountName.fromOriginAndUserNames(
-                                MyContextHolder.get(),
-                                originOfUser.getName(),
-                                state.getAccount().getUsername()).toString(),
-                                TriState.fromBoolean(oAuthCheckBox.isChecked()));
-                showUserPreferences();
-            }
-            if (key.equals(MyAccount.KEY_USERNAME_NEW)) {
-                String usernameNew = usernameText.getText();
-                if (usernameNew.compareTo(state.getAccount().getUsername()) != 0) {
-                    boolean isOAuth = state.getAccount().isOAuth();
-                    String originName = state.getAccount().getOriginName();
-                    state.builder = MyAccount.Builder.newOrExistingFromAccountName(
-                            MyContextHolder.get(), 
-                            AccountName.fromOriginAndUserNames(myContext, 
-                                    originName, usernameNew).toString(),
-                            TriState.fromBoolean(isOAuth));
-                    showUserPreferences();
-                }
-            }
-            if (key.equals(Connection.KEY_PASSWORD)
-                    && state.getAccount().getPassword().compareTo(passwordText.getText()) != 0) {
-                state.builder.setPassword(passwordText.getText());
-                showUserPreferences();
-            }
-        } finally {
-            onSharedPreferenceChangedIsBusy = false;
-        }
-    }
-
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        int titleId = 0;
-        int summaryId = 0;
-        Dialog dlg = null;
-
-        switch (id) {
-            case MSG_ACCOUNT_INVALID:
-                if (titleId == 0) {
-                    titleId = R.string.dialog_title_authentication_failed;
-                    summaryId = R.string.dialog_summary_authentication_failed;
-                }
-                dlg = DialogFactory.newNoActionAlertDialog(this, titleId, summaryId);
-                break;
-            case MSG_CREDENTIALS_OF_OTHER_USER:
-                if (titleId == 0) {
-                    titleId = R.string.dialog_title_authentication_failed;
-                    summaryId = R.string.error_credentials_of_other_user;
-                }
-                dlg = DialogFactory.newNoActionAlertDialog(this, titleId, summaryId);
-                break;
-            default:
-                dlg = super.onCreateDialog(id);
-                break;
-        }
-        return dlg;
-    }
-
-    /**
      * This semaphore helps to avoid ripple effect: changes in MyAccount cause
      * changes in this activity ...
      */
     private boolean somethingIsBeingProcessed = false;
-
-    /*
-     * (non-Javadoc)
-     * @seeandroid.preference.PreferenceActivity#onPreferenceTreeClick(android.
-     * preference.PreferenceScreen, android.preference.Preference)
-     */
-    @Override
-    public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
-        MyLog.d(TAG, "Preference clicked:" + preference.getKey());
-        if (preference.getKey().compareTo(MyPreferences.KEY_VERIFY_CREDENTIALS) == 0) {
-            verifyCredentials(true);
-        }
-        if (preference.getKey().compareTo(MyAccount.KEY_IS_DEFAULT_ACCOUNT) == 0) {
-            MyContextHolder.get().persistentAccounts().setDefaultAccount(state.getAccount());
-            showUserPreferences();
-        }
-        return super.onPreferenceTreeClick(preferenceScreen, preference);
-    }
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -635,14 +634,6 @@ public class AccountSettingsActivity extends PreferenceActivity implements
             mIsFinishing = true;
             finish();
         }
-    }
-
-    @Override
-    public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (MyLog.isLoggable(TAG, MyLog.VERBOSE)) {
-            MyLog.v(TAG, "onPreferenceChange: " + preference.toString() + " -> " + (newValue == null ? "null" : newValue.toString()));
-        }
-        return true;
     }
     
     /**
@@ -735,15 +726,14 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                         MyContextHolder.get().persistentAccounts().initialize();
                         state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                                 MyContextHolder.get(), accountName, TriState.TRUE);
-                        showUserPreferences();
+                        updateScreen();
                         new OAuthAcquireRequestTokenTask().execute();
                         // and return back to default screen
                         overrideBackActivity = true;
                     } else {
-                        Toast.makeText(AccountSettingsActivity.this, message, Toast.LENGTH_LONG).show();
-
+                        appendError(message);
                         state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
-                        showUserPreferences();
+                        updateScreen();
                     }
                 } catch (JSONException e) {
                     MyLog.e(this, e);
@@ -871,10 +861,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                         // Because of initializations in onCreate...
                         AccountSettingsActivity.this.finish();
                     } else {
-                        Toast.makeText(AccountSettingsActivity.this, message, Toast.LENGTH_LONG).show();
-
+                        appendError(message);
                         state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
-                        showUserPreferences();
+                        updateScreen();
                     }
                 } catch (JSONException e) {
                     MyLog.e(this, e);
@@ -1009,10 +998,9 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                             message2 = message2 + ": " + message;
                             MyLog.d(TAG, message);
                         }
-                        Toast.makeText(AccountSettingsActivity.this, message2, Toast.LENGTH_LONG).show();
-
+                        appendError(message2);
                         state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
-                        showUserPreferences();
+                        updateScreen();
                     }
                 } catch (JSONException e) {
                     MyLog.e(this, e);
@@ -1095,10 +1083,11 @@ public class AccountSettingsActivity extends PreferenceActivity implements
         protected void onPostExecute(JSONObject jso) {
             DialogFactory.dismissSafely(dlg);
             boolean succeeded = false;
+            CharSequence errorMessage = "";
             if (jso != null) {
                 try {
                     int what = jso.getInt("what");
-                    String message = jso.getString("message");
+                    CharSequence message = jso.getString("message");
 
                     switch (what) {
                         case MSG_ACCOUNT_VALID:
@@ -1107,17 +1096,18 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                             succeeded = true;
                             break;
                         case MSG_ACCOUNT_INVALID:
+                            errorMessage = getText(R.string.dialog_summary_authentication_failed);
+                            break;
                         case MSG_CREDENTIALS_OF_OTHER_USER:
-                            showDialog(what);
+                            errorMessage = getText(R.string.error_credentials_of_other_user);
                             break;
                         case MSG_CONNECTION_EXCEPTION:
-                            Toast.makeText(AccountSettingsActivity.this, getText(R.string.error_connection_error) + " \n" + message, Toast.LENGTH_LONG).show();
-							MyLog.i(this, message);
+                            errorMessage = getText(R.string.error_connection_error) + " \n" + message;
+							MyLog.i(this, errorMessage.toString());
                             break;
                         default:
                             break;
                     }
-                    showUserPreferences();
                 } catch (JSONException e) {
                     MyLog.e(this, e);
                 }
@@ -1132,13 +1122,13 @@ public class AccountSettingsActivity extends PreferenceActivity implements
                     state2.actionCompleted = true;
                     if (state2.getAccountAction().compareTo(Intent.ACTION_INSERT) == 0) {
                         state2.setAccountAction(Intent.ACTION_EDIT);
-                        showUserPreferences();
                         // TODO: Decide if we need closeAndGoBack() here
                     }
                 }
                 somethingIsBeingProcessed = false;
             }
-            showUserPreferences();
+            updateScreen();
+            appendError(errorMessage);
         }
     }
 }

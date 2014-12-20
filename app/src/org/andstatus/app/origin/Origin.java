@@ -119,7 +119,7 @@ public class Origin {
 
     public boolean isUsernameValid(String username) {
         boolean ok = false;
-        if (username != null && (username.length() > 0)) {
+        if (!TextUtils.isEmpty(username)) {
             ok = username.matches(originType.usernameRegEx);
             if (!ok && MyLog.isLoggable(this, MyLog.INFO)) {
                 MyLog.i(this, "The Username is not valid: \"" + username + "\" in " + name);
@@ -128,13 +128,8 @@ public class Origin {
         return ok;
     }
 
-    public boolean isUsernameValidToStartAddingNewAccount(String username, boolean isOAuthUser) {
-        // Name doesn't matter at this step
-        if (isOAuthUser) {
-            return true;
-        } else {
-            return isUsernameValid(username);
-        }
+    public boolean isUsernameNeededToStartAddingNewAccount(boolean isOAuthUser) {
+        return !isOAuthUser;
     }
 
     /**

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/myLayoutParent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:context=".account.AccountSettingsActivity" >
+
+        <TextView
+            android:id="@+id/origin_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_origin_system" />
+
+        <TextView
+            android:id="@+id/origin_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_marginStart="12dp"
+            android:hint="@string/label_origin_system"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/username_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_preference_username" />
+
+        <EditText
+            android:id="@+id/username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="@string/title_preference_username" >
+
+            <requestFocus />
+        </EditText>
+
+        <TextView
+            android:id="@+id/username_readonly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_marginStart="12dp"
+            android:hint="@string/title_preference_username"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        
+        <TextView
+            android:id="@+id/password_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_preference_password" />
+
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="@string/title_preference_password"
+            android:inputType="textPassword" >
+        </EditText>
+
+        <TextView
+            android:id="@+id/latest_error_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/latest_error_label" />
+
+        <TextView
+            android:id="@+id/latest_error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_marginStart="12dp"
+            android:hint="@string/error"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/account_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="account_state" />
+
+        <Button
+            android:id="@+id/add_account"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/title_preference_add_account" />
+
+        <Button
+            android:id="@+id/verify_credentials"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/title_preference_verify_credentials" />
+
+        <CheckBox
+            android:id="@+id/is_default_account"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_preference_is_default_account" />
+    </LinearLayout>
+
+</ScrollView>

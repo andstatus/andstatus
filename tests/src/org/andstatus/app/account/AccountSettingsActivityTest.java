@@ -19,13 +19,13 @@ package org.andstatus.app.account;
 import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Intent;
-import android.preference.EditTextPreference;
-import android.preference.Preference;
 import android.test.ActivityInstrumentationTestCase2;
+import android.widget.Button;
+import android.widget.TextView;
 
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.OriginList;
 import org.andstatus.app.service.MyServiceManager;
@@ -60,26 +60,31 @@ public class AccountSettingsActivityTest extends ActivityInstrumentationTestCase
     }
     
     public void test() throws InterruptedException {
-        Preference addAccountOrVerifyCredentials = mActivity.findPreference(MyPreferences.KEY_VERIFY_CREDENTIALS);
+        Button addAccountOrVerifyCredentials = (Button) mActivity.findViewById(R.id.add_account);
         assertTrue(addAccountOrVerifyCredentials != null);
-        EditTextPreference usernameText = (EditTextPreference) mActivity.findPreference(MyAccount.KEY_USERNAME_NEW);
-        assertTrue(usernameText != null);
-        assertEquals("Selected Username", ma.getUsername(), usernameText.getText());
+        assertUsernameTextField(R.id.username);
+        assertUsernameTextField(R.id.username_readonly);
         Thread.sleep(500);
         assertFalse("MyService is not available", MyServiceManager.isServiceAvailable());
-        testOpeningOriginList();
+        openingOriginList();
         Thread.sleep(500);
         mActivity.finish();
     }
+
+    private void assertUsernameTextField(int viewId) {
+        TextView usernameText = (TextView) mActivity.findViewById(viewId);
+        assertTrue(usernameText != null);
+        assertEquals("Selected Username", ma.getUsername(), usernameText.getText().toString());
+    }
     
-    private void testOpeningOriginList() throws InterruptedException {
+    private void openingOriginList() throws InterruptedException {
         final String method = "testOpeningOriginList";
         ActivityMonitor activityMonitor = getInstrumentation().addMonitor(OriginList.class.getName(), null, false);
         Runnable clicker = new Runnable() {
             @Override
             public void run() {
                 MyLog.v(this, method + "-Log before click");
-                mActivity.onOriginClick();
+                mActivity.selectOrigin();
             }
           };
     

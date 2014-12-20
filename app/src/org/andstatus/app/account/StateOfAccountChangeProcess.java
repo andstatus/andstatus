@@ -64,10 +64,8 @@ class StateOfAccountChangeProcess {
      */
     boolean restored = false;
 
-    /**
-     * Whether in the current state Account should be selected
-     */
     boolean accountShouldBeSelected = false;
+    boolean originShouldBeSelected = false;
 
     private String requestToken = null;
     private String requestSecret = null;
@@ -134,10 +132,11 @@ class StateOfAccountChangeProcess {
                 Origin origin = MyContextHolder
                         .get()
                         .persistentOrigins()
-                        .firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
+                        .firstOfType(OriginType.UNKNOWN);
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(),
                         AccountName.ORIGIN_SEPARATOR + origin.getName(), TriState.UNKNOWN);
+                state.originShouldBeSelected = true;
             } else {
                 state.builder = MyAccount.Builder.newOrExistingFromAccountName(
                         MyContextHolder.get(),

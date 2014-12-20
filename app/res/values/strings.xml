@@ -39,6 +39,7 @@
   <string name="appwidget_nodata">No data yet.</string>
   <string name="authentication_never">Didn\'t authenticate yet</string>
   <string name="authentication_successful">Authentication successful!</string>
+  <string name="back_label">Back</string>
   <string name="button_add">Add</string>
   <string name="button_add_origin">Add new system</string>
   <string name="button_backup">Backup</string>
@@ -103,6 +104,7 @@
   <string name="drawer_open">Open navigation drawer</string>
   <string name="empty_in_parenthesis">(empty)</string>
   <string name="error">Error</string>
+  <string name="error_invalid_value">Invalid value</string>
   <string name="error_twitter_404">The page cannot be found. Please report this error!</string>
   <string name="error_connection_error">A connection error has occurred. Please report this error!</string>
   <string name="error_set_username">Couldn\'t set the Username to: </string>
@@ -158,6 +160,7 @@
   <string name="label_restore">Restore application data from Backup</string>
   <string name="label_upgrading">Upgrade is in progress. Please wait.</string>
   <string name="label_with_media">with media</string>
+  <string name="latest_error_label">Latest error</string>
   <string name="loading">Loading&#8230;</string>
   <string name="message">Message</string>
   <string name="message_twitter">Tweet</string>
@@ -186,6 +189,7 @@
   <string name="menu_item_view_profile">View Profile</string>
   <string name="message_sent">Your message has been sent.</string>
   <string name="messages_activity">Direct Messages</string>
+  <string name="next_label">Next</string>
   <string name="not_set">not set</string>
   <string name="notification_message_formats_1">{0} message</string>
   <string name="notification_message_formats_2">{0} messages</string>
@@ -220,6 +224,7 @@
   <string name="options_menu_reload">Reload</string>
   <string name="options_menu_mentions">Mentions</string>
   <string name="options_menu_search">Search</string>
+  <string name="origin_selector_label">Select Microblogging system</string>
   <string name="origin_settings_action">Microblogging system</string>
   <string name="preference_allow_misconfigured_ssl_title">Allow misconfigured SSL</string>
   <string name="preference_allow_misconfigured_ssl_summary_off">You are safe: only properly configured SSL connections allowed</string>

@@ -820,8 +820,12 @@ public final class MyAccount {
         return oAccountName.getOrigin().canChangeOAuth();
     }
     
-    public boolean isUsernameValidToStartAddingNewAccount() {
-        return oAccountName.getOrigin().isUsernameValidToStartAddingNewAccount(getUsername(), isOAuth());
+    public boolean isUsernameNeededToStartAddingNewAccount() {
+        return oAccountName.getOrigin().isUsernameNeededToStartAddingNewAccount(isOAuth());
+    }
+
+    public boolean isUsernameValid() {
+        return oAccountName.getOrigin().isUsernameValid(getUsername());
     }
     
     public boolean isGlobalSearchSupported() {

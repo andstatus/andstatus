@@ -73,7 +73,7 @@ public abstract class HttpConnection {
         // Nothing to do
     }
     
-    
+    /** return not null **/
     public String getPassword() {
         return "";
     }

@@ -38,7 +38,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="14.0" android:versionCode="117"
-        versionDate="2014-12-14"
+        versionDate="2014-12-20"
         versionTitle="&quot;Everything&quot; timeline">
         <changes>
 	        <change>&quot;Everything&quot; timeline added:
@@ -53,6 +53,9 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
 	            Thanks to <a href="https://status.vinilox.eu/moshpirit">status.vinilox.eu/moshpirit</a>
 	            for the contribution. 
 	            <a href="https://github.com/andstatus/andstatus/issues/182">#182</a>
+	        </change>
+	        <change>A screen to add new account (or to manage existing account) redesigned for a Novice. 
+	            <a href="https://github.com/andstatus/andstatus/issues/164">#164</a>
 	        </change>
 	        <change>Fixed <a href="https://github.com/andstatus/andstatus/issues/190">#190</a> 
                 [pump.io] Don't make a Reply ("Comment") public. Now a Reply fully relies

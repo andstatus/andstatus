@@ -42,12 +42,12 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 public class HttpConnectionBasic extends HttpConnection implements HttpApacheRequest  {
-    protected String mPassword;
+    protected String mPassword = "";
 
     @Override
     protected void setConnectionData(HttpConnectionData connectionData) {
         super.setConnectionData(connectionData);
-        mPassword = connectionData.dataReader.getDataString(Connection.KEY_PASSWORD, "");
+        setPassword(connectionData.dataReader.getDataString(Connection.KEY_PASSWORD, ""));
     }  
     
     @Override
@@ -155,18 +155,9 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
     public boolean isPasswordNeeded() {
         return true;
     }
-    /**
-     * Set User's password if the Connection object needs it
-     */
     @Override
     public void setPassword(String passwordIn) {
-        String password = passwordIn;
-        if (password == null) {
-            password = "";
-        }
-        if (password.compareTo(mPassword) != 0) {
-            mPassword = password;
-        }
+        mPassword = passwordIn == null ? "" : passwordIn;
     }
     @Override
     public String getPassword() {

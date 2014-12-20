@@ -36,6 +36,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,20 +76,25 @@ public class OriginList extends ListActivity {
      */
     private void processNewIntent(Intent intentNew) {
         String action = intentNew.getAction();
-        boolean actionPick = action!=null && action.equals(Intent.ACTION_PICK);
         Button buttonAdd = (Button) findViewById(R.id.button_add);
-        if (actionPick) {
+        if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_INSERT.equals(action)) {
             getListView().setOnItemClickListener(new Picker());
-            buttonAdd.setVisibility(android.view.View.GONE);
         } else {
             getListView().setOnItemClickListener(new Updater());
+        }
+        if (Intent.ACTION_PICK.equals(action)) {
+            buttonAdd.setVisibility(android.view.View.GONE);
+        } else {
             buttonAdd.setVisibility(android.view.View.VISIBLE);
             buttonAdd.setOnClickListener(new AddClickListener());
         }
-        fillList(actionPick);
+        if (Intent.ACTION_INSERT.equals(action)) {
+            getActionBar().setTitle(R.string.header_add_new_account);
+        }
+        fillList();
     }
 
-    private void fillList(boolean actionPick) {
+    private void fillList() {
         data.clear();
         for (Origin origin : MyContextHolder.get().persistentOrigins().collection()) {
             Map<String, String> map = new HashMap<String, String>();
@@ -97,6 +103,12 @@ public class OriginList extends ListActivity {
             map.put(KEY_NAME, origin.getName());
             data.add(map);
         }
+        java.util.Collections.sort(data, new Comparator<Map<String, String>>() {
+            @Override
+            public int compare(Map<String, String> lhs, Map<String, String> rhs) {
+                return lhs.get(KEY_VISIBLE_NAME).compareToIgnoreCase(rhs.get(KEY_VISIBLE_NAME));
+            }
+        });
         MyLog.v(this, "fillList, " + data.size() + " items");
         ((SimpleAdapter) getListAdapter()).notifyDataSetChanged(); 
     }
@@ -134,7 +146,7 @@ public class OriginList extends ListActivity {
         MyLog.v(this, "onActivityResult " + ActivityRequestCode.fromId(requestCode) );
         switch (ActivityRequestCode.fromId(requestCode)) {
             case EDIT_ORIGIN:
-                fillList(false);
+                fillList();
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);

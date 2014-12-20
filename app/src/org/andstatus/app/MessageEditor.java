@@ -45,7 +45,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -113,7 +112,7 @@ class MessageEditor {
     }
 
     private void setupButtons() {
-        Button sendButton = (Button) mEditorView.findViewById(R.id.messageEditSendButton);
+        View sendButton = mEditorView.findViewById(R.id.messageEditSendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

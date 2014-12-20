@@ -47,7 +47,7 @@ class OriginPumpio extends Origin {
     }
     
     @Override
-    public boolean isUsernameValidToStartAddingNewAccount(String username, boolean isOAuthUser) {
-        return isUsernameValid(username);
+    public boolean isUsernameNeededToStartAddingNewAccount(boolean isOAuthUser) {
+        return true;
     }
 }
