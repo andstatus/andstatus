@@ -42,16 +42,17 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     }
 
     private static void logLaunch(CommandExecutorStrategy strategy) {
-        if (strategy.execContext.getCommandData().getCommand() == CommandEnum.UPDATE_STATUS 
-                && MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false)) {
-            MyLog.setLogToFile(true);
+        if (strategy.execContext.getCommandData().getCommand() == CommandEnum.UPDATE_STATUS) {
+            MyLog.onSendingMessageStart();;
         }
         MyLog.d(strategy, "Launching " + strategy.execContext);
     }
 
     private static void logEnd(CommandExecutorStrategy strategy) {
         MyLog.d(strategy, "Executed " + strategy.execContext);
-        MyLog.setLogToFile(false);
+        if (strategy.execContext.getCommandData().getCommand() == CommandEnum.UPDATE_STATUS) {
+            MyLog.onSendingMessageEnd();
+        }
     }
 
     static void executeStep(CommandExecutionContext execContext, CommandExecutorParent parent) {

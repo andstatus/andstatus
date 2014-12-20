@@ -293,6 +293,7 @@ public class MyLog {
                 if (sp != null) {
                     val = getMinLogLevel(sp);
                 }
+                setLogToFile(MyPreferences.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false));                
             } catch (Exception e) {
                 Log.e(TAG, "Error in isLoggable", e);
             }
@@ -402,6 +403,30 @@ public class MyLog {
         return key + ":{" + out + "}";
     }
 
+    public static void onSendingMessageStart() {
+        onSendingMessageEvent(true);
+    }
+
+    private static void onSendingMessageEvent(boolean start) {
+        if (!MyPreferences.getBoolean(MyPreferences.KEY_SENDING_MESSAGES_LOG_ENABLED, false) ||
+                MyPreferences.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false)) {
+            return;
+        }
+        setLogToFile(start);
+    }
+
+    public static void onSendingMessageEnd() {
+        onSendingMessageEvent(false);
+    }
+    
+    public static void setNextLogFileName() {
+        synchronized (logFileLock) {
+            if (isLogToFileEnabled()) {
+                setLogToFile(true);
+            }
+        }
+    }
+    
     public static void setLogToFile(boolean logEnabled) {
         String filename = currentDateTimeFormatted() + "_log.txt";
         synchronized (logFileLock) {

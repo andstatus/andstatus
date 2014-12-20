@@ -83,6 +83,7 @@ public class MyPreferences {
      */
     public static final String KEY_MIN_LOG_LEVEL = "min_log_level";
     public static final String KEY_SENDING_MESSAGES_LOG_ENABLED = "sending_messages_log_enabled";
+    public static final String KEY_LOG_EVERYTHING_TO_FILE = "log_everything_to_file";
     
     public static final String KEY_THEME_SIZE = "theme_size";
     public static final String KEY_THEME_COLOR = "theme_color";
