@@ -109,7 +109,7 @@
     <string-array name="origin_system_types_entries">
         <item>Twitter</item>
         <item>Pump.io</item>
-        <item>StatusNet</item>
+        <item>GNU social</item>
     </string-array>
     <string-array name="theme_color_entries">
         <item>@string/theme_color_entries_defautl</item>

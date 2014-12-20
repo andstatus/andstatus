@@ -31,7 +31,7 @@ import org.andstatus.app.data.MyDatabase.MsgOfUser;
 import org.andstatus.app.data.MyDatabase.OidEnum;
 import org.andstatus.app.data.MyDatabase.User;
 import org.andstatus.app.net.ConnectionException;
-import org.andstatus.app.net.ConnectionStatusNetTest;
+import org.andstatus.app.net.ConnectionGnuSocialTest;
 import org.andstatus.app.net.MbMessage;
 import org.andstatus.app.net.MbUser;
 import org.andstatus.app.service.CommandData;
@@ -274,7 +274,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
 
     public void testMessageWithAttachment() throws Exception {
-        MbMessage message = ConnectionStatusNetTest.getMessageWithAttachment(this
+        MbMessage message = ConnectionGnuSocialTest.getMessageWithAttachment(this
                 .getInstrumentation().getContext());
 
         MyAccount ma = MyContextHolder.get().persistentAccounts()
@@ -289,7 +289,7 @@ public class DataInserterTest extends InstrumentationTestCase {
     }
 
     public void testUserNameChanged() {
-        MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME); 
+        MyAccount ma = TestSuite.getMyContextForTest().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME); 
         String username = "peter" + TestSuite.TESTRUN_UID;
         MbUser user1 = new MessageInserter(ma).buildUserFromOid("34804" + TestSuite.TESTRUN_UID);
         user1.setUserName(username);

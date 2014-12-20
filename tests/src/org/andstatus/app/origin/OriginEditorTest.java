@@ -49,7 +49,7 @@ public class OriginEditorTest extends ActivityInstrumentationTestCase2<OriginEdi
     }
 
     public void test() throws InterruptedException {
-        OriginType originType = OriginType.STATUSNET;
+        OriginType originType = OriginType.GNUSOCIAL;
         String originName = "oe" + System.currentTimeMillis();
         String host = originName + ".example.com";
         boolean isSsl = false;

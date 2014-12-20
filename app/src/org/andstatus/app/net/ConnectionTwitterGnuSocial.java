@@ -33,10 +33,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Specific implementation of the {@link org.andstatus.app.net.Connection.ApiEnum#STATUSNET_TWITTER}
+ * Specific implementation of the {@link org.andstatus.app.net.Connection.ApiEnum#GNUSOCIAL_TWITTER}
  * @author yvolk@yurivolkov.com
  */
-public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
+public class ConnectionTwitterGnuSocial extends ConnectionTwitter1p0 {
 
     @Override
     protected String getApiPath1(ApiRoutineEnum routine) {
@@ -86,7 +86,7 @@ public class ConnectionTwitterStatusNet extends ConnectionTwitter1p0 {
         try {
             formParams.put("status", message);
             
-            // This parameter was removed from Twitter API, but it still is in StatusNet
+            // This parameter was removed from Twitter API, but it still is in GNUsocial
             formParams.put("source", HttpConnection.USER_AGENT);
             
             if ( !TextUtils.isEmpty(inReplyToId)) {

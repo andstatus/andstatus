@@ -37,7 +37,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ConversationInserter;
 import org.andstatus.app.data.MessageInserter;
 import org.andstatus.app.data.OriginsAndAccountsInserter;
-import org.andstatus.app.data.StatusNetMessagesInserter;
+import org.andstatus.app.data.GnuSocialMessagesInserter;
 import org.andstatus.app.net.ConnectionException;
 import org.andstatus.app.net.HttpConnection;
 import org.andstatus.app.net.MbUser;
@@ -211,7 +211,7 @@ public class TestSuite extends TestCase {
             dataAdded = true;
             new OriginsAndAccountsInserter(getMyContextForTest()).insert();
             new ConversationInserter().insertConversation("");
-            new StatusNetMessagesInserter().insertData();
+            new GnuSocialMessagesInserter().insertData();
         }
 
         if (MyContextHolder.get().persistentAccounts().size() == 0) {
@@ -234,10 +234,10 @@ public class TestSuite extends TestCase {
     public static final String CONVERSATION_ACCOUNT_AVATAR_URL = "http://andstatus.org/andstatus/images/AndStatus_logo.png";
     public static final String CONVERSATION_ENTRY_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/thisisfakeuri" + TESTRUN_UID;
     public static final String HTML_MESSAGE_OID = "http://identi.ca/testerofandstatus/comment/htmlfakeuri" + TESTRUN_UID;
-    public static final String STATUSNET_TEST_ORIGIN_NAME = "StatusnetTest";
-    public static final String STATUSNET_TEST_ACCOUNT_USERNAME = "t131t";
-    public static final String STATUSNET_TEST_ACCOUNT_NAME = STATUSNET_TEST_ACCOUNT_USERNAME + "/" + STATUSNET_TEST_ORIGIN_NAME;
-    public static final String STATUSNET_TEST_ACCOUNT_USER_OID = "115391";
+    public static final String GNUSOCIAL_TEST_ORIGIN_NAME = "GNUsocialTest";
+    public static final String GNUSOCIAL_TEST_ACCOUNT_USERNAME = "t131t";
+    public static final String GNUSOCIAL_TEST_ACCOUNT_NAME = GNUSOCIAL_TEST_ACCOUNT_USERNAME + "/" + GNUSOCIAL_TEST_ORIGIN_NAME;
+    public static final String GNUSOCIAL_TEST_ACCOUNT_USER_OID = "115391";
     public static final String TWITTER_TEST_ORIGIN_NAME = "TwitterTest";
     public static final String TWITTER_TEST_ACCOUNT_USERNAME = "t131t";
     public static final String TWITTER_TEST_ACCOUNT_USER_OID = "144771645";

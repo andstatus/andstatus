@@ -43,8 +43,8 @@ public class AttachmentDownloaderTest extends InstrumentationTestCase {
         super.setUp();
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME); 
-        assertTrue(TestSuite.STATUSNET_TEST_ACCOUNT_NAME + " exists", ma != null);
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME); 
+        assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma != null);
     }
     
     public void testImageAttachmentLoad() throws IOException {

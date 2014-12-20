@@ -105,7 +105,7 @@ public class CommandDataTest extends InstrumentationTestCase {
     
     public void testPriority() {
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
-        queue.add(CommandData.searchCommand(TestSuite.STATUSNET_TEST_ACCOUNT_NAME, "q1"));
+        queue.add(CommandData.searchCommand(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, "q1"));
         queue.add(CommandData.updateStatus("", "Test 1", 0, 0, null));
         queue.add(new CommandData(CommandEnum.AUTOMATIC_UPDATE, ""));
         queue.add(CommandData.updateStatus("", "Test 2", 0, 0, null));

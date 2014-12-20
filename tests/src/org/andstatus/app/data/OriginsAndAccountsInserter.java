@@ -52,8 +52,8 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         OriginTest.createOneOrigin(TestSuite.CONVERSATION_ORIGIN_TYPE,
                 TestSuite.CONVERSATION_ORIGIN_NAME,
                 TestSuite.getTestOriginHost(TestSuite.CONVERSATION_ORIGIN_NAME), true, true);
-        OriginTest.createOneOrigin(OriginType.STATUSNET, TestSuite.STATUSNET_TEST_ORIGIN_NAME,
-                TestSuite.getTestOriginHost(TestSuite.STATUSNET_TEST_ORIGIN_NAME), true, true);
+        OriginTest.createOneOrigin(OriginType.GNUSOCIAL, TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME,
+                TestSuite.getTestOriginHost(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME), true, true);
         myContext.persistentOrigins().initialize();
         
         Origin pumpioOrigin = myContext.persistentOrigins().fromName(TestSuite.CONVERSATION_ORIGIN_NAME);
@@ -67,9 +67,9 @@ public class OriginsAndAccountsInserter extends InstrumentationTestCase {
         assertEquals("Twitter test origin created", twitterOrigin.getOriginType(), OriginType.TWITTER);
         addAccount(twitterOrigin, TestSuite.TWITTER_TEST_ACCOUNT_USER_OID, TestSuite.TWITTER_TEST_ACCOUNT_USERNAME, "");
         
-        Origin statusNetOrigin = myContext.persistentOrigins().fromName(TestSuite.STATUSNET_TEST_ORIGIN_NAME);
-        assertEquals("StatusNetOrigin created", statusNetOrigin.getOriginType(), OriginType.STATUSNET);
-        addAccount(statusNetOrigin, TestSuite.STATUSNET_TEST_ACCOUNT_USER_OID, TestSuite.STATUSNET_TEST_ACCOUNT_USERNAME, "");
+        Origin gnuSocialOrigin = myContext.persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
+        assertEquals("GNU social Origin created", gnuSocialOrigin.getOriginType(), OriginType.GNUSOCIAL);
+        addAccount(gnuSocialOrigin, TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID, TestSuite.GNUSOCIAL_TEST_ACCOUNT_USERNAME, "");
         
         MyPreferences.onPreferencesChanged();
         MyContextHolder.initialize(null, this);

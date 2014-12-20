@@ -23,7 +23,7 @@ import org.andstatus.app.util.MyLog;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-class OriginStatusNet extends Origin {
+class OriginGnuSocial extends Origin {
 
     @Override
     public String messagePermalink(long messageId) {

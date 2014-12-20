@@ -34,13 +34,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-public class ConnectionStatusNetTest extends InstrumentationTestCase {
+public class ConnectionGnuSocialTest extends InstrumentationTestCase {
     private Connection connection;
     private HttpConnectionMock httpConnectionMock;
     private OriginConnectionData connectionData;
     
     public static MbMessage getMessageWithAttachment(Context context) throws Exception {
-        ConnectionStatusNetTest test = new ConnectionStatusNetTest();
+        ConnectionGnuSocialTest test = new ConnectionGnuSocialTest();
         test.setUp();
         return test.privateGetMessageWithAttachment(context, true);
     }
@@ -50,11 +50,11 @@ public class ConnectionStatusNetTest extends InstrumentationTestCase {
         super.setUp();
         TestSuite.initializeWithData(this);
 
-        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.STATUSNET_TEST_ORIGIN_NAME);
+        Origin origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
         
         connectionData = origin.getConnectionData(TriState.UNKNOWN);
-        connectionData.setAccountUserOid(TestSuite.STATUSNET_TEST_ACCOUNT_USER_OID);
-        connectionData.setAccountUsername(TestSuite.STATUSNET_TEST_ACCOUNT_USERNAME);
+        connectionData.setAccountUserOid(TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID);
+        connectionData.setAccountUsername(TestSuite.GNUSOCIAL_TEST_ACCOUNT_USERNAME);
         connectionData.setDataReader(new AccountDataReaderEmpty());
         connection = connectionData.getConnectionClass().newInstance();
         connection.enrichConnectionData(connectionData);

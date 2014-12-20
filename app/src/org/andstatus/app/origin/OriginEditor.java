@@ -92,7 +92,7 @@ public class OriginEditor extends Activity {
         if (Intent.ACTION_INSERT.equals(editorAction)) {
             buttonSave.setOnClickListener(new AddOrigin());
             buttonSave.setText(R.string.button_add);
-            builder = new Origin.Builder(OriginType.STATUSNET);
+            builder = new Origin.Builder(OriginType.GNUSOCIAL);
         } else {
             buttonSave.setOnClickListener(new SaveOrigin());
             spinnerOriginType.setEnabled(false);

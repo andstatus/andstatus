@@ -8,7 +8,7 @@ import org.andstatus.app.net.HttpConnectionEmpty;
 import org.andstatus.app.net.HttpConnectionOAuthApache;
 import org.andstatus.app.net.HttpConnectionOAuthJavaNet;
 import org.andstatus.app.net.Connection.ApiEnum;
-import org.andstatus.app.net.ConnectionTwitterStatusNet;
+import org.andstatus.app.net.ConnectionTwitterGnuSocial;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -26,15 +26,15 @@ public enum OriginType {
      * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
      * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
      */
-    PUMPIO(2, "pump.io", ApiEnum.PUMPIO),
-    STATUSNET(3, "StatusNet", ApiEnum.STATUSNET_TWITTER),
+    PUMPIO(2, "Pump.io", ApiEnum.PUMPIO),
+    GNUSOCIAL(3, "GNU social", ApiEnum.GNUSOCIAL_TWITTER),
     UNKNOWN(0, "?", ApiEnum.UNKNOWN_API);
 
     private static final String BASIC_PATH_DEFAULT = "api";
     private static final String OAUTH_PATH_DEFAULT = "oauth";
     private static final String USERNAME_REGEX_DEFAULT = "[a-zA-Z_0-9/\\.\\-\\(\\)]+";
     public static final OriginType ORIGIN_TYPE_DEFAULT = TWITTER;
-    public static final OriginType ORIGIN_TYPE_DEFAULT_BEFORE_TWITTER = STATUSNET;
+    public static final OriginType ORIGIN_TYPE_DEFAULT_BEFORE_TWITTER = GNUSOCIAL;
     public static final int TEXT_LIMIT_MAXIMUM = 5000;
 
     private long id;
@@ -123,7 +123,7 @@ public enum OriginType {
                 connectionClass = ConnectionPumpio.class;
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet.class;
                 break;
-            case STATUSNET_TWITTER:
+            case GNUSOCIAL_TWITTER:
                 isOAuthDefault = false;  
                 canChangeOAuth = false; 
                 canSetUrlOfOrigin = true;
@@ -133,8 +133,8 @@ public enum OriginType {
                 canChangeSsl = true;
                 basicPath = BASIC_PATH_DEFAULT;
                 oauthPath = BASIC_PATH_DEFAULT;
-                originClass = OriginStatusNet.class;
-                connectionClass = ConnectionTwitterStatusNet.class;
+                originClass = OriginGnuSocial.class;
+                connectionClass = ConnectionTwitterGnuSocial.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
                 break;

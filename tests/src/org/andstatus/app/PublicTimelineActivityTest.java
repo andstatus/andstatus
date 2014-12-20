@@ -43,7 +43,7 @@ public class PublicTimelineActivityTest extends android.test.ActivityInstrumenta
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
+        MyAccount ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma != null);
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         

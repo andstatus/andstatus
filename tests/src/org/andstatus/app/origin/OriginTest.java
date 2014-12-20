@@ -51,7 +51,7 @@ public class OriginTest extends InstrumentationTestCase {
                 origin.charactersLeftForMessage(message));
 
         origin = MyContextHolder.get().persistentOrigins()
-                .firstOfType(OriginType.STATUSNET);
+                .firstOfType(OriginType.GNUSOCIAL);
         textLimit = 200;
         int uploadLimit = 0;
         MbConfig config = MbConfig.fromTextLimit(textLimit, uploadLimit);
@@ -84,7 +84,7 @@ public class OriginTest extends InstrumentationTestCase {
     public void testAddDeleteOrigin() {
         String seed = Long.toString(System.nanoTime());
         String originName = "snTest" + seed;
-        OriginType originType = OriginType.STATUSNET;
+        OriginType originType = OriginType.GNUSOCIAL;
         String hostOrUrl = "sn" + seed + ".example.org";
         boolean isSsl = true;
         boolean allowHtml = true;

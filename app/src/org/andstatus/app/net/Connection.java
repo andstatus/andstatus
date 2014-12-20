@@ -60,8 +60,8 @@ public abstract class Connection {
         TWITTER1P0,
         /** Twitter API v.1.1 https://dev.twitter.com/docs/api/1.1 */
         TWITTER1P1,
-        /** Status Net Twitter compatible API http://status.net/wiki/Twitter-compatible_API  */
-        STATUSNET_TWITTER,
+        /** GNU social (former: Status Net) Twitter compatible API http://status.net/wiki/Twitter-compatible_API  */
+        GNUSOCIAL_TWITTER,
         /** https://github.com/e14n/pump.io/blob/master/API.md */
         PUMPIO
     }

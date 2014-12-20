@@ -40,7 +40,7 @@ public class MyAccountTest  extends InstrumentationTestCase {
        createAccountOfOriginType("testUser1", OriginType.TWITTER);
        createAccountOfOriginType("", OriginType.PUMPIO);
        createAccountOfOriginType("test2User@somepipe.example.com", OriginType.PUMPIO);
-       createAccountOfOriginType("PeterPom", OriginType.STATUSNET);
+       createAccountOfOriginType("PeterPom", OriginType.GNUSOCIAL);
     }
     
     private void createAccountOfOriginType(String userName, OriginType originType) {

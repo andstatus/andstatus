@@ -68,6 +68,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
 	        <change>&quot;True black background&quot; option added.
 	            <a href="https://github.com/andstatus/andstatus/issues/195">#195</a>
 	        </change>
+	        <change>References to StatusNet changed to &quot;GNU social&quot;</change>
 	    </changes>
     </release>
     <release android:versionName="13.3" android:versionCode="116"

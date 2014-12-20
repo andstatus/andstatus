@@ -17,8 +17,8 @@ public class LatestTimelineItemTest extends InstrumentationTestCase {
         TestSuite.initializeWithData(this);
     }
 
-    public void testStatusNetTimeline() {
-        testTimelineForAccount(TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
+    public void testGnuSocialTimeline() {
+        testTimelineForAccount(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
     }
 
     public void testTwitterTimeline() {

@@ -455,7 +455,7 @@ public abstract class ConnectionTwitter extends Connection {
         if (result != null) {
             switch (data.getOriginType().getApi()) {
                 case TWITTER1P0:
-                case STATUSNET_TWITTER:
+                case GNUSOCIAL_TWITTER:
                     status.remaining = result.optInt("remaining_hits");
                     status.limit = result.optInt("hourly_limit");
                     break;

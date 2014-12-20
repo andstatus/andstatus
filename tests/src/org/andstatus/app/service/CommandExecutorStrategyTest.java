@@ -45,7 +45,7 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
         MyContextHolder.get().persistentAccounts().initialize();
         ma = MyAccount.Builder.newOrExistingFromAccountName(
                 MyContextHolder.get(), 
-                TestSuite.STATUSNET_TEST_ACCOUNT_NAME, TriState.UNKNOWN).getAccount();
+                TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, TriState.UNKNOWN).getAccount();
         assertTrue(ma.getUserId() != 0);
     }
 
@@ -70,9 +70,9 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
     public void testUpdateDestroyStatus() {
         String body = "Some text to send " + System.currentTimeMillis() + "ms"; 
         httpConnectionMock.setResponse(RawResourceUtils.getJSONObject(this.getInstrumentation().getContext(), 
-                org.andstatus.app.tests.R.raw.update_status_response_status_net));
+                org.andstatus.app.tests.R.raw.quitter_update_status_response));
        
-        CommandData commandData = CommandData.updateStatus(TestSuite.STATUSNET_TEST_ACCOUNT_NAME, 
+        CommandData commandData = CommandData.updateStatus(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, 
                 body, 0, 0, null);
         assertEquals(0, commandData.getResult().getExecutionCount());
         CommandExecutorStrategy.executeCommand(commandData, null);
@@ -114,12 +114,12 @@ public class CommandExecutorStrategyTest extends InstrumentationTestCase {
                 + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage));
 
         httpConnectionMock.setException(null);
-        commandData = new CommandData(CommandEnum.DESTROY_STATUS, TestSuite.STATUSNET_TEST_ACCOUNT_NAME, msgId);
+        commandData = new CommandData(CommandEnum.DESTROY_STATUS, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, msgId);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.getResult().hasError());
 
         final long INEXISTENT_MSG_ID = -1;
-        commandData = new CommandData(CommandEnum.DESTROY_STATUS, TestSuite.STATUSNET_TEST_ACCOUNT_NAME, INEXISTENT_MSG_ID);
+        commandData = new CommandData(CommandEnum.DESTROY_STATUS, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, INEXISTENT_MSG_ID);
         CommandExecutorStrategy.executeCommand(commandData, null);
         assertFalse(commandData.getResult().hasError());
         

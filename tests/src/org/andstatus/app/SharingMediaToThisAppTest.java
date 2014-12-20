@@ -31,7 +31,7 @@ public class SharingMediaToThisAppTest extends ActivityInstrumentationTestCase2<
 
         mService.setUp();
         
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME);
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME);
         assertTrue(ma != null);
         MyContextHolder.get().persistentAccounts().setCurrentAccount(ma);
         

@@ -120,7 +120,7 @@ public class MyServiceTest extends InstrumentationTestCase {
     public void testRateLimitStatus() {
         MyLog.v(this, "testRateLimitStatus started");
 
-        mService.listentedToCommand = new CommandData(CommandEnum.RATE_LIMIT_STATUS, TestSuite.STATUSNET_TEST_ACCOUNT_NAME, TimelineTypeEnum.ALL, 0);
+        mService.listentedToCommand = new CommandData(CommandEnum.RATE_LIMIT_STATUS, TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME, TimelineTypeEnum.ALL, 0);
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
@@ -166,9 +166,9 @@ public class MyServiceTest extends InstrumentationTestCase {
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         CommandData.loadQueue(MyContextHolder.get().context(), queue,
                 QueueType.CURRENT);
+        assertFalse("First command is not in the main queue", queue.contains(cd1));
         assertFalse("Main queue is not empty", queue.isEmpty());
-        assertTrue("The command stayed in the main queue", queue.contains(cd1));
-        assertTrue("The command stayed in the main queue", queue.contains(cd2));
+        assertTrue("The second command stayed in the main queue", queue.contains(cd2));
 
         CommandData cd3 = new CommandData(CommandEnum.FETCH_TIMELINE,
                 TestSuite.TWITTER_TEST_ACCOUNT_NAME, TimelineTypeEnum.HOME, 0)
@@ -188,8 +188,7 @@ public class MyServiceTest extends InstrumentationTestCase {
         CommandData.loadQueue(MyContextHolder.get().context(), queue,
                 QueueType.CURRENT);
         assertFalse("Main queue is not empty", queue.isEmpty());
-        assertFalse("First duplicated command was found in retry queue", queue.contains(cd1));
-        assertTrue("The command stayed in the main queue", queue.contains(cd2));
+        assertTrue("The second command stayed in the main queue", queue.contains(cd2));
         assertFalse("Foreground command is not in main queue", queue.contains(cd3));
 
         MyLog.v(this, "testSyncInForeground ended");

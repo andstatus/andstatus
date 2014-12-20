@@ -30,7 +30,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandExecutionContext;
 
-public class StatusNetMessagesInserter extends InstrumentationTestCase {
+public class GnuSocialMessagesInserter extends InstrumentationTestCase {
     private static volatile int iteration = 0;
 
     private MbUser accountMbUser;
@@ -44,11 +44,11 @@ public class StatusNetMessagesInserter extends InstrumentationTestCase {
     
     private void mySetup() throws Exception {
         iteration++;
-        origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.STATUSNET_TEST_ORIGIN_NAME);
-        assertTrue(TestSuite.STATUSNET_TEST_ORIGIN_NAME + " exists", origin != null);
-        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.STATUSNET_TEST_ACCOUNT_NAME); 
-        assertTrue(TestSuite.STATUSNET_TEST_ACCOUNT_NAME + " exists", ma != null);
-        accountMbUser = userFromOid(TestSuite.STATUSNET_TEST_ACCOUNT_USER_OID);
+        origin = MyContextHolder.get().persistentOrigins().fromName(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME);
+        assertTrue(TestSuite.GNUSOCIAL_TEST_ORIGIN_NAME + " exists", origin != null);
+        ma = MyContextHolder.get().persistentAccounts().fromAccountName(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME); 
+        assertTrue(TestSuite.GNUSOCIAL_TEST_ACCOUNT_NAME + " exists", ma != null);
+        accountMbUser = userFromOid(TestSuite.GNUSOCIAL_TEST_ACCOUNT_USER_OID);
     }
     
     @Override
