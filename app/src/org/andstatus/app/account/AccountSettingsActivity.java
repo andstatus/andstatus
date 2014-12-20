@@ -79,12 +79,11 @@ public class AccountSettingsActivity extends Activity {
     /**
      * This is single list of (in fact, enums...) of Message/Dialog IDs
      */
-    static final int MSG_NONE = 1;
-    static final int MSG_ACCOUNT_VALID = 2;
-    static final int MSG_ACCOUNT_INVALID = 3;
-    static final int MSG_CONNECTION_EXCEPTION = 5;
-    static final int MSG_CREDENTIALS_OF_OTHER_USER = 7;
-    // End Of the list ----------------------------------------
+    private static final int MSG_NONE = 1;
+    private static final int MSG_ACCOUNT_VALID = 2;
+    private static final int MSG_ACCOUNT_INVALID = 3;
+    private static final int MSG_CONNECTION_EXCEPTION = 5;
+    private static final int MSG_CREDENTIALS_OF_OTHER_USER = 7;
 
     /**
      * We are going to finish/restart this Activity

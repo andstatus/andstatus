@@ -39,7 +39,6 @@
   <string name="appwidget_nodata">No data yet.</string>
   <string name="authentication_never">Didn\'t authenticate yet</string>
   <string name="authentication_successful">Authentication successful!</string>
-  <string name="back_label">Back</string>
   <string name="button_add">Add</string>
   <string name="button_add_origin">Add new system</string>
   <string name="button_backup">Backup</string>
@@ -189,7 +188,6 @@
   <string name="menu_item_view_profile">View Profile</string>
   <string name="message_sent">Your message has been sent.</string>
   <string name="messages_activity">Direct Messages</string>
-  <string name="next_label">Next</string>
   <string name="not_set">not set</string>
   <string name="notification_message_formats_1">{0} message</string>
   <string name="notification_message_formats_2">{0} messages</string>
@@ -224,7 +222,6 @@
   <string name="options_menu_reload">Reload</string>
   <string name="options_menu_mentions">Mentions</string>
   <string name="options_menu_search">Search</string>
-  <string name="origin_selector_label">Select Microblogging system</string>
   <string name="origin_settings_action">Microblogging system</string>
   <string name="preference_allow_misconfigured_ssl_title">Allow misconfigured SSL</string>
   <string name="preference_allow_misconfigured_ssl_summary_off">You are safe: only properly configured SSL connections allowed</string>
