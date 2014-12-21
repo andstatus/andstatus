@@ -87,8 +87,8 @@ public class CommandData implements Comparable<CommandData> {
         if (msgId != 0) {
             commandData.bundle.putString(
                     IntentExtra.EXTRA_MESSAGE_TEXT.key,
-                    trimmedTextForSummary(
-                            MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId))
+                    trimConditionally(
+                            MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId), true)
                             .toString());
         }
         return commandData;
@@ -303,7 +303,6 @@ public class CommandData implements Comparable<CommandData> {
             }
             MyLog.d(context, method + "to '" + queueType  + "', " + count + " msgs");
         }
-		// TODO: How to clear all old shared preferences in this file?
 		// Adding Empty command to mark the end.
 		(new CommandData(CommandEnum.EMPTY, "")).saveToSharedPreferences(sp, count);
         return count;
@@ -545,8 +544,24 @@ public class CommandData implements Comparable<CommandData> {
         return commandResult;
     }
 
+    public String share(MyContext myContext) {
+        return toUserFrindlyForm(myContext, false);
+    }
+    
     public String toCommandSummary(MyContext myContext) {
+        return toUserFrindlyForm(myContext, true);
+    }
+
+    private String toUserFrindlyForm(MyContext myContext, boolean summaryOnly) {
         StringBuilder builder = new StringBuilder(toShortCommandName(myContext) + " ");
+        if (!summaryOnly) {
+            if (mInForeground) {
+                builder.append(", foreground ");
+            }
+            if (mManuallyLaunched) {
+                builder.append(", manual ");
+            }
+        }
         switch (command) {
             case FETCH_AVATAR:
                 builder.append(myContext.context().getText(R.string.combined_timeline_off_account) + " ");
@@ -560,10 +575,19 @@ public class CommandData implements Comparable<CommandData> {
             case FETCH_ATTACHMENT:
             case UPDATE_STATUS:
                 builder.append("\"");
-                builder.append(trimmedTextForSummary(bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key)));                
+                builder.append(trimConditionally(
+                        bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key), summaryOnly));
                 builder.append("\"");
                 if (getMediaUri() != null) {
-                    builder.append(" (" + MyContextHolder.get().context().getText(R.string.label_with_media).toString() + ")");
+                    builder.append(" ("
+                            + MyContextHolder.get().context().getText(R.string.label_with_media)
+                                    .toString());
+                    if (!summaryOnly) {
+                        builder.append("=\"");
+                        builder.append(getMediaUri().toString());                
+                        builder.append("\",");
+                    }
+                    builder.append(")");
                 }
                 break;
             case AUTOMATIC_UPDATE:
@@ -583,7 +607,7 @@ public class CommandData implements Comparable<CommandData> {
                 break;
 			case SEARCH_MESSAGE:
 				builder.append("\"");
-                builder.append(I18n.trimTextAt(getSearchQuery(), 40));                
+                builder.append(trimConditionally(getSearchQuery(), summaryOnly));                
                 builder.append("\" ");
 				if (!TextUtils.isEmpty(accountName)) {
                     builder.append(myContext.context().getText(R.string.combined_timeline_off_origin) + " ");
@@ -605,11 +629,18 @@ public class CommandData implements Comparable<CommandData> {
                 }
                 break;
         }
+        if (!summaryOnly) {
+            builder.append(" \n" + getResult().toSummary());
+        }
         return builder.toString();
     }
 
-    private static CharSequence trimmedTextForSummary(String text) {
-        return I18n.trimTextAt(MyHtml.fromHtml(text), 40);
+    private static CharSequence trimConditionally(String text, boolean trim) {
+        if (trim) {
+            return I18n.trimTextAt(MyHtml.fromHtml(text), 40);
+        } else {
+            return text;
+        }
     }
 
     public String toShortCommandName(MyContext myContext) {
@@ -642,6 +673,12 @@ public class CommandData implements Comparable<CommandData> {
 
     public final void resetRetries() {
         getResult().resetRetries(getCommand());
+    }
+
+    public long getCreatedDate() {
+        // TODO: move the field to the command itself and make it unique
+        // see http://stackoverflow.com/a/9191383/297710
+        return getResult().getCreatedDate();
     }
     
 }

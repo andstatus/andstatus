@@ -64,15 +64,14 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
             return commandData.hashCode();
         }
 
-        @Override
-        public String toString() {
-            return toSubject()
-                    + " \n" + commandData.getResult().toSummary();
-        }
-
-        public String toSubject() {
+        public String toSharedSubject() {
             return queueType.getAcronym() + "; "
                     + commandData.toCommandSummary(MyContextHolder.get());
+        }
+        
+        public String toSharedText() {
+            return queueType.getAcronym() + "; "
+                    + commandData.share(MyContextHolder.get());
         }
     }
 
@@ -130,15 +129,11 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
             case R.id.menuItemResend:
                 queueData.commandData.resetRetries();
                 queueData.commandData.setManuallyLaunched(true);
-                if (MyServiceManager.isServiceAvailable()) {
-                    MyServiceManager.sendForegroundCommand(queueData.commandData);
-                } else {
-                    Queue<CommandData> mainCommandQueue = new PriorityBlockingQueue<CommandData>(100);
-                    CommandData.loadQueue(this, mainCommandQueue, QueueType.CURRENT);
-                    if (mainCommandQueue.offer(queueData.commandData)) {
-                        CommandData.saveQueue(this, mainCommandQueue, QueueType.CURRENT);
-                    }
-                }
+                MyServiceManager.sendForegroundCommand(queueData.commandData);
+                return true;
+            case R.id.menuItemDelete:
+                MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.DELETE_COMMAND,
+                        null, queueData.commandData.getCreatedDate()));
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -148,8 +143,8 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
     private void share(QueueData queueData) {
         Intent intent = new Intent(android.content.Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_SUBJECT, queueData.toSubject());
-        intent.putExtra(Intent.EXTRA_TEXT, queueData.toString());
+        intent.putExtra(Intent.EXTRA_SUBJECT, queueData.toSharedSubject());
+        intent.putExtra(Intent.EXTRA_TEXT, queueData.toSharedText());
         startActivity(Intent.createChooser(intent, getText(R.string.menu_item_share)));        
     }
 

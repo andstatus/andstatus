@@ -25,4 +25,9 @@ limitations under the License.
         android:showAsAction="ifRoom"
         android:title="@string/menu_item_resend">
     </item>
+    <item
+        android:id="@+id/menuItemDelete"
+        android:showAsAction="ifRoom"
+        android:title="@string/button_delete">
+    </item>
 </menu>

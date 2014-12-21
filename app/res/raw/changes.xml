@@ -38,12 +38,16 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="14.0" android:versionCode="117"
-        versionDate="2014-12-20"
-        versionTitle="&quot;Everything&quot; timeline">
+        versionDate="2014-12-21"
+        versionTitle="&quot;Everything&quot; timeline and Fullscreen image view">
         <changes>
 	        <change>&quot;Everything&quot; timeline added:
 	            all cached messages are shown in one timeline.   
 	            <a href="https://github.com/andstatus/andstatus/issues/114">#114</a>
+	        </change>
+	        <change>Added &quot;View Image&quot; context menu item, allowing to view attachments
+	            in Your selected image Viewer. 
+	            <a href="https://github.com/andstatus/andstatus/issues/191">#191</a>
 	        </change>
 	        <change>Multiline titles for checkbox and list settings. Now a User can see full titles
 	            of all settings even in a portrait mode. 
@@ -61,15 +65,11 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
                 [pump.io] Don't make a Reply ("Comment") public. Now a Reply fully relies
 	            on Pump.io server to determine correct recipients of the Reply.
             </change>
-	        <change>Added &quot;View Image&quot; context menu item, allowing to view attachment
-	            with Your selected image Viewer. 
-	            <a href="https://github.com/andstatus/andstatus/issues/191">#191</a>
-	        </change>
 	        <change>&quot;True black background&quot; option added.
 	            <a href="https://github.com/andstatus/andstatus/issues/195">#195</a>
 	        </change>
-	        <change>References to StatusNet changed to &quot;GNU social&quot;</change>
-	        <change>Added debugging option &quot;Log everything to file&quot;</change>
+	        <change>References to StatusNet changed to &quot;GNU social&quot;.</change>
+	        <change>Added debugging option &quot;Log everything to file&quot;.</change>
 	    </changes>
     </release>
     <release android:versionName="13.3" android:versionCode="116"

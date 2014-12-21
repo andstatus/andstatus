@@ -103,6 +103,7 @@
   <string name="drawer_open">Abrir panel de navegación</string>
   <string name="empty_in_parenthesis">(vacío)</string>
   <string name="error">Error</string>
+  <string name="error_invalid_value">Entrada inválida</string>
   <string name="error_twitter_404">La página no se puede encontrar. Por favor, informa de este error!</string>
   <string name="error_connection_error">Se ha producido un error de conexión. Por favor, informa de este error!</string>
   <string name="error_set_username">No se pudo establecer el nombre de usuario para: </string>
@@ -158,6 +159,7 @@
   <string name="label_restore">Restaurar información desde una copia de seguridad</string>
   <string name="label_upgrading">Actualización en curso. Por favor, espere.</string>
   <string name="label_with_media">con multimedia</string>
+  <string name="latest_error_label">Último error</string>
   <string name="loading">Cargando&#8230;</string>
   <string name="message">Mensaje</string>
   <string name="message_twitter">Tweet</string>
@@ -174,6 +176,7 @@
   <string name="menu_item_direct_message">Mensaje directo</string>
   <string name="menu_item_favorite">Favorito</string>
   <string name="menu_item_follow_user">Seguir a \"%1s\"</string>
+  <string name="menu_item_view_image">Ver imagen</string>
   <string name="menu_item_open_message_permalink">Ver en navegador</string>
   <string name="menu_item_reply">Responder</string>
   <string name="menu_item_reblog">Repetir</string>
@@ -223,6 +226,11 @@
   <string name="preference_allow_misconfigured_ssl_title">Permitir SSL desconfigurada</string>
   <string name="preference_allow_misconfigured_ssl_summary_off">Estás seguro: tan sólo las conexiones SSL bien configuradas son permitidas</string>
   <string name="preference_allow_misconfigured_ssl_summary_on">Atención: Tus conexiones no son seguras, gracias a los certificados de seguridad, las incidencias de cualquier servidor son aceptadas. Los protocolos TLS y SNI no están disponibles. Por favor, contacta con el administrador de tu servidor para arreglarlo y entonces desactivar esta opción.</string>
+  <string name="preference_debugging_info_in_ui_title">Información de desarrollo en la interfaz de usuario</string>
+  <string name="preference_notification_icon_alternative_title">Icono de notificación alternativo</string>
+  <string name="preference_notification_icon_alternative_off">Icono de las letras \"&amp;s\"</string>
+  <string name="preference_notification_icon_alternative_on">Icono circular</string>
+  <string name="preference_true_black_title">Negro sólido como color de fondo</string>
   <string name="preference_use_kitkat_media_chooser_title">Usar la interfaz moderna para añadir multimedia</string>
   <string name="reltime_days_ago_formats_1">hoy</string>
   <string name="reltime_days_ago_formats_2">hace {0} días</string>
@@ -392,6 +400,7 @@ del mensaje seleccionado es seleccionar
   <string name="timeline_reloaded">La línea de tiempo se ha vuelto a cargar.</string>
   <string name="timeline_title_all">Todo</string>
   <string name="timeline_title_direct_messages">Mensajes directos</string>
+  <string name="timeline_title_everything">Todo</string>
   <string name="timeline_title_favorites">Favoritos</string>
   <string name="timeline_title_following_user">Siguiendo</string>
   <string name="timeline_title_home">Inicio</string>

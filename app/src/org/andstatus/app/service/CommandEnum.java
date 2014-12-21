@@ -40,6 +40,7 @@ public enum CommandEnum {
     EMPTY("empty"),
     /** For testing purposes only */
     DROP_QUEUES("drop-queues"),
+    DELETE_COMMAND("delete-command"),
     /**
      * The action to fetch all usual timelines in the background.
      */
