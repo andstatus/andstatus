@@ -603,8 +603,6 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append(", manual ");
             }
         }
-        builder.append(", " + myContext.context().getText(R.string.created_label)
-                + RelativeTime.getDifference(myContext.context(), getCreatedDate()) + " ");
         switch (command) {
             case FETCH_AVATAR:
                 builder.append(myContext.context().getText(R.string.combined_timeline_off_account)
@@ -680,10 +678,17 @@ public class CommandData implements Comparable<CommandData> {
                 }
                 break;
         }
-        if (!summaryOnly) {
+        if (!summaryOnly) {            
+            builder.append(" \n " + createdDateWithLabel(myContext.context())); 
             builder.append(" \n" + getResult().toSummary());
         }
         return builder.toString();
+    }
+
+    public String createdDateWithLabel(Context context) {
+        return context.getText(R.string.created_label)
+                       + " "
+                       + RelativeTime.getDifference(context, getCreatedDate());
     }
 
     private static CharSequence trimConditionally(String text, boolean trim) {
@@ -742,7 +747,7 @@ public class CommandData implements Comparable<CommandData> {
         return id;
     }
 
-    private long getCreatedDate() {
+    public long getCreatedDate() {
         return createdDate;
     }
 

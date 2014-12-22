@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
+import org.andstatus.app.service.QueueViewer.*;
+import java.util.*;
 
 public class QueueViewer extends ListActivity implements MyServiceListener {
     private static final String KEY_QUEUE_TYPE = "queue_type";
@@ -162,8 +164,18 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
     
     private void showList() {
         mListData = newListData();
+        sortList(mListData);
         setListAdapter(newListAdapter(mListData));
         MyContextHolder.get().clearNotification(TimelineTypeEnum.ALL);
+    }
+
+    private void sortList(List<QueueData> data) {
+        java.util.Collections.sort(data, new Comparator<QueueData>() {
+                @Override
+                public int compare(QueueData lhs, QueueData rhs) {
+                    return -Long.compare(lhs.commandData.getCreatedDate(), rhs.commandData.getCreatedDate());
+                }
+            });
     }
 
     private List<QueueData> newListData() {
@@ -182,12 +194,15 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
         }
     }
 
-    private ListAdapter newListAdapter(List<QueueData> queueDataList) {
+    private ListAdapter newListAdapter(List<QueueData> listData) {
         List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        for (QueueData queueData : queueDataList) {
+        for (QueueData queueData : listData) {
             Map<String, String> map = new HashMap<String, String>();
             map.put(KEY_QUEUE_TYPE, queueData.queueType.getAcronym());
-            map.put(KEY_COMMAND_SUMMARY, queueData.commandData.toCommandSummary(MyContextHolder.get()));
+            map.put(KEY_COMMAND_SUMMARY, queueData.commandData.toCommandSummary(MyContextHolder.get())
+                    + "\t "
+                    + queueData.commandData.createdDateWithLabel(this)
+            );
             map.put(KEY_RESULT_SUMMARY, queueData.commandData.getResult().toSummary());
             map.put(BaseColumns._ID, Long.toString(queueData.getId()));
             list.add(map);
