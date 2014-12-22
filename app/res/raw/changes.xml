@@ -38,7 +38,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="14.0" android:versionCode="117"
-        versionDate="2014-12-21"
+        versionDate="2014-12-23"
         versionTitle="&quot;Everything&quot; timeline and Fullscreen image view">
         <changes>
 	        <change>&quot;Everything&quot; timeline added:
@@ -70,7 +70,11 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
 	        </change>
 	        <change>References to StatusNet changed to &quot;GNU social&quot;.</change>
 	        <change>Added debugging option &quot;Log everything to file&quot;.</change>
-	    </changes>
+	        <change>Deleting commands from Queue implemented. 
+	            Text of the posts shared from "Commands in the Queue" is not truncated now.
+	            Commands now are sorted by date-time of creation cronologically (newest first). 
+	            <a href="https://github.com/andstatus/andstatus/issues/162">#162</a></change>
+	        </changes>
     </release>
     <release android:versionName="13.3" android:versionCode="116"
         versionDate="2014-11-30"

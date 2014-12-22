@@ -36,13 +36,12 @@ import org.andstatus.app.data.TimelineTypeEnum;
 import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
-import org.andstatus.app.service.QueueViewer.*;
-import java.util.*;
 
 public class QueueViewer extends ListActivity implements MyServiceListener {
     private static final String KEY_QUEUE_TYPE = "queue_type";
@@ -173,11 +172,16 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
         java.util.Collections.sort(data, new Comparator<QueueData>() {
                 @Override
                 public int compare(QueueData lhs, QueueData rhs) {
-                    return -Long.compare(lhs.commandData.getCreatedDate(), rhs.commandData.getCreatedDate());
+                    return -Long_compare(lhs.commandData.getCreatedDate(), rhs.commandData.getCreatedDate());
                 }
             });
     }
 
+    // TODO: Replace with Long.compare for API >= 19
+    public static int Long_compare(long lhs, long rhs) {
+        return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
+    }
+    
     private List<QueueData> newListData() {
         List<QueueData> listData = new ArrayList<QueueData>();
         loadQueue(listData, QueueType.CURRENT);

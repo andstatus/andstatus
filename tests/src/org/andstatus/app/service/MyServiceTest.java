@@ -214,11 +214,9 @@ public class MyServiceTest extends InstrumentationTestCase {
 
         assertEquals(cd2.getId(), mService.listentedToCommand.itemId);
         
-        long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
         mService.sendListenedToCommand();
-        assertTrue("Delete command started executing", mService.waitForCommandExecutionStarted(startCount));
         assertTrue("Delete command ended executing", mService.waitForCommandExecutionEnded(endCount));
 
         assertTrue("Service stopped", mService.waitForServiceStopped());

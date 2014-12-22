@@ -679,7 +679,7 @@ public class CommandData implements Comparable<CommandData> {
                 break;
         }
         if (!summaryOnly) {            
-            builder.append(" \n " + createdDateWithLabel(myContext.context())); 
+            builder.append(" \n" + createdDateWithLabel(myContext.context())); 
             builder.append(" \n" + getResult().toSummary());
         }
         return builder.toString();
