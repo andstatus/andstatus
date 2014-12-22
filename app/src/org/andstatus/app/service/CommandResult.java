@@ -35,7 +35,6 @@ import org.andstatus.app.util.RelativeTime;
 public final class CommandResult implements Parcelable {
     static final int INITIAL_NUMBER_OF_RETRIES = 10;
     
-    private long createdDate = System.currentTimeMillis();
     private long lastExecutedDate = 0;
     private int executionCount = 0;
     private int retriesLeft = 0;
@@ -106,7 +105,6 @@ public final class CommandResult implements Parcelable {
     
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(createdDate);
         dest.writeLong(lastExecutedDate);
         dest.writeInt(executionCount);
         dest.writeInt(retriesLeft);
@@ -121,7 +119,6 @@ public final class CommandResult implements Parcelable {
     }
     
     public CommandResult(Parcel parcel) {
-        createdDate = parcel.readLong();
         lastExecutedDate = parcel.readLong();
         executionCount = parcel.readInt();
         retriesLeft = parcel.readInt();
@@ -137,7 +134,6 @@ public final class CommandResult implements Parcelable {
     
     void saveToSharedPreferences(android.content.SharedPreferences.Editor ed, int index) {
         String si = Integer.toString(index);
-        ed.putLong(IntentExtra.EXTRA_CREATED_DATE.key + si, createdDate);
         ed.putLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, lastExecutedDate);
         ed.putInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
         ed.putInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
@@ -150,7 +146,6 @@ public final class CommandResult implements Parcelable {
 
     void loadFromSharedPreferences(SharedPreferences sp, int index) {
         String si = Integer.toString(index);
-        createdDate = sp.getLong(IntentExtra.EXTRA_CREATED_DATE.key + si, createdDate);
         lastExecutedDate = sp.getLong(IntentExtra.EXTRA_LAST_EXECUTED_DATE.key + si, lastExecutedDate);
         executionCount = sp.getInt(IntentExtra.EXTRA_EXECUTION_COUNT.key + si, executionCount);
         retriesLeft = sp.getInt(IntentExtra.EXTRA_RETRIES_LEFT.key + si, retriesLeft);
@@ -203,7 +198,6 @@ public final class CommandResult implements Parcelable {
     
     private StringBuilder toSummaryBuilder() {
         StringBuilder message = new StringBuilder();
-        message.append("created:" + RelativeTime.getDifference(MyContextHolder.get().context(), createdDate) + ", ");
         if (executionCount > 0) {
             message.append("executed:" + executionCount + ", ");
             message.append("last:" + RelativeTime.getDifference(MyContextHolder.get().context(), lastExecutedDate) + ", ");
@@ -369,10 +363,6 @@ public final class CommandResult implements Parcelable {
 
     void setItemId(long itemId) {
         this.itemId = itemId;
-    }
-
-    public long getCreatedDate() {
-        return createdDate;
     }
 
     public long getLastExecutedDate() {

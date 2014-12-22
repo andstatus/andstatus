@@ -40,7 +40,7 @@ public enum CommandEnum {
     EMPTY("empty"),
     /** For testing purposes only */
     DROP_QUEUES("drop-queues"),
-    DELETE_COMMAND("delete-command"),
+    DELETE_COMMAND("delete-command", R.string.button_delete, 100),
     /**
      * The action to fetch all usual timelines in the background.
      */

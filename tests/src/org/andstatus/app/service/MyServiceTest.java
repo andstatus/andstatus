@@ -166,8 +166,8 @@ public class MyServiceTest extends InstrumentationTestCase {
         Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
         CommandData.loadQueue(MyContextHolder.get().context(), queue,
                 QueueType.CURRENT);
-        assertFalse("First command is not in the main queue", queue.contains(cd1));
         assertFalse("Main queue is not empty", queue.isEmpty());
+        assertFalse("First command is not in the main queue", queue.contains(cd1));
         assertTrue("The second command stayed in the main queue", queue.contains(cd2));
 
         CommandData cd3 = new CommandData(CommandEnum.FETCH_TIMELINE,
@@ -189,11 +189,47 @@ public class MyServiceTest extends InstrumentationTestCase {
                 QueueType.CURRENT);
         assertFalse("Main queue is not empty", queue.isEmpty());
         assertTrue("The second command stayed in the main queue", queue.contains(cd2));
+        
+        long idFound = -1;
+        for (CommandData cd : queue) {
+            if (cd.equals(cd2)) {
+                idFound = cd.getId();
+            }
+        }
+        assertEquals("command id", cd2.getId(), idFound);
+        assertTrue("command id=" + idFound, idFound >= 0);
+        
         assertFalse("Foreground command is not in main queue", queue.contains(cd3));
-
         MyLog.v(this, "testSyncInForeground ended");
+        myTestDeleteCommand(cd2);
     }
     
+    private void myTestDeleteCommand(CommandData cd2) {
+        MyLog.v(this, "myTestDeleteCommand started");
+
+        CommandData cdDelete = new CommandData(CommandEnum.DELETE_COMMAND,
+        "", TimelineTypeEnum.EVERYTHING, cd2.getId());
+        cdDelete.setInForeground(true);
+        mService.listentedToCommand = cdDelete;
+
+        assertEquals(cd2.getId(), mService.listentedToCommand.itemId);
+        
+        long startCount = mService.executionStartCount;
+        long endCount = mService.executionEndCount;
+
+        mService.sendListenedToCommand();
+        assertTrue("Delete command started executing", mService.waitForCommandExecutionStarted(startCount));
+        assertTrue("Delete command ended executing", mService.waitForCommandExecutionEnded(endCount));
+
+        assertTrue("Service stopped", mService.waitForServiceStopped());
+
+        Queue<CommandData> queue = new PriorityBlockingQueue<CommandData>(100);
+        CommandData.loadQueue(MyContextHolder.get().context(), queue,
+                QueueType.CURRENT);
+        assertFalse("The second command was deleted from the main queue", queue.contains(cd2));
+        MyLog.v(this, "myTestDeleteCommand ended");
+    }
+
     @Override
     protected void tearDown() throws Exception {
         MyLog.v(this, "tearDown started");

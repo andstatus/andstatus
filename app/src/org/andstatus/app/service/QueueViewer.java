@@ -133,7 +133,7 @@ public class QueueViewer extends ListActivity implements MyServiceListener {
                 return true;
             case R.id.menuItemDelete:
                 MyServiceManager.sendForegroundCommand(new CommandData(CommandEnum.DELETE_COMMAND,
-                        null, queueData.commandData.getCreatedDate()));
+                        null, queueData.commandData.getId()));
                 return true;
             default:
                 return super.onContextItemSelected(item);

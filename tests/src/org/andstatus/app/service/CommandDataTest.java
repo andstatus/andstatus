@@ -78,7 +78,7 @@ public class CommandDataTest extends InstrumentationTestCase {
 
         CommandData commandData2 = queue.poll();
         assertEquals(commandData, commandData2);
-        assertEquals(commandData.getResult().getCreatedDate(), commandData2.getResult().getCreatedDate());
+        assertEquals(commandData.getId(), commandData2.getId());
         assertEquals(commandData.getResult().getLastExecutedDate(), commandData2.getResult().getLastExecutedDate());
         assertEquals(commandData.getResult().getExecutionCount(), commandData2.getResult().getExecutionCount());
         assertEquals(commandData.getResult().getRetriesLeft(), commandData2.getResult().getRetriesLeft());

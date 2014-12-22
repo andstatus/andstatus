@@ -41,6 +41,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Command data store (message...)
@@ -49,28 +50,30 @@ import java.util.Queue;
  */
 public class CommandData implements Comparable<CommandData> {
     private final CommandEnum command;
-    private int priority = 0;
-    
+    private final long id;
+    private final long createdDate;
+
     /**
-     * Unique name of {@link MyAccount} for this command. Empty string if command is not Account specific 
-     * (e.g. {@link CommandEnum#AUTOMATIC_UPDATE} which works for all accounts) 
+     * Unique name of {@link MyAccount} for this command. Empty string if command is not Account
+     * specific (e.g. {@link CommandEnum#AUTOMATIC_UPDATE} which works for all accounts)
      */
     private final String accountName;
 
     /**
-     * Timeline type used for the {@link CommandEnum#FETCH_TIMELINE} command 
+     * Timeline type used for the {@link CommandEnum#FETCH_TIMELINE} command
      */
     private final TimelineTypeEnum timelineType;
 
+    private int priority = 0;
     private volatile boolean mInForeground = false;
     private volatile boolean mManuallyLaunched = false;
 
     /**
-     * This is: 
-     * 1. Generally: Message ID ({@link MyDatabase.Msg#MSG_ID} of the {@link MyDatabase.Msg}).
-     * 2. User ID ( {@link MyDatabase.User#USER_ID} ) for the {@link CommandEnum#FETCH_USER_TIMELINE}, 
-     *      {@link CommandEnum#FOLLOW_USER}, {@link CommandEnum#STOP_FOLLOWING_USER} 
-       */
+     * This is: 1. Generally: Message ID ({@link MyDatabase.Msg#MSG_ID} of the
+     * {@link MyDatabase.Msg}). 2. User ID ( {@link MyDatabase.User#USER_ID} ) for the
+     * {@link CommandEnum#FETCH_USER_TIMELINE}, {@link CommandEnum#FOLLOW_USER},
+     * {@link CommandEnum#STOP_FOLLOWING_USER}
+     */
     protected long itemId = 0;
 
     /**
@@ -82,149 +85,17 @@ public class CommandData implements Comparable<CommandData> {
 
     private CommandResult commandResult = new CommandResult();
 
-    public static CommandData fetchAttachment(long msgId, long downloadDataRowId) {
-        CommandData commandData = new CommandData(CommandEnum.FETCH_ATTACHMENT, null, downloadDataRowId);
-        if (msgId != 0) {
-            commandData.bundle.putString(
-                    IntentExtra.EXTRA_MESSAGE_TEXT.key,
-                    trimConditionally(
-                            MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId), true)
-                            .toString());
-        }
-        return commandData;
-    }
-    
-    public CommandData(CommandEnum commandIn, String accountNameIn) {
-        this(commandIn, accountNameIn, TimelineTypeEnum.UNKNOWN);
-    }
-
-    public CommandData(CommandEnum commandIn, String accountNameIn, long itemIdIn) {
-        this(commandIn, accountNameIn, TimelineTypeEnum.UNKNOWN, itemIdIn);
-    }
-	
-    public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn, long itemIdIn) {
-        this(commandIn, accountNameIn, timelineTypeIn);
-		itemId = itemIdIn;
-    }
-	
-    public Uri getMediaUri() {
-        String uriString = getExtraText(IntentExtra.EXTRA_MEDIA_URI);
-        if (!TextUtils.isEmpty(uriString)) {
-            return Uri.parse(uriString);
-        }
-        return null;
-    }
-
-    public String getMessageText() {
-        return getExtraText(IntentExtra.EXTRA_MESSAGE_TEXT);
-    }
-
-    public String getSearchQuery() {
-        return getExtraText(IntentExtra.EXTRA_SEARCH_QUERY);
-    }
-
-    private String getExtraText(IntentExtra intentExtra) {
-        String value = "";
-        if (bundle.containsKey(intentExtra.key)) {
-            String value1 =  bundle.getString(intentExtra.key);
-            if (!TextUtils.isEmpty(value1)) {
-                value = value1;
-            }
-        }
-        return value;
-    }
-    
-    public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn) {
-        command = commandIn;
-		String accountName2 = "";
-		TimelineTypeEnum timelineType2 = TimelineTypeEnum.UNKNOWN;
-        priority = command.getPriority();
-		switch (command) {
-		    case FETCH_ATTACHMENT:
-		    case FETCH_AVATAR:
-				break;
-			default:
-				if (!TextUtils.isEmpty(accountNameIn)) {
-					accountName2 = accountNameIn;
-				}
-				timelineType2 = timelineTypeIn;
-				break;
-		}
-		accountName = accountName2;
-		timelineType = timelineType2;
-        resetRetries();
-    }
-
-    public static CommandData forOneExecStep(CommandExecutionContext execContext) {
-        CommandData commandData = CommandData.fromIntent(execContext.getCommandData().toIntent(new Intent()),
-			execContext.getMyAccount().getAccountName(),
-			execContext.getTimelineType()
-			);
-        commandData.commandResult = execContext.getCommandData().getResult().forOneExecStep();
-        return commandData;
-    }
-    
-    public void accumulateOneStep(CommandData commandData) {
-        commandResult.accumulateOneStep(commandData.getResult());
-    }
-    
-    /**
-     * Used to decode command from the Intent upon receiving it
-     */
-	public static CommandData fromIntent(Intent intent) {
-		return fromIntent(intent, "", TimelineTypeEnum.UNKNOWN);
-	}
-	
-    private static CommandData fromIntent(Intent intent, String accountNameIn, TimelineTypeEnum timelineTypeIn) {
-        CommandData commandData = getEmpty();
-        if (intent != null) {
-            Bundle bundle = intent.getExtras();
-            String strCommand = "";
-            if (bundle != null) {
-                strCommand = bundle.getString(IntentExtra.EXTRA_MSGTYPE.key);
-            }
-            CommandEnum command = CommandEnum.load(strCommand);
-            switch (command) {
-                case UNKNOWN:
-                    MyLog.w(CommandData.class, "Intent had UNKNOWN command " + strCommand + "; Intent: " + intent);
-                    break;
-                case EMPTY:
-                    break;
-                default:
-					String accountName2 = accountNameIn;
-					if ( TextUtils.isEmpty(accountName2)) {
-						accountName2 = bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
-					}
-					TimelineTypeEnum timelineType2 = timelineTypeIn;
-					if ( timelineType2 == TimelineTypeEnum.UNKNOWN ) {
-						timelineType2 = TimelineTypeEnum.load(
-						    bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
-					}
-                    commandData = new CommandData(command, accountName2, timelineType2);
-					commandData.bundle = bundle;
-                    commandData.itemId = commandData.bundle.getLong(IntentExtra.EXTRA_ITEMID.key);
-                    commandData.mInForeground = commandData.bundle.getBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key);
-                    commandData.mManuallyLaunched = commandData.bundle.getBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key);
-                    commandData.commandResult = commandData.bundle.getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
-                    break;
-            }
-        }
-        return commandData;
-    }
-
-    public static CommandData getEmpty() {
-        return new CommandData(CommandEnum.EMPTY, "");        
-    }
-    
     public static CommandData searchCommand(String accountName, String queryString) {
-        CommandData commandData = new CommandData(CommandEnum.SEARCH_MESSAGE, accountName, TimelineTypeEnum.PUBLIC);
+        CommandData commandData = new CommandData(CommandEnum.SEARCH_MESSAGE, accountName,
+                TimelineTypeEnum.PUBLIC);
         commandData.mInForeground = true;
         commandData.mManuallyLaunched = true;
         commandData.bundle.putString(IntentExtra.EXTRA_SEARCH_QUERY.key, queryString);
         return commandData;
     }
 
-    public static CommandData updateStatus(String accountName, String status, long replyToId, long recipientId, Uri mediaUri) {
+    public static CommandData updateStatus(String accountName, String status, long replyToId,
+            long recipientId, Uri mediaUri) {
         CommandData commandData = new CommandData(CommandEnum.UPDATE_STATUS, accountName);
         commandData.mInForeground = true;
         commandData.mManuallyLaunched = true;
@@ -240,9 +111,203 @@ public class CommandData implements Comparable<CommandData> {
         }
         return commandData;
     }
-    
+
+    public static CommandData forOneExecStep(CommandExecutionContext execContext) {
+        CommandData commandData = CommandData.fromIntent(
+                execContext.getCommandData().toIntent(new Intent()),
+                execContext.getMyAccount().getAccountName(),
+                execContext.getTimelineType()
+                );
+        commandData.commandResult = execContext.getCommandData().getResult().forOneExecStep();
+        return commandData;
+    }
+
     /**
-     * Restore this from the SharedPreferences 
+     * Used to decode command from the Intent upon receiving it
+     */
+    public static CommandData fromIntent(Intent intent) {
+        return fromIntent(intent, "", TimelineTypeEnum.UNKNOWN);
+    }
+
+    private static CommandData fromIntent(Intent intent, String accountNameIn,
+            TimelineTypeEnum timelineTypeIn) {
+        CommandData commandData = getEmpty();
+        if (intent != null) {
+            Bundle bundle = intent.getExtras();
+            String strCommand = "";
+            if (bundle != null) {
+                strCommand = bundle.getString(IntentExtra.EXTRA_MSGTYPE.key);
+            }
+            CommandEnum command = CommandEnum.load(strCommand);
+            switch (command) {
+                case UNKNOWN:
+                    MyLog.w(CommandData.class, "Intent had UNKNOWN command " + strCommand
+                            + "; Intent: " + intent);
+                    break;
+                case EMPTY:
+                    break;
+                default:
+                    String accountName2 = accountNameIn;
+                    if (TextUtils.isEmpty(accountName2)) {
+                        accountName2 = bundle.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key);
+                    }
+                    TimelineTypeEnum timelineType2 = timelineTypeIn;
+                    if (timelineType2 == TimelineTypeEnum.UNKNOWN) {
+                        timelineType2 = TimelineTypeEnum.load(
+                                bundle.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key));
+                    }
+                    commandData = new CommandData(
+                            bundle.getLong(IntentExtra.EXTRA_COMMAND_ID.key, 0),
+                            command, accountName2, timelineType2,
+                            bundle.getLong(IntentExtra.EXTRA_ITEMID.key));
+                    commandData.bundle = bundle;
+                    commandData.mInForeground = commandData.bundle
+                            .getBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key);
+                    commandData.mManuallyLaunched = commandData.bundle
+                            .getBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key);
+                    commandData.commandResult = commandData.bundle
+                            .getParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key);
+                    break;
+            }
+        }
+        return commandData;
+    }
+
+    /**
+     * @return Intent to be sent to this.AndStatusService
+     */
+    public Intent toIntent(Intent intentIn) {
+        Intent intent = intentIn;
+        if (intent == null) {
+            throw new IllegalArgumentException("toIntent: input intent is null");
+        }
+        if (bundle == null) {
+            bundle = new Bundle();
+        }
+        bundle.putLong(IntentExtra.EXTRA_COMMAND_ID.key, id);
+        bundle.putString(IntentExtra.EXTRA_MSGTYPE.key, command.save());
+        if (!TextUtils.isEmpty(getAccountName())) {
+            bundle.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, getAccountName());
+        }
+        if (timelineType != TimelineTypeEnum.UNKNOWN) {
+            bundle.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
+        }
+        if (itemId != 0) {
+            bundle.putLong(IntentExtra.EXTRA_ITEMID.key, itemId);
+        }
+        bundle.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key, mInForeground);
+        bundle.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key, mManuallyLaunched);
+        bundle.putParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key, commandResult);
+        intent.putExtras(bundle);
+        return intent;
+    }
+
+    public static CommandData getEmpty() {
+        return new CommandData(CommandEnum.EMPTY, "");
+    }
+
+    public void accumulateOneStep(CommandData commandData) {
+        commandResult.accumulateOneStep(commandData.getResult());
+    }
+
+    /**
+     * @return Number of items persisted
+     */
+    static int saveQueue(Context context, Queue<CommandData> queue, QueueType queueType) {
+        String method = "saveQueue: ";
+        int count = 0;
+        SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
+        sp.edit().clear().commit();
+        if (!queue.isEmpty()) {
+            while (!queue.isEmpty()) {
+                CommandData cd = queue.poll();
+                cd.toSharedPreferences(sp, count);
+                MyLog.v(context, method + "Command saved: " + cd.toString());
+                count += 1;
+            }
+            MyLog.d(context, method + "to '" + queueType + "', " + count + " msgs");
+        }
+        // Adding Empty command to mark the end.
+        (new CommandData(CommandEnum.EMPTY, "")).toSharedPreferences(sp, count);
+        return count;
+    }
+
+    /**
+     * Persist the object to the SharedPreferences We're not storing all types of commands here
+     * because not all commands go to the queue. SharedPreferences should not contain any previous
+     * versions of the same entries (we don't store default values!)
+     * 
+     * @param sp
+     * @param index Index of the preference's name to be used
+     */
+    private void toSharedPreferences(SharedPreferences sp, int index) {
+        String si = Integer.toString(index);
+
+        android.content.SharedPreferences.Editor ed = sp.edit();
+        ed.putLong(IntentExtra.EXTRA_COMMAND_ID.key + si, id);
+        ed.putString(IntentExtra.EXTRA_MSGTYPE.key + si, command.save());
+        ed.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, getAccountName());
+        ed.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, timelineType.save());
+        ed.putLong(IntentExtra.EXTRA_ITEMID.key + si, itemId);
+        ed.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key + si, mInForeground);
+        ed.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key + si, mManuallyLaunched);
+        switch (command) {
+            case FETCH_ATTACHMENT:
+                ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si,
+                        bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
+                break;
+            case UPDATE_STATUS:
+                ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si,
+                        bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
+                ed.putLong(IntentExtra.EXTRA_INREPLYTOID.key + si,
+                        bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key));
+                ed.putLong(IntentExtra.EXTRA_RECIPIENTID.key + si,
+                        bundle.getLong(IntentExtra.EXTRA_RECIPIENTID.key));
+                ed.putString(IntentExtra.EXTRA_MEDIA_URI.key + si,
+                        bundle.getString(IntentExtra.EXTRA_MEDIA_URI.key));
+                break;
+            case SEARCH_MESSAGE:
+                ed.putString(IntentExtra.EXTRA_SEARCH_QUERY.key + si, getSearchQuery());
+                break;
+            default:
+                break;
+        }
+        commandResult.saveToSharedPreferences(ed, index);
+        ed.commit();
+    }
+
+    /**
+     * @return Number of items loaded
+     */
+    static int loadQueue(Context context, Queue<CommandData> q, QueueType queueType) {
+        String method = "loadQueue: ";
+        int count = 0;
+        if (SharedPreferencesUtil.exists(context, queueType.getFilename())) {
+            SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
+            for (int index = 0; index < 100000; index++) {
+                CommandData cd = fromSharedPreferences(sp, index);
+                if (CommandEnum.EMPTY.equals(cd.getCommand())) {
+                    break;
+                } else if (q.contains(cd)) {
+                    MyLog.e(context, method + index + " duplicate skipped " + cd);
+                    break;
+                } else {
+                    if (q.offer(cd)) {
+                        MyLog.v(context, method + index + " " + cd);
+                        count++;
+                    } else {
+                        MyLog.e(context, method + index + " " + cd);
+                    }
+                }
+            }
+            MyLog.d(context, method + "loaded " + count + " msgs from '" + queueType + "'");
+        }
+        return count;
+    }
+
+    /**
+     * Restore this from the SharedPreferences
+     * 
      * @param sp
      * @param index Index of the preference's name to be used
      */
@@ -250,10 +315,12 @@ public class CommandData implements Comparable<CommandData> {
         String si = Integer.toString(index);
         CommandEnum command = CommandEnum.load(sp.getString(IntentExtra.EXTRA_MSGTYPE.key + si,
                 CommandEnum.EMPTY.save()));
-		if (CommandEnum.EMPTY.equals(command)) {
-			return CommandData.getEmpty();
-		}
-        CommandData commandData = new CommandData(command,
+        if (CommandEnum.EMPTY.equals(command)) {
+            return CommandData.getEmpty();
+        }
+        CommandData commandData = new CommandData(
+                sp.getLong(IntentExtra.EXTRA_COMMAND_ID.key + si, 0),
+                command,
                 sp.getString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, ""),
                 TimelineTypeEnum.load(sp.getString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, "")),
                 sp.getLong(IntentExtra.EXTRA_ITEMID.key + si, 0));
@@ -275,71 +342,108 @@ public class CommandData implements Comparable<CommandData> {
                 commandData.bundle.putString(IntentExtra.EXTRA_MEDIA_URI.key,
                         sp.getString(IntentExtra.EXTRA_MEDIA_URI.key + si, ""));
                 break;
-			case SEARCH_MESSAGE:
-				commandData.bundle.putString(IntentExtra.EXTRA_SEARCH_QUERY.key,
-						sp.getString(IntentExtra.EXTRA_SEARCH_QUERY.key + si, ""));
-				break;			
+            case SEARCH_MESSAGE:
+                commandData.bundle.putString(IntentExtra.EXTRA_SEARCH_QUERY.key,
+                        sp.getString(IntentExtra.EXTRA_SEARCH_QUERY.key + si, ""));
+                break;
             default:
                 break;
         }
         commandData.getResult().loadFromSharedPreferences(sp, index);
         return commandData;
     }
-    
-    /**
-     * @return Number of items persisted
-     */
-    static int saveQueue(Context context, Queue<CommandData> queue, QueueType queueType) {
-        String method = "saveQueue: ";
-        int count = 0;
-		SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
-		sp.edit().clear().commit();
-        if (!queue.isEmpty()) {
-            while (!queue.isEmpty()) {
-                CommandData cd = queue.poll();
-                cd.saveToSharedPreferences(sp, count);
-                MyLog.v(context, method + "Command saved: " + cd.toString());
-                count += 1;
+
+    public static CommandData fetchAttachment(long msgId, long downloadDataRowId) {
+        CommandData commandData = new CommandData(CommandEnum.FETCH_ATTACHMENT, null,
+                downloadDataRowId);
+        if (msgId != 0) {
+            commandData.bundle.putString(
+                    IntentExtra.EXTRA_MESSAGE_TEXT.key,
+                    trimConditionally(
+                            MyProvider.msgIdToStringColumnValue(MyDatabase.Msg.BODY, msgId), true)
+                            .toString());
+        }
+        return commandData;
+    }
+
+    public CommandData(CommandEnum commandIn, String accountNameIn) {
+        this(commandIn, accountNameIn, TimelineTypeEnum.UNKNOWN);
+    }
+
+    public CommandData(CommandEnum commandIn, String accountNameIn, long itemIdIn) {
+        this(commandIn, accountNameIn, TimelineTypeEnum.UNKNOWN, itemIdIn);
+    }
+
+    public CommandData(CommandEnum commandIn, String accountNameIn, TimelineTypeEnum timelineTypeIn) {
+        this(commandIn, accountNameIn, timelineTypeIn, 0);
+    }
+
+    public CommandData(CommandEnum commandIn, String accountNameIn,
+            TimelineTypeEnum timelineTypeIn, long itemIdIn) {
+        this(0, commandIn, accountNameIn, timelineTypeIn, itemIdIn);
+    }
+
+    private CommandData(long idIn, CommandEnum commandIn, String accountNameIn,
+            TimelineTypeEnum timelineTypeIn, long itemIdIn) {
+        if (idIn == 0) {
+            id = uniqueCurrentTimeMS();
+        } else {
+            id = idIn;
+        }
+        // This is by implementation
+        createdDate = id;
+
+        command = commandIn;
+        String accountName2 = "";
+        TimelineTypeEnum timelineType2 = TimelineTypeEnum.UNKNOWN;
+        priority = command.getPriority();
+        switch (command) {
+            case FETCH_ATTACHMENT:
+            case FETCH_AVATAR:
+                break;
+            default:
+                if (!TextUtils.isEmpty(accountNameIn)) {
+                    accountName2 = accountNameIn;
+                }
+                timelineType2 = timelineTypeIn;
+                break;
+        }
+        accountName = accountName2;
+        timelineType = timelineType2;
+        itemId = itemIdIn;
+        resetRetries();
+    }
+
+    public Uri getMediaUri() {
+        String uriString = getExtraText(IntentExtra.EXTRA_MEDIA_URI);
+        if (!TextUtils.isEmpty(uriString)) {
+            return Uri.parse(uriString);
+        }
+        return null;
+    }
+
+    public String getMessageText() {
+        return getExtraText(IntentExtra.EXTRA_MESSAGE_TEXT);
+    }
+
+    public String getSearchQuery() {
+        return getExtraText(IntentExtra.EXTRA_SEARCH_QUERY);
+    }
+
+    private String getExtraText(IntentExtra intentExtra) {
+        String value = "";
+        if (bundle.containsKey(intentExtra.key)) {
+            String value1 = bundle.getString(intentExtra.key);
+            if (!TextUtils.isEmpty(value1)) {
+                value = value1;
             }
-            MyLog.d(context, method + "to '" + queueType  + "', " + count + " msgs");
         }
-		// Adding Empty command to mark the end.
-		(new CommandData(CommandEnum.EMPTY, "")).saveToSharedPreferences(sp, count);
-        return count;
+        return value;
     }
-    
+
     /**
-     * @return Number of items loaded
-     */
-    static int loadQueue(Context context, Queue<CommandData> q, QueueType queueType) {
-        String method = "loadQueue: ";
-		int count = 0;
-        if (SharedPreferencesUtil.exists(context, queueType.getFilename())) {
-            SharedPreferences sp = MyPreferences.getSharedPreferences(queueType.getFilename());
-			for (int index=0; index < 100000; index++) {
-                CommandData cd = fromSharedPreferences(sp, index);
-                if (CommandEnum.EMPTY.equals(cd.getCommand())) {
-                    break;
-				} else if (q.contains(cd)) {
-					MyLog.e(context, method + index + " duplicate skipped " + cd);
-					break;
-                } else {
-                    if ( q.offer(cd) ) {
-                        MyLog.v(context, method + index + " " + cd);
-						count++;
-                    } else {
-                        MyLog.e(context, method + index + " " + cd);
-                    }
-                }				
-			}
-            MyLog.d(context, method + "loaded " + count + " msgs from '" + queueType  + "'");
-        }
-        return count;
-    }
-    
-    /**
-     * It's used in equals() method. We need to distinguish duplicated
-     * commands but to ignore differences in results!
+     * It's used in equals() method. We need to distinguish duplicated commands but to ignore
+     * differences in results!
      */
     @Override
     public int hashCode() {
@@ -382,20 +486,24 @@ public class CommandData implements Comparable<CommandData> {
         if (mManuallyLaunched) {
             builder.append("manual,");
         }
+        builder.append("created:"
+                + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate())
+                + ",");
         switch (command) {
             case UPDATE_STATUS:
                 builder.append("\"");
-                builder.append(I18n.trimTextAt(bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key), 40));                
+                builder.append(I18n.trimTextAt(
+                        bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key), 40));
                 builder.append("\",");
                 if (getMediaUri() != null) {
-                    builder.append("media=\"");
-                    builder.append(getMediaUri().toString());                
+                    builder.append("media:\"");
+                    builder.append(getMediaUri().toString());
                     builder.append("\",");
                 }
                 break;
             case SEARCH_MESSAGE:
                 builder.append("\"");
-                builder.append(I18n.trimTextAt(getSearchQuery(), 40));                
+                builder.append(I18n.trimTextAt(getSearchQuery(), 40));
                 builder.append("\",");
                 break;
             default:
@@ -408,39 +516,11 @@ public class CommandData implements Comparable<CommandData> {
             builder.append(timelineType + ",");
         }
         if (itemId != 0) {
-            builder.append("id:" + itemId + ",");
+            builder.append("itemId:" + itemId + ",");
         }
         builder.append("hashCode:" + hashCode() + ",");
         builder.append(CommandResult.toString(commandResult));
         return MyLog.formatKeyValue("CommandData", builder);
-    }
-
-    /**
-     * @return Intent to be sent to this.AndStatusService
-     */
-    public Intent toIntent(Intent intentIn) {
-        Intent intent = intentIn;
-        if (intent == null) {
-            throw new IllegalArgumentException("toIntent: input intent is null");
-        }
-        if (bundle == null) {
-            bundle = new Bundle();
-        }
-        bundle.putString(IntentExtra.EXTRA_MSGTYPE.key, command.save());
-        if (!TextUtils.isEmpty(getAccountName())) {
-            bundle.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key, getAccountName());
-        }
-        if (timelineType != TimelineTypeEnum.UNKNOWN) {
-            bundle.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key, timelineType.save());
-        }
-        if (itemId != 0) {
-            bundle.putLong(IntentExtra.EXTRA_ITEMID.key, itemId);
-        }
-        bundle.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key, mInForeground);
-        bundle.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key, mManuallyLaunched);
-        bundle.putParcelable(IntentExtra.EXTRA_COMMAND_RESULT.key, commandResult);        
-        intent.putExtras(bundle);
-        return intent;
     }
 
     @Override
@@ -464,45 +544,6 @@ public class CommandData implements Comparable<CommandData> {
         return true;
     }
 
-    /**
-     * Persist the object to the SharedPreferences 
-     * We're not storing all types of commands here because not all commands
-     *   go to the queue.
-     * SharedPreferences should not contain any previous versions of the same entries 
-     * (we don't store default values!)
-     * @param sp
-     * @param index Index of the preference's name to be used
-     */
-    private void saveToSharedPreferences(SharedPreferences sp, int index) {
-        String si = Integer.toString(index);
-
-        android.content.SharedPreferences.Editor ed = sp.edit();
-        ed.putString(IntentExtra.EXTRA_MSGTYPE.key + si, command.save());
-        ed.putString(IntentExtra.EXTRA_ACCOUNT_NAME.key + si, getAccountName());
-        ed.putString(IntentExtra.EXTRA_TIMELINE_TYPE.key + si, timelineType.save());
-        ed.putLong(IntentExtra.EXTRA_ITEMID.key + si, itemId);
-        ed.putBoolean(IntentExtra.EXTRA_IN_FOREGROUND.key + si, mInForeground);
-        ed.putBoolean(IntentExtra.EXTRA_MANUALLY_LAUCHED.key + si, mManuallyLaunched);
-        switch (command) {
-            case FETCH_ATTACHMENT:
-                ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
-                break;
-            case UPDATE_STATUS:
-                ed.putString(IntentExtra.EXTRA_MESSAGE_TEXT.key + si, bundle.getString(IntentExtra.EXTRA_MESSAGE_TEXT.key));
-                ed.putLong(IntentExtra.EXTRA_INREPLYTOID.key + si, bundle.getLong(IntentExtra.EXTRA_INREPLYTOID.key));
-                ed.putLong(IntentExtra.EXTRA_RECIPIENTID.key + si, bundle.getLong(IntentExtra.EXTRA_RECIPIENTID.key));
-                ed.putString(IntentExtra.EXTRA_MEDIA_URI.key + si, bundle.getString(IntentExtra.EXTRA_MEDIA_URI.key));
-                break;
-			case SEARCH_MESSAGE:
-				ed.putString(IntentExtra.EXTRA_SEARCH_QUERY.key + si, getSearchQuery());
-				break;
-            default:
-                break;
-        }
-        commandResult.saveToSharedPreferences(ed, index);
-        ed.commit();
-    }
-
     public String getAccountName() {
         return accountName;
     }
@@ -517,7 +558,7 @@ public class CommandData implements Comparable<CommandData> {
     @Override
     public int compareTo(CommandData another) {
         int greater = 0;
-        if ( another != null && another.priority != this.priority) {
+        if (another != null && another.priority != this.priority) {
             greater = this.priority > another.priority ? 1 : -1;
         }
         return greater;
@@ -539,7 +580,7 @@ public class CommandData implements Comparable<CommandData> {
         this.mManuallyLaunched = manuallyLaunched;
         return this;
     }
-    
+
     public CommandResult getResult() {
         return commandResult;
     }
@@ -547,7 +588,7 @@ public class CommandData implements Comparable<CommandData> {
     public String share(MyContext myContext) {
         return toUserFrindlyForm(myContext, false);
     }
-    
+
     public String toCommandSummary(MyContext myContext) {
         return toUserFrindlyForm(myContext, true);
     }
@@ -562,14 +603,20 @@ public class CommandData implements Comparable<CommandData> {
                 builder.append(", manual ");
             }
         }
+        builder.append(", " + myContext.context().getText(R.string.created_label)
+                + RelativeTime.getDifference(myContext.context(), getCreatedDate()) + " ");
         switch (command) {
             case FETCH_AVATAR:
-                builder.append(myContext.context().getText(R.string.combined_timeline_off_account) + " ");
-                builder.append(MyProvider.userIdToName(itemId) );
+                builder.append(myContext.context().getText(R.string.combined_timeline_off_account)
+                        + " ");
+                builder.append(MyProvider.userIdToName(itemId));
                 if (myContext.persistentAccounts().getDistinctOriginsCount() > 1) {
-                    long originId = MyProvider.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID, itemId);
-                    builder.append(" " + myContext.context().getText(R.string.combined_timeline_off_origin) + " ");
-                    builder.append(myContext.persistentOrigins().fromId(originId).getName() );
+                    long originId = MyProvider.userIdToLongColumnValue(MyDatabase.User.ORIGIN_ID,
+                            itemId);
+                    builder.append(" "
+                            + myContext.context().getText(R.string.combined_timeline_off_origin)
+                            + " ");
+                    builder.append(myContext.persistentOrigins().fromId(originId).getName());
                 }
                 break;
             case FETCH_ATTACHMENT:
@@ -584,7 +631,7 @@ public class CommandData implements Comparable<CommandData> {
                                     .toString());
                     if (!summaryOnly) {
                         builder.append("=\"");
-                        builder.append(getMediaUri().toString());                
+                        builder.append(getMediaUri().toString());
                         builder.append("\",");
                     }
                     builder.append(")");
@@ -596,25 +643,29 @@ public class CommandData implements Comparable<CommandData> {
                     if (timelineType == TimelineTypeEnum.USER) {
                         builder.append(MyProvider.userIdToName(itemId) + " ");
                     }
-                    builder.append(timelineType.getPrepositionForNotCombinedTimeline(myContext.context()));
+                    builder.append(timelineType.getPrepositionForNotCombinedTimeline(myContext
+                            .context()));
                     MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
                     if (ma == null) {
                         builder.append(" ('" + accountName + "' ?)");
                     } else {
-                        builder.append(" " + TimelineActivity.buildAccountButtonText(ma.getUserId()));
+                        builder.append(" "
+                                + TimelineActivity.buildAccountButtonText(ma.getUserId()));
                     }
                 }
                 break;
-			case SEARCH_MESSAGE:
-				builder.append("\"");
-                builder.append(trimConditionally(getSearchQuery(), summaryOnly));                
+            case SEARCH_MESSAGE:
+                builder.append("\"");
+                builder.append(trimConditionally(getSearchQuery(), summaryOnly));
                 builder.append("\" ");
-				if (!TextUtils.isEmpty(accountName)) {
-                    builder.append(myContext.context().getText(R.string.combined_timeline_off_origin) + " ");
+                if (!TextUtils.isEmpty(accountName)) {
+                    builder.append(myContext.context().getText(
+                            R.string.combined_timeline_off_origin)
+                            + " ");
                     MyAccount ma = myContext.persistentAccounts().fromAccountName(accountName);
                     builder.append(ma != null ? ma.getOriginName() : "?");
                 }
-				break;
+                break;
             default:
                 if (!TextUtils.isEmpty(accountName)) {
                     builder.append(timelineType.getPrepositionForNotCombinedTimeline(myContext
@@ -656,7 +707,19 @@ public class CommandData implements Comparable<CommandData> {
         }
         return builder.toString();
     }
-    
+
+    void deleteCommandInTheQueue(Queue<CommandData> queue) {
+        String method = "deleteCommandInTheQueue: ";
+        for (CommandData cd : queue) {
+            if (cd.getId() == itemId) {
+                queue.remove(cd);
+                getResult().incrementDownloadedCount();
+                MyLog.v(this, method + "deleted: " + cd);
+            }
+        }
+        MyLog.v(this, method + "id=" + itemId + ", processed queue: " + queue.size());
+    }
+
     public boolean isInForeground() {
         return mInForeground;
     }
@@ -675,10 +738,25 @@ public class CommandData implements Comparable<CommandData> {
         getResult().resetRetries(getCommand());
     }
 
-    public long getCreatedDate() {
-        // TODO: move the field to the command itself and make it unique
-        // see http://stackoverflow.com/a/9191383/297710
-        return getResult().getCreatedDate();
+    public long getId() {
+        return id;
     }
-    
+
+    private long getCreatedDate() {
+        return createdDate;
+    }
+
+    // see http://stackoverflow.com/a/9191383/297710
+    private static final AtomicLong LAST_TIME_MS = new AtomicLong();
+
+    private static long uniqueCurrentTimeMS() {
+        long now = System.currentTimeMillis();
+        while (true) {
+            long lastTime = LAST_TIME_MS.get();
+            if (lastTime >= now)
+                now = lastTime + 1;
+            if (LAST_TIME_MS.compareAndSet(lastTime, now))
+                return now;
+        }
+    }
 }

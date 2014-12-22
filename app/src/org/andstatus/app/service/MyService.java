@@ -595,7 +595,11 @@ public class MyService extends Service {
                 if (MyContextHolder.get().isOnline(commandData.getCommand().getConnetionRequired())) {
                     MyServiceBroadcaster.newInstance(MyContextHolder.get(), getServiceState())
                     .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
-                    CommandExecutorStrategy.executeCommand(commandData, this);
+                    if (commandData.getCommand() == CommandEnum.DELETE_COMMAND) {
+                        executeDeleteCommand(commandData);
+                    } else {
+                        CommandExecutorStrategy.executeCommand(commandData, this);
+                    }
                 } else {
                     commandData.getResult().incrementNumIoExceptions();
                     commandData.getResult().setMessage("No '" + commandData.getCommand().getConnetionRequired() + "' connection");
@@ -746,6 +750,12 @@ public class MyService extends Service {
             addToMainQueue(new CommandData(CommandEnum.FETCH_TIMELINE,
                     commandDataExecuted.getAccountName(), TimelineTypeEnum.HOME)
                     .setInForeground(commandDataExecuted.isInForeground()));
+        }
+        
+        public void executeDeleteCommand(CommandData commandData) {
+            commandData.deleteCommandInTheQueue(mMainCommandQueue);
+            commandData.deleteCommandInTheQueue(mRetryCommandQueue);
+            commandData.deleteCommandInTheQueue(mErrorCommandQueue);
         }
         
         @Override
