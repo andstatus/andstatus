@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type='text/xsl' href='changesxsl.xsl' encoding="utf-8"?>
 <!-- 
 	Copyright (C) 2012-2014 yvolk (Yuri Volkov), http://yurivolkov.com
 	
@@ -38,7 +38,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
     </header>
 
     <release android:versionName="14.0" android:versionCode="117"
-        versionDate="2014-12-23"
+        versionDate="2014-12-24"
         versionTitle="&quot;Everything&quot; timeline and Fullscreen image view">
         <changes>
 	        <change>&quot;Everything&quot; timeline added:
@@ -72,7 +72,7 @@ Legend: (not used yet. Maybe it's not for this document, but rather for the User
 	        <change>Added debugging option &quot;Log everything to file&quot;.</change>
 	        <change>Deleting commands from Queue implemented. 
 	            Text of the posts shared from "Commands in the Queue" is not truncated now.
-	            Commands now are sorted by date-time of creation cronologically (newest first). 
+	            Commands now are sorted by date-time of creation chronologically (newest first). 
 	            <a href="https://github.com/andstatus/andstatus/issues/162">#162</a></change>
 	        </changes>
     </release>
