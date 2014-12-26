@@ -14,29 +14,21 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
  -->
-
-<!-- 
-	Starting from v.1.11.3 of AndStatus the Recent changes may be seen 
-    through Preferences-"Change Log"
-	
-	'changes' element contains text for the "Recent changes" section in the Market.
-	
-Legend: (not used yet. Maybe it's not for this document, but rather for the User Interface)
-
- * -> Security Fix
- # -> Bug Fix
- $ -> Language fix or change
- + -> Addition
- ^ -> Change
- - -> Removed
- ! -> Note  	
- -->
-
 <document xmlns:android="http://schemas.android.com/apk/res/android">
     <header>
         <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
     </header>
 
+    <release android:versionName="14.1" android:versionCode="118"
+        versionDate="2014-12-26"
+        versionTitle="Cleaning???">
+        <changes>
+	        <change>&quot;Log network level messages&quot; option added allowing deeper debugging.
+	            If &quot;Log everything to file&quot; is also enabled, separate .json files are
+	            created for each request and response.
+	        </change>
+	    </changes>
+    </release>
     <release android:versionName="14.0" android:versionCode="117"
         versionDate="2014-12-24"
         versionTitle="&quot;Everything&quot; timeline and Fullscreen image view">

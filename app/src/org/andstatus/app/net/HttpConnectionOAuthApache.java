@@ -83,6 +83,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
             MyLog.i(this, logmsg, e);
             throw new ConnectionException(logmsg, e);
         }
+        MyLog.logNetworkLevelMessage("getRequest_oauthApache", response);
         if (!ok) {
             jso = null;
         }

@@ -17,9 +17,6 @@
 package org.andstatus.app.net;
 
 import org.andstatus.app.util.MyLog;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.net.URL;
 
@@ -72,25 +69,12 @@ public class ConnectionException extends Exception {
     public static ConnectionException loggedJsonException(Object objTag, Exception e, Object obj, String detailMessage) throws ConnectionException {
         MyLog.d(objTag, detailMessage + (e != null ? ": " + e.getMessage() : ""));
         if (obj != null) {
-            try {
-                if (e != null) {
-                    String stackTrace = MyLog.getStackTrace(e);
-                    MyLog.writeStringToFile(stackTrace, "ErrorJson_stacktrace_log.txt");
-                    MyLog.v(objTag, "stack trace: " + stackTrace);
-                }
-                String strJso = "";
-                if (JSONObject.class.isInstance(obj)) {
-                   strJso = ((JSONObject) obj).toString(2);
-                } else if (JSONArray.class.isInstance(obj)) {
-                    strJso = ((JSONArray) obj).toString(2);
-                } else {
-                    strJso = "Class " + obj.getClass().getCanonicalName() + " " + obj.toString();
-                }
-                MyLog.writeStringToFile(strJso, "ErrorJson_log.json");
-                MyLog.v(objTag, "jso: " + strJso);
-            } catch (JSONException ignored) {
-                MyLog.ignored(objTag, ignored);
+            if (e != null) {
+                String stackTrace = MyLog.getStackTrace(e);
+                MyLog.writeStringToFile(stackTrace, MyLog.uniqueDateTimeFormatted() + "_JsonException_stacktrace_log.txt");
+                MyLog.v(objTag, "stack trace: " + stackTrace);
             }
+            MyLog.logJson(objTag, obj, true);
         }
         return new ConnectionException(detailMessage);
     }

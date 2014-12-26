@@ -112,6 +112,7 @@ public class HttpApacheUtils {
     protected JSONObject postRequest(String path, JSONObject formParams) throws ConnectionException {
         HttpPost postMethod = new HttpPost(request.pathToUrl(path));
         JSONObject out = new JSONObject();
+        MyLog.logNetworkLevelMessage("postRequest_formParams", formParams);
         try {
             if (formParams == null || formParams.length() == 0) {
                 // Nothing to do
@@ -124,6 +125,7 @@ public class HttpApacheUtils {
         } catch (UnsupportedEncodingException e) {
             MyLog.i(this, e);
         }
+        MyLog.logNetworkLevelMessage("postRequest_result", out);
         return out;
     }
 

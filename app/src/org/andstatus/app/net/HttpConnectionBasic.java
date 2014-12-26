@@ -129,6 +129,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpApacheReq
         } finally {
             getMethod.abort();
         }
+        MyLog.logNetworkLevelMessage("getRequest_basic", response);
         parseStatusLine(statusLine, e1, logmsg, response);
         return jso;
     }

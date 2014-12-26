@@ -128,7 +128,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         JSONObject result = null;
 		String logmsg = method;
         try {
-			logmsg += (formParams == null ? "(empty)" : formParams.toString(2));
+            MyLog.logNetworkLevelMessage("postRequest_formParams", formParams);
 			url = new URL(pathToUrl(path));
 			logmsg += "; URL=" + url.toExternalForm();
             MyLog.v(this, logmsg);
@@ -160,6 +160,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         } catch(Exception e) {
             throw new ConnectionException(logmsg, e);
         }
+        MyLog.logNetworkLevelMessage("postRequest_result", result);
         return result;
     }
 
@@ -283,6 +284,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         } catch(Exception e) {
             throw new ConnectionException(logmsg, e);
         }
+        MyLog.logNetworkLevelMessage("getRequest_oauthJavaNet", result);
         return result;
     }
 

@@ -41,7 +41,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.Queue;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Command data store (message...)
@@ -386,7 +385,7 @@ public class CommandData implements Comparable<CommandData> {
     private CommandData(long idIn, CommandEnum commandIn, String accountNameIn,
             TimelineTypeEnum timelineTypeIn, long itemIdIn) {
         if (idIn == 0) {
-            id = uniqueCurrentTimeMS();
+            id = MyLog.uniqueCurrentTimeMS();
         } else {
             id = idIn;
         }
@@ -749,19 +748,5 @@ public class CommandData implements Comparable<CommandData> {
 
     public long getCreatedDate() {
         return createdDate;
-    }
-
-    // see http://stackoverflow.com/a/9191383/297710
-    private static final AtomicLong LAST_TIME_MS = new AtomicLong();
-
-    private static long uniqueCurrentTimeMS() {
-        long now = System.currentTimeMillis();
-        while (true) {
-            long lastTime = LAST_TIME_MS.get();
-            if (lastTime >= now)
-                now = lastTime + 1;
-            if (LAST_TIME_MS.compareAndSet(lastTime, now))
-                return now;
-        }
     }
 }

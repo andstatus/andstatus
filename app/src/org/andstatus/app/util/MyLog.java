@@ -20,6 +20,10 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -29,6 +33,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicLong;
 
 import android.content.SharedPreferences;
 import android.text.TextUtils;
@@ -523,5 +528,73 @@ public class MyLog {
     /** TODO: java.util.concurrent.TimeUnit.DAYS.toMillis(maxDays) since API 9  */
     public static long daysToMillis(long days) {
         return days * (1000L * 60 * 60 * 24); 
+    }
+
+    public static void logNetworkLevelMessage(Object objTag, Object obj) {
+        if (obj != null && isLoggable(objTag, VERBOSE) 
+                && MyPreferences.getBoolean(MyPreferences.KEY_LOG_NETWORK_LEVEL_MESSAGES, false)) {
+            logJson(objTag, obj, MyPreferences.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, false));
+        }
+    }
+   
+    public static void logJson(Object objTag, Object obj, boolean toFile) {
+        if (obj == null) {
+            return;
+        }
+        try {
+            Object obj2 = obj;
+            if (String.class.isInstance(obj)) {
+                if (TextUtils.isEmpty((String) obj)) {
+                    return;
+                }
+                obj2 = (new JSONTokener((String) obj)).nextValue();
+             }
+            String strJso = "";
+            if (JSONObject.class.isInstance(obj2)) {
+               strJso = ((JSONObject) obj2).toString(2);
+            } else if (JSONArray.class.isInstance(obj2)) {
+                strJso = ((JSONArray) obj2).toString(2);
+            } else {
+                strJso = "Class " + obj2.getClass().getCanonicalName() + " " + obj2.toString();
+            }
+            if (toFile) {
+                writeStringToFile(strJso, uniqueDateTimeFormatted() + "_" + objTagToString(objTag) + "_log.json");
+            } else {
+                v(objTag, "jso: " + strJso);
+            }
+        } catch (JSONException ignored) {
+            try {
+                if (toFile) {
+                    writeStringToFile(obj.toString(), uniqueDateTimeFormatted() + "_" + objTagToString(objTag) + "_invalid_log.json");
+                }
+                v(objTag, "invalid obj: " + obj.toString());
+            } catch (Exception ignored2) {
+                ignored(objTag, ignored2);
+            }
+        }
+    }
+    
+    public static String uniqueDateTimeFormatted() {
+        long time = uniqueCurrentTimeMS();
+        String strTime = DateFormat.format("yyyy-MM-dd-HH-mm-ss", new Date(time)).toString();
+        if (strTime.contains("HH")) {
+            // see http://stackoverflow.com/questions/16763968/android-text-format-dateformat-hh-is-not-recognized-like-with-java-text-simple
+            strTime = DateFormat.format("yyyy-MM-dd-kk-mm-ss", new Date(time)).toString();
+        }
+        return strTime + Long.toString(time);
+    }
+    
+    // see http://stackoverflow.com/a/9191383/297710
+    private static final AtomicLong LAST_TIME_MS = new AtomicLong();
+
+    public static long uniqueCurrentTimeMS() {
+        long now = System.currentTimeMillis();
+        while (true) {
+            long lastTime = LAST_TIME_MS.get();
+            if (lastTime >= now)
+                now = lastTime + 1;
+            if (LAST_TIME_MS.compareAndSet(lastTime, now))
+                return now;
+        }
     }
 }
