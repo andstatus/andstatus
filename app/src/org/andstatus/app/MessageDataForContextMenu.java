@@ -40,11 +40,13 @@ class MessageDataForContextMenu {
      * MyAccount, suitable for this message, null if nothing was found
      */
     public MyAccount ma = null;
+    private boolean isTiedToFirstAccount = false; 
     
     public String body = "";
     boolean isDirect = false;
     long authorId = 0;
     long senderId = 0;
+    long inReplyToUserId = 0;
     boolean favorited = false;
     boolean reblogged = false;
     boolean senderFollowed = false;
@@ -57,12 +59,15 @@ class MessageDataForContextMenu {
     
     String imageFilename = null;
 
+    final long preferredOtherUserId;
     /**
      * Sometimes current message already tied to the first user (favorited by him...)
      */
-    boolean canUseSecondAccountInsteadOfFirst = false;
+    boolean preferSecondAccountToFirst = false;
     
-    public MessageDataForContextMenu(Context context, long userIdForThisMessage, long preferredOtherUserId, TimelineTypeEnum timelineType, long msgId) {
+    public MessageDataForContextMenu(Context context, long userIdForThisMessage, 
+            long preferredOtherUserId, TimelineTypeEnum timelineType, long msgId) {
+        this.preferredOtherUserId = preferredOtherUserId;
         ma = MyContextHolder.get().persistentAccounts().getAccountWhichMayBeLinkedToThisMessage(msgId, userIdForThisMessage,
                 preferredOtherUserId);
         if (ma == null) {
@@ -75,7 +80,9 @@ class MessageDataForContextMenu {
         try {
             cursor = context.getContentResolver().query(uri, new String[] {
                     BaseColumns._ID, MyDatabase.Msg.BODY, MyDatabase.Msg.SENDER_ID,
-                    MyDatabase.Msg.AUTHOR_ID, MyDatabase.MsgOfUser.FAVORITED,
+                    MyDatabase.Msg.AUTHOR_ID,
+                    MyDatabase.Msg.IN_REPLY_TO_USER_ID, 
+                    MyDatabase.MsgOfUser.FAVORITED,
                     MyDatabase.Msg.RECIPIENT_ID,
                     MyDatabase.MsgOfUser.REBLOGGED,
                     MyDatabase.FollowingUser.SENDER_FOLLOWED,
@@ -86,6 +93,7 @@ class MessageDataForContextMenu {
                 isDirect = !cursor.isNull(cursor.getColumnIndex(MyDatabase.Msg.RECIPIENT_ID));
                 authorId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.AUTHOR_ID));
                 senderId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.SENDER_ID));
+                inReplyToUserId = cursor.getLong(cursor.getColumnIndex(MyDatabase.Msg.IN_REPLY_TO_USER_ID));
                 favorited = cursor.getInt(cursor.getColumnIndex(MyDatabase.MsgOfUser.FAVORITED)) == 1;
                 reblogged = cursor.getInt(cursor.getColumnIndex(MyDatabase.MsgOfUser.REBLOGGED)) == 1;
                 senderFollowed = cursor.getInt(cursor
@@ -107,12 +115,15 @@ class MessageDataForContextMenu {
                                 MyHtml.fromHtml(cursor.getString(cursor
                                         .getColumnIndex(MyDatabase.Msg.BODY))), 40).toString();
 
-                if ( timelineType != TimelineTypeEnum.FOLLOWING_USER 
-                        && !isDirect && !favorited && !reblogged && !isSender && !senderFollowed && !authorFollowed
-                        && ma.getUserId() != preferredOtherUserId) {
+                isTiedToFirstAccount = isDirect || favorited || reblogged || isSender
+                        || senderFollowed || authorFollowed
+                        || (inReplyToUserId == ma.getUserId());
+                if ( !isTiedToFirstAccount
+                        && ma.getUserId() != preferredOtherUserId
+                        && timelineType != TimelineTypeEnum.FOLLOWING_USER) {
                     MyAccount ma2 = MyContextHolder.get().persistentAccounts().fromUserId(preferredOtherUserId);
                     if (ma2 != null && ma.getOriginId() == ma2.getOriginId()) {
-                        canUseSecondAccountInsteadOfFirst = true;
+                        preferSecondAccountToFirst = true;
                     }
                 }
             }

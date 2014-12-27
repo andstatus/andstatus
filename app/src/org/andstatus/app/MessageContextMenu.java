@@ -121,7 +121,7 @@ public class MessageContextMenu implements OnCreateContextMenuListener {
         if (md.ma == null) {
             return;
         }
-        if (accountUserIdToActAs==0 && md.canUseSecondAccountInsteadOfFirst) {
+        if (accountUserIdToActAs==0 && md.preferSecondAccountToFirst) {
             // Yes, use current Account!
             md = new MessageDataForContextMenu(getContext(), getCurrentMyAccountUserId(), 0, messageList.getTimelineType(), mCurrentMsgId);
         }
