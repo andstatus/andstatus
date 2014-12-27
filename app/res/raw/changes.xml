@@ -1,4 +1,4 @@
-<?xml-stylesheet type='text/xsl' href='changesxsl.xsl' encoding="utf-8"?>
+<?xml-stylesheet type='text/xsl' href='changes2html.xsl' encoding="utf-8"?>
 <!-- 
 	Copyright (C) 2012-2014 yvolk (Yuri Volkov), http://yurivolkov.com
 	
@@ -16,7 +16,14 @@
  -->
 <document xmlns:android="http://schemas.android.com/apk/res/android">
     <header>
-        <title><a href="https://github.com/andstatus/andstatus/wiki">AndStatus</a> Change Log</title>
+        <title>AndStatus Change Log</title>
+        <subtitle>List of changes in the 
+			<a href="https://play.google.com/store/apps/details?id=org.andstatus.app" 
+			    onclick="target='_blank'">Google Play</a> releases of AndStatus.</subtitle>
+        <subtitle>
+			For more information on the application please read the 
+  				<a href="https://github.com/andstatus/andstatus/wiki">AndStatus Wiki</a>.
+		</subtitle>
     </header>
 
     <release android:versionName="14.1" android:versionCode="118"
@@ -335,11 +342,12 @@
                 See <a href="https://github.com/andstatus/andstatus/issues/75" >Issue #75</a></change>
             <change>Action bar added to the "Settings" and "Account" screens (for Android 4.x+) in 
                 order to show a "Way back" to a User. These screens have new, more common names.</change>
-            <changes>"Manage accounts" link in AndStatus Settings now leads directly to the list of accounts
-                avoiding long Android's "System Settings" list. This simplifies working with existing accounts.
+            <change>&quot;Manage accounts&quot; link in AndStatus Settings now leads directly to the list of accounts
+                avoiding long Android's &quot;System Settings&quot; list. 
+                This simplifies working with existing accounts.
                 In order to add the second and further accounts an additional button created. 
                 Note: In order to delete an account a User still has to go 
-                to the native Android interface: System Settings-&gt;Accounts.</changes>
+                to the native Android interface: System Settings-&gt;Accounts.</change>
             <change>A User Guide updated (English and Russian translations). 
                 The User Guide is available by tapping the "Learn more" button 
                 on the "About AndStatus" screen.</change>
@@ -805,8 +813,7 @@ replying and reblogging.
 				<change>Widget shows last time when data was successfully 
                 downloaded from the server,
                 not when there was last attempt to do this (maybe it failed…)</change>
-		
-	       </package>
+	      	</package>
 			<package android:versionName="1.1.3" android:versionCode="39"
 				versionDate="2011-07-16">
 				1. Queued tweet sending implemented. Now User doesn't
@@ -825,7 +832,7 @@ replying and reblogging.
 				Two (location) permissions were removed,
 				one permission was added to help asynchronous message delivery
 				(ACCESS_NETWORK_STATE).
-	</package>
+			</package>
 			<package android:versionName="1.1.2" android:versionCode="38"
 				versionDate="2011-04-29">
 				1. Fixed bug preventing timeline position restore.
@@ -838,7 +845,7 @@ replying and reblogging.
 				and, in fact, synchronous requests (Twitter commands) processing to
 				the sequential and queued processing, see {@link
 				org.andstatus.app.TimelineActivity#queueIntent}
-	</package>
+			</package>
 			<package android:versionName="1.1.1" android:versionCode="37"
 				versionDate="2011-04-01">
 				1. Blank screen in Preferences activity during
@@ -847,25 +854,22 @@ replying and reblogging.
 				preference moved to the top of the "User Credentials" preference's
 				section, because User can really start from tapping it (typing
 				Username is not required for OAuth)!
-	</package>
+			</package>
 			<package android:versionName="1.1.0" android:versionCode="36"
 				versionDate="2011-03-12">
 				1. Fixed "black on black" tweet text on "Single tweet"
 				window on Android v.2.3.3
 				2. Style definitions in
 				"res/values/themes.xml" reworked.
-	</package>
+			</package>
 		</history>
 	</release>
-	<release android:versionName="1.0.5" android:versionCode="35"
-		versionDate="2011-02-19">
+	<release android:versionName="1.0.5" android:versionCode="35" versionDate="2011-02-19">
         <changes>
             <change>"Favorites" list added.</change>
-            <change>Favorites are protected from
-        automatic deletion (unlike other old tweets)</change>
-            <change>Click on Widget opens
-        the timeline, that has something new, in this order: messages,
-        mentions, tweets</change>
+            <change>Favorites are protected from automatic deletion (unlike other old tweets)</change>
+            <change>Click on Widget opens the timeline, that has something new, in this order: 
+                messages, mentions, tweets</change>
             <change>Maximum History time (to store tweets) is 1 year now</change>
             <change>OAuth is On By Default.</change>
             <change>Mentions are not "quick Search" any
@@ -873,8 +877,7 @@ replying and reblogging.
         Mentions also.</change>
             <change>"Automatic updates" setting is not being turned off
         by the System. (in beta1:)</change>
-            <change>Fixed issue: Old records are not being
-        deleted.</change>
+            <change>Fixed issue: Old records are not being deleted.</change>
         </changes>
 	</release>
 </document>

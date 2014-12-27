@@ -112,7 +112,7 @@ public class HelpActivity extends Activity implements SwipeInterface {
         }
 
         // Show the Change log
-        Xslt.toWebView(this, R.id.help_changelog, R.raw.changes, R.raw.changesxsl);
+        Xslt.toWebView(this, R.id.help_changelog, R.raw.changes, R.raw.changes2html);
         
         versionText.setOnClickListener(new OnClickListener() {
             @Override

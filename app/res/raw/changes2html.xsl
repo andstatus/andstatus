@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8' ?>
 <!-- 
-    Copyright (C) 2012 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (C) 2012-2014 yvolk (Yuri Volkov), http://yurivolkov.com
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@
 <xsl:output method="html" encoding='UTF-8' media-type="text/html; charset=UTF-8"/>
 
 <xsl:template match="/">
-  <h1><b><xsl:copy-of select="/document/header/title/node()"/></b></h1>
-  <xsl:for-each select="/document/release">
+  	<h1><xsl:copy-of select="/document/header/title/node()"/></h1>
+	<xsl:apply-templates select="/document/header/subtitle" />
+  	<xsl:for-each select="/document/release">
       <h2><xsl:value-of select="@versionDate"/> 
           v.<xsl:value-of select="@android:versionName"/> (<xsl:value-of select="@android:versionCode"/>)
           <xsl:value-of select="@versionTitle"/></h2>
@@ -33,6 +34,11 @@
         <li><xsl:copy-of select="node()"/></li>
       </xsl:for-each>   
       </ol>  
-      </xsl:for-each>   
+    </xsl:for-each>   
 </xsl:template>
+
+<xsl:template match="subtitle">
+    <p><xsl:copy-of select="node()"/></p>
+</xsl:template>
+
 </xsl:stylesheet>
